@@ -1,3 +1,5 @@
+before_install:
+  - sudo apt-get -y install libopenmpi-dev
 sudo: false
 matrix:
   fast_finish: true
