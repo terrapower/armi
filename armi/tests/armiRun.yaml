@@ -1,0 +1,62 @@
+metadata:
+  version: uncontrolled
+settings:
+  beta: 0.003454
+  BOL: true
+  branchVerbosity: debug
+  buGroups:
+    - 100
+  burnSteps: 2
+  clusterExclusive: false
+  comment: Simple test input.
+  crossSectionControl:
+    DA:
+      geometry: 0D
+      blockRepresentation: Median
+      criticalBuckling: true
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+    XA:
+      geometry: 0D
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+      fileLocation:
+        - ISOXA
+  cycleLength: 2000.0
+  db: false
+  detailAssemLocationsBOL:
+    - A2001
+  economics: false
+  epsBurnTime: 0.001
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
+  eqRingSchedule:
+    - 13
+    - 1
+  freshFeedType: igniter fuel
+  fuelHandlerName: EquilibriumShuffler
+  geomFile: geom.xml
+  jumpRingNum: 9
+  loadingFile: refSmallReactor.yaml
+  loadNode: 1
+  loadPadElevation: 200.0
+  max2SigmaCladIDT: 630.0
+  maxFlowZones: 12
+  maxRegionDensityIterations: 5
+  nCycles: 6
+  nodeGroup: OnlineNodes,TP
+  numCoupledIterations: 0
+  outputFileExtension: png
+  percentNaReduction: 10.0
+  power: 100000000.0
+  refType: inner igniter fuel
+  shuffleLogic: refSmallReactorShuffleLogic.py
+  summarizeAssemDesign: false
+  targetK: 1.002
+  transientForSensitivity: ''
+  verbosity: extra
+  zoneFlowSummary: false

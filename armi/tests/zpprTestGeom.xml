@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+-->
+<reactor geom="cartesian" symmetry="full core">
+	<assembly name="DrawerSet2" xi="0" yi="0"/>
+	<assembly name="DrawerSet1" xi="1" yi="0"/>
+	<assembly name="DrawerSet1" xi="2" yi="0"/>
+	<assembly name="DrawerSet1" xi="3" yi="0"/>
+	<assembly name="DrawerSet2" xi="0" yi="1"/>
+	<assembly name="DrawerSet2" xi="1" yi="1"/>
+	<assembly name="DrawerSet2" xi="2" yi="1"/>
+	<assembly name="DrawerSet2" xi="3" yi="1"/>
+	<assembly name="DrawerSet2" xi="0" yi="2"/>
+    <assembly name="DrawerSet2" xi="1" yi="2"/>
+    <assembly name="DrawerSet2" xi="2" yi="2"/>
+    <assembly name="DrawerSet2" xi="3" yi="2"/>
+</reactor>

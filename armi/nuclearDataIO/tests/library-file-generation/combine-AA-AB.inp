@@ -1,0 +1,58 @@
+$control
+     c_isotxs_conversion = bin2asc
+/
+$material
+    t_composition(:,1) = U235_7   "U235AA"    1.00000E-03   873.000  !   Fuel
+                         U238_7   "U238AA"    1.00000E-03   873.000  !   Fuel
+                         PU2397   "PU39AA"    1.00000E-04   873.000  !   Fuel
+                         FE54_7   "FE54AA"    1.00000E-03   743.000  !   Structure
+                         FE56_7   "FE56AA"    1.00000E-02   743.000  !   Structure
+                         FE57_7   "FE57AA"    1.00000E-04   743.000  !   Structure
+                         FE58_7   "FE58AA"    1.00000E-05   743.000  !   Structure
+                         NA23_7   "NA23AA"    1.00000E-03   738.000  !   Coolant
+                         ZR90_7   "ZR90AA"    1.00000E-03   873.000  !   Composite fission product
+                         ZR91_7   "ZR91AA"    1.00000E-04   873.000  !   Composite fission product
+                         ZR92_7   "ZR92AA"    1.00000E-04   873.000  !   Composite fission product
+                         ZR93_7   "ZR93AA"    1.00000E-15   873.000  !   Fission product
+                         ZR94_7   "ZR94AA"    1.00000E-04   873.000  !   Composite fission product
+                         ZR95_7   "ZR95AA"    1.00000E-15   873.000  !   Fission product
+                         ZR96_7   "ZR96AA"    1.00000E-05   873.000  !   Composite fission product
+                         XE1287   "XE28AA"    1.00000E-15   873.000  !   Fission product
+                         XE1297   "XE29AA"    1.00000E-15   873.000  !   Fission product
+                         XE1307   "XE30AA"    1.00000E-15   873.000  !   Fission product
+                         XE1317   "XE31AA"    1.00000E-15   873.000  !   Fission product
+                         XE1327   "XE32AA"    1.00000E-15   873.000  !   Fission product
+                         XE1337   "XE33AA"    1.00000E-15   873.000  !   Fission product
+                         XE1347   "XE34AA"    1.00000E-15   873.000  !   Fission product
+                         XE1357   "XE35AA"    1.00000E-15   873.000  !   Fission product
+                         XE1367   "XE36AA"    1.00000E-15   873.000  !   Fission product
+                         FP40AA   FP40AA       1.0           873.0
+                         U235_7   "U235AB"    1.10000E-03   873.000  !   Fuel
+                         U238_7   "U238AB"    1.10000E-03   873.000  !   Fuel
+                         PU2397   "PU39AB"    1.10000E-04   873.000  !   Fuel
+                         FE54_7   "FE54AB"    1.10000E-03   743.000  !   Structure
+                         FE56_7   "FE56AB"    1.10000E-02   743.000  !   Structure
+                         FE57_7   "FE57AB"    1.10000E-04   743.000  !   Structure
+                         FE58_7   "FE58AB"    1.10000E-05   743.000  !   Structure
+                         NA23_7   "NA23AB"    1.10000E-03   738.000  !   Coolant
+                         ZR90_7   "ZR90AB"    1.10000E-03   873.000  !   Composite fission product
+                         ZR91_7   "ZR91AB"    1.10000E-04   873.000  !   Composite fission product
+                         ZR92_7   "ZR92AB"    1.10000E-04   873.000  !   Composite fission product
+                         ZR93_7   "ZR93AB"    1.10000E-15   873.000  !   Fission product
+                         ZR94_7   "ZR94AB"    1.10000E-04   873.000  !   Composite fission product
+                         ZR95_7   "ZR95AB"    1.10000E-15   873.000  !   Fission product
+                         ZR96_7   "ZR96AB"    1.10000E-05   873.000  !   Composite fission product
+                         XE1287   "XE28AB"    1.10000E-15   873.000  !   Fission product
+                         XE1297   "XE29AB"    1.10000E-15   873.000  !   Fission product
+                         XE1307   "XE30AB"    1.10000E-15   873.000  !   Fission product
+                         XE1317   "XE31AB"    1.10000E-15   873.000  !   Fission product
+                         XE1327   "XE32AB"    1.10000E-15   873.000  !   Fission product
+                         XE1337   "XE33AB"    1.10000E-15   873.000  !   Fission product
+                         XE1347   "XE34AB"    1.10000E-15   873.000  !   Fission product
+                         XE1357   "XE35AB"    1.10000E-15   873.000  !   Fission product
+                         XE1367   "XE36AB"    1.10000E-15   873.000  !   Fission product
+                         FP40AB   FP40AB       1.0           873.0
+/
+$output
+  c_isotxs_file = "../mc2v3-AA.isotxs" "../mc2v3-AB.isotxs"
+/

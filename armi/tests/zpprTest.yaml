@@ -1,0 +1,47 @@
+metadata:
+  version: uncontrolled
+settings:
+  buGroups:
+    - 100
+  burnSteps: 0
+  comment: ZPPR test case
+  crossSectionControl:
+    AA:
+      geometry: 1D slab
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+      meshSubdivisionsPerCm: 10
+    AC:
+      geometry: 1D slab
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+      meshSubdivisionsPerCm: 10
+    AZ:
+      geometry: 1D slab
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+      meshSubdivisionsPerCm: 10
+  cycleLength: 365.25
+  economics: false
+  epsCyclic: 1.0
+  epsEig: 1e-10
+  genXS: Neutron
+  geomFile: zpprTestGeom.xml
+  loadingFile: 1DslabXSByCompTest.yaml
+  max2SigmaCladIDT: 630.0
+  maxFlowZones: 12
+  mpiTasksPerNode: 6
+  numProcessors: 12
+  outputFileExtension: pdf
+  power: 75000000.0
+  Tin: 20.0
+  Tout: 20.0
+  verbosity: extra
+  xsBlockRepresentation: ComponentAverage1DSlab
+  zoneFlowSummary: false

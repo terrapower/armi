@@ -1,0 +1,59 @@
+$control
+    c_group_structure       = ANL33
+    i_number_region         = 1
+    l_external_inelasticpn  = F
+    c_geometry_type         = mixture
+    l_buckling_search       = T
+    r_eps_buckling          = 0.00001
+    l_gamma                 = T 
+/
+$library
+     c_mcclibdir  ="\\albert\apps\prod\mc2\3.2.2\libraries\endfb-vii.0\lib.mcc.e70"
+     c_gammalibdir = "\\albert\apps\prod\mc2\3.2.2\libraries\endfb-vii.0\lib.gamma.e70"
+/
+$material
+    t_composition(:,1) = U235_7   "U235AB"    1.10000E-03   873.000  !   Fuel
+                         U238_7   "U238AB"    1.10000E-03   873.000  !   Fuel
+                         PU2397   "PU39AB"    1.10000E-04   873.000  !   Fuel
+                         FE54_7   "FE54AB"    1.10000E-03   743.000  !   Structure
+                         FE56_7   "FE56AB"    1.10000E-02   743.000  !   Structure
+                         FE57_7   "FE57AB"    1.10000E-04   743.000  !   Structure
+                         FE58_7   "FE58AB"    1.10000E-05   743.000  !   Structure
+                         NA23_7   "NA23AB"    1.10000E-03   738.000  !   Coolant
+                         ZR90_7   "ZR90AB"    1.10000E-03   873.000  !   Composite fission product
+                         ZR91_7   "ZR91AB"    1.10000E-04   873.000  !   Composite fission product
+                         ZR92_7   "ZR92AB"    1.10000E-04   873.000  !   Composite fission product
+                         ZR93_7   "ZR93AB"    1.10000E-15   873.000  !   Fission product
+                         ZR94_7   "ZR94AB"    1.10000E-04   873.000  !   Composite fission product
+                         ZR95_7   "ZR95AB"    1.10000E-15   873.000  !   Fission product
+                         ZR96_7   "ZR96AB"    1.10000E-05   873.000  !   Composite fission product
+                         XE1287   "XE28AB"    1.10000E-15   873.000  !   Fission product
+                         XE1297   "XE29AB"    1.10000E-15   873.000  !   Fission product
+                         XE1307   "XE30AB"    1.10000E-15   873.000  !   Fission product
+                         XE1317   "XE31AB"    1.10000E-15   873.000  !   Fission product
+                         XE1327   "XE32AB"    1.10000E-15   873.000  !   Fission product
+                         XE1337   "XE33AB"    1.10000E-15   873.000  !   Fission product
+                         XE1347   "XE34AB"    1.10000E-15   873.000  !   Fission product
+                         XE1357   "XE35AB"    1.10000E-15   873.000  !   Fission product
+                         XE1367   "XE36AB"    1.10000E-15   873.000  !   Fission product
+/
+$output
+    c_check_memory       = "long"
+    c_lump_name(      1) = FP40AB
+    t_lump_isotope(:, 1) = ZR90_7   0.090
+                           ZR91_7   0.091
+                           ZR92_7   0.092
+                           ZR93_7   0.093
+                           ZR94_7   0.094
+                           ZR95_7   0.095
+                           ZR96_7   0.096
+                           XE1287   0.128
+                           XE1297   0.129
+                           XE1307   0.130
+                           XE1317   0.131
+                           XE1327   0.132
+                           XE1337   0.133
+                           XE1347   0.134
+                           XE1357   0.135
+                           XE1367   0.136
+/

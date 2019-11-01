@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!--
+-->
+<reactor geom="cartesian" symmetry="full core" xw="10.0" yw="10.0">
+	<assembly name="IC" xi="0" yi="0"/>
+	<assembly name="IC" xi="0" yi="1"/>
+	<assembly name="IC" xi="0" yi="2"/>
+	<assembly name="IC" xi="0" yi="3"/>
+
+    <assembly name="MC" xi="1" yi="0"/>
+	<assembly name="IC" xi="1" yi="1"/>
+	<assembly name="IC" xi="1" yi="2"/>
+	<assembly name="IC" xi="1" yi="3"/>
+
+    <assembly name="IC" xi="2" yi="0"/>
+	<assembly name="IC" xi="2" yi="1"/>
+	<assembly name="IC" xi="2" yi="2"/>
+	<assembly name="IC" xi="2" yi="3"/>
+
+    <assembly name="IC" xi="3" yi="0"/>
+	<assembly name="IC" xi="3" yi="1"/>
+	<assembly name="IC" xi="3" yi="2"/>
+	<assembly name="IC" xi="3" yi="3"/>
+
+</reactor>

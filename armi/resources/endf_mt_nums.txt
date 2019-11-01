@@ -1,0 +1,203 @@
+MT #    Reaction    Reaction Description (http://www.nndc.bnl.gov/exfor/help7.jsp)
+1   n,tot   Neutron total cross sections
+2   n,el    Elastic neutron scattering cross sections
+3   n,non   Nonelastic neutron cross sections. Sum of MT=4, 5, 16-18, 22-26, 28-37,41, 42, 102-116.
+4   n,inl   Inelastic neutron cross sections. Sum of the MT=50-91.
+5   n,x Cross section for the sum of all reactions not given explicitly in another MT number.
+6-9     Not allowed in version 6 except for compatibility with JENDL-3.2
+10  n,tot   Total neutron-induced continuum reactions.
+11  n,2n+d  Production of two neutrons and a deutron.
+12-15       Unassigned
+16  n,2n    Cross section for producing two neutrons and a residual.
+17  n,3n    Cross section for producing three neutrons and a residual.
+18  n,f Neutron fission cross section, MT=18 is the sum of MT=19-21, 38.
+19  n,f First chance neutron fission cross section.
+20  n,n+f   Second-chance neutron fission cross section.
+21  n,2n+f  Third-chance neutron fission cross section.
+22  n,n+a   Cross section for production of a neutron and an alpha particle.
+23  n,n+3a  Cross section for production of a neutron and three alpha particles.
+24  n,2n+a  Cross section for production of two neutrons and an alpha particle.
+25  n,3n+a  Cross section for production of three neutrona and an alpha particle.
+26      Not allowed in version 6. That was (n,2n) isomeric state cross section in version 5.
+27  n,abs   Neutron absorption cross section. Sum of MT=18 and MT=102-116.
+28  n,n+p   Cross section for production of a neutron and a proton
+29  n,n+2a  Cross section for production of a neutron and two alpha particles.
+30  n,2n+2a Cross section for production of two neutrons and two alpha particles.
+31      Not allowed in version 6.
+32  n,n+d   Cross section for production of a neutron and a deutron.
+33  n,n+t   Cross section for production of a neutron and a triton.
+34  n,n+he3 Cross section for production of a neutron and a 3He.
+35  n,nd+2a Cross section for production of a neutron and deutron and two alpha particles.
+36  n,nt+2a Cross section for production of a neutron and triton and two alpha particles.
+37  n,4n    Cross section for production of four neutrons.
+38  n,3n+f  Fourth chance neutron fission cross section.
+39      Not allowed in version 6.
+40      Not allowed in version 6.
+41  n,2n+p  Cross section for production of two neutrons and a proton.
+42  n,3n+p  Cross section for production of three neutrons and a proton.
+43      Unassigned.
+44  n,n+2p  Cross section for production of a neutron and two protons.
+45  n,n+pa  Cross section for production of neutron, proton and alpha particle.
+46-49       Not allowed in version 6.
+50  n,n0    Cross section for production of a neutron, with residual in the ground state.
+51  n,n1    Cross section for production of a neutron, with residual in the 1st excited state.
+52  n,n2    Cross section for production of a neutron, with residual in the 2nd excited state.
+53-90   n,n'    Cross section for production of a neutron, with residual in the 3-40th excited state.
+91  n,nc    Cross section for production of a neutron in the continnum not included in the above discrete representation.
+92-100      Unassigned.
+101 n,dis   Neutron disappearance cross section.
+102 n,g Neutron radiative capture cross section.
+103 n,p Cross section for production of a proton. If MT=600-649 are present, the MT103 is their sum.
+104 n,d Cross section for production of a deutron. If MT=650-699 are present, the MT104 is their sum.
+105 n,t Cross section for production of a triton. If MT=700-749 are present, the MT105 is their sum.
+106 n,3He   Cross section for production of 3He. If MT=750-799 are present, the MT106 is their sum.
+107 n,a Cross section for production of an alpha particle. If MT=800-849 are present, the MT107 is their sum.
+108 n,2a    Cross section for production of two alpha particles.
+109 n,3a    Cross section for production of tree alpha particles.
+110     Unassigned.
+111 n,2p    Cross section for production of two protons.
+112 n,p+a   Cross section for for production of a proton and an alpha particle.
+113 n,t+2a  Cross section for for production of a triton and two alpha particles.
+114 n,d+2a  Cross section for for production of a deutron and two alpha particles.
+115 n,p+d   Cross section for for production of a proton and a deutron.
+116 n,p+t   Cross section for for production of a proton and a triton.
+117 n,d+a   Cross section for for production of a deutron and an alpha particle.
+118-119     Unassigned.
+120     Not allowed in version 6.
+121-150     Unassigned.
+151 n,res   Neutron resonance parameters that can be used to calculate cross sections at different temperatures in the resolved and unresolved energy ranges.
+152-200     Unassigned.
+201 n,xn    Total neutron production cross section.
+202 n,xg    Total gamma production cross section.
+203 n,xp    Total proton production cross section.
+204 n,xd    Total deutron production cross section.
+205 n,xt    Total triton production cross section.
+206 n,x3He  Total 3He production cross section.
+207 n,xa    Total alpha particle production cross section.
+208 n,xpi+  Total pi+ production cross section.
+209 n,xpi0  Total pi0 production cross section.
+210 n,xpi-  Total pi- production cross section.
+211 n,xmu+  Total mu+ production cross section.
+212 n,xmu-  Total mu- production cross section.
+213 n,xk+   Total k+ production cross section.
+214 n,xk0   Total k0 (long) production cross section.
+215 n,xk0   Total k0 (short) production cross section.
+216 n,xk-   Total k- production cross section.
+217 n,xp    Total anti-proton production cross section.
+218 n,xn    Total anti-neutron production cross section.
+219-250     Unassigned.
+251 n,...   μL (mu bar), the average cosine of scattering angle (laboratory system) for elastic scattering of neutrons.
+252 n,...   ε, the average logarithmic energy decrement for elastic scattering of neutrons.
+253 n,...   γ, the average of the square of the logarithmic energy decrement for elastic scattering divided by twice the average logarithmic energy decrement for elastic scattering of neutrons.
+254-300     Unassigned.
+301-450 n,...   Energy release parameters, E, &sigma, for total and partial cross sections. MT=300 plus reaction MT number.
+451 n,...   Heading or title information; given in File 1 only.
+452 n,nu_tot    Neutron fission: Nubar (νT), average total (prompt plus delayed) number of neutrons released per fission
+452 0,nu_tot    Spontaneous fission: Nubar (νT), average total (prompt plus delayed) number of neutrons released per fission
+453     Unassigned.
+454 n,ind_fy    Neutron fission: Independent fission product yield data
+454 0,ind_fy    Spontaneous fission: Independent fission product yield data
+455 n,nu_d  Neutron fission: Average number of delayed neutrons released per fission event
+456 n,nu_p  Neutron fission: Average number of prompt neutrons released per fission event
+457 decay   Radioactive decay data
+458 e_rel_fis   Neutron fission: Energy release in fission for incident neutrons
+459 fy_cum  Neutron/spontaneous fission: Cumulative fission product yield data
+460-464     Unassigned.
+465-466     Not allowed in version 6.
+467-499     Unassigned.
+500     Total charge particle stopping power.
+501     Total photon interaction.
+502     Photon coherent scattering.
+503     Unassigned.
+504     Photon incoherent scattering.
+505     Imaginary scattering factor.
+506     Real scattering factor.
+507-514     Unassigned.
+515     Pair production, electron field.
+516     Pair production, Sum of MT=515,517.
+517     Pair production, nuclear field.
+518     Not allowed in version 6.
+519-521     Unassigned.
+522     Photoelectric absorption.
+523     Photo-excitation cross section.
+524-525     Unassigned.
+526     Electro-atomic scattering.
+527     Electro-atomic bremsstrahlung.
+528     Electro-atomic excitation cross section.
+529-531     Unassigned.
+532     Not allowed in version 6.
+533     Atomic relaxation data.
+534 K   (1s1/2) Subshell photoelectric cross section.
+535 L1  (2s1/2) Subshell photoelectric cross section.
+536 L2  (2p1/2) Subshell photoelectric cross section.
+537 L3  (2p3/2) Subshell photoelectric cross section.
+538 M1  (3s1/2) Subshell photoelectric cross section.
+539 M2  (3p1/2) Subshell photoelectric cross section.
+540 M3  (3p3/2) Subshell photoelectric cross section.
+541 M4  (3d3/2) Subshell photoelectric cross section.
+542 M5  (3d5/2) Subshell photoelectric cross section.
+543 N1  (4s1/2) Subshell photoelectric cross section.
+544 N2  (4p1/2) Subshell photoelectric cross section.
+545 N3  (4p3/2) Subshell photoelectric cross section.
+546 N4  (4d3/2) Subshell photoelectric cross section.
+547 N5  (4d5/2) Subshell photoelectric cross section.
+548 N6  (4f5/2) Subshell photoelectric cross section.
+549 N7  (4f7/2) Subshell photoelectric cross section.
+550 O1  (5s1/2) Subshell photoelectric cross section.
+551 O2  (5p1/2) Subshell photoelectric cross section.
+552 O3  (5p3/2) Subshell photoelectric cross section.
+553 O4  (5d3/2) Subshell photoelectric cross section.
+554 O5  (5d5/2) Subshell photoelectric cross section.
+555 O6  (5f5/2) Subshell photoelectric cross section.
+556 O7  (5f7/2) Subshell photoelectric cross section.
+557 O8  (5g7/2) Subshell photoelectric cross section.
+558 O9  (5g9/2) Subshell photoelectric cross section.
+559 P1  (6s1/2) Subshell photoelectric cross section.
+560 P2  (6p1/2) Subshell photoelectric cross section.
+561 P3  (6p3/2) Subshell photoelectric cross section.
+562 P4  (6d3/2) Subshell photoelectric cross section.
+563 P5  (6d5/2) Subshell photoelectric cross section.
+564 P6  (6f5/2) Subshell photoelectric cross section.
+565 P7  (6f7/2) Subshell photoelectric cross section.
+566 P8  (6g7/2) Subshell photoelectric cross section.
+567 P9  (6g9/2) Subshell photoelectric cross section.
+568 P10 (6h9/2) Subshell photoelectric cross section.
+569 P11 (6h11/2) Subshell photoelectric cross section.
+570 Q1  (7s1/2) Subshell photoelectric cross section.
+571 Q2  (7p1/2) Subshell photoelectric cross section.
+572 Q3  (7p3/2) Subshell photoelectric cross section.
+573-599     Unassigned.
+600 n,p0    Cross section for production of a proton leaving the residual nucleus in the ground state.
+601 n,p1    Cross section for production of a proton leaving the residual nucleus in the 1st excited state.
+602 n,p2    Cross section for production of a proton leaving the residual nucleus in the 2nd excited state.
+603-648 n,p#    Cross section for production of a proton leaving the residual nucleus in the #th excited state.
+649 n,pc    Cross section for production of a proton in the continuum.
+650 n,d0    Cross section for production of a deutron leaving the residual nucleus in the ground state.
+651 n,d1    Cross section for production of a deutron leaving the residual nucleus in the 1st excited state.
+652 n,d2    Cross section for production of a deutron leaving the residual nucleus in the 2nd excited state.
+653-698 n,d#    Cross section for production of a deutron leaving the residual nucleus in the #th excited state.
+699 n,dc    Cross section for production of a deutron in the continuum.
+700 n,t0    Cross section for production of a triton leaving the residual nucleus in the ground state.
+701 n,t1    Cross section for production of a triton leaving the residual nucleus in the 1st excited state.
+702 n,t2    Cross section for production of a triton leaving the residual nucleus in the 2nd excited state.
+703-748 n,t#    Cross section for production of a triton leaving the residual nucleus in the #th excited state.
+749 n,tc    Cross section for production of a triton in the continuum.
+750 n,3He0  Cross section for production of a 3He particle leaving the residual nucleus in the ground state.
+751 n,3He1  Cross section for production of a 3He particle leaving the residual nucleus in the 1st excited state.
+752 n,3He2  Cross section for production of a 3He particle leaving the residual nucleus in the 2nd excited state.
+753-798 n,3He#  Cross section for production of a 3He particle leaving the residual nucleus in the #th excited state.
+799 n,3Hec  Cross section for production of a 3He particle in the continuum.
+800 n,a0    Cross section for production of an alpha particle leaving the residual nucleus in the ground state.
+801 n,a1    Cross section for production of an alpha particle leaving the residual nucleus in the 1st excited state.
+802 n,a2    Cross section for production of an alpha particle leaving the residual nucleus in the 2nd excited state.
+803-848 n,a#    Cross section for production of an alpha particle leaving the residual nucleus in the #th excited state.
+849 n,ac    Cross section for production of an alpha particle in the continuum.
+850     Unassigned.
+851-870     Lumped reaction covariances.
+871-874     Unassigned.
+875 n,2n0   Cross section for production of two neutrons leaving the residual nucleus in the ground state.
+876 n,2n1   Cross section for production of two neutrons leaving the residual nucleus in the 1st excited state.
+877 n,2n2   Cross section for production of two neutrons leaving the residual nucleus in the 2nd excited state.
+878-890 n,2n#   Cross section for production of two neutrons leaving the residual nucleus in the #th excited state.
+891 n,2nc   Cross section for production of two neutrons in the continuum.
+892-999     Unassigned.

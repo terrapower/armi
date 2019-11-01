@@ -1,0 +1,16 @@
+numpy
+scipy
+mpi4py
+yamlize
+matplotlib
+h5py
+tabulate
+ordered-set
+pluggy
+pyyaml>=5.1
+psutil
+xlrd
+pillow
+future
+configparser
+voluptuous

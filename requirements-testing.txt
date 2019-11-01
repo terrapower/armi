@@ -1,0 +1,18 @@
+mako
+pytest
+pytest-xdist
+pytest-cov
+pytest-html
+pympler
+coverage
+pylint
+docutils
+sphinx
+sphinx-rtd-theme
+black ; python_version > '3.0'
+# for running jupyter dynamically in docs
+sphinxcontrib-apidoc
+jupyter_client
+ipykernel
+nbsphinx
+nbsphinx-link

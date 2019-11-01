@@ -1,0 +1,121 @@
+nuclide flags:
+    U234: {burn: true, xs: true}
+    U235: {burn: true, xs: true}
+    U236: {burn: true, xs: true}
+    U238: {burn: true, xs: true}
+    NP237: {burn: true, xs: true}
+    NP238: {burn: true, xs: true}
+    PU236: {burn: true, xs: true}
+    PU238: {burn: true, xs: true}
+    PU239: {burn: true, xs: true}
+    PU240: {burn: true, xs: true}
+    PU241: {burn: true, xs: true}
+    PU242: {burn: true, xs: true}
+    AM241: {burn: true, xs: true}
+    AM242: {burn: true, xs: true}
+    AM243: {burn: true, xs: true}
+    CM242: {burn: true, xs: true}
+    CM243: {burn: true, xs: true}
+    CM244: {burn: true, xs: true}
+    CM245: {burn: true, xs: true}
+    CM246: {burn: true, xs: true}
+    CM247: {burn: true, xs: true}
+    B10: {burn: false, xs: true}
+    B11: {burn: false, xs: true}
+    HF174: {burn: true, xs: true}
+    HF176: {burn: true, xs: true}
+    HF177: {burn: true, xs: true}
+    HF178: {burn: true, xs: true}
+    HF179: {burn: true, xs: true}
+    HF180: {burn: true, xs: true}
+    LFP35: {burn: true, xs: true}
+    LFP38: {burn: true, xs: true}
+    LFP39: {burn: true, xs: true}
+    LFP40: {burn: true, xs: true}
+    LFP41: {burn: true, xs: true}
+    DUMP1: {burn: true, xs: true}
+    DUMP2: {burn: true, xs: true}
+    ZR: {burn: false, xs: true}
+    C: {burn: false, xs: true}
+    SI: {burn: false, xs: true}
+    V: {burn: false, xs: true}
+    CR: {burn: false, xs: true}
+    MN55: {burn: false, xs: true}
+    FE: {burn: false, xs: true}
+    NI: {burn: false, xs: true}
+    MO: {burn: false, xs: true}
+    W182: {burn: false, xs: true}
+    W183: {burn: false, xs: true}
+    W184: {burn: false, xs: true}
+    W186: {burn: false, xs: true}
+    NA23: {burn: false, xs: true}
+blocks:
+    fuel: &block_fuel
+        fuel: &component_fuel_fuel
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 169.0
+            od: 0.86
+        clad: &component_fuel_clad
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            mult: fuel.mult
+            od: 1.09
+        bond: &component_fuel_bond
+            shape: Circle
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            id: fuel.od
+            mult: fuel.mult
+            od: clad.id
+        wire: &component_fuel_wire
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            axialPitch: 30
+            helixDiameter: 1.20
+            id: 0.0
+            mult: fuel.mult
+            od: 0.10056
+        coolant: &component_fuel_coolant
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+        duct: &component_fuel_duct
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 16.0
+            mult: 1.0
+            op: 16.7
+        intercoolant: &component_fuel_intercoolant
+            shape: Hexagon
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            ip: duct.op
+            mult: 1.0
+            op: 16.8
+assemblies:
+    heights: &standard_heights [25.0]
+    axial mesh points: &standard_axial_mesh_points [ 1]
+    igniter fuel:
+        specifier: IC
+        blocks: &igniter_fuel_blocks [ *block_fuel]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        material modifications:
+            U235_wt_frac: &igniter_fuel_u235_wt_frac [ 0.11]
+            ZR_wt_frac: &igniter_fuel_zr_wt_frac [0.06]
+        xs types: &igniter_fuel_xs_types [A]
+    

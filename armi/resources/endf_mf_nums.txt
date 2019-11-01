@@ -1,0 +1,25 @@
+MF #    Quantity    Quantity Description (http://www.nndc.bnl.gov/exfor/help7.jsp)
+1   info    General information
+2   res     Resonance parameters
+3   sig     Reaction cross section
+4   da  Angular distribution for emitted particles
+5   de  Energy distribution for emitted particles
+6   da/de   Energy-Angle distribution for emitted particles
+7   sig/ths     Thermal neutron scattering
+8   rnp     Radioactivity and fission-product yields
+9   mrnp    Multiplicities for production of radioactive nuclides
+10  sig/act     Cross section for production of radioactive nuclides
+11  commg   General comments on photon production
+12  mult    Multiplicities for photon production
+13  sigg    Cross sections for photon production
+14  dag     Angular distribution for emitted photons
+15  deg     Energy distribution for emitted photons
+23  sig/sgi     Photo-atomic interaction cross section
+27  aff     Atomic form factors or scattering functions for photo-atomic interaction
+30  cov/intr    Covariances (correlated uncertainties) obtained from nuclear reaction model parameters
+31  cov/nu  Covariances for nubar (average number of neutrons per fission)
+32  cov/res     Covariances for resonance parameters
+33  cov/sig     Covariances for reaction cross sections
+34  cov/da  Covariances for angular distributions of emitted particles
+35  cov/de  Covariances for energy distributions of emitted particles
+40  cov/act     Covariances for production cross sections of radioactive nuclides

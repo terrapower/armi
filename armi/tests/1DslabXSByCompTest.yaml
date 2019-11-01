@@ -1,0 +1,188 @@
+nuclide flags:
+    NA23: {burn: false, xs: true}
+    FE: {burn: false, xs: true}
+    U235: {burn: false, xs: true}
+    U238: {burn: false, xs: true}
+    PU239: {burn: false, xs: true}
+    PU240: {burn: false, xs: true}
+    PU241: {burn: false, xs: true}
+custom isotopics:
+    eUranium:
+        input format: number densities
+        U235: 0.025
+        U238: 0.02
+    PuUranium:
+        input format: number densities
+        PU239: 0.02
+        PU240: 0.0075
+        PU241: 0.0025
+        U238: 0.015
+    depletedUranium:
+        input format: number densities
+        U238: 0.045
+    sodium:
+        input format: number densities
+        NA23: 0.02
+    structuralSteel:
+        input format: number densities
+        FE: 0.07
+    eUraniumHalf:
+        input format: number densities
+        U235: 0.0125
+        U238: 0.01
+blocks:
+    eu fuel block: &block_eufuelblock
+        depleted_uranium: &component_eufuelblock_depleted_uranium
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: depletedUranium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 1.0
+        enriched_uranium fuel:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: eUranium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 2.0
+        sodium: &component_eufuelblock_sodium
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: sodium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 1.0
+        iron: &component_eufuelblock_iron
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: structuralSteel
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 4.0
+        latticeboundarycell: &component_eufuelblock_latticeboundarycell
+            shape: Rectangle
+            material: Void
+            Tinput: 20.0
+            Thot: 20.0
+            lengthInner: 1.0
+            lengthOuter: 1.0
+            mult: 1.0
+            widthInner: 8.0
+            widthOuter: 8.0
+    reversedeu fuel block: &block_reversedeufuelblock
+        iron: *component_eufuelblock_iron
+        sodium: *component_eufuelblock_sodium
+        enriched_uranium fuel:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: eUraniumHalf
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 2.0
+        depleted_uranium: *component_eufuelblock_depleted_uranium
+        latticeboundarycell: *component_eufuelblock_latticeboundarycell
+    inheritseublocks: &block_inheritseublocks
+        sodium:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: sodium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 0.5
+        pu(fuel):
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: PuUranium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 3.0
+        iron:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: structuralSteel
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 1.0
+        pu(fuel)2:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: PuUranium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 0.5
+        iron2:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: structuralSteel
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 3.0
+        latticeboundarycell: *component_eufuelblock_latticeboundarycell
+    blanket fuel block: &block_blanketfuelblock
+        depleted_uranium fuel 1: *component_eufuelblock_depleted_uranium
+        sodium:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: sodium
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 6.0
+        depleted_uranium(fuel)2: *component_eufuelblock_depleted_uranium
+        latticeboundarycell: *component_eufuelblock_latticeboundarycell
+    reflectorblockinheritsblanket: &block_reflectorblockinheritsblanket
+        iron:
+            shape: SolidRectangle
+            material: Custom
+            Tinput: 20.0
+            Thot: 20.0
+            isotopics: structuralSteel
+            lengthOuter: 1.0
+            mult: 1.0
+            widthOuter: 8.0
+        latticeboundarycell: *component_eufuelblock_latticeboundarycell
+assemblies:
+    heights: &standard_heights [10.0, 30.0, 30.0, 15.0, 15.0, 30.0, 30.0, 10.0]
+    axial mesh points: &standard_axial_mesh_points [1, 2, 2, 1, 1, 2, 2, 1]
+    feed fuel:
+        specifier: DrawerSet1
+        blocks: [*block_reflectorblockinheritsblanket, *block_blanketfuelblock, *block_eufuelblock, *block_inheritseublocks, *block_reversedeufuelblock, *block_eufuelblock, *block_blanketfuelblock, *block_reflectorblockinheritsblanket]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: &feed_fuel_xs_types [AZ, AZ, AA, AA, AA, AA, AZ, AZ]
+    drawerset2:
+        specifier: DrawerSet2
+        blocks: [*block_reflectorblockinheritsblanket, *block_blanketfuelblock, *block_inheritseublocks, *block_eufuelblock, *block_reversedeufuelblock, *block_reversedeufuelblock, *block_blanketfuelblock,
+            *block_reflectorblockinheritsblanket]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: *feed_fuel_xs_types
+    NotInCoreButGetBlocks:
+        specifier: NotInCore
+        blocks: [*block_reflectorblockinheritsblanket, *block_blanketfuelblock, *block_eufuelblock, *block_inheritseublocks, *block_reversedeufuelblock, *block_eufuelblock, *block_blanketfuelblock, *block_reflectorblockinheritsblanket]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: [AZ, AZ, AC, AC, AC, AC, AZ, AZ]
+

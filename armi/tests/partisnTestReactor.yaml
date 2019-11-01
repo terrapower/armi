@@ -1,0 +1,48 @@
+metadata:
+  version: uncontrolled
+settings:
+  beta: 0.003454
+  BOL: true
+  branchVerbosity: debug
+  buGroups:
+    - 100
+  burnSteps: 0
+  clusterExclusive: false
+  comment: 'TEsting CRs and safety big run for all snapshots. This initial case is
+    just a regular physics run. '
+  cycleLength: 2000.0
+  db: false
+  disableBlockTypeExclusionInXsGeneration: true
+  dontAssignPinMGFluxes: false
+  economics: false
+  epsBurnTime: 0.001
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
+  eqRingSchedule:
+    - 13
+    - 1
+  freshFeedType: igniter fuel
+  fuelHandlerName: EquilibriumShuffler
+  genXS: Neutron
+  geomFile: partisnReactorGeom.xml
+  jumpRingNum: 9
+  loadingFile: refSmallReactor.yaml
+  loadNode: 1
+  loadPadElevation: 200.0
+  max2SigmaCladIDT: 630.0
+  maxFlowZones: 12
+  maxRegionDensityIterations: 5
+  minimumFissileFraction: 0.0
+  outputFileExtension: png
+  partisnCoresPerNode: 3
+  partisnXSGroupStructure: ANL2082
+  percentNaReduction: 10.0
+  power: 100000000.0
+  refType: inner igniter fuel
+  shuffleLogic: refSmallReactorShuffleLogic.py
+  summarizeAssemDesign: false
+  targetK: 1.002
+  transientForSensitivity: ''
+  verbosity: extra
+  xsKernel: MC2v3-PARTISN
+  zoneFlowSummary: false
