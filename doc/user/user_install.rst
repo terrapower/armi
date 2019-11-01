@@ -77,7 +77,7 @@ Then, install ARMI into your venv with::
 	In Windows, click *Start* and type ``Edit Environmental Variable`` to adjust ``PYTHONPATH``. 
 	In Linux, add ``export PYTHONPATH=/path/to/armi/source`` in a  user profile script (like ``.bashrc``).
 
-To see if it worked, run this the ARMI launcher script::
+To see if it worked, run the ARMI launcher script::
 
 	 (armi-venv) $ armi
 

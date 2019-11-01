@@ -39,8 +39,8 @@ setup(
     name="armi",
     version="0.1",  # manually duplicated in meta.py... for now
     description="The Advanced Reactor Modeling Interface",
-    author="TerraPower LLC",
-    # author_email="armi-devs@terrapower.com",
+    author="TerraPower, LLC",
+    author_email="armi-devs@terrapower.com",
     url="https://github.com/terrapower/armi/",
     license="Apache 2.0",
     long_description=README,

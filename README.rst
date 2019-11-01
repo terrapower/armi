@@ -1,4 +1,4 @@
-The Advanced Reactor Modeling Interface (:term:`ARMI`\ :sup:`®`) software is a
+The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) software is a
 productivity tool written by engineers for nuclear reactor design and analysis.
 It provides a digital model of a nuclear reactor at your fingertips. It allows
 us to, for example, make 1000 digital copies of a reactor, change them all
@@ -38,10 +38,41 @@ reactor design and analysis. Additional high-level overview about this system ca
 
    * - Source code
      - https://github.com/terrapower/armi
+   * - Documentation
+     - (Coming soon)
    * - Bug tracker
      - https://github.com/terrapower/armi/issues
+   * - Plugin directory
+     - (Coming soon)
    * - Contact
      - armi-devs@terrapower.com
+
+Quick start
+-----------
+Before starting, you need to have Python 3.6+ on Windows or Linux. On Linux,
+you will also need some MPI development libraries to install the ``mpi4py``
+library (e.g. ``sudo apt install libopenmpi-dev``)
+
+Get the ARMI code, install the prerequisites, and fire up the launcher with
+(you may want to do this in a virtual environment as described in the User
+manual)::
+
+    $ git clone https://github.com/terrapower/armi
+    $ pip install -r requirements.txt
+    $ python setup.py install 
+    $ armi
+
+The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_
+and then run::
+
+    $ pip install -r requirements-testing.txt
+    $ tox -- -n 6
+
+This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
+to run on a single process.
+
+From here, the User documentation will guide you through a few tutorials to
+start touring the features and capabilities.
 
 
 Background
@@ -239,7 +270,7 @@ ARMI was originally created by TerraPower, LLC near Seattle WA starting in
 2009. Its founding mission was to determine the optimal fuel management
 operations required to transition a fresh Traveling Wave Reactor core
 from startup into an equilibrium state. It started out automating the
-Argonne National Lab (:term:`ANL`) fast reactor neutronics codes, MC2 and
+Argonne National Lab (ANL) fast reactor neutronics codes, MC2 and
 REBUS.  The reactor model design was made with the intention of adding
 other physics capabilities later. Soon, simple thermal hydraulics were
 added and it's grown ever since. It has continuously evolved towards a
@@ -284,7 +315,7 @@ development is needed to support the more traditional Linux HPC environments.
 Disclaimers
 -----------
 Due to TerraPower goals and priorities, many ARMI modules were developed
-with the sodium-cooled :term:`TWR` as the target, and are not necessarily yet
+with the sodium-cooled TWR as the target, and are not necessarily yet
 optimized for other plants. On the other hand, we have attempted to keep the
 framework general where possible, and many modules are broadly applicable to
 many reactors. We have run parts of ARMI on various SFRs (TWRs, FFTF, Joyo,
