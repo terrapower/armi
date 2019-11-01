@@ -43,7 +43,7 @@ found in [#touranarmi]_.
    * - Source code
      - https://github.com/terrapower/armi
    * - Documentation
-     - (Coming soon)
+     - https://terrapower.github.io/armi
    * - Bug tracker
      - https://github.com/terrapower/armi/issues
    * - Plugin directory
