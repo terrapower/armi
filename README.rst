@@ -1,3 +1,5 @@
+|Build Status|
+
 The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) software is a productivity tool
 written by engineers for nuclear reactor design and analysis.  It provides a digital
 model of a nuclear reactor at your fingertips. It allows us to, for example, make 1000
@@ -395,3 +397,5 @@ The ARMI system is licensed as follows:
 
 --------------
 
+.. |Build Status| image:: https://travis-ci.com/terrapower/armi.svg?branch=master
+    :target: https://travis-ci.com/terrapower/armi
