@@ -68,14 +68,14 @@ dependencies could conflict with your system dependencies.
 
     $ git clone https://github.com/terrapower/armi
     $ cd armi
-    $ pip install -r requirements.txt
-    $ python setup.py install
+    $ pip3 install -r requirements.txt
+    $ python3 setup.py install
     $ armi
 
 The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_
 and then run::
 
-    $ pip install -r requirements-testing.txt
+    $ pip3 install -r requirements-testing.txt
     $ tox -- -n 6
 
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument

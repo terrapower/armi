@@ -31,7 +31,7 @@ step.
 Start a terminal and navigate to the directory you'd like to install ARMI into. 
 To create a new virtual environment, use a command like:: 
 
-    $ python -m venv armi-venv
+    $ python3 -m venv armi-venv
 
 The result is a folder named ``armi-venv``, which contains a minimal set of Python
 packages, and a set of scripts for activating and deactivating that environment.
@@ -51,7 +51,7 @@ Getting the code
 ..  If you plan on running ARMI without modifying it, you may simply install it with pip, which will 
 	automatically discover and install its dependencies::
 
-   	(armi-venv) $ python -m pip install armi
+   	(armi-venv) $ pip3 install armi
 
     That's it!
 
@@ -68,11 +68,11 @@ Clone the ARMI source code from the git repository with::
 Now install the ARMI dependencies::
 
     (armi-venv) $ cd armi
-    (armi-venv) $ python -m pip install -r requirements.txt
+    (armi-venv) $ pip3 install -r requirements.txt
 
 Then, install ARMI into your venv with::
 
-	(armi-venv) $ python setup.py install 
+	(armi-venv) $ python3 setup.py install 
 
 .. tip:: If you don't want to install ARMI into your venv, you will need to add the ARMI source 
 	location to your system's ``PYTHONPATH`` environment variable so that
@@ -83,7 +83,7 @@ Then, install ARMI into your venv with::
 
 To see if it worked, run the ARMI launcher script::
 
-	 (armi-venv) $ armi
+    (armi-venv) $ armi
 
 If it worked, you should see the (classic) ARMI splash screen and no errors::
 
