@@ -55,15 +55,19 @@ found in [#touranarmi]_.
 
 Quick start
 -----------
-Before starting, you need to have Python 3.6+ on Windows or Linux. On Linux,
-you will also need some MPI development libraries to install the ``mpi4py``
-library (e.g. ``sudo apt install libopenmpi-dev``)
+Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.6+ on
+Windows or Linux. On Linux, you will also need some MPI development libraries to install
+the ``mpi4py`` library (e.g. ``sudo apt install libopenmpi-dev``).
 
-Get the ARMI code, install the prerequisites, and fire up the launcher with
-(you may want to do this in a virtual environment as described in the User
-manual)::
+Get the ARMI code, install the prerequisites, and fire up the launcher with the following
+commands. You probably want to do this in a virtual environment as described in the `User
+Guide <https://terrapower.github.io/armi/user/user_install.html>`_. Otherwise, the
+dependencies could conflict with your system dependencies.
+
+::
 
     $ git clone https://github.com/terrapower/armi
+    $ cd armi
     $ pip install -r requirements.txt
     $ python setup.py install
     $ armi

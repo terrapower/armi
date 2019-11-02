@@ -11,6 +11,7 @@ wheelhouse
 *.dll
 bin/*
 /bin
+armi.egg-info/
 ARMI.egg-info/
 dist/
 dist-*/

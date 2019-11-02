@@ -1,7 +1,7 @@
 ************
 Installation
 ************
-This section will guide you through installing the ARMI Framework on your machine. 
+This section will guide you through installing the ARMI Framework on your machine.
 
 Prerequisites
 -------------
@@ -15,14 +15,17 @@ You must have the following before proceeding:
 * Git
 * MS Windows or Linux operating system
 
+On Linux, you will also need some MPI development libraries to install the ``mpi4py``
+library (e.g. ``sudo apt install libopenmpi-dev``).
+
 Preparing a Virtual Environment
 -------------------------------
-While not required, we highly recommend installing ARMI into a `virtual environment
-<https://docs.python.org/3/library/venv.html>`_  to assist in dependency management. 
-In short, virtual environments are a mechanism by which a Python user can maintain 
-separate sets of Python packages for various applications on the same machine. 
-This prevents dependencies from various tools conflicting with one another. ARMI has 
-a lot of requirements and may conflict with other libraries unless you do this 
+While not *technically* required, we highly recommend installing ARMI into a `virtual
+environment <https://docs.python.org/3/library/venv.html>`_  to assist in dependency
+management.  In short, virtual environments are a mechanism by which a Python user can
+maintain separate sets of Python packages for various applications on the same machine.
+This prevents dependencies from various tools conflicting with one another. ARMI has a lot
+of requirements and may conflict with other libraries on your system unless you do this
 step.
 
 Start a terminal and navigate to the directory you'd like to install ARMI into. 
@@ -64,6 +67,7 @@ Clone the ARMI source code from the git repository with::
 
 Now install the ARMI dependencies::
 
+    (armi-venv) $ cd armi
     (armi-venv) $ python -m pip install -r requirements.txt
 
 Then, install ARMI into your venv with::
@@ -93,4 +97,4 @@ If it worked, you should see the (classic) ARMI splash screen and no errors::
                        ---------------------------------------------------
 
 
-If it works, congrats! So far so good. 
+If it works, congrats! So far so good.
