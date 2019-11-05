@@ -34,6 +34,7 @@ the database file, the ``Layout`` class is used to help map the hierarchical Com
 Reactor Model to the flat representation in the database.
 """
 import collections
+import copy
 import io
 import itertools
 import os
@@ -1611,7 +1612,15 @@ def packSpecialData(
 
     """
 
+    # Check to make sure that we even need to do this. If the numpy data type is
+    # not "O", chances are we have nice, clean data.
+    if data.dtype != "O":
+        return data, {}
+
     attrs: Dict[str, Any] = {"specialFormatting": True}
+
+    # make a copy of the data, so that the original is unchanged
+    data = copy.copy(data)
 
     # find locations of Nones. The below works for ndarrays, whereas `data == None`
     # gives a single True/False value
@@ -1621,10 +1630,10 @@ def packSpecialData(
         # Everything is None, so why bother?
         return None, attrs
 
-    if nones.any():
+    if len(nones) > 0:
         attrs["nones"] = True
 
-    # XXX: this whole if/iften/elif/else can be optimized by looping once and then
+    # XXX: this whole if/then/elif/else can be optimized by looping once and then
     #      determining the correct action
     # A robust solution would need
     # to do this on a case-by-case basis, and re-do it any time we want to
@@ -1745,8 +1754,13 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     --------
     packSpecialData
     """
+    if not attrs.get("specialFormatting", False):
+        # The data were not subjected to any special formatting; short circuit.
+        assert data.dtype != "O"
+        return data
+
     unpackedData: List[Any]
-    if attrs.get("nones", False):
+    if attrs.get("nones", False) and not attrs.get("jagged", False):
         data = replaceNonsenseWithNones(data, paramName)
         return data
     if attrs.get("jagged", False):
@@ -1812,7 +1826,7 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
         isNone = data == "<!None!>"
     else:
         raise TypeError(
-            "Unable to resolve values that should be None for {}".format(paramName)
+            "Unable to resolve values that should be None for `{}`".format(paramName)
         )
 
     if data.ndim > 1:

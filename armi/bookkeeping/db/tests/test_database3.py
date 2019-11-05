@@ -14,6 +14,7 @@
 
 import unittest
 import numpy
+import numpy.testing
 import h5py
 import os
 
@@ -38,6 +39,36 @@ class TestDatabase3(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
 
+    def _compareArrays(self, ref, src):
+        """
+        Compare two numpy arrays.
+
+        Comparing numpy arrays that may have unsavory data (NaNs, Nones, jagged
+        data, etc.) is really difficult. For now, convert to a list and compare
+        element-by-element.
+        """
+        self.assertEqual(type(ref), type(src))
+        if isinstance(ref, numpy.ndarray):
+            ref = ref.tolist()
+            src = src.tolist()
+
+        for v1, v2 in zip(ref, src):
+            # Entries may be None
+            if isinstance(v1, numpy.ndarray):
+                v1 = v1.tolist()
+            if isinstance(v2, numpy.ndarray):
+                v2 = v2.tolist()
+            self.assertEqual(v1, v2)
+
+    def _compareRoundTrip(self, data):
+        """
+        Make sure that data is unchanged by packing/unpacking.
+        """
+        packed, attrs = database.packSpecialData(data, "testing")
+        roundTrip = database.unpackSpecialData(packed, attrs, "testing")
+        self._compareArrays(data, roundTrip)
+
+
     def test_replaceNones(self):
         """
         This definitely needs some work.
@@ -47,28 +78,21 @@ class TestDatabase3(unittest.TestCase):
         data1iNones = numpy.array([1, 2, None, 5, 6])
         data1fNones = numpy.array([None, 2.0, None, 5.0, 6.0])
         data2fNones = numpy.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]])
-        data_jag = numpy.array([[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
-        data_dict = numpy.array(
+        dataJag = numpy.array([[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
+        dataJagNones = numpy.array(
+            [[[1, 2], [3, 4]], [[1],[1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
+        )
+        dataDict = numpy.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
         )
-        # nones = numpy.where([d is None for d in data1])[0]
-        # conv_d1 = database.replaceNonesWithNonsense(data1, None, nones)
-        print("data3: ", database.packSpecialData(data3, ""))
-        print("data_jag", database.packSpecialData(data_jag, ""))
-        # print("data1", database.packSpecialData(data1, ""))
-        print("data1iNones", database.packSpecialData(data1iNones, ""))
-        print("data1fNones", database.packSpecialData(data1fNones, ""))
-        print("data2fNones", database.packSpecialData(data2fNones, ""))
-        print("dataDict", database.packSpecialData(data_dict, ""))
-
-        packedData, attrs = database.packSpecialData(data_jag, "")
-        roundTrip = database.unpackSpecialData(packedData, attrs, "")
-        print("round-tripped jagged:", roundTrip)
-        print("round-tripped dtype:", roundTrip.dtype)
-
-        packedData, attrs = database.packSpecialData(data_dict, "")
-        roundTrip = database.unpackSpecialData(packedData, attrs, "")
-        print("round-tripped dict:", roundTrip)
+        self._compareRoundTrip(data3)
+        self._compareRoundTrip(data1)
+        self._compareRoundTrip(data1iNones)
+        self._compareRoundTrip(data1fNones)
+        self._compareRoundTrip(data2fNones)
+        self._compareRoundTrip(dataJag)
+        self._compareRoundTrip(dataJagNones)
+        self._compareRoundTrip(dataDict)
 
     def test_splitDatabase(self):
         for cycle, node in ((cycle, node) for cycle in range(3) for node in range(3)):
