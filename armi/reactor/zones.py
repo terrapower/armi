@@ -240,7 +240,7 @@ class Zones(object):
             )
             runLog.info(
                 "  There are {0} assemblies in this zone"
-                "".format(len(fuelAssemsInZone) * self.core.p.powerMultiplier)
+                "".format(len(fuelAssemsInZone) * self.core.powerMultiplier)
             )
             if self.cs["doOrificedTH"] and maxPowerAssem[0].p.THmaxLifeTimePower:
                 # print on the maximum power to flow in each ring zone.  This only has any meaning in
@@ -266,7 +266,7 @@ class Zones(object):
             for zi, b in enumerate(a):
                 slabPower[zi] = (
                     slabPower.get(zi, 0.0)
-                    + b.p.power * b.getSymmetryFactor() * self.core.p.powerMultiplier
+                    + b.p.power * b.getSymmetryFactor() * self.core.powerMultiplier
                 )
 
         # reorder the dictionary into a list, knowing that zi is stopped at the highest block

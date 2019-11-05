@@ -106,7 +106,6 @@ class ReportInterface(interfaces.Interface):
         self.fuelCycleSummary["bocFissile"] = self.r.core.getTotalBlockParam("kgFis")
 
     def interactEOC(self, cycle=None):
-        self.r.core.setBreedingRatio2(self.fuelCycleSummary)
         reportingUtils.writeCycleSummary(self.r.core)
         runLog.info(self.o.timer.report(inclusion_cutoff=0.001))
 

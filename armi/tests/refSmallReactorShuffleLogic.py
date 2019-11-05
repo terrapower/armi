@@ -34,7 +34,7 @@ class EquilibriumShuffler(FuelHandler):
             cascade.append(a)
         self.swapCascade(cascade)
         fresh = self.r.blueprints.constructAssem(
-            self.r.core.p.geomType, self.cs, name="igniter fuel"
+            self.r.core.geomType, self.cs, name="igniter fuel"
         )
         self.dischargeSwap(fresh, cascade[0])
         if self.cycle > 0:

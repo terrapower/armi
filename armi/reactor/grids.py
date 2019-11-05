@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 This contains structured meshes in multiple geometries and spatial locators (i.e. locations).
 
@@ -65,14 +64,19 @@ by the current grid.
 import itertools
 import math
 import re
-from typing import Tuple
+from typing import Tuple, List
+import collections
 
 import numpy.linalg
 
 from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
 from armi.utils import hexagon
 
-
+# data structure for database-serialization of grids
+GridParameters = collections.namedtuple(
+    "GridParameters",
+    ("unitSteps", "bounds", "unitStepLimits", "offset", "geomType", "symmetry",),
+)
 TAU = math.pi * 2.0
 BOUNDARY_0_DEGREES = 1
 BOUNDARY_60_DEGREES = 2
@@ -366,6 +370,49 @@ class IndexLocation(LocationBase):
         return self.grid.getRingPos(self.getCompleteIndices())
 
 
+class MultiIndexLocation(IndexLocation):
+    """
+    A collection of index locations that can be used as a spatialLocator.
+
+    This allows components with multiplicity>1 to have location information
+    within a parent grid. The implication is that there are multiple
+    discrete components, each one residing in one of the actual locators
+    underlying this collection.
+
+    This class contains an implementation that allows a multi-index
+    location to be used in the ARMI data model similar to a
+    individual IndexLocation.
+    """
+
+    def __init__(self, grid):
+        IndexLocation.__init__(self, 0, 0, 0, grid)
+        self._locations = []
+
+    def __getitem__(self, index):
+        return self._locations[index]
+
+    def __setitem__(self, index, obj):
+        self._locations[index] = obj
+
+    def __iter__(self):
+        return iter(self._locations)
+
+    def __len__(self):
+        return len(self._locations)
+
+    def getCompleteIndices(self) -> Tuple[int, int, int]:
+        raise NotImplementedError("Multi locations cannot do this yet.")
+
+    def append(self, location: IndexLocation):
+        self._locations.append(location)
+
+    def extend(self, locations: List[IndexLocation]):
+        self._locations.extend(locations)
+
+    def pop(self, location: IndexLocation):
+        self._locations.pop(location)
+
+
 class CoordinateLocation(IndexLocation):
     """
     A triple representing a point in space.
@@ -503,6 +550,8 @@ class Grid(object):
         bounds=(None, None, None),
         unitStepLimits=((0, 1), (0, 1), (0, 1)),
         offset=None,
+        geomType="",
+        symmetry="",
         armiObject=None,
     ):
         # these lists contain the indices representing which dimensions for which steps
@@ -538,6 +587,11 @@ class Grid(object):
         # True if only contains k-cells.
         self.isAxialOnly = iLen == jLen == 1 and kLen > 1
 
+        # geometric metadata encapsulated here because it's related to the grid.
+        # They do not impact the grid object itself.
+        self.geomType = geomType
+        self.symmetry = symmetry
+
     def reduce(self):
         """
         Return the set of arguments used to create this Grid.
@@ -572,7 +626,14 @@ class Grid(object):
                 unitSteps.append(0)
         unitSteps = _tuplify(unitSteps)
 
-        return (unitSteps, bounds, self._unitStepLimits, offset)
+        return GridParameters(
+            unitSteps,
+            bounds,
+            self._unitStepLimits,
+            offset,
+            self.geomType,
+            self.symmetry,
+        )
 
     def __repr__(self):
         msg = (
@@ -821,6 +882,18 @@ class Grid(object):
         newOffsetX = self._offset[0] * xw / xwOld
         newOffsetY = self._offset[1] * yw / ywOld
         self._offset = numpy.array((newOffsetX, newOffsetY, 0.0))
+
+    @property
+    def pitch(self):
+        """
+        The pitch of the grid.
+        
+        Assumes 2-d unit-step defined (works for cartesian)
+        """
+        pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
+        if pitch[0] == 0:
+            raise ValueError(f"Grid {self} does not have a defined pitch.")
+        return pitch
 
 
 class HexGrid(Grid):

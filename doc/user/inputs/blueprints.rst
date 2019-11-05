@@ -42,6 +42,9 @@ The ARMI data model is represented schematically below, and the blueprints are d
 
 :ref:`systems <systems>`:
     Reactor-level structures like the core, the spent fuel pool, pumps, the head, etc.
+    
+:ref:`grids <grids>`:
+    Lattice definitions for the core map or pin maps
 
 :ref:`nuclide flags <nuclide-flags>`:
     Special setting: Specifies nuclide modeling options, whether a nuclide is being modeled for cross sections and/or
@@ -199,6 +202,42 @@ removes more cross sectional area than the clad expansion creates, the amount of
 reduced. This is physical since, in reality, the fluid would be displaced as dimensions
 change.
 
+Pin lattices
+------------
+Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input
+section. A block may assigned a grid name, and then each component may be assigned one or more 
+grid specifiers.  
+
+For example, the following input section specifies that fuel pins will occupy all grid positions
+marked with a ``1`` and cladding components will occupy all grid positions marked with either
+a ``1`` or a ``2``. This situation may be desirable when some burnable poison pins use the same
+cladding as the fuel pins. ::
+
+    blocks:
+        fuel: &block_fuel
+            grid name: fuelgrid
+            fuel:
+                shape: Circle
+                material: UZr
+                Tinput: 25.0
+                Thot: 600.0
+                id: 0.0
+                mult: 169.0
+                od: 0.86602
+                latticeIDs: [1]
+            clad:
+                shape: Circle
+                material: HT9
+                Tinput: 25.0
+                Thot: 470.0
+                id: 1.0
+                mult: fuel.mult
+                od: 1.09
+                latticeIDs: [1,2]
+
+.. note:: A ``grid`` with the name ``fuelgrid`` must be defined as well in the grid input section.
+
+
 .. _naming-flags:
 
 About naming
@@ -341,34 +380,55 @@ A complete reactor structure with a core and a SFP may be seen below::
 
         systems:
             core:
-                lattice file: geometry.xml
+                grid name: core
                 origin:
                     x: 0.0
                     y: 10.1
                     z: 1.1
             sfp:
-                lattice file: sfp-geom.xml
-                lattice pitch:
-                    x: 50.0
-                    y: 50.0
+                grid name: sfp
                 origin:
                     x: 1000.0
                     y: 12.1
                     z: 1.1
 
+The ``origin`` defines the point of origin in global space
+in units of cm. This allows you to define the relative position of the various structures.  
+The ``grid name`` inputs are string mappings to the grid definitions described below.
+
+.. _grids:
+
+Grids
+=====
 The ``lattice files`` are different geometry files that define arrangements in Hex, Cartesian, or R-Z-Theta.
-See :doc:`/user/inputs/facemap_file` for details. The base defines the point of origin in global space
-in units of cm. This allows you to define the relative position of the various structures. The optional
+See :doc:`/user/inputs/facemap_file` for details. The optional
 ``lattice pitch`` entry allows you to specify spacing between objects that is different from
 tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies
-are to be loaded into a Cartesian arrangement.
+are to be loaded into a Cartesian arrangement. The contents of a grid may defined using one 
+of the following:
 
+``lattice file:``
+    A path to a file that contains the lattice arrangement in either YAML (preferred) or XML (historical) formats.
+``lattice map:``
+    A ASCII map representing the grid contents
+``grid contents:``
+    a direct YAML representation of the contents 
 
-.. These following guys are rst substitutions. They're useful for keeping the plaintext readable
-   while getting subscripted text.
+Example grid definitions are shown below::
 
-.. |Tinput| replace:: T\ :sub:`input`
-.. |Thot| replace:: T\ :sub:`hot`
+    grids:
+        core:
+            lattice file: geometry.xml
+            geom: hex
+            symmetry: third periodic
+    	sfp:
+    	    lattice file: sfp-geom.xml
+            lattice pitch:
+                x: 50.0
+                y: 50.0
+                
+.. warning:: We have gone through some effort to allow both pin and core grid definitions to share this
+    input and it may improve in the future.
 
 .. _custom-isotopics:
 
@@ -579,3 +639,9 @@ deplete.::
 
 The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in
 ``nuclide flags``.  A failure can also occur if the burn chain is missing a nuclide.
+
+.. These following are rst substitutions. They're useful for keeping the plaintext readable
+   while getting subscripted text.
+
+.. |Tinput| replace:: T\ :sub:`input`
+.. |Thot| replace:: T\ :sub:`hot`

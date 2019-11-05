@@ -156,9 +156,6 @@ class MainInterface(interfaces.Interface):
 
                 self.o.reattach(r, self.cs)
 
-    def interactEOC(self, _cycle):
-        self.r.core.assembliesRemovedThisCycle = []
-
     def interactEOL(self):
         if self.cs["smallRun"]:
             # successful run with smallRun activated. Clean things up.

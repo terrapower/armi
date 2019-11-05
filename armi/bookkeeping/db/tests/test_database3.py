@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import unittest
+import os
+
 import numpy
 import numpy.testing
 import h5py
-import os
 
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
@@ -114,7 +115,7 @@ class TestDatabase3(unittest.TestCase):
             self.assertTrue(newDb["c00n00/Reactor/cycle"][()] == 0)
             self.assertTrue(newDb["c00n00/Reactor/cycleLength"][()] == 1)
             self.assertTrue("c02n00" not in newDb)
-            self.assertTrue(newDb.attrs["databaseVersion"] == "3")
+            self.assertTrue(newDb.attrs["databaseVersion"] == database.DB_VERSION)
 
 
 if __name__ == "__main__":

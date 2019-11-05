@@ -111,20 +111,20 @@ class XTViewDatabase:
 
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self._hdf_file.filename))[0]
-        cs.loadFromString(self._hdf_file["inputs/settings"].value)
+        cs.loadFromString(self._hdf_file["inputs/settings"][()])
         return cs
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        bp = blueprints.Blueprints.load(self._hdf_file["inputs/blueprints"].value)
+        bp = blueprints.Blueprints.load(self._hdf_file["inputs/blueprints"][()])
         return bp
 
     def loadGeometry(self):
         from armi.reactor import geometry
 
         geom = geometry.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(self._hdf_file["inputs/geomFile"].value))
+        geom.readGeomFromStream(io.StringIO(self._hdf_file["inputs/geomFile"][()]))
         return geom
 
     def load(self, cycle, node, cs=None, bp=None, geom=None):
@@ -210,9 +210,9 @@ class XTViewDatabase:
 
     def readInputsFromDB(self):
         return (
-            self._hdf_file["inputs/settings"].value,
-            self._hdf_file["inputs/geomFile"].value,
-            self._hdf_file["inputs/blueprints"].value,
+            self._hdf_file["inputs/settings"][()],
+            self._hdf_file["inputs/geomFile"][()],
+            self._hdf_file["inputs/blueprints"][()],
         )
 
     def updateFromDB(self, reactor, dbTimeStep, updateIndividualAssemblyNumbers=True):

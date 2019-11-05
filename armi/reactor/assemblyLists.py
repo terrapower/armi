@@ -100,14 +100,14 @@ class SpentFuelPool(AssemblyList):
                     dTime=a.p.dischargeTime,
                     residence=(a.p.dischargeTime - a.p.chargeTime),
                     cycle=a.p.chargeCycle,
-                    fiss=a.getFissileMass() * self.r.p.powerMultiplier / 1000.0,
+                    fiss=a.getFissileMass() * self.r.powerMultiplier / 1000.0,
                     bu=a.getMaxParam("percentBu"),
                 )
             )
             totFis += a.getFissileMass() / 1000  # convert to kg
         runLog.important(
             "Total full-core fissile inventory of {0} is {1:.4E} MT".format(
-                self, totFis * self.r.p.powerMultiplier / 1000.0
+                self, totFis * self.r.powerMultiplier / 1000.0
             )
         )
 
@@ -132,13 +132,13 @@ class ChargedFuelPool(AssemblyList):
             )
         )
         for a in self.getChildren():
-            totFis += a.p.chargeFis * self.r.p.powerMultiplier / 1000.0
+            totFis += a.p.chargeFis * self.r.powerMultiplier / 1000.0
             runLog.important(
                 "{assembly:15s} {dTime:10f} {cycle:3f} {bu:5.2f} {fiss:13.4f} {cum:13.4f}".format(
                     assembly=a,
                     dTime=a.p.chargeTime,
                     cycle=a.p.chargeCycle,
-                    fiss=a.p.chargeFis * self.r.p.powerMultiplier,
+                    fiss=a.p.chargeFis * self.r.powerMultiplier,
                     bu=a.p.chargeBu,
                     cum=totFis,
                 )

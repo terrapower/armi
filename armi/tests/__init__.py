@@ -41,12 +41,11 @@ def getEmptyHexReactor(cs=None):
     """Make an empty hex reactor used in some tests."""
     cs = cs or settings.getMasterCs()
     bp = blueprints.Blueprints()
-    geom = geometry.SystemLayoutInput()
-    geom.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
-    geom.geomType = geometry.HEX
     reactor = reactors.Reactor(cs, bp)
-    reactor.add(reactors.Core("Core", cs, geom))
+    reactor.add(reactors.Core("Core", cs))
     reactor.core.spatialGrid = grids.hexGridFromPitch(1.0)
+    reactor.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+    reactor.core.spatialGrid.geomType = geometry.HEX
     reactor.core.spatialGrid.armiObject = reactor.core
     return reactor
 

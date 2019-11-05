@@ -125,6 +125,15 @@ assemblies:
         <<: *assembly_a
         fuelVent: True
         hotChannelFactors: Reactor
+grids:
+    pins:
+        geom: cartesian
+        lattice map: |
+            2 2 2 2 2
+            2 1 1 1 2
+            2 1 3 1 2
+            2 3 1 1 2
+            2 2 2 2 2
 """
 
     def test_assemblyParameters(self):

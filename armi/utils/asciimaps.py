@@ -21,6 +21,14 @@ data structures.
 
 We make classes for different geometries to share code. This will eventually be
 expanded for various symmetries that are applicable to cores, assemblies, etc.
+
+See Also
+--------
+armi.reactor.grids : More powerful, nestable lattices with specific dimensions
+    Most input lattices eventually end up as Grid objects.
+armi.reactor.blueprints.latticeBlueprint : user input of generic lattices
+armi.reactor.geometry : a specific usage of lattices, for core maps
+
 """
 
 
@@ -74,10 +82,12 @@ class AsciiMap(object):
             line.append(f"{self.lattice.get((i,j),'-')}")
         stream.write(" ".join(line) + "\n")
 
-    def _getRowBase(self, row):
+    @staticmethod
+    def _getRowBase(row):
         raise NotImplementedError()
 
-    def _getIndices(self, base, col):
+    @staticmethod
+    def _getIndices(base, col):
         raise NotImplementedError()
 
 
@@ -88,11 +98,13 @@ class AsciiMapCartesian(AsciiMap):
     This may represent a full assembly or core or some symmetry of that.
     """
 
-    def _getRowBase(self, row):
+    @staticmethod
+    def _getRowBase(row):
         """Return the base point for a given row. In Cartesian, this is just the row."""
         return 0, row
 
-    def _getIndices(self, base, col):
+    @staticmethod
+    def _getIndices(base, col):
         iBase, jBase = base
         return iBase + col, jBase
 
@@ -137,7 +149,8 @@ class AsciiMapHexThird(AsciiMap):
     are going to be less fragile.
     """
 
-    def _getRowBase(self, row):
+    @staticmethod
+    def _getRowBase(row):
         """Get the i,j base of a text row in 1/3 hex."""
         tripletNum = row // 3
         tripletPos = row % 3
@@ -146,11 +159,12 @@ class AsciiMapHexThird(AsciiMap):
             iBase = 2 - tripletNum - tripletPos
             jBase = tripletNum * 2 - 1 + tripletPos
         else:
-            iBase, jBase = self._getFirstTripletBase(tripletPos)
+            iBase, jBase = AsciiMapHexThird._getFirstTripletBase(tripletPos)
 
         return iBase, jBase
 
-    def _getFirstTripletBase(self, tripletPos):  # pylint: disable=no-self-use
+    @staticmethod
+    def _getFirstTripletBase(tripletPos):  # pylint: disable=no-self-use
         """Handle base for first triplet at center of core."""
         if tripletPos == 0:
             iBase, jBase = 0, 0
@@ -160,7 +174,8 @@ class AsciiMapHexThird(AsciiMap):
             iBase, jBase = 0, 1
         return iBase, jBase
 
-    def _getIndices(self, base, col):  # pylint: disable=no-self-use
+    @staticmethod
+    def _getIndices(base, col):  # pylint: disable=no-self-use
         iBase, jBase = base
         return iBase + col * 2, jBase - col
 
@@ -199,17 +214,21 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
     def readMap(self, text):
         lattice = AsciiMap.readMap(self, text)
-        return self._shiftLattice(lattice)
+        self.lattice = self._shiftLattice(lattice)
+        return self.lattice
 
-    def _getRowBase(self, row):
+    @staticmethod
+    def _getRowBase(row):
         """Get the i,j base of a text row full hex."""
         return -row, row
 
-    def _getIndices(self, base, col):  # pylint: disable=no-self-use
+    @staticmethod
+    def _getIndices(base, col):  # pylint: disable=no-self-use
         iBase, jBase = base
         return iBase + col, jBase
 
-    def _shiftLattice(self, lattice):
+    @staticmethod
+    def _shiftLattice(lattice):
         """
         Shift lattice indices so 0,0 is in the center rather than the bottom left corner.
 
@@ -223,3 +242,17 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         for (i, j), spec in lattice.items():
             shifted[i, j - shift] = spec
         return shifted
+
+
+def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
+    """Get a ascii map class from a geometry type."""
+    from armi.reactor import geometry
+
+    MAP_FROM_GEOM = {
+        (geometry.HEX, geometry.THIRD_CORE): AsciiMapHexThird,
+        (geometry.HEX, geometry.FULL_CORE): AsciiMapHexFullTipsUp,
+        (geometry.CARTESIAN, None): AsciiMapCartesian,
+        (geometry.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
+    }
+
+    return MAP_FROM_GEOM[(geomType, symmetry)]

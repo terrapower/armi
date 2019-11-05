@@ -112,7 +112,7 @@ class SnapshotInterface(interfaces.Interface):
             runLog.extra(
                 "Dumping requested location snapshot to " + locSnapTxt + ".dat "
             )
-            locObj = locations.locationFactory(self.r.core.p.geomType)()
+            locObj = locations.locationFactory(self.r.core.geomType)()
             locObj.fromLabel(locLabel)
             a = self.r.core.whichAssemblyIsIn(locObj.i1, locObj.i2)
             a.dump(locSnapTxt + ".dat")  # pylint: disable=no-member

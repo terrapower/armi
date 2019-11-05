@@ -187,15 +187,18 @@ class OperatorMPI(Operator):
 
             if self._workersShouldResetAfter(cmd):
                 # clear out the reactor on the workers to start anew.
+                # Note: This should build empty non-core systems too.
                 xsGroups = self.getInterface("xsGroups")
                 if xsGroups:
                     xsGroups.clearRepresentativeBlocks()
                 cs = settings.getMasterCs()
                 bp = self.r.blueprints
-                geom = self.r.core.geom
+                spatialGrid = self.r.core.spatialGrid
                 self.detach()
                 self.r = reactors.Reactor(cs, bp)
-                self.r.add(reactors.Core("Core", cs, geom))
+                core = reactors.Core("Core", cs)
+                self.r.add(core)
+                core.spatialGrid = spatialGrid
                 self.reattach(self.r, cs)
 
             # might be an mpi action which has a reactor and everything, preventing

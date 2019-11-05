@@ -20,24 +20,34 @@ from armi.reactor import blueprints
 from armi import settings
 from armi.reactor import reactors
 from armi.reactor.blueprints import reactorBlueprint
+from armi.reactor.blueprints import gridBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
 
 CORE_BLUEPRINT = """
 core:
-  lattice file: {0}geometry.xml
+  grid name: core
   origin:
     x: 0.0
     y: 10.1
     z: 1.1
 sfp:
-    lattice file: {0}sfp-geom.xml
-    lattice pitch:
-        x: 25.0
-        y: 25.0
+    grid name: sfp
     origin:
         x: 0.0
         y: 12.1
         z: 1.1
+"""
+
+GRIDS = """
+core:
+    lattice file: {0}geometry.xml
+sfp:
+    lattice file: {0}sfp-geom.xml
+    lattice pitch:
+        x: 25.0
+        y: 25.0
+    geom: cartesian
+    symmetry: full
 """
 
 GEOM = """<?xml version="1.0" ?>
@@ -53,17 +63,15 @@ class TestReactorBlueprints(unittest.TestCase):
 
     def setUp(self):
         # add testMethodName to avoid I/O collisions during parallel testing
-        self.systemDesigns = reactorBlueprint.Systems.load(
-            CORE_BLUEPRINT.format(self._testMethodName)
-        )
+        self.systemDesigns = reactorBlueprint.Systems.load(CORE_BLUEPRINT)
+        self.gridDesigns = gridBlueprint.Grids.load(GRIDS.format(self._testMethodName))
 
     def test_simple_read(self):
         self.assertEqual(
-            self.systemDesigns["core"].latticeFile,
-            self._testMethodName + "geometry.xml",
+            self.gridDesigns["core"].latticeFile, self._testMethodName + "geometry.xml",
         )
         self.assertEqual(
-            self.systemDesigns["sfp"].latticeFile, self._testMethodName + "sfp-geom.xml"
+            self.gridDesigns["sfp"].latticeFile, self._testMethodName + "sfp-geom.xml"
         )
         self.assertAlmostEqual(self.systemDesigns["sfp"].origin.y, 12.1)
 
@@ -73,11 +81,13 @@ class TestReactorBlueprints(unittest.TestCase):
             with open(fn, "w") as f:
                 f.write(GEOM)
         cs = settings.Settings()
+        # test migration from geometry xml files
         cs["geomFile"] = self._testMethodName + "geometry.xml"
         bp = blueprints.Blueprints.load(
             test_customIsotopics.TestCustomIsotopics.yamlString
         )
         bp.systemDesigns = self.systemDesigns
+        bp.gridDesigns = self.gridDesigns
         reactor = reactors.Reactor(cs, bp)
         core = bp.systemDesigns["core"].construct(cs, bp, reactor)
         sfp = bp.systemDesigns["sfp"].construct(cs, bp, reactor)

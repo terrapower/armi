@@ -232,7 +232,6 @@ class TestDatabaseReading(unittest.TestCase):
 
         cls.cs = o.cs
         cls.bp = o.r.blueprints
-        cls.geom = o.r.core.geom
         cls.dbName = o.cs.caseTitle + ".h5"
 
         # needed for test_readWritten
@@ -247,7 +246,7 @@ class TestDatabaseReading(unittest.TestCase):
     def test_readWritten(self):
 
         with Database3(self.dbName, "r") as db:
-            r2 = db.load(0, 0, self.cs, self.bp, self.geom)
+            r2 = db.load(0, 0, self.cs, self.bp)
 
         for a1, a2 in zip(self.r.core, r2.core):
             # assemblies assign a name based on assemNum at initialization

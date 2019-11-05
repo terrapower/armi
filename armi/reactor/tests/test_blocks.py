@@ -36,6 +36,7 @@ from armi.reactor import grids
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO import isotxs
+from armi.reactor import geometry
 
 
 def loadTestBlock(cold=True):
@@ -641,7 +642,10 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(b.getSymmetryFactor(), 1.0)
 
         # center blocks have a different symmetry factor for 1/3rd core
-        for symmetry, powerMult in (("full core", 1), ("third core periodic", 3)):
+        for symmetry, powerMult in (
+            (geometry.FULL_CORE, 1),
+            (geometry.THIRD_CORE + geometry.PERIODIC, 3),
+        ):
             self.r.core.symmetry = symmetry
             i, j = grids.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]

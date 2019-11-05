@@ -332,10 +332,14 @@ assemblies:
 # end-assemblies-section
 systems:
     core:
-      lattice file: anl-afci-177-coreMap.yaml
+      grid name: core
       origin:
           x: 0.0
           y: 0.0
           z: 0.0
+grids: 
+    core:
+        lattice file: anl-afci-177-coreMap.yaml
+        
 # end-systems-section
     

@@ -1540,9 +1540,9 @@ class ArmiObject(metaclass=CompositeModelType):
                     "calcBasedOnFullObj. Will result in double counting."
                 )
             try:
-                coreMult = self.p.powerMultiplier
+                coreMult = self.powerMultiplier
             except AttributeError:
-                coreMult = self.parent.p.powerMultiplier
+                coreMult = self.parent.powerMultiplier
             if not coreMult:
                 raise ValueError("powerMultiplier is equal to {}".format(coreMult))
         else:

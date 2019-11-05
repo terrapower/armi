@@ -65,11 +65,11 @@ ANNULUS_SECTOR_PRISM = "AnnulusSectorPrism"
 
 VALID_GEOMETRY_TYPE = {HEX, RZT, RZ, CARTESIAN}
 
-FULL_CORE = "full core"
-THIRD_CORE = "third core "
-QUARTER_CORE = "quarter core "
-EIGHTH_CORE = "eighth core "
-SIXTEENTH_CORE = "sixteenth core "
+FULL_CORE = "full"
+THIRD_CORE = "third "
+QUARTER_CORE = "quarter "
+EIGHTH_CORE = "eighth "
+SIXTEENTH_CORE = "sixteenth "
 REFLECTIVE = "reflective"
 PERIODIC = "periodic"
 THROUGH_CENTER_ASSEMBLY = (
@@ -228,12 +228,12 @@ class SystemLayoutInput(object):
         except ET.ParseError:
             stream.seek(0)
             self._readYaml(stream)
+        self._applyMigrations()
 
     def _readXml(self, stream):
         tree = ET.parse(stream)
         root = tree.getroot()
         self._getGeomTypeAndSymmetryFromXml(root)
-        self._checkGeomAndSymmetry()
         self.assemTypeByIndices.clear()
 
         for assemblyNode in root:
@@ -324,6 +324,11 @@ class SystemLayoutInput(object):
                 f"ASCII map reading from geom/symmetry: {self.geomType}/"
                 f"{self.symmetry} not supported."
             )
+
+    def _applyMigrations(self):
+        # remove "core" so we can use symmetry for in-block things as well
+        # as core maps
+        self.symmetry = self.symmetry.replace(" core", "")
 
     def modifyEqPaths(self, modifiedPaths):
         """
@@ -481,18 +486,6 @@ class SystemLayoutInput(object):
         else:
             self.symmetry = str(root.attrib[INP_SYMMETRY]).lower()
 
-    def _checkGeomAndSymmetry(self):
-        if self.geomType not in VALID_GEOMETRY_TYPE:
-            raise ValueError(
-                "Geom type {} is invalid. Valid (case insensitive) geom types are {}"
-                "".format(symmetry, VALID_SYMMETRY)
-            )
-        if self.symmetry not in VALID_SYMMETRY:
-            raise ValueError(
-                "Symmetry {} is invalid. Valid (case insensitive) symmetries are {}"
-                "".format(symmetry, VALID_SYMMETRY)
-            )
-
 
 def fromReactor(reactor):
     """
@@ -504,7 +497,7 @@ def fromReactor(reactor):
     """
     geom = SystemLayoutInput()
     runLog.info("Reading core map from {}".format(reactor))
-    geom.geomType = reactor.core.p.geomType
+    geom.geomType = reactor.core.geomType
     geom.symmetry = reactor.core.symmetry
 
     bp = reactor.blueprints
@@ -520,10 +513,6 @@ def fromReactor(reactor):
             assembly.spatialLocator.getCompleteIndices()
         )
         geom.maxRings = max(x, geom.maxRings)
-
-        if reactor.core.geom:
-            # may need to be updated later.
-            geom.eqPathInput = reactor.core.geom.eqPathInput
 
         geom.assemTypeByIndices[indices] = aType
 

@@ -57,17 +57,22 @@ class Triplet(yamlize.Object):
 
 
 class SystemBlueprint(yamlize.Object):
-    """The reactor-level structure input blueprint."""
+    """
+    The reactor-level structure input blueprint.
+
+    .. note:: We use strings to link grids to things that use
+        them rather than YAML anchors in this part of the input.
+        This seems inconsistent with how blocks are referred to
+        in assembly blueprints but this is part of a transition
+        away from YAML anchors.
+    """
 
     name = yamlize.Attribute(key="name", type=str)
-    latticeFile = yamlize.Attribute(key="lattice file", type=str)
+    gridName = yamlize.Attribute(key="grid name", type=str)
     origin = yamlize.Attribute(key="origin", type=Triplet, default=None)
-    latticeDimensions = yamlize.Attribute(
-        key="lattice pitch", type=Triplet, default=None
-    )
 
     def __init__(
-        self, name=None, latticeFile=None, origin=None, latticeDimensions=None
+        self, name=None, gridName=None, origin=None,
     ):
         """
         A Reactor Level Structure like a core or SFP.
@@ -78,85 +83,45 @@ class SystemBlueprint(yamlize.Object):
         this is only needed for when you want to make this object from a non-YAML source.
         """
         self.name = name
-        self.latticeFile = latticeFile
+        self.gridName = gridName
         self.origin = origin
-        self.latticeDimensions = latticeDimensions
 
     def construct(self, cs, bp, reactor, geom=None):
         """Build a core/IVS/EVST/whatever and fill it with children."""
         from armi.reactor import reactors  # avoid circular import
 
         runLog.info("Constructing the `{}`".format(self.name))
-        geom = geometry.SystemLayoutInput()
-        geom.readGeomFromFile(self.latticeFile)
-        container = reactors.Core(self.name, cs, geom)
+        gridDesign = bp.gridDesigns[self.gridName]
+        spatialGrid = gridDesign.construct()
+        container = reactors.Core(self.name, cs)
+        container.spatialGrid = spatialGrid
+        container.spatialGrid.armiObject = container
         reactor.add(container)  # need parent before loading assemblies
-        self._constructSpatialGrid(container)
+        spatialLocator = grids.CoordinateLocation(
+            self.origin.x, self.origin.y, self.origin.z, None
+        )
+        container.spatialLocator = spatialLocator
         if armi.MPI_RANK != 0:
             # on non-master nodes we don't bother building up the assemblies
             # because they will be populated with DistributeState.
             # This is intended to optimize speed and minimize ram.
             return None
-        self._loadAssemblies(cs, container, geom, bp)
+        self._loadAssemblies(cs, container, gridDesign, gridDesign.gridContents, bp)
         summarizeMaterialData(container)
-        self._modifyGeometry(container)
+        self._modifyGeometry(container, gridDesign)
         container.processLoading(cs)
         return container
 
-    def _constructSpatialGrid(self, container):
-        """
-        Build unit-dimension spatial grid on the reactor level.
-
-        The grid will be adjusted to the proper pitch after it is populated by
-        inferring the spacing from its children. If you want to make a more
-        spatially-distributed grid (i.e. with empty space between structures
-        as you might have with various ex-core structures),
-        """
-        runLog.extra("Creating the spatial grid")
-        if container.p.geomType in [geometry.RZT, geometry.RZ]:
-            container.spatialGrid = grids.thetaRZGridFromGeom(
-                container.geom, armiObject=container
-            )
-        elif container.p.geomType == geometry.HEX:
-            pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
-            # add 2 for potential dummy assems
-            container.spatialGrid = grids.hexGridFromPitch(
-                pitch, numRings=container.geom.maxRings + 2, armiObject=container
-            )
-        elif container.p.geomType == geometry.CARTESIAN:
-            # if full core or not cut-off, bump the first assembly from the center of the mesh
-            # into the positive values.
-            xw, yw = (
-                (self.latticeDimensions.x, self.latticeDimensions.y)
-                if self.latticeDimensions
-                else (1.0, 1.0)
-            )
-            isOffset = (
-                container.isFullCore
-                or geometry.THROUGH_CENTER_ASSEMBLY not in container.symmetry
-            )
-            container.spatialGrid = grids.cartesianGridFromRectangle(
-                xw,
-                yw,
-                numRings=container.geom.maxRings,
-                isOffset=isOffset,
-                armiObject=container,
-            )
-        container.spatialLocator = grids.CoordinateLocation(
-            self.origin.x, self.origin.y, self.origin.z, None
-        )
-        runLog.debug("Built grid: {}".format(container.spatialGrid))
-
     # pylint: disable=no-self-use
-    def _loadAssemblies(self, cs, container, geom, bp):
+    def _loadAssemblies(self, cs, container, gridDesign, gridContents, bp):
         runLog.header(
             "=========== Adding Assemblies to {} ===========".format(container)
         )
         badLocations = set()
-        for locationInfo, aTypeID in geom.assemTypeByIndices.items():
-            newAssembly = bp.constructAssem(geom.geomType, cs, specifier=aTypeID)
+        for locationInfo, aTypeID in gridContents.items():
+            newAssembly = bp.constructAssem(gridDesign.geom, cs, specifier=aTypeID)
 
-            if geom.geomType in [geometry.RZT, geometry.RZ]:
+            if gridDesign.geom in [geometry.RZT, geometry.RZ]:
                 # in RZ, TRZ, locationInfo are upper and lower bounds in R and Theta.
                 # We want to convert these into spatialLocator indices in the reactor's spatialGrid
                 rad0, rad1, theta0, theta1, numAzi, numRadial = locationInfo
@@ -186,7 +151,7 @@ class SystemBlueprint(yamlize.Object):
                 "The locations outside the first third are {}".format(badLocations)
             )
 
-    def _modifyGeometry(self, container):
+    def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
         # all cases should have no edge assemblies. They are added ephemerally when needed
         from armi.reactor.converters import geometryConverters  # circular imports
@@ -197,15 +162,15 @@ class SystemBlueprint(yamlize.Object):
 
         # now update the spatial grid dimensions based on the populated children
         # (unless specified on input)
-        if not self.latticeDimensions:
+        if not gridDesign.latticeDimensions:
             runLog.info(
                 "Updating spatial grid pitch data for {} geometry".format(
-                    container.p.geomType
+                    container.geomType
                 )
             )
-            if container.p.geomType == geometry.HEX:
+            if container.geomType == geometry.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
-            elif container.p.geomType == geometry.CARTESIAN:
+            elif container.geomType == geometry.CARTESIAN:
                 xw, yw = container[0][0].getPitch()
                 container.spatialGrid.changePitch(xw, yw)
 
@@ -259,15 +224,22 @@ def summarizeMaterialData(container):
 
 def migrate(bp, cs):
     """
-    Make a structure representing a Core based on a cs object with a ``geomFile``.
+    Make a system and a grid representing the Core from a ``geomFile`` setting.
 
     This allows settings-driven core map for backwards compatibility.
     """
-    from armi.reactor import blueprints  # avoid cyclic import
+    from armi.reactor.blueprints import gridBlueprint
 
-    # backwards compatibility
     if bp.systemDesigns is None:
         bp.systemDesigns = Systems()
+    if bp.gridDesigns is None:
+        bp.gridDesigns = gridBlueprint.Grids()
+
+    if "core" in [rd.name for rd in bp.gridDesigns]:
+        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
+    bp.gridDesigns["core"] = gridBlueprint.GridBlueprint(
+        "core", latticeFile=cs["geomFile"],
+    )
 
     if "core" in [rd.name for rd in bp.systemDesigns]:
         raise ValueError(
@@ -275,8 +247,7 @@ def migrate(bp, cs):
             "the blueprints file. Only one definition may exist. "
             "Update inputs."
         )
-
-    bp.systemDesigns["core"] = SystemBlueprint("core", cs["geomFile"], Triplet())
+    bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
 
     # Someday: write out the migration file. At the moment this messes up the case
     # title and doesn't yet have the other systems in place so this isn't the right place.

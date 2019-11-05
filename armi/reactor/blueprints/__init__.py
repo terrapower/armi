@@ -94,7 +94,7 @@ from armi.reactor.blueprints.isotopicOptions import (
     NuclideFlag,
     CustomIsotopics,
 )
-
+from armi.reactor.blueprints.gridBlueprint import Grids
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -171,6 +171,7 @@ class Blueprints(yamlize.Object):
         key="assemblies", type=AssemblyKeyedList, default=None
     )
     systemDesigns = yamlize.Attribute(key="systems", type=Systems, default=None)
+    gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
 
     # These are used to set up new attributes that come from plugins. Defining its
     # initial state here to make pylint happy
@@ -196,10 +197,14 @@ class Blueprints(yamlize.Object):
         # instance of a Blueprints object and initializes it with values using setattr. Since the
         # method is never called, it serves the purpose of preventing pylint from issuing warnings
         # about attributes not existing.
+        self._assembliesBySpecifier = {}
+        self._prepped = False
         self.systemDesigns = Systems()
         self.assemDesigns = AssemblyKeyedList()
         self.blockDesigns = BlockKeyedList()
         self.assemblies = {}
+        self.grids = Grids()
+        self.elementsToExpand = []
 
     def __repr__(self):
         return "<{} Assemblies:{} Blocks:{}>".format(

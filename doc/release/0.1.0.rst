@@ -7,3 +7,18 @@ ARMI v0.1.0
 Release Date: (31 October 2019)
 
 Initial public release.
+
+ARMI v0.1.1
+===========
+Release Date: (TBD)
+
+User-facing enhancements
+------------------------
+* Improved ability to input subassembly geometric details by adding
+  grid definitions to blueprints files
+  
+Backend changes
+---------------
+* Removed need for geometry object for Reactor construction
+* Pushed symmetry and geomType metadata onto spatialGrids
+

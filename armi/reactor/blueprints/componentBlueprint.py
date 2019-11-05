@@ -139,7 +139,8 @@ class ComponentBlueprint(yamlize.Object):
     Tinput = yamlize.Attribute(type=float)
     Thot = yamlize.Attribute(type=float)
     isotopics = yamlize.Attribute(type=str, default=None)
-    centers = yamlize.Attribute(type=str, default=None)
+    latticeIDs = yamlize.Attribute(type=list, default=None)
+    origin = yamlize.Attribute(type=list, default=None)
     orientation = yamlize.Attribute(type=str, default=None)
     mergeWith = yamlize.Attribute(type=str, default=None)
 
@@ -163,6 +164,10 @@ class ComponentBlueprint(yamlize.Object):
             elif attr.name == "material":
                 # value is a material instance
                 value, appliedMatMods = self._constructMaterial(blueprint, matMods)
+            elif attr.name == "latticeIDs":
+                # Don't pass latticeIDs on to the component constructor.
+                # They're applied during block construction.
+                continue
             else:
                 value = attr.get_value(self)
 

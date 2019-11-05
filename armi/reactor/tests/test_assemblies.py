@@ -190,7 +190,7 @@ class Assembly_TestCase(unittest.TestCase):
         )  # Print nothing to the screen that would normally go to the log.
 
         self.r = tests.getEmptyHexReactor(self.cs)
-        self.r.core.symmetry = "third core periodic"
+        self.r.core.symmetry = "third periodic"
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
         self.r.core.add(self.Assembly)
@@ -1446,10 +1446,8 @@ class AnnularFuelTestCase(unittest.TestCase):
         self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
         settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
-        geom = geometry.SystemLayoutInput()
-        geom.symmetry = "third core periodic"
         self.r = reactors.Reactor(self.cs, bp)
-        self.r.add(reactors.Core("Core", self.cs, geom))
+        self.r.add(reactors.Core("Core", self.cs))
 
         inputStr = """blocks:
     ann fuel: &block_ann_fuel

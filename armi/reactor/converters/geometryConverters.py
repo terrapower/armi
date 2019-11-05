@@ -268,14 +268,14 @@ class FuelAssemNumModifier(GeometryChanger):
         """
         self._sourceReactor = r
 
-        if r.core.p.powerMultiplier != 1 and r.core.p.powerMultiplier != 3:
+        if r.core.powerMultiplier != 1 and r.core.powerMultiplier != 3:
             raise ValueError(
                 "Invalid reactor geometry {} in {}. Reactor must be full or third core to modify the "
-                "number of assemblies.".format(r.core.p.powerMultiplier, self)
+                "number of assemblies.".format(r.core.powerMultiplier, self)
             )
 
         # Set the number of fueled and non-fueled positions within the core (Full core or third-core)
-        coreGeom = "full-core" if r.core.p.powerMultiplier == 1 else "third-core"
+        coreGeom = "full-core" if r.core.powerMultiplier == 1 else "third-core"
         runLog.info(
             "Modifying {} geometry to have {} fuel assemblies.".format(
                 coreGeom, self.numFuelAssems
@@ -283,22 +283,22 @@ class FuelAssemNumModifier(GeometryChanger):
         )
         nonFuelAssems = (
             sum(not assem.hasFlags(Flags.FUEL) for assem in r.core)
-            * r.core.p.powerMultiplier
+            * r.core.powerMultiplier
         )
-        self.numFuelAssems *= r.core.p.powerMultiplier
+        self.numFuelAssems *= r.core.powerMultiplier
         totalCoreAssems = nonFuelAssems + self.numFuelAssems
 
         # Adjust the total power of the reactor by keeping power per assembly constant
         if self.modifyReactorPower:
             r.core.p.power *= float(self.numFuelAssems) / (
-                len(r.core.getAssemblies(Flags.FUEL)) * r.core.p.powerMultiplier
+                len(r.core.getAssemblies(Flags.FUEL)) * r.core.powerMultiplier
             )
 
         # Get the sorted assembly locations in the core (Full core or third core)
         assemOrderList = r.core.spatialGrid.generateSortedHexLocationList(
             totalCoreAssems
         )
-        if r.core.p.powerMultiplier == 3:
+        if r.core.powerMultiplier == 3:
             assemOrderList = [
                 loc for loc in assemOrderList if r.core.spatialGrid.isInFirstThird(loc)
             ]
@@ -318,12 +318,12 @@ class FuelAssemNumModifier(GeometryChanger):
                     if assem.hasFlags(self.overwriteList):
                         r.core.removeAssembly(assem, discharge=False)
                     r.core.add(fuelAssem, loc)
-                    numFuelAssemsAdded += r.core.p.powerMultiplier
+                    numFuelAssemsAdded += r.core.powerMultiplier
                 else:
                     # Keep the existing assembly in the core
                     if assem.hasFlags(Flags.FUEL):
                         # Count the assembly in the location if it is fuel
-                        numFuelAssemsAdded += r.core.p.powerMultiplier
+                        numFuelAssemsAdded += r.core.powerMultiplier
                     else:
                         pass
             # Flag the completion of adding fuel assemblies (see note 1)
@@ -390,13 +390,13 @@ class FuelAssemNumModifier(GeometryChanger):
 
         # generate ordered list of assembly locations
         assemOrderList = r.core.spatialGrid.generateSortedHexLocationList(maxAssemsFull)
-        if r.core.p.powerMultiplier == 3:
+        if r.core.powerMultiplier == 3:
             assemOrderList = [
                 loc
                 for loc in assemOrderList
                 if self._sourceReactor.core.spatialGrid.isInFirstThird(loc)
             ]
-        elif r.core.p.powerMultiplier != 1:
+        elif r.core.powerMultiplier != 1:
             raise RuntimeError("{} only works on full or 1/3 symmetry.".format(self))
         # add new assemblies to core within one ring
         for locator in assemOrderList:
@@ -535,10 +535,10 @@ class HexToRZThetaConverter(GeometryConverter):
         if r is None:
             raise ValueError("Reactor needed for reactor conversion")
 
-        if r.core.p.geomType != geometry.HEX:
+        if r.core.geomType != geometry.HEX:
             raise ValueError(
                 "Cannot use {} to convert {} reactor".format(
-                    self, r.core.p.geomType.upper()
+                    self, r.core.geomType.upper()
                 )
             )
 
@@ -658,15 +658,12 @@ class HexToRZThetaConverter(GeometryConverter):
         self._o = self._sourceReactor.o
 
     def _setupConvertedReactor(self, grid):
-        newGeom = geometry.SystemLayoutInput()
-        newGeom.symmetry = geometry.FULL_CORE
-        newGeom.geomType = self._GEOMETRY_TYPE
         self.convReactor = reactors.Reactor(self._cs, self._sourceReactor.blueprints)
-        self.convReactor.add(reactors.Core("Core", self._cs, newGeom))
+        self.convReactor.add(reactors.Core("Core", self._cs))
         self.convReactor.core.spatialGrid = grid
+        grid.symmetry = geometry.FULL_CORE
+        grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
-        self.convReactor.core.symmetry = geometry.FULL_CORE
-        self.convReactor.core.p.geomType = self._GEOMETRY_TYPE
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
         self.convReactor.core.name += " - {0}".format(self._GEOMETRY_TYPE)
         self._o.reattach(self.convReactor, self._cs)
@@ -802,7 +799,7 @@ class HexToRZThetaConverter(GeometryConverter):
             radialRingArea = (
                 radialZoneVolume
                 / axialSegmentHeight
-                * self._sourceReactor.core.p.powerMultiplier
+                * self._sourceReactor.core.powerMultiplier
             )
             outerDiameter = blockConverters.getOuterDiamFromIDAndArea(
                 innerDiameter, radialRingArea
@@ -1078,7 +1075,7 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         runLog.info(
             "Generating plot(s) of the converted {} reactor".format(
-                self.convReactor.core.p.geomType.upper()
+                self.convReactor.core.geomType.upper()
             )
         )
         colConv = matplotlib.colors.ColorConverter()
@@ -1120,7 +1117,7 @@ class HexToRZThetaConverter(GeometryConverter):
                 innerRadius = outerRadius
             plt.title(
                 "{} Core Map of {} from {} to {} revolutions".format(
-                    self.convReactor.core.p.geomType.upper(),
+                    self.convReactor.core.geomType.upper(),
                     self._cs.caseTitle.upper(),
                     innerTheta * units.RAD_TO_REV,
                     outerTheta * units.RAD_TO_REV,
@@ -1147,7 +1144,7 @@ class HexToRZThetaConverter(GeometryConverter):
             plt.plot()
             figName = (
                 self._cs.caseTitle
-                + "-{}".format(self.convReactor.core.p.geomType)
+                + "-{}".format(self.convReactor.core.geomType)
                 + "_{}".format(i)
                 + ".png"
             )
@@ -1236,7 +1233,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = "third core periodic"
+    EXPECTED_INPUT_SYMMETRY = "third periodic"
 
     def convert(self, r=None):
         """
@@ -1256,11 +1253,11 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             return r
         elif not (
             r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
-            and r.core.p.geomType == geometry.HEX
+            and r.core.geomType == geometry.HEX
         ):
             raise ValueError(
                 "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
-                "Geometry received was {} {}".format(r.core.symmetry, r.core.p.geomType)
+                "Geometry received was {} {}".format(r.core.symmetry, r.core.geomType)
             )
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(r.core)

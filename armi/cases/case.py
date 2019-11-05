@@ -556,11 +556,11 @@ class Case:
 
         copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
-        for system in self.bp.systemDesigns or []:
-            if system.latticeFile:
+        for grid in self.bp.gridDesigns or []:
+            if grid.latticeFile:
                 pathTools.copyOrWarn(
-                    "system lattice for {}".format(system.name),
-                    fromPath(system.latticeFile),
+                    "system lattice for {}".format(grid.name),
+                    fromPath(grid.latticeFile),
                     clone.cs.inputDirectory,
                 )
 

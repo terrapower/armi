@@ -49,17 +49,18 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
             version = tempDb.attrs["databaseVersion"]
         del tempDb
 
-        if version == "2":
+        majorversion = version.split(".")[0] if version else "2"
+        if majorversion == "2":
             return XTViewDatabase(dbName, permission)
 
-        if version == "3":
+        if majorversion == "3":
             return Database3(dbName, permission)
 
         raise ValueError("Unable to determine Database version for {}".format(dbName))
 
     elif permission in permissions.Permissions.write:
-        version = version or "3"
-        if version == "2":
+        majorversion = version.split(".")[0] if version else "3"
+        if majorversion == "2":
             return XTViewDatabase(dbName, permission)
-        if version == "3":
+        if majorversion == "3":
             return Database3(dbName, permission)

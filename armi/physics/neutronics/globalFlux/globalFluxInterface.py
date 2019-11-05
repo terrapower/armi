@@ -102,7 +102,7 @@ class GlobalFluxInterface(interfaces.Interface):
             / units.WATTS_PER_MW
         )
         specifiedPower = (
-            self.r.core.p.power / units.WATTS_PER_MW / self.r.core.p.powerMultiplier
+            self.r.core.p.power / units.WATTS_PER_MW / self.r.core.powerMultiplier
         )
 
         if not math.isclose(
@@ -423,7 +423,7 @@ class GlobalFluxInterface(interfaces.Interface):
         return (
             "FD" in self.cs["neutronicsKernel"]
             and self.r.core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
-            and self.r.core.p.geomType == geometry.HEX
+            and self.r.core.geomType == geometry.HEX
         )
 
     def clearFlux(self):

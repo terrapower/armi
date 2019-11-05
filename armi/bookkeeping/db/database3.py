@@ -48,11 +48,9 @@ from typing import (
     Dict,
     Any,
     List,
-    Union,
     Sequence,
     MutableSequence,
     Generator,
-    Type,
 )
 
 import numpy
@@ -70,13 +68,14 @@ from armi.reactor import assemblies
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
-from armi.reactor.composites import ArmiObject, Composite
+from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
-from armi import operators
 from armi.bookkeeping.db.types import History, Histories
 from armi.bookkeeping.db import database
+from armi.reactor import geometry
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
+DB_VERSION = "3.1"
 
 
 def getH5GroupName(cycle, timeNode, statePointName=None):
@@ -151,11 +150,14 @@ class DatabaseInterface(interfaces.Interface):
         # There's not always a geomFile; sometimes geom is brought in via systems.
         # Eventually, we'll need to store multiple of these (one for each system).
         # Just do core for now.
-        geomFileName = self.r.blueprints.systemDesigns["core"].latticeFile
-        with open(
-            os.path.join(os.path.dirname(self.cs.path), geomFileName), "r"
-        ) as fileStream:
-            geomString = fileStream.read()
+        geomFileName = self.r.blueprints.gridDesigns["core"].latticeFile
+        if geomFileName:
+            with open(
+                os.path.join(os.path.dirname(self.cs.path), geomFileName), "r"
+            ) as fileStream:
+                geomString = fileStream.read()
+        else:
+            geomString = ""
         self._db.writeInputsToDB(self.cs, geomString=geomString)
 
     def interactEveryNode(self, cycle, node):
@@ -272,9 +274,7 @@ class DatabaseInterface(interfaces.Interface):
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
                 if loadDB.hasTimeStep(cycle, timeNode, statePointName=""):
-                    newR = loadDB.load(
-                        cycle, timeNode, self.cs, self.r.blueprints, self.r.core.geom
-                    )
+                    newR = loadDB.load(cycle, timeNode, self.cs, self.r.blueprints)
                     break
         else:
             # reactor was never set so fail
@@ -381,7 +381,7 @@ class Database3(database.Database):
     `doc/user/outputs/database` for more details.
     """
 
-    version = "3"
+    version = DB_VERSION
 
     timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
 
@@ -444,7 +444,7 @@ class Database3(database.Database):
         self.h5db = h5py.File(filePath, self._permission)
         self.h5db.attrs["successfulCompletion"] = False
         self.h5db.attrs["version"] = armi.__version__
-        self.h5db.attrs["databaseVersion"] = "3"
+        self.h5db.attrs["databaseVersion"] = DB_VERSION
         self.h5db.attrs["user"] = armi.USER
         self.h5db.attrs["python"] = sys.version
         self.h5db.attrs["armiLocation"] = os.path.dirname(armi.ROOT)
@@ -595,20 +595,18 @@ class Database3(database.Database):
 
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
-        cs.loadFromString(self.h5db["inputs/settings"].value)
+        cs.loadFromString(self.h5db["inputs/settings"][()])
         return cs
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        bp = blueprints.Blueprints.load(self.h5db["inputs/blueprints"].value)
+        bp = blueprints.Blueprints.load(self.h5db["inputs/blueprints"][()])
         return bp
 
     def loadGeometry(self):
-        from armi.reactor import geometry
-
         geom = geometry.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"].value))
+        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"][()]))
         return geom
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
@@ -651,9 +649,9 @@ class Database3(database.Database):
 
     def readInputsFromDB(self):
         return (
-            self.h5db["inputs/settings"].value,
-            self.h5db["inputs/geomFile"].value,
-            self.h5db["inputs/blueprints"].value,
+            self.h5db["inputs/settings"][()],
+            self.h5db["inputs/geomFile"][()],
+            self.h5db["inputs/blueprints"][()],
         )
 
     def mergeHistory(self, inputDB, startCycle, startNode):
@@ -780,7 +778,7 @@ class Database3(database.Database):
         for comps in groupedComps.values():
             self._writeParams(h5group, comps)
 
-    def load(self, cycle, node, cs=None, bp=None, geom=None):
+    def load(self, cycle, node, cs=None, bp=None):
         """Load a new reactor from (cycle, node).
 
         Case settings, blueprints, and geom can be provided by the client, or read from
@@ -799,8 +797,6 @@ class Database3(database.Database):
             if not provided one is read from the database
         bp : armi.reactor.Blueprints (Optional)
             if not provided one is read from the database
-        geom : armi.geometry.Geometry (Optional)
-            if not provided one is read from the database
         """
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
@@ -808,14 +804,11 @@ class Database3(database.Database):
         # apply to avoid defaults in getMasterCs calls
         settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
-        geom = geom or self.loadGeometry()
 
-        comps = []
-        groupedComps = collections.defaultdict(list)
         h5group = self.h5db[getH5GroupName(cycle, node)]
 
         layout = Layout(h5group=h5group)
-        comps, groupedComps = layout._initComps(cs, bp, geom)
+        comps, groupedComps = layout._initComps(cs, bp)
 
         # populate data onto initialized components
         for compType, compTypeList in groupedComps.items():
@@ -833,8 +826,6 @@ class Database3(database.Database):
 
         # stitch together
         self._compose(iter(comps), cs)
-
-        rootComponent = comps[0][0]
 
         # also, make sure to update the global serial number so we don't re-use a number
         parameterCollections.GLOBAL_SERIAL_NUM = max(
@@ -881,14 +872,7 @@ class Database3(database.Database):
             comp.remove(spontaneousChild)
 
         if isinstance(comp, Core):
-            # TODO: This is questionable, and an artifact of how we deal with the geom
-            # objects. There is a "the" geom object for the reactor core, and other
-            # geoms, which are specified in the blueprints for other Core objects. We
-            # are only storing the main geom object input in the db, and using that to
-            # make all Core objects in their __init__() calls. So we need to override
-            # these, which are derived from the main geom.
-            comp._symmetry = comp.p.symmetry
-            comp.geomType = comp.p.geomType
+            pass
         elif isinstance(comp, Assembly):
             # Assemblies force their name to be something based on assemNum. When the
             # assembly is created it gets a new assemNum, and throws out the correct
@@ -1059,10 +1043,17 @@ class Database3(database.Database):
             for c, val, linkedDim in itertools.zip_longest(
                 comps, data.tolist(), linkedDims, fillvalue=""
             ):
-                if linkedDim != "":
-                    c.p[paramName] = linkedDim
-                else:
-                    c.p[paramName] = val
+                try:
+                    if linkedDim != "":
+                        c.p[paramName] = linkedDim
+                    else:
+                        c.p[paramName] = val
+                except AssertionError as ae:
+                    # happens when a param was deprecated but being loaded from old DB
+                    runLog.warning(
+                        f"{str(ae)}\nSkipping load of invalid param `{paramName}`"
+                        " (possibly loading from old DB)\n"
+                    )
 
     def getHistory(
         self,
@@ -1262,7 +1253,7 @@ class Layout(object):
         # set of grid parameters that have been seen in _createLayout. For efficient
         # checks for uniqueness
         self._seenGridParams = dict()
-        # actual list of grid paramters, with stable order for safe indexing
+        # actual list of grid parameters, with stable order for safe indexing
         self.gridParams = []
 
         self.groupedComps = collections.defaultdict(list)
@@ -1365,7 +1356,6 @@ class Layout(object):
             )
 
             gridGroup = h5group["layout/grids"]
-            nGrids = gridGroup.attrs["nGrids"]
             gridTypes = [t.decode() for t in gridGroup["type"][:]]
 
             self.gridParams = []
@@ -1382,9 +1372,25 @@ class Layout(object):
                         bounds.append(None)
                 unitStepLimits = thisGroup["unitStepLimits"][:]
                 offset = thisGroup["offset"][:] if thisGroup.attrs["offset"] else None
+                geomType = (
+                    thisGroup["geomType"][()] if "geomType" in thisGroup else None
+                )
+                symmetry = (
+                    thisGroup["symmetry"][()] if "symmetry" in thisGroup else None
+                )
 
                 self.gridParams.append(
-                    (gridType, (unitSteps, bounds, unitStepLimits, offset))
+                    (
+                        gridType,
+                        grids.GridParameters(
+                            unitSteps,
+                            bounds,
+                            unitStepLimits,
+                            offset,
+                            geomType,
+                            symmetry,
+                        ),
+                    )
                 )
 
         except KeyError as e:
@@ -1393,7 +1399,7 @@ class Layout(object):
             )
             raise e
 
-    def _initComps(self, cs, bp, geom):
+    def _initComps(self, cs, bp):
         comps = []
         groupedComps = collections.defaultdict(list)
 
@@ -1424,7 +1430,7 @@ class Layout(object):
             if issubclass(Klass, Reactor):
                 comp = Klass(cs, bp)
             elif issubclass(Klass, Core):
-                comp = Klass(name, cs, geom)
+                comp = Klass(name, cs)
             elif issubclass(Klass, Component):
                 # XXX: initialize all dimensions to 0, they will be loaded and assigned
                 # after load
@@ -1505,19 +1511,23 @@ class Layout(object):
 
             for igrid, gridParams in enumerate(gp[1] for gp in self.gridParams):
                 thisGroup = gridsGroup.create_group(str(igrid))
-                thisGroup.create_dataset("unitSteps", data=gridParams[0])
+                thisGroup.create_dataset("unitSteps", data=gridParams.unitSteps)
 
-                for ibound, bound in enumerate(gridParams[1]):
+                for ibound, bound in enumerate(gridParams.bounds):
                     if bound is not None:
                         bound = numpy.array(bound)
                         thisGroup.create_dataset("bounds_{}".format(ibound), data=bound)
 
-                thisGroup.create_dataset("unitStepLimits", data=gridParams[2])
+                thisGroup.create_dataset(
+                    "unitStepLimits", data=gridParams.unitStepLimits
+                )
 
-                offset = gridParams[3]
+                offset = gridParams.offset
                 thisGroup.attrs["offset"] = offset is not None
                 if offset is not None:
                     thisGroup.create_dataset("offset", data=offset)
+                thisGroup.create_dataset("geomType", data=gridParams.geomType)
+                thisGroup.create_dataset("symmetry", data=gridParams.symmetry)
         except RuntimeError:
             runLog.error("Failed to create datasets in: {}".format(h5group))
             raise

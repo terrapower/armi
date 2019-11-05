@@ -252,7 +252,7 @@ def writeAssemblyMassSummary(r):
                 count += 1
             else:
                 # add 3 if it's 1/3 core, etc.
-                count += core.p.powerMultiplier
+                count += core.powerMultiplier
 
         # Get the dominant materials
         pinMaterialKey = "pinMaterial"
@@ -543,7 +543,7 @@ def summarizePower(core):
     core : armi.reactor.reactors.Core
     """
     sums = collections.defaultdict(lambda: 0.0)
-    pmult = core.p.powerMultiplier
+    pmult = core.powerMultiplier
     for a in core:
         sums[a.getType()] += a.calcTotalParam("power") * pmult
 
@@ -618,7 +618,7 @@ def summarizeZones(core, cs):
     avgAssem = highPow[avgIndex]  # the actual average assembly
 
     # ok, now need counts, and peak and avg. flow and power in high power region.
-    mult = core.p.powerMultiplier
+    mult = core.powerMultiplier
 
     summary = "Zone Summary For Safety Analysis cycle {0}\n".format(core.r.p.cycle)
     summary += "  Assemblies in high-power zone: {0}\n".format(len(highPow) * mult)
@@ -745,7 +745,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         coreDesignTable,
         report.DESIGN,
     )
-    corePowerMult = int(core.p.powerMultiplier)
+    corePowerMult = int(core.powerMultiplier)
     report.setData(
         "Core Total Volume",
         "{:.2f} cc".format(totalVolume * corePowerMult),

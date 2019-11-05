@@ -30,7 +30,6 @@ from armi.bookkeeping import report
 from armi.localization import exceptions
 from armi.reactor import composites
 from armi.reactor import parameters
-from armi.reactor.parameters import resolveCollections
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K

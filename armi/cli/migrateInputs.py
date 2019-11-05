@@ -39,9 +39,10 @@ class MigrateInputs(EntryPoint):
         )
 
     def invoke(self):
+        from armi.scripts.migration.databaseMigrations import migrateDatabase
         from armi.scripts.migration import migrate_inputs
 
         if self.args.settings_path:
             migrate_inputs.migrate_settings(self.args.settings_path)
         if self.args.database_path:
-            migrate_inputs.migrate_database(self.args.database_path)
+            migrateDatabase.migrateDatabase(self.args.database_path)

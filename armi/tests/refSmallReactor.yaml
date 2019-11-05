@@ -483,13 +483,16 @@ assemblies:
 
 systems:
     sfp:
-        lattice file: sfpGeom.xml
-        lattice pitch:
-            x: 50.0
-            y: 50.0
+        grid name: sfp
         origin:
             x: 5000.0
             y: 5000.0
             z: 6000.0
-
-
+grids: 
+    sfp: 
+        lattice file: sfpGeom.xml
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 50.0
+            y: 50.0

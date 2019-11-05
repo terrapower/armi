@@ -21,6 +21,7 @@ from armi.utils import directoryChangers
 from armi.tests import TEST_ROOT
 from armi.reactor.flags import Flags
 import armi.reactor.tests.test_reactors
+from armi.reactor import geometry
 
 
 class CartesianReactorTests(unittest.TestCase):
@@ -49,7 +50,7 @@ class CartesianReactorTests(unittest.TestCase):
             Flags.FUEL
         )
         custom = fuel.getComponent(Flags.FUEL)
-        self.assertEqual(self.r.core.geom.geomType, "cartesian")
+        self.assertEqual(self.r.core.geomType, geometry.CARTESIAN)
         self.assertAlmostEqual(
             custom.getNumberDensity("U238"), 0.0134125
         )  # from blueprints input file

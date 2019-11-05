@@ -158,49 +158,6 @@ def defineCoreParameters():
             default=None,
         )
 
-    with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
-
-        def symmetry(self, value):
-            if (
-                value is not parameters.NoDefault
-                and value not in geometry.VALID_SYMMETRY
-            ):
-                raise ValueError("`{}` is not a valid symmetry.".format(value))
-            self._p_symmetry = value
-            self.powerMultiplier = geometry.SYMMETRY_FACTORS.get(
-                value, parameters.NoDefault
-            )
-
-        pb.defParam(
-            "symmetry",
-            units=None,
-            setter=symmetry,
-            description="Symmetry option of the reactor",
-            default=parameters.NoDefault,
-        )
-
-        def powerMultiplier(self, value):
-            if (
-                value is not parameters.NoDefault
-                and value != geometry.SYMMETRY_FACTORS[self.symmetry]
-            ):
-                raise ValueError(
-                    "powerMultiplier ({}) is not in valid for symmetry option ({}). Update"
-                    "r.core.symmetry if symmetry is changing and the power multiplier will update also.".format(
-                        value, self.symmetry
-                    )
-                )
-            self._p_powerMultiplier = value
-
-        pb.defParam(
-            "powerMultiplier",
-            units=None,
-            setter=powerMultiplier,
-            description="Symmetry factor for this model. 1 for full core, 3 for 1/3 core, etc.",
-            default=parameters.NoDefault,
-            saveToDB=False,
-        )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
 
         pb.defParam("currentPercentExpanded", units="", description="")
@@ -1023,11 +980,4 @@ def defineCoreParameters():
             description="Decay power from decaying radionuclides",
         )
 
-        pb.defParam(
-            "geomType",
-            units="N/A",
-            description="String specifying the geometry type",
-            saveToDB=False,
-            default=geometry.HEX,
-        )
     return pDefs

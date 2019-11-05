@@ -1777,46 +1777,6 @@ class Block(composites.Composite):
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
 
-    def hasPinPitch(self):
-        """Return True if the block has enough information to calculate pin pitch."""
-        return self.getComponent(Flags.CLAD) and self.getComponent(Flags.WIRE)
-
-    def getPinPitch(self, cold=False):
-        """
-        Get the pin pitch in cm.
-
-        Parameters
-        ----------
-        cold : boolean
-            Determines whether the dimensions should be cold or hot
-
-        Returns
-        -------
-        pinPitch : float
-            pin pitch in cm
-
-        """
-        try:
-            clad = self.getComponent(Flags.CLAD)
-            wire = self.getComponent(Flags.WIRE)
-        except ValueError:
-            runLog.info(
-                "Block {} has multiple clad and wire components,"
-                " so pin pitch is not well-defined.".format(self)
-            )
-            return
-
-        if wire and clad:
-            return clad.getDimension("od", cold=cold) + wire.getDimension(
-                "od", cold=cold
-            )
-        else:
-            raise ValueError(
-                "Cannot get pin pitch in {} because it does not have a wire and a clad".format(
-                    self
-                )
-            )
-
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
         raise NotImplementedError  # no geometry can be assumed
@@ -1895,6 +1855,18 @@ class Block(composites.Composite):
             return p, c
         else:
             return p
+
+    def hasPinPitch(self):
+        """Return True if the block has enough information to calculate pin pitch."""
+        return self.spatialGrid is not None
+
+    def getPinPitch(self, cold=False):
+        """
+        Return sub-block pitch in blocks.
+
+        This assumes the spatial grid is defined by unit steps
+        """
+        return self.spatialGrid.pitch
 
     def getDimensions(self, dimension):
         """Return dimensional values of the specified dimension."""
@@ -2855,6 +2827,49 @@ class HexBlock(Block):
         pinCenterCornerToCorner = 2 * (nRings - 1) * pinPitch
         pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
         return pinCenterFlatToFlat
+
+    def hasPinPitch(self):
+        """Return True if the block has enough information to calculate pin pitch."""
+        return self.getComponent(Flags.CLAD) and self.getComponent(Flags.WIRE)
+
+    def getPinPitch(self, cold=False):
+        """
+        Get the pin pitch in cm.
+
+        Assumes that the pin pitch is defined entirely by contacting cladding tubes
+        and wire wraps. Grid spacers not yet supported.
+
+        Parameters
+        ----------
+        cold : boolean
+            Determines whether the dimensions should be cold or hot
+
+        Returns
+        -------
+        pinPitch : float
+            pin pitch in cm
+
+        """
+        try:
+            clad = self.getComponent(Flags.CLAD)
+            wire = self.getComponent(Flags.WIRE)
+        except ValueError:
+            runLog.info(
+                "Block {} has multiple clad and wire components,"
+                " so pin pitch is not well-defined.".format(self)
+            )
+            return
+
+        if wire and clad:
+            return clad.getDimension("od", cold=cold) + wire.getDimension(
+                "od", cold=cold
+            )
+        else:
+            raise ValueError(
+                "Cannot get pin pitch in {} because it does not have a wire and a clad".format(
+                    self
+                )
+            )
 
 
 class CartesianBlock(Block):

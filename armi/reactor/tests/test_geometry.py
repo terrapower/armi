@@ -39,7 +39,7 @@ GEOM_INPUT = """<?xml version="1.0" ?>
 GEOM_INPUT_YAML = """reactor:
   core:
     geom: hex
-    symmetry: third core periodic
+    symmetry: third periodic
     lattice: |
         -     SH   SH   SH
         -  SH   SH   SH   SH

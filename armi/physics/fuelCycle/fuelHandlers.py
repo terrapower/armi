@@ -89,7 +89,7 @@ class FuelHandlerInterface(interfaces.Interface):
         if self.enabled():
             self.manageFuel(cycle)
 
-        self.r.core.p.numAssembliesInSFP = self.r.core.p.powerMultiplier * len(
+        self.r.core.p.numAssembliesInSFP = self.r.core.powerMultiplier * len(
             self.r.core.sfp
         )
 
@@ -352,7 +352,7 @@ class FuelHandler:
 
         # inform the reactor of how many moves occurred so it can put the number in the database.
         if self.moved:
-            numMoved = len(self.moved) * self.r.core.p.powerMultiplier
+            numMoved = len(self.moved) * self.r.core.powerMultiplier
 
             # tell the reactor which assemblies moved where
             # also tell enrichments of each block in case there's some autoboosting going on.
