@@ -292,12 +292,28 @@ class ArmiPlugin:
         """
         Define configuration settings for this plugin.
 
-        This hook allows plugins to provide their own configuration settings.
+        This hook allows plugins to provide their own configuration settings, which can
+        participate in the :py:class:`armi.settings.caseSettings.CaseSettings`. Plugins
+        may provide entirely new settings to what are already provided by ARMI, as well
+        as new options or default values for existing settings. For instance, the
+        framework provides a ``neutronicsKernel`` setting for selecting which global
+        physics solver to use. Since we wish to enforce that the user specify a valid
+        kernel, the settings validator will check to make sure that the user's requested
+        kernel is among the available options. If a plugin were to provide a new
+        neutronics kernel (let's say MCNP), it should also define a new option to tell
+        the settings system that ``"MCNP"`` is a valid option.
 
         Returns
         -------
         list
-            Setting objects associated with this plugin
+            A list of Settings, Options, or Defaults to be registered.
+
+        See also
+        --------
+        armi.physics.neutronics.NeutronicsPlugin.defineSettings
+        armi.settings.setting2.Setting
+        armi.settings.setting2.Option
+        armi.settings.setting2.Default
 
         """
         return []
