@@ -48,6 +48,17 @@ class Test_NeutronicsPlugin(TestPlugin):
         cs.writeToYamlFile(fname)
         os.remove(fname)
 
+    def test_customSettingRoundTrip(self):
+        """Check specialized settings can go back and forth."""
+        cs = caseSettings.Settings()
+        yaml = YAML()
+        inp = yaml.load(io.StringIO(XS_EXAMPLE))
+        cs[CONF_CROSS_SECTION] = inp
+        cs[CONF_CROSS_SECTION] = cs[CONF_CROSS_SECTION]
+        fname = "test_setting_obj_io_round.yaml"
+        cs.writeToYamlFile(fname)
+        os.remove(fname)
+
 
 if __name__ == "__main__":
     unittest.main()

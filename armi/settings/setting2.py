@@ -205,7 +205,7 @@ class Setting:
         try:
             val = self.schema(val)
         except vol.error.MultipleInvalid:
-            runLog.error("val: {}".format(val))
+            runLog.error(f"Error in setting {self.name}, val: {val}.")
             raise
 
         self._value = self._load(val)

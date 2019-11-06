@@ -210,15 +210,38 @@ class XSSettingDef(Setting):
         We massage the data on its way out for user convenience, leaving None values out
         and leaving the special ``xsID`` value out.
         """
+        output = self._serialize(self._value)
+        output = XS_SCHEMA(output)  # validate on the way out too
+        return output
+
+    def setValue(self, val):
+        """
+        Set value of setting to val.
+        
+        Since this is a custom serializable setting, we allow users
+        to pass in either a ``XSModelingOptions`` object itself
+        or a dictionary representation of one. 
+        """
+        try:
+            if isinstance(list(val.values())[0], XSModelingOptions):
+                val = self._serialize(val)
+        except TypeError:
+            # value is not a dict, may be a CommentedMapValuesView or related; serialization
+            # not required
+            pass
+
+        Setting.setValue(self, val)
+
+    @staticmethod
+    def _serialize(value):
         output = {}
-        for xsID, val in self._value.items():
+        for xsID, val in value.items():
             xsIDVals = {
                 config: confVal
                 for config, confVal in val.__dict__.items()
                 if config != "xsID" and confVal is not None
             }
             output[xsID] = xsIDVals
-        output = XS_SCHEMA(output)  # validate on the way out too
         return output
 
 

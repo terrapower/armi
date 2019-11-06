@@ -68,7 +68,6 @@ class TestDatabase3(unittest.TestCase):
         roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
-
     def test_replaceNones(self):
         """
         This definitely needs some work.
@@ -80,7 +79,7 @@ class TestDatabase3(unittest.TestCase):
         data2fNones = numpy.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]])
         dataJag = numpy.array([[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
         dataJagNones = numpy.array(
-            [[[1, 2], [3, 4]], [[1],[1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
+            [[[1, 2], [3, 4]], [[1], [1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
         )
         dataDict = numpy.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
