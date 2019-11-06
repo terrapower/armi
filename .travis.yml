@@ -1,3 +1,6 @@
+branches:
+  only:
+  - master
 before_install:
   - sudo apt-get -y install libopenmpi-dev
 sudo: false
@@ -11,7 +14,7 @@ matrix:
     - python: "3.7"
       env: TOXENV=lint
     - python: "3.7"
-      env: TOXENV=report
+      env: TOXENV=cov,report
 
 cache:
   directories:
