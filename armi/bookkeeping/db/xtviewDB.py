@@ -30,6 +30,7 @@ import traceback
 
 import numpy
 
+import armi
 from armi import runLog
 from armi import settings
 from armi import utils
@@ -1087,8 +1088,14 @@ def setParameterWithRenaming(obj, parameter, value):
     This allows older databases to work with newer ARMI versions if the parameter renames are
     properly recorded.
     """
+    # Watch out, this might be slow if it isn't cached by the App
+    renames = armi.getApp().getParamRenames()
+    name = parameter
+
+    while name in renames:
+        name = renames[name]
+
     try:
-        name = parameters.RENAMES.get(parameter, parameter)
         obj.p[name] = value
     except parameters.UnknownParameterError:
         runLog.warning(

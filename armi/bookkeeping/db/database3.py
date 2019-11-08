@@ -129,11 +129,11 @@ class DatabaseInterface(interfaces.Interface):
     def initDB(self):
         """
         Open the underlying database to be written to, and write input files to DB.
-        
+
         Notes
         -----
-        Main Interface calls this so that the database is available as early as 
-        possible in the run. The database interface interacts near the end of the 
+        Main Interface calls this so that the database is available as early as
+        possible in the run. The database interface interacts near the end of the
         interface stack (so that all the parameters have been updated) while the Main
         Interface interacts first.
         """
@@ -231,7 +231,7 @@ class DatabaseInterface(interfaces.Interface):
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
-        
+
         Notes
         -----
         If filename is present only returns one database since specifically instructed
@@ -254,18 +254,18 @@ class DatabaseInterface(interfaces.Interface):
     ):
         """
         Loads a fresh reactor and applies it to the Operator.
-        
+
         Notes
         -----
         timeStepName is not currently supportred by database load.
         Will load preferentially from the `fileName` if passed. Otherwise will load from
         existing database in memory or `cs["reloadDBName"]` in that order.
-        
+
         Raises
         ------
         RuntimeError
             If fileName is specified and that  file does not have the time step.
-            If fileName is not specified and neither the database in memory, nor the 
+            If fileName is not specified and neither the database in memory, nor the
             `cs["reloadDBName"]` have the time step specified.
         """
 
@@ -1033,8 +1033,15 @@ class Database3(database.Database):
     def _readParams(h5group, compTypeName, comps):
         g = h5group[compTypeName]
 
+        renames = armi.getApp().getParamRenames()
+
         # this can also be made faster by specializing the method by type
         for paramName, dataSet in g.items():
+            # Honor historical databases where the parameters may have changed names
+            # since.
+            while paramName in renames:
+                paramName = renames[paramName]
+
             data = dataSet[:]
             attrs = _resolveAttrs(dataSet.attrs, h5group)
 
@@ -1163,6 +1170,7 @@ class Database3(database.Database):
                 # differences.
                 # 1) we are not assigning to p[paramName]
                 # 2) not using linkedDims at all
+                # 3) not performing parameter renaming. This may become necessary
                 for paramName in params or h5GroupForType.keys():
                     if paramName == "location":
                         # cast to a numpy array so that we can use list indices

@@ -108,6 +108,7 @@ def migrate_database(database_path):
 
 
 def _copyValidDatasets(newDB, typeNames, name, dataset):
+    renames = armi.getApp().getParamRenames()
     if isinstance(dataset, h5py.Group):
         runLog.important("Skipping Group {}".format(dataset))
         return
@@ -127,13 +128,14 @@ def _copyValidDatasets(newDB, typeNames, name, dataset):
                 "Unexpected entry in database `{}` being copied.".format(name)
             )
 
-        elif paramName in parameters.RENAMES:
-            runLog.important(
-                "Renaming `{}` -> `{}`.".format(
-                    paramName, parameters.RENAMES[paramName]
+        elif paramName in renames:
+            while paramName in renames:
+                runLog.important(
+                    "Renaming `{}` -> `{}`.".format(
+                        paramName, renames[paramName]
+                    )
                 )
-            )
-            paramName = parameters.RENAMES[paramName]
+                paramName = renames[paramName]
 
         elif paramName in {"typeNumBlock"}:
             newName = "type"

@@ -28,9 +28,11 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
+from typing import Dict
 
 from armi import plugins
 from armi import meta
+from armi.reactor import parameters
 
 
 class App:
@@ -38,7 +40,21 @@ class App:
     The main point of customization for the ARMI Framework.
 
     The App class is intended to be subclassed in order to customize the functionality
-    and look-and-feel of the ARMI Framework for a specific use case.
+    and look-and-feel of the ARMI Framework for a specific use case. An App contains a
+    plugin manager, which should be populated in ``__init__()`` with a collection of
+    plugins that are deemed suitable for a given application, as well as other methods
+    which provide further customization.
+
+    The base App class is also a good place to expose some more convenient ways to get
+    data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
+    pain, as the results returned by the individual plugins may need to be merged and/or
+    checked for errors. Adding that logic here reduces boilerplate throughout the rest
+    of the code. Another place where such code could go would be an ARMI subclass of the
+    ``pluggy.PluginManager`` class. For the time being, we are doing okay without having
+    to specialize the PluginManager, and we already have an App class to work with, so
+    this is a pretty good place. If at some point it makes sense to introduce stateful
+    plugins, or a more specialized PluginManager, then these methods should be migrated
+    there.
     """
 
     name = "ARMI"
@@ -73,9 +89,37 @@ class App:
     @property
     def pluginManager(self):
         """
-        Return the App's PluginManager
+        Return the App's PluginManager.
         """
         return self._pm
+
+    def getParamRenames(self) -> Dict[str, str]:
+        """
+        Return the parameter renames from all registered plugins.
+
+        This renders a merged dictionary containing all parameter renames from all of
+        the registered plugins. It also performs simple error checking.
+        """
+        currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
+
+        renames: Dict[str, str] = dict()
+        for (
+            pluginRenames
+        ) in self._pm.hook.defineParameterRenames():  #  pylint: disable=no-member
+            collisions = currentNames & pluginRenames.keys()
+            if collisions:
+                raise plugins.PluginError(
+                    "The following parameter renames from a plugin collide with "
+                    "currently-defined parameters:\n{}".format(collisions)
+                )
+            pluginCollisions = renames.keys() & pluginRenames.keys()
+            if pluginCollisions:
+                raise plugins.PluginError(
+                    "The following parameter renames are already defined by another "
+                    "plugin:\n{}".format(pluginCollisions)
+                )
+            renames.update(pluginRenames)
+        return renames
 
     @property
     def splashText(self):
@@ -85,6 +129,7 @@ class App:
         Specific applications will want to customize this, but by default the ARMI one
         is produced.
         """
+        # Don't move the triple quotes from the beginning of the line
         return r"""
                        ---------------------------------------------------
                       |             _      ____     __  __    ___         |
@@ -97,4 +142,4 @@ class App:
                                       Version {0:10s}
 """.format(
             meta.__version__
-        )  # Don't move the triple quotes from the beginning of the line
+        )

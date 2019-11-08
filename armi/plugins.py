@@ -16,7 +16,7 @@
 Plugins allow various built-in or external functionality to be brought into the ARMI ecosystem.
 
 This module defines the hooks that may be defined within plugins. Plugins are ultimately
-incoporated into a ``PluginManager``, which live inside of a :py:class:`armi.apps.App`
+incorporated into a ``PluginManager``, which live inside of a :py:class:`armi.apps.App`
 object.
 
 The ``PluginManager`` is a class provided by the ``pluggy`` package, which provides a
@@ -40,7 +40,9 @@ After forming the ``PluginManager``, the plugin hooks can be accessed through th
 Don't forget to use the keyword argument form for all arguments to hooks; ``pluggy``
 requires them to enforce hook specifications.
 
-
+The :py:class:`armi.apps.App` class serves as the primary storage location of the
+PluginManager, and also provides some methods to get data out of the plugins more
+ergonomically than through the hooks themselves.
 
 Some things you may want to bring in via a plugin includes:
 
@@ -57,9 +59,10 @@ Some things you may want to bring in via a plugin includes:
 
 Warning
 -------
-The plugin system was developed to support improved collaboration.
-It is new and should be considered under development. The API is
-subject to change as the version of the ARMI framework approaches 1.0.
+
+The plugin system was developed to support improved collaboration.  It is new and should
+be considered under development. The API is subject to change as the version of the ARMI
+framework approaches 1.0.
 
 Notes
 -----
@@ -79,6 +82,13 @@ considerably). Examples:
     much of the class's behavior through metaclassing. Therefore, we need to be able
     to import all plugins *before* importing blueprints.
 
+Plugins are stateless. They do not have ``__init__()`` methods, and when they are
+registered with the PluginMagager, the PluginManager gets the Plugin's class object
+rather than an instance of that class. Also notice that all of the hooks are
+``@staticmethod``s. As a result, they can be called directly off of the class object,
+and only have access to the state passed into them to perform their function. This is a
+deliberate design choice to keep the plugin system simple and to preclude a large class
+of potential bugs. At some point it may make sense to revisit this.
 """
 from typing import Dict, Union
 
@@ -251,14 +261,16 @@ class ArmiPlugin:
         list
             (name, section, resolutionMethod) tuples, where:
 
-             - name : The name of the attribute to add to the Blueprints class; this should
-               be a valid Python identifier.
+             - name : The name of the attribute to add to the Blueprints class; this
+               should be a valid Python identifier.
+
              - section : An instance of ``yaml.Attribute`` defining the data that is
                described by the Blueprints section.
+
              - resolutionMethod : A callable that takes a Blueprints object and case
-               settings as arguments. This will be called like an unbound instance method on
-               the passed Blueprints object to initialize the state of the new Blueprints
-               section.
+               settings as arguments. This will be called like an unbound instance
+               method on the passed Blueprints object to initialize the state of the new
+               Blueprints section.
 
         Notes
         -----
@@ -417,6 +429,50 @@ class ArmiPlugin:
     @HOOKSPEC
     def getOperatorClassFromRunType(runType: str):
         """Return an Operator subclass if the runType is recognized by this plugin."""
+
+    @staticmethod
+    @HOOKSPEC
+    def defineParameterRenames():
+        """
+        Return a mapping from old parameter names to new parameter names.
+
+        Occasionally, it may become necessary to alter the name of an existing
+        parameter. This can lead to frustration when attempting to load from old
+        database files that use the previous name. This hook allows a plugin to define
+        mappings from the old name to the new name, allowing the old database to be read
+        in and translated to the new parameter name.
+
+        The following rules are followed when applying these renames:
+
+        * When state is loaded from a database, if the parameter name in the database
+          file is found in the rename dictionary, it will be mapped to that renamed
+          parameter.
+        * If the renamed parameter is found in the renames, then it will be mapped again
+          to new parameter name. This process is repeated until there are no more
+          renames left. This allows for parameters to be renamed multiple times, and for
+          a database from several generations prior to still be readable, so long as the
+          history of renames is intact.
+        * If at the end of the above process, the parameter name is not a defined
+          parameter for the appropriate ``ArmiObject`` type, an exception is raised.
+        * If any of the ``renames`` keys match any currently-defined parameters, an
+          exception is raised.
+        * If any of the ``renames`` collide with another plugin's ``renames``, an
+          exception is raised.
+
+        Returns
+        -------
+        renames : dict
+            Keys should be an old parameter name, where the corresponding values are
+            the new parameter name.
+
+        Example
+        -------
+        The following would allow databases with values for either ``superOldParam`` or
+        ``oldParam`` to be read into ``currentParam``::
+
+            return {"superOldParam": "oldParam",
+                    "oldParam": "currentParam"}
+        """
 
 
 def getNewPluginManager() -> pluggy.PluginManager:
