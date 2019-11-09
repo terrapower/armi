@@ -146,7 +146,7 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
     return isosToMerge
 
 
-def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix, mergeGammaLibs=False):
+def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=False):
     """
     Merge neutron (ISOTXS) and gamma (GAMISO/PMATRX) library data into the provided library.
 
@@ -155,10 +155,12 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix, mergeGammaLibs=Fals
     lib : obj
         ISOTXS library object
 
-    xsLibrarySuffix : str
-        XS library suffix used to determine which ISOTXS files are merged together
+    xsLibrarySuffix : str, optional
+        XS library suffix used to determine which ISOTXS files are merged together,
+        typically something like `-doppler`. If empty string, will merge everything
+        without suffix (indicated by a `-`).
 
-    mergeGammaLibs : bool
+    mergeGammaLibs : bool, optional
         If True, the GAMISO and PMATRX files that correspond to the ISOTXS library will be merged. Note: if these
         files do not exist this will fail.
     """

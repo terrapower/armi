@@ -1084,7 +1084,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def getNucTemperature(self, xsID, nucName):
         """
-        Return the temperature of the nuclide in the group with specified xsID.
+        Return the temperature (in C) of the nuclide in the group with specified xsID.
 
         Notes
         -----

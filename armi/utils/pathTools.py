@@ -20,6 +20,8 @@ manipulations.
 import os
 import shutil
 import inspect
+import importlib
+import pathlib
 
 from armi import runLog
 from armi.context import ROOT
@@ -159,3 +161,103 @@ def isAccessible(path):
             return False
     else:
         return False
+
+
+def getModAndClassFromPath(path):
+    """
+    Return the path to the module specified and the name of the class in the module.
+
+    Raises
+    ------
+    ValueError:
+        If the path does not exist or
+
+
+    """
+    pass
+
+
+def separateModuleAndAttribute(pathAttr):
+    """
+    Return True of the specified python module, and attribute of the module exist.
+    
+    
+    Parameters
+    ----------
+    pathAttr : str
+        Path to a python module followed by the desired attribute.
+        e.g.: `/path/to/my/thing.py:MyClass`
+    
+    Notes
+    -----
+    The attribute of the module could be a class, function, variable, etc.
+    
+    Raises
+    ------
+    ValueError:
+        If there is no `:` separating the path and attr.
+    """
+    # rindex gives last index.
+    # The last is needed because the first colon index could be mapped drives in windows.
+    lastColonIndex = pathAttr.rindex(":")  # this raises a valueError
+    # there should be at least 1 colon. 2 is possible due to mapped drives in windows.
+    return (pathAttr[:lastColonIndex]), pathAttr[lastColonIndex + 1 :]
+
+
+def importCustomPyModule(modulePath):
+    """
+    Dynamically import a custom module.
+    
+    Parameters
+    ----------
+    modulePath : str
+        Path to a python module.
+        
+    Returns
+    -------
+    userSpecifiedModule : module
+        The imported python module.
+    """
+    _dir, moduleName = os.path.split(modulePath)
+    moduleName = os.path.splitext(moduleName)[0]  # take off the extension
+    spec = importlib.util.spec_from_file_location(moduleName, modulePath)
+    userSpecifiedModule = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(userSpecifiedModule)
+    return userSpecifiedModule
+
+
+def moduleAndAttributeExist(pathAttr):
+    """
+    Return True if the specified python module, and attribute of the module exist.
+    
+    
+    Parameters
+    ----------
+    pathAttr : str
+        Path to a python module followed by the desired attribute.
+        e.g.: `/path/to/my/thing.py:MyClass`
+        
+    Returns 
+    -------
+    bool 
+        True if the specified python module, and attribute of the module exist.
+    
+    Notes
+    -----
+    The attribute of the module could be a class, function, variable, etc.
+    """
+    try:
+        modulePath, moduleAttributeName = separateModuleAndAttribute(pathAttr)
+    except ValueError:
+        return False
+
+    modulePath = pathlib.Path(modulePath)
+    if not modulePath.is_file():
+        return False
+
+    try:
+        userSpecifiedModule = importCustomPyModule(modulePath)
+    # Blanket except is okay since we are checking to see if a custom import will work.
+    except:
+        return False
+    return moduleAttributeName in userSpecifiedModule.__dict__

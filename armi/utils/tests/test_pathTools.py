@@ -17,7 +17,7 @@ Unit tests for pathTools.
 """
 import unittest
 from os import path
-
+import types
 
 from armi.utils import pathTools
 from armi.utils import directoryChangers
@@ -46,6 +46,50 @@ class PathToolsTests(unittest.TestCase):
     def test_armiAbsDir_name(self):
         result = pathTools.armiAbsDirFromName(__name__)
         self.assertEqual(result, path.join(ROOT, "utils", "tests"))
+
+    def test_separateModuleAndAttribute(self):
+        self.assertRaises(
+            ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon"
+        )
+        self.assertEqual(
+            (r"aPath/file.py", "MyClass"),
+            pathTools.separateModuleAndAttribute(r"aPath/file.py:MyClass"),
+        )
+        # testing windows stuff mapped drives since they have more than 1 colon
+        self.assertEqual(
+            (r"c:/aPath/file.py", "MyClass"),
+            pathTools.separateModuleAndAttribute(r"c:/aPath/file.py:MyClass"),
+        )
+        # not what we want but important to demonstrate what you get when no module
+        # attribute is defined.
+        self.assertEqual(
+            ("c", r"/aPath/file.py"),
+            pathTools.separateModuleAndAttribute(r"c:/aPath/file.py"),
+        )
+
+    def test_importCustomModule(self):
+        """Test that importCustomPyModule is usable just like any other module."""
+        module = pathTools.importCustomPyModule(path.join(THIS_DIR, __file__))
+        self.assertIsInstance(module, types.ModuleType)
+        self.assertIn("THIS_DIR", module.__dict__)
+        # test that this class is present in the import
+        self.assertIn(self.__class__.__name__, module.__dict__)
+
+    def test_moduleAndAttributeExist(self):
+        """Test that determination of existance of module attribute works."""
+
+        # test that no `:` doesn't raise an exception
+        self.assertFalse(pathTools.moduleAndAttributeExist(r"path/that/not/exist.py"))
+        # test that multiple `:` doesn't raise an exception
+        self.assertFalse(
+            pathTools.moduleAndAttributeExist(r"c:/path/that/not/exist.py:MyClass")
+        )
+        thisFile = path.join(THIS_DIR, __file__)
+        # no module attribute specified
+        self.assertFalse(pathTools.moduleAndAttributeExist(thisFile))
+        self.assertFalse(pathTools.moduleAndAttributeExist(thisFile + ":doesntExist"))
+        self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":THIS_DIR"))
+        self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":PathToolsTests"))
 
 
 if __name__ == "__main__":

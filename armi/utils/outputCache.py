@@ -176,9 +176,11 @@ def cacheCall(
 
     Notes
     -----
-    It is non-trivial to determine the exact set of outputs an executable will produce without running the executable.
-    Therefore, ``outputs`` is expected to be a greedy list and cache will attempt to copy all the files, but not
-    fail if the file is not present. When copying outputs back, all files copied previously will be targeted.
+    It is non-trivial to determine the exact set of outputs an executable will produce
+    without running the executable. Therefore, ``outputFileNames`` is expected to be a
+    greedy list and cache will attempt to copy all the files, but not fail if the
+    file is not present. When copying outputs back, all files copied previously will
+    be targeted.
     """
     if execute is None:
         execute = lambda: subprocess.call([executablePath] + inputPaths)

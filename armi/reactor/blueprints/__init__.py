@@ -386,6 +386,7 @@ class Blueprints(yamlize.Object):
         elementalsToSkip = set()
         endf70Elementals = [nuclideBases.byName[name] for name in ["C", "V", "ZN"]]
         endf71Elementals = [nuclideBases.byName[name] for name in ["C"]]
+        endf80Elementals = []
 
         if "MCNP" in cs["neutronicsKernel"]:
             if int(cs["mcnpLibrary"]) == 50:
@@ -406,6 +407,21 @@ class Blueprints(yamlize.Object):
 
         elif cs["xsKernel"] in ["SERPENT", "MC2v3", "MC2v3-PARTISN"]:
             elementalsToSkip.update(endf70Elementals)
+        elif cs["xsKernel"] == "DRAGON":
+            # Users need to use default nuclear lib name. This is documented.
+            dragLib = cs["dragonDataPath"]
+            # only supports ENDF/B VII/VIII at the moment.
+            if "7r0" in dragLib:
+                elementalsToSkip.update(endf70Elementals)
+            elif "7r1" in dragLib:
+                elementalsToSkip.update(endf71Elementals)
+            elif "8r0" in dragLib:
+                elementalsToSkip.update(endf80Elementals)
+            else:
+                raise ValueError(
+                    f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
+                )
+
         elif cs["xsKernel"] == "MC2v2":
             elementalsToSkip.update(nuclideBases.instances)  # skip expansion
 

@@ -982,6 +982,14 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
 
 class DummyNuclideBase(INuclide):
+    """
+    Dummy nuclides are used nuclides which transmute into isotopes that are not defined in blueprints.
+
+    Notes
+    -----
+    If DMP number density is not very small, cross section may be artifically depressed.
+    """
+
     def __init__(self, name, mc2id, weight):
         INuclide.__init__(
             self, 0, 0, 0, weight, 0.0, name, "DMP" + name[4], mc2id  # z  # a  # state
@@ -1025,6 +1033,15 @@ class DummyNuclideBase(INuclide):
 
 
 class LumpNuclideBase(INuclide):
+    """
+    Lump nuclides are used for lumped fission products.
+
+    See Also
+    --------
+    armi.physics.neutronics.fissionProduct model:
+        Describes what nuclides LumpNuclideBase is expend to.
+    """
+
     def __init__(self, name, z, mc2id, weight):
         INuclide.__init__(self, z, 0, 0, weight, 0.0, name, name[1:], mc2id)
 

@@ -30,6 +30,32 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 LATTICE_PHYSICS = "latticePhysics"
 
 
+def setBlockNeutronVelocities(r, neutronVelocities):
+    """
+    Set the ``mgNeutronVelocity`` parameter for each block using the ``neutronVelocities`` dictionary data.
+
+    Parameters
+    ----------
+    neutronVelocities : dict
+        Dictionary that is keyed with the ``representativeBlock`` XS IDs with values of multigroup neutron
+        velocity data computed by MC2.
+
+    Raises
+    ------
+    ValueError
+        Multi-group neutron velocities was not computed during the cross section calculation.
+    """
+    for b in r.core.getBlocks():
+        xsID = b.getMicroSuffix()
+        if xsID not in neutronVelocities:
+            raise ValueError(
+                "Cannot assign multi-group neutron velocity to {} because it does not exist in "
+                "the neutron velocities dictionary with keys: {}. The XS library does not contain "
+                "data for the {} xsid.".format(b, neutronVelocities.keys(), xsID)
+            )
+        b.p.mgNeutronVelocity = neutronVelocities[b.getMicroSuffix()]
+
+
 class LatticePhysicsInterface(interfaces.Interface):
     """Class for interacting with lattice physics codes."""
 
@@ -37,7 +63,9 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
-        self._updateBlockNeutronVelocities = True  # Set to True by default, but should be disabled when perturbed cross sections are generated.
+
+        # Set to True by default, but should be disabled when perturbed cross sections are generated.
+        self._updateBlockNeutronVelocities = True
         # Geometry options available through the lattice physics interfaces
         self._ZERO_DIMENSIONAL_GEOM = "0D"
         self._ONE_DIMENSIONAL_GEOM = "1D"
@@ -243,7 +271,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         -------
         returnedFromWriters: list
             A list of what this specific writer instance returns for each representative block.
-            It is the responsibility of the subclassed interface to imc2
+            It is the responsibility of the subclassed interface to implement.
+            In many cases, it is the executing agent.
 
         See Also
         --------

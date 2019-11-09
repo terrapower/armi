@@ -40,7 +40,7 @@ from armi import runLog
 from armi.localization.exceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
-from armi.utils import directoryChangers
+from armi.utils import directoryChangers, pathTools
 from armi import utils
 
 
@@ -221,14 +221,7 @@ def fuelHandlerFactory(operator):
     # from the input directory.
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
         try:
-            # Import from custom code according to the importlib docs.
-            moduleName = os.path.split(fuelHandlerModulePath)[-1]
-            moduleName = os.path.splitext(moduleName)[0]  # take off the extension
-            spec = importlib.util.spec_from_file_location(
-                moduleName, fuelHandlerModulePath
-            )
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+            module = pathTools.importCustomPyModule(fuelHandlerModulePath)
 
             if not hasattr(module, fuelHandlerClassName):
                 raise KeyError(

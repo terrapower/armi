@@ -260,16 +260,16 @@ class MpiAction(object):
         mpiFlatten : used for collecting results
         """
         ntasks = len(objectsForAllCoresToIter)
-        nlocal, deficit = divmod(ntasks, armi.MPI_SIZE)
+        numLocalObjects, deficit = divmod(ntasks, armi.MPI_SIZE)
         if armi.MPI_RANK < deficit:
-            nlocal += 1
-            first = armi.MPI_RANK * nlocal
+            numLocalObjects += 1
+            first = armi.MPI_RANK * numLocalObjects
         else:
-            first = armi.MPI_RANK * nlocal + deficit
+            first = armi.MPI_RANK * numLocalObjects + deficit
 
-        for objIndex in range(first, first + nlocal):
+        for objIndex in range(first, first + numLocalObjects):
             yield objectsForAllCoresToIter[objIndex]
-
+            
     def invokeHook(self):
         """This method must be overridden in sub-clases.
 
