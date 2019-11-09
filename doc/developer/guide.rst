@@ -226,12 +226,13 @@ When using the Operators that come with ARMI, Interfaces are discovered using th
 
 How interfaces get called
 -------------------------
+
 The hooks of interfaces are called during the main loop in
-:py:meth:`armi.operators.Operator.mainOperate`. There are a few special operator calls in there to
-methods like :py:meth:`armi.operators.Operator.interactAllBOL` that loop through the interface stack
-and call each enabled interface's ``interactBOL()`` method. If you override ``mainOperate`` in a
-custom operator, you will need to add these calls as deemed necessary to have the interfaces work
-properly.
+:py:meth:`armi.operators.Operator.mainOperate`. There are a few special operator calls
+in there to methods like :py:meth:`armi.operators.Operator.interactAllBOL` that loop
+through the interface stack and call each enabled interface's ``interactBOL()`` method.
+If you override ``mainOperate`` in a custom operator, you will need to add these calls
+as deemed necessary to have the interfaces work properly.
 
 To use interfaces in parallel, please refer to :py:mod:`armi.mpiActions`.
 
@@ -239,8 +240,10 @@ To use interfaces in parallel, please refer to :py:mod:`armi.mpiActions`.
 -------
 Plugins
 -------
-Plugins are higher-level objects that can bring in one or more Interfaces, settings definitions, 
-parameters, validations, etc. They are documented in :doc:/doc/developer/making_armi_based_apps`.
+
+Plugins are higher-level objects that can bring in one or more Interfaces, settings
+definitions, parameters, validations, etc. They are documented in
+:doc:`/developer/making_armi_based_apps` and :py:mod:`armi.plugins`.
 
 
 Entry Points
@@ -262,14 +265,19 @@ Finding assemblies
 ------------------
 There are a few ways to get the assemblies you're interested in.
 
-    * `r.whichAssembyIsIn(ring,position)` returns whichever assembly is in (ring,position)
-    * `r.getLocationContents(locList)` returns the assemblies or blocks that correspond to
-      the location list. This can be much faster that `whichAssemblyIsIn` if you need many assemblies
-    * `r.getAssemblies()` loops through all assemblies in the core for when you need to do something to all
-      assemblies
-    * `hist.getDetailAssemblies()` use the `HistoryInterface` to find the assemblies that the user has
-      specifically designated "detail assemblies", meaning assemblies that will receive special analysis. This
-      is useful for doing limiting analyses that would be too time consuming or otherwise wasteful
-      to apply to all assemblies.
+    * `r.whichAssembyIsIn(ring,position)` returns whichever assembly is in
+      (ring,position)
+
+    * `r.getLocationContents(locList)` returns the assemblies or blocks that correspond
+      to the location list. This can be much faster that `whichAssemblyIsIn` if you need
+      many assemblies
+
+    * `r.getAssemblies()` loops through all assemblies in the core for when you need to
+      do something to all assemblies
+
+    * `hist.getDetailAssemblies()` use the `HistoryInterface` to find the assemblies
+      that the user has specifically designated "detail assemblies", meaning assemblies
+      that will receive special analysis. This is useful for doing limiting analyses
+      that would be too time consuming or otherwise wasteful to apply to all assemblies.
 
 

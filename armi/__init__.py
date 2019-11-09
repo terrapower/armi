@@ -310,6 +310,11 @@ def getPluginManagerOrFail() -> pluggy.PluginManager:
     return _app.pluginManager
 
 
+def getApp() -> Optional[apps.App]:
+    global _app
+    return _app
+
+
 def _cleanupOnCancel(signum, _frame):
     """Helper function to clean up upon cancellation."""
     print(
