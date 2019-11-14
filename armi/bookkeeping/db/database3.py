@@ -454,13 +454,6 @@ class Database3(database.Database):
     def close(self, completedSuccessfully=False):
         """
         Close the DB and perform cleanups and auto-conversions.
-
-        Notes
-        -----
-        Visualization tools like XTVIEW are still using DB format 2, so this
-        will (for now) auto-generate a full XTVIEW-compatible database
-        upon closing. It does this here because, in remote runs, this is where
-        the I/O is fastest.
         """
         self._openCount = 0
         if self.h5db is None:
@@ -475,41 +468,8 @@ class Database3(database.Database):
         self.h5db = None
 
         if self._permission == "w":
-            try:
-                self._autoConvertDBToXTVIEW()
-            except:  # pylint: disable=bare-except; never sacrifice the main DB
-                pass
             # move out of the FAST_PATH and into the working directory
             shutil.move(self._fullPath, self._fileName)
-
-    def _autoConvertDBToXTVIEW(self):
-        """
-        Make auto-conversion of DB to visualizable XTVIEW format.
-
-        This is a non-trivial operation that should be removed
-        when XTVIEW can read the Version 3 database.
-        """
-        from armi.bookkeeping.db import convertDatabase
-
-        name, ext = os.path.splitext(self._fileName)
-        xtname = f"{name}-xtview{ext}"
-        xtpath = os.path.join(armi.FAST_PATH, xtname)
-        # master cs issues: See T2330.
-        # Here, the cs becomes invalid if we continue with an operator
-        # after performing a DB conversion.
-        masterCs = settings.getMasterCs()
-        try:
-            convertDatabase(
-                inputDBName=self._fullPath, outputDBName=xtpath, outputVersion="2"
-            )
-            shutil.move(xtpath, xtname)
-        except:
-            # fail silently on this convenience. Sometimes (in tests)
-            # the DB isn't actually written even when it's opened.
-            pass
-        finally:
-            # Always restore master cs to stay consistent, even in failures
-            settings.setMasterCs(masterCs)
 
     def splitDatabase(
         self, keepTimeSteps: Sequence[Tuple[int, int]], label: str
