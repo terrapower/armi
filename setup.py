@@ -48,13 +48,13 @@ setup(
     packages=find_packages(),
     package_data={"armi": ["resources/*", "resources/**/*"] + EXTRA_FILES},
     entry_points={"console_scripts": ["armi = armi.__main__:main"]},
+    # note that these are duplicated in requirements.txt
     install_requires=[
         "configparser",
         "coverage",
         "future",
         "h5py",
         "matplotlib",
-        "mpi4py",
         "numpy",
         "ordered-set",
         "pillow",
@@ -68,6 +68,9 @@ setup(
         "xlrd",
         "yamlize",
     ],
+    extras_require={
+        "mpi":["mpi4py"]
+    },
     tests_require=["nbconvert", "jupyter_client", "ipykernel"],
     classifiers=[
         "Development Status :: 4 - Beta",
