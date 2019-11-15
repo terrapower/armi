@@ -2150,8 +2150,8 @@ class Composite(ArmiObject):
     This is a fundamental ARMI state object that generally represents some piece of the nuclear reactor that is
     made up of other smaller pieces. This object can cache information about its children to help performance.
 
-    Details about spatial representation
-    ------------------------------------
+    **Details about spatial representation**
+
     Spatial representation of a ``Composite`` is handled through a combination of the ``spatialLocator``
     and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy triple representing either:
 

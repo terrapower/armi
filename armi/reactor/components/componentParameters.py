@@ -225,7 +225,7 @@ def getTriangleParameterDefinitions():
 
 
 def getUnshapedParameterDefinitions():
-    """Return paramters for UnshapedComponent."""
+    """Return parameters for UnshapedComponent."""
 
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:

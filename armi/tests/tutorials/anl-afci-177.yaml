@@ -20,7 +20,5 @@ settings:
   buGroups:
     - 100
   comment: ANL-AFCI-177 CR 1.0 metal core but with HALEU instead of TRU
-  doTH: true
   genXS: Neutron
-  numProcessors: 36
-  subchan: true
+  numProcessors: 1

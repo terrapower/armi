@@ -1367,8 +1367,8 @@ class Mesh(object):
         """
         Returns the outer position of the n-th element in the mesh in the direction labeled.
         
-        Paramters
-        ---------
+        Parameters
+        ----------
         n: integer 
             The index of position with in mesh structure
             

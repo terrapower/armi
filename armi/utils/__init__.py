@@ -1188,7 +1188,7 @@ def average1DWithinTolerance(vals, tolerance=0.2):
 
     Tuned for averaging assembly meshes or block heights.
 
-    Paramaters
+    Parameters
     ----------
     vals : 2D numpy.array
         could be assembly x axial mesh tops or heights

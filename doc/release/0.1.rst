@@ -4,21 +4,24 @@ ARMI v0.1 Release Notes
 
 ARMI v0.1.0
 ===========
-Release Date: (31 October 2019)
+Release Date: 2019-10-31
 
 Initial public release.
 
 ARMI v0.1.1
 ===========
-Release Date: (TBD)
+Release Date: 2019-11-15
 
 User-facing enhancements
 ------------------------
+* Slightly improved installation documentation
 * Improved ability to input subassembly geometric details by adding
   grid definitions to blueprints files
+* Demoted ``mpi4py`` to an optional requirement to ease installation
+  process.
   
 Backend changes
 ---------------
 * Removed need for geometry object for Reactor construction
 * Pushed symmetry and geomType metadata onto spatialGrids
-
+* Turned off auto-conversion of HDF5 DBs to a previous format
