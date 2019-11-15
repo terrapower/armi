@@ -56,8 +56,7 @@ found in [#touranarmi]_.
 Quick start
 -----------
 Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.6+ on
-Windows or Linux. On Linux, you will also need some MPI development libraries to install
-the ``mpi4py`` library (e.g. ``sudo apt install libopenmpi-dev``).
+Windows or Linux. 
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
 commands. You probably want to do this in a virtual environment as described in the `User
@@ -340,7 +339,8 @@ basically any kind of computer. We have developed it predominantly within a Micr
 Windows environment, but have performed tests under various flavors of Linux as well. It
 can perform meaningful analysis on a single laptop, but the full value of design
 optimization and large problems is realized with parallel runs over MPI with 32-128
-CPUs, or more. Serious engineering models can consume significant RAM, so at least 16 GB
+CPUs, or more (requires installation optional ``mpi4py`` library). 
+Serious engineering models can consume significant RAM, so at least 16 GB
 is recommended.
 
 The original developer's HPC environment has been Windows based, so some development is

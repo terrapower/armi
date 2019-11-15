@@ -15,9 +15,6 @@ You must have the following before proceeding:
 * Git
 * MS Windows or Linux operating system
 
-On Linux, you will also need some MPI development libraries to install the ``mpi4py``
-library (e.g. ``sudo apt install libopenmpi-dev``).
-
 Preparing a Virtual Environment
 -------------------------------
 While not *technically* required, we highly recommend installing ARMI into a `virtual
@@ -45,6 +42,10 @@ Or on Linux::
     
 .. note:: You'll have to activate the venv every time you open a new command line. 
 	Many people set up scripts to activate this automatically.
+	
+If you will be running ARMI in parallel over MPI, you must also install the ``mpi4py`` Python
+library. On Linux, doing so will require some MPI development libraries 
+(e.g. ``sudo apt install libopenmpi-dev``).
 
 Getting the code
 ----------------
