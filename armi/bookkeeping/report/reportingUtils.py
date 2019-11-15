@@ -518,6 +518,10 @@ def summarizePowerPeaking(core):
     maxPowAssem = maxPowBlock.parent
     avgPDens = maxPowAssem.calcAvgParam("pdens")
     peakPDens = maxPowAssem.getMaxParam("pdens")
+    if not avgPDens:
+        # protect against divide-by-zero. Peaking doesnt make sense if there is no
+        # power.
+        return
     axPeakF = peakPDens / avgPDens
 
     # Fxy is the radial peaking factor, looking at ALL assemblies with axially integrated powers.
@@ -570,11 +574,10 @@ def summarizeZones(core, cs):
 
     """
 
-    if not cs["doTH"]:
-        runLog.warning("Cannot summarize peak and average w/o TH data. Rerun with TH")
-        return
-
     totPow = core.getTotalBlockParam("power")
+    if not totPow:
+        # protect against divide-by-zero
+        return
     powList = []  # eventually will be a sorted list of power
     for a in core.getAssemblies():
         if a.hasFlags(Flags.FUEL):
