@@ -399,7 +399,7 @@ class Square(Rectangle):
         Tinput,
         Thot,
         widthOuter=None,
-        widthInner=None,
+        widthInner=0.0,
         mult=None,
         modArea=None,
         isotopics=None,

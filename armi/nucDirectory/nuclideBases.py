@@ -1236,6 +1236,8 @@ def getDefaultNuclideFlags():
         "W186",
         "NA23",
         "HE4",
+        "O",
+        "H",
     ]:
         nuclideFlags[struct] = {"burn": False, "xs": True}
 

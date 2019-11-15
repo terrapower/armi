@@ -388,6 +388,20 @@ class MultiIndexLocation(IndexLocation):
         IndexLocation.__init__(self, 0, 0, 0, grid)
         self._locations = []
 
+    def __getstate__(self):
+        """
+        Used in pickling and deepcopy, this detaches the grid.
+        """
+        return self._locations
+
+    def __setstate__(self, state):
+        """
+        Unpickle a locator, the grid will attach itself if it was also pickled, otherwise this will
+        be detached.
+        """
+        self.__init__(None)
+        self._locations = state
+
     def __getitem__(self, index):
         return self._locations[index]
 

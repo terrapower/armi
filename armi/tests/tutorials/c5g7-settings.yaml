@@ -1,0 +1,14 @@
+metadata:
+  version: uncontrolled
+settings:
+  availabilityFactor: 0.9
+  power: 1000000000.0
+  cycleLength: 411.11
+  loadingFile: c5g7-blueprints.yaml
+  nCycles: 10
+  burnSteps: 2
+  buGroups:
+    - 100
+  comment: C5G7 LWR Benchmark inputs
+  genXS: Neutron
+  numProcessors: 1

@@ -1,0 +1,212 @@
+# Simple description of the C5G7 benchmark problem
+# from: https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-16.pdf
+custom isotopics:
+    UO2:
+        input format: mass fractions
+        U235: 1.0
+    mox low: 
+        input format: mass fractions
+        U235: 1.0
+        
+    mox medium: 
+        input format: mass fractions
+        U235: 1.0
+    mox high:
+        input format: mass fractions
+        U235: 1.0
+    FissionChamber:
+        input format: mass fractions
+        U235: 1.0
+    GuideTube:
+        input format: mass fractions
+        U235: 1.0
+blocks:
+    uo2: &block_uo2
+        grid name: UO2 grid
+        fuel:
+            shape: Circle
+            material: UO2
+            Tinput: 25.0
+            Thot: 25.0
+            od:  1.08
+            latticeIDs: [U]
+        moderator: &moderator
+            shape: DerivedShape
+            material: Water
+            Tinput: 450.0
+            Thot: 450.0
+        guide tube: &guide_tube
+            shape: Square
+            material: Custom
+            isotopics: GuideTube
+            Tinput: 25.0
+            Thot: 25.0
+            widthOuter: 1.26
+            latticeIDs: [GT]
+        fission chamber: &fission_chamber
+            shape: Square
+            material: Custom
+            isotopics: FissionChamber
+            Tinput: 25.0
+            Thot: 25.0
+            widthOuter: 1.26
+            latticeIDs: [FC]
+        pitch: &pitch
+        # dummy component for assembly sizing
+            shape: Square
+            material: Void
+            Tinput: 25.0
+            Thot: 25.0
+            widthInner: 21.42
+            widthOuter: 21.42
+            mult: 1.0
+
+    mox: &block_mox
+        grid name: MOX grid
+        mox low fuel:
+            shape: Circle
+            material: UO2
+            isotopics: mox low
+            Tinput: 25.0
+            Thot: 25.0
+            od:  1.08
+            latticeIDs: [ML]
+        mox medium fuel:
+            shape: Circle
+            material: UO2
+            isotopics: mox medium
+            Tinput: 25.0
+            Thot: 25.0
+            od:  1.08
+            latticeIDs: [MM]
+        mox high fuel:
+            shape: Circle
+            material: UO2
+            isotopics: mox high
+            Tinput: 25.0
+            Thot: 25.0
+            od:  1.08
+            latticeIDs: [MH]
+        moderator: *moderator
+        guide tube: *guide_tube
+        fission chamber: *fission_chamber
+        pitch: *pitch
+    moderator: &block_mod
+        moderator: 
+            shape: Square
+            material: Water
+            Tinput: 25.0
+            Thot: 25.0
+            widthOuter: 21.42
+            mult: 1.0
+assemblies:
+    heights: &heights
+        - 64.26
+        - 64.26
+        - 64.26
+        - 21.42
+    axial mesh points: &mesh
+        - 3
+        - 3
+        - 3
+        - 2
+
+    UO2:
+        specifier: UO2
+        blocks:
+            - *block_uo2
+            - *block_uo2
+            - *block_uo2
+            - *block_mod
+        height: *heights
+        axial mesh points: *mesh
+        xs types: [A,A,A,A]
+    mox:
+        specifier: MOX
+        blocks:
+            - *block_mox
+            - *block_mox
+            - *block_mox
+            - *block_mod
+        height: *heights
+        axial mesh points: *mesh
+        xs types: [A,A,A,A]
+    mod:
+        specifier: MOD
+        blocks:
+            - *block_mod
+            - *block_mod
+            - *block_mod
+            - *block_mod
+        height: *heights
+        axial mesh points: *mesh
+        xs types: [A,A,A,A]
+        
+systems:
+    core:
+      grid name: core
+
+      origin:
+          x: 0.0
+          y: 0.0
+          z: 0.0
+grids: 
+    core:
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 21.42
+            y: 21.42
+        lattice map: |
+         UO2 MOX MOD
+         MOX UO2 MOD
+         MOD MOD MOD
+         
+    UO2 grid: 
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 1.26
+            y: 1.26
+        lattice map: | 
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  U  U  U  GT U  U  GT U  U  GT U  U  U  U  U
+            U  U  U  GT U  U  U  U  U  U  U  U  U  GT U  U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  GT U  U  GT U  U  GT U  U  GT U  U  GT U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  GT U  U  GT U  U  FC U  U  GT U  U  GT U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  GT U  U  GT U  U  GT U  U  GT U  U  GT U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  U  GT U  U  U  U  U  U  U  U  U  GT U  U  U
+            U  U  U  U  U  GT U  U  GT U  U  GT U  U  U  U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+            U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+    MOX grid:
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 1.26
+            y: 1.26
+        lattice map: | 
+            ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML
+            ML MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM ML
+            ML MM MM MM MM GT MM MM GT MM MM GT MM MM MM MM ML
+            ML MM MM GT MM MH MH MH MH MH MH MH MM GT MM MM ML
+            ML MM MM MM MH MH MH MH MH MH MH MH MH MM MM MM ML
+            ML MM GT MH MH GT MH MH GT MH MH GT MH MH GT MM ML
+            ML MM MM MH MH MH MH MH MH MH MH MH MH MH MM MM ML
+            ML MM MM MH MH MH MH MH MH MH MH MH MH MH MM MM ML
+            ML MM GT MH MH GT MH MH FC MH MH GT MH MH GT MM ML
+            ML MM MM MH MH MH MH MH MH MH MH MH MH MH MM MM ML
+            ML MM MM MH MH MH MH MH MH MH MH MH MH MH MM MM ML
+            ML MM GT MH MH GT MH MH GT MH MH GT MH MH GT MM ML
+            ML MM MM MM MH MH MH MH MH MH MH MH MH MM MM MM ML
+            ML MM MM GT MM MH MH MH MH MH MH MH MM GT MM MM ML
+            ML MM MM MM MM GT MM MM GT MM MM GT MM MM MM MM ML
+            ML MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM ML
+            ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML

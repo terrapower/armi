@@ -30,7 +30,6 @@ blocks:
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            mult: 169.0
             od: 0.86602
             latticeIDs: [1]
         clad:
@@ -39,7 +38,6 @@ blocks:
             Tinput: 25.0
             Thot: 470.0
             id: 1.0
-            mult: fuel.mult
             od: 1.09
             latticeIDs: [1,2]
         coolant:

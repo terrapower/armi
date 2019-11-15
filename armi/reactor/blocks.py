@@ -1114,10 +1114,11 @@ class Block(composites.Composite):
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.molesHmBOL = self.getHMMoles()
         self.p.nHMAtBOL = hmDens
-        if self.getComponentsOfShape(
-            components.Circle
-        ):  # non-pinned reactors will not use smear density param
+        try:
+            # non-pinned reactors (or ones without cladding) will not use smear density
             self.p.smearDensity = self.getSmearDensity()
+        except ValueError:
+            pass
         self.p.enrichmentBOL = self.getEnrichment()
         self.massHMBOL = 0.0
         sf = self.getSymmetryFactor()
@@ -1743,11 +1744,7 @@ class Block(composites.Composite):
         return c.getProperties()
 
     def verifyBlockDims(self):
-        runLog.warning(
-            "Trying to verify block dimensions on {}, which does not know how to do "
-            "so. Make sure that your dimensions are correct!".format(self),
-            single=True,
-        )
+        """Optional dimension checking."""
         return
 
     def getDim(self, typeSpec, dimName):

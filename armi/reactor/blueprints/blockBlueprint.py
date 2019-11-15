@@ -114,6 +114,14 @@ class BlockBlueprint(yamlize.KeyedList):
                 c.spatialLocator = gridDesign.getMultiLocator(
                     spatialGrid, componentDesign.latticeIDs
                 )
+                mult = c.getDimension("mult")
+                if mult and mult != 1.0 and mult != len(c.spatialLocator):
+                    raise ValueError(f"Conflicting ``mult`` input ({mult}) and number of "
+                                     f"lattice positions ({len(c.spatialLocator)}) for {c}. "
+                                     "Recommend leaving off ``mult`` input when using grids.")
+                elif not mult or mult == 1.0:
+                    # learn mult from grid definition
+                    c.setDimension("mult", len(c.spatialLocator))
 
         if any(materialInput) and not appliedMatMods:
             raise ValueError(

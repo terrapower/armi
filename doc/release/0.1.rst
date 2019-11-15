@@ -14,6 +14,7 @@ Release Date: 2019-11-15
 
 User-facing enhancements
 ------------------------
+* Added C5G7 sample LWR inputs
 * Slightly improved installation documentation
 * Improved ability to input subassembly geometric details by adding
   grid definitions to blueprints files
