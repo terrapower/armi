@@ -37,7 +37,7 @@ EXTRA_FILES = collectExtraFiles()
 
 setup(
     name="armi",
-    version="0.1.2-dev",  # manually duplicated in meta.py... for now
+    version="0.1.3-dev",  # manually duplicated in meta.py... for now
     description="The Advanced Reactor Modeling Interface",
     author="TerraPower, LLC",
     author_email="armi-devs@terrapower.com",

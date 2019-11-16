@@ -3,7 +3,6 @@ pytest
 pytest-xdist
 pytest-cov
 pytest-html
-pympler
 coverage
 pylint
 docutils

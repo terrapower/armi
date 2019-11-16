@@ -20,13 +20,21 @@ User-facing enhancements
   grid definitions to blueprints files
 * Demoted ``mpi4py`` to an optional requirement to ease installation
   process.
-  
+
 Backend changes
 ---------------
 * Removed need for geometry object for Reactor construction
 * Pushed symmetry and geomType metadata onto spatialGrids
 * Turned off auto-conversion of HDF5 DBs to a previous format
 
-ARMI v0.1.2-dev
+ARMI v0.1.2
+===========
+Release Date: 2019-11-16
+
+Hotfixes
+--------
+* Fixed dependency issue with pympler
+
+ARMI v0.1.3-dev
 ===============
 Release Date: TBD

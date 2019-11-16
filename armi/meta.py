@@ -15,4 +15,4 @@
 """
 Metadata describing an ARMI distribution.
 """
-__version__ = "0.1.2-dev"  # manually duplicated in setup.py... for now
+__version__ = "0.1.3-dev"  # manually duplicated in setup.py... for now
