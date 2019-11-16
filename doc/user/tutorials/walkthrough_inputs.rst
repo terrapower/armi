@@ -1,6 +1,6 @@
-==================================
-Building input files for a reactor
-==================================
+=======================================
+Building input files for a fast reactor
+=======================================
 
 The true power of ARMI comes when you have a reactor at your fingertips. To get this,
 you must describe the reactor via input files.
@@ -425,3 +425,5 @@ Here are the full files used in this example:
 * :download:`Settings <../../../armi/tests/tutorials/anl-afci-177.yaml>`
 * :download:`Core map <../../../armi/tests/tutorials/anl-afci-177-coremap.yaml>`
 * :download:`Fuel management <../../../armi/tests/tutorials/anl-afci-177-fuelManagement.py>`
+
+The next tutorial will guide you through inputs for a classic LWR benchmark problem (C5G7).

@@ -1,5 +1,6 @@
 # Simple description of the C5G7 benchmark problem
 # from: https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-16.pdf
+# start-custom-isotopics
 custom isotopics:
     UO2:
         input format: mass fractions
@@ -7,7 +8,6 @@ custom isotopics:
     mox low: 
         input format: mass fractions
         U235: 1.0
-        
     mox medium: 
         input format: mass fractions
         U235: 1.0
@@ -20,6 +20,7 @@ custom isotopics:
     GuideTube:
         input format: mass fractions
         U235: 1.0
+# end-custom-isotopics
 blocks:
     uo2: &block_uo2
         grid name: UO2 grid
@@ -60,7 +61,7 @@ blocks:
             widthInner: 21.42
             widthOuter: 21.42
             mult: 1.0
-
+# end-block-uo2
     mox: &block_mox
         grid name: MOX grid
         mox low fuel:
@@ -91,6 +92,7 @@ blocks:
         guide tube: *guide_tube
         fission chamber: *fission_chamber
         pitch: *pitch
+# end-block-mox
     moderator: &block_mod
         moderator: 
             shape: Square
@@ -99,6 +101,7 @@ blocks:
             Thot: 25.0
             widthOuter: 21.42
             mult: 1.0
+# end-block-mod
 assemblies:
     heights: &heights
         - 64.26
@@ -141,7 +144,7 @@ assemblies:
         height: *heights
         axial mesh points: *mesh
         xs types: [A,A,A,A]
-        
+# end-assemblies
 systems:
     core:
       grid name: core
@@ -150,6 +153,7 @@ systems:
           x: 0.0
           y: 0.0
           z: 0.0
+# end-systems
 grids: 
     core:
         symmetry: full
@@ -161,7 +165,7 @@ grids:
          UO2 MOX MOD
          MOX UO2 MOD
          MOD MOD MOD
-         
+# end-grid-core
     UO2 grid: 
         symmetry: full
         geom: cartesian
@@ -186,6 +190,7 @@ grids:
             U  U  U  U  U  GT U  U  GT U  U  GT U  U  U  U  U
             U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
             U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
+# end-grid-UO2
     MOX grid:
         symmetry: full
         geom: cartesian
@@ -210,3 +215,4 @@ grids:
             ML MM MM MM MM GT MM MM GT MM MM GT MM MM MM MM ML
             ML MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM ML
             ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML
+# end-grid-MOX

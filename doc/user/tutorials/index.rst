@@ -13,5 +13,6 @@ demonstrate in more detail how to interact with ARMI.
     nuclide_demo.ipynb
     materials_demo.ipynb
     walkthrough_inputs
+    walkthrough_lwr_inputs
     data_model.ipynb
 

@@ -164,7 +164,7 @@ coupled to N other kernels. The ARMI Framework, depicted in green below, is the 
 of the open source package. Several skeletal analysis routines are included as well to
 perform basic data management and to help align efforts on external physics kernels.
 
-.. figure:: https://terrapower.github.io/armi/_images/armiSchematicView.png
+.. figure:: https://terrapower.github.io/armi/_static/armiSchematicView.png
    :figclass: align-center
 
    **Figure 1.** The schematic representation of the ARMI data model.
@@ -180,11 +180,12 @@ different modeling approximations (e.g. symmetries, transport vs. diffusion vs. 
 Carlo, subchannel vs. CFD, etc.).
 
 
-.. figure:: https://terrapower.github.io/armi/_images/armiGeometries.png
+.. figure:: https://terrapower.github.io/armi/_static/armiGeometries.png
    :figclass: align-center
 
    **Figure 2.** A variety of approximations in hexagonal geometry (1/3-core, full core, pin detailed, etc.) are shown,
-   all derived from one consistent input file.
+   all derived from one consistent input file. ARMI supports Cartesian, Hex, RZ, and RZTheta geometric grids
+   and includes many geometric components. Additionally, users can provide custom geometric elements.
 
 
 New analysis and physics capabilities
