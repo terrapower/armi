@@ -65,7 +65,7 @@ copy the moderator, guide tube, and fission chamber from the previous assembly.
 
 .. literalinclude:: ../../../armi/tests/tutorials/c5g7-blueprints.yaml
     :language: yaml
-    :start-after: end-custom-isotopics
+    :start-after: end-block-uo2
     :end-before: end-block-mox
 
 The moderator block
@@ -84,7 +84,7 @@ to what we did in the SFR tutorial. There are three distinct assembly definition
 
 .. literalinclude:: ../../../armi/tests/tutorials/c5g7-blueprints.yaml
     :language: yaml
-    :start-after: end-block-mox
+    :start-after: end-block-mod
     :end-before: end-assemblies
 
 The Systems definition

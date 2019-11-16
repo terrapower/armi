@@ -354,9 +354,9 @@ sodium-cooled TWR as the target, and are not necessarily yet optimized for other
 On the other hand, we have attempted to keep the framework general where possible, and
 many modules are broadly applicable to many reactors. We have run parts of ARMI on
 various SFRs (TWRs, FFTF, Joyo, Phenix), some fast critical assemblies (such as ZPPRs
-and BFS), molten salt reactors, and some thermal systems. Full support for the basic
-needs of thermal reactors (like a good spatial description of pin maps) is under
-development.
+and BFS), molten salt reactors, and some thermal systems. Support for the basic
+needs of thermal reactors (like a good spatial description of pin maps) exists but
+has not been subject to as much use.
 
 ARMI was developed within a rapidly changing R&D environment. It evolved accordingly,
 and naturally carries some legacy.  We continuously attempt to identify and update
