@@ -13,3 +13,4 @@ pillow
 future
 configparser
 voluptuous
+pympler
