@@ -26,3 +26,7 @@ Backend changes
 * Removed need for geometry object for Reactor construction
 * Pushed symmetry and geomType metadata onto spatialGrids
 * Turned off auto-conversion of HDF5 DBs to a previous format
+
+ARMI v0.1.2-dev
+===============
+Release Date: TBD
