@@ -369,18 +369,14 @@ class ReactorTests(_ReactorTests):
 
         for b2, b3 in zip(r2.core.getBlocks(), self.r.core.getBlocks()):
             for element in self.r.blueprints.elementsToExpand:
-                mass2 = b2.getMass(
-                    element.symbol
-                )  # nucspec allows elemental mass to be computed
+                # nucspec allows elemental mass to be computed
+                mass2 = b2.getMass(element.symbol)
                 mass3 = b3.getMass(element.symbol)
                 assert_allclose(mass2, mass3)
 
-                # check constituents
                 constituentNucs = [nn.name for nn in element.nuclideBases if nn.a > 0]
-                constituentMass2 = b2.getMass(constituentNucs)
-                constituentMass3 = b3.getMass(constituentNucs)
-                self.assertEqual(constituentMass2, 0.0)
-                assert_allclose(mass3, constituentMass3)
+                nuclideLevelMass3 = b3.getMass(constituentNucs)
+                assert_allclose(mass3, nuclideLevelMass3)
 
     def test_getDominantMaterial(self):
         dominantDuct = self.r.core.getDominantMaterial(Flags.DUCT)

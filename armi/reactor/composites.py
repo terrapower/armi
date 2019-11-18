@@ -929,23 +929,25 @@ class ArmiObject(metaclass=CompositeModelType):
             # note that if these arguments are false, you'll get ALL nuclides in the material
             # use material.getNuclides to get only non-zero ones.
             # use nucDir.getNuclides to get all.
-            constantNuclides = nucDir.getNuclideNames(
-                nucName=nuclideToHoldConstant, elementSymbol=elementToHoldConstant
-            )
-            constantSum = sum(
-                self.getMassFrac(nucName)
-                for nucName in nuclides.intersection(constantNuclides)
-            )
+            # Intersect with current nuclides to eliminate double counting of element/isotopes
+            constantNuclides = set(
+                nucDir.getNuclideNames(
+                    nucName=nuclideToHoldConstant, elementSymbol=elementToHoldConstant
+                )
+            ).intersection(nuclides)
+            constantSum = sum(self.getMassFrac(nucName) for nucName in constantNuclides)
         else:
             constantNuclides = []
             constantSum = 0.0
 
         # determine which nuclides we're adjusting.
         # Rather than calling this material's getNuclides method, we call the nucDirectory to do this.
-        # this way, even zeroed-out nuclides will get int the mix
-        adjustNuclides = nucDir.getNuclideNames(
-            nucName=nuclideToAdjust, elementSymbol=elementToAdjust
-        )
+        # this way, even zeroed-out nuclides will get in the mix
+        adjustNuclides = set(
+            nucDir.getNuclideNames(
+                nucName=nuclideToAdjust, elementSymbol=elementToAdjust
+            )
+        ).intersection(nuclides)
         # get original mass frac A of those to be adjusted.
         A = sum(self.getMassFrac(ni) for ni in adjustNuclides)
 

@@ -26,7 +26,7 @@ class Test_densityTools(unittest.TestCase):
     def test_expandElementalMassFracsToNuclides(self):
         element = elements.bySymbol["N"]
         mass = {"N": 1.0}
-        densityTools.expandElementalMassFracsToNuclides(mass, [element])
+        densityTools.expandElementalMassFracsToNuclides(mass, [(element, None)])
         self.assertNotIn("N", mass)
         self.assertIn("N15", mass)
         self.assertIn("N14", mass)
@@ -35,7 +35,7 @@ class Test_densityTools(unittest.TestCase):
 
     def test_expandElementalZeroMassFrac(self):
         """As above, but try with a zero mass frac elemental."""
-        elementals = [elements.bySymbol["N"], elements.bySymbol["O"]]
+        elementals = [(elements.bySymbol["N"], None), (elements.bySymbol["O"], None)]
         mass = {"N": 0.0, "O": 1.0}
         densityTools.expandElementalMassFracsToNuclides(mass, elementals)
         self.assertNotIn("N", mass)
@@ -59,7 +59,7 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(
             uo2Chemicals["U"], uo2.p.massFrac["U235"] + uo2.p.massFrac["U238"], 6
         )
-        self.assertAlmostEqual(uo2Chemicals["O"], uo2.p.massFrac["O16"], 6)
+        self.assertAlmostEqual(uo2Chemicals["O"], uo2.p.massFrac["O"], 6)
 
         # ensure getChemicals works if the nuclideBase is the dict key
         massFrac = {u238: 0.87, u235: 0.12, o16: 0.01}
@@ -69,6 +69,21 @@ class Test_densityTools(unittest.TestCase):
 
         self.assertAlmostEqual(uo2Chemicals["U"], massFrac[u235] + massFrac[u238], 2)
         self.assertAlmostEqual(uo2Chemicals["O"], massFrac[o16], 2)
+
+    def test_expandElement(self):
+        """Ensure isotopic subset feature works in expansion."""
+        elemental = elements.bySymbol["O"]
+        massFrac = 1.0
+        subset = [nuclideBases.byName["O16"], nuclideBases.byName["O17"]]
+        m1 = densityTools.expandElementalNuclideMassFracs(elemental, massFrac)
+        m2 = densityTools.expandElementalNuclideMassFracs(elemental, massFrac, subset)
+        self.assertIn("O18", m1)
+        self.assertNotIn("O18", m2)
+        self.assertAlmostEqual(1.0, sum(m1.values()))
+        self.assertAlmostEqual(1.0, sum(m2.values()))
+        # expect some small difference due to renormalization
+        self.assertNotAlmostEqual(m1["O17"], m2["O17"])
+        self.assertAlmostEqual(m1["O17"], m2["O17"], delta=1e-5)
 
 
 if __name__ == "__main__":

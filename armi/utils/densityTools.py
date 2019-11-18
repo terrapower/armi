@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Tuple, List
 
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir, nuclideBases, elements
 from armi.utils import units
 from armi import runLog
 
@@ -268,11 +269,14 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     return nuclideVector
 
 
-def expandElementalMassFracsToNuclides(massFracs, elements):
+def expandElementalMassFracsToNuclides(
+    massFracs: dict,
+    elementExpansionPairs: Tuple[elements.Element, List[nuclideBases.NuclideBase]],
+):
     """
     Expand elemental mass fractions to natural nuclides.
 
-    Modifies the input ``massFracs`` to contain nuclides.
+    Modifies the input ``massFracs`` in place to contain nuclides.
 
     Notes
     -----
@@ -282,18 +286,21 @@ def expandElementalMassFracsToNuclides(massFracs, elements):
     ----------
     massFracs : dict(str, float)
         dictionary of nuclide or element names with mass fractions.
-        Elements will be expanded using natural isotopics.
+        Elements will be expanded in place using natural isotopics.
 
-    elements : iterable of Elements
-        element objects to expand (from nuclidBase.element).
+    elementExpansionPairs : (Element, [NuclideBase]) pairs
+        element objects to expand (from nuclidBase.element) and list
+        of NuclideBases to expand into (or None for all natural)
     """
     # expand elements
-    for element in elements:
+    for element, isotopicSubset in elementExpansionPairs:
         massFrac = massFracs.pop(element.symbol, None)
         if massFrac is None:
             continue
 
-        expandedNucs = expandElementalNuclideMassFracs(element, massFrac)
+        expandedNucs = expandElementalNuclideMassFracs(
+            element, massFrac, isotopicSubset
+        )
         massFracs.update(expandedNucs)
 
         total = sum(expandedNucs.values())
@@ -303,16 +310,43 @@ def expandElementalMassFracsToNuclides(massFracs, elements):
             )
 
 
-def expandElementalNuclideMassFracs(element, massFrac):
-    """Return a dictionary of nuclide names to natural mass fractions."""
-    nucBases = element.getNaturalIsotopics()
-    elementalWeightGperMole = sum(nb.weight * nb.abundance for nb in nucBases)
-    if not any(nucBases):
-        raise ValueError("Cannot expand element {}".format(element))
+def expandElementalNuclideMassFracs(
+    element: elements.Element,
+    massFrac: dict,
+    isotopicSubset: List[nuclideBases.NuclideBase] = None,
+):
+    """
+    Return a dictionary of nuclide names to isotopic mass fractions.
+
+    If an isotopic subset is passed in, the mass fractions get scaled up
+    s.t. the total mass fraction remains constant.
+
+    Parameters
+    ----------
+    element : Element
+        The element to expand to natural isotopics
+    massFrac : float
+        Mass fraction of the initial element
+    isotopicSubset : list of NuclideBases
+        Natural isotopes to include in the expansion. Useful e.g. for
+        excluding O18 from an expansion of Oxygen.
+    """
+    elementNucBases = element.getNaturalIsotopics()
+    if isotopicSubset:
+        expandedNucBases = [nb for nb in elementNucBases if nb in isotopicSubset]
+    else:
+        expandedNucBases = elementNucBases
+    elementalWeightGperMole = sum(nb.weight * nb.abundance for nb in expandedNucBases)
+    if not any(expandedNucBases):
+        raise ValueError(
+            "Cannot expand element `{}` into isotopes: `{}`"
+            "".format(element, expandedNucBases)
+        )
     expanded = {}
-    for nb in nucBases:
-        mult = nb.abundance if len(nucBases) > 1 else 1.0
-        expanded[nb.name] = massFrac * mult * nb.weight / elementalWeightGperMole
+    for nb in expandedNucBases:
+        expanded[nb.name] = (
+            massFrac * nb.abundance * nb.weight / elementalWeightGperMole
+        )
     return expanded
 
 

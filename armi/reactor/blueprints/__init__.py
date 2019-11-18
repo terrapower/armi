@@ -82,6 +82,7 @@ from armi import settings
 from armi import plugins
 from armi.localization.exceptions import InputError
 from armi.nucDirectory import nuclideBases
+from armi.nucDirectory import elements
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -89,11 +90,7 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor.blueprints.reactorBlueprint import Systems
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
-from armi.reactor.blueprints.isotopicOptions import (
-    NuclideFlags,
-    NuclideFlag,
-    CustomIsotopics,
-)
+from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids
 
 context.BLUEPRINTS_IMPORTED = True
@@ -161,10 +158,10 @@ class Blueprints(yamlize.Object):
     """Base Blueprintsobject representing all the subsections in the input file."""
 
     nuclideFlags = yamlize.Attribute(
-        key="nuclide flags", type=NuclideFlags, default=None
+        key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
     )
     customIsotopics = yamlize.Attribute(
-        key="custom isotopics", type=CustomIsotopics, default=None
+        key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None
     )
     blockDesigns = yamlize.Attribute(key="blocks", type=BlockKeyedList, default=None)
     assemDesigns = yamlize.Attribute(
@@ -253,7 +250,7 @@ class Blueprints(yamlize.Object):
         generates the `.assemblies` attribute (the BOL assemblies). Eventually, this
         should be removed.
         """
-        self._prepConstruction(geomType, cs)
+        self._prepConstruction(cs)
 
         # TODO: this should be migrated assembly designs instead of assemblies
         if name is not None:
@@ -268,7 +265,7 @@ class Blueprints(yamlize.Object):
         a.makeUnique()
         return a
 
-    def _prepConstruction(self, geomType, cs):
+    def _prepConstruction(self, cs):
         """
         This method initializes a bunch of information within a Blueprints object such
         as assigning assembly and block type numbers, resolving the nuclides in the
@@ -316,49 +313,109 @@ class Blueprints(yamlize.Object):
                         self.blockDesigns.add(bDesign)
 
     def _resolveNuclides(self, cs):
-        """Expands the density of any elemental nuclides to its natural isotopics."""
+        """
+        Process elements and determine how to expand them to natural isotopics.
+
+        Also builds meta-data about which nuclides are in the problem.
+
+        This system works by building a dictionary in the
+        ``elementsToExpand`` attribute with ``Element`` keys
+        and list of ``NuclideBase`` values.
+
+        The actual expansion of elementals to isotopics occurs during
+        :py:meth:`Component construction <armi.reactor.blueprints.componentBlueprint.
+        ComponentBlueprint._constructMaterial>`.
+        """
 
         from armi import utils
 
-        # expand burn-chain to only contain nuclides, no elements
         actives = set()
         inerts = set()
         undefBurnChainActiveNuclides = set()
         if self.nuclideFlags is None:
-            self.nuclideFlags = genDefaultNucFlags()
+            self.nuclideFlags = isotopicOptions.genDefaultNucFlags()
+
+        self.elementsToExpand = []
         for nucFlag in self.nuclideFlags:
-            nucFlag.prepForCase(actives, inerts, undefBurnChainActiveNuclides)
+            expandedElements = nucFlag.fileAsActiveOrInert(
+                actives, inerts, undefBurnChainActiveNuclides
+            )
+            # this returns any nuclides that are flagged specifically for expansion by input
+            self.elementsToExpand.extend(expandedElements)
 
         inerts -= actives
-        self.customIsotopics = self.customIsotopics or CustomIsotopics()
-        self.elementsToExpand = []
+        self.customIsotopics = self.customIsotopics or isotopicOptions.CustomIsotopics()
+        (
+            elementalsToKeep,
+            expansions,
+        ) = isotopicOptions.autoSelectElementsToKeepFromSettings(cs)
 
-        elementalsToSkip = self._selectNuclidesToExpandForModeling(cs)
-
-        # if elementalsToSkip=[CR], we expand everything else. e.g. CR -> CR (unchanged)
         nucsFromInput = actives | inerts  # join
 
+        # Flag all elementals for expansion unless they've been flagged otherwise by
+        # user input or automatic lattice/datalib rules.
         for elemental in nuclideBases.instances:
             if not isinstance(elemental, nuclideBases.NaturalNuclideBase):
-                continue
-            if elemental.name not in nucsFromInput:
-                continue
-
-            # we've now confirmed this elemental is in the problem
-            if elemental in elementalsToSkip:
+                # `elemental` may be a NaturalNuclideBase or a NuclideBase
+                # skip all NuclideBases
                 continue
 
-            nucsInProblem = actives if elemental.name in actives else inerts
-            nucsInProblem.remove(elemental.name)
+            if elemental in elementalsToKeep:
+                continue
+
+            if elemental.name in actives:
+                currentSet = actives
+                actives.remove(elemental.name)
+            elif elemental.name in inerts:
+                currentSet = inerts
+                inerts.remove(elemental.name)
+            else:
+                # This was not specified in the nuclide flags at all.
+                # If a material with this in its composition is brought in
+                # it's nice from a user perspective to allow it.
+                # But current behavior is that all nuclides in problem
+                # must be declared up front.
+                continue
 
             self.elementsToExpand.append(elemental.element)
 
-            for nb in elemental.element.getNaturalIsotopics():
-                nucsInProblem.add(nb.name)
+            if (
+                elemental.name in self.nuclideFlags
+                and self.nuclideFlags[elemental.name].expandTo
+            ):
+                # user-input has precedence
+                newNuclides = [
+                    nuclideBases.byName[nn]
+                    for nn in self.nuclideFlags[elemental.element.symbol].expandTo
+                ]
+            elif (
+                elemental in expansions
+                and elemental.element.symbol in self.nuclideFlags
+            ):
+                # code-specific expansion required
+                newNuclides = expansions[elemental]
+                # overlay code details onto nuclideFlags for other parts of the code
+                # that will use them.
+                # CRAP: would be better if nuclideFlags did this upon reading s.t.
+                # order didn't matter. On the other hand, this is the only place in
+                # the code where NuclideFlags get built and have user settings around
+                # (hence "resolve").
+                # This must be updated because the operative expansion code just uses the flags
+                #
+                # Also, if this element is not in nuclideFlags at all, we just don't add it
+                self.nuclideFlags[elemental.element.symbol].expandTo = [
+                    nb.name for nb in newNuclides
+                ]
+            else:
+                # expand to all possible natural isotopics
+                newNuclides = elemental.element.getNaturalIsotopics()
+
+            for nb in newNuclides:
+                currentSet.add(nb.name)
 
         if self.elementsToExpand:
             runLog.info(
-                "Expanding {} elementals to have natural isotopics".format(
+                "Will expand {} elementals to have natural isotopics".format(
                     ", ".join(element.symbol for element in self.elementsToExpand)
                 )
             )
@@ -369,7 +426,7 @@ class Blueprints(yamlize.Object):
             sorted(actives.union(inerts))
         )
 
-        # Inform user that the burn-chain may not be complete
+        # Inform user which nuclides are truncating the burn chain.
         if undefBurnChainActiveNuclides:
             runLog.info(
                 tabulate.tabulate(
@@ -385,52 +442,6 @@ class Blueprints(yamlize.Object):
                 ),
                 single=True,
             )
-
-    @staticmethod
-    def _selectNuclidesToExpandForModeling(cs):
-        elementalsToSkip = set()
-        endf70Elementals = [nuclideBases.byName[name] for name in ["C", "V", "ZN"]]
-        endf71Elementals = [nuclideBases.byName[name] for name in ["C"]]
-        endf80Elementals = []
-
-        if "MCNP" in cs["neutronicsKernel"]:
-            if int(cs["mcnpLibrary"]) == 50:
-                elementalsToSkip.update(nuclideBases.instances)  # skip expansion
-            # ENDF/B VII.0
-            elif 70 <= int(cs["mcnpLibrary"]) <= 79:
-                elementalsToSkip.update(endf70Elementals)
-            # ENDF/B VII.1
-            elif 80 <= int(cs["mcnpLibrary"]) <= 89:
-                elementalsToSkip.update(endf71Elementals)
-            else:
-                raise InputError(
-                    "Failed to determine nuclides for modeling. "
-                    "The `mcnpLibrary` setting value ({}) is not supported.".format(
-                        cs["mcnpLibrary"]
-                    )
-                )
-
-        elif cs["xsKernel"] in ["SERPENT", "MC2v3", "MC2v3-PARTISN"]:
-            elementalsToSkip.update(endf70Elementals)
-        elif cs["xsKernel"] == "DRAGON":
-            # Users need to use default nuclear lib name. This is documented.
-            dragLib = cs["dragonDataPath"]
-            # only supports ENDF/B VII/VIII at the moment.
-            if "7r0" in dragLib:
-                elementalsToSkip.update(endf70Elementals)
-            elif "7r1" in dragLib:
-                elementalsToSkip.update(endf71Elementals)
-            elif "8r0" in dragLib:
-                elementalsToSkip.update(endf80Elementals)
-            else:
-                raise ValueError(
-                    f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
-                )
-
-        elif cs["xsKernel"] == "MC2v2":
-            elementalsToSkip.update(nuclideBases.instances)  # skip expansion
-
-        return elementalsToSkip
 
     def _checkAssemblyAreaConsistency(self, cs):
         references = None
@@ -476,13 +487,3 @@ class Blueprints(yamlize.Object):
                             b, b.getArea(), a[0], blockArea
                         )
                     )
-
-
-def genDefaultNucFlags():
-    """Perform all the yamlize-required type conversions."""
-    flagsDict = nuclideBases.getDefaultNuclideFlags()
-    flags = NuclideFlags()
-    for nucName, nucFlags in flagsDict.items():
-        flag = NuclideFlag(nucName, nucFlags["burn"], nucFlags["xs"])
-        flags[nucName] = flag
-    return flags

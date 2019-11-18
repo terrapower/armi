@@ -38,3 +38,14 @@ Hotfixes
 ARMI v0.1.3-dev
 ===============
 Release Date: TBD
+
+User-facing enhancements
+------------------------
+* Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
+  users can control precisely which isotopes the elements get expanded into.
+
+Backend changes
+---------------
+* Number fractions are now maintained across elemental expansion subsets. This slightly changes
+  the isotopic composition when, for example, Tungsten is expanded to 4 out of the 
+  5 natural isotopes.

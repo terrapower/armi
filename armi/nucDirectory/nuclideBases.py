@@ -407,9 +407,14 @@ def factory(force=False):
     change to the data files, which should not happen during run time, or a *bad*
     :py:class`INuclide` is created.
 
+    Notes
+    -----
+    Nuclide labels from MC2-2, MC2-3, and MCNP are currently handled directly.
+    Moving forward, we plan to implement a more generic labeling system so that
+    plugins can provide code-specific nuclide labels in a more extensible fashion.
+
     Attributes
     ----------
-
     force: bool, optional
         If True, forces the reinstantiation of all :py:class:`INuclides`.
         Any :py:class:`Nuclides <armi.nucDirectory.nuclide.Nuclde>` objects referring to the
@@ -433,7 +438,21 @@ def factory(force=False):
         __readRiplAbundance()
         # load the mc2Nuclide.json file. This will be used to supply nuclide IDs
         __readMc2Nuclides()
+        _completeNaturalNuclideBases()
         elements.deriveNaturalWeights()
+
+
+def _completeNaturalNuclideBases():
+    """
+    After natural nuclide bases are loaded for mc2, fill in missing ones.
+
+    This is important for libraries that have elementals that differ
+    from MC2.
+    """
+    for element in elements.byZ.values():
+        if element.symbol not in byName:
+            if element.z <= 92:
+                NaturalNuclideBase(element.symbol, element, None)
 
 
 def _renormalizeElementRelationship():
@@ -1091,7 +1110,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             0,
             0,
             sum([nn.weight * nn.abundance for nn in element.getNaturalIsotopics()]),
-            1.0,
+            0.0,  # keep abundance 0.0 to not interfere with the isotopes
             name,
             name,
             mc2id,
@@ -1180,68 +1199,6 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
                 )
             )
         return "{0}".format(self.z * 100)
-
-
-def getDefaultNuclideFlags():
-    """
-    Return a default set of nuclides to model and deplete.
-
-    Notes
-    -----
-    The nuclideFlags input on blueprints has confused new users and is infrequently
-    changed. It will be moved to be a user setting, but in any case a reasonable default
-    should be provided. We will by default model medium-lived and longer actinides between
-    U234 and CM247.
-    
-    We will include B10 and B11 without depletion, sodium, and structural elements. 
-    
-    We will include LFPs with depletion.
-    
-    """
-    nuclideFlags = {}
-    actinides = {
-        "U": [234, 235, 236, 238],
-        "NP": [237, 238],
-        "PU": [236] + list(range(238, 243)),
-        "AM": range(241, 244),
-        "CM": range(242, 248),
-    }
-
-    for el, masses in actinides.items():
-        for mass in masses:
-            nuclideFlags[f"{el}{mass}"] = {"burn": True, "xs": True}
-
-    for fp in [35, 38, 39, 40, 41]:
-        nuclideFlags[f"LFP{fp}"] = {"burn": True, "xs": True}
-
-    for dmp in [1, 2]:
-        nuclideFlags[f"DUMP{dmp}"] = {"burn": True, "xs": True}
-
-    for boron in [10, 11]:
-        nuclideFlags[f"B{boron}"] = {"burn": False, "xs": True}
-
-    for struct in [
-        "ZR",
-        "C",
-        "SI",
-        "V",
-        "CR",
-        "MN55",
-        "FE",
-        "NI",
-        "MO",
-        "W182",
-        "W183",
-        "W184",
-        "W186",
-        "NA23",
-        "HE4",
-        "O",
-        "H",
-    ]:
-        nuclideFlags[struct] = {"burn": False, "xs": True}
-
-    return nuclideFlags
 
 
 def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclides):

@@ -60,15 +60,12 @@ nuclide flags:
     CM246: {burn: true, xs: true}
     CM247: {burn: true, xs: true}
     NI: {burn: true, xs: true}
-    W182: {burn: true, xs: true}
-    MN55: {burn: true, xs: true}
+    W: {burn: true, xs: true, expandTo: ["W182", "W183", "W184", "W186"]}
+    MN: {burn: true, xs: true}
     CR: {burn: true, xs: true}
     V: {burn: true, xs: true}
     SI: {burn: true, xs: true}
-    W186: {burn: true, xs: true}
     MO: {burn: true, xs: true}
-    W183: {burn: true, xs: true}
-    W184: {burn: true, xs: true}
 
 custom isotopics:
     uranium isotopic mass fractions:
@@ -206,7 +203,11 @@ assemblies:
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics"""
         fuel = self.a[0].getComponent(Flags.FUEL)
-        self.assertEqual(self.numUZrNuclides, len(fuel.p.numberDensities))
+        self.assertEqual(
+            self.numUZrNuclides,
+            len(fuel.p.numberDensities),
+            msg=fuel.p.numberDensities.keys(),
+        )
         # Note this density does not come from the material but is based on number densities
         self.assertAlmostEqual(15.5, fuel.density(), 0)  # i.e. it is not 19.1
 
@@ -306,6 +307,62 @@ class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
             density: 10.0
             """
             )
+
+
+class TestNuclideFlagsExpansion(unittest.TestCase):
+    yamlString = r"""
+nuclide flags:
+    U238: {burn: false, xs: true}
+    U235: {burn: false, xs: true}
+    ZR: {burn: false, xs: true}
+    AL: {burn: false, xs: true}
+    FE: {burn: false, xs: true, expandTo: ["FE54"]}
+    C: {burn: false, xs: true}
+    NI: {burn: true, xs: true}
+    MN: {burn: true, xs: true}
+    CR: {burn: true, xs: true}
+    V: {burn: true, xs: true}
+    SI: {burn: true, xs: true}
+    MO: {burn: true, xs: true}
+    W: {burn: true, xs: true}
+blocks:
+    uzr fuel: &block_0
+        fuel:
+            shape: Hexagon
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            mult: 1.0
+            op: 10.0
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 1.0
+            od: 10.0
+assemblies:
+    fuel a: 
+        specifier: IC
+        blocks: [*block_0]
+        height: [10]
+        axial mesh points: [1]
+        xs types: [A]
+    """
+
+    def test_expandedNatural(self):
+        cs = settings.Settings()
+        cs["xsKernel"] = "MC2v3"
+        bp = blueprints.Blueprints.load(self.yamlString)
+        a = bp.constructAssem("hex", cs, name="fuel a")
+        b = a[-1]
+        c = b.getComponent(Flags.CLAD)
+        nd = c.getNumberDensities()
+        self.assertIn("FE54", nd)  # natural isotopic as requested
+        self.assertNotIn("FE56", nd)  # natural isotopic not requested
+        self.assertNotIn("FE51", nd)  # un-natural
+        self.assertNotIn("FE", nd)
 
 
 if __name__ == "__main__":

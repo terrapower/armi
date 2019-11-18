@@ -38,7 +38,7 @@ class Sodium(material.Fluid):
 
     def setDefaultMassFracs(self):
         """It's just sodium"""
-        self.setMassFrac("NA23", 1.0)
+        self.setMassFrac("NA", 1.0)
         self.p.refDens = 0.968
 
     def density(self, Tk=None, Tc=None, check_range=True):

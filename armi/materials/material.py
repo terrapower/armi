@@ -468,13 +468,10 @@ class Material(composites.Leaf):
         expandFissionProducts=False,
     ):
         """
-        return mass fraction of nucName.
-
-        If no arguments, send sum of all.
+        Return mass fraction of nucName.
 
         Parameters
         ----------
-
         nucName : str, optional
             Nuclide name to return ('ZR','PU239',etc.)
 

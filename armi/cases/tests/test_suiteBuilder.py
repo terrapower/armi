@@ -46,6 +46,7 @@ nuclide flags:
     MO: {burn: false, xs: true}
     NI: {burn: false, xs: true}
     V: {burn: false, xs: true}
+    W: {burn: false, xs: true}
 blocks:
     fuel 1: &fuel_1
         fuel: &fuel_1_fuel
@@ -95,7 +96,7 @@ GEOM_INPUT = io.StringIO(
 class TestBlueprintModifiers(unittest.TestCase):
     def setUp(self):
         self.bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
-        self.bp._prepConstruction(MockGeom.geomType, settings.Settings())
+        self.bp._prepConstruction(settings.Settings())
 
     def tearDown(self):
         del self.bp
@@ -246,7 +247,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         geom.readGeomFromStream(GEOM_INPUT)
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
         cs = settings.Settings()
-        bp._prepConstruction(geom.geomType, cs)
+        bp._prepConstruction(cs)
         cls.baseCase = cases.Case(cs=cs, bp=bp, geom=geom)
 
     def test_SmearDensityFail(self):

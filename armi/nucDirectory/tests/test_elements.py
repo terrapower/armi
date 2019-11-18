@@ -86,12 +86,7 @@ class TestElement(unittest.TestCase):
         for ee in elements.byZ.values():
             if not ee.isNaturallyOccurring():
                 continue
-            # NaturalNuclideBase have abundance of 1 so sums to 2 if included
-            totAbund = sum(
-                iso.abundance
-                for iso in ee.nuclideBases
-                if not isinstance(iso, nuclideBases.NaturalNuclideBase)
-            )
+            totAbund = sum(iso.abundance for iso in ee.nuclideBases)
             maxDeviationInRIPL = 0.000030021  # Ca sums to 1.0003002
             self.assertAlmostEqual(
                 totAbund,

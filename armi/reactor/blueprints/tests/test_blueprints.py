@@ -54,7 +54,7 @@ class TestBlueprints(unittest.TestCase):
 
         with open("refSmallReactor.yaml", "r") as y:
             cls.blueprints = blueprints.Blueprints.load(y)
-            cls.blueprints._prepConstruction("hex", cls.cs)
+            cls.blueprints._prepConstruction(cls.cs)
 
     @classmethod
     def tearDownClass(cls):
@@ -162,7 +162,7 @@ grids:
         cs = settings.Settings()
         cs["xsKernel"] = "MC2v2"
         design = blueprints.Blueprints.load(self.yamlString)
-        design._prepConstruction("hex", cs)
+        design._prepConstruction(cs)
         self.assertTrue(
             set({"U238", "U235", "ZR"}).issubset(set(design.allNuclidesInProblem))
         )
@@ -177,7 +177,7 @@ grids:
         cs = settings.Settings()
         cs["xsKernel"] = "MC2v3"
         design = blueprints.Blueprints.load(self.yamlString)
-        design._prepConstruction("hex", cs)
+        design._prepConstruction(cs)
 
         # 93 and 95 are not naturally occurring.
         zrNucs = {"ZR" + str(A) for A in range(90, 97)} - {"ZR93", "ZR95"}
@@ -209,6 +209,7 @@ nuclide flags:
     MN:  {burn: true, xs: true}
     NA:  {burn: true, xs: true}
     V:  {burn: true, xs: true}
+    W:  {burn: true, xs: true}
 blocks:
     nomerge block: &unmerged_block
         A: &comp_a

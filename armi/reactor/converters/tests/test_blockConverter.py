@@ -174,8 +174,9 @@ class TestBlockConverter(unittest.TestCase):
                     nucName, n1, n2
                 )
         self.assertTrue(not errorMessage, errorMessage)
-        self.assertAlmostEqual(block.getMass(), convertedBlock.getMass())
-        self.assertIn("NA23", nucs)  # verify it isn't empty
+        bMass = block.getMass()
+        self.assertAlmostEqual(bMass, convertedBlock.getMass())
+        self.assertGreater(bMass, 0.0)  # verify it isn't empty
 
     def _checkCiclesAreInContact(self, convertedCircleBlock):
         numComponents = len(convertedCircleBlock)

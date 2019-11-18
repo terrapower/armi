@@ -50,7 +50,7 @@ assemblies:
     def loadUZrAssembly(self, materialModifications):
         yamlString = self.uZrInput + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
-        design._prepConstruction("hex", settings.getMasterCs())
+        design._prepConstruction(settings.getMasterCs())
         return design.assemblies["fuel a"]
 
     def test_noMaterialModifications(self):

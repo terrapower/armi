@@ -96,7 +96,7 @@ class TestGriddedBlock(unittest.TestCase):
 
         with io.StringIO(FULL_BP) as stream:
             self.blueprints = blueprints.Blueprints.load(stream)
-            self.blueprints._prepConstruction("hex", self.cs)
+            self.blueprints._prepConstruction(self.cs)
 
     def test_constructSpatialGrid(self):
         """Test intermediate grid construction function"""

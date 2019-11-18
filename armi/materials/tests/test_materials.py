@@ -126,7 +126,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.UraniumOxide
 
     def test_adjustMassEnrichment(self):
-        o16 = nuclideBases.byName["O16"].weight
+        o16 = nuclideBases.byName["O"].weight
         u235 = nuclideBases.byName["U235"].weight
         u238 = nuclideBases.byName["U238"].weight
         self.mat.adjustMassEnrichment(0.02)
@@ -134,7 +134,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         gPerMol = 2 * o16 + 0.02 * u235 + 0.98 * u238
         massFracs = self.mat.p.massFrac
 
-        testing.assert_allclose(massFracs["O16"], 2 * o16 / gPerMol, rtol=5e-4)
+        testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
         testing.assert_allclose(
             massFracs["U235"], 0.02 * (u235 * 0.02 + u238 * 0.98) / gPerMol, rtol=5e-4
         )
@@ -146,7 +146,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         massFracs = self.mat.p.massFrac
         gPerMol = 2 * o16 + 0.8 * u238 + 0.2 * u235
 
-        testing.assert_allclose(massFracs["O16"], 2 * o16 / gPerMol, rtol=5e-4)
+        testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
         testing.assert_allclose(
             massFracs["U235"], 0.2 * (u235 * 0.2 + u238 * 0.8) / gPerMol, rtol=5e-4
         )

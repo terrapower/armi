@@ -67,16 +67,14 @@ def getNuclideFromName(name):
 
 
 def getNuclidesFromInputName(name):
-    """Take in the string nuclide or element name, try to expand it out to its bases correctly."""
+    """Convert nuclide specifier strings to isotopically-expanded nuclide bases"""
     name = name.upper()
 
-    if name in nuclideBases.byName:
-        return [nuclideBases.byName[name]]
-
-    elif name in elements.bySymbol:
+    if name in elements.bySymbol:
         element = elements.bySymbol[name]
         if element.isNaturallyOccurring():
-            # For things like Aluminum, just give natural isotopics, this is likely what the user wants.
+            # For things like Aluminum, just give natural isotopics.
+            # This is likely what the user wants.
             return [
                 nuc for nuc in element.nuclideBases if nuc.a > 0 and nuc.abundance > 0
             ]
@@ -338,9 +336,9 @@ def getNuclideNames(nucName=None, elementSymbol=None):
     r"""
     returns a list of nuclide names in a particular nuclide or element
 
-    If no arguments, returns all nuclideBases in the directory
+    If no arguments, returns all nuclideBases in the directory.
 
-    Used to convert things to DB name, to adjustNuclides, etc.
+    .. warning:: You will get both isotopes and NaturalNuclideBases for each element.
 
     Parameters
     ----------

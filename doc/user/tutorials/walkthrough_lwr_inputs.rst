@@ -133,6 +133,17 @@ Similarly, we define the ``MOX grid`` as follows:
 This grid is more complex in that it has different enrichment zones throughout
 the assembly.
 
+Nuclide Flags
+-------------
+.. literalinclude:: ../../../armi/tests/tutorials/c5g7-blueprints.yaml
+    :language: yaml
+    :start-after: end-grid-MOX
+    :end-before: end-nucflags
+
+The default nuclide flags provided do not contain oxygen or hydrogen, but
+these elements are present in the ``SaturatedWater`` material. Thus,
+we list them in this input section, and specifically leave out
+the trace isotope, ``O18``.
 
 The settings file
 =================

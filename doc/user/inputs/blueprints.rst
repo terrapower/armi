@@ -49,6 +49,8 @@ The ARMI data model is represented schematically below, and the blueprints are d
 :ref:`nuclide flags <nuclide-flags>`:
     Special setting: Specifies nuclide modeling options, whether a nuclide is being modeled for cross sections and/or
     depletion. For instance, it allows you to ignore nuclides above Curium for depletion speed.
+    This also allows you to expand elements to a subset of nuclides. For example, you can
+    choose to expand Oxygen to just Oxygen-16 and neglect Oxygen-17 and 18. 
 
 :ref:`custom isotopics <custom-isotopics>`:
     Special setting: defines user-specified isotopic compositions.
@@ -601,7 +603,10 @@ elements in structural materials, but in other analysis you might.  If the
 nuclide should deplete, it must have ``burn: true``.  If it is to be included
 in the problem at all, it must be have ``xs: true`` All nuclides that will be
 produced via transmutation/decay  must also have ``burn: true``, so if you add
-Thorium, make sure to add all other actinides in its chain. Remember this
+Thorium, make sure to add all other actinides in its chain. You can use the
+``expandTo:`` section to list a subset of natural nuclides to expand
+into. If you leave this section out, a default set of nuclide flags will be 
+applied to your problem. Remember this
 section when you start changing which nuclides are modeled and which ones
 deplete.::
 
@@ -623,7 +628,7 @@ deplete.::
         N: {burn: false, xs: true}
         NA: {burn: false, xs: true}
         NI: {burn: false, xs: true}
-        O: {burn: false, xs: true}
+        O: {burn: false, xs: true, expandTo: ["O16", "O17"]}
         P: {burn: false, xs: true}
         PU238: {burn: true, xs: true}
         PU239: {burn: true, xs: true}
@@ -639,6 +644,10 @@ deplete.::
 
 The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in
 ``nuclide flags``.  A failure can also occur if the burn chain is missing a nuclide.
+
+.. tip::
+    We plan to upgrade the default behavior of this to inherit from all defined materials
+    in a problem to reduce the user-input burden.
 
 .. These following are rst substitutions. They're useful for keeping the plaintext readable
    while getting subscripted text.

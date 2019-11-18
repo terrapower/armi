@@ -111,18 +111,20 @@ class UraniumOxide(Material):
         """
         u235 = nuclideBases.byName["U235"]
         u238 = nuclideBases.byName["U238"]
-        o16 = nuclideBases.byName["O16"]
+        oxygen = nuclideBases.byName["O"]
 
         u238Abundance = (
             1.0 - u235.abundance
         )  # neglect U234 and keep U235 at natural level
         gramsIn1Mol = (
-            2 * o16.weight + u235.abundance * u235.weight + u238Abundance * u238.weight
+            2 * oxygen.weight
+            + u235.abundance * u235.weight
+            + u238Abundance * u238.weight
         )
 
         self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
         self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
-        self.setMassFrac("O16", 2 * o16.weight / gramsIn1Mol)
+        self.setMassFrac("O", 2 * oxygen.weight / gramsIn1Mol)
 
     def meltingPoint(self):
         """

@@ -46,12 +46,12 @@ class HT9(materials.Material):
         From E.2-1 of [MFH]_.
         """
         self.setMassFrac("C", 0.002)
-        self.setMassFrac("MN55", 0.005)
+        self.setMassFrac("MN", 0.005)
         self.setMassFrac("SI", 0.0025)
         self.setMassFrac("NI", 0.0055)
         self.setMassFrac("CR", 0.1175)
         self.setMassFrac("MO", 0.01)
-        # self.setMassFrac("W", 0.0055)
+        self.setMassFrac("W", 0.0055)
         self.setMassFrac("V", 0.0030)
         self.setMassFrac("FE", 1.0 - sum(self.p.massFrac.values()))
 

@@ -269,7 +269,7 @@ class MpiAction(object):
 
         for objIndex in range(first, first + numLocalObjects):
             yield objectsForAllCoresToIter[objIndex]
-            
+
     def invokeHook(self):
         """This method must be overridden in sub-clases.
 

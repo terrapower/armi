@@ -182,9 +182,8 @@ class ComponentBlueprint(yamlize.Object):
 
     def _constructMaterial(self, blueprint, matMods):
         nucsInProblem = blueprint.allNuclidesInProblem
-        mat = materials.resolveMaterialClassByName(
-            self.material
-        )()  # make material with defaults
+        # make material with defaults
+        mat = materials.resolveMaterialClassByName(self.material)()
 
         if self.isotopics is not None:
             blueprint.customIsotopics.apply(mat, self.isotopics)
@@ -192,31 +191,56 @@ class ComponentBlueprint(yamlize.Object):
         appliedMatMods = False
         if any(matMods):
             try:
-                mat.applyInputParams(
-                    **matMods
-                )  # update material with updated input params from YAML file.
+                # update material with updated input params from blueprints file.
+                mat.applyInputParams(**matMods)
                 appliedMatMods = True
             except TypeError:
                 # This component does not accept material modification inputs of the names passed in
                 # Keep going since the modification could work for another component
                 pass
 
-        # expand elementals
-        densityTools.expandElementalMassFracsToNuclides(
-            mat.p.massFrac, blueprint.elementsToExpand
-        )
+        expandElementals(mat, blueprint)
 
         missing = set(mat.p.massFrac.keys()).difference(nucsInProblem)
 
         if missing:
             raise exceptions.ConsistencyError(
                 "The nuclides {} are present in material {} by compositions, but are not "
-                "specified in the input file. They need to be added.".format(
+                "specified in the `nuclide flags` section of the input file. "
+                "They need to be added, or custom isotopics need to be applied.".format(
                     missing, mat
                 )
             )
 
         return mat, appliedMatMods
+
+
+def expandElementals(mat, blueprint):
+    """
+    Expand elements to isotopics during material construction.
+
+    Does so as required by modeling options or user input.
+
+    See Also
+    --------
+    armi.reactor.blueprints.Blueprints._resolveNuclides
+        Sets the metadata defining this behavior.
+    """
+    elementExpansionPairs = []
+    for elementToExpand in blueprint.elementsToExpand:
+        if elementToExpand.symbol not in mat.p.massFrac:
+            continue
+        nucFlags = blueprint.nuclideFlags.get(elementToExpand.symbol)
+        nuclidesToBecome = (
+            [nuclideBases.byName[nn] for nn in nucFlags.expandTo]
+            if (nucFlags and nucFlags.expandTo)
+            else None
+        )
+        elementExpansionPairs.append((elementToExpand, nuclidesToBecome))
+
+    densityTools.expandElementalMassFracsToNuclides(
+        mat.p.massFrac, elementExpansionPairs
+    )
 
 
 def _insertDepletableNuclideKeys(c, blueprint):

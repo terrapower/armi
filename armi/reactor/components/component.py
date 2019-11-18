@@ -172,7 +172,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         Temperature in C to which dimensions were thermally-expanded upon input.
     material : str or material.Material
         The material object that makes up this component and give it its thermo-mechanical properties.
-
     """
 
     DIMENSION_NAMES = tuple()  # will be assigned by ComponentType
@@ -297,11 +296,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setProperties(self, properties):
         """Apply thermo-mechanical properties of a Material."""
-        self.material = (
-            materials.resolveMaterialClassByName(properties)()
-            if isinstance(properties, str)
-            else properties
-        )
+        if isinstance(properties, str):
+            mat = materials.resolveMaterialClassByName(properties)()
+            # note that the material will not be expanded to natural isotopics
+            # here because the user-input blueprints information is not available
+        else:
+            mat = properties
+        self.material = mat
         self.material.parent = self
         self.clearLinkedCache()
 

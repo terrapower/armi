@@ -22,7 +22,6 @@ import armi
 
 
 class C5G7ReactorTests(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
 
@@ -43,7 +42,7 @@ class C5G7ReactorTests(unittest.TestCase):
         b = o.r.core.getFirstBlock(Flags.MOX)
         # there are 100 of each high, medium, and low MOX pins
         fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)
-        self.assertEqual(fuelPinsHigh.getDimension('mult'), 100)
+        self.assertEqual(fuelPinsHigh.getDimension("mult"), 100)
 
         gt = b.getComponent(Flags.GUIDE_TUBE)
-        self.assertEqual(gt.getDimension('mult'), 24)
+        self.assertEqual(gt.getDimension("mult"), 24)

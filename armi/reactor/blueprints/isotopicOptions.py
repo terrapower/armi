@@ -13,7 +13,10 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
+Defines nuclide flags and custom isotopics via input.
+
+Nuclide flags control meta-data about nuclides. Custom isotopics
+allow specification of arbitrary isotopic compositions.
 """
 import yamlize
 from armi.utils import units
@@ -25,15 +28,49 @@ from armi.nucDirectory import elements
 from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.utils import densityTools
-
+from armi.localization.exceptions import InputError
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
 
 class NuclideFlag(yamlize.Object):
     """
-    This class defines a nuclide options for use within the ARMI simulation, defining whether or not it should be
-    included in the burn chain and cross sections.
+    Defines whether or not each nuclide is included in the burn chain and cross sections.
+
+    Also controls which nuclides get expanded from elementals to isotopics
+    and which natural isotopics to exclude (if any). Oftentimes, cross section
+    library creators include some natural isotopes but not all. For example,
+    it is common to include O16 but not O17 or O18. Each code has slightly
+    different interpretations of this so we give the user full control here.
+
+    We also try to provide useful defaults.
+
+    There are lots of complications that can arise in these choices.
+    It makes reasonable sense to use elemental compositions
+    for things that are typically used  without isotopic modifications
+    (Fe, O, Zr, Cr, Na). If we choose to expand some or all of these
+    to isotopics at initialization based on cross section library
+    requirements, a single case will work fine with a given lattice
+    physics option. However, restarting from that case with different
+    cross section needs is challenging.
+
+    Attributes
+    ----------
+    nuclideName : str
+        The name of the nuclide
+    burn : bool
+        True if this nuclide should be added to the burn chain.
+        If True, all reachable nuclides via transmutation
+        and decay must be included as well.
+    xs : bool
+        True if this nuclide should be included in the cross
+        section libraries. Effectively, if this nuclide is in the problem
+        at all, this should be true.
+    expandTo : list of str, optional
+        isotope nuclideNames to expand to. For example, if nuclideName is
+        ``O`` then this could be ``["O16", "O17"]`` to expand it into
+        those two isotopes (but not ``O18``). The nuclides will be scaled
+        up uniformly to account for any missing natural nuclides.
     """
 
     nuclideName = yamlize.Attribute(type=str)
@@ -49,29 +86,47 @@ class NuclideFlag(yamlize.Object):
 
     burn = yamlize.Attribute(type=bool)
     xs = yamlize.Attribute(type=bool)
+    expandTo = yamlize.Attribute(type=yamlize.StrList, default=None)
 
-    def __init__(self, nuclideName, burn, xs):
+    def __init__(self, nuclideName, burn, xs, expandTo):
         # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
         self.nuclideName = nuclideName
         self.burn = burn
         self.xs = xs
+        self.expandTo = expandTo
 
     def __repr__(self):
         return "<NuclideFlag name:{} burn:{} xs:{}>".format(
             self.nuclideName, self.burn, self.xs
         )
 
-    def prepForCase(self, activeSet, inertSet, undefinedBurnChainActiveNuclides):
-        """Take in the string nuclide or element name, try to expand it out to its bases correctly."""
-        actualNuclides = nucDir.getNuclidesFromInputName(self.nuclideName)
-        for actualNuclide in actualNuclides:
-            if self.burn:
-                if not actualNuclide.trans and not actualNuclide.decays:
-                    undefinedBurnChainActiveNuclides.add(actualNuclide.name)
-                activeSet.add(actualNuclide.name)
+    def fileAsActiveOrInert(
+        self, activeSet, inertSet, undefinedBurnChainActiveNuclides
+    ):
+        """
+        Given a nuclide or element name, file it as either active or inert.
 
+        If isotopic expansions are requested, include the isotopics
+        rather than the NaturalNuclideBase, as the NaturalNuclideBase will never
+        occur in such a problem.
+        """
+        nb = nuclideBases.byName[self.nuclideName]
+        if self.expandTo:
+            nucBases = [nuclideBases.byName[nn] for nn in self.expandTo]
+            expanded = [nb.element]  # error to expand non-elements
+        else:
+            nucBases = [nb]
+            expanded = []
+
+        for nuc in nucBases:
+            if self.burn:
+                if not nuc.trans and not nuc.decays:
+                    # DUMPs and LFPs usually
+                    undefinedBurnChainActiveNuclides.add(nuc.name)
+                activeSet.add(nuc.name)
             if self.xs:
-                inertSet.add(actualNuclide.name)
+                inertSet.add(nuc.name)
+        return expanded
 
 
 class NuclideFlags(yamlize.KeyedList):
@@ -160,7 +215,7 @@ class CustomIsotopic(yamlize.Map):
             self._initializeMassFracs()
             self._expandElementMassFracs()
         except Exception as ex:
-            # use a YamlizingError to line/column of erroneous input
+            # use a YamlizingError to get line/column of erroneous input
             raise yamlize.YamlizingError(str(ex), node)
 
         return self
@@ -179,7 +234,7 @@ class CustomIsotopic(yamlize.Map):
             self._initializeMassFracs()
             self._expandElementMassFracs()
         except Exception as ex:
-            # use a YamlizingError to line/column of erroneous input
+            # use a YamlizingError to get line/column of erroneous input
             raise yamlize.YamlizingError(str(ex), val_node)
 
         return self
@@ -246,13 +301,15 @@ class CustomIsotopic(yamlize.Map):
 
     def _expandElementMassFracs(self):
         """
-        Expand the massFrac dictionary element inputs to isotopics inputs (keys are strings) when the element name is
-        not a elemental nuclide. Most everywhere else expects Nuclide objects (or nuclide names). This input allows a
+        Expand the custom isotopics input entries that are elementals to isotopics.
+
+        This is necessary when the element name is not a elemental nuclide.
+        Most everywhere else expects Nuclide objects (or nuclide names). This input allows a
         user to enter "U" which would expand to the naturally occurring uranium isotopics.
 
-        This is different than the isotopic expansion done for meeting user-specified modeling options (such as an
-        MC**2, or MCNP expecting elements or isotopes), because it translates the user input into something that can be
-        used later on.
+        This is different than the isotopic expansion done for meeting user-specified
+        modeling options (such as an MC**2, or MCNP expecting elements or isotopes),
+        because it translates the user input into something that can be used later on.
         """
         elementsToExpand = []
         for nucName in self.massFracs:
@@ -264,7 +321,8 @@ class CustomIsotopic(yamlize.Map):
                             self.name, nucName
                         )
                     )
-                    elementsToExpand.append(element)
+                    # include all natural isotopes with None flag
+                    elementsToExpand.append((element, None))
                 else:
                     raise exceptions.InputError(
                         "Unrecognized nuclide/isotope/element in input: {}".format(
@@ -338,3 +396,174 @@ class CustomIsotopics(yamlize.KeyedList):
 
         custom = self[customIsotopicsName]
         custom.apply(material)
+
+
+def getDefaultNuclideFlags():
+    """
+    Return a default set of nuclides to model and deplete.
+
+    Notes
+    -----
+    The nuclideFlags input on blueprints has confused new users and is infrequently
+    changed. It will be moved to be a user setting, but in any case a reasonable default
+    should be provided. We will by default model medium-lived and longer actinides between
+    U234 and CM247.
+
+    We will include B10 and B11 without depletion, sodium, and structural elements.
+
+    We will include LFPs with depletion.
+
+    """
+    nuclideFlags = {}
+    actinides = {
+        "U": [234, 235, 236, 238],
+        "NP": [237, 238],
+        "PU": [236] + list(range(238, 243)),
+        "AM": range(241, 244),
+        "CM": range(242, 248),
+    }
+
+    for el, masses in actinides.items():
+        for mass in masses:
+            nuclideFlags[f"{el}{mass}"] = {"burn": True, "xs": True, "expandTo": None}
+
+    for fp in [35, 38, 39, 40, 41]:
+        nuclideFlags[f"LFP{fp}"] = {"burn": True, "xs": True, "expandTo": None}
+
+    for dmp in [1, 2]:
+        nuclideFlags[f"DUMP{dmp}"] = {"burn": True, "xs": True, "expandTo": None}
+
+    for boron in [10, 11]:
+        nuclideFlags[f"B{boron}"] = {"burn": False, "xs": True, "expandTo": None}
+
+    for struct in [
+        "ZR",
+        "C",
+        "SI",
+        "V",
+        "CR",
+        "MN",
+        "FE",
+        "NI",
+        "MO",
+        "W",
+        "NA",
+        "HE",
+    ]:
+        nuclideFlags[struct] = {"burn": False, "xs": True, "expandTo": None}
+
+    return nuclideFlags
+
+
+def autoSelectElementsToKeepFromSettings(cs):
+    """
+    Intelligently choose elements to expand based on settings.
+
+    If settings point to a particular code and library and we know
+    that combo requires certain elementals to be expanded, we
+    flag them here to make the user input as simple as possible.
+
+    This determines both which elementals to keep and which
+    specific expansion subsets to use.
+
+    Notes
+    -----
+    This logic is expected to be moved to respective plugins in time.
+
+    Returns
+    -------
+    elementalsToKeep : set
+        Set of NaturalNuclideBase instances to not expand into
+        natural isotopics.
+    expansions : dict
+        Element to list of nuclides for expansion.
+        For example: {oxygen: [oxygen16]} indicates that all
+        oxygen should be expanded to O16, ignoring natural
+        O17 and O18. (variables are Natural/NuclideBases)
+
+    """
+    elementalsToKeep = set()
+    oxygenElementals = [nuclideBases.byName["O"]]
+    hydrogenElementals = [nuclideBases.byName[name] for name in ["H"]]
+    endf70Elementals = [nuclideBases.byName[name] for name in ["C", "V", "ZN"]]
+    endf71Elementals = [nuclideBases.byName[name] for name in ["C"]]
+    endf80Elementals = []
+    elementalsInMC2 = set()
+    expansionStrings = {}
+    mc2Expansions = {
+        "HE": ["HE4"],  # neglect HE3
+        "O": ["O16"],  # neglect O17 and O18
+        "W": ["W182", "W183", "W184", "W186"],  # neglect W180
+    }
+    mcnpExpansions = {
+        "O": ["O16"],
+    }
+
+    for element in elements.byName.values():
+        # any NaturalNuclideBase that's available in MC2 libs
+        nnb = nuclideBases.byName.get(element.symbol)
+        if nnb and nnb.mc2id:
+            elementalsInMC2.add(nnb)
+
+    if "MCNP" in cs["neutronicsKernel"]:
+        expansionStrings.update(mcnpExpansions)
+        if int(cs["mcnpLibrary"]) == 50:
+            elementalsToKeep.update(nuclideBases.instances)  # skip expansion
+        # ENDF/B VII.0
+        elif 70 <= int(cs["mcnpLibrary"]) <= 79:
+            elementalsToKeep.update(endf70Elementals)
+        # ENDF/B VII.1
+        elif 80 <= int(cs["mcnpLibrary"]) <= 89:
+            elementalsToKeep.update(endf71Elementals)
+        else:
+            raise InputError(
+                "Failed to determine nuclides for modeling. "
+                "The `mcnpLibrary` setting value ({}) is not supported.".format(
+                    cs["mcnpLibrary"]
+                )
+            )
+
+    elif cs["xsKernel"] in ["SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+        elementalsToKeep.update(endf70Elementals)
+        expansionStrings.update(mc2Expansions)
+
+    elif cs["xsKernel"] == "DRAGON":
+        # Users need to use default nuclear lib name. This is documented.
+        dragLib = cs["dragonDataPath"]
+        # only supports ENDF/B VII/VIII at the moment.
+        if "7r0" in dragLib:
+            elementalsToKeep.update(endf70Elementals)
+        elif "7r1" in dragLib:
+            elementalsToKeep.update(endf71Elementals)
+        elif "8r0" in dragLib:
+            elementalsToKeep.update(endf80Elementals)
+            elementalsToKeep.update(hydrogenElementals)
+            elementalsToKeep.update(oxygenElementals)
+        else:
+            raise ValueError(
+                f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
+            )
+
+    elif cs["xsKernel"] == "MC2v2":
+        # strip out any NaturalNuclideBase with no mc2id (not on mc2Nuclides.yaml)
+        elementalsToKeep.update(elementalsInMC2)
+        expansionStrings.update(mc2Expansions)
+
+    # convert convenient string notation to actual NuclideBase objects
+    expansions = {}
+    for nnb, nbs in expansionStrings.items():
+        expansions[nuclideBases.byName[nnb]] = [nuclideBases.byName[nb] for nb in nbs]
+
+    return elementalsToKeep, expansions
+
+
+def genDefaultNucFlags():
+    """Perform all the yamlize-required type conversions."""
+    flagsDict = getDefaultNuclideFlags()
+    flags = NuclideFlags()
+    for nucName, nucFlags in flagsDict.items():
+        flag = NuclideFlag(
+            nucName, nucFlags["burn"], nucFlags["xs"], nucFlags["expandTo"]
+        )
+        flags[nucName] = flag
+    return flags

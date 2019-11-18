@@ -577,7 +577,7 @@ class Assembly_TestCase(unittest.TestCase):
             with open(self.cs["loadingFile"], "r") as y:
                 self.r.blueprints = blueprints.Blueprints.load(y)
 
-            self.r.blueprints._prepConstruction("hex", self.cs)
+            self.r.blueprints._prepConstruction(self.cs)
 
     def test_duplicate(self):
         self._setup_blueprints()
@@ -1516,7 +1516,7 @@ assemblies:
         xs types:  &inner_igniter_fuel_xs_types [D]
 """
         self.blueprints = blueprints.Blueprints.load(inputStr)
-        self.blueprints._prepConstruction("hex", self.cs)
+        self.blueprints._prepConstruction(self.cs)
 
     def test_areaCheck(self):
         assembly = list(self.blueprints.assemblies.values())[0]

@@ -185,6 +185,13 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_saturated_water_entropy / water.entropy(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_saturated_steam_entropy / steam.entropy(Tk=Tk), 1, 3)
 
+    def test_massFrac(self):
+        for water in [SaturatedWater(), SaturatedSteam()]:
+            massFracO = water.getMassFrac("O")
+            massFracH = water.getMassFrac("H")
+            self.assertAlmostEqual(massFracO, 0.888, places=3)
+            self.assertAlmostEqual(massFracO + massFracH, 1.0)
+
 
 if __name__ == "__main__":
 

@@ -16,10 +16,9 @@
 import math
 
 from armi.utils.units import getTk
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory import elements
 from armi.materials.material import Fluid
 from armi.utils import units
-from armi.utils import densityTools
 
 
 class Water(Fluid):
@@ -75,13 +74,10 @@ class Water(Fluid):
     d[5] = 0.981825814
 
     def setDefaultMassFracs(self):
-
-        massFrac = {"H": 2.0 / 3.0, "O": 1.0 / 3.0}
-        elements = [
-            nuclideBases.elements.bySymbol["H"],
-            nuclideBases.elements.bySymbol["O"],
-        ]
-        densityTools.expandElementalMassFracsToNuclides(massFrac, elements)
+        massHydrogen = elements.bySymbol["H"].standardWeight
+        massOxygen = elements.bySymbol["O"].standardWeight
+        totalMass = 2 * massHydrogen + massOxygen
+        massFrac = {"H": 2.0 * massHydrogen / totalMass, "O": massOxygen / totalMass}
         for nucName, mfrac in massFrac.items():
             self.setMassFrac(nucName, mfrac)
 
@@ -309,6 +305,11 @@ class Water(Fluid):
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return phi + 1.0 / rho * dp_dT
+
+    def density(self, Tk=None, Tc=None):
+        raise NotImplementedError(
+            "Please use a concrete instance: SaturatedWater or SaturatedSteam."
+        )
 
 
 class SaturatedWater(Water):

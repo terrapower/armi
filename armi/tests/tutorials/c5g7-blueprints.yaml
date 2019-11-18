@@ -33,7 +33,7 @@ blocks:
             latticeIDs: [U]
         moderator: &moderator
             shape: DerivedShape
-            material: Water
+            material: SaturatedWater
             Tinput: 450.0
             Thot: 450.0
         guide tube: &guide_tube
@@ -96,7 +96,7 @@ blocks:
     moderator: &block_mod
         moderator: 
             shape: Square
-            material: Water
+            material: SaturatedWater
             Tinput: 25.0
             Thot: 25.0
             widthOuter: 21.42
@@ -216,3 +216,12 @@ grids:
             ML MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM ML
             ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML
 # end-grid-MOX
+nuclide flags:
+    O: 
+        burn: false
+        xs: true
+        expandTo: ["O16"]
+    H: {burn: false, xs: true}
+    U235: {burn: false, xs: true}
+    U238: {burn: false, xs: true}
+# end-nucflags
