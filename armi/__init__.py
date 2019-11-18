@@ -153,19 +153,20 @@ def cleanTempDirs(olderThanDays=None):
     """
     Clean up temporary files after a run.
 
-    Parameters
-    ----------
-    olderThanDays: int, optional
-        If provided, deletes other ARMI directories if they are older than the requested
-        time.
-
     The Windows HPC system sends a SIGBREAK signal when the user cancels a job, which
     is NOT handled by ``atexit``. Notably SIGBREAK doesn't exist off Windows.
     For the SIGBREAK signal to work with a Microsoft HPC, the ``TaskCancelGracePeriod``
     option must be configured to be non-zero. This sets the period between SIGBREAK
     and SIGTERM/SIGINT. To do cleanups in this case, we must use the ``signal`` module.
     Actually, even then it does not work because MS ``mpiexec`` does not pass signals
-    through.  """
+    through.
+
+    Parameters
+    ----------
+    olderThanDays: int, optional
+        If provided, deletes other ARMI directories if they are older than the requested
+        time.
+    """
     disconnectAllHdfDBs()
 
     if os.path.exists(FAST_PATH):
