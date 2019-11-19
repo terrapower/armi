@@ -101,3 +101,17 @@ class TestApps(unittest.TestCase):
             plugins.PluginError, ".*currently-defined parameters.*"
         ):
             app.getParamRenames()
+
+
+class TestArmi(unittest.TestCase):
+    """
+    Tests for functions in the ARMI __init__ module.
+    """
+
+    def test_getDefaultPlugMan(self):
+        from armi import cli
+        pm = armi.getDefaultPluginManager()
+        pm2 = armi.getDefaultPluginManager()
+
+        self.assertTrue(pm is not pm2)
+        self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())

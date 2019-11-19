@@ -153,19 +153,20 @@ def cleanTempDirs(olderThanDays=None):
     """
     Clean up temporary files after a run.
 
-    Parameters
-    ----------
-    olderThanDays: int, optional
-        If provided, deletes other ARMI directories if they are older than the requested
-        time.
-
     The Windows HPC system sends a SIGBREAK signal when the user cancels a job, which
     is NOT handled by ``atexit``. Notably SIGBREAK doesn't exist off Windows.
     For the SIGBREAK signal to work with a Microsoft HPC, the ``TaskCancelGracePeriod``
     option must be configured to be non-zero. This sets the period between SIGBREAK
     and SIGTERM/SIGINT. To do cleanups in this case, we must use the ``signal`` module.
     Actually, even then it does not work because MS ``mpiexec`` does not pass signals
-    through.  """
+    through.
+
+    Parameters
+    ----------
+    olderThanDays: int, optional
+        If provided, deletes other ARMI directories if they are older than the requested
+        time.
+    """
     disconnectAllHdfDBs()
 
     if os.path.exists(FAST_PATH):
@@ -288,6 +289,12 @@ def getDefaultPluginManager() -> pluggy.PluginManager:
     return pm
 
 
+def isConfigured():
+    """
+    Returns whether ARMI has been configured with an App.
+    """
+    return _app is not None
+
 def getPluginManager() -> Optional[pluggy.PluginManager]:
     """
     Return the plugin manager, if there is one.
@@ -331,6 +338,20 @@ def _cleanupOnCancel(signum, _frame):
 def configure(app: apps.App):
     """
     Set the plugin manager for the Framework and configure internals to those plugins.
+
+    Important
+    ---------
+    Since this affects the behavior of several modules at their import time, it is
+    generally not safe to re-configure the ARMI framework once it has been configured.
+    Therefore this will raise an ``AssertionError`` if such a re-configuration is
+    attempted.
+
+    Notes
+    -----
+    We are planning on encapsulating much of the global ARMI state that gets configured
+    with an App into the App object itself (with some other things going into the Case
+    object). This will provide a number of benefits, the main one being that it will
+    become trivial to re-configure the framework, which is currently not possible.
     """
     assert not armi.context.BLUEPRINTS_IMPORTED, (
         "ARMI can no longer be configured after blueprints have been imported. "
