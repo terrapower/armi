@@ -34,8 +34,7 @@ class MockGeom(object):
     geomType = "hex"
 
 
-BLUEPRINT_INPUT = """
-nuclide flags:
+FLAGS_INPUT = """nuclide flags:
     U: {burn: false, xs: true}
     ZR: {burn: false, xs: true}
     MN: {burn: false, xs: true}
@@ -46,8 +45,22 @@ nuclide flags:
     MO: {burn: false, xs: true}
     NI: {burn: false, xs: true}
     V: {burn: false, xs: true}
-    W: {burn: false, xs: true}
-blocks:
+    W: {burn: false, xs: true}"""
+CLAD = """clad: &fuel_1_clad
+            Tinput: 350.0
+            Thot: 350.0
+            shape: circle
+            id: 1.0
+            od: 1.1
+            material: HT9"""
+CLAD_LINKED = """clad: &fuel_1_clad
+            Tinput: 350.0
+            Thot: 350.0
+            shape: circle
+            id: fuel.od
+            od: 1.1
+            material: HT9"""
+BLOCKS_INPUT = """blocks:
     fuel 1: &fuel_1
         fuel: &fuel_1_fuel
             Tinput: 350.0
@@ -56,13 +69,7 @@ blocks:
             id: 0.0
             od: 0.5
             material: UZr
-        clad: &fuel_1_clad
-            Tinput: 350.0
-            Thot: 350.0
-            shape: circle
-            id: 1.0
-            od: 1.1
-            material: HT9
+        {clad}
         hex: &fuel_1_hex
             Tinput: 350.0
             Thot: 350.0
@@ -72,9 +79,21 @@ blocks:
             material: HT9
     fuel 2: *fuel_1
     block 3: *fuel_1                                        # non-fuel blocks
-    block 4: {<<: *fuel_1}                                  # non-fuel blocks
-    block 5: {fuel: *fuel_1_fuel, clad: *fuel_1_clad, hex: *fuel_1_hex}       # non-fuel blocks
-assemblies: {}
+    block 4: {{<<: *fuel_1}}                                  # non-fuel blocks
+    block 5: {{fuel: *fuel_1_fuel, clad: *fuel_1_clad, hex: *fuel_1_hex}}       # non-fuel blocks"""
+BLOCKS_INPUT_1 = BLOCKS_INPUT.format(clad=CLAD)
+BLOCKS_INPUT_2 = BLOCKS_INPUT.format(clad=CLAD_LINKED)
+
+BLUEPRINT_INPUT = f"""
+{FLAGS_INPUT}
+{BLOCKS_INPUT_1}
+assemblies: {{}}
+"""
+
+BLUEPRINT_INPUT_LINKS = f"""
+{FLAGS_INPUT}
+{BLOCKS_INPUT_2}
+assemblies: {{}}
 """
 
 GEOM_INPUT = io.StringIO(
@@ -245,7 +264,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def setUpClass(cls):
         geom = geometry.SystemLayoutInput()
         geom.readGeomFromStream(GEOM_INPUT)
-        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
+        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS)
         cs = settings.Settings()
         bp._prepConstruction(cs)
         cls.baseCase = cases.Case(cs=cs, bp=bp, geom=geom)
@@ -286,18 +305,10 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
             {"neutronicsKernel": neutronics.DIF3DFD, "numberMeshPerEdge": 1},
             {"neutronicsKernel": neutronics.DIF3DFD, "numberMeshPerEdge": 2},
             {"neutronicsKernel": neutronics.DIF3DFD, "numberMeshPerEdge": 3},
-            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-7, "epsFSAvg": 1e-5,},
-            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-9, "epsFSAvg": 1e-6,},
-            {
-                "neutronicsKernel": neutronics.VARIANT,
-                "epsEig": 1e-12,
-                "epsFSAvg": 1e-7,
-            },
-            {
-                "neutronicsKernel": neutronics.VARIANT,
-                "epsEig": 1e-13,
-                "epsFSAvg": 1e-8,
-            },
+            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-7, "epsFSAvg": 1e-5},
+            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-9, "epsFSAvg": 1e-6},
+            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-12, "epsFSAvg": 1e-7},
+            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-13, "epsFSAvg": 1e-8},
         )
         builder.addDegreeOfFreedom(
             NeutronicsKernelOpts(opts) for opts in neutronicKernelOpts

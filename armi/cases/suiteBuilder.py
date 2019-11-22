@@ -30,6 +30,7 @@ import os
 import random
 
 from armi.reactor import flags
+from armi.reactor.components import component
 from armi.cases import suite
 
 
@@ -428,6 +429,10 @@ class _PinTypeAssemblyModifier(InputModifier):
                 for dimName in c.DIMENSION_NAMES:
                     inpDim = getattr(cDesign, dimName)
                     newDim = getattr(c.p, dimName)
+                    if isinstance(newDim, tuple):
+                        # map linked component dimension
+                        link = component._DimensionLink(newDim)
+                        newDim = str(link)
                     if inpDim != newDim:
                         setattr(cDesign, dimName, newDim)
 

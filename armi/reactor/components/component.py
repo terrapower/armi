@@ -106,6 +106,15 @@ class _DimensionLink(tuple):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __str__(self):
+        """Return a string representation of a dimension link.
+
+        These look like ``otherComponentName.otherDimensionName``.
+        For example, if a link were to a ``fuel`` component's
+        ``od`` param, the link would render as ``fuel.od``.
+        """
+        return f"{self[0].name}.{self[1]}"
+
 
 class ComponentType(composites.CompositeModelType):
     """
@@ -133,6 +142,7 @@ class ComponentType(composites.CompositeModelType):
         "material",
         "name",
         "components",
+        "area",
     )
 
     def __new__(cls, name, bases, attrs):
@@ -203,7 +213,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=None,
         isotopics="",
         mergeWith="",
         components=None,
@@ -797,7 +807,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 {}
             )  # changes in dimensions can affect cached variables such as pitch
             for c in self.getLinkedComponents():
-                c.p.volume = None  # no clearCache since parent already updated derivedMustUpdate in self.clearCache()
+                # no clearCache since parent already updated derivedMustUpdate in self.clearCache()
+                c.p.volume = None
 
     def getLinkedComponents(self):
         """Find other components that are linked to this component."""

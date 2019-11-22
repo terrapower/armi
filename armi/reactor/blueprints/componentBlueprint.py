@@ -143,6 +143,7 @@ class ComponentBlueprint(yamlize.Object):
     origin = yamlize.Attribute(type=list, default=None)
     orientation = yamlize.Attribute(type=str, default=None)
     mergeWith = yamlize.Attribute(type=str, default=None)
+    area = yamlize.Attribute(type=float, default=None)
 
     def construct(self, blueprint, matMods):
         """Construct a component"""

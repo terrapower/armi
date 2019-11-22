@@ -44,6 +44,10 @@ User-facing enhancements
 * Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
   users can control precisely which isotopes the elements get expanded into.
 
+Bugfixes
+--------
+* SuiteBuilder handles smear density dimension changes for parameter sweeps again
+
 Backend changes
 ---------------
 * Number fractions are now maintained across elemental expansion subsets. This slightly changes
