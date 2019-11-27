@@ -872,7 +872,7 @@ class Database3(database.Database):
             # the SFP, etc.
             if comp.hasFlags(Flags.CORE):
                 comp.processLoading(cs)
-        if isinstance(comp, Assembly):
+        elif isinstance(comp, Assembly):
             comp.calculateZCoords()
 
         return comp
