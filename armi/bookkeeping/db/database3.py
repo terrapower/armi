@@ -560,8 +560,9 @@ class Database3(database.Database):
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
-
-        bp = blueprints.Blueprints.load(self.h5db["inputs/blueprints"][()])
+        stream = io.StringIO(self.h5db["inputs/blueprints"][()])
+        stream = blueprints.Blueprints.migrate(stream)
+        bp = blueprints.Blueprints.load(stream)
         return bp
 
     def loadGeometry(self):
@@ -1959,6 +1960,12 @@ def _writeAttrs(obj, group, attrs):
     limited space. If an attribute is too large, h5py raises a RuntimeError.
     In such cases, this will store the attribute data in a proper dataset and
     place a reference to that dataset in the attribute instead.
+
+    In practice, this takes ``linkedDims`` attrs from a particular
+    component type (like ``c00/n00/Circle/id``) and stores them
+    in new datasets (like ``c00n00/attrs/1_linkedDims``,
+    ``c00n00/attrs/2_linkedDims``) and
+    then sets the object's attrs to links to those datasets.
     """
     for key, value in attrs.items():
         try:
@@ -1984,12 +1991,21 @@ def _writeAttrs(obj, group, attrs):
 
 def _resolveAttrs(attrs, group):
     """
-    Reverse the action of _writeAttrs
+    Reverse the action of _writeAttrs.
+
+    This reads actual attrs and looks for the real data
+    in the datasets that the attrs were pointing to.
     """
     resolved = {}
     for key, val in attrs.items():
-        if isinstance(val, h5py.h5r.Reference):
-            resolved[key] = group[val]
-        else:
-            resolved[key] = val
+        try:
+            if isinstance(val, h5py.h5r.Reference):
+                # dereference the .ref to get the data
+                # out of the dataset.
+                resolved[key] = group[val]
+            else:
+                resolved[key] = val
+        except ValueError:
+            runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
+            raise
     return resolved

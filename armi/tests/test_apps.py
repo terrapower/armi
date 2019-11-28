@@ -110,6 +110,7 @@ class TestArmi(unittest.TestCase):
 
     def test_getDefaultPlugMan(self):
         from armi import cli
+
         pm = armi.getDefaultPluginManager()
         pm2 = armi.getDefaultPluginManager()
 

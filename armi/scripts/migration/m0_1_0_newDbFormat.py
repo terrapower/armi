@@ -31,9 +31,19 @@ from armi import runLog
 from armi import utils
 from armi.reactor import geometry
 
+from armi.scripts.migration.base import DatabaseMigration
 
-def migrateDatabase(databasePath):
-    _migrateDatabase(databasePath, _preCollector, _visit, _postApplier)
+
+class ConvertDB2toDB3(DatabaseMigration):
+    """Convert ARMI DB version 2 to DB version 3."""
+
+    def __init__(self, stream=None, path=None):
+        DatabaseMigration.__init__(self, stream=stream, path=path)
+        if stream:
+            raise ValueError("Can only migrate database by path.")
+
+    def apply(self):
+        _migrateDatabase(self.path, _preCollector, _visit, _postApplier)
 
 
 def _migrateDatabase(databasePath, preCollector, visitor, postApplier):

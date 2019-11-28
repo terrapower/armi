@@ -16,11 +16,15 @@
 Entry point into ARMI to migrate inputs to the latest version of ARMI.
 """
 
+import os
+
 from armi.cli.entryPoint import EntryPoint
+from armi.scripts.migration import ACTIVE_MIGRATIONS, base
+from armi.utils import directoryChangers
 
 
 class MigrateInputs(EntryPoint):
-    """Migrate ARMI Inputs to Latest ARMI Code Base"""
+    """Migrate ARMI Inputs and/or outputs to Latest ARMI Code Base"""
 
     name = "migrate-inputs"
 
@@ -39,10 +43,38 @@ class MigrateInputs(EntryPoint):
         )
 
     def invoke(self):
-        from armi.scripts.migration.databaseMigrations import migrateDatabase
-        from armi.scripts.migration import migrate_inputs
-
+        """
+        Run the entry point
+        """
         if self.args.settings_path:
-            migrate_inputs.migrate_settings(self.args.settings_path)
-        if self.args.database_path:
-            migrateDatabase.migrateDatabase(self.args.database_path)
+            path, _fname = os.path.split(self.args.settings_path)
+            with directoryChangers.DirectoryChanger(path):
+                self._migrate(self.args.settings_path, self.args.database_path)
+        else:
+            self._migrate(self.args.settings_path, self.args.database_path)
+
+    def _migrate(self, settingsPath, dbPath):
+        """
+        Run all migrations.
+
+        Notes
+        -----
+        Some migrations change the paths so we update them one by one.
+        For example, a migration converts a settings file from xml to yaml.
+        """
+        for migrationI in ACTIVE_MIGRATIONS:
+            if (
+                issubclass(
+                    migrationI, (base.SettingsMigration, base.BlueprintsMigration)
+                )
+                and settingsPath
+            ):
+                mig = migrationI(path=settingsPath)
+                mig.apply()
+                if issubclass(migrationI, base.SettingsMigration):
+                    # don't update on blueprints migration paths, that's not settings!
+                    settingsPath = mig.path
+            elif issubclass(migrationI, base.DatabaseMigration) and dbPath:
+                mig = migrationI(path=dbPath)
+                mig.apply()
+                dbPath = mig.path

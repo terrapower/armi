@@ -295,6 +295,7 @@ def isConfigured():
     """
     return _app is not None
 
+
 def getPluginManager() -> Optional[pluggy.PluginManager]:
     """
     Return the plugin manager, if there is one.

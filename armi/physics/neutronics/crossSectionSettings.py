@@ -64,11 +64,11 @@ SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_BLOCKTYPES): [str],
         vol.Optional(CONF_HOMOGBLOCK): bool,
         vol.Optional(CONF_EXTERNAL_DRIVER, default=True): bool,
-        vol.Optional(CONF_INTERNAL_RINGS): int,
-        vol.Optional(CONF_EXTERNAL_RINGS): int,
+        vol.Optional(CONF_INTERNAL_RINGS): vol.Coerce(int),
+        vol.Optional(CONF_EXTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_MERGE_INTO_CLAD): [str],
         vol.Optional(CONF_FILE_LOCATION): [str],
-        vol.Optional(CONF_MESH_PER_CM): int,
+        vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
     }
 )
 

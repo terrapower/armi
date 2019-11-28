@@ -24,7 +24,7 @@ At a high level there are 3 things to know about HDF5:
    little endian so that the file is portable across different systems). Values can be
    scalar, vector, or N-dimensional arrays.
 3. Attributes - attributes can exist on a dataset or a group to provide supplemental
-   information about the group or dataset. We use attributes to idicate the ARMI
+   information about the group or dataset. We use attributes to indicate the ARMI
    database version that was used to create the database, the time the case was
    executed, and whether or not the case completed successfully. We also sometimes apply
    attributes to datasets to indicate if any special formatting or layout was used to

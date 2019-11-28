@@ -1243,10 +1243,12 @@ def getBlockParameterDefinitions():
 
         pb.defParam("hydDiam", units="?", description="?", saveToDB=False)
 
-        pb.defParam("nHMAtBOL",
-                    units="atoms/bn-cm.",
-                    description="Ndens of heavy metal at BOL",
-                    saveToDB=False)
+        pb.defParam(
+            "nHMAtBOL",
+            units="atoms/bn-cm.",
+            description="Ndens of heavy metal at BOL",
+            saveToDB=False,
+        )
 
         pb.defParam(
             "z",

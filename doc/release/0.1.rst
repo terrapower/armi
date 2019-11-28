@@ -43,6 +43,7 @@ User-facing enhancements
 ------------------------
 * Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
   users can control precisely which isotopes the elements get expanded into.
+* Improved migration system, accessible with ``python3 -m armi migrate-inputs``
 
 Bugfixes
 --------

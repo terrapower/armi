@@ -67,12 +67,13 @@ import collections
 from collections import OrderedDict
 import os
 import traceback
+import typing
 
 import tabulate
-
 import six
 import yamlize
 import yamlize.objects
+import ruamel.yaml
 import ordered_set
 
 import armi
@@ -83,6 +84,7 @@ from armi import plugins
 from armi.localization.exceptions import InputError
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
+from armi.scripts import migration
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -101,7 +103,7 @@ def loadFromCs(cs):
     """
     Function to load Blueprints based on supplied ``CaseSettings``.
     """
-    from armi.utils import directoryChangers  # circular import protection
+    from armi.utils import directoryChangers  # pylint: disable=import-outside-toplevel; circular import protection
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
         with open(cs["loadingFile"], "r") as bpYaml:
@@ -130,15 +132,15 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
     def __new__(mcs, name, bases, attrs):
         # pylint: disable=no-member
-        plugins = armi.getPluginManager()
-        if plugins is None:
+        pm = armi.getPluginManager()
+        if pm is None:
             runLog.warning(
                 "Blueprints were instantiated before the framework was "
                 "configured with plugins. Blueprints cannot be imported before "
                 "ARMI has been configured."
             )
         else:
-            pluginSections = plugins.hook.defineBlueprintsSections()
+            pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
                 for (attrName, section, resolver) in plug:
                     assert isinstance(section, yamlize.Attribute)
@@ -487,3 +489,18 @@ class Blueprints(yamlize.Object):
                             b, b.getArea(), a[0], blockArea
                         )
                     )
+
+    @classmethod
+    def migrate(cls, inp: typing.TextIO):
+        """Given a stream representation of a blueprints file, migrate it.
+
+        Parameters
+        ----------
+        inp : typing.TextIO
+            Input stream to migrate.
+        """
+        for migI in migration.ACTIVE_MIGRATIONS:
+            if issubclass(migI, migration.base.BlueprintsMigration):
+                mig = migI(stream=inp)
+                inp = mig.apply()
+        return inp

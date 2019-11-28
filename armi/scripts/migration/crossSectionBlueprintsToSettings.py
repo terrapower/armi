@@ -16,7 +16,7 @@
 Migrate compound cross section settings from blueprints file to settings file.
 
 This setting was originally stored in blueprints just because yaml was more
-condusive than XML for a compound setting. After we migrated the settings
+conducive than XML for a compound setting. After we migrated the settings
 system to YAML, it was much more natural to put this setting in the settings 
 file. Along the way, we renamed some of the input fields as well. 
 
@@ -37,6 +37,39 @@ from armi import runLog
 from armi.settings import caseSettings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionSettings import *
+from armi.scripts.migration.base import SettingsMigration
+from armi.settings import settingsIO
+
+
+class MoveCrossSectionsFromBlueprints(SettingsMigration):
+    """
+    Move cross sections settings from blueprints to settings.
+
+    This modifies both settings and blueprints.
+    """
+
+    fromVersion = "0.0.0"
+    toVersion = "0.1.0"
+
+    def _applyToStream(self):
+        cs = caseSettings.Settings()
+        reader = settingsIO.SettingsReader(cs)
+        reader.readFromStream(self.stream)
+        self.stream.close()
+        cs.path = self.path
+
+        migrateCrossSectionsFromBlueprints(cs)
+        writer = settingsIO.SettingsWriter(cs)
+        newStream = io.StringIO()
+        writer.writeYaml(newStream)
+        newStream.seek(0)
+        return newStream
+
+    def _backupOriginal(self):
+        """Don't actually back up because it's done below."""
+
+    def _writeNewFile(self, newStream):
+        """Skip writing new file since it's handled below."""
 
 
 def migrateCrossSectionsFromBlueprints(settingsObj):

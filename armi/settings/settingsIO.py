@@ -106,10 +106,18 @@ class _SettingsReader(object):
     def readFromStream(self, stream, handleInvalids=True, fmt=SettingsInputFormat.YAML):
         """Read from a file-like stream."""
         self.format = fmt
+        if self.format == self.SettingsInputFormat.YAML:
+            try:
+                self._readYaml(stream, handleInvalids=handleInvalids)
+            except ruamel.yaml.scanner.ScannerError:
+                # mediocre way to detect xml vs. yaml at the stream level
+                runLog.info(
+                    "Could not read stream in YAML format. Attempting XML format."
+                )
+                self.format = self.SettingsInputFormat.XML
+                stream.seek(0)
         if self.format == self.SettingsInputFormat.XML:
             self._readXml(stream, handleInvalids=handleInvalids)
-        elif self.format == self.SettingsInputFormat.YAML:
-            self._readYaml(stream, handleInvalids=handleInvalids)
 
     def _readXml(self, stream, handleInvalids=True):
         """

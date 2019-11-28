@@ -31,18 +31,17 @@ Migrations should generally happen in the background from the user's perspective
 like happens in mainstream applications like word processors and spreadsheets.
 """
 
+from . import (
+    m0_1_0_settings,
+    m0_1_3,
+    m0_1_0_newDbFormat,
+    crossSectionBlueprintsToSettings,
+)
 
-class Migration:
-    fromVersion = "x.x.x"
-    toVersion = "x.x.x"
-    description = "Base migration class"
-
-    def apply(self):
-        self._migrateInputs()
-        self._migrateDatabase()
-
-    def _migrateInputs(self):
-        raise NotImplementedError()
-
-    def _migrateDatabase(self):
-        raise NotImplementedError()
+ACTIVE_MIGRATIONS = [
+    m0_1_0_settings.ConvertXmlSettingsToYaml,
+    m0_1_0_newDbFormat.ConvertDB2toDB3,
+    m0_1_3.RemoveCentersFromBlueprints,
+    m0_1_3.UpdateElementalNuclides,
+    crossSectionBlueprintsToSettings.MoveCrossSectionsFromBlueprints,
+]
