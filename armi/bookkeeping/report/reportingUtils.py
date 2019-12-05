@@ -607,8 +607,14 @@ def summarizeZones(core, cs):
             pFracList.append(pFrac)
         totFrac += pFrac
 
+    if not pFracList:
+        # sometimes this is empty (why?), which causes an error below when
+        # calling max(pFracList)
+        return
+
     if abs(totFrac - 1.0) < 1e-4:
         runLog.warning("total power fraction not equal to sum of assembly powers.")
+
 
     peak = max(pFracList)  # highest power assembly
     peakIndex = pFracList.index(peak)
