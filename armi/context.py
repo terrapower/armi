@@ -64,14 +64,6 @@ class Mode:
             mode
         )
         CURRENT_MODE = mode
-        try:
-            from ccl import schedulers
-
-            schedulers.Scheduler.GUI_MODE = mode == cls.Gui
-        except:  # pylint: disable=bare-except;reason=avoid pywin32 p.load parallel issues
-            # nonstandard because this is //before// any other armi import
-            # ccl usage will fail but only on demand.
-            pass
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
