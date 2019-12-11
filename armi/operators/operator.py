@@ -804,7 +804,22 @@ class Operator:  # pylint: disable=too-many-public-methods
     def loadState(
         self, cycle, timeNode, timeStepName="", fileName=None, updateMassFractions=None
     ):
-        """Convenience method reroute to the database interface state reload method"""
+        """
+        Convenience method reroute to the database interface state reload method
+        
+        See also
+        --------
+        armi.bookeeping.db.loadOperator:
+            A method for loading an operator given a database. loadOperator does not
+            require an operator prior to loading the state of the reactor. loadState
+            does, and therefore armi.init must be called which requires access to the
+            blueprints, settings, and geometry files. These files are stored implicitly
+            on the database, so loadOperator creates the reactor first, and then attaches
+            it to the operator. loadState should be used if you are in the middle
+            of an ARMI calculation and need load a different time step. If you are
+            loading from a fresh ARMI session, either method is sufficient if you have
+            access to all the input files.
+        """
         dbi = self.getInterface("database")
         if not dbi:
             raise RuntimeError("Cannot load from snapshot without a database interface")

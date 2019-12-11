@@ -370,12 +370,13 @@ class Case:
                 combinedCoverage.html_report()
                 combinedCoverage.xml_report()
 
-    def initializeOperator(self):
+    def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
         with DirectoryChanger(self.cs.inputDirectory):
             self._initBurnChain()
             o = operators.factory(self.cs)
-            r = reactors.factory(self.cs, self.bp)
+            if not r:
+                r = reactors.factory(self.cs, self.bp)
             o.initializeInterfaces(r)
             # Set this here to make sure the full duration of initialization is properly captured.
             # Cannot be done in reactors since the above self.bp call implicitly initializes blueprints.

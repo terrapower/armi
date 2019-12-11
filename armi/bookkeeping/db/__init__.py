@@ -33,11 +33,89 @@ from armi.reactor import reactors
 
 # these imports flatten the required imports so that someone only needs to use `from
 # armi.bookkeeping import db`
+from . import database3
 from .permissions import Permissions
 from .database3 import Database3, DatabaseInterface
 from .xtviewDB import XTViewDatabase
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
+
+
+def loadOperator(pathToDb, loadCycle, loadNode):
+    """
+    Return an operator given the path to a database.
+    
+    Parameters
+    ----------
+    pathToDb : str
+        The path of the database to load from.
+    loadCycle : int
+        The cycle to load the reactor state from.
+    loadNode : int
+        The time node to load the reactor from.
+    
+    See Also
+    --------
+    armi.operator.Operator.loadState:
+        A method for loading reactor state that is useful if you already have an
+        operator and a reactor object. loadOperator varies in that it supplies these
+        given only a database file. loadState should be used if you are in the
+        middle of an ARMI calculation and need load a different time step.
+    
+    Notes
+    -----
+    The operator will have a reactor attached that is loaded to the specified cycle
+    and node. The operator will not be in the same state that it was at that cycle and
+    node, only the reactor.
+
+    Examples
+    --------
+    >>> o = db.loadOperator(r"pathToDatabase", 0, 1)
+    >>> r = o.r
+    >>> cs = o.cs
+    >>> r.p.timeNode
+    1
+    >>> r.getFPMass()  # Note since it is loaded from step 1 there are fission products.
+    12345.67
+    """
+    # `import armi` doesn't work if imported at top
+    from armi import cases
+    from armi import settings
+
+    if not os.path.exists(pathToDb):
+        raise ValueError(
+            f"Specified database at path {pathToDb} does not exist. \n\n"
+            "Double check that escape characters were correctly processed.\n"
+            "Consider sending the full path, or change directory to be the directory "
+            "of the database."
+        )
+
+    db = Database3(pathToDb, "r")
+    with db:
+        # init Case here as it keeps track of execution time and assigns a reactor
+        # attribute. This attribute includes the time it takes to initialize the reactor
+        # so creating a reactor from the database should be included.
+        cs = db.loadCS()
+        thisCase = cases.Case(cs)
+
+        r = db.load(loadCycle, loadNode)
+    settings.setMasterCs(cs)
+
+    # Update the global assembly number because, if the user is loading a reactor from
+    # blueprints and does not have access to an operator, it is unlikely that there is
+    # another reactor that has alter the global assem num. Fresh cases typically want
+    # this updated.
+    database3.updateGlobalAssemNum(r)
+
+    o = thisCase.initializeOperator(r=r)
+    runLog.warning(
+        "The operator provided is not in the same state as the operator was.\n"
+        "When the reactor was at the prescribed cycle and node, it should have\n"
+        "access to the same interface stack, but the interfaces will also not be in the "
+        "same state.\n"
+        "ARMI does not support loading operator states, as they are not stored."
+    )
+    return o
 
 
 def copyDatabase(r, srcDB, tarDB):

@@ -87,6 +87,14 @@ def describeInterfaces(cs):
     return (DatabaseInterface, {"enabled": cs["db"]})
 
 
+def updateGlobalAssemNum(r):
+    assemNum = r.core.p.maxAssemNum
+    if assemNum is not None:
+        assemblies.setAssemNumCounter(int(assemNum + 1))
+    else:
+        raise ValueError("Could not load maxAssemNum from the database")
+
+
 class DatabaseInterface(interfaces.Interface):
     """
     Handles interactions between the ARMI data model and the persistent data storage
@@ -259,7 +267,7 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        timeStepName is not currently supportred by database load.
+        timeStepName is not currently supported by database load.
         Will load preferentially from the `fileName` if passed. Otherwise will load from
         existing database in memory or `cs["reloadDBName"]` in that order.
 
@@ -291,11 +299,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
         if updateGlobalAssemNum:
-            assemNum = newR.core.p.maxAssemNum
-            if assemNum is not None:
-                assemblies.setAssemNumCounter(int(assemNum + 1))
-            else:
-                raise ValueError("Could not load maxAssemNum from the database")
+            updateGlobalAssemNum()
 
         self.o.reattach(newR, self.cs)
 
@@ -560,6 +564,7 @@ class Database3(database.Database):
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
+
         stream = io.StringIO(self.h5db["inputs/blueprints"][()])
         stream = blueprints.Blueprints.migrate(stream)
         bp = blueprints.Blueprints.load(stream)
@@ -758,6 +763,11 @@ class Database3(database.Database):
             if not provided one is read from the database
         bp : armi.reactor.Blueprints (Optional)
             if not provided one is read from the database
+
+        Returns
+        -------
+        root : ArmiObject
+            The top-level object stored in the database; usually a Reactor.
         """
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
@@ -792,8 +802,8 @@ class Database3(database.Database):
         parameterCollections.GLOBAL_SERIAL_NUM = max(
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
-
-        return comps[0][0]
+        root = comps[0][0]
+        return root  # usually reactor object
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):

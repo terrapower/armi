@@ -249,8 +249,6 @@ class IORecord(object):
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
 
-        See Also
-        --------
         """
         raise NotImplementedError()
 
@@ -268,8 +266,6 @@ class IORecord(object):
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
 
-        See Also
-        --------
         """
         raise NotImplementedError()
 
@@ -282,8 +278,6 @@ class IORecord(object):
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
 
-        See Also
-        --------
         """
         raise NotImplementedError()
 
@@ -296,8 +290,6 @@ class IORecord(object):
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
 
-        See Also
-        --------
         """
         raise NotImplementedError()
 
