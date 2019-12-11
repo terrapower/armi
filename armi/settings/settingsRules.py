@@ -141,6 +141,7 @@ RENAMES = {
     "control2name": "control2Name",
     "control2location": "control2Location",
     "control2value": "control2Value",
+    "SASdensityCoeff": "calcSpatialRxCoeffs",
     # end of sassys setting rename
     "turnOnProfiler": "profile",
     "mc2.path": "mc2v3.path",
