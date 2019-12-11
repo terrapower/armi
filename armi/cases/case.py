@@ -425,21 +425,15 @@ class Case:
                             textwrap.fill(
                                 query.question, width=50, break_long_words=False
                             ),
-                            query.autoResolved,
                         )
                     )
 
                 if queryData:
-                    runLog.header("=========== Input Queries ===========")
+                    runLog.header("=========== Settings Input Queries ===========")
                     runLog.info(
                         tabulate.tabulate(
                             queryData,
-                            headers=[
-                                "Number",
-                                "Statement",
-                                "Question",
-                                "Auto-resolved",
-                            ],
+                            headers=["Number", "Statement", "Question"],
                             tablefmt="armi",
                         )
                     )
