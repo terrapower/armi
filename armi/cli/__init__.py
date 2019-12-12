@@ -63,7 +63,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
             # testing
             backupDatabases,
             cleanTemps,
-            convertDB,
+            database,
         )
 
         entryPoints = []
@@ -81,7 +81,9 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
         entryPoints.append(backupDatabases.BackUpInUseTestDabases)
         entryPoints.append(backupDatabases.CopyDB)
         entryPoints.append(cleanTemps.CleanTemps)
-        entryPoints.append(convertDB.ConvertDB)
+        entryPoints.append(database.ConvertDB)
+        entryPoints.append(database.ExtractInputs)
+        entryPoints.append(database.InjectInputs)
 
         return entryPoints
 

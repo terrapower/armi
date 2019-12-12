@@ -301,6 +301,8 @@ def getPluginManager() -> Optional[pluggy.PluginManager]:
     Return the plugin manager, if there is one.
     """
     global _app
+    if _app is None:
+        return None
     return _app.pluginManager
 
 

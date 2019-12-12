@@ -181,7 +181,7 @@ def loadFromCs(cs):
         return geom
 
 
-class SystemLayoutInput(object):
+class SystemLayoutInput:
     """Geometry file. Contains 2-D mapping of geometry."""
 
     _GEOM_FILE_EXTENSION = ".xml"
@@ -333,12 +333,13 @@ class SystemLayoutInput(object):
     def modifyEqPaths(self, modifiedPaths):
         """
         Modifies the geometry object by updating the equilibrium path indices and equilibrium path cycles.
-        
+
         Parameters
         ----------
         modifiedPaths : dict, required
-            This is a dictionary that contains the indices that are mapped to the eqPathIndex and eqPathCycle.
-            modifiedPath[indices] = (eqPathIndex, eqPathCycle)
+            This is a dictionary that contains the indices that are mapped to the
+            eqPathIndex and eqPathCycle.  modifiedPath[indices] = (eqPathIndex,
+            eqPathCycle)
         """
         runLog.important("Modifying the equilibrium paths on {}".format(self))
         self.eqPathsHaveBeenModified = True

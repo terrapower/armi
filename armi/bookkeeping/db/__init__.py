@@ -23,7 +23,7 @@ The database can be visualized through various tools such as XTVIEW.
 This module contains factories for selecting and building DB-related objects
 """
 import os
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import armi
 from armi import settings
@@ -31,9 +31,7 @@ from armi.utils import pathTools
 from armi import runLog
 from armi.reactor import reactors
 
-# these imports flatten the required imports so that someone only needs to use `from
-# armi.bookkeeping import db`
-from . import database3
+# re-export package components for easier import
 from .permissions import Permissions
 from .database3 import Database3, DatabaseInterface
 from .xtviewDB import XTViewDatabase
@@ -44,7 +42,7 @@ from .factory import databaseFactory
 def loadOperator(pathToDb, loadCycle, loadNode):
     """
     Return an operator given the path to a database.
-    
+
     Parameters
     ----------
     pathToDb : str
@@ -53,7 +51,7 @@ def loadOperator(pathToDb, loadCycle, loadNode):
         The cycle to load the reactor state from.
     loadNode : int
         The time node to load the reactor from.
-    
+
     See Also
     --------
     armi.operator.Operator.loadState:
@@ -61,7 +59,7 @@ def loadOperator(pathToDb, loadCycle, loadNode):
         operator and a reactor object. loadOperator varies in that it supplies these
         given only a database file. loadState should be used if you are in the
         middle of an ARMI calculation and need load a different time step.
-    
+
     Notes
     -----
     The operator will have a reactor attached that is loaded to the specified cycle
@@ -151,6 +149,7 @@ def convertDatabase(
     inputDBName: str,
     outputDBName: Optional[str] = None,
     outputVersion: Optional[str] = None,
+    nodes: Optional[List[Tuple[int, int]]] = None,
 ):
     """
     Convert database files between different versions.
@@ -163,6 +162,8 @@ def convertDatabase(
         name of the output database that should be consistent with XTView
     outputVersion
         version of the database to convert to. Defaults to latest version
+    nodes
+        optional list of specific (cycle,node)s to convert
     """
     dbIn = databaseFactory(inputDBName, permission=Permissions.READ_ONLY_FME)
 
@@ -182,14 +183,35 @@ def convertDatabase(
     conversionVerbosity = runLog.getVerbosity()
     runLog.extra(f"Converting {dbIn} to DB version {outputVersion}")
     with dbIn, dbOut:
+        dbNodes = list(dbIn.genTimeSteps())
+
+        if nodes is not None and any(node not in dbNodes for node in nodes):
+            raise RuntimeError(
+                "Some of the requested nodes are not in the source database.\n"
+                "Requested: {}\n"
+                "Present: {}".format(nodes, dbNodes)
+            )
+
         # Making the bold assumption that we are working with HDF5
         h5In = _getH5File(dbIn)
         h5Out = _getH5File(dbOut)
         dbOut.writeInputsToDB(None, *dbIn.readInputsFromDB())
 
-        for cycle, timeNode in dbIn.genTimeSteps():
+        for cycle, timeNode in dbNodes:
+            if nodes is not None and (cycle, timeNode) not in nodes:
+                continue
             runLog.extra(f"Converting cycle={cycle}, timeNode={timeNode}")
+            timeStepsInOutDB = set(dbOut.genTimeSteps())
             r = dbIn.load(cycle, timeNode)
+            if (r.p.cycle, r.p.timeNode) in timeStepsInOutDB:
+                runLog.warning(
+                    "Time step ({}, {}) is already in the output DB. This "
+                    "is probably due to repeated cycle/timeNode in the source DB; "
+                    "deleting the existing time step and re-writing".format(
+                        r.p.cycle, r.p.timeNode
+                    )
+                )
+                del dbOut[r.p.cycle, r.p.timeNode, None]
             runLog.setVerbosity(conversionVerbosity)
             dbOut.writeToDB(r)
 

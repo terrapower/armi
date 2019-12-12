@@ -153,8 +153,8 @@ class DatabaseInterface(interfaces.Interface):
         self._db = Database3(self.cs.caseTitle + ".h5", "w")
         self._db.open()
 
-        # Grab geomString here because the DB-level has no access to the reactor or blueprints
-        # or anything.
+        # Grab geomString here because the DB-level has no access to the reactor or
+        # blueprints or anything.
         # There's not always a geomFile; sometimes geom is brought in via systems.
         # Eventually, we'll need to store multiple of these (one for each system).
         # Just do core for now.
@@ -428,7 +428,7 @@ class Database3(database.Database):
         filePath = self._fileName
         self._openCount += 1
 
-        if self._permission == "r":
+        if self._permission in {"r", "a"}:
             self._fullPath = os.path.abspath(filePath)
             self.h5db = h5py.File(filePath, self._permission)
             return
@@ -588,8 +588,8 @@ class Database3(database.Database):
         This is hard-coded to read the entire file contents into memory and write that
         directly into the database. We could have the cs/blueprints/geom write to a
         string, however the ARMI log file contains a hash of each files' contents. In
-        the future, we will be able to reproduce calculation showing that the inputs are
-        identical.
+        the future, we should be able to reproduce a calculation with confidence that
+        the inputs are identical.
         """
         caseTitle = (
             cs.caseTitle if cs is not None else os.path.splitext(self.fileName)[0]
@@ -657,6 +657,12 @@ class Database3(database.Database):
     def __del__(self):
         if self.h5db is not None:
             self.close(False)
+
+    def __delitem__(self, tn: Tuple[int, int, Optional[str]]):
+        cycle, timeNode, statePointName = tn
+        name = getH5GroupName(cycle, timeNode, statePointName)
+        if self.h5db is not None:
+            del self.h5db[name]
 
     def genTimeStepGroups(
         self, timeSteps: Sequence[Tuple[int, int]] = None
@@ -968,8 +974,8 @@ class Database3(database.Database):
             try:
                 if paramDef.name in g:
                     raise ValueError(
-                        "`{}` was already in database. This time node "
-                        "should have been empty".format(paramDef.name)
+                        "`{}` was already in `{}`. This time node "
+                        "should have been empty".format(paramDef.name, g)
                     )
                 else:
                     dataset = g.create_dataset(

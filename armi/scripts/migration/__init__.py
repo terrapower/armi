@@ -15,15 +15,16 @@
 """
 Migrate input/output from one version of ARMI to another.
 
-Users want to be able to upgrade to the latest version of the code without having to invest
-a bunch of time in updating their previous input and output files. Users have up to
-thousands of inputs that they want to keep working. Even more serious, follow-on analysts
-who got an output database (including associated inputs) from an ARMI power-user strongly
-prefer to be able to migrate old cases. Oftentimes, an output database can be many GB large
-and be the result of many CPU-weeks, so there's monetary and temporal value to be preserved.
+Users want to be able to upgrade to the latest version of the code without having to
+invest a bunch of time in updating their previous input and output files. Users have up
+to thousands of inputs that they want to keep working. Even more serious, follow-on
+analysts who got an output database (including associated inputs) from an ARMI
+power-user strongly prefer to be able to migrate old cases. Oftentimes, an output
+database can be many GB large and be the result of many CPU-weeks, so there's monetary
+and temporal value to be preserved.
 
-Meanwhile, developers want to be able to make upgrades to the input and/or output to fix bugs,
-ease the training and cognitive burden of new users, and so on.
+Meanwhile, developers want to be able to make upgrades to the input and/or output to fix
+bugs, ease the training and cognitive burden of new users, and so on.
 
 Migrations are key to getting both of these big needs.
 

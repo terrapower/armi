@@ -110,7 +110,19 @@ from armi.utils import asciimaps
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi import runLog
-from .reactorBlueprint import Triplet
+
+
+class Triplet(yamlize.Object):
+    """A x, y, z triplet for coordinates or lattice pitch."""
+
+    x = yamlize.Attribute(type=float)
+    y = yamlize.Attribute(type=float, default=0.0)
+    z = yamlize.Attribute(type=float, default=0.0)
+
+    def __init__(self, x=0.0, y=0.0, z=0.0):
+        self.x = x
+        self.y = y
+        self.z = z
 
 
 class GridBlueprint(yamlize.Object):
@@ -196,6 +208,21 @@ class GridBlueprint(yamlize.Object):
         grid = self._constructSpatialGrid()
         return grid
 
+    @staticmethod
+    def fromSystemLayoutInput(name: str, geom: geometry.SystemLayoutInput):
+        """
+        Initialize a GridBlueprint from an already-loaded SystemLayoutInput object.
+
+        This aids in loading inputs from streams, when files would otherwise be
+        expected. The geom file/stream can be pre-loaded, and turned into a
+        GridBlueprint, which the rest of the blueprints system wants.
+        """
+        bp = GridBlueprint(name)
+        bp._readSystemLayoutInput(geom)
+        bp._constructSpatialGrid()
+
+        return bp
+
     def _constructSpatialGrid(self):
         """
         Build spatial grid.
@@ -239,7 +266,7 @@ class GridBlueprint(yamlize.Object):
     def _getMaxIndex(self):
         """
         Find the max index in the grid contents.
-        
+
         Used to limit the size of the spatialGrid. Used to be
         called maxNumRings.
         """
@@ -271,7 +298,9 @@ class GridBlueprint(yamlize.Object):
         elif self.latticeMap:
             self._readGridContentsLattice()
         elif self.latticeFile:
-            self._readGridContentsFile()
+            geom = geometry.SystemLayoutInput()
+            geom.readGeomFromFile(self.latticeFile)
+            self._readSystemLayoutInput(geom)
 
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.
@@ -284,7 +313,7 @@ class GridBlueprint(yamlize.Object):
         lattice = latticeCls()
         self.gridContents = lattice.readMap(self.latticeMap)
 
-    def _readGridContentsFile(self):
+    def _readSystemLayoutInput(self, geom: geometry.SystemLayoutInput):
         """
         Read grid contents from a file.
 
@@ -295,8 +324,6 @@ class GridBlueprint(yamlize.Object):
         trying to take over from the geometry file/geometry object.
         """
         self.gridContents = {}
-        geom = geometry.SystemLayoutInput()
-        geom.readGeomFromFile(self.latticeFile)
         for indices, spec in geom.assemTypeByIndices.items():
             self.gridContents[indices] = spec
         self.geom = str(geom.geomType)

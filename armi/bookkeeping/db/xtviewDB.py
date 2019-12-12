@@ -27,6 +27,7 @@ import os
 import re
 from typing import Tuple, Generator
 import traceback
+import itertools
 
 import numpy
 
@@ -117,14 +118,23 @@ class XTViewDatabase:
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        bp = blueprints.Blueprints.load(self._hdf_file["inputs/blueprints"][()])
+        stream = io.StringIO(self._hdf_file["inputs/blueprints"][()])
+        stream = blueprints.Blueprints.migrate(stream)
+        bp = blueprints.Blueprints.load(stream)
+
         return bp
 
     def loadGeometry(self):
         from armi.reactor import geometry
 
         geom = geometry.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(self._hdf_file["inputs/geomFile"][()]))
+        geomData = self._hdf_file["inputs/geomFile"][()]
+        if isinstance(geomData, bytes):
+            # different versions of the code may have outputted these differently,
+            # possibly when using using python2, or possibly from different versions of
+            # h5py handling strings differently.
+            geomData = geomData.decode()
+        geom.readGeomFromStream(io.StringIO(geomData))
         return geom
 
     def load(self, cycle, node, cs=None, bp=None, geom=None):
@@ -398,7 +408,7 @@ class XTViewDatabase:
                             )
                         param = newParam
 
-                b.p[param] = val
+                setParameterWithRenaming(b, param, val)
 
     def _updateReactorParams(self, reactor, dbTimeStep):
         """Update reactor-/core-level parameters from the database"""
@@ -453,7 +463,8 @@ class XTViewDatabase:
                 ring, pos = a.spatialLocator.getRingPos()
                 for assemParamName in assemParams:
                     val = assemParamData[assemParamName, ring, pos]
-                    a.p[assemParamName] = val
+                    setParameterWithRenaming(a, assemParamName, val)
+
                     if assemParamName == "assemNum" and val:
                         # update assembly name based on assemNum
                         name = a.makeNameFromAssemNum(val)
@@ -1018,10 +1029,17 @@ class XTViewDatabase:
         # need to try both since Reactor and Core are squashed in the DB.
         try:
             # pylint: disable=protected-access
-            paramDef = reactors.Reactor.paramCollectionType._paramDefs[param]
+            paramDef = reactors.Reactor.paramCollectionType.pDefs[param]
         except KeyError:
             # pylint: disable=protected-access
-            paramDef = reactors.Core.paramCollectionType._paramDefs[param]
+            try:
+                paramDef = reactors.Core.paramCollectionType.pDefs[param]
+            except KeyError:
+                # Dead parameter?
+                runLog.warning(
+                    "Reactor/Core parameter `{}` was unrecognized and is being "
+                    "ignored.".format(param)
+                )
         all_vals = []
         for timestep in timesteps:
             value = self._get_1d_dataset("{}/reactors/{}".format(timestep, param))
@@ -1097,7 +1115,7 @@ def setParameterWithRenaming(obj, parameter, value):
 
     try:
         obj.p[name] = value
-    except parameters.UnknownParameterError:
+    except (parameters.UnknownParameterError, AssertionError):
         runLog.warning(
             "Incompatible database has unsupported parameter: "
             '"{}", and will be ignored!'.format(parameter),

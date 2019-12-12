@@ -28,7 +28,7 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
-from typing import Dict
+from typing import Dict, Optional
 
 from armi import plugins
 from armi import meta
@@ -86,6 +86,8 @@ class App:
         ):
             self._pm.register(plugin)
 
+        self._paramRenames: Optional[Dict[str, str]] = None
+
     @property
     def pluginManager(self):
         """
@@ -100,26 +102,28 @@ class App:
         This renders a merged dictionary containing all parameter renames from all of
         the registered plugins. It also performs simple error checking.
         """
-        currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
+        if self._paramRenames is None:
+            currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
 
-        renames: Dict[str, str] = dict()
-        for (
-            pluginRenames
-        ) in self._pm.hook.defineParameterRenames():  #  pylint: disable=no-member
-            collisions = currentNames & pluginRenames.keys()
-            if collisions:
-                raise plugins.PluginError(
-                    "The following parameter renames from a plugin collide with "
-                    "currently-defined parameters:\n{}".format(collisions)
-                )
-            pluginCollisions = renames.keys() & pluginRenames.keys()
-            if pluginCollisions:
-                raise plugins.PluginError(
-                    "The following parameter renames are already defined by another "
-                    "plugin:\n{}".format(pluginCollisions)
-                )
-            renames.update(pluginRenames)
-        return renames
+            renames: Dict[str, str] = dict()
+            for (
+                pluginRenames
+            ) in self._pm.hook.defineParameterRenames():  #  pylint: disable=no-member
+                collisions = currentNames & pluginRenames.keys()
+                if collisions:
+                    raise plugins.PluginError(
+                        "The following parameter renames from a plugin collide with "
+                        "currently-defined parameters:\n{}".format(collisions)
+                    )
+                pluginCollisions = renames.keys() & pluginRenames.keys()
+                if pluginCollisions:
+                    raise plugins.PluginError(
+                        "The following parameter renames are already defined by another "
+                        "plugin:\n{}".format(pluginCollisions)
+                    )
+                renames.update(pluginRenames)
+            self._paramRenames = renames
+        return self._paramRenames
 
     @property
     def splashText(self):

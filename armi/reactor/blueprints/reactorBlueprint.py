@@ -41,19 +41,7 @@ import armi
 from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
-
-
-class Triplet(yamlize.Object):
-    """A x, y, z triplet for coordinates or lattice pitch."""
-
-    x = yamlize.Attribute(type=float)
-    y = yamlize.Attribute(type=float, default=0.0)
-    z = yamlize.Attribute(type=float, default=0.0)
-
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        self.x = x
-        self.y = y
-        self.z = z
+from armi.reactor.blueprints.gridBlueprint import GridBlueprint, Triplet
 
 
 class SystemBlueprint(yamlize.Object):
@@ -91,7 +79,10 @@ class SystemBlueprint(yamlize.Object):
         from armi.reactor import reactors  # avoid circular import
 
         runLog.info("Constructing the `{}`".format(self.name))
-        gridDesign = bp.gridDesigns[self.gridName]
+        if geom is not None:
+            gridDesign = GridBlueprint.fromSystemLayoutInput("core", geom)
+        else:
+            gridDesign = bp.gridDesigns[self.gridName]
         spatialGrid = gridDesign.construct()
         container = reactors.Core(self.name, cs)
         container.spatialGrid = spatialGrid
@@ -237,6 +228,7 @@ def migrate(bp, cs):
 
     if "core" in [rd.name for rd in bp.gridDesigns]:
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
+
     bp.gridDesigns["core"] = gridBlueprint.GridBlueprint(
         "core", latticeFile=cs["geomFile"],
     )
