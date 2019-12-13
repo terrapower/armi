@@ -105,7 +105,7 @@ def loadOperator(pathToDb, loadCycle, loadNode):
     # blueprints and does not have access to an operator, it is unlikely that there is
     # another reactor that has alter the global assem num. Fresh cases typically want
     # this updated.
-    database3.updateGlobalAssemNum(r)
+    database3.updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
     runLog.warning(

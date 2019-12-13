@@ -87,7 +87,7 @@ def describeInterfaces(cs):
     return (DatabaseInterface, {"enabled": cs["db"]})
 
 
-def updateGlobalAssemNum(r):
+def updateGlobalAssemblyNum(r):
     assemNum = r.core.p.maxAssemNum
     if assemNum is not None:
         assemblies.setAssemNumCounter(int(assemNum + 1))
@@ -299,7 +299,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
         if updateGlobalAssemNum:
-            updateGlobalAssemNum()
+            updateGlobalAssemblyNum(newR)
 
         self.o.reattach(newR, self.cs)
 
