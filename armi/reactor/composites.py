@@ -151,6 +151,21 @@ class ArmiObject(metaclass=CompositeModelType):
     the ArmiObject subclass to reflect which type of parameter collection should be
     used.
 
+    Attributes
+    ----------
+    name : str
+        Object name
+    parent : ArmiObject
+        The object's parent in a hierarchical tree
+    cached : dict
+        Some cached values for performance
+    p : ParameterCollection
+        The state variables
+    spatialGrid : grids.Grid
+        The spatial grid that this object contains
+    spatialLocator : grids.LocationBase
+        The location of this object in its parent grid, or global space
+
     See Also
     --------
     armi.reactor.parameters
@@ -1491,10 +1506,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getPuN(self):
         """Returns total number density of Pu isotopes"""
-        ndens = 0.0
-        for nucName in [nuc.name for nuc in elements.byZ[94].nuclideBases]:
-            ndens += self.getNumberDensity(nucName)
-        return ndens
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclideBases]
+        return sum(self.getNuclideNumberDensities(nucNames))
 
     def calcTotalParam(
         self,
@@ -1827,9 +1840,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getFissileMass(self):
         """Returns fissile mass in grams."""
-        return self.getMass(
-            nuclideBases.NuclideBase.fissile
-        )  # convert to kg #/1000 # * 1.66054e-3
+        return self.getMass(nuclideBases.NuclideBase.fissile)
 
     def getHMMass(self):
         """Returns heavy metal mass in grams"""
@@ -2001,8 +2012,20 @@ class ArmiObject(metaclass=CompositeModelType):
         return numerator / denominator
 
     def getMasses(self):
-        """Return a dictionary of masses indexed by their nuclide names."""
-        return {nucName: self.getMass(nucName) for nucName in self.getNuclides()}
+        """
+        Return a dictionary of masses indexed by their nuclide names.
+
+        Notes
+        -----
+        Implemented to get number densities and then convert to mass
+        because getMass is too slow on a large tree.
+        """
+        numDensities = self.getNumberDensities()
+        vol = self.getVolume()
+        return {
+            nucName: densityTools.getMassInGrams(nucName, vol, ndens)
+            for nucName, ndens in numDensities.items()
+        }
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         raise NotImplementedError
@@ -2380,19 +2403,22 @@ class Composite(ArmiObject):
 
         if errors:
             errorData = sorted(
-                (str(comp), comp.__class__.__name__, paramName, nodes)
+                (str(comp), comp.__class__.__name__, str(comp.parent), paramName, nodes)
                 for (comp, paramName), nodes in errors.items()
             )
-            message = "Synchronization failed due to overlapping data. Only the first "
-            "duplicates are listed\n{}".format(
-                tabulate.tabulate(
-                    errorData,
-                    headers=[
-                        "Composite",
-                        "Composite Type",
-                        "ParameterName",
-                        "NodeRanks",
-                    ],
+            message = (
+                "Synchronization failed due to overlapping data. Only the first "
+                "duplicates are listed\n{}".format(
+                    tabulate.tabulate(
+                        errorData,
+                        headers=[
+                            "Composite",
+                            "Composite Type",
+                            "Composite Parent",
+                            "ParameterName",
+                            "NodeRanks",
+                        ],
+                    )
                 )
             )
             raise exceptions.SynchronizationError(message)

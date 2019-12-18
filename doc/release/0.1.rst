@@ -44,10 +44,13 @@ User-facing enhancements
 * Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
   users can control precisely which isotopes the elements get expanded into.
 * Improved migration system, accessible with ``python3 -m armi migrate-inputs``
+* Added new material modifications for inputting fuels made of mixtures of two 
+  custom isotopic vectors
 
 Bugfixes
 --------
 * SuiteBuilder handles smear density dimension changes for parameter sweeps again
+* Fixed broken documentation printout of Flags
 
 Backend changes
 ---------------

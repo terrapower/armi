@@ -255,9 +255,8 @@ class DerivedShape(UnshapedComponent):
 
         """
         if self.parent.derivedMustUpdate:
-            self.p.volume = (
-                None  # tell _updateVolume to update it during the below getVolume call
-            )
+            # tell _updateVolume to update it during the below getVolume call
+            self.p.volume = None
             self.parent.derivedMustUpdate = False
         vol = UnshapedComponent.getVolume(self)
         return vol

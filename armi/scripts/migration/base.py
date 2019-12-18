@@ -29,8 +29,10 @@ class Migration:
     def __init__(self, stream=None, path=None):
         if not (bool(stream) ^ bool(path)):
             # XOR
-            raise RuntimeError("Stream and path inputs to migration are"
-                               "mutually exclusive. Choose one or the other.")
+            raise RuntimeError(
+                "Stream and path inputs to migration are"
+                "mutually exclusive. Choose one or the other."
+            )
         self.stream = stream
         self.path = path
 

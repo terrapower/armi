@@ -148,10 +148,10 @@ class ComponentBlueprint(yamlize.Object):
     def construct(self, blueprint, matMods):
         """Construct a component"""
         runLog.debug("Constructing component {}".format(self.name))
-        kwargs, appliedMatMods = self._conformKwargs(blueprint, matMods)
+        kwargs = self._conformKwargs(blueprint, matMods)
         component = components.factory(self.shape.strip().lower(), [], kwargs)
         _insertDepletableNuclideKeys(component, blueprint)
-        return component, appliedMatMods
+        return component
 
     def _conformKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component"""
@@ -164,7 +164,7 @@ class ComponentBlueprint(yamlize.Object):
                 continue
             elif attr.name == "material":
                 # value is a material instance
-                value, appliedMatMods = self._constructMaterial(blueprint, matMods)
+                value = self._constructMaterial(blueprint, matMods)
             elif attr.name == "latticeIDs":
                 # Don't pass latticeIDs on to the component constructor.
                 # They're applied during block construction.
@@ -179,7 +179,7 @@ class ComponentBlueprint(yamlize.Object):
 
             kwargs[attr.name] = value
 
-        return kwargs, appliedMatMods
+        return kwargs
 
     def _constructMaterial(self, blueprint, matMods):
         nucsInProblem = blueprint.allNuclidesInProblem
@@ -187,14 +187,24 @@ class ComponentBlueprint(yamlize.Object):
         mat = materials.resolveMaterialClassByName(self.material)()
 
         if self.isotopics is not None:
+            # Apply custom isotopics before processing input mods so
+            # the input mods have the final word
             blueprint.customIsotopics.apply(mat, self.isotopics)
 
-        appliedMatMods = False
-        if any(matMods):
+        # add mass fraction custom isotopics info, since some material modifications need to see them
+        # e.g. in the base Material.applyInputParams
+        matMods.update(
+            {
+                "customIsotopics": {
+                    k: v.massFracs for k, v in blueprint.customIsotopics.items()
+                }
+            }
+        )
+        if len(matMods) > 1:
+            # don't apply if only customIsotopics is in there
             try:
                 # update material with updated input params from blueprints file.
                 mat.applyInputParams(**matMods)
-                appliedMatMods = True
             except TypeError:
                 # This component does not accept material modification inputs of the names passed in
                 # Keep going since the modification could work for another component
@@ -213,7 +223,7 @@ class ComponentBlueprint(yamlize.Object):
                 )
             )
 
-        return mat, appliedMatMods
+        return mat
 
 
 def expandElementals(mat, blueprint):

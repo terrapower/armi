@@ -107,9 +107,8 @@ class BlockBlueprint(yamlize.KeyedList):
         else:
             spatialGrid = None
         for componentDesign in self:
-            c, compAppliedMatMods = componentDesign.construct(blueprint, materialInput)
+            c = componentDesign.construct(blueprint, materialInput)
             components[c.name] = c
-            appliedMatMods |= compAppliedMatMods
             if spatialGrid:
                 c.spatialLocator = gridDesign.getMultiLocator(
                     spatialGrid, componentDesign.latticeIDs
@@ -124,13 +123,6 @@ class BlockBlueprint(yamlize.KeyedList):
                 elif not mult or mult == 1.0:
                     # learn mult from grid definition
                     c.setDimension("mult", len(c.spatialLocator))
-
-        if any(materialInput) and not appliedMatMods:
-            raise ValueError(
-                "Failure to apply material modifications {} in block {}".format(
-                    materialInput, self.name
-                )
-            )
 
         for c in components.values():
             c._resolveLinkedDims(components)

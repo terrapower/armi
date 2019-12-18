@@ -26,7 +26,9 @@ class B4C(material.Material):
     name = "B4C"
     enrichedNuclide = "B10"
 
-    def applyInputParams(self, B10_wt_frac=None, theoretical_density=None):
+    def applyInputParams(
+        self, B10_wt_frac=None, theoretical_density=None, *args, **kwargs
+    ):
         if B10_wt_frac:
             # we can't just use the generic enrichment adjustment here because the
             # carbon has to change with enrich.

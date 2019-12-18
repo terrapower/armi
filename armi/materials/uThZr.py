@@ -40,8 +40,6 @@ class UThZr(Material):
         self.p.thFrac = TH_wt_frac
         self.p.zrFrac = ZR_wt_frac
 
-        self.p.shapeFactor = 2.5  # pore shape factor for thermal conductivity.
-
     def setDefaultMassFracs(self):
         r""" U-ZR mass fractions"""
         self.setMassFrac("U238", 0.8)

@@ -28,7 +28,7 @@ class Lithium(material.Fluid):
     references = {"density": "Wikipedia"}
     enrichedNuclide = "LI6"
 
-    def applyInputParams(self, LI_wt_frac=None):
+    def applyInputParams(self, LI_wt_frac=None, *args, **kwargs):
         enrich = utils.getFloat(LI_wt_frac)
         # allow 0.0 to pass in!
         if enrich is not None:

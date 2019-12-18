@@ -21,9 +21,6 @@ from armi.materials.material import Material
 class Tantalum(Material):
     name = "Tantalum"
 
-    def applyInputParams(self):
-        self.setDefaultMassFracs()
-
     def setDefaultMassFracs(self):
         self.setMassFrac("TA181", 1)
 

@@ -22,11 +22,11 @@ Data is from [#IAEA-TECDOCT-1450]_.
 """
 
 from armi.utils.units import getTk
-from armi.materials.material import Material
+from armi.materials import material
 from armi import runLog
 
 
-class ThU(Material):
+class ThU(material.Material):
     name = "ThU"
     enrichedNuclide = "U233"
 
@@ -35,11 +35,12 @@ class ThU(Material):
             self.getMassFrac("U233") + self.getMassFrac("TH232")
         )
 
-    def applyInputParams(self, U233_wt_frac=None):
+    def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
         runLog.warning("Material {} has not yet been tested for accuracy".format("ThU"))
 
         if U233_wt_frac:
             self.adjustMassEnrichment(U233_wt_frac)
+        material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
         self.setMassFrac("TH232", 1.0)

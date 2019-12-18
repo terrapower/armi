@@ -57,9 +57,6 @@ class TZM(Material):
         5.04e-01,
     ]
 
-    def applyInputParams(self):
-        self.setDefaultMassFracs()
-
     def setDefaultMassFracs(self):
         self.setMassFrac("C", 2.50749e-05)
         self.setMassFrac("TI", 0.002502504)

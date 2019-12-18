@@ -59,5 +59,3 @@ def _modify_settings(cs):
             "You may need to manually disable modules you don't want to run"
         )
         cs["runType"] = "Snapshots"
-
-

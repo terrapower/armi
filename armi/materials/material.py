@@ -34,6 +34,7 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.materials import materialParameters
 from armi.utils.units import getTk, getTc
+from armi.utils import densityTools
 
 # globals
 FAIL_ON_RANGE = False
@@ -109,7 +110,9 @@ class Material(composites.Leaf):
 
         This is used for reactivity coefficients, etc.
         """
-        return self.p.linearExpansion
+        raise NotImplementedError(
+            f"{self} does not have a linear expansion property defined"
+        )
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
@@ -184,7 +187,7 @@ class Material(composites.Leaf):
         self.p.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
-        r"""default do-nothing responder to XLS input params"""
+        """Apply material-specific material input parameters."""
         pass
 
     def adjustMassEnrichment(self, massEnrichment):
@@ -711,3 +714,51 @@ class Fluid(Material):
         for fluids, there is no such thing as 2 d expansion so density() is already 3D.
         """
         return self.density(Tk=Tk, Tc=Tc)
+
+
+class FuelMaterial(Material):
+    """
+    Material that is considered a nuclear fuel.
+
+    All this really does is enable the special class 1/class 2 isotopics input option.
+    """
+    pDefs = materialParameters.getFuelMaterialParameterDefinitions()
+
+    def applyInputParams(
+        self,
+        class1_custom_isotopics=None,
+        class2_custom_isotopics=None,
+        class1_wt_frac=None,
+        customIsotopics=None,
+    ):
+        """Apply optional class 1/class 2 custom enrichment input.
+
+        Notes
+        -----
+        This is often overridden to insert customized material modification parameters
+        but then this parent should always be called at the end in case users want to
+        use this style of custom input.
+
+        This is only applied to materials considered fuel so we don't apply these
+        kinds of parameters to coolants and structural material, which are often
+        not parameterized with any kind of enrichment.
+        """
+        # Save class data for future reconstructions (e.g. in closed cycles)
+        self.p.class1_wt_frac = class1_wt_frac
+        self.p.class1_custom_isotopics = class1_custom_isotopics
+        self.p.class2_custom_isotopics = class2_custom_isotopics
+        if class1_wt_frac:
+            self._applyIsotopicsMixFromCustomIsotopicsInput(customIsotopics)
+
+    def _applyIsotopicsMixFromCustomIsotopicsInput(self, customIsotopics):
+        """
+        Apply a Class 1/Class 2 mixture of custom isotopics at input.
+
+        Only adjust heavy metal.
+
+        This may also be needed for building charge assemblies during reprocessing, but
+        will take input from the SFP rather than from the input external feeds.
+        """
+        class1Isotopics = customIsotopics[self.p.class1_custom_isotopics]
+        class2Isotopics = customIsotopics[self.p.class2_custom_isotopics]
+        densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)

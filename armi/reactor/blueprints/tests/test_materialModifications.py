@@ -55,7 +55,7 @@ assemblies:
 
     def test_noMaterialModifications(self):
         a = self.loadUZrAssembly("")
-        # mass fractiosn should be whatever UZr is
+        # mass fractions should be whatever UZr is
         uzr = materials.UZr()
         fuelComponent = a[0][0]
         totalMass = fuelComponent.getMass()

@@ -682,7 +682,8 @@ class Assembly(composites.Composite):
                 conserveMass = True
                 adjustList = b.getNuclides()
                 # conserve mass of everything except coolant.
-                coolantList = b.getComponent(Flags.COOLANT).getNuclides()
+                coolant = b.getComponent(Flags.COOLANT)
+                coolantList = coolant.getNuclides() if coolant else []
                 for nuc in coolantList:
                     if nuc in adjustList:
                         adjustList.remove(nuc)

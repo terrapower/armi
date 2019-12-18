@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 from armi.nucDirectory import nucDir, nuclideBases, elements
 from armi.utils import units
@@ -374,3 +374,50 @@ def getChemicals(nuclideInventory):
             chemicals[nb.element.symbol] = N
 
     return chemicals
+
+
+def applyIsotopicsMix(material,
+                      enrichedMassFracs : Dict[str, float],
+                      fertileMassFracs: Dict[str, float]):
+    """
+    Update material heavy metal mass fractions based on its enrichment and two nuclide feeds.
+
+    This will remix the heavy metal in a Material object based on the object's
+    ``class1_wt_frac`` parameter and the input nuclide information.
+
+    This can be used for inputting mixtures of two external custom isotopic feeds
+    as well as for fabricating assemblies from two  closed-cycle collections
+    of material.
+
+    See Also
+    --------
+    armi.materials.material.FuelMaterial
+
+    Parameters
+    ----------
+    material : material.Material
+        The object to modify. Must have a ``class1_wt_frac`` param set
+    enrichedMassFracs : dict
+        Nuclide names and weight fractions of the class 1 nuclides
+    fertileMassFracs : dict
+        Nuclide names and weight fractions of the class 2 nuclides
+    """
+    total = sum(material.p.massFrac.values())
+    hm = 0.0
+    for nucName, massFrac in material.p.massFrac.items():
+        nb = nuclideBases.byName[nucName]
+        if nb.isHeavyMetal():
+            hm += massFrac
+    hmFrac = hm / total
+    hmEnrich = material.p.class1_wt_frac
+    for nucName in (
+        set(enrichedMassFracs.keys())
+        .union(set(fertileMassFracs.keys()))
+        .union(set(material.p.massFrac.keys()))
+    ):
+        nb = nuclideBases.byName[nucName]
+        if nb.isHeavyMetal():
+            material.p.massFrac[nucName] = hmFrac * (
+                hmEnrich * enrichedMassFracs.get(nucName, 0.0)
+                + (1 - hmEnrich) * fertileMassFracs.get(nucName, 0.0)
+            )

@@ -22,9 +22,6 @@ from armi.materials.material import Material
 class NZ(Material):
     name = "NZ"
 
-    def applyInputParams(self):
-        self.setDefaultMassFracs()
-
     def setDefaultMassFracs(self):
         self.setMassFrac("NB93", 0.99)
         self.setMassFrac("ZR", 0.01)

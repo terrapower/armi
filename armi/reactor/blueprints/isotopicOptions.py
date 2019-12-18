@@ -19,8 +19,8 @@ Nuclide flags control meta-data about nuclides. Custom isotopics
 allow specification of arbitrary isotopic compositions.
 """
 import yamlize
-from armi.utils import units
 
+from armi.utils import units
 from armi import materials
 from armi import runLog
 from armi.localization import exceptions
@@ -345,6 +345,7 @@ class CustomIsotopic(yamlize.Map):
         ----------
         material : Material
             An ARMI Material instance.
+
         """
         material.p.massFrac = dict(self.massFracs)
         if self.density is not None:

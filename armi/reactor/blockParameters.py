@@ -1117,7 +1117,12 @@ def getBlockParameterDefinitions():
             description="Assembly displacement in the y direction",
         )
 
-        pb.defParam("fastFluence", units="#/cm^2", description="Fast spectrum fluence")
+        pb.defParam(
+            "fastFluence",
+            units="#/cm^2",
+            description="Fast spectrum fluence",
+            categories=["cumulative"],
+        )
 
         pb.defParam(
             "fastFluencePeak",
@@ -1126,7 +1131,9 @@ def getBlockParameterDefinitions():
             categories=["detailedAxialExpansion"],
         )
 
-        pb.defParam("fluence", units="#/cm^2", description="Fluence")
+        pb.defParam(
+            "fluence", units="#/cm^2", description="Fluence", categories=["cumulative"]
+        )
 
         pb.defParam(
             "flux",

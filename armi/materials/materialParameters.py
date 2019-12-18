@@ -54,13 +54,17 @@ def getMaterialParameterDefinitions():
             "puFrac", units=None, description="The Pu weight fraction of a material"
         )
 
-        pb.defParam("thFrac", units=None, description="?")
+        pb.defParam("thFrac", units=None, description="Thorium weight fraction")
 
-        pb.defParam("refTempK", units="K", description="?")
+        pb.defParam("refTempK", units="K", description="Reference temperature")
 
-        pb.defParam("shapeFactor", units="?", description="?")
-
-        pb.defParam("theoreticalDensityFrac", units="?", description="?")
+        pb.defParam(
+            "theoreticalDensityFrac",
+            units=None,
+            description=(
+                "Fraction of theoretical density this material is " "fabricated at"
+            ),
+        )
 
         pb.defParam(
             "thermalConductivity", units="W-m/K", description="Thermal conductivity"
@@ -75,7 +79,36 @@ def getMaterialParameterDefinitions():
         pb.defParam(
             "atomFracDenom",
             units=None,
-            description="so it does not have to be summed each time ( O(1) vs. O(N))",
+            description="Aux param to avoid summing each time ( O(1) vs. O(N))",
+        )
+
+    return pDefs
+
+
+def getFuelMaterialParameterDefinitions():
+    """
+    Define the state parameters available on a FuelMaterial object.
+
+    .. note:: These are not stored in the database.
+    """
+    pDefs = parameters.ParameterDefinitionCollection()
+    with pDefs.createBuilder(
+        location=ParamLocation.AVERAGE, default=0.0, saveToDB=False
+    ) as pb:
+
+        # not strictly fissile when the class 1/class 2 custom isotopic input option is used
+        pb.defParam(
+            "class1_wt_frac", units=None, description="~Fissile/HM mass fraction"
+        )
+        pb.defParam(
+            "class1_custom_isotopics",
+            units=None,
+            description="Name of high-reactivity custom isotopics",
+        )
+        pb.defParam(
+            "class2_custom_isotopics",
+            units=None,
+            description="Name of low-reactivity custom isotopicsn",
         )
 
     return pDefs

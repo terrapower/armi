@@ -265,7 +265,7 @@ The following special names should be used in the **blueprints** input to achiev
     from tabulate import tabulate
 
     return tabulate(headers=('Keyword', 'Special use'),
-                    tabular_data=[(name, 'TBD') for name in Flags.__members__.keys()],
+                    tabular_data=[(name, 'TBD') for name in Flags._nameToValue.keys()],
                     tablefmt='rst')
 
 
@@ -363,11 +363,16 @@ material modifications
       return tabulate(headers=('Material Name', 'Available modifications'),
                       tabular_data=data, tablefmt='rst')
 
-.. warning::
 
-    The input processing system will try to apply the extra input parameters to all components in
-    the block, so there should typically only be one component per block that understands each input
-    parameter.
+  The class 1/class 2 modifications in fuel materials are used to identify mixtures of
+  custom isotopics labels for input scenarios where a varying blend of a high-reactivity
+  feed with a low-reactivity feed. This is often useful for closed fuel cycles. For example,
+  you can define any fuel material as being made of LWR-derived TRU plus depleted uranium
+  at various weight fractions. Note that this input style only adjusts the heavy metal.
+
+  .. warning:: The input processing system will try to apply the extra input parameters to all components in
+        the block, so there should typically only be one component per block that understands each input
+        parameter.
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some
 other structure.

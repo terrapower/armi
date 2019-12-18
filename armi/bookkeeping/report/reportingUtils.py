@@ -615,7 +615,6 @@ def summarizeZones(core, cs):
     if abs(totFrac - 1.0) < 1e-4:
         runLog.warning("total power fraction not equal to sum of assembly powers.")
 
-
     peak = max(pFracList)  # highest power assembly
     peakIndex = pFracList.index(peak)
     peakAssem = highPow[peakIndex]

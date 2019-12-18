@@ -48,6 +48,7 @@ class MockBP:
     activeNuclides = allNuclidesInProblem
     inactiveNuclides = set()
     elementsToExpand = set()
+    customIsotopics = {}
 
 
 def getDummyParamDefs():

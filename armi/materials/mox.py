@@ -23,6 +23,7 @@ A definitive source for these properties is [#ornltm20002]_.
 
 """
 from armi.materials.uraniumOxide import UraniumOxide
+from armi.materials import material
 from armi.nucDirectory import nucDir
 
 
@@ -42,7 +43,9 @@ class MOX(UraniumOxide):
 
     enrichedNuclide = "U235"
 
-    def applyInputParams(self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None):
+    def applyInputParams(
+        self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None, *args, **kwargs
+    ):
         if U235_wt_frac:
             self.adjustMassEnrichment(U235_wt_frac)
 
@@ -54,6 +57,7 @@ class MOX(UraniumOxide):
 
         if mass_frac_PU02:
             self.setMassFracPuO2(mass_frac_PU02)
+        material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def getMassFracPuO2(self):
         massFracPu = sum(

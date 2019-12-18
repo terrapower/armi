@@ -18,11 +18,11 @@ Simplified UZr alloy.
 This is a notional U-10Zr material based on [Chandrabhanu]_.
 """
 
-from armi import materials
+from armi.materials import material
 from armi.utils import units
 
 
-class UZr(materials.Material):
+class UZr(material.FuelMaterial):
     """
     Simplified UZr fuel alloy.
 
@@ -51,16 +51,16 @@ class UZr(materials.Material):
         u235Enrichment = 0.1
         self.p.uFrac = self.uFracDefault
         self.p.zrFrac = self.zrFracDefault
-        self.setMassFrac("U238", (1.0 - u235Enrichment) * self.p.uFrac)
-        self.setMassFrac("U235", u235Enrichment * self.p.uFrac)
         self.setMassFrac("ZR", self.p.zrFrac)
+        self.setMassFrac("U235", u235Enrichment * self.p.uFrac)
+        self.setMassFrac("U238", (1.0 - u235Enrichment) * self.p.uFrac)
         self._calculateReferenceDensity()
 
     def applyInputParams(
-        self, U235_wt_frac=None, ZR_wt_frac=None
+        self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs
     ):  # pylint: disable=arguments-differ
         """Apply user input."""
-        ZR_wt_frac = 0.1 if ZR_wt_frac is None else ZR_wt_frac
+        ZR_wt_frac = self.zrFracDefault if ZR_wt_frac is None else ZR_wt_frac
         U235_wt_frac = 0.1 if U235_wt_frac is None else U235_wt_frac
         self.p.zrFrac = ZR_wt_frac
         self.p.uFrac = 1.0 - ZR_wt_frac
@@ -68,10 +68,15 @@ class UZr(materials.Material):
         self.setMassFrac("U235", U235_wt_frac * self.p.uFrac)
         self.setMassFrac("U238", (1.0 - U235_wt_frac) * self.p.uFrac)
         self._calculateReferenceDensity()
+        material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def _calculateReferenceDensity(self):
         """
         Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law
+
+        .. warning:: the zrFrac, uFrac, etc. may seem redundant with massFrac data.
+            But it's complicated to update material fractions one at a time when density
+            is changing on the fly.
         """
         zrFrac = self.p.zrFrac
         uFrac = self.p.uFrac

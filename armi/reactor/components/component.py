@@ -230,7 +230,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self._applyNaturalNumberDensities()  # not necessary when duplicating...
+        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
@@ -316,7 +316,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.material.parent = self
         self.clearLinkedCache()
 
-    def _applyNaturalNumberDensities(self):
+    def applyMaterialMassFracsToNumberDensities(self):
         """
         Set initial (hot) number densities of this component based Material composition.
 

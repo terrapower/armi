@@ -103,7 +103,8 @@ def loadFromCs(cs):
     """
     Function to load Blueprints based on supplied ``CaseSettings``.
     """
-    from armi.utils import directoryChangers  # pylint: disable=import-outside-toplevel; circular import protection
+    # pylint: disable=import-outside-toplevel; circular import protection
+    from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
         with open(cs["loadingFile"], "r") as bpYaml:

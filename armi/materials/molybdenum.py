@@ -23,9 +23,6 @@ from armi.materials.material import Material
 class Molybdenum(Material):
     name = "Molybdenum"
 
-    def applyInputParams(self):
-        self.setDefaultMassFracs()
-
     def setDefaultMassFracs(self):
         """Moly mass fractions."""
         self.setMassFrac("MO", 1.0)

@@ -29,7 +29,7 @@ from numpy import interp
 
 from armi.nucDirectory import nuclideBases
 from armi.utils.units import getTk
-from armi.materials.material import Material
+from armi.materials import material
 from armi import runLog
 
 HeatCapacityConstants = collections.namedtuple(
@@ -37,7 +37,7 @@ HeatCapacityConstants = collections.namedtuple(
 )
 
 
-class UraniumOxide(Material):
+class UraniumOxide(material.FuelMaterial):
     name = "Uranium Oxide"
     references = {
         "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
@@ -88,7 +88,7 @@ class UraniumOxide(Material):
     def getTD(self):
         return self.theoreticalDensityFrac
 
-    def applyInputParams(self, U235_wt_frac=None, TD_frac=None):
+    def applyInputParams(self, U235_wt_frac=None, TD_frac=None, *args, **kwargs):
         if U235_wt_frac:
             self.adjustMassEnrichment(U235_wt_frac)
 
@@ -104,6 +104,7 @@ class UraniumOxide(Material):
             self.adjustTD(td)
         else:
             self.adjustTD(1.00)  # default to fully dense.
+        material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
         r"""

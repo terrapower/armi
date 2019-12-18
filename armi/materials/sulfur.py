@@ -24,9 +24,7 @@ from armi.materials import material
 class Sulfur(material.Fluid):
     name = "Sulfur"
 
-    def applyInputParams(
-        self, U235_wt_frac=None, ZR_wt_frac=None, sulfur_density_frac=None
-    ):
+    def applyInputParams(self, sulfur_density_frac=None):
         if sulfur_density_frac:
             self.fullDensFrac = float(sulfur_density_frac)
 
