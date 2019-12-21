@@ -277,7 +277,8 @@ class SettingsReader(_SettingsReader):
             else:
                 # apply validations
                 settingObj = self.cs.settings[settingName]
-                value = applyTypeConversions(settingObj, value)
+                if value:
+                    value = applyTypeConversions(settingObj, value)
                 try:
                     value = settingObj.schema(value)
                 except:
