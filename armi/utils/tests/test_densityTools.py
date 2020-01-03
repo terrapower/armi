@@ -93,9 +93,9 @@ class Test_densityTools(unittest.TestCase):
         fertileMassFracs = {"U238":0.3, "PU240":0.7}
         densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)
 
-        self.assertEqual(uo2.p.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1)  # HM blended
-        self.assertEqual(uo2.p.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3)  # HM blended
-        self.assertEqual(uo2.p.massFrac["O"], massFracO)  # non-HM stays unchanged
+        self.assertAlmostEqual(uo2.p.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1)  # HM blended
+        self.assertAlmostEqual(uo2.p.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3)  # HM blended
+        self.assertAlmostEqual(uo2.p.massFrac["O"], massFracO)  # non-HM stays unchanged
 
 
 if __name__ == "__main__":
