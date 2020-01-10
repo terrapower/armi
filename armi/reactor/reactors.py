@@ -306,7 +306,7 @@ class Core(composites.Composite):
     def isFullCore(self):
         """Return True if reactor is full core, otherwise False."""
         # Avoid using `not core.isFullCore` to check if third core geometry
-        # us `core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC`
+        # use `core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC`
         return self.symmetry == geometry.FULL_CORE
 
     @property

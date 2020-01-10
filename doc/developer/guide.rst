@@ -265,14 +265,14 @@ Finding assemblies
 ------------------
 There are a few ways to get the assemblies you're interested in.
 
-    * `r.whichAssembyIsIn(ring,position)` returns whichever assembly is in
+    * `r.core.whichAssemblyIsIn(ring,position)` returns whichever assembly is in
       (ring,position)
 
-    * `r.getLocationContents(locList)` returns the assemblies or blocks that correspond
+    * `r.core.getLocationContents(locList)` returns the assemblies or blocks that correspond
       to the location list. This can be much faster that `whichAssemblyIsIn` if you need
       many assemblies
 
-    * `r.getAssemblies()` loops through all assemblies in the core for when you need to
+    * `r.core.getAssemblies()` loops through all assemblies in the core for when you need to
       do something to all assemblies
 
     * `hist.getDetailAssemblies()` use the `HistoryInterface` to find the assemblies
