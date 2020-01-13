@@ -92,6 +92,8 @@ def loadTestReactor(
     o : Operator
     r : Reactor
     """
+    #TODO: it would be nice to have this be more stream-oriented. Juggling files is
+    # devilishly difficult.
     global TEST_REACTOR
     isotopicDepletion.applyDefaultBurnChain()
     fName = os.path.join(inputFilePath, inputFileName)

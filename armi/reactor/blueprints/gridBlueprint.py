@@ -103,9 +103,12 @@ Examples
 
 """
 import itertools
+from typing import Sequence, Optional
 
+import numpy
 import yamlize
 
+from armi.localization.exceptions import InputError
 from armi.utils import asciimaps
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -135,21 +138,20 @@ class GridBlueprint(yamlize.Object):
     The grids get origins either from a parent block (for pin lattices)
     or from a System (for Cores, SFPs, and other components).
 
-    For backward compatibility, the geometry and grid can be
-    alternatively read from a latticeFile (historically the geometry.xml file).
-
     Attributes
     ----------
     name : str
         The grid name
     geom : str
         The geometry of the grid (e.g. 'cartesian')
-    latticeFile : str
-        Path to input file containing just the lattice contents definition
     latticeMap : str
         An asciimap representation of the lattice contents
     latticeDimensions : Triplet
-        An x/y/z dict with grid dimensions in cm
+        An x/y/z Triplet with grid dimensions in cm. This is used to specify a uniform
+        grid, such as Cartesian or Hex. Mutually exclusive with gridBounds.
+    gridBounds : dict
+        A dictionary containing explicit grid boundaries. Specific keys used will depend
+        on the type of grid being defined. Mutually exclusive with latticeDimensions.
     symmetry : str
         A string defining the symmetry mode of the grid
     gridContents : dict
@@ -160,11 +162,11 @@ class GridBlueprint(yamlize.Object):
 
     name = yamlize.Attribute(key="name", type=str)
     geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
-    latticeFile = yamlize.Attribute(key="lattice file", type=str, default=None)
     latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
     latticeDimensions = yamlize.Attribute(
         key="lattice pitch", type=Triplet, default=None
     )
+    gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
     symmetry = yamlize.Attribute(
         key="symmetry", type=str, default=geometry.THIRD_CORE + geometry.PERIODIC
     )
@@ -173,14 +175,23 @@ class GridBlueprint(yamlize.Object):
     # grid contents information is written out.
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
+    @gridContents.validator
+    def gridContents(self, value):
+        if value is None:
+            return True
+        if not all(isinstance(key, tuple) for key in value.keys()):
+            raise InputError(
+                "Keys need to be presented as [i, j]. Check the blueprints."
+            )
+
     def __init__(
         self,
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        latticeFile=None,
         symmetry=geometry.THIRD_CORE + geometry.PERIODIC,
         gridContents=None,
+        gridBounds=None,
     ):
         """
         A Grid blueprint.
@@ -188,18 +199,19 @@ class GridBlueprint(yamlize.Object):
         Notes
         -----
         yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        this is only needed for when you want to make this object from a non-YAML source.
+        this is only needed for when you want to make this object from a non-YAML
+        source.
 
-        .. warning:: This is a Yamlize object, so ``__init__`` never really gets called. Only
-            ``__new__`` does.
+        .. warning:: This is a Yamlize object, so ``__init__`` never really gets called.
+        Only ``__new__`` does.
 
         """
         self.name = name
         self.geom = geom
         self.latticeMap = latticeMap
-        self.latticeFile = latticeFile
         self.symmetry = symmetry
         self.gridContents = gridContents
+        self.gridBounds = gridBounds
         self.eqPathInput = {}
 
     def construct(self):
@@ -208,42 +220,50 @@ class GridBlueprint(yamlize.Object):
         grid = self._constructSpatialGrid()
         return grid
 
-    @staticmethod
-    def fromSystemLayoutInput(name: str, geom: geometry.SystemLayoutInput):
-        """
-        Initialize a GridBlueprint from an already-loaded SystemLayoutInput object.
-
-        This aids in loading inputs from streams, when files would otherwise be
-        expected. The geom file/stream can be pre-loaded, and turned into a
-        GridBlueprint, which the rest of the blueprints system wants.
-        """
-        bp = GridBlueprint(name)
-        bp._readSystemLayoutInput(geom)
-        bp._constructSpatialGrid()
-
-        return bp
-
     def _constructSpatialGrid(self):
         """
         Build spatial grid.
 
-        If you do not enter latticeDimensions, a unit grid will be produced
-        which must be adjusted to the proper dimensions (often
-        by inspection of children) at a later time.
+        If you do not enter latticeDimensions, a unit grid will be produced which must
+        be adjusted to the proper dimensions (often by inspection of children) at a
+        later time.
         """
         geom = self.geom
         maxIndex = self._getMaxIndex()
         runLog.extra("Creating the spatial grid")
-        if geom in [geometry.RZT, geometry.RZ]:
-            # for now, these can only be read in from the old geometry XML files.
-            spatialGrid = self._makeRZGridFromLatticeFile()
+        if geom in (geometry.RZT, geometry.RZ):
+            if self.gridBounds is None:
+                # This check is regrattably late. It would be nice if we could validate
+                # that bounds are provided if R-Theta mesh is being used.
+                raise InputError(
+                    "Grid bounds must be provided for `{}` to specify a grid with "
+                    "r-theta components.".format(self.name)
+                )
+            for key in ("theta", "r"):
+                if key not in self.gridBounds:
+                    raise InputError(
+                        "{} grid bounds were not provided for `{}`.".format(
+                            key, self.name
+                        )
+                    )
+
+            # convert to list, otherwise it is a CommentedSeq
+            theta = numpy.array(self.gridBounds["theta"])
+            radii = numpy.array(self.gridBounds["r"])
+            for l, name in ((theta, "theta"), (radii, "radii")):
+                if not _isMonotonicUnique(l):
+                    raise InputError(
+                        "Grid bounds for {}:{} is not sorted or contains "
+                        "duplicates. Check blueprints.".format(self.name, name)
+                    )
+            spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom == geometry.HEX:
             pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
             # add 2 for potential dummy assems
-            spatialGrid = grids.hexGridFromPitch(pitch, numRings=maxIndex + 2,)
+            spatialGrid = grids.hexGridFromPitch(pitch, numRings=maxIndex + 2)
         elif geom == geometry.CARTESIAN:
-            # if full core or not cut-off, bump the first assembly from the center of the mesh
-            # into the positive values.
+            # if full core or not cut-off, bump the first assembly from the center of
+            # the mesh into the positive values.
             xw, yw = (
                 (self.latticeDimensions.x, self.latticeDimensions.y)
                 if self.latticeDimensions
@@ -253,7 +273,7 @@ class GridBlueprint(yamlize.Object):
                 self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
             )
             spatialGrid = grids.cartesianGridFromRectangle(
-                xw, yw, numRings=maxIndex, isOffset=isOffset,
+                xw, yw, numRings=maxIndex, isOffset=isOffset
             )
         runLog.debug("Built grid: {}".format(spatialGrid))
         # set geometric metadata on spatialGrid. This information is needed in various
@@ -272,13 +292,6 @@ class GridBlueprint(yamlize.Object):
         """
         return max(itertools.chain(*zip(*self.gridContents.keys())))
 
-    def _makeRZGridFromLatticeFile(self):
-        """Read an old-style XML file to build a RZT spatial grid."""
-        geom = geometry.SystemLayoutInput()
-        geom.readGeomFromFile(self.latticeFile)
-        spatialGrid = grids.thetaRZGridFromGeom(geom)
-        return spatialGrid
-
     def _readGridContents(self):
         """
         Read the specifiers as a function of grid position.
@@ -287,52 +300,30 @@ class GridBlueprint(yamlize.Object):
 
         * A dict mapping indices to specifiers (default output of this)
         * An asciimap
-        * A YAML file in the gen-2 geometry file format
-        * An XML file in the gen-1 geometry file format
 
         The output will always be stored in ``self.gridContents``.
         """
         if self.gridContents:
-            # grid contents read directly from input so nothing to do here.
             return
         elif self.latticeMap:
             self._readGridContentsLattice()
-        elif self.latticeFile:
-            geom = geometry.SystemLayoutInput()
-            geom.readGeomFromFile(self.latticeFile)
-            self._readSystemLayoutInput(geom)
 
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.
 
-        This update the gridContents attribute, which is a
-        dict mapping grid i,j,k indices to textual specifiers
-        (e.g. ``IC``))
+        This update the gridContents attribute, which is a dict mapping grid i,j,k
+        indices to textual specifiers (e.g. ``IC``))
         """
         latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
         lattice = latticeCls()
-        self.gridContents = lattice.readMap(self.latticeMap)
+        latticeMap = lattice.readMap(self.latticeMap)
+        self.gridContents = dict()
 
-    def _readSystemLayoutInput(self, geom: geometry.SystemLayoutInput):
-        """
-        Read grid contents from a file.
-
-        Notes
-        -----
-        This reads both the old XML format as well as the new
-        YAML format. The concept of a grid blueprint is slowly
-        trying to take over from the geometry file/geometry object.
-        """
-        self.gridContents = {}
-        for indices, spec in geom.assemTypeByIndices.items():
-            self.gridContents[indices] = spec
-        self.geom = str(geom.geomType)
-        self.symmetry = str(geom.symmetry)
-
-        # eqPathInput allows fuel management to be input alongside the core grid.
-        # This would be better as an independent grid but is here for now to help
-        # migrate inputs from previous versions.
-        self.eqPathInput = geom.eqPathInput
+        for (i, j), spec in latticeMap.items():
+            if spec == "-":
+                # skip placeholders
+                continue
+            self.gridContents[i, j] = spec
 
     def getLocators(self, spatialGrid: grids.Grid, latticeIDs: list):
         """
@@ -366,3 +357,21 @@ class GridBlueprint(yamlize.Object):
 class Grids(yamlize.KeyedList):
     item_type = GridBlueprint
     key_attr = GridBlueprint.name
+
+
+def _isMonotonicUnique(l: Sequence[float]) -> bool:
+    """
+    Check that the provided sequence increases monotonically, and has no duplicates.
+    """
+    # we want to safely compare for equality. numpy/list semantics are different
+    l = list(l)
+    if len(set(l)) != len(l):
+        # Duplicates
+        return False
+
+    # Assuming that we are going to fail anyways if this returns False, so be lazy and
+    # compare to sorted list. Fast happy path.
+    if sorted(l) != l:
+        return False
+
+    return True

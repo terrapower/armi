@@ -1,0 +1,4 @@
+# some comment in includeA
+full_name: Jennifer Person
+children:
+    !include includeB.yaml

@@ -29,6 +29,7 @@ from armi.reactor import reactors
 from armi.reactor.assemblies import *
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
+from armi.utils import textProcessors
 import armi.reactor.tests.test_reactors
 
 
@@ -575,6 +576,7 @@ class Assembly_TestCase(unittest.TestCase):
         with directoryChangers.DirectoryChanger(TEST_ROOT):
             self.cs["loadingFile"] = "refSmallReactor.yaml"
             with open(self.cs["loadingFile"], "r") as y:
+                y = textProcessors.resolveMarkupInclusions(y)
                 self.r.blueprints = blueprints.Blueprints.load(y)
 
             self.r.blueprints._prepConstruction(self.cs)

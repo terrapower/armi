@@ -66,14 +66,14 @@ import copy
 import collections
 from collections import OrderedDict
 import os
+import pathlib
 import traceback
 import typing
 
+import ruamel
 import tabulate
-import six
 import yamlize
 import yamlize.objects
-import ruamel.yaml
 import ordered_set
 
 import armi
@@ -85,15 +85,17 @@ from armi.localization.exceptions import InputError
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
 from armi.scripts import migration
+from armi.utils import textProcessors
+from armi.reactor import geometry
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
 # without adding detail
-from armi.reactor.blueprints.reactorBlueprint import Systems
+from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
 from armi.reactor.blueprints import isotopicOptions
-from armi.reactor.blueprints.gridBlueprint import Grids
+from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -106,8 +108,12 @@ def loadFromCs(cs):
     # pylint: disable=import-outside-toplevel; circular import protection
     from armi.utils import directoryChangers
 
+    textProcessors.registerYamlIncludeConstructor()
+
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
         with open(cs["loadingFile"], "r") as bpYaml:
+            # Make sure that the !include constructor is registered
+            bpYaml = textProcessors.resolveMarkupInclusions(bpYaml)
             try:
                 bp = Blueprints.load(bpYaml)
             except yamlize.yamlizing_error.YamlizingError as err:
@@ -153,11 +159,12 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
                     attrs[attrName] = section
                     attrs["_resolveFunctions"].append(resolver)
 
-        return yamlize.objects.ObjectType.__new__(mcs, name, bases, attrs)
+        newType = yamlize.objects.ObjectType.__new__(mcs, name, bases, attrs)
+
+        return newType
 
 
-@six.add_metaclass(_BlueprintsPluginCollector)
-class Blueprints(yamlize.Object):
+class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     """Base Blueprintsobject representing all the subsections in the input file."""
 
     nuclideFlags = yamlize.Attribute(
@@ -193,10 +200,10 @@ class Blueprints(yamlize.Object):
         return self
 
     def __init__(self):
-        # again, yamlize does not call __init__, instead we use Blueprints.load which creates and
-        # instance of a Blueprints object and initializes it with values using setattr. Since the
-        # method is never called, it serves the purpose of preventing pylint from issuing warnings
-        # about attributes not existing.
+        # again, yamlize does not call __init__, instead we use Blueprints.load which
+        # creates and instance of a Blueprints object and initializes it with values
+        # using setattr. Since the method is never called, it serves the purpose of
+        # preventing pylint from issuing warnings about attributes not existing.
         self._assembliesBySpecifier = {}
         self._prepped = False
         self.systemDesigns = Systems()
@@ -505,3 +512,67 @@ class Blueprints(yamlize.Object):
                 mig = migI(stream=inp)
                 inp = mig.apply()
         return inp
+
+def migrate(bp: Blueprints, cs):
+    """
+    Apply migrations to the input structure.
+
+    This is a good place to perform migrations that address changes to the system design
+    description (settings, blueprints, geom file). We have access to all three here, so
+    we can even move stuff between files. Namely, this:
+     - creates a grid blueprint to represent the core layout from the old ``geomFile``
+       setting, and applies that grid to a ``core`` system.
+     - moves the radial and azimuthal submesh values from the ``geomFile`` to the
+       assembly designs, but only if they are uniform (this is limiting, but could be
+       made more sophisticated in the future, if there is need)
+
+    This allows settings-driven core map to still be used for backwards compatibility.
+    At some point once the input stabilizes, we may wish to move this out to the
+    dedicated migration portion of the code, and not perform the migration so lazily.
+    """
+    from armi.reactor.blueprints import gridBlueprint
+
+    if bp.systemDesigns is None:
+        bp.systemDesigns = Systems()
+    if bp.gridDesigns is None:
+        bp.gridDesigns = gridBlueprint.Grids()
+
+    if "core" in [rd.name for rd in bp.gridDesigns]:
+        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
+
+    geom = geometry.SystemLayoutInput()
+    geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs["geomFile"]))
+    gridDesign = geom.toGridBlueprint("core")
+    bp.gridDesigns["core"] = gridDesign
+
+    if "core" in [rd.name for rd in bp.systemDesigns]:
+        raise ValueError(
+            "Core map is defined in both the ``geometry`` setting and in "
+            "the blueprints file. Only one definition may exist. "
+            "Update inputs."
+        )
+    bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
+
+    if geom.geomType in (geometry.RZT, geometry.RZ):
+        aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
+        radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
+
+        if len(aziMeshes) > 1 or len(radMeshes) > 1:
+            raise ValueError("The system layout described in {} has non-uniform "
+                    "azimuthal and/or radial submeshing. This migration is currently "
+                    "only smart enough to handle a single radial and single azimuthal "
+                    "submesh for all assemblies.".format(cs["geomFile"]))
+        radMesh = next(iter(radMeshes))
+        aziMesh = next(iter(aziMeshes))
+
+        for _, aDesign in bp.assemDesigns.items():
+            aDesign.radialMeshPoints = radMesh
+            aDesign.azimuthalMeshPoints = aziMesh
+
+    # Someday: write out the migrated file. At the moment this messes up the case
+    # title and doesn't yet have the other systems in place so this isn't the right place.
+
+
+#     cs.writeToXMLFile(cs.caseTitle + '.migrated.xml')
+#     with open(os.path.split(cs['loadingFile'])[0] + '.migrated.' + '.yaml', 'w') as loadingFile:
+#         blueprints.Blueprints.dump(bp, loadingFile)

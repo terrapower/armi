@@ -1,0 +1,9 @@
+# Behold, the Person family
+bobby: &bobby
+    full_name: Robert Person
+
+billy:
+    full_name: William Person
+    children:
+        - *bobby
+        - !include includeA.yaml

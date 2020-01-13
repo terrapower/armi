@@ -97,9 +97,10 @@ class MainInterface(interfaces.Interface):
                 dbi.prepRestartRun(dbCycle, dbNode)
             except:
                 runLog.error(
-                    "Could not load state at BOL as requested. DB {0} does "
-                    "not exist or does not have enough time steps to load this time"
-                    "".format(self.cs["reloadDBName"])
+                    "Could not load the initial state as requested. DB `{0}` does "
+                    "not exist or does not have enough time steps to load this time "
+                    "(cycle={}, tn={})"
+                    "".format(self.cs["reloadDBName"], dbCycle, dbNode)
                 )
                 raise
             self.r.p.cycle = self.cs["startCycle"]

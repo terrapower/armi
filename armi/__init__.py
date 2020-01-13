@@ -338,9 +338,15 @@ def _cleanupOnCancel(signum, _frame):
     sys.exit(1)  # since we're handling the signal we have to cancel
 
 
-def configure(app: apps.App):
+def configure(app: Optional[apps.App]=None):
     """
     Set the plugin manager for the Framework and configure internals to those plugins.
+
+    Parameters
+    ----------
+    app :
+        An :py:class:`armi.apps.App` instance with which the framework is to be
+        configured. If it is not provided, then the default ARMI App will be used.
 
     Important
     ---------
@@ -362,6 +368,8 @@ def configure(app: apps.App):
             armi.context.BLUEPRINTS_IMPORT_CONTEXT
         )
     )
+
+    app = app or apps.App()
 
     global _app
     _app = app

@@ -40,14 +40,20 @@ sfp:
 
 GRIDS = """
 core:
-    lattice file: {0}geometry.xml
+    geom: hex
+    symmetry: third core periodic
+    grid contents:
+      [0, 0]: IC
+      [1, 1]: IC
 sfp:
-    lattice file: {0}sfp-geom.xml
     lattice pitch:
         x: 25.0
         y: 25.0
     geom: cartesian
     symmetry: full
+    lattice map: |
+      IC IC
+      IC IC
 """
 
 GEOM = """<?xml version="1.0" ?>
@@ -67,12 +73,6 @@ class TestReactorBlueprints(unittest.TestCase):
         self.gridDesigns = gridBlueprint.Grids.load(GRIDS.format(self._testMethodName))
 
     def test_simple_read(self):
-        self.assertEqual(
-            self.gridDesigns["core"].latticeFile, self._testMethodName + "geometry.xml",
-        )
-        self.assertEqual(
-            self.gridDesigns["sfp"].latticeFile, self._testMethodName + "sfp-geom.xml"
-        )
         self.assertAlmostEqual(self.systemDesigns["sfp"].origin.y, 12.1)
 
     def _setupReactor(self):
@@ -99,7 +99,7 @@ class TestReactorBlueprints(unittest.TestCase):
         """Actually construct some reactor systems."""
         core, sfp = self._setupReactor()
         self.assertEqual(len(core), 2)
-        self.assertEqual(len(sfp), 2)
+        self.assertEqual(len(sfp), 4)
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""

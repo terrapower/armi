@@ -1012,7 +1012,8 @@ class XTViewDatabase:
 
     def _getParamNames(self, objName):
         # TODO: add a set of names as attributes somewhere so it's reliably exhaustive?
-        # using the last TS currently to get all parameters defined, iterating across each entry is way too slow
+        # using the last TS currently to get all parameters defined, iterating across
+        # each entry is way too slow
         # TODO: should allow a specific TS lookup in the case of loadState
         last_ts = self.getAllTimesteps()[-1]
         return list(self._hdf_file["{}/{}".format(last_ts, objName)].keys())
@@ -1040,6 +1041,7 @@ class XTViewDatabase:
                     "Reactor/Core parameter `{}` was unrecognized and is being "
                     "ignored.".format(param)
                 )
+
         all_vals = []
         for timestep in timesteps:
             value = self._get_1d_dataset("{}/reactors/{}".format(timestep, param))

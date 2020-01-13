@@ -42,7 +42,7 @@ include armi/tests/refOneBlockReactor.yaml
 include armi/tests/refSmallCartesian.yaml
 include armi/tests/refSmallReactor.yaml
 include armi/tests/refTestCartesian.yaml
-include armi/tests/sfpGeom.xml
+include armi/tests/sfpGeom.yaml
 include armi/tests/testEq.yaml
 include armi/tests/testEqMulti-geom.xml
 include armi/tests/testEqSingle-geom.xml

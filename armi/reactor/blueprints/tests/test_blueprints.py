@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file"""
+import pathlib
 import unittest
 
 import yamlize
@@ -24,24 +25,26 @@ from armi.nucDirectory.elements import bySymbol
 from armi import settings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
+from armi.utils import textProcessors
 from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
 from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
 from armi.physics.neutronics import isotopicDepletion
 
 
 class TestBlueprints(unittest.TestCase):
-    """Test that the basic functionality of faithfully receiving user input to construct ARMI
-    data model objects works as expected.
+    """Test that the basic functionality of faithfully receiving user input to construct
+    ARMI data model objects works as expected.
 
-    Values are hopefully not hardcoded in here, just sanity checks that nothing messed up as this is
-    code has VERY high incidental coverage from other tests.
+    Values are hopefully not hardcoded in here, just sanity checks that nothing messed
+    up as this is code has VERY high incidental coverage from other tests.
 
-    NOTE: as it stands it seems a little hard to test more granularity with the blueprints file
-    as each initialization is intended to be a complete load from the input file, and each load also
+    NOTE: as it stands it seems a little hard to test more granularity with the
+    blueprints file as each initialization is intended to be a complete load from the
+    input file, and each load also
     makes calls out to the reactor for some assembly initialization steps.
 
-    TODO: see the above note, and try to test blueprints on a wider range of input files, touching
-    on each failure case.
+    TODO: see the above note, and try to test blueprints on a wider range of input
+    files, touching on each failure case.
 
     """
 
@@ -53,6 +56,7 @@ class TestBlueprints(unittest.TestCase):
         isotopicDepletion.applyDefaultBurnChain()
 
         with open("refSmallReactor.yaml", "r") as y:
+            y = textProcessors.resolveMarkupInclusions(y)
             cls.blueprints = blueprints.Blueprints.load(y)
             cls.blueprints._prepConstruction(cls.cs)
 
@@ -350,7 +354,7 @@ assemblies:
                 "Tinput": 1.0,
                 "Thot": 1.0,
             },
-            {"shape": "Circle", "name": "name", "Tinput": 1.0, "Thot": 1.0,},
+            {"shape": "Circle", "name": "name", "Tinput": 1.0, "Thot": 1.0},
             {"shape": "circle", "name": "name", "material": "HT9", "Thot": 1.0},
             {"shape": "circle", "name": "name", "material": "HT9", "Tinput": 1.0},
             {

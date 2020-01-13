@@ -28,8 +28,9 @@ import itertools
 import math
 import re
 import os
-import time
 import tabulate
+import time
+from typing import Optional
 
 from six import moves
 import numpy
@@ -55,6 +56,7 @@ from armi import materials
 from armi import utils
 from armi.utils import units
 from armi.utils.iterables import Sequence
+from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 
@@ -122,30 +124,31 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, blueprints, geom=None):
+def factory(
+    cs, bp, geom: Optional[geometry.SystemLayoutInput] = None
+):
     """
     Build a reactor from input settings, blueprints and geometry.
     """
-    from armi.reactor.blueprints import reactorBlueprint  # circular import protection
-    from armi.utils import directoryChangers
+    from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
     # just before reactor construction, update the material "registry" with user settings,
     # if it is set. Often it is set by the application.
     if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
         materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
-    r = Reactor(cs, blueprints)
+    r = Reactor(cs, bp)
 
     if cs["geomFile"]:
-        reactorBlueprint.migrate(blueprints, cs)
+        blueprints.migrate(bp, cs)
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
         # always construct the core first (for assembly serial number purposes)
-        core = blueprints.systemDesigns["core"]
-        core.construct(cs, blueprints, r, geom=geom)
-        for structure in blueprints.systemDesigns:
+        core = bp.systemDesigns["core"]
+        core.construct(cs, bp, r, geom=geom)
+        for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
-                structure.construct(cs, blueprints, r)
+                structure.construct(cs, bp, r)
 
     runLog.debug("Reactor: {}".format(r))
     return r

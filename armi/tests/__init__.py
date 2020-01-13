@@ -25,7 +25,6 @@ from armi import runLog
 from armi import settings
 from armi.utils import directoryChangers
 from armi.reactor import assemblies
-from armi.reactor import blueprints
 from armi.reactor import geometry
 from armi.reactor import reactors
 from armi.reactor import grids
@@ -39,6 +38,8 @@ COMPXS_PATH = os.path.join(TEST_ROOT, "COMPXS.ascii")
 
 def getEmptyHexReactor(cs=None):
     """Make an empty hex reactor used in some tests."""
+    from armi.reactor import blueprints
+
     cs = cs or settings.getMasterCs()
     bp = blueprints.Blueprints()
     reactor = reactors.Reactor(cs, bp)
