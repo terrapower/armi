@@ -14,26 +14,27 @@
 """
 This contains structured meshes in multiple geometries and spatial locators (i.e. locations).
 
-:py:class:`Grids <Grid>` are objects that map indices (i, j, k) to spatial locations (x,y,z) or (t,r,z).
-They are useful for arranging things in reactors, such as:
+:py:class:`Grids <Grid>` are objects that map indices (i, j, k) to spatial locations
+(x,y,z) or (t,r,z).  They are useful for arranging things in reactors, such as:
 
 * Fuel assemblies in a reactor
 * Plates in a heat exchanger
 * Pins in a fuel assembly
 * Blocks in a fuel assembly (1-D)
 
-Fast reactors often use a hexagonal grid, while other reactors may be better suited for Cartesian
-or RZT grids. This module contains representations of all these.
+Fast reactors often use a hexagonal grid, while other reactors may be better suited for
+Cartesian or RZT grids. This module contains representations of all these.
 
-``Grid``s can be defined by any arbitrary combination of absolute grid boundaries and unit step
-directions.
+``Grid``s can be defined by any arbitrary combination of absolute grid boundaries and
+unit step directions.
 
-Associated with grids are :py:class:`IndexLocations <IndexLocation>`. Each of these maps to a single cell in a grid,
-or to an arbitrary point in the continuous space represented by a grid. When a `Grid`` is
-built, it builds a collection of ``IndexLocation``s, one for each cell.
+Associated with grids are :py:class:`IndexLocations <IndexLocation>`. Each of these maps
+to a single cell in a grid, or to an arbitrary point in the continuous space represented
+by a grid. When a `Grid`` is built, it builds a collection of ``IndexLocation``s, one
+for each cell.
 
-In the ARMI :py:mod:`armi.reactor` module, each object is assigned a locator either from a grid
-or in arbitrary, continuous space (using a :py:class:`CoordinateLocation`) on the
+In the ARMI :py:mod:`armi.reactor` module, each object is assigned a locator either from
+a grid or in arbitrary, continuous space (using a :py:class:`CoordinateLocation`) on the
 ``spatialLocator`` attribute.
 
 Below is a basic example of how to use a 2-D grid::
@@ -43,28 +44,29 @@ Below is a basic example of how to use a 2-D grid::
 >>> location.getGlobalCoordinates()
 array([ 1.,  2.,  0.])
 
-Grids can be chained together in a parent-child relationship. This is often used in
-ARMI where a 1-D axial grid (e.g. in an assembly) is being positioned in a core
-or spent-fuel pool. See example in
+Grids can be chained together in a parent-child relationship. This is often used in ARMI
+where a 1-D axial grid (e.g. in an assembly) is being positioned in a core or spent-fuel
+pool. See example in
 :py:meth:`armi.reactor.tests.test_grids.TestSpatialLocator.test_recursion`.
 
-The "radial" (ring, position) indexing used in DIF3D can be converted to
-and from the more quasi-Cartesian indexing in a hex mesh easily with the utility methods
+The "radial" (ring, position) indexing used in DIF3D can be converted to and from the
+more quasi-Cartesian indexing in a hex mesh easily with the utility methods
 :py:meth:`HexGrid.getRingPos` and :py:func:`indicesToRingPos`.
 
-.. note:: ``IndexLocation`` is intended to replace :py:class:`armi.reactor.locations.Location`.
+.. note:: ``IndexLocation`` is intended to replace
+:py:class:`armi.reactor.locations.Location`.
 
-This module is designed to satisfy the spatial arrangement requirements of
-:py:mod:`the Reactor package <armi.reactor>`.
+This module is designed to satisfy the spatial arrangement requirements of :py:mod:`the
+Reactor package <armi.reactor>`.
 
 Throughout the module, the term **global** refers to the top-level coordinate system
-while the word **local** refers to within the current coordinate system defined
-by the current grid.
+while the word **local** refers to within the current coordinate system defined by the
+current grid.
 """
 import itertools
 import math
 import re
-from typing import Tuple, List
+from typing import Tuple, List, Optional, Sequence
 import collections
 
 import numpy.linalg
@@ -75,7 +77,7 @@ from armi.utils import hexagon
 # data structure for database-serialization of grids
 GridParameters = collections.namedtuple(
     "GridParameters",
-    ("unitSteps", "bounds", "unitStepLimits", "offset", "geomType", "symmetry",),
+    ("unitSteps", "bounds", "unitStepLimits", "offset", "geomType", "symmetry"),
 )
 TAU = math.pi * 2.0
 BOUNDARY_0_DEGREES = 1
@@ -107,7 +109,7 @@ TRIANGLES_IN_HEXAGON = numpy.array(
 )
 
 
-class LocationBase(object):
+class LocationBase:
     """
     A namedtuple-like object for storing location information.
 
@@ -292,8 +294,8 @@ class IndexLocation(LocationBase):
         """
         Get the non-grid indices (i,j,k) of this locator.
 
-        This strips off the annoying ``grid`` tagalong which is there to ensure proper equality
-        (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
+        This strips off the annoying ``grid`` tagalong which is there to ensure proper
+        equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
 
         It is a numpy array for two reasons:
         1. It can be added and subtracted for the recursive computations
@@ -315,7 +317,7 @@ class IndexLocation(LocationBase):
         This is useful for getting the reactor-level (i,j,k) indices of an object
         in a multi-layered 2-D(assemblies in core)/1-D(blocks in assembly) mesh
         like the one mapping blocks up to reactor in Hex reactors.
-  
+
         The benefit of that particular mesh over a 3-D one is that different
         assemblies can have different axial meshes, a common situation.
 
@@ -452,15 +454,15 @@ class CoordinateLocation(IndexLocation):
         return self.indices
 
 
-class Grid(object):
+class Grid:
     """
     A connected set of cells characterized by indices mapping to space and vice versa.
 
-    The cells may be characterized by any mixture of regular repeating steps and user-defined steps
-    in any direction.
+    The cells may be characterized by any mixture of regular repeating steps and
+    user-defined steps in any direction.
 
-    For example, a 2-D hex lattice has constant, regular steps whereas a 3-D hex mesh may have
-    user-defined axial meshes. Similar for Cartesian, RZT, etc.
+    For example, a 2-D hex lattice has constant, regular steps whereas a 3-D hex mesh
+    may have user-defined axial meshes. Similar for Cartesian, RZT, etc.
 
     Parameters
     ----------
@@ -474,32 +476,34 @@ class Grid(object):
         where ``dmn`` is the distance (in cm) that dimension ``m`` will change as a
                 function of index ``n``.
         Unit steps are used as a generic method for defining repetitive grids in a
-        variety of geometries, including hexagonal and Cartesian.
-        The tuples are not vectors in the direction of the translation,
-        but rather grouped by direction. If the bounds argument is described for a
-        direction, the bounds will be used rather than the unit step information.
-        The default of (0, 0, 0) makes all dimensions insensitive to indices since the
-        coordinates are calculated by the dot product of this and the indices.
-        With this default, any dimension that is desired to change with indices should
-        be defined with bounds. RZtheta grids are created exclusively with bounds.
+        variety of geometries, including hexagonal and Cartesian.  The tuples are not
+        vectors in the direction of the translation, but rather grouped by direction. If
+        the bounds argument is described for a direction, the bounds will be used rather
+        than the unit step information.  The default of (0, 0, 0) makes all dimensions
+        insensitive to indices since the coordinates are calculated by the dot product
+        of this and the indices.  With this default, any dimension that is desired to
+        change with indices should be defined with bounds. RZtheta grids are created
+        exclusively with bounds.
 
     bounds : 3-tuple
-        Absolute increasing bounds in cm including endpoints of a  non-uniform grid.
-        Each item represents the boundaries in the associated direction.
-        Use Nones when unitSteps should be applied instead. Most useful for thetaRZ grids 
-        or other non-uniform grids.
+        Absolute increasing bounds in cm including endpoints of a non-uniform grid.
+        Each item represents the boundaries in the associated direction.  Use Nones when
+        unitSteps should be applied instead. Most useful for thetaRZ grids or other
+        non-uniform grids.
 
     unitStepLimits : 3-tuple
-        The limit of the steps in all three directions. This constrains step-defined grids to be
-        finite so we can populate them with SpatialLocator objects.
+        The limit of the steps in all three directions. This constrains step-defined
+        grids to be finite so we can populate them with SpatialLocator objects.
 
     offset : 3-tuple, optional
-        Offset in cm for each axis. By default the center of the (0,0,0)-th object is in the center of the grid.
-        Offsets can move it so that the (0,0,0)-th object can be fully within a quadrant (i.e. in a Cartesian grid).
+        Offset in cm for each axis. By default the center of the (0,0,0)-th object is in
+        the center of the grid.  Offsets can move it so that the (0,0,0)-th object can
+        be fully within a quadrant (i.e. in a Cartesian grid).
 
     armiObject : ArmiObject, optional
-        The ArmiObject that this grid describes. For example if it's a 1-D assembly grid,
-        the armiObject is the assembly. Note that ``self.armiObject.spatialGrid`` is ``self``.
+        The ArmiObject that this grid describes. For example if it's a 1-D assembly
+        grid, the armiObject is the assembly. Note that ``self.armiObject.spatialGrid``
+        is ``self``.
 
     Examples
     --------
@@ -517,45 +521,46 @@ class Grid(object):
     Notes
     -----
     Each dimension must either be defined through unitSteps or bounds.
-    The combination of unitSteps with bounds was settled upon after some struggle to have one
-    unified definition of a grid (i.e. just bounds). A hexagonal grid is somewhat challenging
-    to represent with bounds because the axes are not orthogonal, so a unit-direction vector
-    plus bounds would be required. And then the bounds would be wasted space because
-    they can be derived simply by unit steps. Memory efficiency is important in this object
-    so the compact representation of unitSteps-when-possible, bounds-otherwise was
-    settled upon.
+    The combination of unitSteps with bounds was settled upon after some struggle to
+    have one unified definition of a grid (i.e. just bounds). A hexagonal grid is
+    somewhat challenging to represent with bounds because the axes are not orthogonal,
+    so a unit-direction vector plus bounds would be required. And then the bounds would
+    be wasted space because they can be derived simply by unit steps. Memory efficiency
+    is important in this object so the compact representation of
+    unitSteps-when-possible, bounds-otherwise was settled upon.
 
     Design considerations include:
 
-    * unitSteps are more intuitive as operations starting from the center of a cell, particularly with
-      hexagons and rectangles. Otherwise the 0,0 position of a hexagon in the center of 1/3-symmetric
-      hexagon is at the phantom bottom left of the hexagon.
+    * unitSteps are more intuitive as operations starting from the center of a cell,
+      particularly with hexagons and rectangles. Otherwise the 0,0 position of a hexagon
+      in the center of 1/3-symmetric hexagon is at the phantom bottom left of the
+      hexagon.
 
-    * Users generally prefer to input mesh bounds rather than centers (e.g. starting at 0.5 instead of 0.0 in
-      a unit mesh is weird).
+    * Users generally prefer to input mesh bounds rather than centers (e.g. starting at
+      0.5 instead of 0.0 in a unit mesh is weird).
 
-    * If we store bounds, computing bounds is simple and computing centers takes ~2x the effort. If we
-      store centers, it's the opposite.
+    * If we store bounds, computing bounds is simple and computing centers takes ~2x the
+      effort. If we store centers, it's the opposite.
 
-    * Regardless of how we store things, we'll need a Grid that has the lower-left assembly fully inside
-      the problem (i.e. for full core Cartesian) as well as another one that has the lower-left assembly
-      half-way or quarter-way sliced off (for 1/2, 1/4, and 1/8 symmetries).
-      The ``offset`` parameter handles this.
+    * Regardless of how we store things, we'll need a Grid that has the lower-left
+      assembly fully inside the problem (i.e. for full core Cartesian) as well as
+      another one that has the lower-left assembly half-way or quarter-way sliced off
+      (for 1/2, 1/4, and 1/8 symmetries).  The ``offset`` parameter handles this.
 
-    * Looking up mesh boundaries (to define a mesh in another code) is generally more common than looking
-      up centers (for plotting or measuring distance).
+    * Looking up mesh boundaries (to define a mesh in another code) is generally more
+      common than looking up centers (for plotting or measuring distance).
 
     * A grid can be anchored to the object that it is in with a backreference. This
       gives it the ability to traverse the composite tree and map local to global
       locations without having to duplicate the composite pattern on grids. This remains
-      optional so grids can be used for non-reactor-package reasons.
-      It may seem slightly cleaner to set the armiObject to the parent's spatialLocator itself
+      optional so grids can be used for non-reactor-package reasons.  It may seem
+      slightly cleaner to set the armiObject to the parent's spatialLocator itself
       but the major disadvantage of this is that when an object moves, the armiObject
       would have to be updated. By anchoring directly to Composite objects, the parent
       is always up to date no matter where or how things get moved.
 
-    * Unit step calculations use dot products and must not be polluted by the bound indices.
-      Thus we reduce the size of the unitSteps tuple accordingly.
+    * Unit step calculations use dot products and must not be polluted by the bound
+      indices. Thus we reduce the size of the unitSteps tuple accordingly.
     """
 
     def __init__(
@@ -855,6 +860,16 @@ class Grid(object):
                 indexBounds.append((0, len(bounds)))
         return tuple(indexBounds)
 
+    def getBounds(
+        self
+    ) -> Tuple[
+        Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]
+    ]:
+        """
+        Return the grid bounds for each dimension, if present.
+        """
+        return self._bounds
+
     def getIndicesFromRingAndPos(self, ring, pos):
         return ring, pos
 
@@ -901,7 +916,7 @@ class Grid(object):
     def pitch(self):
         """
         The pitch of the grid.
-        
+
         Assumes 2-d unit-step defined (works for cartesian)
         """
         pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
@@ -1118,7 +1133,8 @@ class ThetaRZGrid(Grid):
     """
     A grid characterized by azimuthal, radial, and zeta indices.
 
-    The angular meshes are limited to 0 to 2pi radians. R and Zeta are as in other meshes.
+    The angular meshes are limited to 0 to 2pi radians. R and Zeta are as in other
+    meshes.
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
     """
@@ -1215,8 +1231,8 @@ def cartesianGridFromRectangle(
     Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
 
     isOffset : bool
-        If true will put first mesh cell fully within the grid instead of centering it on
-        the crosshairs.
+        If true will put first mesh cell fully within the grid instead of centering it
+        on the crosshairs.
     """
     unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
     offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
@@ -1232,7 +1248,8 @@ def axialUnitGrid(numCells, armiObject=None):
     """
     Build a 1-D unit grid in the k-direction based on a number of times. Each mesh is 1cm wide.
 
-    numCells + 1 mesh boundaries are added, since one block would require a bottom and a top.
+    numCells + 1 mesh boundaries are added, since one block would require a bottom and a
+    top.
     """
     # need float bounds or else we truncate integers
     return Grid(
@@ -1299,13 +1316,13 @@ def ringPosFromRingLabel(ringLabel):
 
 def indicesToRingPos(i, j):
     """
-    Convert spatialLocator indices to ring/position. 
-    
+    Convert spatialLocator indices to ring/position.
+
     One benefit it has is that it never has negative numbers.
 
     Notes
     -----
-    Ring, pos index system goes in counterclockwise hex rings.   
+    Ring, pos index system goes in counterclockwise hex rings.
     """
     if i > 0 and j >= 0:
         edge = 0

@@ -50,6 +50,7 @@ from armi import runLog
 from armi.reactor import grids
 from armi.utils import asciimaps
 
+
 SYSTEMS = "systems"
 VERSION = "version"
 
@@ -229,6 +230,44 @@ class SystemLayoutInput:
             stream.seek(0)
             self._readYaml(stream)
         self._applyMigrations()
+
+    def toGridBlueprint(self, name: str = "core"):
+        """Migrate old-style SystemLayoutInput to new GridBlueprint."""
+        from armi.reactor.blueprints.gridBlueprint import GridBlueprint
+
+        geom = self.geomType
+        symmetry = self.symmetry
+
+        bounds = None
+
+        if self.geomType == RZT:
+            # We need a grid in order to go from whats in the input to indices, and to
+            # be able to provide grid bounds to the blueprint.
+            rztGrid = grids.thetaRZGridFromGeom(self)
+            theta, r, _ = rztGrid.getBounds()
+            bounds = {"theta": theta, "r": r}
+
+        gridContents = dict()
+        for indices, spec in self.assemTypeByIndices.items():
+            if HEX in self.geomType:
+                i, j = grids.getIndicesFromRingAndPos(*indices)
+            elif RZT in self.geomType:
+                i, j, _ = rztGrid.indicesOfBounds(*indices[0:4])
+            else:
+                i, j = indices
+            gridContents[i, j] = spec
+
+        bp = GridBlueprint(
+            name=name,
+            gridContents=gridContents,
+            geom=geom,
+            symmetry=symmetry,
+            gridBounds=bounds,
+        )
+
+        bp.eqPathInput = self.eqPathInput
+
+        return bp
 
     def _readXml(self, stream):
         tree = ET.parse(stream)

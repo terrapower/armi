@@ -38,6 +38,7 @@ import copy
 import io
 import itertools
 import os
+import pathlib
 import re
 import sys
 import time
@@ -73,6 +74,7 @@ from armi.reactor import grids
 from armi.bookkeeping.db.types import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import geometry
+from armi.utils.textProcessors import resolveMarkupInclusions
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 DB_VERSION = "3.1"
@@ -155,15 +157,12 @@ class DatabaseInterface(interfaces.Interface):
 
         # Grab geomString here because the DB-level has no access to the reactor or
         # blueprints or anything.
-        # There's not always a geomFile; sometimes geom is brought in via systems.
-        # Eventually, we'll need to store multiple of these (one for each system).
-        # Just do core for now.
-        geomFileName = self.r.blueprints.gridDesigns["core"].latticeFile
-        if geomFileName:
-            with open(
-                os.path.join(os.path.dirname(self.cs.path), geomFileName), "r"
-            ) as fileStream:
-                geomString = fileStream.read()
+        # There's not always a geomFile; we are moving towards the core grid definition
+        # living in the blueprints themselves. In this case, the db doesnt need to store
+        # a geomFile at all.
+        if self.cs["geomFile"]:
+            with open(os.path.join(self.cs.inputDirectory, self.cs["geomFile"])) as f:
+                geomString = f.read()
         else:
             geomString = ""
         self._db.writeInputsToDB(self.cs, geomString=geomString)
@@ -192,7 +191,7 @@ class DatabaseInterface(interfaces.Interface):
     def interactEOL(self):
         """DB's should be closed at run's end. """
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
-        # is necessary  too.
+        # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
         self._db.writeToDB(self.r)
         self._db.close(True)
@@ -604,10 +603,10 @@ class Database3(database.Database):
             csString = stream.read()
 
         if bpString is None:
-            with open(
-                os.path.join(os.path.dirname(cs.path), cs["loadingFile"]), "r"
-            ) as fileStream:
-                bpString = fileStream.read()
+            # Ensure that the input as stored in the DB is complete
+            bpString = resolveMarkupInclusions(
+                pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+            ).read()
 
         self.h5db["inputs/settings"] = csString
         self.h5db["inputs/geomFile"] = geomString

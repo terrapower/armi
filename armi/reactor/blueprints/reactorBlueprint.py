@@ -32,16 +32,14 @@ See Also
 --------
 armi.reactor.geometry.SystemLayoutInput : reads the individual face-map xml files.
 """
-
 import tabulate
-
 import yamlize
 
 import armi
 from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
-from armi.reactor.blueprints.gridBlueprint import GridBlueprint, Triplet
+from armi.reactor.blueprints.gridBlueprint import Triplet
 
 
 class SystemBlueprint(yamlize.Object):
@@ -80,7 +78,7 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.info("Constructing the `{}`".format(self.name))
         if geom is not None:
-            gridDesign = GridBlueprint.fromSystemLayoutInput("core", geom)
+            gridDesign = geom.toGridBlueprint("core")
         else:
             gridDesign = bp.gridDesigns[self.gridName]
         spatialGrid = gridDesign.construct()
@@ -112,26 +110,15 @@ class SystemBlueprint(yamlize.Object):
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(gridDesign.geom, cs, specifier=aTypeID)
 
-            if gridDesign.geom in [geometry.RZT, geometry.RZ]:
-                # in RZ, TRZ, locationInfo are upper and lower bounds in R and Theta.
-                # We want to convert these into spatialLocator indices in the reactor's spatialGrid
-                rad0, rad1, theta0, theta1, numAzi, numRadial = locationInfo
-                loc = container.spatialGrid[
-                    container.spatialGrid.indicesOfBounds(rad0, rad1, theta0, theta1)
-                ]
-                newAssembly.p.AziMesh = numAzi
-                newAssembly.p.RadMesh = numRadial
-            else:
-                ring, pos = locationInfo
-                i, j = container.spatialGrid.getIndicesFromRingAndPos(ring, pos)
-                loc = container.spatialGrid[i, j, 0]
-                if (
-                    container.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
-                    and not container.spatialGrid.isInFirstThird(
-                        loc, includeTopEdge=True
-                    )
-                ):
-                    badLocations.add(loc)
+            i, j = locationInfo
+            loc = container.spatialGrid[i, j, 0]
+            if (
+                container.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+                and not container.spatialGrid.isInFirstThird(
+                    loc, includeTopEdge=True
+                )
+            ):
+                badLocations.add(loc)
             container.add(newAssembly, loc)
         if badLocations:
             raise ValueError(
@@ -211,40 +198,3 @@ def summarizeMaterialData(container):
         )
     )
     return materialData
-
-
-def migrate(bp, cs):
-    """
-    Make a system and a grid representing the Core from a ``geomFile`` setting.
-
-    This allows settings-driven core map for backwards compatibility.
-    """
-    from armi.reactor.blueprints import gridBlueprint
-
-    if bp.systemDesigns is None:
-        bp.systemDesigns = Systems()
-    if bp.gridDesigns is None:
-        bp.gridDesigns = gridBlueprint.Grids()
-
-    if "core" in [rd.name for rd in bp.gridDesigns]:
-        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
-
-    bp.gridDesigns["core"] = gridBlueprint.GridBlueprint(
-        "core", latticeFile=cs["geomFile"],
-    )
-
-    if "core" in [rd.name for rd in bp.systemDesigns]:
-        raise ValueError(
-            "Core map is defined in both the ``geometry`` setting and in "
-            "the blueprints file. Only one definition may exist. "
-            "Update inputs."
-        )
-    bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
-
-    # Someday: write out the migration file. At the moment this messes up the case
-    # title and doesn't yet have the other systems in place so this isn't the right place.
-
-
-#     cs.writeToXMLFile(cs.caseTitle + '.migrated.xml')
-#     with open(os.path.split(cs['loadingFile'])[0] + '.migrated.' + '.yaml', 'w') as loadingFile:
-#         blueprints.Blueprints.dump(bp, loadingFile)

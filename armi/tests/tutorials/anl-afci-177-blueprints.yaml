@@ -337,9 +337,8 @@ systems:
           x: 0.0
           y: 0.0
           z: 0.0
-grids: 
-    core:
-        lattice file: anl-afci-177-coreMap.yaml
-        
+grids:
+    core: !include anl-afci-177-coreMap.yaml
+
 # end-systems-section
-    
+

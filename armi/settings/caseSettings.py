@@ -308,7 +308,12 @@ class Settings:
             )
 
         reader = settingsIO.SettingsReader(self)
-        reader.readFromStream(io.StringIO(string), handleInvalids=handleInvalids)
+        fmt = reader.SettingsInputFormat.YAML
+        if string.strip()[0] == "<":
+            fmt = reader.SettingsInputFormat.XML
+        reader.readFromStream(
+            io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
+        )
 
         if armi.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
@@ -423,10 +428,7 @@ class Settings:
         for key in self.environmentSettings:
             report.setData(key, self[key], report.RUN_META, [report.ENVIRONMENT])
 
-        for key in [
-            "genXS",
-            "neutronicsKernel",
-        ]:
+        for key in ["genXS", "neutronicsKernel"]:
             report.setData(key, self[key], report.CASE_CONTROLS, [report.ENVIRONMENT])
 
         for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:

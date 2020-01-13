@@ -248,6 +248,9 @@ def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
     """Get a ascii map class from a geometry type."""
     from armi.reactor import geometry
 
+    symmetry = symmetry.replace(geometry.PERIODIC, "")
+    symmetry = symmetry.replace(geometry.REFLECTIVE, "")
+
     MAP_FROM_GEOM = {
         (geometry.HEX, geometry.THIRD_CORE): AsciiMapHexThird,
         (geometry.HEX, geometry.FULL_CORE): AsciiMapHexFullTipsUp,

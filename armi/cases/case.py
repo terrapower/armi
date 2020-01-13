@@ -25,6 +25,7 @@ armi.cases.suite : A collection of Cases
 """
 import cProfile
 import os
+import pathlib
 import pstats
 import re
 import sys
@@ -52,6 +53,7 @@ from armi.bookkeeping.db import compareDatabases
 from armi.utils import pathTools
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
+from armi.utils import textProcessors
 from armi.nucDirectory import nuclideBases
 
 # change from default .coverage to help with Windows dotfile issues.
@@ -498,9 +500,8 @@ class Case:
         """
         Clone existing ARMI inputs to current directory with optional settings modifications.
 
-        Since each case depends on multiple inputs, this is a safer
-        way to move cases around without having to wonder if you
-        copied all the files appropriately.
+        Since each case depends on multiple inputs, this is a safer way to move cases
+        around without having to wonder if you copied all the files appropriately.
 
         Parameters
         ----------
@@ -559,11 +560,21 @@ class Case:
 
         copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
-        for grid in self.bp.gridDesigns or []:
-            if grid.latticeFile:
+        with open(self.cs["loadingFile"], "r") as f:
+            for includePath, mark in textProcessors.findYamlInclusions(
+                f, root=pathlib.Path(self.cs.inputDirectory)
+            ):
+                if not includePath.exists():
+                    raise OSError(
+                        "The input file file `{}` referenced at {} does not exist.".format(
+                            includePath, mark
+                        )
+                    )
                 pathTools.copyOrWarn(
-                    "system lattice for {}".format(grid.name),
-                    fromPath(grid.latticeFile),
+                    "auxiliary input file `{}` referenced at {}".format(
+                        includePath, mark
+                    ),
+                    fromPath(includePath),
                     clone.cs.inputDirectory,
                 )
 
