@@ -193,7 +193,7 @@ class Case:
                 )
             )
         # ensure that a case doesn't appear to be its own dependency
-        dependencies.remove(self)
+        dependencies.discard(self)
 
         return dependencies
 
