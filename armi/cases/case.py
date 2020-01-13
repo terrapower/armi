@@ -192,6 +192,8 @@ class Case:
                     r"^(?P<dirName>.*[\/\\])?(?P<title>[^\/\\]+)-SHUFFLES\.txt$",
                 )
             )
+        # ensure that a case doesn't appear to be its own dependency
+        dependencies.remove(self)
 
         return dependencies
 
@@ -282,6 +284,12 @@ class Case:
         Set the task dependence based on the :code:`dependencies`.
 
         This accounts for whether or not the dependency is enabled.
+
+        Note
+        ----
+        This is a leftover from before the release of the ARMI framework. The API of the
+        proprietary cluster communication library is being used here. This should either
+        be moved out into the cluster plugin, or the library should be made available.
         """
         if not self.enabled:
             return
