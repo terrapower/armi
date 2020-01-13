@@ -26,19 +26,28 @@ from armi.bookkeeping.db import database3 as database
 
 
 class TestDatabase3(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(TEST_ROOT)
-
     def setUp(self):
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
         self.db = database.Database3(self._testMethodName + ".h5", "w")
         self.db.open()
-        print(self.db._fullPath)
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
         self.db.close()
         self.stateRetainer.__exit__()
+
+    def makeHistory(self):
+        """
+        Walk the reactor through a few time steps and write them to the db.
+        """
+        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(3)):
+            self.r.p.cycle = cycle
+            self.r.p.timeNode = node
+            # something that splitDatabase won't change, so that we can make sure that
+            # the right data went to the right new groups/cycles
+            self.r.p.cycleLength = cycle
+
+            self.db.writeToDB(self.r)
 
     def _compareArrays(self, ref, src):
         """
@@ -94,15 +103,36 @@ class TestDatabase3(unittest.TestCase):
         self._compareRoundTrip(dataJagNones)
         self._compareRoundTrip(dataDict)
 
-    def test_splitDatabase(self):
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(3)):
-            self.r.p.cycle = cycle
-            self.r.p.timeNode = node
-            # something that splitDatabase won't change, so that we can make sure that
-            # the right data went to the right new groups/cycles
-            self.r.p.cycleLength = cycle
+    def test_mergeHistory(self):
+        self.makeHistory()
 
-            self.db.writeToDB(self.r)
+        # put some big data in an HDF5 attribute. This will exercise the code that pulls
+        # such attributes into a formal dataset and a reference.
+        self.r.p.cycle = 1
+        self.r.p.timeNode = 0
+        tnGroup = self.db.getH5Group(self.r)
+        database._writeAttrs(
+            tnGroup["layout/serialNum"], tnGroup, {"fakeBigData": numpy.eye(6400),
+                "someString": "this isn't a reference to another dataset"}
+        )
+
+        db2 = database.Database3("restartDB.h5", "w")
+        with db2:
+            db2.mergeHistory(self.db, 2, 2)
+            self.r.p.cycle = 1
+            self.r.p.timeNode = 0
+            tnGroup = db2.getH5Group(self.r)
+
+            # this test is a little bit implementation-specific, but nice to be explicit
+            self.assertEqual(tnGroup["layout/serialNum"].attrs["fakeBigData"],
+                    "@/c01n00/attrs/0_fakeBigData")
+
+            # actually exercise the _resolveAttrs function
+            attrs = database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
+            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
+
+    def test_splitDatabase(self):
+        self.makeHistory()
 
         self.db.splitDatabase(
             [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
