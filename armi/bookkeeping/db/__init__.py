@@ -20,7 +20,35 @@ It can also be an input file for follow-on analysis or restart runs.
 
 The database can be visualized through various tools such as XTVIEW.
 
-This module contains factories for selecting and building DB-related objects
+This module contains factories for selecting and building DB-related objects.
+
+Some notes on versions
+----------------------
+Persistent storage of ARMI models has seen many changes throughout the years.
+Calculation results were originally stored on a SQL database (version 1), which has been
+fully deprecated at this point.
+
+Version 2 was the first to use HDF5 as the primary storage format. This was beneficial,
+as it did not rely on any external infrastructure to operate, and benefited from the
+suite of tools that help interact with HDF5 files. It was eventually replaced because
+it did not store a complete model of the reactor, but rather a ghost of assembly, block,
+and reactor parameters that could be applied to an existing reactor model (so long as
+the dimensions were consistent!). This led to loading reactors being inconvenient and
+error-prone, and also posed a limitation for representing more complex systems that have
+non-core components.
+
+Version 3 was created to make the schema more flexible and to permit storing the entire
+reactor model within the HDF5 file. All objects in the ARMI Composite Model are written
+to the database, and the model can be recovered in its entirety just from the HDF5 file.
+Since it's inception, it has seen a number of tweaks to improve its functionality and
+fix bugs.
+
+Being a serialization format, the code associated with reading and writing database
+files may not benefit from Don't Repeat Yourself (DRY) practices in the same way as
+other code. Therefore, we do not share much code between different major versions of the
+databases. Minor revisions (e.g. M.(N+1)) to the database structure should be simple
+enough that specialized logic can be used to support all minor versions without posing a
+maintenance burden. A detailed change log should be maintained of each minor revision.
 """
 import os
 from typing import Optional, List, Tuple

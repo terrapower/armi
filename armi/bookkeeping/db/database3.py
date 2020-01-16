@@ -32,6 +32,18 @@ state to the database and loading it back again, as well as extracting historica
 for a given object or collection of object from the database file. When interacting with
 the database file, the ``Layout`` class is used to help map the hierarchical Composite
 Reactor Model to the flat representation in the database.
+
+Minor revision changelog
+------------------------
+ - 3.1: Improve the handling of reading/writing grids.
+
+ - 3.2: Change the strategy for storing large attributes from using an Object Reference
+   to an external dataset to using a special string starting with an "@" symbol (e.g.,
+   "@/c00n00/attrs/5_linkedDims"). This was done to support copying time node datasets
+   from one file to another without invalidating the references. Support is maintained
+   for reading previous versions, and for performing a ``mergeHistory()`` and converting
+   to the new reference strategy, but the old version cannot be written.
+
 """
 import collections
 import copy
