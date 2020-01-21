@@ -964,8 +964,6 @@ def defineCoreParameters():
 
         pb.defParam("medSrcCore", units="?", description="?")
 
-        pb.defParam("originalHeight", units="?", description="?", saveToDB=False)
-
         pb.defParam("pkFlux", units="?", description="?")
 
         pb.defParam(
