@@ -1814,8 +1814,13 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "assemNum",
-            units="?",
-            description="?",
+            units="None",
+            description="Index that refers, nominally, to the assemNum parameter of "
+            "the containing Assembly object. This is stored on the Block to aid in "
+            "visualizing shuffle patterns and the like, and should not be used within "
+            "the code. These are not guaranteed to be consistent with the containing "
+            "Assembly, so they should not be used as a reliable means to reconstruct "
+            "the model.",
             categories=[parameters.Category.retainOnReplacement],
         )
 
