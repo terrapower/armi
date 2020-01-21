@@ -63,7 +63,7 @@ class MainInterface(interfaces.Interface):
     def _activateDB(self):
         """
         Instantiate the database state.
-        
+
         Notes
         -----
         This happens here rather than on the database interface, as the database
@@ -97,7 +97,7 @@ class MainInterface(interfaces.Interface):
                 dbi.prepRestartRun(dbCycle, dbNode)
             except:
                 runLog.error(
-                    "Could not load the initial state as requested. DB `{0}` does "
+                    "Could not load the initial state as requested. DB `{}` does "
                     "not exist or does not have enough time steps to load this time "
                     "(cycle={}, tn={})"
                     "".format(self.cs["reloadDBName"], dbCycle, dbNode)

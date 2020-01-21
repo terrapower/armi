@@ -389,14 +389,14 @@ def generateBins(totalNumDataPoints, numPerBin, minNum):
 class AxialExpansionModifier(MeshConverter):
     """
     Axially expand or contract a reactor.
-    
+
     Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
 
     def __init__(self, percent, fuelLockedToClad=False, cs=None):
         """
         Build an axial expansion converter.
-        
+
         Parameters
         ----------
         percent : float

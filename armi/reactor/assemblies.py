@@ -1176,7 +1176,8 @@ class Assembly(composites.Composite):
         Returns the number of blocks of a specified type
 
         blockTypeSpec : Flags or list
-            Restrict to only these types of blocks. typeSpec is None, return all of the blocks
+            Restrict to only these types of blocks. typeSpec is None, return all of the
+            blocks
 
         Returns
         -------
@@ -1187,18 +1188,18 @@ class Assembly(composites.Composite):
 
     def axiallyExpandBlockHeights(self, heightList, nucNamesToConserveMass):
         """
-        Takes a list of new fuel block heights and then scales
-        the fuel blocks to the new heights, adjusting densities to
-        preserve mass
+        Takes a list of new fuel block heights and then scales the fuel blocks to the
+        new heights, adjusting densities to preserve mass
 
-        Adjusts the height of the lowest plenum block to keep total
-        assembly height constant.
+        Adjusts the height of the lowest plenum block to keep total assembly height
+        constant.
 
         Parameters
         ----------
         heightList : list of floats
-            Entry 0 represents the height (in cm) of the bottom fuel block closest to the grid plate
-            Entry n represents the height (in cm) of the top fuel block closest to the plenum
+            Entry 0 represents the height (in cm) of the bottom fuel block closest to
+            the grid plate Entry n represents the height (in cm) of the top fuel block
+            closest to the plenum
         nucNamesToConserveMass : list
             The nuclides to conserve mass of
 
@@ -1317,7 +1318,8 @@ class Assembly(composites.Composite):
         Returns
         -------
         samples[maxMat] : Material object
-            The material that has the most volume within this assembly within the given typeSpec and blockList.
+            The material that has the most volume within this assembly within the given
+            typeSpec and blockList.
 
 
         """

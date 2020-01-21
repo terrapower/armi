@@ -501,18 +501,18 @@ class ArmiObject(metaclass=CompositeModelType):
         -----
         Type comparisons use bitwise comparisons using valid flags.
 
-        If you have an 'inner control' assembly, then this will evaluate true for the INNER |
-        CONTROL flag combination. If you just want all FUEL, simply use FUEL with no additional
-        qualifiers. For more complex comparisons, use bitwise operations.
+        If you have an 'inner control' assembly, then this will evaluate True for the
+        INNER | CONTROL flag combination. If you just want all FUEL, simply use FUEL
+        with no additional qualifiers. For more complex comparisons, use bitwise
+        operations.
 
-
-        Always returns true if typeID is none and exact is False, allowing for default parameters to
-        be passed in when the method does not care about the block type. If the typeID is none and
-        exact is True, this will always return False.
+        Always returns true if typeID is none and exact is False, allowing for default
+        parameters to be passed in when the method does not care about the block type.
+        If the typeID is none and exact is True, this will always return False.
 
         Examples
         --------
-        If you have 'inner driver fuel', then
+        If you have an object with the ``INNER``, ``DRIVER``, and ``FUEL`` flags, then
 
         >>> obj.getType()
         [some integer]
@@ -529,6 +529,13 @@ class ArmiObject(metaclass=CompositeModelType):
         >>> obj.hasFlags(Flags.INNER | Flags.FUEL)
         True
 
+        >>> obj.hasFlags(Flags.INNER | Flags.FUEL, exact=True)
+        False
+
+        >>> obj.hasFlags([Flags.INNER | Flags.DRIVER | Flags.FUEL,
+        ... Flags.OUTER | Flags.DRIVER | Flags.FUEL], exact=True)
+        False
+
         """
         if not typeID:
             return False if exact else True
@@ -543,7 +550,8 @@ class ArmiObject(metaclass=CompositeModelType):
             return any(self.hasFlags(typeIDi, exact=exact) for typeIDi in typeID)
 
         if not self.p.flags:
-            # default still set, or null flag. Do down here so we get proper error handling of invalid typeSpecs
+            # default still set, or null flag. Do down here so we get proper error
+            # handling of invalid typeSpecs
             return False
 
         if exact:
@@ -616,16 +624,16 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Determine the volume of any DerivedShapes (e.g. coolant components).
 
-        when a coolant component first gets loaded, it has no area.
-        But after that, it does have area so we must detect purely derived
-        components by the fact that they have no dimension keys.
-        Zero area is acceptable (for gaps that will grow, etc.).
-        
+        When a coolant component first gets loaded, it has no area.  But after that, it
+        does have area so we must detect purely derived components by the fact that they
+        have no dimension keys.  Zero area is acceptable (for gaps that will grow,
+        etc.).
+
         If there are no dimensions but there is still an area, then the user probably
         specified the area on a generic component. If they did specify it on the input,
         then the area should not update. HOWEVER, if it was specified by a previous
-        leftover computation, then we should re-compute. That's why we store
-        the area on the dims
+        leftover computation, then we should re-compute. That's why we store the area on
+        the dims.
         """
         from armi.reactor import components  # avoid circular import
 
@@ -1215,7 +1223,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def _expandLFPs(self, numberDensities):
         """
-        Expand the LFPs on the numberDensities dictionary using this composite's 
+        Expand the LFPs on the numberDensities dictionary using this composite's
         lumpedFissionProductCollection.
         """
         lfpCollection = self.getLumpedFissionProductCollection()
@@ -1318,9 +1326,9 @@ class ArmiObject(metaclass=CompositeModelType):
         Set the number density of this nuclide to this value.
 
         This distributes atom density evenly across all children that contain nucName.
-        If the nuclide doesn't exist in any of the children, then that's actually an error.
-        This would only happen if some unnatural nuclide like Pu239 built up in fresh UZr. That should
-        be anticipated and dealt with elsewhere.
+        If the nuclide doesn't exist in any of the children, then that's actually an
+        error.  This would only happen if some unnatural nuclide like Pu239 built up in
+        fresh UZr. That should be anticipated and dealt with elsewhere.
         """
         activeChildren = self.getChildrenWithNuclides({nucName})
         if not activeChildren:
@@ -1864,11 +1872,12 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Warning
         -------
-        getHMMoles is different than every other get mass call since it multiplies by symmetry factor 
-        but getVolume() on the block level divides by symmetry factor causing them to cancel out. 
-        
-        This was needed so that HM moles mass did not change based on if the block/assembly was on a 
-        symmetry line or not.
+        getHMMoles is different than every other get mass call since it multiplies by
+        symmetry factor but getVolume() on the block level divides by symmetry factor
+        causing them to cancel out.
+
+        This was needed so that HM moles mass did not change based on if the
+        block/assembly was on a symmetry line or not.
         """
 
         return (
@@ -1990,15 +1999,14 @@ class ArmiObject(metaclass=CompositeModelType):
     def getAtomicWeight(self):
         r"""
         Calculate the atomic weight of this object in g/mole of atoms.
-        
-        .. warning:: This is not the molecular weight, which is grams per 
-            mole of molecules (grams/gram-molecule). That requires knowledge 
-            of the chemical formula. Don't be surprised when you run this 
-            on UO2 and find it to be 90; there are a lot of Oxygen atoms
-            in UO2. 
+
+        .. warning:: This is not the molecular weight, which is grams per mole of
+            molecules (grams/gram-molecule). That requires knowledge of the chemical
+            formula. Don't be surprised when you run this on UO2 and find it to be 90;
+            there are a lot of Oxygen atoms in UO2.
 
         .. math::
-            
+
             A =  \frac{\sum_i N_i A_i }{\sum_i N_i}
 
         """
@@ -2349,8 +2357,8 @@ class Composite(ArmiObject):
 
     def syncMpiState(self):
         """
-        Synchronize all parameters of this object and all children to all worker nodes over the 
-        network using MPI.
+        Synchronize all parameters of this object and all children to all worker nodes
+        over the network using MPI.
 
         In parallelized runs, if each process has its own copy of the entire reactor
         hierarchy, this method synchronizes the state of all parameters on all objects.

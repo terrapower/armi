@@ -252,12 +252,16 @@ class Block(composites.Composite):
 
     def makeUnique(self):
         """
-        This function assigns a unique id (integer value) for each block. This should be called whenever creating a
-        block that is intended to be treated as a unique object. For example, if you were to broadcast or pickle a block
-        it should have the same ID across all nodes. Likewise, if you deepcopy a block for a temporary purpose to it
-        should have the same ID.  However, ARMI's assembly construction also uses deepcopy, and in order to keep that
-        functionality, this method needs to be called after creating a fresh assembly (from deepcopy).
+        Assign a unique id (integer value) for each block.
+
+        This should be called whenever creating a block that is intended to be treated
+        as a unique object. For example, if you were to broadcast or pickle a block it
+        should have the same ID across all nodes. Likewise, if you deepcopy a block for
+        a temporary purpose to it should have the same ID.  However, ARMI's assembly
+        construction also uses deepcopy, and in order to keep that functionality, this
+        method needs to be called after creating a fresh assembly (from deepcopy).
         """
+
         self.p.id = self.__class__.uniqID
         self.__class__.uniqID += 1
 
@@ -267,12 +271,15 @@ class Block(composites.Composite):
 
         Notes
         -----
-        1 - Smear density is the area of the fuel divided by the area of the space available for fuel
-            inside the cladding. Other space filled with solid materials is not considered available.
-            If all the area is fuel, it has 100% smear density. Lower smear density allows more room for swelling.
-        2 - Negative areas can exist for void gaps in the fuel pin. A negative area in a gap represents overlap area
-            between two solid components. To account for this additional space within the pin cladding the
-            abs(negativeArea) is added to the inner cladding area.
+        1 - Smear density is the area of the fuel divided by the area of the space
+            available for fuel inside the cladding. Other space filled with solid
+            materials is not considered available. If all the area is fuel, it has 100%
+            smear density. Lower smear density allows more room for swelling.
+        2 - Negative areas can exist for void gaps in the fuel pin. A negative area in a
+            gap represents overlap area between two solid components. To account for
+            this additional space within the pin cladding the abs(negativeArea) is added
+            to the inner cladding area.
+
         Parameters
         -----------
         cold : bool, optional
@@ -544,16 +551,18 @@ class Block(composites.Composite):
         Returns the microscopic library suffix (e.g. 'AB') for this block.
 
         DIF3D and MC2 are limited to 6 character nuclide labels. ARMI by convention uses
-        the first 4 for nuclide name (e.g. U235, PU39, etc.) and then uses the 5th character
-        for cross-section type and the 6th for burnup group. This allows a variety of XS sets
-        to be built modeling substantially different blocks.
+        the first 4 for nuclide name (e.g. U235, PU39, etc.) and then uses the 5th
+        character for cross-section type and the 6th for burnup group. This allows a
+        variety of XS sets to be built modeling substantially different blocks.
 
         Notes
         -----
-        The single-letter use for xsType and buGroup limit users to 26 groups of each. ARMI will allow
-        2-letter xsType designations if and only if the `buGroups` setting has length 1 (i.e. no burnup
-        groups are defined). This is useful for high-fidelity XS modeling of V&V models such as the ZPPRs.
+        The single-letter use for xsType and buGroup limit users to 26 groups of each.
+        ARMI will allow 2-letter xsType designations if and only if the `buGroups`
+        setting has length 1 (i.e. no burnup groups are defined). This is useful for
+        high-fidelity XS modeling of V&V models such as the ZPPRs.
         """
+
         bu = self.p.buGroup
         if not bu:
             raise RuntimeError(
@@ -575,7 +584,8 @@ class Block(composites.Composite):
         nuc : str
             a nuclide name like U235, PU240, FE
         newHomogNDens : float
-            number density to set in units of atoms/barn-cm, which are equal to atoms/cm^3*1e24
+            number density to set in units of atoms/barn-cm, which are equal to
+            atoms/cm^3*1e24
 
         See Also
         --------
