@@ -44,7 +44,7 @@ import six
 import armi
 from armi.reactor import parameters
 from armi.reactor.parameters import resolveCollections
-from armi.reactor.flags import Flags
+from armi.reactor.flags import Flags, TypeSpec
 from armi import runLog
 from armi.utils import units
 from armi.utils import densityTools
@@ -359,17 +359,17 @@ class ArmiObject(metaclass=CompositeModelType):
         """Return the children of this object."""
         raise NotImplementedError
 
-    def getChildrenWithFlags(self, typeSpec, exactMatch=True):
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Get all children that have given flags."""
         return NotImplementedError
 
-    def doChildrenHaveFlags(self, typeSpec, deep=False):
+    def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
         """
         Generator that yields True if the next child has given flags.
 
         Parameters
         ----------
-        typeSpec : Flags or list of Flags
+        typeSpec : TypeSpec
             Requested type of the child
 
         """
@@ -379,13 +379,13 @@ class ArmiObject(metaclass=CompositeModelType):
             else:
                 yield False
 
-    def containsAtLeastOneChildWithFlags(self, typeSpec):
+    def containsAtLeastOneChildWithFlags(self, typeSpec: TypeSpec):
         """
         Return True if any of the children are of a given type.
 
         Parameters
         ----------
-        typeSpec : Flags or list of Flags
+        typeSpec : TypeSpec
             Requested type of the children
 
         See Also
@@ -396,13 +396,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return any(self.doChildrenHaveFlags(typeSpec))
 
-    def containsOnlyChildrenWithFlags(self, typeSpec):
+    def containsOnlyChildrenWithFlags(self, typeSpec: TypeSpec):
         """
         Return True if all of the children are of a given type.
 
         Parameters
         ----------
-        typeSpec : Flags or list of Flags
+        typeSpec : TypeSpec
             Requested type of the children
 
         See Also
@@ -478,16 +478,20 @@ class ArmiObject(metaclass=CompositeModelType):
     def setName(self, name):
         self.name = name
 
-    def hasFlags(self, typeID, exact=False):
+    def hasFlags(self, typeID: TypeSpec, exact=False):
         """
         Determine if this object is of a certain type.
 
         Parameters
         ----------
-        typeID : Flags, list of Flags or None
-            Flags specifying which types of objects are considered valid. If a list is provided,
-            return True if any of the flags in the list match. None matches all objects if exact is
-            false. If exact is true, then None matches no objects.
+        typeID : TypeSpec
+            Flags to test the object against, to see if it contains them. If a list is
+            provided, each element is treated as a "candidate" set of flags. Return True
+            if any of candidates match. When exact is True, the object must match one of
+            the candidates exactly. If exact is False, the object must have at least the
+            flags contained in a candidate for that candidate to be a match; extra flags
+            on the object are permitted. None matches all objects if exact is False, or
+            no objects if exact is True.
 
         exact : bool, optional
             Require the type of the object to fully match the provided typeID(s)
@@ -1272,13 +1276,13 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return self.parent.getAncestor(fn)
 
-    def getAncestorWithFlags(self, typeSpec, exactMatch=False):
+    def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
         """
         Return the first ancestor that matches the passed flags.
 
         Parameters
         ----------
-        typeSpec : Flags or [Flags]
+        typeSpec : TypeSpec
             A collection of flags to match on candidate parents
         exactMatch : bool
             Whether the flags match should be exact
@@ -1523,7 +1527,7 @@ class ArmiObject(metaclass=CompositeModelType):
         objs=None,
         volumeIntegrated=False,
         addSymmetricPositions=False,
-        typeSpec=None,
+        typeSpec: TypeSpec = None,
         generationNum=1,
         calcBasedOnFullObj=False,
     ):
@@ -1540,7 +1544,7 @@ class ArmiObject(metaclass=CompositeModelType):
             Integrate over volume
         addSymmetricPositions : bool, optional
             If True, will multiply by the symmetry factor of the core (3 for 1/3 models, 1 for full core models)
-        typeSpec : Flags or list of Flags, optional
+        typeSpec : TypeSpec
             object types to restrict to
         generationNum : int, optional
             Which generation to consider. 1 means direct children, 2 means children of children.
@@ -1586,7 +1590,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def calcAvgParam(
         self,
         param,
-        typeSpec=None,
+        typeSpec: TypeSpec = None,
         weightingParam=None,
         volumeAveraged=True,  # pylint: disable=too-many-arguments
         absolute=True,
@@ -1600,7 +1604,7 @@ class ArmiObject(metaclass=CompositeModelType):
         param : str
             The ARMI block parameter that you want the average from
 
-        typeSpec : Flags or iterable with Flags values
+        typeSpec : TypeSpec
             The child types that should be included in the calculation. Restrict average to
             a certain child type with this parameter.
 
@@ -1668,7 +1672,12 @@ class ArmiObject(metaclass=CompositeModelType):
         return total / weightSum
 
     def getMaxParam(
-        self, param, typeSpec=None, absolute=True, generationNum=1, returnObj=False
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        absolute=True,
+        generationNum=1,
+        returnObj=False,
     ):
         """Find the maximum value for the parameter in this container
 
@@ -1676,7 +1685,7 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         param : str
             block parameter that will be sought.
-        typeSpec : Flags or list of Flags, optional
+        typeSpec : TypeSpec
             restricts the search to cover a variety of block types.
         absolute : bool
             looks for the largest magnitude value, regardless of sign, default: true
@@ -1702,7 +1711,12 @@ class ArmiObject(metaclass=CompositeModelType):
         )
 
     def getMinParam(
-        self, param, typeSpec=None, absolute=True, generationNum=1, returnObj=False
+        self,
+        param,
+        typeSpec: TypeSpec = None,
+        absolute=True,
+        generationNum=1,
+        returnObj=False,
     ):
         """
         Find the minimum value for the parameter in this container.
@@ -1719,7 +1733,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def _minMaxHelper(
         self,
         param,
-        typeSpec,
+        typeSpec: TypeSpec,
         absolute,
         generationNum,
         returnObj,
@@ -1769,13 +1783,13 @@ class ArmiObject(metaclass=CompositeModelType):
                 return True
         return False
 
-    def getComponents(self, typeSpec=None, exact=False):
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return all armi.reactor.component.Component within this Composite.
 
         Parameters
         ----------
-        typeSpec : flags.Flags, optional
+        typeSpec : TypeSpec
             Component flags. Will restrict Components to specific ones matching the flags specified.
 
         exact : bool, optional
@@ -1800,13 +1814,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return set(c.getName() for c in self.iterComponents())
 
-    def iterComponents(self, typeSpec=None, exact=False):
+    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return an iterator of armi.reactor.component.Component objects within this Composite.
 
         Parameters
         ----------
-        typeSpec : flags.Flags, optional
+        typeSpec : TypeSpec
             Component flags. Will restrict Components to specific ones matching the flags specified.
 
         exact : bool, optional
@@ -2339,7 +2353,7 @@ class Composite(ArmiObject):
 
         return children
 
-    def getChildrenWithFlags(self, typeSpec, exactMatch=False):
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
         """Get all children of a specific type."""
         children = []
         for child in self:
@@ -2726,7 +2740,7 @@ class Leaf(Composite):
         """Return empty list, representing that this object has no children."""
         return []
 
-    def getChildrenWithFlags(self, typeSpec, exactMatch=True):
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Return empty list, representing that this object has no children."""
         return []
 

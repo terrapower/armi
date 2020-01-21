@@ -80,7 +80,15 @@ True
 [<component fuel1>, <component fuel2>, ...]
 
 """
+from typing import Optional, Sequence, Union
+
 from armi.utils.flags import Flag, auto
+
+
+# Type alias used for passing type specifications to many of the composite methods. See
+# Composite::hasFlags() to understand the semantics for how TypeSpecs are interpreted.
+# Anything that interprets a TypeSpec should apply the same semantics.
+TypeSpec = Optional[Union[Flag, Sequence[Flag]]]
 
 
 def __fromStringGeneral(cls, typeSpec, updateMethod):
