@@ -21,7 +21,7 @@ import numpy
 
 from armi import runLog
 from armi.reactor import grids
-from armi.reactor.flags import Flags
+from armi.reactor.flags import Flags, TypeSpec
 
 
 class MeshConverter(object):
@@ -220,8 +220,9 @@ class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
 
     Notes
     -----
-    The new mesh structure is formed by merging multiply "bins" together (i.e. numPerBin = 2 and the original mesh is
-    [1, 2, 3, 4, 5, 6, 7, 8], the new mesh structure will be [2, 4, 6, 8]).
+    The new mesh structure is formed by merging multiply "bins" together (i.e. numPerBin
+    = 2 and the original mesh is [1, 2, 3, 4, 5, 6, 7, 8], the new mesh structure will
+    be [2, 4, 6, 8]).
     """
 
     def setAxialMesh(self):
@@ -419,23 +420,23 @@ class AxialExpansionModifier(MeshConverter):
 
         Notes
         -----
-        This loops through the fuel blocks, making their height larger by a fraction
-        of maxPercent. It reduces the homogenized actinide number densities to conserve atoms.
+        This loops through the fuel blocks, making their height larger by a fraction of
+        maxPercent. It reduces the homogenized actinide number densities to conserve
+        atoms.
 
-        This is a first approximation, adjusting the whole core uniformly and adjusting fuel
-        with structure and everything.
+        This is a first approximation, adjusting the whole core uniformly and adjusting
+        fuel with structure and everything.
 
-        When fuel is locked to clad, this only expands the actinides! So the structural materials
-        and sodium stay as they are in terms of density. By growing the mesh, we are introducing
-        NEW ATOMS of these guys, thus violating conservation of atoms. However, the new ones are
-        effectively piled up on top of the reactor where they are neutronically uninteresting.
-        This approximates fuel movement without clad/duct movement.
+        When fuel is locked to clad, this only expands the actinides! So the structural
+        materials and sodium stay as they are in terms of density. By growing the mesh,
+        we are introducing NEW ATOMS of these guys, thus violating conservation of
+        atoms. However, the new ones are effectively piled up on top of the reactor
+        where they are neutronically uninteresting.  This approximates fuel movement
+        without clad/duct movement.
         """
-        from terrapower.physics.fuelPerformance.crucible import crucible
+        adjustFlags = Flags.FUEL | Flags.CLAD if self._fuelLockedToClad else Flags.FUEL
+        adjustList = getAxialExpansionNuclideAdjustList(r, adjustFlags)
 
-        adjustList = crucible.getAxialExpansionNuclideAdjustList(
-            r, locked=self._fuelLockedToClad
-        )
         runLog.extra(
             "Conserving mass during axial expansion for: {0}".format(str(adjustList))
         )
@@ -463,3 +464,27 @@ class AxialExpansionModifier(MeshConverter):
             "Adjusted full core fuel axial mesh uniformly "
             "{0}% from {1} cm to {2} cm.".format(self._percent, oldMesh, newMesh)
         )
+
+
+def getAxialExpansionNuclideAdjustList(r, componentFlags: TypeSpec = None):
+    r"""
+    Determine which nuclides should have their mass conserved during axial expansion
+
+    Parameters
+    ----------
+    r : Reactor
+        The Reactor object to search for nuclide instances
+    componentFlags : TypeSpec, optional
+        A type specification to use for filtering components that should conserve mass.
+        If None, Flags.FUEL is used.
+
+
+    """
+
+    if componentFlags is None:
+        componentFlags = [Flags.FUEL]
+
+    adjustSet = {nuc for b in r.core.getBlocks() for c in
+            b.getComponents(componentFlags) for nuc in c.getNuclides()}
+
+    return list(adjustSet)

@@ -572,10 +572,12 @@ class XTViewDatabase:
         """
         Update block heights and reactor axial mesh based on block param values in database.
 
-        This must be done before the number densities are read in so the dimensions of the core are consistent.
+        This must be done before the number densities are read in so the dimensions of
+        the core are consistent.
 
-        The refAssem writes the neutronics mesh. This method is necessary  in case the refAssem
-        has been removed. Assume all fuel assemblies have the same mesh unless there is ``detailedAxialExpansion``.
+        The refAssem writes the neutronics mesh. This method is necessary  in case the
+        refAssem has been removed. Assume all fuel assemblies have the same mesh unless
+        there is ``detailedAxialExpansion``.
 
         Mass must be conserved of the fuel, even in the BOL assemblies, especially if
         shuffling and depletion is to occur after loading.
