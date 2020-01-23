@@ -45,7 +45,10 @@ class GlobalFluxInterface(interfaces.Interface):
     r"""
     A general abstract interface for global flux calculating modules.
 
-    Should be subclassed
+    Should be subclassed by more specific implementations. This class currently serves
+    as a common ancestor to a handful of DIF3D/REBUS-based neutronics interfaces, and
+    therefore is not as general as it should be. Future revisions will be generalized to
+    support other families of codes.
     """
 
     name = None  # make sure to set this in subclasses

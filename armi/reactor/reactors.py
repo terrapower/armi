@@ -998,7 +998,7 @@ class Core(composites.Composite):
         exact=False,
     ):
         """
-        Return an list of all the assemblies in the reactor.
+        Return a list of all the assemblies in the reactor.
 
         Assemblies from the Core itself are sorted based on the Assemblies' comparison
         operators (location-based). This is done so that two reactors with physically

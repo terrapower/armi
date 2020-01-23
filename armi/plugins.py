@@ -168,7 +168,7 @@ class ArmiPlugin:
 
         - Verify that all assemblies satisfy constraints imposed by active interfaces
           and plugins
-        - Apply modifications to Assemblies based on modeling opetions and active
+        - Apply modifications to Assemblies based on modeling options and active
           interfaces
 
         Implementers may alter the state of the passed Assembly objects.

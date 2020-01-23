@@ -1312,14 +1312,6 @@ def getBlockParameterDefinitions():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        pb.defParam(
-            "axMesh",
-            units="",
-            description="number of neutronics axial mesh points in this block",
-            default=None,
-            categories=[parameters.Category.retainOnReplacement],
-        )
-
         def xsType(self, value):  # pylint: disable=method-hidden
             self._p_xsType = value  # pylint: disable=attribute-defined-outside-init
             self._p_xsTypeNum = crossSectionGroupManager.getXSTypeNumberFromLabel(
