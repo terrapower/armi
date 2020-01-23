@@ -35,6 +35,14 @@ def _getNeutronicsBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder() as pb:
 
+        pb.defParam(
+            "axMesh",
+            units="",
+            description="number of neutronics axial mesh points in this block",
+            default=None,
+            categories=[parameters.Category.retainOnReplacement],
+        )
+
         def mgFlux(self, value):
             self._p_mgFlux = (
                 value

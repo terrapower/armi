@@ -347,10 +347,10 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         self.elementsToExpand = []
         for nucFlag in self.nuclideFlags:
+            # this returns any nuclides that are flagged specifically for expansion by input
             expandedElements = nucFlag.fileAsActiveOrInert(
                 actives, inerts, undefBurnChainActiveNuclides
             )
-            # this returns any nuclides that are flagged specifically for expansion by input
             self.elementsToExpand.extend(expandedElements)
 
         inerts -= actives
