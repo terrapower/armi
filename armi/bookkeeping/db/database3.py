@@ -806,7 +806,7 @@ class Database3(database.Database):
         for comps in groupedComps.values():
             self._writeParams(h5group, comps)
 
-    def load(self, cycle, node, cs=None, bp=None):
+    def load(self, cycle, node, cs=None, bp=None, statePointName=None):
         """Load a new reactor from (cycle, node).
 
         Case settings, blueprints, and geom can be provided by the client, or read from
@@ -838,7 +838,7 @@ class Database3(database.Database):
         settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 
-        h5group = self.h5db[getH5GroupName(cycle, node)]
+        h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 
         layout = Layout(h5group=h5group)
         comps, groupedComps = layout._initComps(cs, bp)
