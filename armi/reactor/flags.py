@@ -283,7 +283,7 @@ def registerPluginFlags(pm):
     global _PLUGIN_FLAGS_REGISTERED
     if _PLUGIN_FLAGS_REGISTERED:
         raise RuntimeError(
-            "Plugin flags have already been registered. Cannot do it " "twice!"
+            "Plugin flags have already been registered. Cannot do it twice!"
         )
 
     for pluginFlags in pm.hook.defineFlags():

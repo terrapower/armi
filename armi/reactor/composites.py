@@ -74,8 +74,8 @@ def _defineBaseParameters():
     tracking), while the ``flags`` parameter is more a feature of the composite model.
 
     .. important::
-        Notice that the `flags`` parameter is not written to the database. This is for a
-        couple of reasons:
+        Notice that the ``flags`` parameter is not written to the database. This is for
+        a couple of reasons:
         * Flags are derived from an ArmiObject's name. Since the name is stored on
         the DB, it is possible to recover the flags from that.
         * Storing flags to the DB may be complicated, since it is easier to imagine a

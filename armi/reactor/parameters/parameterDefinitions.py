@@ -523,20 +523,24 @@ class ParameterBuilder(object):
 
         Parameters
         ----------
+        name: str
+            the official name of the parameter
+
         units: str
             string representation of the units
 
-        name: str
-            the official name of the parameter
+        description: str
+            a brief, but precise-as-possible description of what the parameter is used
+            for.
 
         location: str
             string representation of the location the attribute is applicable to, such
             as average, max, etc.
 
         saveToDB: bool
-            Boolean indicator as to whether the parameter should be written to the
-            database. The actual default is defined by the :py:class:`ParameterBuilder`,
-            and is :code:`True`.
+            indicator as to whether the parameter should be written to the database. The
+            actual default is defined by the :py:class:`ParameterBuilder`, and is
+            :code:`True`.
 
         default: immutable type
             a default value for this parameter which must be an immutable type. If the
@@ -547,6 +551,10 @@ class ParameterBuilder(object):
             If ``None``, there is no direct way to set the parameter. If some other
             callable method, (which may have the same name as the property!) then the
             setter method is used instead.
+
+        categories: List of str
+            A list of categories to which this Parameter should belong. Categories are
+            typically used to engage special treatment for certain Parameters.
 
         Notes
         -----

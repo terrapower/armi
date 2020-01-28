@@ -120,16 +120,15 @@ class ComponentType(composites.CompositeModelType):
     """
     ComponetType is a metaclass for storing and initializing Component subclass types.
 
-    The construction of Component subclasses is being done through factories for ease of user input.
-    As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
-    to the correct format. Additionally, the constructors arguments can be used to determine the
-    Component subclasses dimensions.
+    The construction of Component subclasses is being done through factories for ease of
+    user input.  As a consequence, the ``__init__`` methods' arguments need to be known
+    in order to conform them to the correct format. Additionally, the constructors
+    arguments can be used to determine the Component subclasses dimensions.
 
-    .. warning:: The import-time metaclass-based component subclass
-        registration was a good idea, but in practice has caused
-        significant confusion and trouble. We will replace this
-        soon with an explicit plugin-based component subclass
-        registration system.
+    .. warning:: The import-time metaclass-based component subclass registration was a
+        good idea, but in practice has caused significant confusion and trouble. We will
+        replace this soon with an explicit plugin-based component subclass registration
+        system.
     """
 
     TYPES = dict()

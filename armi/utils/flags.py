@@ -232,15 +232,15 @@ class Flag(metaclass=_FlagMeta):
 
         Note
         ----
-        This is avoiding just ~ on the ``_value`` because it might not be safe.
-        Using the int directly is slightly dangerous in that python ints are not of
-        fixed width, so the result of inverting one Flag might not be as wide as the
-        result of inverting another Flag. Typically, one would want to invert a Flag to
-        create a mask for unsetting a bit on another Flag, like ``f1 &= ~f2``. If ``f2`` is
-        narrower than ``f1`` the field of ones that you need to keep ``f1`` bits on might
-        not cover the width of ``f1``, erroneously turning off its upper bits. Not sure if
-        this was an issue before or not. Once things are working, might make sense to
-        play with this more.
+        This is avoiding just ~ on the ``_value`` because it might not be safe.  Using
+        the int directly is slightly dangerous in that python ints are not of fixed
+        width, so the result of inverting one Flag might not be as wide as the result of
+        inverting another Flag. Typically, one would want to invert a Flag to create a
+        mask for unsetting a bit on another Flag, like ``f1 &= ~f2``. If ``f2`` is
+        narrower than ``f1`` the field of ones that you need to keep ``f1`` bits on
+        might not cover the width of ``f1``, erroneously turning off its upper bits. Not
+        sure if this was an issue before or not. Once things are working, might make
+        sense to play with this more.
         """
         new = self._value
         for name, val in self._nameToValue.items():

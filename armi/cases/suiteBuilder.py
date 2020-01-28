@@ -15,15 +15,16 @@
 """
 Contains classes that build case suites from perturbing inputs.
 
-The general use case is to create a :py:class:`~SuiteBuilder` with a base 
-:py:class:`~armi.cases.case.Case`, use :py:meth:`~SuiteBuilder.addDegreeOfFreedom`
-to adjust inputs according to the supplied arguments, and finally use
-``.buildSuite`` to generate inputs. The case suite can then be discovered, submitted, and analyzed
-using the standard ``CaseSuite`` objects.
+The general use case is to create a :py:class:`~SuiteBuilder` with a base
+:py:class:`~armi.cases.case.Case`, use :py:meth:`~SuiteBuilder.addDegreeOfFreedom` to
+adjust inputs according to the supplied arguments, and finally use ``.buildSuite`` to
+generate inputs. The case suite can then be discovered, submitted, and analyzed using
+the standard ``CaseSuite`` objects.
 
 This module contains a variety of ``InputModifier`` objects as well, which are examples
-of how you can modify inputs for parameter sweeping. Power-users will
-generally make their own ``Modifier``s that are design-specific.
+of how you can modify inputs for parameter sweeping. Power-users will generally make
+their own ``Modifier``s that are design-specific.
+
 """
 import copy
 import os
@@ -50,11 +51,11 @@ class SuiteBuilder(object):
         A Case object to perturb
 
     modifierSets : list(tuple(InputModifier))
-        Contains a list of tuples of ``InputModifier`` instances. A single case is constructed by
-        running a series (the tuple) of InputModifiers on the case.
+        Contains a list of tuples of ``InputModifier`` instances. A single case is
+        constructed by running a series (the tuple) of InputModifiers on the case.
 
-        NOTE: This is public such that someone could pop an item out of the list if it is known to
-        not work, or be unnecessary.
+        NOTE: This is public such that someone could pop an item out of the list if it
+        is known to not work, or be unnecessary.
     """
 
     def __init__(self, baseCase):
@@ -228,7 +229,7 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
 class FullFactorialSuiteBuilderNoisy(FullFactorialSuiteBuilder):
     """
     Adds a bit of noise to each independent variable to avoid duplicates.
-    
+
     This can be useful in some statistical postprocessors.
 
     .. warning:: Use with caution. This is part of ongoing research.
