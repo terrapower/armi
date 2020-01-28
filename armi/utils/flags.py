@@ -27,6 +27,7 @@ provides most of the safety and functionality.
 There is an `issue <https://bitbucket.org/stoneleaf/aenum/issues/27/>`_ on the ``aenum``
 bitbucket site to track ``Flag`` extension.
 """
+import math
 
 from typing import Dict, Union, Sequence, List, Tuple
 
@@ -83,6 +84,7 @@ class _FlagMeta(type):
         flagClass._nameToValue = allFields
         flagClass._valuesTaken = set(val for _, val in allFields.items())
         flagClass._autoAt = autoAt
+        flagClass._width = math.ceil(len(flagClass._nameToValue) / 8)
 
         # Replace the original class attributes with instances of the class itself.
         for name, value in allFields.items():
@@ -122,9 +124,10 @@ class Flag(metaclass=_FlagMeta):
     """
 
     # for pylint. Set by metaclass
-    _autoAt = 0
+    _autoAt = None
     _nameToValue = dict()
     _valuesTaken = set()
+    _width = None
 
     def __init__(self, init=0):
         self._value = int(init)
@@ -161,6 +164,7 @@ class Flag(metaclass=_FlagMeta):
         assert value not in cls._nameToValue
         cls._valuesTaken.add(value)
         cls._nameToValue[name] = value
+        cls._width = math.ceil(len(cls._nameToValue) / 8)
         instance = cls(value)
         setattr(cls, name, instance)
 
@@ -178,6 +182,18 @@ class Flag(metaclass=_FlagMeta):
             resolved.append((field, value))
             cls._autoAt *= 2
         return resolved
+
+    @classmethod
+    def width(cls):
+        return cls._width
+
+    @classmethod
+    def fields(cls):
+        return cls._nameToValue
+
+    @classmethod
+    def sortedFields(cls):
+        return [i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])]
 
     @classmethod
     def extend(cls, fields: Dict[str, Union[int, auto]]):
@@ -213,6 +229,19 @@ class Flag(metaclass=_FlagMeta):
         resolved = cls._resolveAutos(toResolve)
         for field, value in resolved:
             cls._registerField(field, value)
+
+    def to_bytes(self, byteorder="little"):
+        """
+        Return a byte stream representing the flag.
+        """
+        return self._value.to_bytes(self.width(), byteorder=byteorder)
+
+    @classmethod
+    def from_bytes(cls, bytes, byteorder="little"):
+        """
+        Return a Flags instance given a byte stream.
+        """
+        return cls(int.from_bytes(bytes, byteorder=byteorder))
 
     def __int__(self):
         return self._value

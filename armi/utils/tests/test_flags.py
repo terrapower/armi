@@ -46,6 +46,29 @@ class TestFlag(unittest.TestCase):
         # under the hood.
         self.assertTrue(int(F.baz) > int(F.foo))
 
+    def test_extend(self):
+        class F(Flag):
+            foo = auto()
+            bar = 1
+            baz = auto()
+
+        self.assertEqual(F.width(), 1)
+
+        F.extend({"A": auto(), "B": 8, "C": auto(), "D": auto(), "E": auto()})
+
+        self.assertEqual(int(F.B), 8)
+        self.assertEqual(F.width(), 1)
+
+        F.extend({"LAST": auto()})
+        self.assertEqual(F.width(), 2)
+
+        f = F.A | F.foo | F.C
+        array = f.to_bytes()
+        self.assertEqual(len(array), 2)
+
+        f2 = F.from_bytes(array)
+        self.assertEqual(f, f2)
+
     def test_collision(self):
         """
         Make sure that we catch value collisions
