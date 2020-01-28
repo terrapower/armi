@@ -206,6 +206,7 @@ from armi.reactor.parameters.parameterDefinitions import (
     SINCE_BACKUP,
     SINCE_ANYTHING,
     NEVER,
+    Serializer,
     Category,
     ParamLocation,
     NoDefault,

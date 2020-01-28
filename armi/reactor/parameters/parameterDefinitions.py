@@ -29,7 +29,9 @@ armi.reactor.parameters
 import enum
 import re
 import functools
-import six
+from typing import Callable, Dict, Optional, Sequence, Tuple, Type
+
+import numpy
 
 from armi.reactor.flags import Flags
 
@@ -99,6 +101,73 @@ class _Undefined:
         raise NotImplementedError("You cannot create an instance of _Undefined.")
 
 
+class Serializer:
+    """
+    Abstract class describing serialize/deserialize operations for Parameter data.
+
+    Parameters need to be stored to and read from database files. This currently
+    requires that the Parameter data be converted to a numpy array of a datatype
+    supported by the ``h5py`` package. Some parameters may contain data that are not
+    trivially representable in numpy/HDF5, and need special treatment. Subclassing
+    ``Serializer`` and setting it as a ``Parameter``s ``serializer`` allows for special
+    operations to be performed on the parameter values as they are stored to the
+    database or read back in.
+
+    The ``Database3`` already knows how to handle certain cases where the data are not
+    straightforward to get into a numpy array, such as when:
+
+      - There are ``None`` s.
+
+      - The dimensions of the values stored on each object are inconsistent (e.g.,
+        "jagged" arrays)
+
+    So, in these cases, a Serializer is not needed. Serializers are necessary for when
+    the actual data need to be converted to a native data type (e.g., int, float, etc.)
+    For example, we use a Serializer to handle writing ``Flags`` to the Database, as
+    they tend to be too big to fit into a system-native integer.
+
+    .. important::
+
+        Defining a Serializer for a Parameter in part defines the underlying
+        representation of the data within a database file; the data stored in a database
+        are sensitive to the code that wrote them. Changing the method that a Serializer
+        uses to pack or unpack data may break compatibility with old databse files.
+        Therefore, Serializers should be dilligent about signalling changes by updating
+        their version. It is also good practice, whenever possible, to support reading
+        old versions so that database files written by old versions can still be read.
+
+    See Also
+    --------
+    armi.bookkeeping.db.database3.packSpecialData
+    armi.bookkeeping.db.database3.unpackSpecialData
+    armi.reactor.flags.FlagSerializer
+    """
+
+    # This will accompany the packed data as an attribute when written, and will be
+    # provided to the unpack() method when reading. If the underlying format of the data
+    # changes, make sure to change this.
+    version = None
+
+    @staticmethod
+    def pack(data: Sequence[any]) -> Tuple[numpy.ndarray, Dict[str, any]]:
+        """
+        Given unpacked data, return packed data and a dictionary of attributes needed to
+        unpack it.
+
+        The should perform the fundamental packing operation, returning the packed data
+        and any metadata ("attributes") that would be necessary to unpack the data. The
+        class's version is always stored, so no need to provide it as an attribute.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    def unpack(
+        data: numpy.ndarray, version: any, attrs: Dict[str, any]
+    ) -> Sequence[any]:
+        """Given packed data and attributes, return the unpacked data."""
+        raise NotImplementedError()
+
+
 @functools.total_ordering
 class Parameter:
     r"""Metadata about a specific parameter"""
@@ -115,6 +184,7 @@ class Parameter:
         "collectionType",
         "location",
         "saveToDB",
+        "serializer",
         "units",
         "default",
         "_getter",
@@ -126,14 +196,28 @@ class Parameter:
     )
 
     def __init__(
-        self, name, units, description, location, saveToDB, default, setter, categories
+        self,
+        name,
+        units,
+        description,
+        location,
+        saveToDB,
+        default,
+        setter,
+        categories,
+        serializer: Optional[Type[Serializer]] = None,
     ):
         assert self._validName.match(name), "{} is not a valid param name".format(name)
+        assert not (serializer is not None and not saveToDB)
+        # nonsensical to have a serializer with no intention of saving to DB; probably
+        # in error
+        assert serializer is None or saveToDB
         self.collectionType = _Undefined
         self.name = name
         self.fieldName = "_p_" + name
         self.location = location
         self.saveToDB = saveToDB
+        self.serializer = serializer
         self.description = description
         self.units = units
         self.default = default
@@ -490,7 +574,7 @@ class ParameterBuilder(object):
 
     def _assertDefaultIsProperType(self, default):
         if default in (NoDefault, None) or isinstance(
-            default, (int, six.string_types, float, bool, Flags)
+            default, (int, str, float, bool, Flags)
         ):
             return
         raise AssertionError(
@@ -518,6 +602,7 @@ class ParameterBuilder(object):
         default=NoDefault,
         setter=NoDefault,
         categories=None,
+        serializer: Optional[Type[Serializer]] = None,
     ):
         r"""Create a parameter as a property (with get/set) on a class
 
@@ -556,6 +641,11 @@ class ParameterBuilder(object):
             A list of categories to which this Parameter should belong. Categories are
             typically used to engage special treatment for certain Parameters.
 
+        serializer: Optional subclass of Serializer
+            A class describing how the parameter data should be stored to the database.
+            This is usually only needed in exceptional cases where it is difficult to
+            store a parameter in a numpy array.
+
         Notes
         -----
         It is not possible to initialize the parameter on the class this method would be
@@ -569,6 +659,7 @@ class ParameterBuilder(object):
                 "The default location is not specified for {}; "
                 "a parameter-specific location is required.".format(self)
             )
+
         paramDef = Parameter(
             name,
             units=units,
@@ -578,6 +669,7 @@ class ParameterBuilder(object):
             default=default if default is not NoDefault else self._defaultValue,
             setter=setter,
             categories=set(categories or []).union(self._defaultCategories),
+            serializer=serializer
         )
 
         if self._paramDefs is not None:
