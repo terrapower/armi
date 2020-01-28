@@ -60,6 +60,75 @@ from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.nuclearDataIO import xsCollections
 
 
+class FlagSerializer(parameters.Serializer):
+    """
+    Serializer implementation for Flags.
+
+    This operates by converting each set of Flags (too large to fit in a uint64) into a
+    sequence of enough uint8 elements to represent all flags. These constitute a
+    dimension of a 2-D numpy array containing all Flags for all objects provided to the
+    ``pack()`` function.
+    """
+
+    version = "1"
+
+    @staticmethod
+    def pack(data):
+        """
+        Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
+        integers), where each row contains the bytes representing a single Flags
+        instance. We also store the list of field names so that we can verify that the
+        reader and the writer agree on the meaning of each bit.
+        """
+        npa = numpy.array(
+            [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
+        ).reshape((len(data), Flags.width()))
+
+        return npa, {"flag_order": Flags.sortedFields()}
+
+    @classmethod
+    def unpack(cls, data, version, attrs):
+        flagOrderPassed = attrs["flag_order"]
+        flagOrderNow = Flags.sortedFields()
+
+        if version != cls.version:
+            raise ValueError(
+                "The FlagSerializer version used to pack the data ({}) does not match "
+                "the current version ({})! This database either needs to be migrated, "
+                "or on-the-fly inter-version conversion needs to be implemented.".format(
+                    version, cls.version
+                )
+            )
+
+        # Ensure that the meanings of the Flags bits are the same. We could also
+        # implement a more expensive operation which attempts to map from one version's
+        # meaning to another's, but possibly YAGNI.
+        if not len(flagOrderPassed) == len(flagOrderNow):
+            raise ValueError(
+                "The database contains a different number of Flags than the current "
+                "ARMI Application!\n"
+                "The database has:\n"
+                "{}\n"
+                "\n"
+                "The current application has:\n"
+                "{}".format(flagOrderPassed, flagOrderNow)
+            )
+
+        if not all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
+            raise ValueError(
+                "The database has Flags with different meanings than the current ARMI"
+                "Application!\n"
+                "The database has:\n"
+                "{}\n"
+                "\n"
+                "The current application has:\n"
+                "{}".format(flagOrderPassed, flagOrderNow)
+            )
+
+        out = [Flags.from_bytes(row.tobytes()) for row in data]
+        return out
+
+
 def _defineBaseParameters():
     """
     Return parameter definitions that all ArmiObjects must have to function properly.
@@ -94,10 +163,11 @@ def _defineBaseParameters():
             units=None,
             description="The type specification of this object",
             location=parameters.ParamLocation.AVERAGE,
-            saveToDB=False,
+            saveToDB=True,
             default=Flags(0),
             setter=parameters.NoDefault,
             categories=set(),
+            serializer=FlagSerializer,
         )
     )
 
