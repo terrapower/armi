@@ -93,6 +93,9 @@ DB_VERSION = "3.2"
 
 ATTR_LINK = re.compile("^@(.*)$")
 
+_SERIALIZER_NAME = "serializerName"
+_SERIALIZER_VERSION = "serializerVersion"
+
 
 def getH5GroupName(cycle, timeNode, statePointName=None):
     return "c{:0>2}n{:0>2}{}".format(cycle, timeNode, statePointName or "")
@@ -679,10 +682,12 @@ class Database3(database.Database):
                 # The source database may have object references in some attributes.
                 # make sure to link those up using our manual path strategy.
                 references = []
+
                 def findReferences(name, obj):
                     for key, attr in obj.attrs.items():
                         if isinstance(attr, h5py.h5r.Reference):
                             references.append((name, key, inputDB.h5db[attr].name))
+
                 h5ts.visititems(findReferences)
 
                 for key, attr, path in references:
@@ -962,7 +967,6 @@ class Database3(database.Database):
             attrs = {}
 
             if hasattr(c, "DIMENSION_NAMES") and paramDef.name in c.DIMENSION_NAMES:
-                # assume failure due to linked dimensions
                 linkedDims = []
                 data = []
 
@@ -982,8 +986,15 @@ class Database3(database.Database):
                 # XXX: side effect is that after loading previously unset values will be
                 # the default
                 temp = [c.p.get(paramDef.name, paramDef.default) for c in comps]
-                data = numpy.array(temp)
-                del temp
+                if paramDef.serializer is not None:
+                    data, sAttrs = paramDef.serializer.pack(temp)
+                    assert data.dtype.kind != "O"
+                    attrs.update(sAttrs)
+                    attrs[_SERIALIZER_NAME] = paramDef.serializer.__name__
+                    attrs[_SERIALIZER_VERSION] = paramDef.serializer.version
+                else:
+                    data = numpy.array(temp)
+                    del temp
 
             # Convert Unicode to byte-string
             if data.dtype.kind == "U":
@@ -1047,6 +1058,8 @@ class Database3(database.Database):
 
         renames = armi.getApp().getParamRenames()
 
+        pDefs = comps[0].pDefs
+
         # this can also be made faster by specializing the method by type
         for paramName, dataSet in g.items():
             # Honor historical databases where the parameters may have changed names
@@ -1054,8 +1067,20 @@ class Database3(database.Database):
             while paramName in renames:
                 paramName = renames[paramName]
 
+            pDef = pDefs[paramName]
+
             data = dataSet[:]
             attrs = _resolveAttrs(dataSet.attrs, h5group)
+
+            if pDef.serializer is not None:
+                assert _SERIALIZER_NAME in dataSet.attrs
+                assert dataSet.attrs[_SERIALIZER_NAME] == pDef.serializer.__name__
+                assert _SERIALIZER_VERSION in dataSet.attrs
+
+                data = pDef.serializer.unpack(
+                    data, dataSet.attrs[_SERIALIZER_VERSION], attrs
+                )
+                continue
 
             if data.dtype.type is numpy.string_:
                 data = numpy.char.decode(data)
