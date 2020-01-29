@@ -157,6 +157,10 @@ class Serializer:
         The should perform the fundamental packing operation, returning the packed data
         and any metadata ("attributes") that would be necessary to unpack the data. The
         class's version is always stored, so no need to provide it as an attribute.
+
+        See Also
+        --------
+        armi.reactor.flags.FlagSerializer.pack
         """
         raise NotImplementedError()
 

@@ -118,9 +118,9 @@ class Flag(metaclass=_FlagMeta):
         practically unlimited number of fields. *However*, including more flags than can
         be represented in the system-native integer types may lead to strange behavior
         when interfacing with non-pure Python code. For instance, exceeding 64 fields
-        makes the underlying value not trivially-storable in an HDF5 file. If we ever
-        want to store flags in an HDF5 file, we will need to develop some method of
-        encoding these when they are too wide.
+        makes the underlying value not trivially-storable in an HDF5 file. In such
+        circumstances, the ``from_bytes()`` and ``to_bytes()`` methods are available to
+        represent a Flag's values in smaller chunks.
     """
 
     # for pylint. Set by metaclass
@@ -185,14 +185,23 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def width(cls):
+        """
+        Return the number of bytes needed to store all of the flags on this class.
+        """
         return cls._width
 
     @classmethod
     def fields(cls):
+        """
+        Return a dictionary containing a mapping from field name to integer value.
+        """
         return cls._nameToValue
 
     @classmethod
     def sortedFields(cls):
+        """
+        Return a list of all field names, sorted by increasing integer value.
+        """
         return [i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])]
 
     @classmethod
@@ -233,6 +242,14 @@ class Flag(metaclass=_FlagMeta):
     def to_bytes(self, byteorder="little"):
         """
         Return a byte stream representing the flag.
+
+        This is useful when storing Flags in a data type of limited size. Python ints
+        can be of arbitrary size, while most other systems can only represent integers
+        of 32 or 64 bits. For compatibiliy, this function allows to convert the flags to
+        a sequence of single-byte elements.
+
+        Note that this uses snake_case to mimic the method on the Python-native int
+        type.
         """
         return self._value.to_bytes(self.width(), byteorder=byteorder)
 

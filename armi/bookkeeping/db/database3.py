@@ -988,7 +988,11 @@ class Database3(database.Database):
                 temp = [c.p.get(paramDef.name, paramDef.default) for c in comps]
                 if paramDef.serializer is not None:
                     data, sAttrs = paramDef.serializer.pack(temp)
-                    assert data.dtype.kind != "O"
+                    assert (
+                        data.dtype.kind != "O"
+                    ), "{} failed to convert {} to a numpy-supported type.".format(
+                        paramDef.serializer.__name__, paramDef.name
+                    )
                     attrs.update(sAttrs)
                     attrs[_SERIALIZER_NAME] = paramDef.serializer.__name__
                     attrs[_SERIALIZER_VERSION] = paramDef.serializer.version

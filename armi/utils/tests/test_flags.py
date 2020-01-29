@@ -47,6 +47,8 @@ class TestFlag(unittest.TestCase):
         self.assertTrue(int(F.baz) > int(F.foo))
 
     def test_extend(self):
+        """Ensure the set of flags can be programmatically extended."""
+
         class F(Flag):
             foo = auto()
             bar = 1
