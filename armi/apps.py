@@ -71,6 +71,7 @@ class App:
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
+        from armi.physics import fuelPerformance
         from armi.physics import neutronics
         from armi.physics import safety
         from armi import reactor
@@ -80,6 +81,7 @@ class App:
             cli.EntryPointsPlugin,
             bookkeeping.BookkeepingPlugin,
             fuelCycle.FuelHandlerPlugin,
+            fuelPerformance.FuelPerformancePlugin,
             neutronics.NeutronicsPlugin,
             safety.SafetyPlugin,
             reactor.ReactorPlugin,
