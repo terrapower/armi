@@ -770,11 +770,8 @@ class Block(composites.Composite):
         completeInitialLoading must be run because adjusting the enrichment actually
         changes the mass slightly and you can get negative burnups, which you do not want.
         """
-        fuels = []
-        for c in self.getChildren():
-            if "fuel" in c.getName().lower():
-                # this component has fuel
-                fuels.append(c)
+        fuels = self.getChildrenWithFlags(Flags.FUEL)
+
         if fuels:
             for fuel in fuels:
                 fuel.adjustMassEnrichment(newEnrich)

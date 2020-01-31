@@ -850,13 +850,6 @@ class Database3(database.Database):
         # assign params from blueprints
         self._assignBlueprintsParams(bp, groupedComps)
 
-        # Re-assign names to assemblies and blocks based on the read-in assemnum. Should
-        # the name be a param?
-        for a in groupedComps[Assembly]:
-            name = a.makeNameFromAssemNum(a.p.assemNum)
-            a.name = name
-            a.renameBlocksAccordingToAssemblyNum()
-
         # stitch together
         self._compose(iter(comps), cs)
 

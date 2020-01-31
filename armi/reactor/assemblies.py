@@ -129,8 +129,8 @@ class Assembly(composites.Composite):
         """
         Compare two assemblies by location.
 
-        This allow consistent sorting of assemblies based on location. If either assembly is not in
-        the core (or more accurately a container), returns False.
+        This allow consistent sorting of assemblies based on location. If either
+        assembly is not in the core (or more accurately a container), returns False.
         """
         try:
             return self.spatialLocator.getRingPos() < other.spatialLocator.getRingPos()
@@ -141,9 +141,9 @@ class Assembly(composites.Composite):
         """
         Function to make an assembly unique by getting a new assembly number.
 
-        This also adjusts the assembly's blocks IDs. This is necessary when using ``deepcopy`` to
-        get a unique ``assemNum`` since a deepcopy implies it would otherwise have been the same
-        object.
+        This also adjusts the assembly's blocks IDs. This is necessary when using
+        ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
+        otherwise have been the same object.
         """
         self.p.assemNum = incrementAssemNum()
         self.name = self.makeNameFromAssemNum(self.p.assemNum)
@@ -164,17 +164,19 @@ class Assembly(composites.Composite):
         """
         Add an object to this assembly.
 
-        The simple act of adding a block to an assembly fully defines the location of the block in 3-D.
+        The simple act of adding a block to an assembly fully defines the location of
+        the block in 3-D.
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to have the right value.
+        # assemblies have bounds-based 1-D spatial grids. Adjust it to have the right
+        # value.
         if len(self.spatialGrid._bounds[2]) < len(self):
             self.spatialGrid._bounds[2][len(self)] = (
                 self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
             )
         else:
-            #             # more work is needed, make a new mesh
+            # more work is needed, make a new mesh
             self.reestablishBlockOrder()
             self.calculateZCoords()
 
@@ -185,7 +187,8 @@ class Assembly(composites.Composite):
             self.p.numMoves += 1
             self.p.daysSinceLastMove = 0.0
         self.parent.childrenByLocator[locator] = self
-        self.clearCache()  # symmetry may have changed (either moving on or off of symmetry line)
+        # symmetry may have changed (either moving on or off of symmetry line)
+        self.clearCache()
 
     def insert(self, index, obj):
         """Insert an object at a given index position with the assembly."""
@@ -210,14 +213,18 @@ class Assembly(composites.Composite):
         )
 
     def getLocationObject(self):
-        """Return the location of the assembly in the plane using spatial grid indices."""
+        """
+        Return the location of the assembly in the plane using spatial grid indices.
+        """
         loc = self.LOCATION_CLASS()
         i, j, k = self.spatialLocator.getCompleteIndices()
         loc.fromLocator((i, j, None))  # cut off axial index.
         return loc
 
     def coords(self):
-        """Return the location of the assembly in the plane using cartesian global coordinates."""
+        """
+        Return the location of the assembly in the plane using cartesian global coordinates.
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
@@ -235,7 +242,8 @@ class Assembly(composites.Composite):
         """
         Set spatialLocator based on a (old-style) location object.
 
-        Patch to keep code working while location system is refactored to use spatialLocators.
+        Patch to keep code working while location system is refactored to use
+        spatialLocators.
 
         Reactors only have 2-D grid info so we only look at i and j.
         """
@@ -252,7 +260,8 @@ class Assembly(composites.Composite):
                 self.parent.spatialGrid[i, j, 0] = loc
                 self.spatialLocator = loc
         else:
-            # no parent, set a gridless location (will get converted to gridded upon adding to parent)
+            # no parent, set a gridless location (will get converted to gridded upon
+            # adding to parent)
             runLog.warning("{} has no grid because no parent. ".format(self))
             self.spatialLocator = grids.IndexLocation(i, j, 0, None)
 
@@ -347,8 +356,6 @@ class Assembly(composites.Composite):
     def adjustResolution(self, refA):
         """
         Split the blocks in this assembly to have the same mesh structure as refA.
-
-        Originally used to turn shields into fuel assemblies in post processing for NUBOW.
         """
         newBlockStack = []
 
@@ -370,18 +377,19 @@ class Assembly(composites.Composite):
                     "".format(b, b.getHeight(), refB, refB.getHeight())
                 )
             else:
-                # b is larger than refB. Split b up by splitting it into several smaller blocks of refBs
+                # b is larger than refB. Split b up by splitting it into several smaller
+                # blocks of refBs
                 heightToChop = b.getHeight()
                 heightChopped = 0.0
                 while (
                     abs(heightChopped - heightToChop) > 1e-5
                 ):  # stop when they are equal. floating point.
+                    # update which ref block we're on (does nothing on the first pass)
                     refB = refA[
                         i + newBlocks
-                    ]  # update which ref block we're on (does nothing on the first pass)
+                    ]
                     newB = copy.deepcopy(b)
                     newB.setHeight(refB.getHeight())  # make block match ref mesh
-                    # b.setHeight(b.getHeight()-refB.getHeight())  # shrink remaining big block. # no need, newBlockStack replaces.
                     newBlockStack.append(newB)
                     heightChopped += refB.getHeight()
                     newBlocks += 1
@@ -465,7 +473,9 @@ class Assembly(composites.Composite):
             bottom = top
             b.spatialLocator = self.spatialGrid[0, 0, bi]
 
-        # also update the 1-D axial assembly level grid (this is intended to replace z, ztop, zbottom, etc.)
+        # also update the 1-D axial assembly level grid (this is intended to replace z,
+        # ztop, zbottom, etc.)
+
         # length of this is numBlocks + 1
         bounds = list(self.spatialGrid._bounds)
         bounds[2] = numpy.array(mesh)
@@ -495,7 +505,10 @@ class Assembly(composites.Composite):
         return self.getTotalHeight(typeSpec)
 
     def getReactiveHeight(self, enrichThresh=0.02):
-        """Returns the zBottom and total height in cm that has fissile enrichment over enrichThresh"""
+        """
+        Returns the zBottom and total height in cm that has fissile enrichment over
+        enrichThresh.
+        """
         reactiveH = 0.0
         zBot = None
         z = 0.0
@@ -549,7 +562,8 @@ class Assembly(composites.Composite):
 
     def getElevationsMatchingParamValue(self, param, value):
         """
-        Returns the elevations (z-coordinates) where the specified param takes the specified value
+        Return the elevations (z-coordinates) where the specified param takes the
+        specified value.
 
         Uses linear interpolation, assuming params correspond to block centers
 
@@ -608,13 +622,12 @@ class Assembly(composites.Composite):
         indices of a reference assembly we should stick with. This method writes the
         indices of the top of a block to settings as topIndex.
 
-        Keep in mind that assemblies can have different number of blocks. This is
-        why this function is useful. So this makes a list of reference indices that
+        Keep in mind that assemblies can have different number of blocks. This is why
+        this function is useful. So this makes a list of reference indices that
         correspond to different axial mesh points on this assembly.
 
-        This is the depletion mesh we're returning, useful for snapping
-        after axial extension. Note that the neutronics mesh on rebusOutputs
-        might be different.
+        This is the depletion mesh we're returning, useful for snapping after axial
+        extension. Note that the neutronics mesh on rebusOutputs might be different.
 
         See Also
         --------
@@ -626,7 +639,8 @@ class Assembly(composites.Composite):
 
         refMesh = refAssem.getAxialMesh() if refMesh is None else refMesh
         selfMesh = self.getAxialMesh()
-        # make a list relating this assemblies axial mesh points to indices of the reference assembly
+        # make a list relating this assemblies axial mesh points to indices of the
+        # reference assembly
         z = 0.0
         for b in self:
             top = z + b.getHeight()
@@ -649,7 +663,8 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         belowFuelColumn : boolean
-            Determines whether a block is below the fuel column or not in fuel assemblies
+            Determines whether a block is below the fuel column or not in fuel
+            assemblies
 
         b : armi block
             The block that is being examined for modification
@@ -678,7 +693,8 @@ class Assembly(composites.Composite):
         elif self.hasFlags(Flags.FUEL):
             # non-fuel block of a fuel assembly.
             if belowFuelColumn:
-                # conserve mass of everything below the fuel so as to not invalidate grid-plate dose calcs.
+                # conserve mass of everything below the fuel so as to not invalidate
+                # grid-plate dose calcs.
                 conserveMass = True
                 adjustList = b.getNuclides()
                 # conserve mass of everything except coolant.
@@ -706,19 +722,22 @@ class Assembly(composites.Composite):
         -----
         This function only conserves mass on certain conditions:
             1) Fuel Assembly
-                a) Structural material below the assembly conserves mass to accurate depict grid plate shielding
-                   Sodium is not conserved.
-                b) Fuel blocks only conserve mass of the fuel, not the structure since the fuel slides
-                   up through the cladding (thus fuel/cladding should be reduced).
-                c) Structure above the assemblies (expected to be plenum) do not conserve mass
-                   since plenum regions have their height reduced to conserve the total structure
-                   mass when the fuel grows in the cladding.  See b)
+                a) Structural material below the assembly conserves mass to accurate
+                   depict grid plate shielding Sodium is not conserved.
+                b) Fuel blocks only conserve mass of the fuel, not the structure since
+                   the fuel slides up through the cladding (thus fuel/cladding should be
+                   reduced).
+                c) Structure above the assemblies (expected to be plenum) do not
+                   conserve mass since plenum regions have their height reduced to
+                   conserve the total structure mass when the fuel grows in the
+                   cladding.  See b)
             2) Reflectors, shields, and control rods
-                a) These assemblies do not conserve mass since they should remain uniform to keep radial shielding
-                   accurate. This approach should be conservative.
-                b) Control rods do not have their mass conserved and the control rod interface
-                   is required to be run after this function is called to correctly place mass
-                   of poison axially.
+                a) These assemblies do not conserve mass since they should remain
+                   uniform to keep radial shielding accurate. This approach should be
+                   conservative.
+                b) Control rods do not have their mass conserved and the control rod
+                   interface is required to be run after this function is called to
+                   correctly place mass of poison axially.
 
         Parameters
         ----------
@@ -879,9 +898,11 @@ class Assembly(composites.Composite):
         """
         Returns the block at a specified axial dimension elevation (given in cm)
 
-        If height matches the exact top of the block, the block is considered at that height.
+        If height matches the exact top of the block, the block is considered at that
+        height.
 
-        Used as a way to determine what block the control rod will be modifying with a mergeBlocks
+        Used as a way to determine what block the control rod will be modifying with a
+        mergeBlocks.
 
         Parameters
         ----------
@@ -977,7 +998,8 @@ class Assembly(composites.Composite):
         """
         Returns a tuple with the amount of a block above or below a given height in an assembly.
 
-        Used to determine what fraction of the block should be merged with a control rod
+        Used to determine what fraction of the block should be merged with a control
+        rod.
 
         Parameters
         ----------
@@ -987,7 +1009,8 @@ class Assembly(composites.Composite):
         Returns
         -------
         distances : tuple
-            tuple containing the distance from height to top of block followed by distance of height to bottom of block
+            tuple containing the distance from height to top of block followed by
+            distance of height to bottom of block
 
         """
         for b in self:
@@ -1005,22 +1028,24 @@ class Assembly(composites.Composite):
         self, param, elevations, interpType="linear", fillValue=numpy.NaN
     ):
         """
-        Interpolates a param axially to find it at any value of elevation z
+        Interpolates a param axially to find it at any value of elevation z.
 
-        By default, assumes that all parameters are for the center of a block. So for parameters such as
-        THoutletTemperature that are defined on the top, this may be off. See the paramDefinedAt parameters
+        By default, assumes that all parameters are for the center of a block. So for
+        parameters such as THoutletTemperature that are defined on the top, this may be
+        off. See the paramDefinedAt parameters.
 
         Defaults to linear interpolations.
 
         Notes
         -----
-        This caches interpolators for each param and must be cleared if new params are set or new heights are set.
+        This caches interpolators for each param and must be cleared if new params are
+        set or new heights are set.
 
         WARNING:
-        Fails when requested to extrapolate.
-        With higher order splines it is possible to interpolate non-physical values, for example a
-        negative flux or dpa.Please use caution when going off default in interpType and be certain
-        that interpolated values are physical
+        Fails when requested to extrapolate.With higher order splines it is possible
+        to interpolate non-physical values, for example a negative flux or dpa. Please
+        use caution when going off default in interpType and be certain that
+        interpolated values are physical.
 
         Parameters
         ----------
@@ -1028,17 +1053,20 @@ class Assembly(composites.Composite):
             the parameter to interpolate
 
         elevations : array of float
-            the elevations from the bottom of the assembly in cm at which you want the point.
+            the elevations from the bottom of the assembly in cm at which you want the
+            point.
 
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation as a string
-            ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
-            where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of first, second or third order)
-            or as an integer specifying the order of the spline interpolator to use. Default is 'linear'.
+            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
+            where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
+            first, second or third order) or as an integer specifying the order of the
+            spline interpolator to use. Default is 'linear'.
 
         fillValue: str
-            Rough pass through to scipy.interpolate.interp1d. If 'extend', then the lower and upper bounds are used
-            as the extended value. If 'extrapolate', then extrapolation is permitted.
+            Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
+            lower and upper bounds are used as the extended value. If 'extrapolate',
+            then extrapolation is permitted.
 
         Returns
         -------
@@ -1054,18 +1082,21 @@ class Assembly(composites.Composite):
         """
         Interpolates a param axially to find it at any value of elevation z
 
-        By default, assumes that all parameters are for the center of a block. So for parameters such as
-        THoutletTemperature that are defined on the top, this may be off. See the paramDefinedAt parameters
+        By default, assumes that all parameters are for the center of a block. So for
+        parameters such as THoutletTemperature that are defined on the top, this may be
+        off. See the paramDefinedAt parameters.
 
         Defaults to linear interpolations.
 
         Notes
         -----
-        This caches interpolators for each param and must be cleared if new params are set or new heights are set.
+        This caches interpolators for each param and must be cleared if new params are
+        set or new heights are set.
 
-        WARNING: Fails when requested to extrapololate. With higher order splines it is possible to
-        interpolate nonphysical values, for example a negative flux or dpa. Please use caution when
-        going off default in interpType and be certain that interpolated values are physical
+        WARNING: Fails when requested to extrapololate. With higher order splines it is
+        possible to interpolate nonphysical values, for example a negative flux or dpa.
+        Please use caution when going off default in interpType and be certain that
+        interpolated values are physical.
 
         Parameters
         ----------
@@ -1073,17 +1104,20 @@ class Assembly(composites.Composite):
             the parameter to interpolate
 
         elevations : array of float
-            the elevations from the bottom of the assembly in cm at which you want the point.
+            the elevations from the bottom of the assembly in cm at which you want the
+            point.
 
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation as a string
-            ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
-            where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of first, second or third order)
-            or as an integer specifying the order of the spline interpolator to use. Default is 'linear'.
+            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
+            where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
+            first, second or third order) or as an integer specifying the order of the
+            spline interpolator to use. Default is 'linear'.
 
         fillValue: float
-            Rough pass through to scipy.interpolate.interp1d. If 'extend', then the lower and upper bounds are used
-            as the extended value. If 'extrapolate', then extrapolation is permitted.
+            Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
+            lower and upper bounds are used as the extended value. If 'extrapolate',
+            then extrapolation is permitted.
 
         Returns
         -------
@@ -1143,7 +1177,8 @@ class Assembly(composites.Composite):
 
         See Also
         --------
-        calculateZCoords : updates the ztop/zbottom params on each block after reordering.
+        calculateZCoords : updates the ztop/zbottom params on each block after
+            reordering.
         """
         # replace grid with one that has the right number of locations
         self.spatialGrid = grids.axialUnitGrid(len(self))
@@ -1155,17 +1190,18 @@ class Assembly(composites.Composite):
 
     def renameBlocksAccordingToAssemblyNum(self):
         """
-        Updates the names of all blocks to comply with the assembly number
+        Updates the names of all blocks to comply with the assembly number.
 
-        Useful after an assembly number/name has been loaded from a snapshot
-        and you want to update all block names to be consistent.
+        Useful after an assembly number/name has been loaded from a snapshot and you
+        want to update all block names to be consistent.
 
-        It may be better to store block numbers on each block as params. A database
-        that can hold strings would be even better.
+        It may be better to store block numbers on each block as params. A database that
+        can hold strings would be even better.
 
         Notes
         -----
-        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling this
+        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
+        this.
         """
         assemNum = self.getNum()
         for bi, b in enumerate(self):
@@ -1231,7 +1267,8 @@ class Assembly(composites.Composite):
                 "No plenum blocks found in {0}. Axial expansion is modifying the "
                 "total assembly height and volume.".format(self)
             )
-            # Alter assembly number density to account conserve attoms during volume change
+            # Alter assembly number density to account conserve attoms during volume
+            # change.
             # This is analogous to what happens to component/block number density
             # during `armi.reactor.blocks.Block.adjustDensity`, which gets called when
             # block heights change.
@@ -1284,7 +1321,8 @@ class Assembly(composites.Composite):
         Search through blocks in this assembly and find the first component of compName.
         Then, look on that component for dimName.
 
-        Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm. """
+        Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
+        """
 
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)
@@ -1303,14 +1341,15 @@ class Assembly(composites.Composite):
     def getDominantMaterial(self, typeSpec=None, blockList=None):
         """
         Returns the most common material in the compositions of the blocks.
-        If you pass ['clad','duct'], you might get HT9, for example.
-        This allows generality in reading material properties on groups of blocks.
-        Dominant is defined by most volume. This version is assembly-level.
+
+        If you pass ['clad','duct'], you might get HT9, for example.  This allows
+        generality in reading material properties on groups of blocks.  Dominant is
+        defined by most volume. This version is assembly-level.
 
         Parameters
         ----------
         typeSpec : Flags or list of Flags, optional
-            Specification of the type of components to pull the dominant materials from
+            Specification of the type of components to pull the dominant materials from.
 
         blockList : list of block objects
             A list of blocks to look at in this assembly.
@@ -1320,7 +1359,6 @@ class Assembly(composites.Composite):
         samples[maxMat] : Material object
             The material that has the most volume within this assembly within the given
             typeSpec and blockList.
-
 
         """
         mats = {}
@@ -1385,11 +1423,13 @@ class HexAssembly(Assembly):
             The arbitrary quantity that is to be re-indexed from 2-D to 1-D.
 
         imax : int
-            The maximum number of hex assembly rings in the reactor (including partially-filled rings).
+            The maximum number of hex assembly rings in the reactor (including
+            partially-filled rings).
 
         jmax : list of ints
-            A list containing the total number of hex assembly "positions" in each hex assembly "ring".
-            This includes "ghost" assemblies that do not exist in a 1/3 or 1/6 core.
+            A list containing the total number of hex assembly "positions" in each hex
+            assembly "ring".  This includes "ghost" assemblies that do not exist in a
+            1/3 or 1/6 core.
 
         Returns
         -------
@@ -1407,14 +1447,13 @@ class HexAssembly(Assembly):
 
 class RZAssembly(Assembly):
     """
-    RZAssembly are assemblies in RZ geometry, they need to be different
-    objects than HexAssembly because they use different locations and need
-    to have Radial Meshes in their setting
+    RZAssembly are assemblies in RZ geometry; they need to be different objects than
+    HexAssembly because they use different locations and need to have Radial Meshes in
+    their setting
 
-    note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z)
-    because they should have a common place to put information about
-    subdividing the global mesh for transport - this is similar to how blocks
-    have 'AxialMesh' in their blocks
+    note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
+    they should have a common place to put information about subdividing the global mesh
+    for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
 
     LOCATION_CLASS = locations.ThetaRZLocation
@@ -1464,20 +1503,21 @@ class RZAssembly(Assembly):
         return self[0].thetaInner()
 
     def Rcoords(self):
-        # can likely be upgraded to use ``self.spatialLocator.getGlobalCoordinates(nativeCoords=True)``
+        # can likely be upgraded to use
+        # ``self.spatialLocator.getGlobalCoordinates(nativeCoords=True)``
         return self.location.Rcoords()
 
 
 class ThRZAssembly(RZAssembly):
     """
-    ThRZAssembly are assemblies in ThetaRZ geometry, they need to be different
-    objects than HexAssembly because they use different locations and need
-    to have Radial Meshes in their setting
+    ThRZAssembly are assemblies in ThetaRZ geometry, they need to be different objects
+    than HexAssembly because they use different locations and need to have Radial Meshes
+    in their setting.
 
     Notes
     -----
-    This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly Object
-    """
+    This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
+    Object """
 
     LOCATION_CLASS = locations.ThetaRZLocation
 
