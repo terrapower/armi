@@ -29,7 +29,7 @@ armi.reactor.parameters
 import enum
 import re
 import functools
-from typing import Callable, Dict, Optional, Sequence, Tuple, Type
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Type
 
 import numpy
 
@@ -164,9 +164,9 @@ class Serializer:
         """
         raise NotImplementedError()
 
-    @staticmethod
+    @classmethod
     def unpack(
-        data: numpy.ndarray, version: any, attrs: Dict[str, any]
+        cls, data: numpy.ndarray, version: Any, attrs: Dict[str, any]
     ) -> Sequence[any]:
         """Given packed data and attributes, return the unpacked data."""
         raise NotImplementedError()

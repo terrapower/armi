@@ -1081,10 +1081,9 @@ class Database3(database.Database):
                 assert dataSet.attrs[_SERIALIZER_NAME] == pDef.serializer.__name__
                 assert _SERIALIZER_VERSION in dataSet.attrs
 
-                data = pDef.serializer.unpack(
+                data = numpy.array(pDef.serializer.unpack(
                     data, dataSet.attrs[_SERIALIZER_VERSION], attrs
-                )
-                continue
+                ))
 
             if data.dtype.type is numpy.string_:
                 data = numpy.char.decode(data)

@@ -98,7 +98,7 @@ def buildTestAssemblies():
 
     block = blocks.HexBlock("fuel", caseSetting)
     block2 = blocks.HexBlock("fuel", caseSetting)
-    block.p.type = "fuel"
+    block.setType("fuel")
     block.setHeight(10.0)
     block.addComponent(fuelUZr)
     block.addComponent(fuelUTh)
@@ -108,7 +108,7 @@ def buildTestAssemblies():
     block.p.molesHmBOL = 1.0
     block.p.molesHmNow = 1.0
 
-    block2.p.type = "fuel"
+    block2.setType("fuel")
     block2.setHeight(10.0)
     block2.addComponent(fuelUThZr)
     block2.addComponent(clad)

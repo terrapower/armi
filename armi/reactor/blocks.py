@@ -1140,7 +1140,7 @@ class Block(composites.Composite):
     def replaceBlockWithBlock(self, bReplacement):
         """
         Replace the current block with the replacementBlock.
-        
+
         Typically used in the insertion of control rods.
         """
         paramsToSkip = set(

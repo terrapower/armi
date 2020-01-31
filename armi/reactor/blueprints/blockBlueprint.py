@@ -158,9 +158,9 @@ class BlockBlueprint(yamlize.KeyedList):
     def _getGridDesign(self, blueprint):
         """
         Get the appropriate grid design
-        
-        This happens when a lattice input is provided on the block. Otherwise
-        all components are ambiguously defined in the block. 
+
+        This happens when a lattice input is provided on the block. Otherwise all
+        components are ambiguously defined in the block.
         """
         if self.gridName:
             if self.gridName not in blueprint.gridDesigns:

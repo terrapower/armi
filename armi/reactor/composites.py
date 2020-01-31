@@ -639,9 +639,10 @@ class ArmiObject(metaclass=CompositeModelType):
         """Return the object type."""
         return self.p.type
 
-    def setType(self, typeSpec):
+    def setType(self, newType):
         """Set the object type."""
-        self.p.type = typeSpec
+        self.p.flags = Flags.fromStringIgnoreErrors(newType)
+        self.p.type = newType
 
     def getVolume(self):
         return sum(child.getVolume() for child in self)
@@ -2815,7 +2816,7 @@ class Leaf(Composite):
         return []
 
 
-class StateRetainer(object):
+class StateRetainer:
     """
     Retains state during some operations.
 
