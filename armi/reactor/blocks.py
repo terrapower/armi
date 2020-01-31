@@ -1090,14 +1090,15 @@ class Block(composites.Composite):
         """
         Does some BOL bookkeeping to track things like BOL HM density for burnup tracking.
 
-        runs after this block is loaded up at BOC (called from Reactor.initialLoading(Axial))
+        This should run after this block is loaded up at BOC (called from
+        Reactor.initialLoading).
 
-        original purpose of this was to get the moles HM at BOC for the moles Pu/moles HM at BOL
-        calculation
+        The original purpose of this was to get the moles HM at BOC for the moles
+        Pu/moles HM at BOL calculation.
 
-        This also must be called after modifying something like the smear density or zr fraction in
-        an optimization case.  In ECPT cases, a BOL block must be passed or else the burnup will
-        try to get based on a pre-burned value.
+        This also must be called after modifying something like the smear density or zr
+        fraction in an optimization case. In ECPT cases, a BOL block must be passed or
+        else the burnup will try to get based on a pre-burned value.
 
         Parameters
         ----------
