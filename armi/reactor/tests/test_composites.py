@@ -55,11 +55,7 @@ def getDummyParamDefs():
     dummyDefs = parameters.ParameterDefinitionCollection()
     with dummyDefs.createBuilder() as pb:
 
-        def type(self, value):
-            self._p_type = value
-            self._p_flags = Flags.fromStringIgnoreErrors(value)
-
-        pb.defParam("type", units="none", description="Fake type", setter=type)
+        pb.defParam("type", units="none", description="Fake type")
     return dummyDefs
 
 
@@ -164,23 +160,23 @@ class TestCompositePattern(unittest.TestCase):
         )
 
     def test_hasFlags(self):
-        self.container.p.type = "fuel"
+        self.container.setType("fuel")
         self.assertFalse(self.container.hasFlags(Flags.SHIELD | Flags.FUEL, exact=True))
         self.assertTrue(self.container.hasFlags(Flags.FUEL))
         self.assertTrue(self.container.hasFlags(None))
 
     def test_hasFlagsSubstring(self):
         """Make sure typespecs with the same word in them no longer match."""
-        self.container.p.type = "intercoolant"
+        self.container.setType("intercoolant")
         self.assertFalse(self.container.hasFlags(Flags.COOLANT))
         self.assertFalse(self.container.hasFlags(Flags.COOLANT, exact=True))
         self.assertTrue(self.container.hasFlags(Flags.INTERCOOLANT, exact=True))
 
-        self.container.p.type = "innerduct"
+        self.container.setType("innerduct")
         self.assertFalse(self.container.hasFlags(Flags.DUCT, exact=True))
 
     def test_hasFlagsNoTypeSpecified(self):
-        self.container.p.type = "fuel"
+        self.container.setType("fuel")
         types = [None, [], [None]]
         for t in types:
             self.assertTrue(self.container.hasFlags(t))

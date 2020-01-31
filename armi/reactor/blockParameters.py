@@ -1345,20 +1345,12 @@ def getBlockParameterDefinitions():
             setter=xsTypeNum,
         )
 
-        def type(self, value):  # pylint: disable=method-hidden
-            """Always set flags when type changes."""
-            self._p_type = value  # pylint: disable=attribute-defined-outside-init
-            self._p_flags = Flags.fromStringIgnoreErrors(
-                value
-            )  # pylint: disable=attribute-defined-outside-init
-
         pb.defParam(
             "type",
             units="N/A",
             description="string name of the input block",
             default="defaultType",
             saveToDB=True,
-            setter=type,
         )
 
         pb.defParam(

@@ -80,7 +80,7 @@ class TestFuelHandler(ArmiTestHelper):
 
         # generate a block
         self.block = blocks.HexBlock("TestHexBlock", self.o.cs)
-        self.block.p.type = "fuel"
+        self.block.setType("fuel")
         self.block.setHeight(10.0)
         self.block.addComponent(fuel)
         self.block.addComponent(clad)

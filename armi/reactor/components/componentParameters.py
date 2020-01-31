@@ -46,18 +46,10 @@ def getComponentParameterDefinitions():
             description="Label of other component to merge with",
         )
 
-        def type(self, value):  # pylint: disable=method-hidden
-            """Always set flags when type changes."""
-            self._p_type = value  # pylint: disable=attribute-defined-outside-init
-            self._p_flags = Flags.fromStringIgnoreErrors(
-                value
-            )  # pylint: disable=attribute-defined-outside-init
-
         pb.defParam(
             "type",
             units="",
             description="The name of this object as input on the blueprints",
-            setter=type,
         )
 
         pb.defParam(

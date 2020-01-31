@@ -15,10 +15,12 @@
 """
 This module defines the blueprints input object for assemblies.
 
-In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible for constructing ``Assembly``
-objects. An attempt has been made to decouple ``Assembly`` construction from the rest of ARMI as much as possible. For
-example, an assembly does not require a reactor to be constructed, or a geometry file (but uses ``geomType`` string as a
-surrogate).
+In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible
+for constructing ``Assembly`` objects. An attempt has been made to decouple ``Assembly``
+construction from the rest of ARMI as much as possible. For example, an assembly does
+not require a reactor to be constructed, or a geometry file (but uses ``geomType``
+string as a surrogate).
+
 """
 import yamlize
 

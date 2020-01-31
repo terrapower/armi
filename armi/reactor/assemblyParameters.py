@@ -242,11 +242,6 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder() as pb:
 
-        def typeSetter(self, value):
-            """Always set flags when type changes."""
-            self._p_type = value
-            self._p_flags = Flags.fromStringIgnoreErrors(value)
-
         pb.defParam(
             "type",
             units="?",
@@ -254,7 +249,6 @@ def getAssemblyParameterDefinitions():
             location="?",
             default="defaultAssemType",
             saveToDB=True,
-            setter=typeSetter,
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
