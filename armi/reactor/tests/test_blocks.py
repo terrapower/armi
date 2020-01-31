@@ -879,7 +879,7 @@ class Block_TestCase(unittest.TestCase):
             }
         )
 
-        self.Block.completeInitialLoading(bolBlock=self.Block)
+        self.Block.completeInitialLoading()
 
         cur = self.Block.p.molesHmBOL
         ref = self.Block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area

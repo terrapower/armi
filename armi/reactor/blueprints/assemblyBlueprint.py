@@ -163,9 +163,8 @@ class AssemblyBlueprint(yamlize.Object):
             cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
         )
 
-        # always just use B as the BOL block at this BOL point.
         # TODO: remove when the plugin system is fully set up?
-        b.completeInitialLoading(bolBlock=b)
+        b.completeInitialLoading()
         return b
 
     def _checkParamConsistency(self, a):
