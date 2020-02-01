@@ -98,7 +98,8 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
         )
     except Exception as e:
         runLog.warning(
-            "Could not copy {}: {}\n{}".format(fileDescription, sourcePath, e)
+            "Could not copy {} from {} to {}\nError was: {}".format(
+                fileDescription, sourcePath, destinationPath, e)
         )
 
 

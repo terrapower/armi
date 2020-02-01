@@ -174,8 +174,9 @@ for symmetry in VALID_SYMMETRY:
 
 def loadFromCs(cs):
     """Function to load Geoemtry based on supplied ``CaseSettings``."""
-    from armi.utils import directoryChangers  # circular import protection
-
+    from armi.utils import directoryChangers  # pylint: disable=import-outside-toplevel; circular import protection
+    if not cs["geomFile"]:
+        return None
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
         geom = SystemLayoutInput()
         geom.readGeomFromFile(cs["geomFile"])

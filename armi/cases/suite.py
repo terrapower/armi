@@ -267,7 +267,7 @@ class CaseSuite:
             Similar to this but doesn't let you write out new geometry or blueprints objects.
         """
         for case in self:
-            case.writeInputs()
+            case.writeInputs(sourceDir=self.cs.inputDirectory)
 
     def writeTable(self, tableResults):
         """Write a table summarizing the test differences."""
