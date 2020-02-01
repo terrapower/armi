@@ -122,13 +122,6 @@ class SuiteBuilder(object):
         """
         caseSuite = suite.CaseSuite(self.baseCase.cs)
 
-        assert (
-            self.baseCase.geom is not None
-        ), ".geom is build on request, this forces it to be created"
-        assert (
-            self.baseCase.bp is not None
-        ), ".bp is build on request, this forces it to be created"
-
         if namingFunc is None:
 
             def namingFunc(index, _case, _mods):  # pylint: disable=function-redefined

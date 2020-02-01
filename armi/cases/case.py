@@ -33,7 +33,7 @@ import trace
 import time
 import textwrap
 import ast
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 import tabulate
 import six
@@ -543,8 +543,6 @@ class Case:
         for inputFileSetting in [
             "loadingFile",
             "geomFile",
-            "shuffleLogic",
-            "explicitRepeatShuffles",
         ]:
             fileName = self.cs[inputFileSetting]
             if fileName:
@@ -619,7 +617,7 @@ class Case:
 
         return code
 
-    def writeInputs(self):
+    def writeInputs(self, sourceDir: Union[str, None]=None):
         """
         Write the inputs to disk.
 
@@ -627,10 +625,16 @@ class Case:
         for a parameter sweep or migration) to be written out as input
         for a forthcoming case.
 
+        Parameters
+        ----------
+        sourceDir : str, optional
+            The path to copy inputs from (if different from the cs.path). Needed
+            in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
+
         Notes
         -----
         This will rename the ``loadingFile`` and ``geomFile`` to be ``title-blueprints + '.yaml'`` and
-        ``title + '-geom.xml'`` respectively.
+        ``title + '-geom.yaml'`` respectively.
 
         See Also
         --------
@@ -647,23 +651,24 @@ class Case:
             self.bp
             self.geom
             self.cs["loadingFile"] = self.title + "-blueprints.yaml"
-            self.cs["geomFile"] = self.title + "-geom.xml"
+            if self.geom:
+                self.cs["geomFile"] = self.title + "-geom.yaml"
+                self.geom.writeGeom(self.cs["geomFile"])
             if self.independentVariables:
                 self.cs["independentVariables"] = [
                     "({}, {})".format(repr(varName), repr(val))
                     for varName, val in self.independentVariables.items()
                 ]
 
-            self.cs.writeToYamlFile(self.title + ".yaml")
-            self.geom.writeGeom(self.cs["geomFile"])
-
             with open(self.cs["loadingFile"], "w") as loadingFile:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
-            copyInterfaceInputs(self.cs, self.directory)
+            # copy input files from other modules (e.g. fuel management, control logic, etc.)
+            copyInterfaceInputs(self.cs, ".", sourceDir)
 
+            self.cs.writeToYamlFile(self.title + ".yaml")
 
-def copyInterfaceInputs(cs, destination):
+def copyInterfaceInputs(cs, destination: str, sourceDir: Union[str, None]=None):
     """
     Copy sets of files that are considered "input" from each active interface.
 
@@ -671,6 +676,7 @@ def copyInterfaceInputs(cs, destination):
     modular way.
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
+    sourceDir = sourceDir or cs.inputDirectory
     for klass, kwargs in activeInterfaces:
         if not kwargs.get("enabled", True):
             # Don't consider disabled interfaces
@@ -678,6 +684,8 @@ def copyInterfaceInputs(cs, destination):
         interfaceFileNames = klass.specifyInputs(cs)
         for label, fileNames in interfaceFileNames.items():
             for f in fileNames:
+                if not f:
+                    continue
                 pathTools.copyOrWarn(
-                    label, pathTools.armiAbsPath(cs.inputDirectory, f), destination
+                    label, pathTools.armiAbsPath(sourceDir, f), destination
                 )

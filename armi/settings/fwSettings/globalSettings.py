@@ -695,7 +695,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_OUTPUT_CACHE_LOCATION,
             default="",
-            label="Location of output cache.",
+            label="Location of output cache",
             description="Location where cached calculations are stored and "
             "retrieved if exactly the same as the calculation requested. Empty "
             "string will not cache",
