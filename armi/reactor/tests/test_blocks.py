@@ -1412,6 +1412,7 @@ class Block_TestCase(unittest.TestCase):
         fuel = self.Block.getComponent(Flags.FUEL)
         mult = fuel.getDimension("mult")
         self.assertGreater(mult, 1.0)
+        self.Block.completeInitialLoading()
         self.Block.breakFuelComponentsIntoIndividuals()
         self.assertEqual(fuel.getDimension("mult"), 1.0)
 

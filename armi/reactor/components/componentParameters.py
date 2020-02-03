@@ -72,6 +72,13 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "massHmBOL",
+            units="grams",
+            description="Mass of heavy metal at BOL",
+            default=None,
+        )
+
+        pb.defParam(
             "burnupMWdPerKg",
             units="MWd/kg",
             description="Burnup in MWd/Kg of heavy metal",

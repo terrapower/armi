@@ -103,7 +103,6 @@ class Block(composites.Composite):
         composites.Composite.__init__(self, name)
         self.makeUnique()
         self.p.height = height
-        self.massHMBOL = 0.0  # in grams
 
         if location:
             k = location.axial
@@ -1128,11 +1127,12 @@ class Block(composites.Composite):
         except ValueError:
             pass
         self.p.enrichmentBOL = self.getEnrichment()
-        self.massHMBOL = 0.0
+        massHmBOL = 0.0
         sf = self.getSymmetryFactor()
         for child in self:
-            child.massHMBOL = child.getHMMass() * sf  # scale to full block
-            self.massHMBOL += child.massHMBOL
+            child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
+            massHmBOL += child.p.massHmBOL
+        self.p.massHmBOL = massHmBOL
         return hmDens
 
     def replaceBlockWithBlock(self, bReplacement):
@@ -2345,7 +2345,7 @@ class Block(composites.Composite):
         for pinNum, pin in enumerate(self.iterComponents(Flags.FUEL)):
             pin.p.flags = fuelFlags  # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
             self.p.molesHmBOLByPin.append(pin.getHMMoles())
-            pin.massHMBOL /= nPins
+            pin.p.massHmBOL /= nPins
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
