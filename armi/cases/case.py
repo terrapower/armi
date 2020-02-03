@@ -33,7 +33,7 @@ import trace
 import time
 import textwrap
 import ast
-from typing import Optional, Sequence, Union
+from typing import Optional, Sequence
 
 import tabulate
 import six
@@ -617,7 +617,7 @@ class Case:
 
         return code
 
-    def writeInputs(self, sourceDir: Union[str, None]=None):
+    def writeInputs(self, sourceDir: Optional[str]=None):
         """
         Write the inputs to disk.
 
@@ -668,7 +668,8 @@ class Case:
 
             self.cs.writeToYamlFile(self.title + ".yaml")
 
-def copyInterfaceInputs(cs, destination: str, sourceDir: Union[str, None]=None):
+
+def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str]=None):
     """
     Copy sets of files that are considered "input" from each active interface.
 
