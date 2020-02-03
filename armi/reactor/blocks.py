@@ -103,7 +103,6 @@ class Block(composites.Composite):
         composites.Composite.__init__(self, name)
         self.makeUnique()
         self.p.height = height
-        self.massHMBOL = 0.0  # in grams
 
         if location:
             k = location.axial
@@ -1090,14 +1089,15 @@ class Block(composites.Composite):
         """
         Does some BOL bookkeeping to track things like BOL HM density for burnup tracking.
 
-        runs after this block is loaded up at BOC (called from Reactor.initialLoading(Axial))
+        This should run after this block is loaded up at BOC (called from
+        Reactor.initialLoading).
 
-        original purpose of this was to get the moles HM at BOC for the moles Pu/moles HM at BOL
-        calculation
+        The original purpose of this was to get the moles HM at BOC for the moles
+        Pu/moles HM at BOL calculation.
 
-        This also must be called after modifying something like the smear density or zr fraction in
-        an optimization case.  In ECPT cases, a BOL block must be passed or else the burnup will
-        try to get based on a pre-burned value.
+        This also must be called after modifying something like the smear density or zr
+        fraction in an optimization case. In ECPT cases, a BOL block must be passed or
+        else the burnup will try to get based on a pre-burned value.
 
         Parameters
         ----------
@@ -1127,11 +1127,12 @@ class Block(composites.Composite):
         except ValueError:
             pass
         self.p.enrichmentBOL = self.getEnrichment()
-        self.massHMBOL = 0.0
+        massHmBOL = 0.0
         sf = self.getSymmetryFactor()
         for child in self:
-            child.massHMBOL = child.getHMMass() * sf  # scale to full block
-            self.massHMBOL += child.massHMBOL
+            child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
+            massHmBOL += child.p.massHmBOL
+        self.p.massHmBOL = massHmBOL
         return hmDens
 
     def replaceBlockWithBlock(self, bReplacement):
@@ -2344,7 +2345,7 @@ class Block(composites.Composite):
         for pinNum, pin in enumerate(self.iterComponents(Flags.FUEL)):
             pin.p.flags = fuelFlags  # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
             self.p.molesHmBOLByPin.append(pin.getHMMoles())
-            pin.massHMBOL /= nPins
+            pin.p.massHmBOL /= nPins
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """

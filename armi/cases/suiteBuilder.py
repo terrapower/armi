@@ -307,18 +307,19 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 class InputModifier(object):
     """
     Object that modifies input definitions in some well-defined way.
-    
+
     (This class is abstract.)
 
-    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``, ``Blueprints``,
-    and ``SystemLayoutInput``.
+    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
+    ``Blueprints``, and ``SystemLayoutInput``.
 
-    The class attribute ``FAIL_IF_AFTER`` should be a tuple defining what, if any, modifications
-    this should fail if performed after. For example, one should not adjust the smear density (a
-    function of Cladding ID) before adjusting the Cladding ID.
-    
-    Some subclasses are provided, but you are expected to make your own design-specific modifiers 
-    in most cases.
+    The class attribute ``FAIL_IF_AFTER`` should be a tuple defining what, if any,
+    modifications this should fail if performed after. For example, one should not
+    adjust the smear density (a function of Cladding ID) before adjusting the Cladding
+    ID.
+
+    Some subclasses are provided, but you are expected to make your own design-specific
+    modifiers in most cases.
     """
 
     FAIL_IF_AFTER = ()
@@ -326,12 +327,13 @@ class InputModifier(object):
     def __init__(self, independentVariable=None):
         """
         Constuctor.
-        
+
         Parameters
         ----------
         independentVariable : dict or None, optional
-            Name/value pairs to associate with the independent variable being modified by this object.
-            Will be analyzed and plotted against other modifiers with the same name.
+            Name/value pairs to associate with the independent variable being modified
+            by this object.  Will be analyzed and plotted against other modifiers with
+            the same name.
         """
         if independentVariable is None:
             independentVariable = {}
@@ -383,11 +385,11 @@ class _PinTypeAssemblyModifier(InputModifier):
     """
     Abstract class for modifying something about a pin, within a block.
 
-    This will construct blocks, determine if the block should be modified by checking the
-    ``_getBlockTypesToModify``, and then run ``_adjustBlock(b)``. The ``Blueprints`` are then
-    updated based on the modification assuming that dimension names match exactly to
-    ComponenBlueprint attributes (which is true, because ComponentBlueprint attributes are
-    programmatically derived from Component constructors).
+    This will construct blocks, determine if the block should be modified by checking
+    the ``_getBlockTypesToModify``, and then run ``_adjustBlock(b)``. The ``Blueprints``
+    are then updated based on the modification assuming that dimension names match
+    exactly to ComponenBlueprint attributes (which is true, because ComponentBlueprint
+    attributes are programmatically derived from Component constructors).
     """
 
     def __init__(self, value):
@@ -398,19 +400,20 @@ class _PinTypeAssemblyModifier(InputModifier):
         for bDesign in blueprints.blockDesigns:
             # bDesign construct requires lots of arguments, many of which have no impact.
             # The following can safely be defaulted to meaningless inputs:
-            # axialIndex: a block can be reused at any axial index, modifications made dependent on
-            #     will not translate back to the input in a  meaningful fashion
-            # axialMeshPoints: similar to above, this is specified by the assembly, and a block can
-            #     be within any section of an assembly.
-            # height: similar to above. a block can have any height specified by an assembly. if
-            #     height-specific modifications are required, then a new block definition should be
-            #     created in the input
-            # xsType: similar to above. a block can have any xsType specified through the assembly
-            #     definition assembly. if xsType-specific modifications are required, then a new
+            # axialIndex: a block can be reused at any axial index, modifications made
+            #     dependent on will not translate back to the input in a  meaningful
+            #     fashion
+            # axialMeshPoints: similar to above, this is specified by the assembly, and
+            #     a block can be within any section of an assembly.
+            # height: similar to above. a block can have any height specified by an
+            #     assembly. if height-specific modifications are required, then a new
             #     block definition should be created in the input
-            # materialInput: this is the materialModifications from the assembly definition. if
-            #     material modifications are required on a block-specific basis, they should be
-            #     edited directly
+            # xsType: similar to above. a block can have any xsType specified through
+            #     the assembly definition assembly. if xsType-specific modifications are
+            #     required, then a new block definition should be created in the input
+            # materialInput: this is the materialModifications from the assembly
+            #     definition. if material modifications are required on a block-specific
+            #     basis, they should be edited directly
             b = bDesign.construct(
                 cs,
                 blueprints,
@@ -449,10 +452,10 @@ class _PinTypeAssemblyModifier(InputModifier):
 class SmearDensityModifier(_PinTypeAssemblyModifier):
     """
     Adjust the smeared density to the specified value.
-    
-    This is effectively how much of the space inside the cladding tube
-    is occupied by fuel at fabrication. 
-    
+
+    This is effectively how much of the space inside the cladding tube is occupied by
+    fuel at fabrication.
+
     See Also
     --------
     armi.reactor.blocks.Block.adjustSmearDensity
@@ -502,9 +505,9 @@ class NeutronicConvergenceModifier(InputModifier):
     """
     Adjust the neutronics convergence parameters ``epsEig``, ``epsFSAvg``, and ``epsFSPoint``.
 
-    The supplied value is used for ``epsEig``. ``epsFSAvg`` and ``epsFSPoint`` are set to 100 times
-    the supplied value.
-    
+    The supplied value is used for ``epsEig``. ``epsFSAvg`` and ``epsFSPoint`` are set
+    to 100 times the supplied value.
+
     This can be used to perform sensitivity studies on convergence criteria.
     """
 

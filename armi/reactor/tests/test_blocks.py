@@ -879,7 +879,7 @@ class Block_TestCase(unittest.TestCase):
             }
         )
 
-        self.Block.completeInitialLoading(bolBlock=self.Block)
+        self.Block.completeInitialLoading()
 
         cur = self.Block.p.molesHmBOL
         ref = self.Block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area
@@ -1412,6 +1412,7 @@ class Block_TestCase(unittest.TestCase):
         fuel = self.Block.getComponent(Flags.FUEL)
         mult = fuel.getDimension("mult")
         self.assertGreater(mult, 1.0)
+        self.Block.completeInitialLoading()
         self.Block.breakFuelComponentsIntoIndividuals()
         self.assertEqual(fuel.getDimension("mult"), 1.0)
 
