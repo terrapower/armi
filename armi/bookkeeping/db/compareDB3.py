@@ -161,6 +161,7 @@ def compareDatabases(
     tolerance: float = 0.0,
 ) -> Optional[DiffResults]:
 
+    compiledExclusions = None
     if exclusions is not None:
         compiledExclusions = [re.compile(ex) for ex in exclusions]
 
