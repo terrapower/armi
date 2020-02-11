@@ -42,8 +42,8 @@ def getEmptyHexReactor(cs=None):
 
     cs = cs or settings.getMasterCs()
     bp = blueprints.Blueprints()
-    reactor = reactors.Reactor(cs, bp)
-    reactor.add(reactors.Core("Core", cs))
+    reactor = reactors.Reactor("Reactor", bp)
+    reactor.add(reactors.Core("Core"))
     reactor.core.spatialGrid = grids.hexGridFromPitch(1.0)
     reactor.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
     reactor.core.spatialGrid.geomType = geometry.HEX

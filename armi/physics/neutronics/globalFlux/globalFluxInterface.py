@@ -16,10 +16,8 @@
 The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
 """
 import math
-import os
 
-from matplotlib import pyplot
-from matplotlib.collections import PolyCollection
+
 import numpy
 import scipy.integrate
 
@@ -34,21 +32,18 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor import assemblies
 from armi.localization import exceptions
 from armi.reactor.flags import Flags
-from armi.utils import pathTools
 from armi.physics import neutronics
+from armi.physics import executers
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
 
 # pylint: disable=too-many-public-methods
 class GlobalFluxInterface(interfaces.Interface):
-    r"""
-    A general abstract interface for global flux calculating modules.
+    """
+    A general abstract interface for global flux-calculating modules.
 
-    Should be subclassed by more specific implementations. This class currently serves
-    as a common ancestor to a handful of DIF3D/REBUS-based neutronics interfaces, and
-    therefore is not as general as it should be. Future revisions will be generalized to
-    support other families of codes.
+    Should be subclassed by more specific implementations.
     """
 
     name = None  # make sure to set this in subclasses
@@ -67,18 +62,13 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
-        self.geomConverters = {}
-        self._outputFilesNamesToRetrieve = []
-        self.meshLookup = None
-        self.iMax = 0
-        self.jMax = 0
-        self.kMax = 0
 
     def getHistoryParams(self):
         """Return parameters that will be added to assembly versus time history printouts."""
         return ["detailedDpa", "detailedDpaPeak", "detailedDpaPeakRate"]
 
     def interactBOC(self, cycle=None):
+        interfaces.Interface.interactBOC(self, cycle)
         self.r.core.p.rxSwing = 0.0  # zero out rxSwing until EOC.
         self.r.core.p.maxDetailedDpaThisCycle = 0.0  # zero out cumulative params
         self.r.core.p.dpaFullWidthHalfMax = 0.0
@@ -88,7 +78,26 @@ class GlobalFluxInterface(interfaces.Interface):
             b.p.detailedDpaThisCycle = 0.0
             b.p.newDPA = 0.0
 
+    def interactEveryNode(self, cycle, node):
+        """
+        Calculate flux, power, and keff for this cycle and node.
+
+        Flux, power, and keff are generally calculated at every timestep to ensure flux 
+        is up to date with the reactor state.
+        """
+        interfaces.Interface.interactEveryNode(self, cycle, node)
+
+        if self.r.p.timeNode == 0:
+            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+
+    def interactCoupled(self, iteration):
+        """Runs during a tightly-coupled physics iteration to updated the flux and power."""
+        interfaces.Interface.interactCoupled(self, iteration)
+        if self.r.p.timeNode == 0:
+            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+
     def interactEOC(self, cycle=None):
+        interfaces.Interface.interactEOC(self, cycle)
         if self._bocKeff is not None:
             self.r.core.p.rxSwing = (
                 (self.r.core.p.keff - self._bocKeff)
@@ -163,175 +172,186 @@ class GlobalFluxInterface(interfaces.Interface):
 
         return inName, outName, stdName
 
-    @codeTiming.timed
-    def retrieveOutputFiles(self, runPath):
+    def calculateKeff(self, label="keff"):
         """
-        Copy interesting output files from local disks to shared network disk.
-
-        Run this if you want copies of the local output files.
-        This copies output from the runPath to the current working directory,
-        which is generally the shared network drive.
-
-        See Also
-        --------
-        specifyOutputFilesToRetrieve : says which ones to copy back.
-        armi.utils.directoryChangers.DirectoryChanger.retrieveFiles : should be used instead of this.
-
-        Notes
-        -----
-        This could be done in a separate thread to let processing continue while I/O spins.
-
+        Runs neutronics tool and returns keff without applying it to the reactor
+        
+        Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
+        For anything more complicated than getting keff, clients should
+        call ``getExecuter`` to build their case. 
         """
-        for sourceName, destinationName in self._outputFilesNamesToRetrieve:
-            workingFileName = os.path.join(runPath, sourceName)
-            pathTools.copyOrWarn("output file", workingFileName, destinationName)
+        raise NotImplementedError()
 
-    def addNewOutputFileToRetrieve(self, sourceName, destinationName=None):
+
+class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
+    """
+    A global flux interface that makes use of the ARMI Executer system to run.
+
+    Using Executers is optional but seems to allow easy interoperability between
+    the myriad global flux solvers in the world.
+
+    If a new global flux solver does not fit easily into the Executer pattern, then
+    it will be best to just start from the base GlobalFluxInterface rather than
+    trying to adjust the Executer pattern to fit.
+
+    Notes
+    -----
+    This points library users to the Executer object, which is intended to
+    provide commonly-used structure useful for many global flux plugins.
+    """
+
+    def interactEveryNode(self, cycle, node):
         """
-        Add a new file to the list of files that will be copied to the shared drive after a run.
+        Calculate flux, power, and keff for this cycle and node.
 
-        These should be names only, not paths.
-
-        Parameters
-        ----------
-        sourceName : str
-            The name of the file in the source location, e.g. `FT06`
-
-        destinationName : str or None
-            The name of the file in the destination location, e.g. `caseName.dif3d.out`
-
-        See Also
-        --------
-        armi.utils.directoryChangers.DirectoryChanger.retrieveFiles : should be used instead of this.
+        Flux, power, and keff are generally calculated at every timestep to ensure flux 
+        is up to date with the reactor state.
         """
-        if destinationName is None:
-            # no name change
-            destinationName = sourceName
-        runLog.debug(
-            "Adding output file {} to list of files to retrieve".format(sourceName)
+        executer = self.getExecuter(label=f"c{cycle}n{node}")
+        executer.run()
+        GlobalFluxInterface.interactEveryNode(self, cycle, node)
+
+    def interactCoupled(self, iteration):
+        """Runs during a tightly-coupled physics iteration to updated the flux and power."""
+        executer = self.getExecuter(
+            label=f"c{self.r.p.cycle}n{self.r.p.timeNode}i{iteration}"
         )
-        self._outputFilesNamesToRetrieve.append((sourceName, destinationName))
+        executer.run()
 
-    # pylint: disable=unused-argument; They're used in subclasses
-    def specifyOutputFilesToRetrieve(self, inName, outName):
+        GlobalFluxInterface.interactCoupled(self, iteration)
+
+    def getOptionsCls(self):
         """
-        determines which output files will be retrieved from the run directory
-
-        Notes
-        -----
-        This just resets the list at every run. The real work is done in the subclass methods.
-
-        See Also
-        --------
-        terrapower.physics.neutronics.dif3d.dif3dInterface.Dif3dInterface.specifyOutputFilesToRetrieve
-
+        Get a blank options object.
+        
+        Subclass this to allow generic updating of options.
         """
-        runLog.debug(
-            "Clearing out files to retrieve: {}".format(
-                self._outputFilesNamesToRetrieve
+        return GlobalFluxOptions
+
+    def getExecuterCls(self):
+        return GlobalFluxExecuter
+
+    def getExecuterOptions(self, label=None):
+        """
+        Get an executer options object populated from current user settings and reactor.
+        
+        If you want to set settings more deliberately (e.g. to specify a cross section
+        library rather than use an auto-derived name), use ``getOptionsCls`` and build 
+        your own.
+        """
+        opts = self.getOptionsCls()(label)
+        opts.fromUserSettings(self.cs)
+        opts.fromReactor(self.r)
+        return opts
+
+    def getExecuter(self, options=None, label=None):
+        """
+        Get executer object for performing custom client calcs
+        
+        This allows plugins to update options in a somewhat generic 
+        way. For example, reactivity coefficients plugin may want to
+        request adjoint flux.
+        """
+        if options and label:
+            raise ValueError(
+                f"Cannot supply a label (`{label}`) and options at the same time. "
+                "Apply label to options object first."
             )
-        )
-        self._outputFilesNamesToRetrieve = []
+        opts = options or self.getExecuterOptions(label)
+        executer = self.getExecuterCls()(options=opts, reactor=self.r)
+        return executer
 
-    def calculateKeff(
-        self,
-        inf,
-        outf,
-        genXS="",
-        baseList=None,
-        forceSerial=False,
-        xsLibrarySuffix="",
-        updateArmi=False,
-        outputsToCopyBack="",
-    ):
-        r"""
-        Run neutronics calculation and return keff
 
-        Handles some XS generation stuff as well, optionally. Usefull when you
-        just need to know keff of the current state (like in rx coeffs, CR worth)
+class GlobalFluxOptions(executers.ExecutionOptions):
+    """Data structure representing common options in Global Flux Solvers"""
 
-        Parameters
-        ----------
-        inf : str
-            input file name
-        outf : str
-            a dif3d/rebus output file name that will be generated
-        genXS : str
-            type of particle you want MC**2 to regenerate cross sections for allowed values
-            of genXS setting.
-        baseList : list
-            MC**2 bases to generate (QA, QAF) if you want a partial MC**2 run
-        forceSerial : bool
-            forces the MC**2 runs to run on a single processor
-        xsLibrarySuffix : str
-            will get appended to the library name ISOTXS.
-        updateArmi : bool, optional
-            If true, will update the ARMI state (reactor, assems, blocks) with the
-            results of the neutronics run. Defaults to False so
-            flux distributions used in weighting blocks for XS don't get mixed up.
-        outputsToCopyBack : str, optional
-            Copy a subset of files back to the main path in fastPath cases. Takes
-            time but good for debugging/restarts.
+    def __init__(self, label=None):
+        executers.ExecutionOptions.__init__(self, label)
+        self.real = True
+        self.adjoint = False
+        self.neutrons = True
+        self.photons = None
+        self.boundaryConditions = {}
+        self.epsFissionSourceAvg = None
+        self.epsFissionSourcePoint = None
+        self.epsEigenvalue = None
+        self.maxOuters = None
+        # can happen in eig if Fredholm Alternative satisfied
+        self.includeFixedSource = False
+        self.eigenvalueProblem = True
+        self.kernelName = None
+        self.isRestart = None
+        self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
+        self.detailedAxialExpansion = None
+        self.boundaries = None
+        self.xsKernel = None
 
-        Returns
-        -------
-        rebOut : a Rebus_Output class containing neutronics output information
+        self.dpaPerFluence = None
+        self.aclpDoseLimit = None
+        self.burnSteps = None
+        self.loadPadElevation = None
+        self.loadPadLength = None
 
-        See Also
-        --------
-        calculateFlux : does this but handles lots of other bookkeeping stuff that
-            is important during a main operator loop.
-
+    def fromUserSettings(self, cs):
         """
-        xsGroupManager = self.getInterface("xsGroups")
-        xsLibName = {neutronics.ISOTXS: neutronics.ISOTXS + xsLibrarySuffix}
-        runLog.info(
-            "Calculating keff in {} using XS Library: {}.".format(
-                os.getcwd(), xsLibName
-            )
-        )
+        Map user input settings from cs to a set of specific global flux options.
 
-        if genXS:
-            # this boolean is specifically not taken from the gui. This ensures that
-            # cross-sections are not generated unless they are specifically needed.
-            if xsGroupManager.enabled():  # might be disabled during Doppler, etc.
-                xsGroupManager.createRepresentativeBlocks()
-            lattice = self.o.getInterface(function="latticePhysics")
-            lattice.computeCrossSections(
-                baseList=baseList,
-                forceSerial=forceSerial,
-                xsLibrarySuffix=xsLibrarySuffix,
-            )
+        This is not required; these options can alternatively be set programmatically.
+        """
+        self.kernelName = cs["neutronicsKernel"]
+        self.isRestart = cs["restartNeutronics"]
+        self.adjoint = neutronics.adjointCalculationRequested(cs)
+        self.real = neutronics.realCalculationRequested(cs)
+        self.detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self.eigenvalueProblem = cs["eigenProb"]
 
-        _runPath, rebOut = self.run(
-            inf,
-            outf,
-            branchNum=armi.MPI_RANK,
-            libNames=xsLibName,
-            updateArmi=updateArmi,
-            outputsToCopyBack=outputsToCopyBack,
-        )
-        self._undoGeometryTransformations()
-        runLog.info("Got keff= {}".format(rebOut.getKeff()))
-        return rebOut
+        # dose/dpa specific (should be separate subclass?)
+        self.dpaPerFluence = cs["dpaPerFluence"]
+        self.aclpDoseLimit = cs["aclpDoseLimit"]
+        self.burnSteps = cs["burnSteps"]
+        self.loadPadElevation = cs["loadPadElevation"]
+        self.loadPadLength = cs["loadPadLength"]
+        self.boundaries = cs["boundaries"]
+        self.xsKernel = cs["xsKernel"]
 
-    def calculateKeffFiniteDifference(self):
-        raise NotImplementedError
 
-    def calculateFlux(self, cycle, node):
-        raise NotImplementedError
+class GlobalFluxExecuter(executers.Executer):
+    """
+    A short-lived object that coordinates the preparation, execution, and processing of a global flux solve.
 
-    def run(
-        self,
-        inName,
-        outName,
-        path=None,
-        branchNum=None,
-        libNames=None,
-        outputsToCopyBack="",
-        updateArmi=False,
-    ):
-        raise NotImplementedError
+    There are many forms of global flux solves:
+
+    * Eigenvalue/Fixed source
+    * Adjoint/real
+    * Diffusion/PN/SN/MC
+    * Finite difference/nodal
+
+    There are also many reasons someone might need a flux solve:
+
+    * Update multigroup flux and power on reactor and compute keff
+    * Just compute keff in a temporary perturbed state
+    * Just compute flux and adjoint flux on a state to
+
+    There may also be some required transformations when a flux solve is done:
+
+    * Add/remove edge assemblies
+    * Apply a uniform axial mesh
+
+    There are also I/O performance complexities, including running on fast local paths
+    and copying certain user-defined files back to the working directory on error
+    or completion. Given all these options and possible needs for information from
+    global flux, this class provides a unified interface to everything.
+    """
+
+    def __init__(self, options, reactor):
+        executers.Executer.__init__(self, options, reactor)
+        self.geomConverters = {}
+
+    def _execute(self):
+        """
+        Execute the global flux solver sequence.
+        """
+        executers.Executer._execute(self)
 
     @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
@@ -360,10 +380,10 @@ class GlobalFluxInterface(interfaces.Interface):
                 + "This is a programming error and requires further investigation."
             )
         neutronicsReactor = self.r
-        if self.cs["detailedAxialExpansion"]:
+        if self.options.detailedAxialExpansion:
             converter = self.geomConverters.get("axial")
             if not converter:
-                converter = uniformMesh.UniformMeshGeometryConverter(self.cs)
+                converter = uniformMesh.UniformMeshGeometryConverter(None)
                 neutronicsReactor = converter.convert(self.r)
                 if makePlots:
                     converter.plotConvertedReactor()
@@ -379,7 +399,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self.r = neutronicsReactor
 
     @codeTiming.timed
-    def _undoGeometryTransformations(self, paramsToScaleSubset=None):
+    def _undoGeometryTransformations(self):
         """
         Restore original data model state and/or apply results to it.
 
@@ -396,7 +416,7 @@ class GlobalFluxInterface(interfaces.Interface):
         geomConverter = self.geomConverters.get("edgeAssems")
         if geomConverter:
             geomConverter.scaleParamsRelatedToSymmetry(
-                self.r, paramsToScaleSubset=paramsToScaleSubset
+                self.r, paramsToScaleSubset=self.options.paramsToScaleSubset
             )
             geomConverter.removeEdgeAssemblies(self.r.core)
 
@@ -413,9 +433,8 @@ class GlobalFluxInterface(interfaces.Interface):
         if nAssemsBeforeConversion:
             assemblies.setAssemNumCounter(min(nAssemsBeforeConversion))
 
-        self.geomConverters = (
-            {}
-        )  # clear the converters in case this function gets called twice
+        # clear the converters in case this function gets called twice
+        self.geomConverters = {}
 
     def edgeAssembliesAreNeeded(self):
         """
@@ -424,10 +443,26 @@ class GlobalFluxInterface(interfaces.Interface):
         We only need them in finite difference cases that are not full core.
         """
         return (
-            "FD" in self.cs["neutronicsKernel"]
-            and self.r.core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
-            and self.r.core.geomType == geometry.HEX
+            "FD" in self.options.kernelName
+            and self.options.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+            and self.options.geomType == geometry.HEX
         )
+
+
+class GlobalFluxResultMapper(interfaces.OutputReader):
+    """
+    A short-lived class that maps neutronics output data to a reactor mode.
+    
+    Neutronics results can come from a file or a pipe or in memory. 
+    This is always subclassed for specific neutronics runs but contains
+    some generic methods that are universally useful for 
+    any global flux calculation. These are mostly along the lines of
+    information that can be derived from other information, like 
+    dpa rate coming from dpa deltas and cycle length. 
+    """
+
+    def getKeff(self):
+        raise NotImplementedError()
 
     def clearFlux(self):
         """
@@ -438,124 +473,6 @@ class GlobalFluxInterface(interfaces.Interface):
             b.p.adjMgFlux = []
             b.p.mgFluxGamma = []
             b.p.extSrc = []
-
-    def buildBlockMeshLookup(self, useWholeHexNodalOrdering=False, plotMesh=False):
-        r"""
-        Build a lookup table between finite difference mesh points and blocks.
-
-        Notes
-        -----
-        This method builds a dictionary. blockLookup[(i,j,k)] = block that's in i,j,k.
-        They start at 1, following loc.containsWhichFDMEshPointsThird
-
-        WARNING: When useWholeHexNodalOrdering = True, this function will give wrong neighbors
-        when the 120-degree symmetry line "edge assemblies" are present. Be careful!
-
-        These mesh indices should start at 1, just like DIF3D. DIFNT switches to 0 based indexing though.
-
-        Parameters
-        ----------
-        useWholeHexNodalOrdering : bool, optional
-            If True, ijList will contain the (i,j) = (ring,pos) indices of hex assemblies.
-                Thus, the axial block locations will be looked up based on which assembly contains them.
-                This is used by fluxRecon.computePinMGFluxAndPower to map nodal surface data from NHFLUX
-                to ARMI blocks (in terms of axial divisions).
-            If False, ijList will contain the triangular FD mesh indices from loc.containsWhichFDMeshPoints,
-                which do NOT correspond to whole hex assemblies. This was how buildBlockMeshLookup always worked
-                before the useWholeHexNodalOrdering option was added.
-
-        plotMesh : bool, optional
-            If true, will print a pdf of the mesh.
-
-        Returns
-        -------
-        meshLookup : 3-D array of block objects
-            b = meshLookup[i,j,k] is the ARMI block object that contains the finite difference mesh node indexed
-                by i, j, and k. Here (i,j) is the index pair in ijList and k is the axial index.
-
-        (iMax,jMax,kMax) : tuple
-            These are the maximum values of the finite difference mesh indices i, j, and k. Here k is the axial index,
-                while i and j can be different hex/triangular indexing systems.
-
-        See Also
-        --------
-        fluxRecon.computePinMGFluxAndPower
-        HexLocation.containsWhichFDMeshPoints
-
-        Raises
-        -----
-        ValueError
-            When blocks are not found.
-        RuntimeError
-            When not all blocks are looped over.
-        """
-
-        # find mesh dimensions while we're at it
-        if self.meshLookup:
-            return self.meshLookup, (self.iMax, self.jMax, self.kMax)
-        runLog.extra("Building new block-mesh lookup")
-
-        meshLookup = {}
-        iMax = jMax = kMax = 0
-        allBlocks = set(self.r.core.getBlocks())
-        for a in self.r.core.getAssemblies():
-            # get i and j.
-            loc = a.getLocationObject()
-            # ijList represents (ring,pos) whole-hex ordering
-            if useWholeHexNodalOrdering:
-                # dummy initialization (this will contain only ONE pair of indices if useWholeHexNodalOrdering = True)
-                ijList = [(-1, -1)]
-                # whole-hex indices: (i,j) = (ring,pos)
-                ijList[0] = a.spatialLocator.getRingPos()
-                # ijList represents triangle subdivision ordering (this was how buildBlockMeshLookup always worked
-                # before the useWholeHexNodalOrdering option was added.)
-            else:
-                ijList = loc.containsWhichFDMeshPoints(
-                    resolution=self.cs["numberMeshPerEdge"],
-                    fullCore=self.r.core.isFullCore,
-                )
-
-            for k, zTop in enumerate(
-                self.r.core.p.axialMesh[1:]
-            ):  # skip the first entry, which is 0
-                # one block may cover several axial mesh points
-                k += 1  # shift to start at 1
-                b = a.getBlockAtElevation(zTop)
-                if b is None:
-                    raise ValueError("No block found in {} at {}".format(a, zTop))
-                for i, j in ijList:
-                    if i > iMax:
-                        iMax = i
-                    if j > jMax:
-                        jMax = j
-                    if k > kMax:
-                        kMax = k
-                    meshLookup[i, j, k] = b
-
-                if b in allBlocks:
-                    allBlocks.remove(b)
-
-        if allBlocks:
-            runLog.error(
-                "Not all blocks were put into the lookup. Missing are: {0}".format(
-                    allBlocks
-                )
-            )
-            raise RuntimeError(
-                "Not all blocks were put into the lookup. Try increasing "
-                "number of axial mesh points near missing blocks"
-            )
-
-        if plotMesh:
-            plotMeshLookup(meshLookup, 2, "mesh.pdf")
-
-        if not useWholeHexNodalOrdering and self.r.core.isFullCore:
-            # pylint: disable=no-member; only implemented in DIFNT actually
-            meshLookup, (iMax, jMax) = self.shiftLookupFullCore(meshLookup)
-            if plotMesh:
-                plotMeshLookup(meshLookup, 2, "meshPostShift.pdf")
-
-        return meshLookup, (iMax, jMax, kMax)
 
     def _renormalizeNeutronFluxByBlock(self, renormalizationCorePower):
         """
@@ -661,6 +578,52 @@ class GlobalFluxInterface(interfaces.Interface):
         maxGridDose = self.r.core.getMaxBlockParam("detailedDpaPeak", Flags.GRID_PLATE)
         self.r.core.p.maxGridDpa = maxGridDose
 
+    def updateAssemblyLevelParams(self, excludedBlockTypes=None):
+        for a in self.r.core.getAssemblies():
+            if excludedBlockTypes is None:
+                excludedBlockTypes = []
+            totalAbs = 0.0  # for calculating assembly average k-inf
+            totalSrc = 0.0
+            for b in a:
+                if b.getType() in excludedBlockTypes:
+                    continue
+                totalAbs += b.p.rateAbs
+                totalSrc += b.p.rateProdNet
+
+            a.p.maxPercentBu = a.getMaxParam("percentBu")
+            a.p.maxDpaPeak = a.getMaxParam("detailedDpaPeak")
+            a.p.timeToLimit = a.getMinParam("timeToLimit", Flags.FUEL)
+            a.p.buLimit = a.getMaxParam("buLimit")
+
+            # self.p.kgFis = self.getFissileMass()
+            if totalAbs > 0:
+                a.p.kInf = totalSrc / totalAbs  # assembly average k-inf.
+
+
+class DoseResultsMapper(GlobalFluxResultMapper):
+    """
+    Updates fluence and dpa when time shifts.
+
+    Often called after a depletion step.
+
+    Notes
+    -----
+    We attempted to make this a set of stateless functions but the requirement of various
+    options made it more of a data passing task than we liked. So it's just a lightweight
+    and ephemeral results mapper.
+    """
+
+    def __init__(self, depletionSeconds, options):
+        self.success = False
+        self.options = options
+        self.r = None
+        self.depletionSeconds = depletionSeconds
+
+    def apply(self, reactor):
+        runLog.extra("Updating fluence and dpa on reactor based on depletion step.")
+        self.r = reactor
+        self.updateFluenceAndDpa(self.depletionSeconds)
+
     def updateFluenceAndDpa(self, stepTimeInSeconds, blockList=None):
         r"""
         updates the fast fluence and the DPA of the blocklist
@@ -714,9 +677,11 @@ class GlobalFluxInterface(interfaces.Interface):
             b.p.detailedDpaPeak = b.p.detailedDpaPeak + newDPAPeak
             b.p.detailedDpaThisCycle = b.p.detailedDpaThisCycle + newDpaThisStep
 
-            if self.cs["dpaPerFluence"]:
+            if self.options.dpaPerFluence:
                 # do the less rigorous fluence -> DPA conversion if the user gave a factor.
-                b.p.dpaPeakFromFluence = b.p.fastFluencePeak * self.cs["dpaPerFluence"]
+                b.p.dpaPeakFromFluence = (
+                    b.p.fastFluencePeak * self.options.dpaPerFluence
+                )
 
             # also set the burnup peaking. Requires burnup to be up-to-date
             # (this should run AFTER burnup has been updated)
@@ -766,9 +731,9 @@ class GlobalFluxInterface(interfaces.Interface):
                     doseHalfMaxHeights[1] - doseHalfMaxHeights[0]
                 )
 
-            aclpDoseLimit = self.cs["aclpDoseLimit"]
+            aclpDoseLimit = self.options.aclpDoseLimit
             aclpDoseLimit3 = (
-                aclpDoseLimit / 3.0 * self.r.p.timeNode / self.cs["burnSteps"]
+                aclpDoseLimit / 3.0 * self.r.p.timeNode / self.options.burnSteps
             )
             aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
                 "detailedDpaThisCycle", aclpDoseLimit3
@@ -784,7 +749,7 @@ class GlobalFluxInterface(interfaces.Interface):
                 self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
 
             aclpDoseLimit7 = (
-                aclpDoseLimit / 7.0 * self.r.p.timeNode / self.cs["burnSteps"]
+                aclpDoseLimit / 7.0 * self.r.p.timeNode / self.options.burnSteps
             )
             aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
                 "detailedDpaThisCycle", aclpDoseLimit7
@@ -819,11 +784,11 @@ class GlobalFluxInterface(interfaces.Interface):
         peakPeak, peakAvg = self._calcLoadPadDose()
         if peakPeak is None:
             return
-        self.o.r.core.p.loadPadDpaAvg = peakAvg[0]
-        self.o.r.core.p.loadPadDpaPeak = peakPeak[0]
+        self.r.core.p.loadPadDpaAvg = peakAvg[0]
+        self.r.core.p.loadPadDpaPeak = peakPeak[0]
         str_ = [
             "Above-core load pad (ACLP) summary. It starts at {0} cm above the "
-            "bottom of the grid plate".format(self.cs["loadPadElevation"])
+            "bottom of the grid plate".format(self.options.loadPadElevation)
         ]
         str_.append(
             "The peak ACLP dose is     {0} DPA in {1}".format(peakPeak[0], peakPeak[1])
@@ -868,8 +833,8 @@ class GlobalFluxInterface(interfaces.Interface):
         Assembly.getParamValuesAtZ : gets the parameters at any arbitrary z point
 
         """
-        loadPadBottom = self.cs["loadPadElevation"]
-        loadPadLength = self.cs["loadPadLength"]
+        loadPadBottom = self.options.loadPadElevation
+        loadPadLength = self.options.loadPadLength
         if not loadPadBottom or not loadPadLength:
             # no load pad dose requested
             return None, None
@@ -879,7 +844,7 @@ class GlobalFluxInterface(interfaces.Interface):
         loadPadTop = loadPadBottom + loadPadLength
 
         zrange = numpy.linspace(loadPadBottom, loadPadTop, 100)
-        for a in self.o.r.core.getAssemblies(Flags.FUEL):
+        for a in self.r.core.getAssemblies(Flags.FUEL):
             # scan over the load pad to find the peak dpa
             # no caching.
             peakDose = max(
@@ -899,77 +864,6 @@ class GlobalFluxInterface(interfaces.Interface):
                 peakAvg = (avgDose, a)
 
         return peakPeak, peakAvg
-
-
-def plotMeshLookup(meshLookup, myK=2, fName="meshPlot.pdf"):
-    """Plots the mesh lookup in one slab."""
-    allIJ = []
-    # side length is 1.0
-    h = -math.sqrt(3.0) / 2.0  # pylint: disable=invalid-name
-    colors = []
-    for (i, j, k), b in meshLookup.items():
-
-        if k == myK and (i, j) not in allIJ:
-            allIJ.append((i, j))
-            colors.append(b.parent.getNum())
-
-    verts = []
-    for i, j in allIJ:
-        b = meshLookup[i, j, myK]
-        x, y = getXY120(i, j)
-
-        if i % 2:
-            # even hex 2,4, etc.
-            p1 = (x - h / 2.0, y - h / 2.0)
-            p2 = (x + h / 2.0, y - h / 2.0)
-            p3 = (x, y + h / 2.0)
-        else:
-            # upside down triangle here.
-            p1 = (x, y - h / 2.0)
-            p2 = (x - h / 2.0, y + h / 2.0)
-            p3 = (x + h / 2.0, y + h / 2.0)
-        verts.append((p1, p2, p3))
-
-    coll = PolyCollection(
-        verts,
-        cmap=pyplot.cm.jet,  # pylint: disable=no-member
-        linewidths=0.1,
-        facecolors="white",
-        array=numpy.array(colors),
-    )
-
-    fig, ax = pyplot.subplots(figsize=(16, 16))  # make it proper sized
-    ax.add_collection(coll)
-    for i, j in allIJ:
-        b = meshLookup[i, j, myK]
-        x, y = getXY120(i, j)
-        ring, pos = b.parent.spatialLocator.getRingPos()
-        ax.text(
-            x,
-            y,
-            "{0}\n({1},{2})\nloc: ({3},{4})".format(b.parent.getNum(), i, j, ring, pos),
-            fontsize=1.5,
-            horizontalalignment="center",
-            verticalalignment="center",
-        )
-    ax.autoscale_view()
-
-    # Add a colorbar for the PolyCollection
-    # fig.colorbar(coll, ax=ax)
-    fig.savefig(fName)
-    pyplot.close(fig)
-
-
-def getXY120(i, j):
-    """
-    Get xy coords for i,j indices in fig 2.4 DIF3D manual.
-
-    Assumes triangleside length 1.0
-    """
-    height = math.sqrt(3) / 2.0
-    y = j * height
-    x = -0.5 * j + 0.5 * i
-    return x, y
 
 
 def computeDpaRate(mgFlux, dpaXs):

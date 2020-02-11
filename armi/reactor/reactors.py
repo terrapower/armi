@@ -73,8 +73,8 @@ class Reactor(composites.Composite):
 
     pDefs = reactorParameters.defineReactorParameters()
 
-    def __init__(self, cs, blueprints):
-        composites.Composite.__init__(self, "R-{}".format(cs.caseTitle))
+    def __init__(self, name, blueprints):
+        composites.Composite.__init__(self, "R-{}".format(name))
 
         self.o = None
         self.spatialGrid = None
@@ -124,9 +124,7 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(
-    cs, bp, geom: Optional[geometry.SystemLayoutInput] = None
-):
+def factory(cs, bp, geom: Optional[geometry.SystemLayoutInput] = None):
     """
     Build a reactor from input settings, blueprints and geometry.
     """
@@ -137,12 +135,12 @@ def factory(
     # if it is set. Often it is set by the application.
     if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
         materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
-    r = Reactor(cs, bp)
+    r = Reactor(cs.caseTitle, bp)
 
     if cs["geomFile"]:
         blueprints.migrate(bp, cs)
 
-    with directoryChangers.DirectoryChanger(cs.inputDirectory):
+    with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
         core = bp.systemDesigns["core"]
         core.construct(cs, bp, r, geom=geom)
@@ -176,7 +174,7 @@ class Core(composites.Composite):
 
     pDefs = reactorParameters.defineCoreParameters()
 
-    def __init__(self, name, cs):
+    def __init__(self, name):
         """
         Initialize the reactor object.
 
@@ -208,11 +206,9 @@ class Core(composites.Composite):
         self.sfp = assemblyLists.SpentFuelPool("Spent Fuel Pool", self)
         self.cfp = assemblyLists.ChargedFuelPool("Charged Fuel Pool", self)
         self._lib = None  # placeholder for ISOTXS object
-        self.p.jumpRing = cs["jumpRingNum"]
         self.locParams = {}  # location-based parameters
-        self.timeOfStart = (
-            time.time()
-        )  # overridden in case.py to include pre-reactor time.
+        # overridden in case.py to include pre-reactor time.
+        self.timeOfStart = time.time()
         self.zones = None
         # initialize the list that holds all shuffles
         self.moveList = {}
@@ -220,7 +216,17 @@ class Core(composites.Composite):
         self._nuclideCategories = {}
         self.typeList = []  # list of block types to convert name - to -number.
 
+        # leftover default "settings" that are intended to eventually be elsewhere.
+        self._freshFeedType = "feed fuel"
+        self._trackAssems = False
+        self._circularRingMode = False
+        self._circularRingPitch = 1.0
+        self._automaticVariableMesh = False
+        self._minMeshSizeRatio = 0.15
+
+    def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
+        self.p.jumpRing = cs["jumpRingNum"]
         self._freshFeedType = cs["freshFeedType"]
         self._trackAssems = cs["trackAssems"]
         self._circularRingMode = cs["circularRingMode"]

@@ -42,9 +42,9 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-            self.o.cs
+            self._converterSettings
         )
-        meshConvert.generateMesh(self.r, self._converterSettings)
+        meshConvert.generateMesh(self.r)
 
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
@@ -56,9 +56,9 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
-            self.o.cs
+            self._converterSettings
         )
-        meshConvert.generateMesh(self.r, self._converterSettings)
+        meshConvert.generateMesh(self.r)
 
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
@@ -84,9 +84,9 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-            self.o.cs
+            self._converterSettingsLargerCore
         )
-        meshConvert.generateMesh(self.r, self._converterSettingsLargerCore)
+        meshConvert.generateMesh(self.r)
 
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
@@ -99,9 +99,9 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedThetaMesh = [2 * math.pi]
 
         meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
-            self.o.cs
+            self._converterSettingsLargerCore
         )
-        meshConvert.generateMesh(self.r, self._converterSettingsLargerCore)
+        meshConvert.generateMesh(self.r)
 
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)

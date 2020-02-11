@@ -15,9 +15,15 @@
 """Module for testing directoryChangers."""
 import os
 import unittest
+from pathlib import Path
+import shutil
 
 from armi.utils import directoryChangers
 from armi.utils import directoryChangersMpi
+
+
+class TestException(Exception):
+    pass
 
 
 class TestDirectoryChangers(unittest.TestCase):
@@ -28,7 +34,11 @@ class TestDirectoryChangers(unittest.TestCase):
             self._testMethodName + "ThisIsATemporaryDirectory-AAZZ0099"
         )
         if os.path.exists(self.temp_directory):
-            os.rmdir(self.temp_directory)
+            shutil.rmtree(self.temp_directory)
+
+    def tearDown(self):
+        if os.path.exists(self.temp_directory):
+            shutil.rmtree(self.temp_directory)
 
     def test_mpiAction(self):
         try:
@@ -47,3 +57,54 @@ class TestDirectoryChangers(unittest.TestCase):
                 self.temp_directory
             )  # pylint: disable=protected-access
             cdma.invoke(None, None, None)
+
+    def test_exception(self):
+        """Make sure directory changers bring back full folder when an exception is raised."""
+        try:
+            with directoryChangers.ForcedCreationDirectoryChanger(self.temp_directory):
+                Path("file1.txt").touch()
+                Path("file2.txt").touch()
+                raise TestException("Ooops")
+        except TestException:
+            pass
+
+        retrievedFolder = f"dump-{self.temp_directory}"
+        self.assertTrue(os.path.exists(os.path.join(retrievedFolder, "file1.txt")))
+        self.assertTrue(os.path.exists(os.path.join(retrievedFolder, "file2.txt")))
+        shutil.rmtree(retrievedFolder)
+
+    def test_exception_disabled(self):
+        """Make sure directory changers do not bring back full folder when handling is disabled."""
+        try:
+            with directoryChangers.ForcedCreationDirectoryChanger(
+                self.temp_directory, dumpOnException=False
+            ):
+                Path("file1.txt").touch()
+                Path("file2.txt").touch()
+                raise TestException("Ooops")
+        except TestException:
+            pass
+
+        self.assertFalse(
+            os.path.exists(os.path.join(f"dump-{self.temp_directory}", "file1.txt"))
+        )
+
+    def test_change_to_nonexisting_fails(self):
+        """Fail if destination doesn't exist."""
+        with self.assertRaises(OSError):
+            with directoryChangers.DirectoryChanger(self.temp_directory):
+                pass
+
+    def test_change_to_nonexisting_works_forced(self):
+        """Succeed with forced creation even when destination doesn't exist."""
+        with directoryChangers.ForcedCreationDirectoryChanger(self.temp_directory):
+            pass
+
+    def test_temporary_cleans(self):
+        """Make sure Temporary cleaner cleans up temporary files."""
+        with directoryChangers.TemporaryDirectoryChanger() as dc:
+            Path("file1.txt").touch()
+            Path("file2.txt").touch()
+            tempName = dc.destination
+
+        self.assertFalse(os.path.exists(tempName))

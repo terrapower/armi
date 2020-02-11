@@ -195,8 +195,8 @@ class OperatorMPI(Operator):
                 bp = self.r.blueprints
                 spatialGrid = self.r.core.spatialGrid
                 self.detach()
-                self.r = reactors.Reactor(cs, bp)
-                core = reactors.Core("Core", cs)
+                self.r = reactors.Reactor(cs.caseTitle, bp)
+                core = reactors.Core("Core")
                 self.r.add(core)
                 core.spatialGrid = spatialGrid
                 self.reattach(self.r, cs)

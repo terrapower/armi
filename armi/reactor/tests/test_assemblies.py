@@ -1448,8 +1448,8 @@ class AnnularFuelTestCase(unittest.TestCase):
         self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
         settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
-        self.r = reactors.Reactor(self.cs, bp)
-        self.r.add(reactors.Core("Core", self.cs))
+        self.r = reactors.Reactor("test", bp)
+        self.r.add(reactors.Core("Core"))
 
         inputStr = """blocks:
     ann fuel: &block_ann_fuel

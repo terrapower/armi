@@ -107,9 +107,9 @@ class TestGeometryConverters(unittest.TestCase):
 
 class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, {"circularRingMode": True})
+        self.o, self.r = loadTestReactor(TEST_ROOT)
         self.cs = settings.getMasterCs()
-        runLog.setVerbosity("info")
+        runLog.setVerbosity("extra")
         self._expandReactor = False
         self._massScaleFactor = 1.0
         if not self._expandReactor:
@@ -128,6 +128,7 @@ class TestHexToRZConverter(unittest.TestCase):
             "thetaBins": 1,
             "axialMesh": [50, 100, 150, 175],
             "thetaMesh": [2 * math.pi],
+            "hexRingGeometryConversion": False,
         }
 
         expectedMassDict, expectedNuclideList = self._getExpectedData()
@@ -178,7 +179,7 @@ class TestHexToRZConverter(unittest.TestCase):
             expectedMass = expectedMassDict[nuclide]
             actualMass = newR.core.getMass(nuclide) / self._massScaleFactor
             if round(abs(expectedMass - actualMass), 7) != 0.0:
-                runLog.warning(
+                print(
                     "{:6s} {:10.2f} {:10.2f}".format(nuclide, expectedMass, actualMass)
                 )
                 massMismatchCount += 1
@@ -293,6 +294,8 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
 
 if __name__ == "__main__":
     import sys
+    import armi
 
+    armi.configure()
     # sys.argv = ["", "TestEdgeAssemblyChanger"]
     unittest.main()

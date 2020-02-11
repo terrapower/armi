@@ -704,7 +704,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         return self.interfaces[:]
 
-    def reattach(self, r, cs):
+    def reattach(self, r, cs=None):
         """Add links to globally-shared objects to this operator and all interfaces.
 
         Notes
@@ -713,11 +713,13 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         self.r = r
         self.r.o = self
-        self.cs = cs
+        if cs is not None:
+            self.cs = cs
         for i in self.interfaces:
             i.r = r
             i.o = self
-            i.cs = cs
+            if cs is not None:
+                i.cs = cs
 
     def detach(self):
         """
@@ -875,18 +877,6 @@ class Operator:  # pylint: disable=too-many-public-methods
             )
         else:
             os.mkdir(newFolder)
-
-        inf = "{0}{1:03d}{2:03d}.inp".format(self.cs.caseTitle, cycle, node)
-        writer = self.getInterface("dif3d")
-
-        if not writer:
-            writer = self.getInterface("rebus")
-        if not writer:
-            runLog.warning(
-                "There are no interface attached that can write a snapshot input"
-            )
-        else:
-            writer.writeInput(os.path.join(newFolder, inf))
 
         # copy the cross section inputs
         for fileName in os.listdir("."):

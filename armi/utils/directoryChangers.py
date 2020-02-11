@@ -32,18 +32,32 @@ def _changeDirectory(destination):
 
 
 class DirectoryChanger(object):
-    r"""
-    Utility class to change directory
+    """
+    Utility to change directory.
+
+    Parameters
+    ----------
+    destination : str
+        Path of directory to change into
+    filesToMove : list of str, optional
+        Filenames to bring from the CWD into the destination
+    filesToRetrieve : list of str, optional
+        Filenames to bring back from the destination to the cwd
+    dumpOnException : bool, optional
+        Flag to tell system to retrieve the entire directory if an exception
+        is raised within a the context manager.
 
     Use with 'with' statements to execute code in a different dir, guaranteeing a clean
     return to the original directory
 
-    >>> with DirectoryChanger(r'C:\whatever')
+    >>> with DirectoryChanger('C:\\whatever')
     ...     pass
 
     """
 
-    def __init__(self, destination, filesToMove=None, filesToRetrieve=None):
+    def __init__(
+        self, destination, filesToMove=None, filesToRetrieve=None, dumpOnException=True
+    ):
         """Establish the new and return directories"""
         self.initial = pathTools.armiAbsPath(os.getcwd())
         self.destination = None
@@ -51,6 +65,7 @@ class DirectoryChanger(object):
             self.destination = pathTools.armiAbsPath(destination)
         self._filesToMove = filesToMove or []
         self._filesToRetrieve = filesToRetrieve or []
+        self._dumpOnException = dumpOnException
 
     def __enter__(self):
         """At the inception of a with command, navigate to a new directory if one is supplied."""
@@ -62,7 +77,14 @@ class DirectoryChanger(object):
     def __exit__(self, exc_type, exc_value, traceback):
         """At the termination of a with command, navigate back to the original directory."""
         runLog.debug("Returning to directory {}".format(self.initial))
-        self.retrieveFiles()
+        if exc_type is not None and self._dumpOnException:
+            runLog.info(
+                "An exception was raised within a DirectoryChanger. "
+                "Retrieving entire folder for debugging."
+            )
+            self._retrieveEntireFolder()
+        else:
+            self.retrieveFiles()
         self.close()
 
     def __repr__(self):
@@ -95,18 +117,42 @@ class DirectoryChanger(object):
         """Retrieve any desired files."""
         initialPath = self.destination
         destinationPath = self.initial
-        self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
+        fileList = self._filesToRetrieve
+        self._transferFiles(initialPath, destinationPath, fileList)
 
-    def _transferFiles(self, initialPath, destinationPath, fileList):
+    def _retrieveEntireFolder(self):
+        """Retrieve all files."""
+        initialPath = self.destination
+        destinationPath = self.initial
+        folderName = os.path.split(self.destination)[1]
+        destinationPath = os.path.join(destinationPath, f"dump-{folderName}")
+        fileList = os.listdir(self.destination)
+        self._transferFiles(initialPath, destinationPath, fileList)
+
+    @staticmethod
+    def _transferFiles(initialPath, destinationPath, fileList):
+        """
+        Transfer files into or out of the directory.
+
+        .. warning:: On Windows the max number of characters in a path is 260.
+            If you exceed this you will see FileNotFound errors here.
+
+        """
         if not fileList:
             return
         if not os.path.exists(destinationPath):
             os.mkdir(destinationPath)
         for ff in fileList:
-            fromPath = os.path.join(initialPath, ff)
-            toPath = os.path.join(destinationPath, ff)
-            runLog.extra("Moving {} to {}".format(fromPath, toPath))
-            shutil.move(fromPath, toPath)
+            if isinstance(ff, tuple):
+                # allow renames in transit
+                fromName, destName = ff
+            else:
+                fromName, destName = ff, ff
+
+            fromPath = os.path.join(initialPath, fromName)
+            toPath = os.path.join(destinationPath, destName)
+            runLog.extra("Copying {} to {}".format(fromPath, toPath))
+            shutil.copy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):
@@ -123,8 +169,12 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
     _home = armi.context.FAST_PATH
 
-    def __init__(self, root=None, filesToMove=None, filesToRetrieve=None):
-        DirectoryChanger.__init__(self, root, filesToMove, filesToRetrieve)
+    def __init__(
+        self, root=None, filesToMove=None, filesToRetrieve=None, dumpOnException=True
+    ):
+        DirectoryChanger.__init__(
+            self, root, filesToMove, filesToRetrieve, dumpOnException
+        )
         root = root or TemporaryDirectoryChanger._home
         if not os.path.exists(root):
             os.makedirs(root)
@@ -145,13 +195,10 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
     def __enter__(self):
         os.mkdir(self.destination)
-        self.moveFiles()
-        os.chdir(self.destination)
-        return self
+        return DirectoryChanger.__enter__(self)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        os.chdir(self.initial)
-        self.retrieveFiles()
+        DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
         shutil.rmtree(self.destination)
 
 
@@ -166,19 +213,31 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
     """
 
     def __init__(
-        self, destination, filesToMove=None, filesToRetrieve=None, clean=False
+        self,
+        destination,
+        filesToMove=None,
+        filesToRetrieve=None,
+        dumpOnException=True,
+        clean=False,
     ):
-        DirectoryChanger.__init__(self, destination, filesToMove, filesToRetrieve)
+        DirectoryChanger.__init__(
+            self, destination, filesToMove, filesToRetrieve, dumpOnException
+        )
         self.clean = clean
 
     def __enter__(self):
         if not os.path.exists(self.destination):
+            runLog.debug(f"Creating destination folder {self.destination}")
             try:
                 os.makedirs(self.destination)
             except OSError:
-                pass  # to avoid race conditions on worker nodes
-        self.moveFiles()
-        os.chdir(self.destination)
+                # even though we checked exists, this still fails
+                # sometimes when multiple MPI nodes try
+                # to make the dirs due to I/O delays
+                runLog.debug(f"Failed to make destination folder")
+        else:
+            runLog.debug(f"Destination folder already exists: {self.destination}")
+        DirectoryChanger.__enter__(self)
         if self.clean:
             shutil.rmtree(".", ignore_errors=True)
         return self

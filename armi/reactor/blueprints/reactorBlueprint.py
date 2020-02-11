@@ -57,9 +57,7 @@ class SystemBlueprint(yamlize.Object):
     gridName = yamlize.Attribute(key="grid name", type=str)
     origin = yamlize.Attribute(key="origin", type=Triplet, default=None)
 
-    def __init__(
-        self, name=None, gridName=None, origin=None,
-    ):
+    def __init__(self, name=None, gridName=None, origin=None):
         """
         A Reactor Level Structure like a core or SFP.
 
@@ -82,7 +80,8 @@ class SystemBlueprint(yamlize.Object):
         else:
             gridDesign = bp.gridDesigns[self.gridName]
         spatialGrid = gridDesign.construct()
-        container = reactors.Core(self.name, cs)
+        container = reactors.Core(self.name)
+        container.setOptionsFromCs(cs)
         container.spatialGrid = spatialGrid
         container.spatialGrid.armiObject = container
         reactor.add(container)  # need parent before loading assemblies
@@ -114,9 +113,7 @@ class SystemBlueprint(yamlize.Object):
             loc = container.spatialGrid[i, j, 0]
             if (
                 container.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
-                and not container.spatialGrid.isInFirstThird(
-                    loc, includeTopEdge=True
-                )
+                and not container.spatialGrid.isInFirstThird(loc, includeTopEdge=True)
             ):
                 badLocations.add(loc)
             container.add(newAssembly, loc)
