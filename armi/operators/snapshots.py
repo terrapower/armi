@@ -59,7 +59,6 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
         # update the snapshot requests if the user chose to load from a specific cycle/node
         dbi = self.getInterface("database")
-        from armi.bookkeeping import snapshotInterface  # avoid cyclic import
 
         lastTimeStep = snapshots[-1]
         for ssCycle, ssNode in snapshots:

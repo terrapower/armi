@@ -806,7 +806,7 @@ class Operator:  # pylint: disable=too-many-public-methods
     ):
         """
         Convenience method reroute to the database interface state reload method
-        
+
         See also
         --------
         armi.bookeeping.db.loadOperator:

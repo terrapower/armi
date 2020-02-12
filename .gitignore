@@ -11,8 +11,6 @@ wheelhouse
 *.dll
 bin/*
 /bin
-armi.egg-info/
-ARMI.egg-info/
 dist/
 dist-*/
 doc/*.png
@@ -54,3 +52,5 @@ tags
 .ipynb_checkpoints
 .tox
 
+*.egg-info/
+armi.egg-info
