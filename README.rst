@@ -49,7 +49,7 @@ found in [#touranarmi]_.
    * - Bug tracker
      - https://github.com/terrapower/armi/issues
    * - Plugin directory
-     - (Coming soon)
+     - https://github.com/terrapower/armi-plugin-directory
    * - Contact
      - armi-devs@terrapower.com
 
