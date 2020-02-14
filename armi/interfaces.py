@@ -442,7 +442,12 @@ class Interface(object):
 
         The files returned by an implementation of this method are those that one would
         want copied to a remote location when cloning a Case or CaseSuite to a remote
-        location
+        location.
+
+        Note
+        ----
+        This existed before the advent of ARMI plugins. Perhaps it can be better served
+        as a plugin hook. Potential future work.
 
         Parameters
         ----------
