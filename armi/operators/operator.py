@@ -104,6 +104,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.powerFractions = self._getPowerFractions()
         self._checkReactorCycleAttrs()
 
+        # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
+        reportingUtils.writeWelcomeHeaders(self, cs)
+
     def _getCycleLengths(self):
         """Return the cycle length for each cycle of the system as a list."""
         return utils.expandRepeatedFloats(self.cs["cycleLengths"]) or (

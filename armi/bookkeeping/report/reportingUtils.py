@@ -19,6 +19,7 @@ various reports
 import re
 import os
 import collections
+import pathlib
 import textwrap
 import sys
 import time
@@ -33,6 +34,8 @@ from armi import utils
 from armi.utils import iterables
 from armi.utils import units
 from armi.utils import pathTools
+from armi.utils import textProcessors
+from armi import interfaces
 from armi.bookkeeping import report
 from armi.reactor.flags import Flags
 from armi.reactor.components import ComponentType
@@ -60,7 +63,7 @@ def writeWelcomeHeaders(o, cs):
                 "{} - {}".format(cs["runType"], o.__class__.__name__),
             ),
             (strings.Operator_CurrentUser, armi.USER),
-            (strings.Operator_ArmiCodebase, cs["armiLocation"]),
+            (strings.Operator_ArmiCodebase, armi.ROOT),
             (strings.Operator_WorkingDirectory, os.getcwd()),
             (strings.Operator_PythonInterperter, sys.version),
             (strings.Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
@@ -75,24 +78,43 @@ def writeWelcomeHeaders(o, cs):
     def _listInputFiles(cs):
         """
         Gathers information about the input files of this case.
-    
+
         Returns
         -------
         inputInfo : list
             (label, fileName, shaHash) tuples
         """
+
+        pathToLoading = pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+
+        if pathToLoading.is_file():
+            includedBlueprints = [
+                inclusion[0]
+                for inclusion in textProcessors.findYamlInclusions(pathToLoading)
+            ]
+        else:
+            includedBlueprints = []
+
         inputInfo = []
-        inputFiles = [
-            ("Case Settings", cs.caseTitle + ".yaml"),
-            ("Blueprints", cs["loadingFile"]),
-            ("Geometry", cs["geomFile"]),
-        ]
-        if cs["shuffleLogic"]:
-            inputFiles.append(("Fuel Management", cs["shuffleLogic"]))
-        if cs["controlLogic"]:
-            inputFiles.append(("Control Logic", cs["controlLogic"]))
-        if cs["orificeSettingsFile"]:
-            inputFiles.append(("Orifice Settings", cs["orificeSettingsFile"]))
+        inputFiles = (
+            [
+                ("Case Settings", cs.caseTitle + ".yaml"),
+                ("Blueprints", cs["loadingFile"]),
+            ]
+            + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
+            + [("Geometry", cs["geomFile"])]
+        )
+
+        activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
+        for klass, kwargs in activeInterfaces:
+            if not kwargs.get("enabled", True):
+                # Don't consider disabled interfaces
+                continue
+            interfaceFileNames = klass.specifyInputs(cs)
+            for label, fileNames in interfaceFileNames.items():
+                for fName in fileNames:
+                    inputFiles.append((label, fName))
+
         if cs["reloadDBName"] and cs["runType"] == RunTypes.SNAPSHOTS:
             inputFiles.append(("Database", cs["reloadDBName"]))
         for label, fName in inputFiles:
@@ -165,10 +187,6 @@ def writeWelcomeHeaders(o, cs):
 
     if armi.MPI_RANK > 0:
         return  # prevent the worker nodes from printing the same thing
-
-    #  make sure armiLocation is consistent with what's truly running.
-    if os.path.join(cs["armiLocation"], "armi") != armi.ROOT:
-        warnings.Operator_executionScriptDiffersFromArmiLocation(armi.ROOT)
 
     _writeCaseInformation(o, cs)
     _writeInputFileInformation(cs)
