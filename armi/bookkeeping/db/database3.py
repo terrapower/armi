@@ -370,6 +370,8 @@ class DatabaseInterface(interfaces.Interface):
         """
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None
+        if timeSteps is not None:
+            timeSteps = copy.copy(timeSteps)
         if timeSteps is not None and now in timeSteps:
             nowRequested = True
             timeSteps.remove(now)
