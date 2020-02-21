@@ -15,17 +15,16 @@
 """
 This module contains the basic composite pattern underlying the reactor package.
 
-This follows the principles of the
-`Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to
-allow the construction of a part/whole hierarchy representing a physical nuclear
-reactor. The composite objects act somewhat like lists: they can be indexed,
-iterated over, appended, extended, inserted, etc. Each member of the hierarchy
-knows its children and its parent, so full access to the hierarchy is available
-from everywhere. This design was chosen because of the close analogy of the
-model to the physical nature of nuclear reactors.
+This follows the principles of the `Composite Design Pattern
+<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a
+part/whole hierarchy representing a physical nuclear reactor. The composite objects act
+somewhat like lists: they can be indexed, iterated over, appended, extended, inserted,
+etc. Each member of the hierarchy knows its children and its parent, so full access to
+the hierarchy is available from everywhere. This design was chosen because of the close
+analogy of the model to the physical nature of nuclear reactors.
 
-These objects are mostly abstract and users should use their subclasses
-(e.g. :py:mod:`armi.reactor.blocks.Block`) in most cases.
+These objects are mostly abstract and users should use their subclasses (e.g.
+:py:mod:`armi.reactor.blocks.Block`) in most cases.
 
 .. warning:: Because each member of the hierarchy is linked to the entire tree,
     it is often unsafe to save references to individual members; it can cause
@@ -68,6 +67,7 @@ class FlagSerializer(parameters.Serializer):
     sequence of enough uint8 elements to represent all flags. These constitute a
     dimension of a 2-D numpy array containing all Flags for all objects provided to the
     ``pack()`` function.
+
     """
 
     version = "1"
@@ -251,8 +251,13 @@ class ArmiObject(metaclass=CompositeModelType):
         self.cached = {}
         self._backupCache = None
         self.p = self.paramCollectionType()
+        # TODO: These are not serialized to the database, and will therefore
+        # lead to surprising behavior when using databases. We need to devise a
+        # way to either represent them in parameters, or otherwise reliably
+        # recover them.
         self._lumpedFissionProducts = None
         self.crossSectionTable = None
+
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
         self.childrenByLocator = {}
@@ -271,6 +276,7 @@ class ArmiObject(metaclass=CompositeModelType):
         being sorted live in the same grid, however, since it probably doesn't make
         sense to sort things across containers or scopes. If this ends up being too
         restrictive, it can probably be relaxed or overridden on specific classes.
+
         """
         if self.spatialLocator.grid is not other.spatialLocator.grid:
             runLog.error("could not compare {} and {}".format(self, other))
@@ -304,6 +310,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Special treatment of ``parent`` is not enough, since the spatialGrid also
         contains a reference back to the armiObject. Consequently, the ``spatialGrid``
         needs to be reassigned in ``__setstate__``.
+
         """
         state = self.__dict__.copy()
         state["parent"] = None
@@ -346,12 +353,11 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        The default behavior for ``not [obj]`` that has a  ``__len__`` defined
-        is to see if the length is zero. However, for these composites,
-        we'd like Assemblies, etc. to be considered non-zero even
-        if they don't have any blocks. This is important for
-        parent resolution, etc. If one of these objects exists,
-        it is non-zero, regardless of its contents.
+        The default behavior for ``not [obj]`` that has a  ``__len__`` defined is to see
+        if the length is zero. However, for these composites, we'd like Assemblies, etc.
+        to be considered non-zero even if they don't have any blocks. This is important
+        for parent resolution, etc. If one of these objects exists, it is non-zero,
+        regardless of its contents.
 
         """
         return True
@@ -366,10 +372,10 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Make a clean copy of this object.
 
-        .. warning:: Be careful with inter-object dependencies. If one object contains
-            a reference to another object which contains links to the entire
-            hierarchical tree, memory can fill up rather rapidly. Weak references
-            are designed to help with this problem.
+        .. warning:: Be careful with inter-object dependencies. If one object contains a
+        reference to another object which contains links to the entire hierarchical
+        tree, memory can fill up rather rapidly. Weak references are designed to help
+        with this problem.
         """
         raise NotImplementedError
 
@@ -383,9 +389,11 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Obtain a value from the cache.
 
-        Cached values can be used to temporarily store frequently read but long-to-compute values.
-        The practice is generally discouraged because it's challenging to make sure to properly
-        invalidate the cache when the state changes.
+        Cached values can be used to temporarily store frequently read but
+        long-to-compute values.  The practice is generally discouraged because it's
+        challenging to make sure to properly invalidate the cache when the state
+        changes.
+
         """
         return self.cached.get(name, None)
 
@@ -650,7 +658,8 @@ class ArmiObject(metaclass=CompositeModelType):
     def _updateVolume(self):
         """Recompute and store volume."""
         children = self.getChildren()
-        # Derived shapes must come last so we temporarily change the order if we have one.
+        # Derived shapes must come last so we temporarily change the order if we
+        # have one.
         from armi.reactor.components import DerivedShape
 
         for child in children[:]:
@@ -664,8 +673,8 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Return volume  fractions of each child.
 
-        Sets volume or area of missing piece (like coolant) if it exists.
-        Caching would be nice here.
+        Sets volume or area of missing piece (like coolant) if it exists.  Caching would
+        be nice here.
 
         Returns
         -------
@@ -678,10 +687,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        void areas can be negative in gaps between fuel/clad/liner(s),
-        but these negative areas are intended to account for overlapping positive areas
-        to insure the total area of components inside the clad is accurate.
-        see test_block.Block_TestCase.test_consistentAreaWithOverlappingComponents
+        void areas can be negative in gaps between fuel/clad/liner(s), but these
+        negative areas are intended to account for overlapping positive areas to insure
+        the total area of components inside the clad is accurate. See
+        test_block.Block_TestCase.test_consistentAreaWithOverlappingComponents
 
         """
         children = self.getChildren()
@@ -699,23 +708,24 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Determine the volume of any DerivedShapes (e.g. coolant components).
 
-        When a coolant component first gets loaded, it has no area.  But after that, it
+        When a coolant component first gets loaded, it has no area. But after that, it
         does have area so we must detect purely derived components by the fact that they
-        have no dimension keys.  Zero area is acceptable (for gaps that will grow,
-        etc.).
+        have no dimension keys. Zero area is acceptable (for gaps that will grow, etc.).
 
         If there are no dimensions but there is still an area, then the user probably
         specified the area on a generic component. If they did specify it on the input,
         then the area should not update. HOWEVER, if it was specified by a previous
-        leftover computation, then we should re-compute. That's why we store the area on
-        the dims.
+        leftover computation, then we should re-compute.  That's why we store the area
+        on the dims.
+
         """
         from armi.reactor import components  # avoid circular import
 
         leftover = []
         totalVolume = 0.0
         for child in self.getChildren():
-            # so far, only coolants do this. ThRZBlock's with these must have area set specifically by input.
+            # so far, only coolants do this. ThRZBlock's with these must have
+            # area set specifically by input.
             if child.__class__ is components.DerivedShape:
                 leftover.append(child)
             else:
@@ -816,8 +826,8 @@ class ArmiObject(metaclass=CompositeModelType):
             Can be a string name of a nuclide or element, or a list of such strings.
 
         This might get Zr isotopes when ZR is passed in if they exist, or it will get
-        elemental ZR if that exists. When expanding elements, all known nuclides
-        are returned, not just the natural ones.
+        elemental ZR if that exists. When expanding elements, all known nuclides are
+        returned, not just the natural ones.
 
         """
         allNuclidesHere = self.getNuclides()
@@ -842,7 +852,8 @@ class ArmiObject(metaclass=CompositeModelType):
                 convertedNucNames.append(nucName)
                 continue
             try:
-                # Need all nuclide bases, not just natural isotopics because, e.g. PU has no natural isotopics!
+                # Need all nuclide bases, not just natural isotopics because, e.g. PU
+                # has no natural isotopics!
                 nucs = [
                     nb.name
                     for nb in elements.bySymbol[nucName].nuclideBases
@@ -877,8 +888,8 @@ class ArmiObject(metaclass=CompositeModelType):
         r"""
         Apply one or more adjusted mass fractions.
 
-        This will adjust the total mass of the object, as the mass of everything designated will change,
-        while anything else will not.
+        This will adjust the total mass of the object, as the mass of everything
+        designated will change, while anything else will not.
 
         .. math::
 
@@ -900,7 +911,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        You can't just change one mass fraction though, you have scale all others to fill the remaining frac.
+        You can't just change one mass fraction though, you have scale all others to
+        fill the remaining frac.
 
         Parameters
         ----------
@@ -932,7 +944,8 @@ class ArmiObject(metaclass=CompositeModelType):
             totalFracSet += massFrac
         totalOther = sum(oldMassFracs.values())
         if totalOther:
-            # we normalize the remaining mass fractions so their concentrations relative to each other stay constant.
+            # we normalize the remaining mass fractions so their concentrations relative
+            # to each other stay constant.
             normalizedOtherMassFracs = {
                 nucNameOther: val / totalOther
                 for nucNameOther, val in oldMassFracs.items()
@@ -975,10 +988,11 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        If you use this for two elements one after the other, you will probably get something wrong.
-        For instance, if you have U-10Zr and add Pu at 10% mass fraction, the Zr fraction will drop below 10% of the
-        total. The U-Zr fractions will remain constant though. So this is mostly useful if you have U-10Zr and want
-        to change it to U-5Zr.
+        If you use this for two elements one after the other, you will probably get
+        something wrong. For instance, if you have U-10Zr and add Pu at 10% mass
+        fraction, the Zr fraction will drop below 10% of the total. The U-Zr fractions
+        will remain constant though. So this is mostly useful if you have U-10Zr and
+        want to change it to U-5Zr.
 
         Theory:
 
@@ -997,7 +1011,8 @@ class ArmiObject(metaclass=CompositeModelType):
         We can scale each Oi evenly by multiplying by the factor f2
         Oi' = Oi * (1-C-v)/O = Oi * f2  where f2= (1-C-v)
 
-        Since massFracs is not necessarily normalized, A+C+O actually = self.p.massFracNorm
+        Since massFracs is not necessarily normalized, A+C+O actually =
+        self.p.massFracNorm
 
         See Also
         --------
@@ -1024,10 +1039,10 @@ class ArmiObject(metaclass=CompositeModelType):
         # determine nuclides to hold constant
         nuclides = set(self.getNuclides())
         if nuclideToHoldConstant or elementToHoldConstant:
-            # note that if these arguments are false, you'll get ALL nuclides in the material
-            # use material.getNuclides to get only non-zero ones.
-            # use nucDir.getNuclides to get all.
-            # Intersect with current nuclides to eliminate double counting of element/isotopes
+            # note that if these arguments are false, you'll get ALL nuclides in the
+            # material use material.getNuclides to get only non-zero ones.  use
+            # nucDir.getNuclides to get all. Intersect with current nuclides to
+            # eliminate double counting of element/isotopes
             constantNuclides = set(
                 nucDir.getNuclideNames(
                     nucName=nuclideToHoldConstant, elementSymbol=elementToHoldConstant
@@ -1039,8 +1054,9 @@ class ArmiObject(metaclass=CompositeModelType):
             constantSum = 0.0
 
         # determine which nuclides we're adjusting.
-        # Rather than calling this material's getNuclides method, we call the nucDirectory to do this.
-        # this way, even zeroed-out nuclides will get in the mix
+        # Rather than calling this material's getNuclides method, we call the
+        # nucDirectory to do this. this way, even zeroed-out nuclides will get in the
+        # mix
         adjustNuclides = set(
             nucDir.getNuclideNames(
                 nucName=nuclideToAdjust, elementSymbol=elementToAdjust
@@ -1058,20 +1074,19 @@ class ArmiObject(metaclass=CompositeModelType):
         for nuc in adjustNuclides:
             if factor1 is None:
                 # this is for when adjust nuclides have zero mass fractions. Like Zr.
-                # In this case, if there are multiple nuclides, we will distribute them evenly
-                # because we have no other indication of how to adjust them.
+                # In this case, if there are multiple nuclides, we will distribute them
+                # evenly because we have no other indication of how to adjust them.
                 newMassFrac = val / numNucs
             else:
-                # this is for when the nuclides we're adjusting already exist with non-zero mass fractions
-                # could be Pu vector.
+                # this is for when the nuclides we're adjusting already exist
+                # with non-zero mass fractions could be Pu vector.
                 newMassFrac = self.getMassFrac(nuc) * factor1
             newA += newMassFrac
             newMassFracs[nuc] = newMassFrac
             if nuc == "ZR":
-                # custom parameter only set here to determine how to behave
-                # for UZr density, linear expansion.
-                # Can't let it roam with each mass frac 'cause then the density roams too
-                # and there are "oscillations"
+                # custom parameter only set here to determine how to behave for UZr
+                # density, linear expansion. Can't let it roam with each mass frac
+                # 'cause then the density roams too and there are "oscillations"
                 self.p.zrFrac = newMassFrac
 
         # error checking.
@@ -1083,13 +1098,15 @@ class ArmiObject(metaclass=CompositeModelType):
             )
             raise RuntimeError("Failed to adjust mass fraction.")
 
-        # determine the mass fraction of the nuclides that will be adjusted to accomodate the requested change
+        # determine the mass fraction of the nuclides that will be adjusted to
+        # accomodate the requested change
         othersSum = 1.0 - A - constantSum
         if not othersSum:
             # no others to be modified.
             factor2 = 1.0
         else:
-            factor2 = (1.0 - newA - constantSum) / othersSum  # use newA rather than val
+            # use newA rather than val
+            factor2 = (1.0 - newA - constantSum) / othersSum
 
         # change all the other nuclides using f2 factor
         for nuc in self.getNuclides():
@@ -1119,8 +1136,9 @@ class ArmiObject(metaclass=CompositeModelType):
         Notes
         -----
         This can get called very frequently and has to do volume computations so should
-        use some kind of caching that is invalidated by any temperature, composition, etc. changes.
-        Even with caching the volume calls are still somewhat expensive so prefer the methods in see also.
+        use some kind of caching that is invalidated by any temperature, composition,
+        etc. changes. Even with caching the volume calls are still somewhat expensive so
+        prefer the methods in see also.
 
         See Also
         --------
@@ -1139,7 +1157,8 @@ class ArmiObject(metaclass=CompositeModelType):
             ]
         )  # c x 1
         totalVol = volumes.sum()
-        if totalVol == 0.0:  # there are no children so no volume or number density
+        if totalVol == 0.0:
+            # there are no children so no volume or number density
             return [0.0] * len(nucNames)
 
         nucDensForEachComp = numpy.array(
@@ -1248,7 +1267,8 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Get the fission energy generation group constants for a composite.
 
-        Gives the fission energy generation rates when multiplied by the multigroup flux.
+        Gives the fission energy generation rates when multiplied by the multigroup
+        flux.
 
         Returns
         -------
@@ -1274,7 +1294,8 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Get the capture energy generation group constants for a composite.
 
-        Gives the capture energy generation rates when multiplied by the multigroup flux.
+        Gives the capture energy generation rates when multiplied by the multigroup
+        flux.
 
         Returns
         -------
@@ -1337,8 +1358,8 @@ class ArmiObject(metaclass=CompositeModelType):
         Parameters
         ----------
         fn : Function-like object
-            The predicate used to test the validity of an ancestor. Should return true if the
-            ancestor satisfies the caller's requirements
+            The predicate used to test the validity of an ancestor. Should return true
+            if the ancestor satisfies the caller's requirements
         """
         if fn(self):
             return self
@@ -1355,6 +1376,7 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         typeSpec : TypeSpec
             A collection of flags to match on candidate parents
+
         exactMatch : bool
             Whether the flags match should be exact
 
@@ -1402,8 +1424,9 @@ class ArmiObject(metaclass=CompositeModelType):
 
         This distributes atom density evenly across all children that contain nucName.
         If the nuclide doesn't exist in any of the children, then that's actually an
-        error.  This would only happen if some unnatural nuclide like Pu239 built up in
+        error. This would only happen if some unnatural nuclide like Pu239 built up in
         fresh UZr. That should be anticipated and dealt with elsewhere.
+
         """
         activeChildren = self.getChildrenWithNuclides({nucName})
         if not activeChildren:
@@ -1436,8 +1459,9 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        We'd like to not have to call setNumberDensity for each nuclide because we don't want to
-        call ``getVolumeFractions`` for each nuclide (it's inefficient).
+        We'd like to not have to call setNumberDensity for each nuclide because we don't
+        want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
+
         """
         numberDensities.update(
             {nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities}
@@ -1448,12 +1472,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
 
-        This changes a nuclide number density only on children that already have that nuclide,
-        thereby allowing, for example, actinides to stay in the fuel component when setting
-        block-level values.
+        This changes a nuclide number density only on children that already have that
+        nuclide, thereby allowing, for example, actinides to stay in the fuel component
+        when setting block-level values.
 
-        The complication is that various number densities are distributed among various components.
-        This sets the number density for each nuclide evenly across all components that contain it.
+        The complication is that various number densities are distributed among various
+        components. This sets the number density for each nuclide evenly across all
+        components that contain it.
 
         Parameters
         ----------
@@ -1466,14 +1491,13 @@ class ArmiObject(metaclass=CompositeModelType):
 
         allDehomogenizedNDens = collections.defaultdict(dict)
 
-        # compute potentially-different homogenization factors for each child.
-        # evenly distribute entire number density over the subset of active children.
+        # compute potentially-different homogenization factors for each child.  evenly
+        # distribute entire number density over the subset of active children.
         for nuc, dens in numberDensities.items():
             # get "active" indices, i.e., indices of children containing nuc
-            # NOTE: this is one of the rare instances in which (imo), using
-            # explicit indexing clarifies subsequent code since it's not
-            # necessary to zip + filter + extract individual components (just
-            # extract by filtered index).
+            # NOTE: this is one of the rare instances in which (imo), using explicit
+            # indexing clarifies subsequent code since it's not necessary to zip +
+            # filter + extract individual components (just extract by filtered index).
             indiciesToSet = tuple(
                 i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild
             )
@@ -1609,23 +1633,30 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         param : str
             Name of the block parameter to sum
+
         objs : iterable, optional
             A list of objects to sum over. If none, all children in object will be used
+
         volumeIntegrated : bool, optional
             Integrate over volume
+
         addSymmetricPositions : bool, optional
-            If True, will multiply by the symmetry factor of the core (3 for 1/3 models, 1 for full core models)
+            If True, will multiply by the symmetry factor of the core (3 for 1/3 models,
+            1 for full core models)
+
         typeSpec : TypeSpec
             object types to restrict to
+
         generationNum : int, optional
-            Which generation to consider. 1 means direct children, 2 means children of children.
-            Default: Just return direct children.
+            Which generation to consider. 1 means direct children, 2 means children of
+            children. Default: Just return direct children.
+
         calcBasedOnFullObj : bool, optional
-            Some assemblies or blocks, such as the center assembly in a third core model, are
-            not modeled as full assemblies or blocks. In the third core model objects at
-            these postions are modeled as having 1/3 the volume and thus 1/3 the power. Setting
-            this argument to True will apply the full value of the parameter as if it was a full
-            block or assembly.
+            Some assemblies or blocks, such as the center assembly in a third core
+            model, are not modeled as full assemblies or blocks. In the third core model
+            objects at these postions are modeled as having 1/3 the volume and thus 1/3
+            the power. Setting this argument to True will apply the full value of the
+            parameter as if it was a full block or assembly.
         """
         tot = 0.0
         if objs is None:
@@ -1676,8 +1707,8 @@ class ArmiObject(metaclass=CompositeModelType):
             The ARMI block parameter that you want the average from
 
         typeSpec : TypeSpec
-            The child types that should be included in the calculation. Restrict average to
-            a certain child type with this parameter.
+            The child types that should be included in the calculation. Restrict average
+            to a certain child type with this parameter.
 
         weightingParam : None or str, optional
              An optional block param that the average will be weighted against
@@ -1750,16 +1781,20 @@ class ArmiObject(metaclass=CompositeModelType):
         generationNum=1,
         returnObj=False,
     ):
-        """Find the maximum value for the parameter in this container
+        """
+        Find the maximum value for the parameter in this container
 
         Parameters
         ----------
         param : str
             block parameter that will be sought.
+
         typeSpec : TypeSpec
             restricts the search to cover a variety of block types.
+
         absolute : bool
             looks for the largest magnitude value, regardless of sign, default: true
+
         returnObj : bool, optional
             If true, returns the child object as well as the value.
 
@@ -1820,9 +1855,10 @@ class ArmiObject(metaclass=CompositeModelType):
                 try:
                     val = b.p[param]
                 except parameters.UnknownParameterError:
-                    # No worries; not all Composite types are guaranteed to have the relevant
-                    # parameter. It might be a good idea to more strongly type-check this, perhaps
-                    # by passing the paramDef, rather than its name?
+                    # No worries; not all Composite types are guaranteed to have the
+                    # relevant parameter. It might be a good idea to more strongly
+                    # type-check this, perhaps by passing the paramDef,
+                    # rather than its name?
                     continue
                 if val is None:
                     # Neither bigger or smaller than anything (also illegal in Python3)
@@ -1849,7 +1885,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def containsHeavyMetal(self):
         """True if this has HM"""
-        for nucName in self.getNuclides():  # these already have non-zero density
+        for nucName in self.getNuclides():
+            # these already have non-zero density
             if nucDir.isHeavyMetal(nucName):
                 return True
         return False
@@ -1861,11 +1898,12 @@ class ArmiObject(metaclass=CompositeModelType):
         Parameters
         ----------
         typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
+            Component flags. Will restrict Components to specific ones matching the
+            flags specified.
 
         exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'.
-            This has no impact if compLabel is None.
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'.  This has no impact if compLabel is None.
 
         Returns
         -------
@@ -1892,11 +1930,12 @@ class ArmiObject(metaclass=CompositeModelType):
         Parameters
         ----------
         typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the flags specified.
+            Component flags. Will restrict Components to specific ones matching the
+            flags specified.
 
         exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'.
-            This has no impact if typeSpec is None.
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'.  This has no impact if typeSpec is None.
 
         Returns
         -------
@@ -1950,10 +1989,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Notes
         -----
-        If an object is on a symmetry line, the number of moles will
-        be scaled up by the symmetry factor. This is done because this is typically
-        used for tracking burnup, and BOL moles are computed in full objects too
-        so there are no complications as things move on and off of symmetry lines.
+        If an object is on a symmetry line, the number of moles will be scaled up by the
+        symmetry factor. This is done because this is typically used for tracking
+        burnup, and BOL moles are computed in full objects too so there are no
+        complications as things move on and off of symmetry lines.
 
         Warning
         -------
@@ -2142,8 +2181,9 @@ class ArmiObject(metaclass=CompositeModelType):
             for pin detailed yet
 
         volume: float, optional
-            If average=True, the volume-integrated flux is divided by volume before being returned.
-            The user may specify a volume here, or the function will obtain the block volume directly.
+            If average=True, the volume-integrated flux is divided by volume before
+            being returned. The user may specify a volume here, or the function will
+            obtain the block volume directly.
 
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
@@ -2265,27 +2305,46 @@ class Composite(ArmiObject):
     """
     An ArmiObject that has children.
 
-    This is a fundamental ARMI state object that generally represents some piece of the nuclear reactor that is
-    made up of other smaller pieces. This object can cache information about its children to help performance.
+    This is a fundamental ARMI state object that generally represents some piece of the
+    nuclear reactor that is made up of other smaller pieces. This object can cache
+    information about its children to help performance.
 
     **Details about spatial representation**
 
-    Spatial representation of a ``Composite`` is handled through a combination of the ``spatialLocator``
-    and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy triple representing either:
+    Spatial representation of a ``Composite`` is handled through a combination of the
+    ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy
+    triple representing either:
 
-    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype is int.
+    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype
+    is int.
+
     2. Coordinates in the parent's universe in cm, used when the dtype is float.
 
-    The top parent of any composite must have a coordinate-based ``spatialLocator``. For example,
-    a Reactor an a Pump should both have coordinates based on how far apart they are.
+    The top parent of any composite must have a coordinate-based ``spatialLocator``. For
+    example, a Reactor an a Pump should both have coordinates based on how far apart
+    they are.
 
-    The traversal of indices and grids is recursive. The Reactor/Core/Assembly/Block model is handled
-    by putting a 2-D grid (either Theta-R, Hex, or Cartesian) on the Core and individual 1-D
-    Z-meshes on the assemblies. Then, Assemblies have 2-D spatialLocators (i,j,0) and Blocks have
-    1-D spatiaLocators (0,0,k). These get added to form the global indices. This way, if an assembly
-    is moved, all the blocks immediately and naturally move with it. Individual children
-    may have coordinate-based spatialLocators mixed with siblings in a grid. This allows mixing
-    grid-representation with explicit representation, often useful in advanced assemblies and thermal reactors.
+    The traversal of indices and grids is recursive. The Reactor/Core/Assembly/Block
+    model is handled by putting a 2-D grid (either Theta-R, Hex, or Cartesian) on the
+    Core and individual 1-D Z-meshes on the assemblies. Then, Assemblies have 2-D
+    spatialLocators (i,j,0) and Blocks have 1-D spatiaLocators (0,0,k). These get added
+    to form the global indices. This way, if an assembly is moved, all the blocks
+    immediately and naturally move with it. Individual children may have
+    coordinate-based spatialLocators mixed with siblings in a grid. This allows mixing
+    grid-representation with explicit representation, often useful in advanced
+    assemblies and thermal reactors.
+
+    The traversal of indices and grids is recursive. The
+    Reactor/Core/Assembly/Block model is handled by putting a 2-D grid (either
+    Theta-R, Hex, or Cartesian) on the Core and individual 1-D Z-meshes on the
+    assemblies. Then, Assemblies have 2-D spatialLocators (i,j,0) and Blocks
+    have 1-D spatiaLocators (0,0,k). These get added to form the global indices.
+    This way, if an assembly is moved, all the blocks immediately and naturally
+    move with it. Individual children may have coordinate-based spatialLocators
+    mixed with siblings in a grid. This allows mixing grid-representation with
+    explicit representation, often useful in advanced assemblies and thermal
+    reactors.
+
     """
 
     def __getitem__(self, index):
@@ -2304,8 +2363,9 @@ class Composite(ArmiObject):
         """
         Membership check.
 
-        This does not use quality checks for membership checking because equality operations can be
-        fairly heavy. Rather, this only checks direct identity matches.
+        This does not use quality checks for membership checking because equality
+        operations can be fairly heavy. Rather, this only checks direct identity
+        matches.
 
         """
         return id(item) in set(id(c) for c in self._children)
@@ -2380,9 +2440,9 @@ class Composite(ArmiObject):
             Return all children of all levels.
 
         generationNum : int, optional
-            Which generation to return. 1 means direct children, 2 means children of children.
-            setting this parameter will only return children of this generation, not their parents.
-            Default: Just return direct children.
+            Which generation to return. 1 means direct children, 2 means children of
+            children. Setting this parameter will only return children of this
+            generation, not their parents. Default: Just return direct children.
 
         includeMaterials : bool, optional
             Include the material properties
@@ -2739,11 +2799,10 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        In an earlier implementation, self.getNuclides() was always called if
-        no nuclides argument was passed, even if self.crossSectionTable had
-        already been generated and, therefore, nuclides was not used. This has
-        been modified so that self.getNuclides() is only called if its result
-        is actually used.
+        In an earlier implementation, self.getNuclides() was always called if no
+        nuclides argument was passed, even if self.crossSectionTable had already been
+        generated and, therefore, nuclides was not used. This has been modified so that
+        self.getNuclides() is only called if its result is actually used.
         """
         if self.crossSectionTable is None:
             if nuclides is None:
@@ -2831,7 +2890,8 @@ class StateRetainer:
       Use on an object up in the hierarchy applies to all objects below as well.
 
     * This is intended to work across MPI, so that if you were to broadcast the
-      reactor the state would be correct; however the exact implication on ``parameters`` may be unclear.
+      reactor the state would be correct; however the exact implication on
+      ``parameters`` may be unclear.
 
     """
 
@@ -2845,8 +2905,9 @@ class StateRetainer:
             composite object to retain state (recursively)
 
         paramsToApply: iterable of parameters.Parameter
-            Iterable of parameters.Parameter to retain updated values after `__exit__`. All other parameters
-            are reverted to the original state, i.e. retained at the original value.
+            Iterable of parameters.Parameter to retain updated values after `__exit__`.
+            All other parameters are reverted to the original state, i.e. retained at
+            the original value.
         """
         self.composite = composite
         self.paramsToApply = set(paramsToApply or [])

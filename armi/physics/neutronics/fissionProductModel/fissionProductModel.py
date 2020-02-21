@@ -78,9 +78,10 @@ class FissionProductModel(interfaces.Interface):
 
         Notes
         -----
-        Some Monte Carlo codes require all nuclides to be consistent in all materials when assemblies are shuffled.
-        This requires that fission products be consistent across all blocks, even if fission products are not generated
-        when the block is depleted.
+        Some Monte Carlo codes require all nuclides to be consistent in all
+        materials when assemblies are shuffled.  This requires that fission
+        products be consistent across all blocks, even if fission products are
+        not generated when the block is depleted.
         """
         blockType = None if self.getInterface("mcnp") is not None else Flags.FUEL
         return blockType
@@ -93,25 +94,29 @@ class FissionProductModel(interfaces.Interface):
         """
         Set ALL the block _lumpedFissionProduct attributes
 
-        Can set them to global or turns on independent block-level LFPs if requested
+        Can set them to global or turns on independent block-level LFPs if
+        requested
 
         sets block._lumpedFissionProducts to something other than the global.
 
         Parameters
         ----------
         blockType : Flags, optional
-            this is the type of block that the global lumped fission product is being applied to. If this is not
-            provided it will get the default behavior from ``self._fissionProductBlockType``.
+            this is the type of block that the global lumped fission product is
+            being applied to. If this is not provided it will get the default
+            behavior from ``self._fissionProductBlockType``.
 
         setMaterialsLFP : bool, optional
             this is a flag to tell the method whether or not to try to apply
             the global lumped fission product to the component and thereby
-            material -- this is only compatable with LumpedFissionProductCompatableMaterial
+            material -- this is only compatable with
+            LumpedFissionProductCompatableMaterial
 
         Examples
         --------
         self.setAllBlockLFPs(blockType='fuel')
-        will apply the global lumped fission product or independent LFPs to only fuel type blocks
+        will apply the global lumped fission product or independent LFPs to only
+        fuel type blocks
 
         See Also
         --------
@@ -203,7 +208,8 @@ class FissionProductModel(interfaces.Interface):
         self.fissionProductNames = fissionProductNames
 
     def _cacheLFPDensities(self, blockList):
-        # pass 2: Cache all LFP densities for all blocks (so they aren't read for each FP)
+        # pass 2: Cache all LFP densities for all blocks (so they aren't read
+        # for each FP)
         runLog.debug("  Caching LFP densities of all blocks")
         lfpDensities = {}
         for b in blockList:
@@ -215,17 +221,21 @@ class FissionProductModel(interfaces.Interface):
         """
         Synchronize fission gas removal fractions of all LFP objects with the reactor state.
 
-        The block parameter ``fgRemoval`` is adjusted by fuel performance modules and is applied here.
+        The block parameter ``fgRemoval`` is adjusted by fuel performance
+        modules and is applied here.
 
-        If the ``makeAllBlockLFPsIndependent`` setting is not activated (default), the global lump
-        gets the flux-weighted average of all blocks. Otherwise, each block gets its own
-        fission gas release fraction applied to its individual LFPs. For MCNP restart cases,
-        it is recommended to activate the ``makeAllBlockLFPsIndependent`` setting.
+        If the ``makeAllBlockLFPsIndependent`` setting is not activated
+        (default), the global lump gets the flux-weighted average of all blocks.
+        Otherwise, each block gets its own fission gas release fraction applied
+        to its individual LFPs. For MCNP restart cases, it is recommended to
+        activate the ``makeAllBlockLFPsIndependent`` setting.
 
         Notes
         -----
-        The CrossSectionGroupManager does this for each XSG individually for lattice physics, but it's important to keep
-        these up to date as well for anything else that may be interested in fission product information (e.g. MCNP).
+        The CrossSectionGroupManager does this for each XSG individually for
+        lattice physics, but it's important to keep these up to date as well for
+        anything else that may be interested in fission product information
+        (e.g. MCNP).
 
         See Also
         --------
