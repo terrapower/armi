@@ -15,4 +15,8 @@
 """
 Metadata describing an ARMI distribution.
 """
-__version__ = "0.1.3-dev"  # manually duplicated in setup.py... for now
+
+# dupclicating with setup.py for now. This is because in order to import meta.py, we
+# need to run armi.__init__, which does a whole heck of a lot of stuff that setup.py
+# shoudn't need. We should clean this up in the future.
+__version__ = "0.1.3"

@@ -16,6 +16,7 @@
 import re
 from setuptools import setup, find_packages
 
+
 with open("README.rst") as f:
     README = f.read()
 
@@ -37,7 +38,8 @@ EXTRA_FILES = collectExtraFiles()
 
 setup(
     name="armi",
-    version="0.1.3-dev",  # manually duplicated in meta.py... for now
+    # duplicating with meta.py for now. See comments there for rationale.
+    version="0.1.3",
     description="The Advanced Reactor Modeling Interface",
     author="TerraPower, LLC",
     author_email="armi-devs@terrapower.com",
