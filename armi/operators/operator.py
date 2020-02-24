@@ -141,6 +141,17 @@ class Operator:  # pylint: disable=too-many-public-methods
                     )
                 )
 
+    @property
+    def atEOL(self):
+        """
+        Return whether we are approaching EOL.
+
+        For the standard operator, this will return true when the current cycle
+        is the last cycle (cs["nCycles"] - 1). Other operators may need to
+        impose different logic.
+        """
+        return self.r.p.cycle == self.cs["nCycles"] - 1
+
     def initializeInterfaces(self, r):
         """
         Attach the reactor to the operator and initialize all interfaces.

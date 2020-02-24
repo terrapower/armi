@@ -199,7 +199,10 @@ class DatabaseInterface(interfaces.Interface):
 
     def interactEOC(self, cycle=None):
         """In case anything changed since last cycle (e.g. rxSwing), update DB. """
-        if cycle < self.cs["nCycles"] - 1:
+        # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
+        # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
+        # Operator has the final say.
+        if not self.o.atEOL:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
             ) / 60.0
@@ -283,7 +286,6 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        timeStepName is not currently supported by database load.
         Will load preferentially from the `fileName` if passed. Otherwise will load from
         existing database in memory or `cs["reloadDBName"]` in that order.
 
@@ -297,8 +299,14 @@ class DatabaseInterface(interfaces.Interface):
 
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
-                if loadDB.hasTimeStep(cycle, timeNode, statePointName=""):
-                    newR = loadDB.load(cycle, timeNode, self.cs, self.r.blueprints)
+                if loadDB.hasTimeStep(cycle, timeNode, statePointName=timeStepName):
+                    newR = loadDB.load(
+                        cycle,
+                        timeNode,
+                        statePointName=timeStepName,
+                        cs=self.cs,
+                        bp=self.r.blueprints,
+                    )
                     break
         else:
             # reactor was never set so fail
@@ -1074,9 +1082,11 @@ class Database3(database.Database):
                 assert dataSet.attrs[_SERIALIZER_NAME] == pDef.serializer.__name__
                 assert _SERIALIZER_VERSION in dataSet.attrs
 
-                data = numpy.array(pDef.serializer.unpack(
-                    data, dataSet.attrs[_SERIALIZER_VERSION], attrs
-                ))
+                data = numpy.array(
+                    pDef.serializer.unpack(
+                        data, dataSet.attrs[_SERIALIZER_VERSION], attrs
+                    )
+                )
 
             if data.dtype.type is numpy.string_:
                 data = numpy.char.decode(data)
