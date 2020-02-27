@@ -68,7 +68,6 @@ def writeWelcomeHeaders(o, cs):
             (strings.Operator_PythonInterperter, sys.version),
             (strings.Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
             (strings.Operator_NumProcessors, armi.MPI_SIZE),
-            (strings.Operator_Date, time.ctime()),
             (strings.Operator_Date, armi.START_TIME),
         ]
 
