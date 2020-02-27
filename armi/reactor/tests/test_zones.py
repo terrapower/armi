@@ -37,7 +37,7 @@ class Zone_TestCase(unittest.TestCase):
         bp = blueprints.Blueprints()
         r = reactors.Reactor("zonetest", bp)
         r.add(reactors.Core("Core"))
-        r.core.spatialGrid = grids.hexGridFromPitch(1.0)
+        r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
         r.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
         r.core.spatialGrid.geomType = geometry.HEX
         aList = []

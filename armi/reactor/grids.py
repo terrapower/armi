@@ -39,7 +39,7 @@ a grid or in arbitrary, continuous space (using a :py:class:`CoordinateLocation`
 
 Below is a basic example of how to use a 2-D grid::
 
->>> grid = cartesianGridFromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
+>>> grid = Grid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
 >>> location = grid[1,2,0]
 >>> location.getGlobalCoordinates()
 array([ 1.,  2.,  0.])
@@ -198,7 +198,7 @@ class LocationBase:
 
         Examples
         --------
-        >>> grid = grids.hexGridFromPitch(1.0)
+        >>> grid = grids.HexGrid.fromPitch(1.0)
         >>> grid[0, 0, 0] < grid[2, 3, 4]   # the "radius" is less
         True
         >>> grid[2, 3, 4] < grid[2, 3, 4]   # they are equal
@@ -611,6 +611,24 @@ class Grid:
         self.geomType = geomType
         self.symmetry = symmetry
 
+    @classmethod
+    def fromRectangle(cls, width, height, numRings=25, isOffset=False, armiObject=None):
+        """
+        Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
+
+        isOffset : bool
+            If true will put first mesh cell fully within the grid instead of centering
+            it on the crosshairs.
+        """
+        unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
+        offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
+        return cls(
+            unitSteps=unitSteps,
+            unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
+            offset=offset,
+            armiObject=armiObject,
+        )
+
     def reduce(self):
         """
         Return the set of arguments used to create this Grid.
@@ -928,6 +946,52 @@ class Grid:
 class HexGrid(Grid):
     """Has 6 neighbors in plane."""
 
+    @staticmethod
+    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False):
+        """
+        Build a finite step-based 2-D hex grid from a hex pitch in cm.
+
+        Parameters
+        ----------
+        pitch : float
+            Hex pitch (flat-to-flat) in cm
+        numRings : int, optional
+            The number of rings in the grid to pre-populate with locatator objects.
+            Even if positions are not pre-populated, locators will be generated
+            there on the fly.
+        armiObject : ArmiObject, optional
+            The object that this grid is anchored to (i.e. the reactor for a grid of
+            assemblies)
+        pointedEndUp : bool, optional
+            Rotate the hexagons 30 degrees so that the pointed end faces up instead of
+            the flat.
+
+        Returns
+        -------
+        HexGrid
+            A functional hexagonal grid object.
+        """
+        side = pitch / math.sqrt(3.0)
+        if pointedEndUp:
+            # rotated 30 degrees CCW from normal
+            # increases in i move you in x and y
+            # increases in j also move you in x and y
+            unitSteps = (
+                (pitch / 2.0, -pitch / 2.0, 0),
+                (1.5 * side, 1.5 * side, 0),
+                (0, 0, 0),
+            )
+        else:
+            # x direction is only a function of i because j-axis is vertical.
+            # y direction is a function of both.
+            unitSteps = ((1.5 * side, 0.0, 0.0), (pitch / 2.0, pitch, 0.0), (0, 0, 0))
+
+        return HexGrid(
+            unitSteps=unitSteps,
+            unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
+            armiObject=armiObject,
+        )
+
     @property
     def pitch(self):
         """
@@ -935,7 +999,7 @@ class HexGrid(Grid):
 
         See Also
         --------
-        armi.reactor.grids.hexGridFromPitch
+        armi.reactor.grids.HexGrid.fromPitch
         """
         return self._unitSteps[1][1]
 
@@ -1139,6 +1203,44 @@ class ThetaRZGrid(Grid):
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
     """
 
+    @staticmethod
+    def fromGeom(geom, armiObject=None):
+        """
+        Build 2-D R-theta grid based on a Geometry object.
+
+        Parameters
+        ----------
+        geomInfo : list
+            list of ((indices), assemName) tuples for all positions in core with input
+            in radians
+
+        See Also
+        --------
+        armi.reactor.geometry.SystemLayoutInput.readGeomXML : produces the geomInfo
+        structure
+
+        Examples
+        --------
+        >>> grid = grids.ThetaRZGrid.fromGeom(geomInfo)
+        """
+        allIndices = [
+            indices for indices, _assemName in geom.assemTypeByIndices.items()
+        ]
+
+        # create ordered lists of all unique theta and R points
+        thetas, radii = set(), set()
+        for rad1, rad2, theta1, theta2, _numAzi, _numRadial in allIndices:
+            radii.add(rad1)
+            radii.add(rad2)
+            thetas.add(theta1)
+            thetas.add(theta2)
+        radii = numpy.array(sorted(radii), dtype=numpy.float64)
+        thetaRadians = numpy.array(sorted(thetas), dtype=numpy.float64)
+
+        return ThetaRZGrid(
+            bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject
+        )
+
     def getCoordinates(self, indices, nativeCoords=False):
         meshCoords = theta, r, z = Grid.getCoordinates(self, indices)
         if not 0 <= theta <= TAU:
@@ -1179,71 +1281,6 @@ class ThetaRZGrid(Grid):
         return (i, j, 0)
 
 
-def hexGridFromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False):
-    """
-    Build a finite step-based 2-D hex grid from a hex pitch in cm.
-
-    Parameters
-    ----------
-    pitch : float
-        Hex pitch (flat-to-flat) in cm
-    numRings : int, optional
-        The number of rings in the grid to pre-populate with locatator objects.
-        Even if positions are not pre-populated, locators will be generated
-        there on the fly.
-    armiObject : ArmiObject, optional
-        The object that this grid is anchored to (i.e. the reactor for a grid of assemblies)
-    pointedEndUp : bool, optional
-        Rotate the hexagons 30 degrees so that the pointed end faces up instead of the flat.
-
-    Returns
-    -------
-    HexGrid
-        A functional hexagonal grid object.
-    """
-    side = pitch / math.sqrt(3.0)
-    if pointedEndUp:
-        # rotated 30 degrees CCW from normal
-        # increases in i move you in x and y
-        # increases in j also move you in x and y
-        unitSteps = (
-            (pitch / 2.0, -pitch / 2.0, 0),
-            (1.5 * side, 1.5 * side, 0),
-            (0, 0, 0),
-        )
-    else:
-        # x direction is only a function of i because j-axis is vertical.
-        # y direction is a function of both.
-
-        unitSteps = ((1.5 * side, 0.0, 0.0), (pitch / 2.0, pitch, 0.0), (0, 0, 0))
-
-    return HexGrid(
-        unitSteps=unitSteps,
-        unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
-        armiObject=armiObject,
-    )
-
-
-def cartesianGridFromRectangle(
-    width, height, numRings=25, isOffset=False, armiObject=None
-):
-    """
-    Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
-
-    isOffset : bool
-        If true will put first mesh cell fully within the grid instead of centering it
-        on the crosshairs.
-    """
-    unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
-    offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
-    return Grid(
-        unitSteps=unitSteps,
-        unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
-        offset=offset,
-        armiObject=armiObject,
-    )
-
-
 def axialUnitGrid(numCells, armiObject=None):
     """
     Build a 1-D unit grid in the k-direction based on a number of times. Each mesh is 1cm wide.
@@ -1256,38 +1293,6 @@ def axialUnitGrid(numCells, armiObject=None):
         bounds=(None, None, numpy.arange(numCells + 1, dtype=numpy.float64)),
         armiObject=armiObject,
     )
-
-
-def thetaRZGridFromGeom(geom, armiObject=None):
-    """
-    Build 2-D R-theta grid based on a Geometry object.
-
-    Parameters
-    ----------
-    geomInfo : list
-        list of ((indices), assemName) tuples for all positions in core with input in radians
-
-    See Also
-    --------
-    armi.reactor.geometry.SystemLayoutInput.readGeomXML : produces the geomInfo structure
-
-    Examples
-    --------
-    >>> grid = grids.thetaRZGridFromGeom(geomInfo)
-    """
-    allIndices = [indices for indices, _assemName in geom.assemTypeByIndices.items()]
-
-    # create ordered lists of all unique theta and R points
-    thetas, radii = set(), set()
-    for rad1, rad2, theta1, theta2, _numAzi, _numRadial in allIndices:
-        radii.add(rad1)
-        radii.add(rad2)
-        thetas.add(theta1)
-        thetas.add(theta2)
-    radii = numpy.array(sorted(radii), dtype=numpy.float64)
-    thetaRadians = numpy.array(sorted(thetas), dtype=numpy.float64)
-
-    return ThetaRZGrid(bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject)
 
 
 def ringPosFromRingLabel(ringLabel):

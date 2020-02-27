@@ -25,6 +25,8 @@ Hexagons are fundamental to advanced reactors.
 import math
 import itertools
 
+import numpy
+
 SQRT3 = math.sqrt(3.0)
 
 
@@ -46,6 +48,35 @@ def side(pitch):
     which you can solve to find p = sqrt(3)*s
     """
     return pitch / SQRT3
+
+
+def corners(rotation):
+    """
+    Return the coordinates of a unit hexagon, rotated as requested.
+
+    Zero rotation implies flat-to-flat aligned with y-axis. Origin in the center.
+    """
+    points = numpy.array(
+        [
+            (1.0 / (2.0 * math.sqrt(3.0)), 0.5),
+            (1.0 / math.sqrt(3.0), 0.0),
+            (1.0 / (2.0 * math.sqrt(3.0)), -0.5),
+            (-1.0 / (2.0 * math.sqrt(3.0)), -0.5),
+            (-1.0 / math.sqrt(3.0), 0.0),
+            (-1.0 / (2.0 * math.sqrt(3.0)), 0.5),
+        ]
+    )
+
+    rotation = rotation / 180.0 * math.pi
+
+    rotation = numpy.array(
+        [
+            [math.cos(rotation), -math.sin(rotation)],
+            [math.sin(rotation), math.cos(rotation)],
+        ]
+    )
+
+    return numpy.array([tuple(rotation.dot(point)) for point in points])
 
 
 def pitch(side):

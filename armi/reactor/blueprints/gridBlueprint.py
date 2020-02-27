@@ -260,7 +260,7 @@ class GridBlueprint(yamlize.Object):
         if geom == geometry.HEX:
             pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
             # add 2 for potential dummy assems
-            spatialGrid = grids.hexGridFromPitch(pitch, numRings=maxIndex + 2)
+            spatialGrid = grids.HexGrid.fromPitch(pitch, numRings=maxIndex + 2)
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of
             # the mesh into the positive values.
@@ -272,7 +272,7 @@ class GridBlueprint(yamlize.Object):
             isOffset = (
                 self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
             )
-            spatialGrid = grids.cartesianGridFromRectangle(
+            spatialGrid = grids.Grid.fromRectangle(
                 xw, yw, numRings=maxIndex, isOffset=isOffset
             )
         runLog.debug("Built grid: {}".format(spatialGrid))
@@ -290,7 +290,10 @@ class GridBlueprint(yamlize.Object):
         Used to limit the size of the spatialGrid. Used to be
         called maxNumRings.
         """
-        return max(itertools.chain(*zip(*self.gridContents.keys())))
+        if self.gridContents:
+            return max(itertools.chain(*zip(*self.gridContents.keys())))
+        else:
+            return 5
 
     def _readGridContents(self):
         """

@@ -244,7 +244,7 @@ class SystemLayoutInput:
         if self.geomType == RZT:
             # We need a grid in order to go from whats in the input to indices, and to
             # be able to provide grid bounds to the blueprint.
-            rztGrid = grids.thetaRZGridFromGeom(self)
+            rztGrid = grids.ThetaRZGrid.fromGeom(self)
             theta, r, _ = rztGrid.getBounds()
             bounds = {"theta": theta, "r": r}
 
@@ -502,7 +502,8 @@ class SystemLayoutInput:
                 )
             )
 
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
+        grid.symmetry = self.symmetry
 
         # need to cast to a list because we will modify during iteration
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
