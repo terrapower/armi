@@ -540,10 +540,7 @@ class Case:
 
         fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
 
-        for inputFileSetting in [
-            "loadingFile",
-            "geomFile",
-        ]:
+        for inputFileSetting in ["loadingFile", "geomFile"]:
             fileName = self.cs[inputFileSetting]
             if fileName:
                 pathTools.copyOrWarn(
@@ -617,7 +614,7 @@ class Case:
 
         return code
 
-    def writeInputs(self, sourceDir: Optional[str]=None):
+    def writeInputs(self, sourceDir: Optional[str] = None):
         """
         Write the inputs to disk.
 
@@ -669,7 +666,7 @@ class Case:
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
-def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str]=None):
+def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
     """
     Copy sets of files that are considered "input" from each active interface.
 
@@ -688,5 +685,7 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str]=None):
                 if not f:
                     continue
                 pathTools.copyOrWarn(
-                    label, pathTools.armiAbsPath(sourceDir, f), destination
+                    label,
+                    pathTools.armiAbsPath(sourceDir, f),
+                    os.path.join(destination, f),
                 )
