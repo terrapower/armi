@@ -190,7 +190,7 @@ class Assembly_TestCase(unittest.TestCase):
             "error"
         )  # Print nothing to the screen that would normally go to the log.
 
-        self.r = tests.getEmptyHexReactor(self.cs)
+        self.r = tests.getEmptyHexReactor()
         self.r.core.symmetry = "third periodic"
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)

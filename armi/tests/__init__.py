@@ -36,11 +36,10 @@ ISOAA_PATH = os.path.join(TEST_ROOT, "ISOAA")
 COMPXS_PATH = os.path.join(TEST_ROOT, "COMPXS.ascii")
 
 
-def getEmptyHexReactor(cs=None):
+def getEmptyHexReactor():
     """Make an empty hex reactor used in some tests."""
     from armi.reactor import blueprints
 
-    cs = cs or settings.getMasterCs()
     bp = blueprints.Blueprints()
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
