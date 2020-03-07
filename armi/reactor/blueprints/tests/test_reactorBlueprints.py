@@ -88,7 +88,7 @@ class TestReactorBlueprints(unittest.TestCase):
         )
         bp.systemDesigns = self.systemDesigns
         bp.gridDesigns = self.gridDesigns
-        reactor = reactors.Reactor(cs, bp)
+        reactor = reactors.Reactor(cs.caseTitle, bp)
         core = bp.systemDesigns["core"].construct(cs, bp, reactor)
         sfp = bp.systemDesigns["sfp"].construct(cs, bp, reactor)
         for fn in fnames:

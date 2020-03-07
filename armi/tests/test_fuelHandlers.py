@@ -41,7 +41,9 @@ class TestFuelHandler(ArmiTestHelper):
     def setUpClass(cls):
         # prepare the input files. This is important so the unit tests run from wherever
         # they need to run from.
-        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
+        cls.directoryChanger = directoryChangers.DirectoryChanger(
+            TEST_ROOT, dumpOnException=False
+        )
         cls.directoryChanger.open()
 
     @classmethod
@@ -277,7 +279,8 @@ class TestFuelHandler(ArmiTestHelper):
     def runShuffling(self, fh):
         """Shuffle fuel and write out a SHUFFLES.txt file."""
         fh.attachReactor(self.o, self.r)
-        self.o.cs.caseTitle = "armiRun2"  # so we don't overwrite the version-controlled armiRun-SHUFFLES.txt
+        # so we don't overwrite the version-controlled armiRun-SHUFFLES.txt
+        self.o.cs.caseTitle = "armiRun2"
         fh.interactBOL()
 
         for cycle in range(3):
@@ -357,13 +360,17 @@ class TestFuelHandler(ArmiTestHelper):
         for a in self.r.core.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
-        os.remove("armiRun2-SHUFFLES.txt")
+        if os.path.exists("armiRun2-SHUFFLES.txt"):
+            # sometimes pytest runs two of these at once.
+            os.remove("armiRun2-SHUFFLES.txt")
 
         restartFileName = "armiRun2.restart.dat"
         if os.path.exists(restartFileName):
             os.remove(restartFileName)
         for i in range(3):
-            os.remove("armiRun2.shuffles_{}.png".format(i))
+            fname = f"armiRun2.shuffles_{i}.png"
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def test_readMoves(self):
         """

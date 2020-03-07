@@ -35,8 +35,8 @@ THIS_DIR = pathTools.armiAbsDirFromName(__name__)
 class Zone_TestCase(unittest.TestCase):
     def setUp(self):
         bp = blueprints.Blueprints()
-        r = reactors.Reactor(settings.getMasterCs(), bp)
-        r.add(reactors.Core("Core", settings.getMasterCs()))
+        r = reactors.Reactor("zonetest", bp)
+        r.add(reactors.Core("Core"))
         r.core.spatialGrid = grids.hexGridFromPitch(1.0)
         r.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
         r.core.spatialGrid.geomType = geometry.HEX

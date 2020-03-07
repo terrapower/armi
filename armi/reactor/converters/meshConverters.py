@@ -25,13 +25,20 @@ from armi.reactor.flags import Flags, TypeSpec
 
 
 class MeshConverter(object):
-    """Base class for the reactor mesh conversions."""
+    """
+    Base class for the reactor mesh conversions.
+    
+    Parameters
+    ----------
+    converterSettings : dict
+        A set of str, value settings used in mesh conversion. Required
+        settings are implementation specific.
+    """
 
-    def __init__(self, cs=None):
-        self._cs = cs
-        self._converterSettings = None
+    def __init__(self, converterSettings: dict):
+        self._converterSettings = converterSettings
 
-    def generateMesh(self, r=None, converterSettings=None):
+    def generateMesh(self, r=None):
         raise NotImplementedError
 
     def writeMeshData(self):
@@ -46,7 +53,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
     ----------
     converterSettings: dict
         This is a dictionary of settings that are used for the RZThetaReactorMeshConverter.
-        Required converter settings: uniformThetaMesh, thetaBins
+        Required converter settings: ``uniformThetaMesh``,``thetaBins``
 
     See Also
     --------
@@ -54,11 +61,10 @@ class RZThetaReactorMeshConverter(MeshConverter):
     RZThetaReactorMeshConverterByRingCompositionAxialCoordinates
     """
 
-    def __init__(self, cs):
-        MeshConverter.__init__(self, cs)
+    def __init__(self, converterSettings):
+        MeshConverter.__init__(self, converterSettings)
         self._useUniformThetaMesh = None
         self._numThetaMeshBins = None
-        self._converterSettings = None
         self._axialSegsPerBin = None
         self._ringsPerBin = None
         self._numRingsInCore = None
@@ -71,10 +77,11 @@ class RZThetaReactorMeshConverter(MeshConverter):
         self.numAxialMeshBins = None
         self.numThetaMeshBins = None
 
-    def generateMesh(self, r=None, converterSettings=None):
+    def generateMesh(self, r=None):
         core = r.core
-        self._useUniformThetaMesh = converterSettings.get("uniformThetaMesh")
-        self._numThetaMeshBins = converterSettings.get("thetaBins")
+        converterSettings = self._converterSettings
+        self._useUniformThetaMesh = converterSettings["uniformThetaMesh"]
+        self._numThetaMeshBins = converterSettings["thetaBins"]
         self._converterSettings = converterSettings
         self._numRingsInCore = core.getNumHexRings()
         self._assemsInCore = core.getAssemblies()
@@ -209,9 +216,7 @@ class _RZThetaReactorMeshConverterByAxialCoordinates(RZThetaReactorMeshConverter
 
     def setAxialMesh(self):
         """Set up the reactor's new radial rings based on a user-specified axial coordinate list (axial mesh)."""
-        self.axialMesh = self._converterSettings.get("axialMesh")
-        if self.axialMesh is None:
-            raise ValueError("No axial mesh was provided in the converter settings")
+        self.axialMesh = self._converterSettings["axialMesh"]
 
 
 class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
@@ -236,11 +241,7 @@ class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
             axialSegsPerBin = 2
             Merged core axial mesh list - [50.0, 100.0, 175.0] cm
         """
-        self._axialSegsPerBin = self._converterSettings.get("axialSegsPerBin")
-        if self._axialSegsPerBin is None:
-            raise ValueError(
-                "Axial segments per bin were specified in the converter settings"
-            )
+        self._axialSegsPerBin = self._converterSettings["axialSegsPerBin"]
         self._mergeAxialMeshByAxialSegsPerBin()
 
     def _mergeAxialMeshByAxialSegsPerBin(self):
@@ -448,7 +449,7 @@ class AxialExpansionModifier(MeshConverter):
 
         r.core.p.axialExpansionPercent = self._percent
 
-        if not self._cs["detailedAxialExpansion"]:
+        if not self._converterSettings["detailedAxialExpansion"]:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             refAssem = r.core.getFirstAssembly(Flags.FUEL) or r.core.getFirstAssembly()
             axMesh = refAssem.getAxialMesh()
@@ -484,7 +485,11 @@ def getAxialExpansionNuclideAdjustList(r, componentFlags: TypeSpec = None):
     if componentFlags is None:
         componentFlags = [Flags.FUEL]
 
-    adjustSet = {nuc for b in r.core.getBlocks() for c in
-            b.getComponents(componentFlags) for nuc in c.getNuclides()}
+    adjustSet = {
+        nuc
+        for b in r.core.getBlocks()
+        for c in b.getComponents(componentFlags)
+        for nuc in c.getNuclides()
+    }
 
     return list(adjustSet)

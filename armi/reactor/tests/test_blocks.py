@@ -45,7 +45,7 @@ def loadTestBlock(cold=True):
     settings.setMasterCs(caseSetting)
     runLog.setVerbosity("error")
     caseSetting["nCycles"] = 1
-    r = tests.getEmptyHexReactor(caseSetting)
+    r = tests.getEmptyHexReactor()
 
     assemNum = 3
     block = blocks.HexBlock("TestHexBlock")
@@ -1448,7 +1448,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.HexBlock.addComponent(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
-        r = tests.getEmptyHexReactor(caseSetting)
+        r = tests.getEmptyHexReactor()
         a = makeTestAssembly(1, 1)
         a.add(self.HexBlock)
         loc1 = r.core.spatialGrid[0, 1, 0]

@@ -1489,9 +1489,9 @@ class Layout(object):
             Klass = ArmiObject.TYPES[compType]
 
             if issubclass(Klass, Reactor):
-                comp = Klass(cs, bp)
+                comp = Klass(cs.caseTitle, bp)
             elif issubclass(Klass, Core):
-                comp = Klass(name, cs)
+                comp = Klass(name)
             elif issubclass(Klass, Component):
                 # XXX: initialize all dimensions to 0, they will be loaded and assigned
                 # after load

@@ -425,11 +425,11 @@ class Interface(object):
 
     def writeInput(self, inName):
         """Write input file(s)."""
-        pass
+        raise NotImplementedError()
 
     def readOutput(self, outName):
         """Read output file(s)."""
-        pass
+        raise NotImplementedError()
 
     @staticmethod
     def specifyInputs(cs) -> Dict[str, List[str]]:  # pylint: disable=unused-argument
@@ -482,7 +482,21 @@ class InputWriter(object):
 
 
 class OutputReader(object):
-    """Read output files from external codes."""
+    """
+    A generic representation of a particular module's output.
+    
+    Attributes
+    ----------
+    success : bool
+        False by default, set to True if the run is considered
+        to have completed without error.
+        
+    Notes
+    -----
+    Should ideally not require r, eci, and fname arguments
+    and would rather just have an apply(reactor) method.
+    
+    """
 
     def __init__(self, r=None, externalCodeInterface=None, fName=None):
         self.externalCodeInterface = externalCodeInterface
@@ -494,6 +508,7 @@ class OutputReader(object):
         else:
             self.output = None
         self.fName = fName
+        self.success = False
 
     def getInterface(self, name):
         """Get another interface by name."""
@@ -504,6 +519,17 @@ class OutputReader(object):
     def read(self, fileName):
         """Read the output file."""
         raise NotImplementedError
+
+    def apply(self, reactor):
+        """
+        Apply the output back to a reactor state.
+        
+        This provides a generic interface for the output data of anything
+        to be applied to a reactor state. The application could involve
+        reading text or binary output or simply parameters to appropriate
+        values in some other data structure.
+        """
+        raise NotImplementedError()
 
 
 def getActiveInterfaceInfo(cs):

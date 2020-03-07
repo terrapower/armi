@@ -478,21 +478,17 @@ class HexToRZThetaConverter(GeometryConverter):
         Convert the source reactor using the converterSettings
         """
         runLog.info("Generating mesh coordinates for the reactor conversion")
-        self._radialMeshConversionType = self.converterSettings.get(
-            "radialConversionType"
-        )
-        self._axialMeshConversionType = self.converterSettings.get(
-            "axialConversionType"
-        )
+        self._radialMeshConversionType = self.converterSettings["radialConversionType"]
+        self._axialMeshConversionType = self.converterSettings["axialConversionType"]
         converter = None
         if self._radialMeshConversionType == self._MESH_BY_RING_COMP:
             if self._axialMeshConversionType == self._MESH_BY_AXIAL_COORDS:
                 converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
-                    self._cs
+                    self.converterSettings
                 )
             elif self._axialMeshConversionType == self._MESH_BY_AXIAL_BINS:
                 converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-                    self._cs
+                    self.converterSettings
                 )
         if converter is None:
             raise ValueError(
@@ -502,11 +498,9 @@ class HexToRZThetaConverter(GeometryConverter):
                 )
             )
         self.meshConverter = converter
-        return self.meshConverter.generateMesh(
-            self._sourceReactor, self.converterSettings
-        )
+        return self.meshConverter.generateMesh(self._sourceReactor)
 
-    def convert(self, r=None):
+    def convert(self, r):
         """
         Run the conversion to 3 dimensional R-Z-Theta.
 
@@ -532,9 +526,6 @@ class HexToRZThetaConverter(GeometryConverter):
         --------
         armi.reactor.converters.meshConverters
         """
-        if r is None:
-            raise ValueError("Reactor needed for reactor conversion")
-
         if r.core.geomType != geometry.HEX:
             raise ValueError(
                 "Cannot use {} to convert {} reactor".format(
@@ -545,7 +536,9 @@ class HexToRZThetaConverter(GeometryConverter):
         self._sourceReactor = r
         self._setupSourceReactorForConversion()
         reactorConversionMethod = (
-            "circular" if self._cs["circularRingMode"] else "hexagonal"
+            "hexagonal"
+            if self.converterSettings["hexRingGeometryConversion"]
+            else "circular"
         )
         runLog.extra(
             "Converting reactor using {} rings".format(reactorConversionMethod)
@@ -642,13 +635,12 @@ class HexToRZThetaConverter(GeometryConverter):
     def _getAssembliesInCurrentRadialZone(self, lowerRing, upperRing):
         ringAssems = []
         for ring in range(lowerRing, upperRing):
-            if self._cs["hexRingGeometryConversion"]:
+            if self.converterSettings["hexRingGeometryConversion"]:
                 ringAssems.extend(
                     self._sourceReactor.core.getAssembliesInSquareOrHexRing(ring)
                 )
             else:
                 ringAssems.extend(self._sourceReactor.core.getAssembliesInRing(ring))
-
         return ringAssems
 
     def _setupSourceReactorForConversion(self):
@@ -658,15 +650,19 @@ class HexToRZThetaConverter(GeometryConverter):
         self._o = self._sourceReactor.o
 
     def _setupConvertedReactor(self, grid):
-        self.convReactor = reactors.Reactor(self._cs, self._sourceReactor.blueprints)
-        self.convReactor.add(reactors.Core("Core", self._cs))
+        self.convReactor = reactors.Reactor(
+            "ConvertedReactor", self._sourceReactor.blueprints
+        )
+        core = reactors.Core("Core")
+        if self._cs is not None:
+            core.setOptionsFromCs(self._cs)
+        self.convReactor.add(core)
         self.convReactor.core.spatialGrid = grid
         grid.symmetry = geometry.FULL_CORE
         grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
         self.convReactor.core.name += " - {0}".format(self._GEOMETRY_TYPE)
-        self._o.reattach(self.convReactor, self._cs)
 
     def _setAssemsInRadialZone(self, radialIndex, lowerRing, upperRing):
         """
@@ -1116,9 +1112,8 @@ class HexToRZThetaConverter(GeometryConverter):
                     innerAxial = outerAxial
                 innerRadius = outerRadius
             plt.title(
-                "{} Core Map of {} from {} to {} revolutions".format(
+                "{} Core Map of from {} to {} revolutions".format(
                     self.convReactor.core.geomType.upper(),
-                    self._cs.caseTitle.upper(),
                     innerTheta * units.RAD_TO_REV,
                     outerTheta * units.RAD_TO_REV,
                 ),
@@ -1143,7 +1138,7 @@ class HexToRZThetaConverter(GeometryConverter):
             plt.ylabel("Axial Mesh (cm)".upper(), labelpad=20)
             plt.plot()
             figName = (
-                self._cs.caseTitle
+                "coreMap"
                 + "-{}".format(self.convReactor.core.geomType)
                 + "_{}".format(i)
                 + ".png"
