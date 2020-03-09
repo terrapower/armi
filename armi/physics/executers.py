@@ -78,25 +78,7 @@ class ExecutionOptions:
 
 class Executer:
     """
-    Coordinates the execution of some calculation.
-
-    This is a semi-generic way to run some kind of calculation based on experience
-    of running many related calculations. It may
-    be an external code execution but could also be some internal calculation.
-    The generic characteristics of a execution are some optional subset of the following:
-
-    * Choose modeling options (either from the global run settings input or dictated programmatically)
-    * Apply geometry transformations to the ARMI Reactor as needed
-    * Build run-specific working directory
-    * Write input file(s)
-    * Put specific input files and libs in run directory
-    * Run the analysis (external execution, or not)
-    * Process output while still in run directory
-    * Check error conditions
-    * Move desired output files back to main working directory
-    * Clean up run directory
-    * Un-apply geometry transformations as needed
-    * Update ARMI data model as desired
+    Short-lived object that coordinates a calculation step and updates a reactor.
 
     Notes
     -----
@@ -112,13 +94,46 @@ class Executer:
     def run(self):
         """
         Run the executer steps. 
-        
+
+        This should use the current state of the reactor as input,
+        perform some kind of calculation, and update the reactor
+        with the output. 
+        """
+        raise NotImplementedError()
+
+
+class DefaultExecuter(Executer):
+    """
+    An Executer that uses a common run sequence.
+
+    This sequence has been found to be relatively common in many 
+    externally-executed physics codes. It is here for convenience
+    but is not required. The sequence look like:
+
+    * Choose modeling options (either from the global run settings input or dictated programmatically)
+    * Apply geometry transformations to the ARMI Reactor as needed
+    * Build run-specific working directory
+    * Write input file(s)
+    * Put specific input files and libs in run directory
+    * Run the analysis (external execution, or not)
+    * Process output while still in run directory
+    * Check error conditions
+    * Move desired output files back to main working directory
+    * Clean up run directory
+    * Un-apply geometry transformations as needed
+    * Update ARMI data model as desired
+    """
+
+    def run(self):
+        """
+        Run the executer steps.
+
         .. warning::
-            If a calculation requires anything different from what this method does,
-            do not update this method with new complexity! Instead, simply make your own
-            run sequence and/or class. This pattern is useful only in that it is fairly simple.
-            By all means, do use ``DirectoryChanger`` and ``ExecuterOptions``
-            and other utilities. 
+                If a calculation requires anything different from what this method does,
+                do not update this method with new complexity! Instead, simply make your own
+                run sequence and/or class. This pattern is useful only in that it is fairly simple.
+                By all means, do use ``DirectoryChanger`` and ``ExecuterOptions``
+                and other utilities. 
         """
         self.options.resolveDerivedOptions()
         runLog.debug(self.options.describe())
@@ -144,6 +159,14 @@ class Executer:
         self._undoGeometryTransformations()
         return output
 
+    def _collectInputsAndOutputs(self):
+        """Get total lists of input and output files."""
+        inputs = [self.options.inputFile] if self.options.inputFile else []
+        inputs.extend(self.options.extraInputFiles)
+        outputs = [self.options.outputFile] if self.options.outputFile else []
+        outputs.extend(self.options.extraOutputFiles)
+        return inputs, outputs
+
     def _execute(self):
         runLog.extra(
             f"Executing {self.options.executablePath}\n"
@@ -152,14 +175,6 @@ class Executer:
             f"\tWorking dir: {self.options.runDir}"
         )
         return True
-
-    def _collectInputsAndOutputs(self):
-        """Get total lists of input and output files."""
-        inputs = [self.options.inputFile] if self.options.inputFile else []
-        inputs.extend(self.options.extraInputFiles)
-        outputs = [self.options.outputFile] if self.options.outputFile else []
-        outputs.extend(self.options.extraOutputFiles)
-        return inputs, outputs
 
     def writeInput(self):
         pass

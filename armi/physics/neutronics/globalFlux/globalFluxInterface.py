@@ -261,6 +261,17 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         executer = self.getExecuterCls()(options=opts, reactor=self.r)
         return executer
 
+    def calculateKeff(self, label="keff"):
+        """
+        Run global flux with current user options and just return keff without applying it.
+        
+        Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
+        """
+        executer = self.getExecuter(label=label)
+        executer.options.applyResultsToReactor = False
+        output = executer.run()
+        return output.getKeff()
+
 
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers"""
@@ -315,9 +326,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.xsKernel = cs["xsKernel"]
 
 
-class GlobalFluxExecuter(executers.Executer):
+class GlobalFluxExecuter(executers.DefaultExecuter):
     """
-    A short-lived object that coordinates the preparation, execution, and processing of a global flux solve.
+    A short-lived object that  coordinates the prep, execution, and processing of a flux solve
 
     There are many forms of global flux solves:
 
@@ -344,14 +355,8 @@ class GlobalFluxExecuter(executers.Executer):
     """
 
     def __init__(self, options, reactor):
-        executers.Executer.__init__(self, options, reactor)
+        executers.DefaultExecuter.__init__(self, options, reactor)
         self.geomConverters = {}
-
-    def _execute(self):
-        """
-        Execute the global flux solver sequence.
-        """
-        executers.Executer._execute(self)
 
     @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
