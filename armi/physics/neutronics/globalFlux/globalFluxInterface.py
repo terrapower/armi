@@ -207,7 +207,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         Flux, power, and keff are generally calculated at every timestep to ensure flux 
         is up to date with the reactor state.
         """
-        executer = self.getExecuter(label=f"c{cycle}n{node}")
+        executer = self.getExecuter(label=f"{self.cs.caseTitle}-flux-c{cycle}n{node}")
         executer.run()
         GlobalFluxInterface.interactEveryNode(self, cycle, node)
 
@@ -303,6 +303,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadElevation = None
         self.loadPadLength = None
 
+        self.geomType = None
+        self.symmetry = None
+
     def fromUserSettings(self, cs):
         """
         Map user input settings from cs to a set of specific global flux options.
@@ -324,6 +327,10 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadLength = cs["loadPadLength"]
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
+
+    def fromReactor(self, reactor):
+        self.geomType = reactor.core.geomType
+        self.symmetry = reactor.core.symmetry
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):
