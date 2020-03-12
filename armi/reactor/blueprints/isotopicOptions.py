@@ -437,20 +437,7 @@ def getDefaultNuclideFlags():
     for boron in [10, 11]:
         nuclideFlags[f"B{boron}"] = {"burn": False, "xs": True, "expandTo": None}
 
-    for struct in [
-        "ZR",
-        "C",
-        "SI",
-        "V",
-        "CR",
-        "MN",
-        "FE",
-        "NI",
-        "MO",
-        "W",
-        "NA",
-        "HE",
-    ]:
+    for struct in ["ZR", "C", "SI", "V", "CR", "MN", "FE", "NI", "MO", "W", "NA", "HE"]:
         nuclideFlags[struct] = {"burn": False, "xs": True, "expandTo": None}
 
     return nuclideFlags
@@ -496,9 +483,7 @@ def autoSelectElementsToKeepFromSettings(cs):
         "O": ["O16"],  # neglect O17 and O18
         "W": ["W182", "W183", "W184", "W186"],  # neglect W180
     }
-    mcnpExpansions = {
-        "O": ["O16"],
-    }
+    mcnpExpansions = {"O": ["O16"]}
 
     for element in elements.byName.values():
         # any NaturalNuclideBase that's available in MC2 libs
@@ -524,7 +509,7 @@ def autoSelectElementsToKeepFromSettings(cs):
                 )
             )
 
-    elif cs["xsKernel"] in ["SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+    elif cs["xsKernel"] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
         elementalsToKeep.update(endf70Elementals)
         expansionStrings.update(mc2Expansions)
 

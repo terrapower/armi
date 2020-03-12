@@ -70,7 +70,7 @@ class ExecutionOptions:
     def describe(self):
         """Make a string summary of all options."""
         lines = ["Options summary:", "----------------"]
-        for key, val in self.__dict__.items():
+        for key, val in sorted(self.__dict__.items()):
             if not key.startswith("_"):
                 lines.append(f"  {key:40s}{str(val)[:80]:80s}")
         return "\n".join(lines)
