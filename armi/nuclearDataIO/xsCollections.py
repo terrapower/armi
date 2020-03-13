@@ -827,6 +827,8 @@ def computeMacroscopicGroupConstants(
     # sort the numberDensities because a summation is being performed that may result in slight
     # differences based on the order.
     for nuclideName, numberDensity in sorted(numberDensities.items()):
+        if not numberDensity:
+            continue
         try:
             libNuclide = lib.getNuclide(nuclideName, microSuffix)
             multLibNuclide = libNuclide
@@ -863,19 +865,15 @@ def computeMacroscopicGroupConstants(
         )
 
     if skippedNuclides:
-        runLog.error(
-            "Following nuclides are not in microscopic library {}: {}".format(
-                lib, skippedNuclides
-            ),
-            single=True,
+        msg = "The following nuclides are not in microscopic library {}: {}".format(
+            lib, skippedNuclides
         )
-        raise ValueError(
-            "Specified nuclides are not in microscopic library {}".format(lib)
-        )
+        runLog.error(msg, single=True)
+        raise ValueError(msg)
 
     if skippedMultNuclides:
         runLog.debug(
-            "Following nuclides are not in multiplier library {}: {}".format(
+            "The following nuclides are not in multiplier library {}: {}".format(
                 multLib, skippedMultNuclides
             ),
             single=True,

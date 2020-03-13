@@ -4,46 +4,12 @@ settings:
   branchVerbosity: info
   burnSteps: 0
   comment: 'Revised benchmark  '
-  CRWorthFile: jcTP1_c602OCR26.stdout
   db: false
   economics: false
   genXS: Neutron
   geomFile: ThRZGeom.xml
   groupStructure: ARMI45
   loadingFile: ThRZloading.yaml
-  nodeGroup: OnlineNodes,TP
   numProcessors: 12
   outputFileExtension: png
-  Param10Distrib: ''
-  Param10name: Param 10
-  Param10Params: 0,0.1
-  Param1Distrib: ''
-  Param1name: Param 1
-  Param1Params: 0,0.1
-  Param2Distrib: ''
-  Param2name: Param 2
-  Param2Params: 0,0.1
-  Param3Distrib: ''
-  Param3name: Param 3
-  Param3Params: 0,0.1
-  Param4Distrib: ''
-  Param4name: Param 4
-  Param4Params: 0,0.1
-  Param5Distrib: ''
-  Param5name: Param 5
-  Param5Params: 0,0.1
-  Param6Distrib: ''
-  Param6name: Param 6
-  Param6Params: 0,0.1
-  Param7Distrib: ''
-  Param7name: Param 7
-  Param7Params: 0,0.1
-  Param8Distrib: ''
-  Param8name: Param 8
-  Param8Params: 0,0.1
-  Param9Distrib: ''
-  Param9name: Param 9
-  Param9Params: 0,0.1
   power: 1000000.0
-  sascases:
-    - powerdefect.txt
