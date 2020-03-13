@@ -827,6 +827,8 @@ def computeMacroscopicGroupConstants(
     # sort the numberDensities because a summation is being performed that may result in slight
     # differences based on the order.
     for nuclideName, numberDensity in sorted(numberDensities.items()):
+        if not numberDensity:
+            continue
         try:
             libNuclide = lib.getNuclide(nuclideName, microSuffix)
             multLibNuclide = libNuclide
