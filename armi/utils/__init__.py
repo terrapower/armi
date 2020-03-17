@@ -52,18 +52,25 @@ _HASH_BUFFER_SIZE = (
 
 def coverageReportHelper(config, dataPaths):
     """
-    Small utility function to generate converage reports.
+    Small utility function to generate coverage reports.
 
     This was created to side-step the difficulties in submitting multi-line python
     commands on-the-fly.
+
+    This combines data paths and then makes html and xml reports for the
+    fully-combined result.
     """
     from coverage import Coverage
     import coverage
 
     try:
         cov = Coverage(config_file=config)
-        cov.combine(data_paths=dataPaths)
-        cov.save()
+        if dataPaths:
+            # fun fact: if you combine when there's only one file, it gets deleted.
+            cov.combine(data_paths=dataPaths)
+            cov.save()
+        else:
+            cov.load()
         cov.html_report()
         cov.xml_report()
     except PermissionError:

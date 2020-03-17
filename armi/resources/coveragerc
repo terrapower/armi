@@ -1,7 +1,6 @@
 # coveragerc to control coverage.py
 [run]
 branch = True
-parallel = True
 omit =
     */tests/*
 # change default .coverage file to something that doesn't have a dot
