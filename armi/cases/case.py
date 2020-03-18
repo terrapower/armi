@@ -40,6 +40,7 @@ import six
 import coverage
 
 import armi
+from armi import context
 from armi import settings
 from armi import operators
 from armi import runLog
@@ -321,6 +322,12 @@ class Case:
             cov = coverage.Coverage(
                 config_file=os.path.join(armi.RES, "coveragerc"), debug=["dataio"]
             )
+            if context.MPI_SIZE > 1:
+                # interestingly, you cannot set the parallel flag in the constructor
+                # without auto-specifying the data suffix. This should enable
+                # parallel coverage with auto-generated data file suffixes and
+                # combinations.
+                cov.config.parallel = True
             cov.start()
 
         profiler = None
@@ -371,9 +378,12 @@ class Case:
                 armi.MPI_COMM.barrier()  # force waiting for everyone to finish
 
             if armi.MPI_RANK == 0 and armi.MPI_SIZE > 1:
+                # combine all the parallel coverage data files into one and make
+                # the XML and HTML reports for the whole run.
                 combinedCoverage = coverage.Coverage(
                     config_file=os.path.join(armi.RES, "coveragerc"), debug=["dataio"]
                 )
+                combinedCoverage.config.parallel = True
                 # combine does delete the files it merges
                 combinedCoverage.combine()
                 combinedCoverage.save()
