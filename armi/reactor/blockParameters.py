@@ -1014,20 +1014,6 @@ def getBlockParameterDefinitions():
 
         pb.defParam("bu", units="", description="?")
 
-        pb.defParam(
-            "gasReleaseFraction",
-            units="",
-            description="Fraction of fission gas to remove",
-            categories=["eq cumulative shift"],
-        )
-
-        pb.defParam(
-            "bondRemoved",
-            units="fraction",
-            description="Fraction of thermal bond between fuel and clad that has been pushed out.",
-            categories=["eq cumulative shift"],
-        )
-
         def buGroup(self, buGroupChar):  # pylint: disable=method-hidden
             if isinstance(buGroupChar, (int, float)):
                 intValue = int(buGroupChar)

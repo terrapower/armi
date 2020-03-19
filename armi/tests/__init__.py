@@ -211,8 +211,6 @@ class ArmiTestHelper(unittest.TestCase):
         Rebaselining the reference files upon large, expected, hand-verified changes is accomodated by
         :py:meth:`rebaselineTextComparisons`.
 
-
-
         Parameters
         ----------
         expectedFilePath: str
@@ -248,11 +246,11 @@ class ArmiTestHelper(unittest.TestCase):
                         for line in (actualLine, expectedLine)
                     ):
                         continue
-                    else:
-                        msg = "\nThe files: \n{} and \n{} \nwere not the same.".format(
-                            expectedFilePath, os.path.abspath(actualFilePath)
-                        )
-                        raise AssertionError(msg) from er
+
+                    msg = "\nThe files: \n{} and \n{} \nwere not the same.".format(
+                        expectedFilePath, os.path.abspath(actualFilePath)
+                    )
+                    raise AssertionError(msg) from er
         os.remove(actualFilePath)
 
 
