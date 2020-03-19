@@ -57,6 +57,11 @@ class TestFuelHandler(ArmiTestHelper):
         """
 
         self.o, self.r = testReactor.loadTestReactor(self.directoryChanger.destination)
+        blockList = self.r.core.getBlocks()
+        for bi, b in enumerate(blockList):
+            b.p.flux = 5e10
+            if b.isFuel():
+                b.p.percentBu = 30.0 * bi / len(blockList)
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
         self.nSfp = len(self.r.core.sfp)
@@ -116,17 +121,13 @@ class TestFuelHandler(ArmiTestHelper):
     def test_FindHighBu(self):
         a = self.r.core.whichAssemblyIsIn(5, 4)
         # set burnup way over 1.0, which is otherwise the highest bu in the core
-        a[0].p.percentBu = 10
+        a[0].p.percentBu = 50
 
         fh = fuelHandlers.FuelHandler(self.o)
         a1 = fh.findAssembly(
             param="percentBu", compareTo=100, blockLevelMax=True, typeSpec=None
         )
-        self.assertEqual(
-            a,
-            a1,
-            "The high burnup assembly {0} is not the expected one {1}".format(a, a1),
-        )
+        self.assertIs(a, a1)
 
     def test_Width(self):
         """Tests the width capability of findAssembly."""
@@ -276,6 +277,46 @@ class TestFuelHandler(ArmiTestHelper):
             "highest burnup ({0}). It has ({1})".format(max(burnups), bu),
         )
 
+    def test_findByCoords(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        assem = fh.findAssembly(coords=(0, 0))
+        self.assertIs(assem, self.o.r.core[0])
+
+    def test_findWithMinMax(self):
+        """Test the complex min/max comparators."""
+        fh = fuelHandlers.FuelHandler(self.o)
+        assem = fh.findAssembly(
+            param="percentBu",
+            compareTo=100,
+            blockLevelMax=True,
+            minParam="percentBu",
+            minVal=("percentBu", 0.1),
+            maxParam="percentBu",
+            maxVal=20.0,
+        )
+        # the burnup should be the maximum bu within
+        # up to a burnup of 20%, which by the simple
+        # dummy data layout should be the 2/3rd block in the blocklist
+        bs = self.r.core.getBlocks(Flags.FUEL)
+        lastB = None
+        for b in bs:
+            if b.p.percentBu > 20:
+                break
+            lastB = b
+        expected = lastB.parent
+        self.assertIs(assem, expected)
+
+        # test the impossible: an block with burnup less than
+        # 110% of its own burnup
+        assem = fh.findAssembly(
+            param="percentBu",
+            compareTo=100,
+            blockLevelMax=True,
+            minParam="percentBu",
+            minVal=("percentBu", 1.1),
+        )
+        self.assertIsNone(assem)
+
     def runShuffling(self, fh):
         """Shuffle fuel and write out a SHUFFLES.txt file."""
         fh.attachReactor(self.o, self.r)
@@ -346,9 +387,7 @@ class TestFuelHandler(ArmiTestHelper):
         self.setUp()
         self.o.cs["plotShuffleArrows"] = True
         # now repeat shuffles
-        self.o.cs[
-            "explicitRepeatShuffles"
-        ] = "armiRun-SHUFFLES.txt"  # signals repeat shuffles
+        self.o.cs["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
 
         fh = self.r.o.getInterface("fuelHandler")
 
@@ -414,6 +453,59 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertNotIn("LoadQueue", loadChains)
         self.assertFalse(loopChains)
 
+    def test_getFactorList(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        factors, flags = fh.getFactorList(0)
+        self.assertIn("eqShuffles", factors)
+
+    def test_simpleAssemblyRotation(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        self.o.cs["assemblyRotationStationary"] = True
+        hist = self.o.getInterface("history")
+        assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
+        addSomeDetailAssemblies(hist, assems)
+        b = self.o.r.core.getFirstBlock(Flags.FUEL)
+        rotNum = b.getRotationNum()
+        fh.simpleAssemblyRotation()
+        fh.simpleAssemblyRotation()
+        self.assertEqual(b.getRotationNum(), rotNum + 2)
+
+    def test_buReducingAssemblyRotation(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        self.o.cs["assemblyRotationStationary"] = True
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        # apply dummy pin-level data to allow intelligent rotation
+        for b in assem.getBlocks(Flags.FUEL):
+            b.breakFuelComponentsIntoIndividuals()
+            b.initializePinLocations()
+            b.p.percentBuMaxPinLocation = 10
+            b.p.percentBuMax = 5
+            b.p.linPowByPin = list(reversed(range(b.getNumPins())))
+        addSomeDetailAssemblies(hist, [assem])
+        rotNum = b.getRotationNum()
+        fh.buReducingAssemblyRotation()
+        self.assertNotEqual(b.getRotationNum(), rotNum)
+
+    def test_buildRingSchedule(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        schedule, widths = fh.buildRingSchedule(17, 1, jumpRingFrom=14)
+        self.assertEqual(
+            schedule, [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17]
+        )
+        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    def test_buildConvergentRingSchedule(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        schedule, widths = fh.buildConvergentRingSchedule(17, 1)
+        self.assertEqual(schedule, [1, 17])
+        self.assertEqual(widths, [16, 1])
+
+    def test_buildEqRingSchedule(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        locSchedule = fh.buildEqRingSchedule([2, 1])
+        self.assertEqual(locSchedule, ["A2001", "A2002", "A1001"])
+
 
 class TestFuelPlugin(unittest.TestCase):
     """Tests that make sure the plugin is being discovered well."""
@@ -425,6 +517,11 @@ class TestFuelPlugin(unittest.TestCase):
 
         setting = cs.settings[nm]
         self.assertIn("distance", setting.options)
+
+
+def addSomeDetailAssemblies(hist, assems):
+    for a in assems:
+        hist.detailAssemblyNames.append(a.getName())
 
 
 if __name__ == "__main__":

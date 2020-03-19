@@ -61,14 +61,18 @@ class FuelHandlerInterface(interfaces.Interface):
         # assembly name key, (x, y) values. used for making shuffle arrows.
         self.oldLocations = {}
         # need order due to nature of moves but with fast membership tests
-        self.moved = collections.OrderedDict([])
+        self.moved = []
         self.cycle = 0
         # filled during summary of EOC time in years of each cycle (time at which shuffling occurs)
         self.cycleTime = {}
 
     @staticmethod
     def specifyInputs(cs):
-        files = [cs[label] for label in ["shuffleLogic", "explicitRepeatShuffles"] if cs[label]]
+        files = [
+            cs[label]
+            for label in ["shuffleLogic", "explicitRepeatShuffles"]
+            if cs[label]
+        ]
         return {"fuel management": files}
 
     def interactBOC(self, cycle=None):
@@ -276,7 +280,7 @@ class FuelHandler:
         # we need access to the operator to find the core, get settings, grab
         # other interfaces, etc.
         self.o = operator
-        self.moved = collections.OrderedDict([])
+        self.moved = []
         self._handleBackwardsCompatibility()
 
     def _handleBackwardsCompatibility(self):
@@ -371,7 +375,7 @@ class FuelHandler:
                 except:
                     runLog.important("A fuel management error has occurred. ")
                     runLog.important("Trying operation on assembly {}".format(a))
-                    runLog.important("The moved list is {}".format(self.moved.keys()))
+                    runLog.important("The moved list is {}".format(self.moved))
                     raise
         else:
             numMoved = 0
@@ -383,8 +387,8 @@ class FuelHandler:
         )
 
         # now wipe out the self.moved version so it doesn't transmit the assemblies during distributeState
-        moved = self.moved.copy()
-        self.moved = collections.OrderedDict([])
+        moved = self.moved[:]
+        self.moved = []
         return moved
 
     def chooseSwaps(self, shuffleFactors=None):
@@ -463,34 +467,27 @@ class FuelHandler:
         hist = self.o.getInterface("history")
         for aPrev in self.moved:  # much more convenient to loop through aPrev first
             aNow = self.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
-            if (
-                aNow in hist.getDetailAssemblies()
-            ):  # no point in rotation if there's no pin detail
+            # no point in rotation if there's no pin detail
+            if aNow in hist.getDetailAssemblies():
 
                 rot = self.getOptimalAssemblyOrientation(aNow, aPrev)
                 aNow.rotatePins(rot)  # rot = integer between 0 and 5
                 numRotated += 1
                 # Print out rotation operation (mainly for testing)
-                (
-                    i,
-                    j,
-                ) = aNow.spatialLocator.getRingPos()  # hex indices (i,j) = (ring,pos)
+                # hex indices (i,j) = (ring,pos)
+                (i, j) = aNow.spatialLocator.getRingPos()
                 runLog.important(
                     "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, rot)
                 )
 
-        if self.cs[
-            "assemblyRotationStationary"
-        ]:  # rotate NON-MOVING assemblies (stationary)
+        # rotate NON-MOVING assemblies (stationary)
+        if self.cs["assemblyRotationStationary"]:
             for a in hist.getDetailAssemblies():
                 if a not in self.moved:
                     rot = self.getOptimalAssemblyOrientation(a, a)
                     a.rotatePins(rot)  # rot = integer between 0 and 6
                     numRotated += 1
-                    (
-                        i,
-                        j,
-                    ) = a.spatialLocator.getRingPos()  # hex indices (i,j) = (ring,pos)
+                    (i, j) = a.spatialLocator.getRingPos()
                     runLog.important(
                         "Rotating Assembly ({0},{1}) to Orientation {2}".format(
                             i, j, rot
@@ -557,9 +554,8 @@ class FuelHandler:
         if maxBuBlock is None:
             # no max block. They're all probably zero
             return rot
-        maxBuPinIndexAssem = int(
-            maxBuBlock.p.percentBuMaxPinLocation - 1
-        )  # start at 0 instead of 1
+        # start at 0 instead of 1
+        maxBuPinIndexAssem = int(maxBuBlock.p.percentBuMaxPinLocation - 1)
         bIndexMaxBu = a.index(maxBuBlock)
 
         if maxBuPinIndexAssem == 0:
@@ -585,9 +581,8 @@ class FuelHandler:
                     indexLookup = maxBuBlock.rotatePins(
                         possibleRotation, justCompute=True
                     )
-                    index = indexLookup[
-                        maxBuPinIndexAssem
-                    ]  # rotated index of highest-BU pin
+                    # rotated index of highest-BU pin
+                    index = int(indexLookup[maxBuPinIndexAssem])
                     # get pin power at this index in the previously assembly located here
                     # power previously at rotated index
                     prevAssemPowHere = aPrev[bIndexMaxBu].p.linPowByPin[index - 1]
@@ -1397,8 +1392,7 @@ class FuelHandler:
         # add assemblies into the moved location
         for a in [a1, a2]:
             if a not in self.moved:
-                self.moved[a] = a  # use as ordered set
-
+                self.moved.append(a)
         oldA1Location = a1.spatialLocator
         self._transferStationaryBlocks(a1, a2)
         a1.moveTo(a2.spatialLocator)
@@ -1440,10 +1434,10 @@ class FuelHandler:
             return
 
         # add assemblies into the moved location
-        # keep it unique so we don't get blow-up nummobes
+        # keep it unique so we don't get artificially inflated numMoves
         for a in [incoming, outgoing]:
             if a not in self.moved:
-                self.moved[a] = a
+                self.moved.append(a)
 
         self._transferStationaryBlocks(incoming, outgoing)
 
