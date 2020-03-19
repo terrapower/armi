@@ -129,6 +129,14 @@ class Utils_TestCase(unittest.TestCase):
         fixed = utils.fixThreeDigitExp("-2.4594981981654-101")
         self.assertEqual(-2.4594981981654e-101, fixed)
 
+    def test_capStrLen(self):
+        #Test with strings
+        str1 = utils.capStrLen('sodium', 5)
+        self.assertEqual('so...', str1)
+        str1 = utils.capStrLen("potassium", 6)
+        self.assertEqual('pot...', str1)
+        str1 = utils.capStrLen('rubidium', 7)
+        self.assertEqual('rubi...', str1)
 
 class TestUnits(unittest.TestCase):
     def setUp(self):
