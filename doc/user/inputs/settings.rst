@@ -31,7 +31,7 @@ The ARMI GUI
 ============
 The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
 also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
-cluster.  The GUI is simply a front-end to
+cluster.  The GUI is a front-end to
 these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them. 
 
 Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same
@@ -61,3 +61,39 @@ to update this setting.
 
 Other settings on this tab may need to be updated depending on your computational environment.
 Talk to your system admins to determine which settings are best.
+
+Some special settings
+=====================
+A few settings warrant additional discussion.
+
+.. _detail-assems:
+
+Detail assemblies
+-----------------
+Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses
+often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins
+may treat detail assemblies differently, so it's important to read the plugin documentation
+as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis
+only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies,
+while subchannel T/H is run on the others. 
+
+Detail assemblies are specified by the user in a variety of ways, 
+through the GUI or the settings system.
+
+.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush
+    for serious multiphysics calculations with each plugin treating them differently.
+    It is likely that this feature will be extended to be more flexible and less
+    surprising in the future.
+
+Detail Assembly Locations BOL
+    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings 
+    (e.g. ``A4003`` for ring 4, position 3). Assemblies that are in these locations at the 
+    beginning-of-life will be activated as detail assemblies.
+
+Detail assembly numbers
+    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous
+    case and specified, regardless of when the assemblies enter the core. This is useful for
+    activating detailed treatment of assemblies that enter the core at a later cycle.
+
+Detail all assemblies
+    The ``detailAllAssems`` setting makes all assemblies in the problem detail assemblies

@@ -85,7 +85,7 @@ considerably). Examples:
 Plugins are stateless. They do not have ``__init__()`` methods, and when they are
 registered with the PluginMagager, the PluginManager gets the Plugin's class object
 rather than an instance of that class. Also notice that all of the hooks are
-``@staticmethod``s. As a result, they can be called directly off of the class object,
+``@staticmethod``\ s. As a result, they can be called directly off of the class object,
 and only have access to the state passed into them to perform their function. This is a
 deliberate design choice to keep the plugin system simple and to preclude a large class
 of potential bugs. At some point it may make sense to revisit this.
@@ -367,7 +367,7 @@ class ArmiPlugin:
         """
         Function for defining case dependencies.
 
-        Some Cases depend on the results of other ``Case``s in the same ``CaseSuite``.
+        Some Cases depend on the results of other ``Case``\ s in the same ``CaseSuite``.
         Which dependencies exist, and how they are discovered depends entirely on the
         type of analysis and active interfaces, etc. This function allows a plugin to
         inspect settings and declare dependencies between the passed ``case`` and any

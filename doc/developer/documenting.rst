@@ -35,3 +35,35 @@ documentation is built. To do this, you can clean the output with::
 
 This should clear the output and overwrite the file. If this doesn't work, you can clear
 all output cells in the notebook web interface itself before committing the file.
+
+Documentation for ARMI plugins
+------------------------------
+The following subsections apply to documentation for ARMI plugins.
+
+Linking to ARMI documentation from plugins
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ARMI plugin documentation can feature rich hyperlinks to the ARMI API documentation 
+with the help of the
+`intersphinx Sphinx plugin <http://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html>`_.
+The ARMI plugin documentation config file should add ``"sphinx.ext.intersphinx",`` to
+its active Sphinx plugin list, and change the default config to read::
+
+    intersphinx_mapping = {
+        "python": ("https://docs.python.org/3", None),
+        "armi": ("https://terrapower.github.io/armi/", None),
+    }
+
+Now you can link to the ARMI documentation with links like::
+
+    :doc:`armi:developer/documenting`
+    :py:mod:`armi.physics.executers`
+
+
+Automatically building apidocs of namespace packages
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Activating the ``"sphinxcontrib.apidoc",`` 
+`Sphinx plugin <https://github.com/sphinx-contrib/apidoc>`_
+enables plugin API documentation to be built with the standard ``make html`` Sphinx workflow. If 
+your ARMI plugin is a namespace package, the following extra config is required::
+
+    apidoc_extra_args = ["--implicit-namespaces"]

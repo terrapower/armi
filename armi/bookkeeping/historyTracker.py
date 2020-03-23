@@ -65,15 +65,7 @@ Now you can do a few things, such as::
 
 Specifying blocks and assemblies to track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The History Tracker stores history only for certain blocks and assemblies (known as detail assemblies or blocks).
-These can be input by the user in a variety of ways, through the GUI or the settings system.
-
-    * Detail Assembly Locations BOL (`detailAssemLocationsBOL`) can be specified on the GUI. This is a list of
-      assembly location strings (e.g. ``A4003`` for ring 4, position3).
-      Assemblies in these locations at beginning-of-life will be activated as detail assemblies.
-    * Detail assembly numbers (``detailAssemNums``) are ``assemNum`` params similar to block IDs.
-
-Finally, you can activate the ``detailAllAssems`` option to specify all assemblies in the problem as detail assemblies.
+See :ref:`detail-assems`.
 
 """
 import re

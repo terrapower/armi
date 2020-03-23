@@ -450,9 +450,7 @@ html_last_updated_fmt = "%Y-%m-%d"
 htmlhelp_basename = "ARMIdoc"
 
 html_context = {
-    "css_files": [
-        "_static/theme_overrides.css"  # overrides for wide tables in RTD theme
-    ]
+    "css_files": ["_static/theme_fixes.css"]  # overrides for wide tables in RTD theme
 }
 
 # -- Options for LaTeX output --------------------------------------------------

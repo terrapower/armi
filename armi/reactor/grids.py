@@ -25,12 +25,12 @@ This contains structured meshes in multiple geometries and spatial locators (i.e
 Fast reactors often use a hexagonal grid, while other reactors may be better suited for
 Cartesian or RZT grids. This module contains representations of all these.
 
-``Grid``s can be defined by any arbitrary combination of absolute grid boundaries and
+``Grid``\ s can be defined by any arbitrary combination of absolute grid boundaries and
 unit step directions.
 
 Associated with grids are :py:class:`IndexLocations <IndexLocation>`. Each of these maps
 to a single cell in a grid, or to an arbitrary point in the continuous space represented
-by a grid. When a `Grid`` is built, it builds a collection of ``IndexLocation``s, one
+by a grid. When a `Grid`` is built, it builds a collection of ``IndexLocation``\ s, one
 for each cell.
 
 In the ARMI :py:mod:`armi.reactor` module, each object is assigned a locator either from
