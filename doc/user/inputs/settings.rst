@@ -31,7 +31,7 @@ The ARMI GUI
 ============
 The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
 also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
-cluster.  The GUI is simply a front-end to
+cluster.  The GUI is a front-end to
 these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them. 
 
 Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same
@@ -80,13 +80,18 @@ while subchannel T/H is run on the others.
 Detail assemblies are specified by the user in a variety of ways, 
 through the GUI or the settings system.
 
+.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush
+    for serious multiphysics calculations with each plugin treating them differently.
+    It is likely that this feature will be extended to be more flexible and less
+    surprising in the future.
+
 Detail Assembly Locations BOL
     The ``detailAssemLocationsBOL`` setting is a list of assembly location strings 
-    (e.g. ``A4003`` for ring 4, position3). Assemblies that are in these locations at the 
+    (e.g. ``A4003`` for ring 4, position 3). Assemblies that are in these locations at the 
     beginning-of-life will be activated as detail assemblies.
 
 Detail assembly numbers
-    The ``detailAssemNums`` setting is a list of``assemNum``s that can be inferred from a previous
+    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous
     case and specified, regardless of when the assemblies enter the core. This is useful for
     activating detailed treatment of assemblies that enter the core at a later cycle.
 
