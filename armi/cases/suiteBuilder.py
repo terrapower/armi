@@ -23,7 +23,7 @@ the standard ``CaseSuite`` objects.
 
 This module contains a variety of ``InputModifier`` objects as well, which are examples
 of how you can modify inputs for parameter sweeping. Power-users will generally make
-their own ``Modifier``s that are design-specific.
+their own ``Modifier``\ s that are design-specific.
 
 """
 import copy

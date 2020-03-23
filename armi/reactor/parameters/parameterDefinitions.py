@@ -15,7 +15,7 @@
 r"""
 This module contains the code necessary to represent parameter definitions.
 
-``ParameterDefinition``s are the metadata that describe specific parameters, and aid in
+``ParameterDefinition``\ s are the metadata that describe specific parameters, and aid in
 enforcing certain rules upon the parameters themselves and the parameter collections
 that contain them.
 
@@ -109,7 +109,7 @@ class Serializer:
     requires that the Parameter data be converted to a numpy array of a datatype
     supported by the ``h5py`` package. Some parameters may contain data that are not
     trivially representable in numpy/HDF5, and need special treatment. Subclassing
-    ``Serializer`` and setting it as a ``Parameter``s ``serializer`` allows for special
+    ``Serializer`` and setting it as a ``Parameter``\ s ``serializer`` allows for special
     operations to be performed on the parameter values as they are stored to the
     database or read back in.
 
@@ -673,7 +673,7 @@ class ParameterBuilder(object):
             default=default if default is not NoDefault else self._defaultValue,
             setter=setter,
             categories=set(categories or []).union(self._defaultCategories),
-            serializer=serializer
+            serializer=serializer,
         )
 
         if self._paramDefs is not None:
