@@ -594,7 +594,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        return [self.getNumberDensity(nucName) for nucName in nucNames]
+        return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
 
     def _getNdensHelper(self):
         return dict(self.p.numberDensities)
