@@ -137,6 +137,29 @@ class Utils_TestCase(unittest.TestCase):
         self.assertEqual('pot...', str1)
         str1 = utils.capStrLen('rubidium', 7)
         self.assertEqual('rubi...', str1)
+		
+    def test_list2str(self):
+        #Test with list of strings
+        list1 = ["One", "Two"]
+        list2 = ["Three", "Four"]
+        str1 = "OneTwo"
+        str2 = utils.list2str(list1, 4, None, None)
+        self.assertEqual(str1, str2)
+        str1 = "One  Two  "
+        str2 = utils.list2str(list1, None, None, 5)
+        self.assertEqual(str1, str2)
+        str1 = "OneTwoThreeFour"
+        str2 = utils.list2str(list2, None, list1, None)
+        self.assertEqual(str1, str2)
+        str1 = "OneTwoThreeFourT...Four"
+        str2 = utils.list2str(list2, 4, list1, None)
+        self.assertEqual(str1, str2)
+        str1 = "OneTwoThreeFourT...FourThreeFour "
+        str2 = utils.list2str(list2, None, list1, 5)
+        self.assertEqual(str1, str2)
+        str1 = "OneTwoThreeFourT...FourThreeFour T... Four "
+        str2 = utils.list2str(list2, 4, list1, 5)
+        self.assertEqual(str1, str2)
 
 class TestUnits(unittest.TestCase):
     def setUp(self):
