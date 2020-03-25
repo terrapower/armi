@@ -1257,11 +1257,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(r.core)
         runLog.info("Expanding to full core geometry")
-        r.core.symmetry = geometry.FULL_CORE
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
-            otherLocs = r.core.spatialGrid.getSymmetricIdenticalsThird(
+            otherLocs = r.core.spatialGrid.getSymmetricEquivalents(
                 a.spatialLocator.indices
             )
             for i, j in otherLocs:
@@ -1269,6 +1268,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 newAssem.makeUnique()
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
+
+        # set symmetry after expanding, because it isnt actually full core until it's
+        # full core.
+        r.core.symmetry = geometry.FULL_CORE
 
     def restorePreviousGeometry(self, cs, reactor):
         """
@@ -1338,7 +1341,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         for a in assembliesOnUpperBoundary:
             # loc will now be either an empty set [], or two different locations
             # in our case, we only want the first of the two locations
-            locs = core.spatialGrid.getSymmetricIdenticalsThird(a.spatialLocator)
+            locs = core.spatialGrid.getSymmetricEquivalents(a.spatialLocator)
             if locs:
                 i, j = locs[0]
                 spatialLocator = core.spatialGrid[i, j, 0]

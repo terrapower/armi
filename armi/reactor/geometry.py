@@ -552,7 +552,7 @@ class SystemLayoutInput:
         # need to cast to a list because we will modify during iteration
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
             indices = grids.getIndicesFromRingAndPos(ring, pos)
-            for symmetricI, symmetricJ in grid.getSymmetricIdenticalsThird(indices):
+            for symmetricI, symmetricJ in grid.getSymmetricEquivalents(indices):
                 symmetricRingPos = grids.indicesToRingPos(symmetricI, symmetricJ)
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 

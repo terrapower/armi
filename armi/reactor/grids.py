@@ -73,6 +73,7 @@ import numpy.linalg
 
 from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
 from armi.utils import hexagon
+from armi.reactor import geometry
 
 # data structure for database-serialization of grids
 GridParameters = collections.namedtuple(
@@ -767,6 +768,15 @@ class Grid:
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
+    def locatorInDomain(self, locator: LocationBase) -> bool:
+        """
+        Return whether the passed locator is in the domain represented by the Grid.
+
+        For instance, if we have a 1/3rd core hex grid, this would return False for
+        locators that are outside of the first third of the grid.
+        """
+        raise NotImplementedError("Not implemented on base Grid type.")
+
     def _evaluateMesh(self, indices, stepOperator, boundsOperator):
         """
         Evaluate some function of indices on this grid.
@@ -818,6 +828,18 @@ class Grid:
     def getNeighboringCellIndices(self, i, j=0, k=0):
         """Return the indices of the immediate neighbors of a mesh point in the plane."""
         return ((i + 1, j, k), (1, j + 1, k), (i - 1, j, k), (i, j - 1, k))
+
+    def getSymmetricEquivalents(self, indices):
+        """
+        Return a list of grid indices that contain matching contents based on symmetry.
+
+        The length of the list with depend on the type of symmetry being used, and
+        potentially the location of the requested indices. E.g.,
+        third-core will return the two sets of indices at the matching location in the
+        other two thirds of the grid, unless it is the central location, in which case
+        no indeces will be returned.
+        """
+        raise NotImplementedError
 
     def getAboveAndBelowCellIndices(self, indices):
         i, j, k = indices
@@ -1090,7 +1112,17 @@ class HexGrid(Grid):
 
         return symmetryLine
 
-    def getSymmetricIdenticalsThird(self, indices):
+    def getSymmetricEquivalents(self, indices):
+        if geometry.THIRD_CORE in self.symmetry and geometry.PERIODIC in self.symmetry:
+            return self._getSymmetricIdenticalsThird(indices)
+        elif geometry.FULL_CORE in self.symmetry:
+            return []
+        else:
+            raise NotImplementedError(
+                "Unhandled symmetry condition for HexGrid: {}".format(self.symmetry)
+            )
+
+    def _getSymmetricIdenticalsThird(self, indices):
         """This works by rotating the indices by 120 degrees twice, counterclockwise."""
         i, j = indices[:2]
         if i == 0 and j == 0:
@@ -1114,6 +1146,12 @@ class HexGrid(Grid):
         self._unitSteps = numpy.array(
             ((1.5 * side, 0.0, 0.0), (newPitchCm / 2.0, newPitchCm, 0.0), (0, 0, 0))
         )[self._stepDims]
+
+    def locatorInDomain(self, locator):
+        if geometry.THIRD_CORE in self.symmetry:
+            return self.isInFirstThird(locator)
+        else:
+            return True
 
     def isInFirstThird(self, locator, includeTopEdge=False):
         """True if locator is in first third of hex grid. """
@@ -1275,8 +1313,8 @@ class ThetaRZGrid(Grid):
         tuple : i, j, k of given bounds
 
         """
-        i = numpy.abs(self._bounds[0] - theta0).argmin()
-        j = numpy.abs(self._bounds[1] - rad0).argmin()
+        i = int(numpy.abs(self._bounds[0] - theta0).argmin())
+        j = int(numpy.abs(self._bounds[1] - rad0).argmin())
 
         return (i, j, 0)
 

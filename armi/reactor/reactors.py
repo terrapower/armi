@@ -1678,7 +1678,7 @@ class Core(composites.Composite):
         See Also
         --------
         reactors.whichAssemblyIsIn
-        locations.getSymmetricIdenticalsThird
+        grids.Grid.getSymmetricEquivalents
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()
@@ -1713,7 +1713,7 @@ class Core(composites.Composite):
         If an existing symmetric identical has NOT been found, return a None (it's empty).
         """
         duplicates = []
-        otherTwoLocations = self.spatialGrid.getSymmetricIdenticalsThird(neighborLoc)
+        otherTwoLocations = self.spatialGrid.getSymmetricEquivalents(neighborLoc)
         for i, j in otherTwoLocations:
             neighborLocation2 = self.spatialGrid[i, j, 0]
             duplicateAssem = self.childrenByLocator.get(neighborLocation2)

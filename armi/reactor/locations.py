@@ -739,8 +739,9 @@ class HexLocation(Location):
             return []
         locs = []
         grid = grids.HexGrid.fromPitch(1.0)
+        grid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
         indices = grid.getIndicesFromRingAndPos(ring, pos)
-        identicalsIJ = grid.getSymmetricIdenticalsThird(indices)
+        identicalsIJ = grid.getSymmetricEquivalents(indices)
         for ij in identicalsIJ:
             ring, pos = grid.getRingPos(ij)
             locs.append(locClass(ring, pos, self.axial))

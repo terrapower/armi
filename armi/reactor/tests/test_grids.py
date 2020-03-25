@@ -21,6 +21,7 @@ import numpy
 from six.moves import cPickle
 
 from armi.reactor import grids
+from armi.reactor import geometry
 from numpy.testing.utils import assert_allclose
 
 
@@ -224,12 +225,11 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getSymmetricIdenticalsThird(self):
         grid = grids.HexGrid.fromPitch(1.0)
-        self.assertEqual(grid.getSymmetricIdenticalsThird((3, -2)), [(-1, 3), (-2, -1)])
-        self.assertEqual(grid.getSymmetricIdenticalsThird((2, 1)), [(-3, 2), (1, -3)])
+        grid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
+        self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
-        symmetrics = grid.getSymmetricIdenticalsThird(
-            grid.getIndicesFromRingAndPos(5, 3)
-        )
+        symmetrics = grid.getSymmetricEquivalents(grid.getIndicesFromRingAndPos(5, 3))
         self.assertEqual(
             [(5, 11), (5, 19)], [grid.getRingPos(indices) for indices in symmetrics]
         )
