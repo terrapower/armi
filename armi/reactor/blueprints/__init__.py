@@ -513,6 +513,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 inp = mig.apply()
         return inp
 
+
 def migrate(bp: Blueprints, cs):
     """
     Apply migrations to the input structure.
@@ -528,7 +529,8 @@ def migrate(bp: Blueprints, cs):
 
     This allows settings-driven core map to still be used for backwards compatibility.
     At some point once the input stabilizes, we may wish to move this out to the
-    dedicated migration portion of the code, and not perform the migration so lazily.
+    dedicated migration portion of the code, and not perform the migration so
+    implicitly.
     """
     from armi.reactor.blueprints import gridBlueprint
 
@@ -558,10 +560,12 @@ def migrate(bp: Blueprints, cs):
         radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
 
         if len(aziMeshes) > 1 or len(radMeshes) > 1:
-            raise ValueError("The system layout described in {} has non-uniform "
-                    "azimuthal and/or radial submeshing. This migration is currently "
-                    "only smart enough to handle a single radial and single azimuthal "
-                    "submesh for all assemblies.".format(cs["geomFile"]))
+            raise ValueError(
+                "The system layout described in {} has non-uniform "
+                "azimuthal and/or radial submeshing. This migration is currently "
+                "only smart enough to handle a single radial and single azimuthal "
+                "submesh for all assemblies.".format(cs["geomFile"])
+            )
         radMesh = next(iter(radMeshes))
         aziMesh = next(iter(aziMeshes))
 

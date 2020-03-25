@@ -37,6 +37,7 @@ See Also
 reactor.blueprints.reactorBlueprint
 """
 
+import enum
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 import os
@@ -51,6 +52,48 @@ from armi.reactor import grids
 from armi.utils import asciimaps
 
 
+class GeomType(enum.Enum):
+    """
+    Enumeration of geometry types.
+
+    Historically, ARMI has used strings to specify and express things like geometry type
+    and symmetry conditions. This makes interpretation of user input straightforward,
+    but is less ergonomic, less efficient, and more error-prone within the code. For
+    instance:
+     - is "quarter reflective" the same as "reflective quarter"? Should it be?
+     - code that needs to interpret these need to use string operations, which are
+       non-trivial compared to enum comparisons.
+     - rules about mutual exclusion (hex and Cartesian can't both be used in the same
+       context) and composability (geometry type + domain + symmetry type) are harder to
+       enforce.
+
+    Instead, we hope to parse user input into a collection of enumerations and use those
+    internally throughout the code. Future work should expand this to satisfy all needs
+    of the geometry system and refactor to replace use of the string constants.
+    """
+    HEX = 1
+    CARTESIAN = 2
+    RZT = 3
+    RZ = 4
+
+    @classmethod
+    def fromStr(cls, geomStr):
+        # case-insensitive
+        canonical = geomStr.lower().strip()
+        if canonical == HEX:
+            return cls.HEX
+        elif canonical == CARTESIAN:
+            return cls.CARTESIAN
+        elif canonical == RZT:
+            return cls.RZT
+        elif canonical == RZ:
+            return cls.RZ
+
+        # use the original geomStr with preserved capitalization for better
+        # error-finding.
+        raise ValueError("Unrecognized geometry type: `{}`".format(geomStr))
+
+
 SYSTEMS = "systems"
 VERSION = "version"
 
@@ -58,6 +101,7 @@ HEX = "hex"
 RZT = "thetarz"
 RZ = "rz"
 CARTESIAN = "cartesian"
+
 DODECAGON = "dodecagon"
 REC_PRISM = "RecPrism"
 HEX_PRISM = "HexPrism"
