@@ -102,6 +102,7 @@ Examples
                          IC   IC   MC   PC   RR   SH
 
 """
+import copy
 import itertools
 from typing import Sequence, Optional
 
@@ -212,7 +213,6 @@ class GridBlueprint(yamlize.Object):
         self.symmetry = symmetry
         self.gridContents = gridContents
         self.gridBounds = gridBounds
-        self.eqPathInput = {}
 
     def construct(self):
         """Build a Grid from a grid definition."""
@@ -295,6 +295,30 @@ class GridBlueprint(yamlize.Object):
         else:
             return 5
 
+    def expandToFull(self):
+        """
+        Unfold the blueprints to represent full symmetry.
+
+        .. note:: This relatively rudimentary, and copies entries from the
+        currently-represented domain to their corresponding locations in full symmetry.
+        This may not produce the desired behavior for some scenarios, such as when
+        expanding fuel shuffling paths or the like. Future work may make this more
+        sophisticated.
+        """
+        if geometry.FULL_CORE in self.symmetry:
+            # No need!
+            return
+
+        grid = self.construct()
+
+        newContents = copy.copy(self.gridContents)
+        for idx, contents in self.gridContents.items():
+            equivs = grid.getSymmetricEquivalents(idx)
+            for idx2 in equivs:
+                newContents[idx2] = contents
+        self.gridContents = newContents
+        self.symmetry = geometry.FULL_CORE
+
     def _readGridContents(self):
         """
         Read the specifiers as a function of grid position.
@@ -310,6 +334,11 @@ class GridBlueprint(yamlize.Object):
             return
         elif self.latticeMap:
             self._readGridContentsLattice()
+
+        if self.gridContents is None:
+            # Make sure we have at least something; clients shouldn't have to worry
+            # about whether gridContents exist at all.
+            self.gridContents = dict()
 
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.
