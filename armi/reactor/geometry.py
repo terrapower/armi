@@ -40,6 +40,7 @@ reactor.blueprints.reactorBlueprint
 import enum
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from copy import copy
 import os
 import sys
 
@@ -50,6 +51,7 @@ import voluptuous as vol
 from armi import runLog
 from armi.reactor import grids
 from armi.utils import asciimaps
+from armi.utils import directoryChangers
 
 
 class GeomType(enum.Enum):
@@ -71,6 +73,7 @@ class GeomType(enum.Enum):
     internally throughout the code. Future work should expand this to satisfy all needs
     of the geometry system and refactor to replace use of the string constants.
     """
+
     HEX = 1
     CARTESIAN = 2
     RZT = 3
@@ -218,7 +221,7 @@ for symmetry in VALID_SYMMETRY:
 
 def loadFromCs(cs):
     """Function to load Geoemtry based on supplied ``CaseSettings``."""
-    from armi.utils import directoryChangers  # pylint: disable=import-outside-toplevel; circular import protection
+
     if not cs["geomFile"]:
         return None
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
@@ -276,8 +279,14 @@ class SystemLayoutInput:
             self._readYaml(stream)
         self._applyMigrations()
 
-    def toGridBlueprint(self, name: str = "core"):
-        """Migrate old-style SystemLayoutInput to new GridBlueprint."""
+    def toGridBlueprints(self, name: str = "core"):
+        """
+        Migrate old-style SystemLayoutInput to new GridBlueprint.
+
+        Returns a list of GridBlueprint objects. There will at least be one entry,
+        containing the main core layout. If equilibrium fuel paths are specified, it
+        will occupy the second element.
+        """
         from armi.reactor.blueprints.gridBlueprint import GridBlueprint
 
         geom = self.geomType
@@ -290,7 +299,7 @@ class SystemLayoutInput:
             # be able to provide grid bounds to the blueprint.
             rztGrid = grids.ThetaRZGrid.fromGeom(self)
             theta, r, _ = rztGrid.getBounds()
-            bounds = {"theta": theta, "r": r}
+            bounds = {"theta": theta.tolist(), "r": r.tolist()}
 
         gridContents = dict()
         for indices, spec in self.assemTypeByIndices.items():
@@ -300,7 +309,7 @@ class SystemLayoutInput:
                 i, j, _ = rztGrid.indicesOfBounds(*indices[0:4])
             else:
                 i, j = indices
-            gridContents[i, j] = spec
+            gridContents[(i, j)] = spec
 
         bp = GridBlueprint(
             name=name,
@@ -310,9 +319,34 @@ class SystemLayoutInput:
             gridBounds=bounds,
         )
 
-        bp.eqPathInput = self.eqPathInput
+        bps = [bp]
 
-        return bp
+        if any(val != (None, None) for val in self.eqPathInput.values()):
+            # We could probably just copy eqPathInput, but we don't want to preserve
+            # (None, None) entries.
+            eqPathContents = dict()
+            for idx, eqPath in self.eqPathInput.items():
+                if eqPath == (None, None):
+                    continue
+                if HEX in self.geomType:
+                    i, j = grids.getIndicesFromRingAndPos(*idx)
+                elif RZT in self.geomType:
+                    i, j, _ = rztGrid.indicesOfBounds(*idx[0:4])
+                else:
+                    i, j = idx
+                eqPathContents[i, j] = copy(self.eqPathInput[idx])
+
+            pathBp = GridBlueprint(
+                name=name + "EqPath",
+                gridContents=eqPathContents,
+                geom=geom,
+                symmetry=symmetry,
+                gridBounds=bounds,
+            )
+
+            bps.append(pathBp)
+
+        return bps
 
     def _readXml(self, stream):
         tree = ET.parse(stream)

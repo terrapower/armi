@@ -532,6 +532,7 @@ def migrate(bp: Blueprints, cs):
     dedicated migration portion of the code, and not perform the migration so
     implicitly.
     """
+    from armi.reactor import blueprints
     from armi.reactor.blueprints import gridBlueprint
 
     if bp.systemDesigns is None:
@@ -544,8 +545,9 @@ def migrate(bp: Blueprints, cs):
 
     geom = geometry.SystemLayoutInput()
     geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs["geomFile"]))
-    gridDesign = geom.toGridBlueprint("core")
-    bp.gridDesigns["core"] = gridDesign
+    gridDesigns = geom.toGridBlueprints("core")
+    for design in gridDesigns:
+        bp.gridDesigns[design.name] = design
 
     if "core" in [rd.name for rd in bp.systemDesigns]:
         raise ValueError(

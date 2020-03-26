@@ -76,7 +76,7 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.info("Constructing the `{}`".format(self.name))
         if geom is not None:
-            gridDesign = geom.toGridBlueprint("core")
+            gridDesign = geom.toGridBlueprints("core")[0]
         else:
             gridDesign = bp.gridDesigns[self.gridName]
         spatialGrid = gridDesign.construct()
