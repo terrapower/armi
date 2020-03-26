@@ -105,7 +105,7 @@ class Zone(object):
         """
         if p0 is None or p1 is None:
             if self.symmetry == 3:
-                grid = grids.hexGridFromPitch(1.0)
+                grid = grids.HexGrid.fromPitch(1.0)
                 posList = grid.allPositionsInThird(ring)
             elif self.symmetry == 1:
                 posList = range(1, hexagon.numPositionsInRing(ring) + 1)

@@ -30,9 +30,8 @@ class AssemblyList(composites.Composite):
 
         composites.Composite.__init__(self, name)
         self.parent = r
-        self.spatialGrid = grids.cartesianGridFromRectangle(
-            50.0, 50.0
-        )  # make a Cartesian assembly rack
+        # make a Cartesian assembly rack
+        self.spatialGrid = grids.Grid.fromRectangle(50.0, 50.0)
 
         # CoreParameterCollections get CORE by default; we arent ready for that yet here, so turn it
         # off.

@@ -101,7 +101,7 @@ class Location_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_generateSortedHexLocationList(self):
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         locators = grid.generateSortedHexLocationList(7)
         asSet = set(locators)
         self.assertIn((+0, +0, 0), asSet)  # 1
@@ -259,7 +259,7 @@ class HexLocation_TestCase(unittest.TestCase):
             self.assertEqual(cur, ref)
 
     def test_allPositionsInThird(self):
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         curList = grid.allPositionsInThird(5)
         refList = [1, 2, 3, 4, 5, 6, 23, 24]
         self.assertEqual(refList, curList)

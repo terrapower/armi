@@ -17,6 +17,10 @@ The location module is responsible for identifying the spatial position of objec
 
 It also contains code useful for traversing regular meshes (hexagons, etc.).
 
+.. warning:: The code in this module is deprecated in favor of the Grid and
+             SpatialLocator classes defined in ``grids.py``. New code should not be
+             implemented against these classes.
+
 The Location Object
 -------------------
 Each ARMI Block (and Assembly) contains a Location object whose purpose it is to identify where in the
@@ -734,9 +738,10 @@ class HexLocation(Location):
             # nothing symmetric in the center.
             return []
         locs = []
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
+        grid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
         indices = grid.getIndicesFromRingAndPos(ring, pos)
-        identicalsIJ = grid.getSymmetricIdenticalsThird(indices)
+        identicalsIJ = grid.getSymmetricEquivalents(indices)
         for ij in identicalsIJ:
             ring, pos = grid.getRingPos(ij)
             locs.append(locClass(ring, pos, self.axial))

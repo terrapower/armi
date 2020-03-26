@@ -2815,7 +2815,7 @@ class HexBlock(Block):
         if pinPitch is None:
             return []
         # pin lattice is rotated 30 degrees from assembly lattice
-        grid = grids.hexGridFromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
+        grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
         for ring in range(numPinRings):
             for pos in range(hexagon.numPositionsInRing(ring + 1)):
                 i, j = grids.getIndicesFromRingAndPos(ring + 1, pos + 1)

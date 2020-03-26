@@ -36,6 +36,7 @@ armi.utils.asciimaps
 
 Examples
 --------
+::
 
     grids:
         control:
@@ -102,6 +103,7 @@ Examples
                          IC   IC   MC   PC   RR   SH
 
 """
+import copy
 import itertools
 from typing import Sequence, Optional
 
@@ -212,7 +214,6 @@ class GridBlueprint(yamlize.Object):
         self.symmetry = symmetry
         self.gridContents = gridContents
         self.gridBounds = gridBounds
-        self.eqPathInput = {}
 
     def construct(self):
         """Build a Grid from a grid definition."""
@@ -260,7 +261,7 @@ class GridBlueprint(yamlize.Object):
         if geom == geometry.HEX:
             pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
             # add 2 for potential dummy assems
-            spatialGrid = grids.hexGridFromPitch(pitch, numRings=maxIndex + 2)
+            spatialGrid = grids.HexGrid.fromPitch(pitch, numRings=maxIndex + 2)
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of
             # the mesh into the positive values.
@@ -272,7 +273,7 @@ class GridBlueprint(yamlize.Object):
             isOffset = (
                 self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
             )
-            spatialGrid = grids.cartesianGridFromRectangle(
+            spatialGrid = grids.Grid.fromRectangle(
                 xw, yw, numRings=maxIndex, isOffset=isOffset
             )
         runLog.debug("Built grid: {}".format(spatialGrid))
@@ -290,7 +291,34 @@ class GridBlueprint(yamlize.Object):
         Used to limit the size of the spatialGrid. Used to be
         called maxNumRings.
         """
-        return max(itertools.chain(*zip(*self.gridContents.keys())))
+        if self.gridContents:
+            return max(itertools.chain(*zip(*self.gridContents.keys())))
+        else:
+            return 5
+
+    def expandToFull(self):
+        """
+        Unfold the blueprints to represent full symmetry.
+
+        .. note:: This relatively rudimentary, and copies entries from the
+            currently-represented domain to their corresponding locations in full
+            symmetry.  This may not produce the desired behavior for some scenarios,
+            such as when expanding fuel shuffling paths or the like. Future work may
+            make this more sophisticated.
+        """
+        if geometry.FULL_CORE in self.symmetry:
+            # No need!
+            return
+
+        grid = self.construct()
+
+        newContents = copy.copy(self.gridContents)
+        for idx, contents in self.gridContents.items():
+            equivs = grid.getSymmetricEquivalents(idx)
+            for idx2 in equivs:
+                newContents[idx2] = contents
+        self.gridContents = newContents
+        self.symmetry = geometry.FULL_CORE
 
     def _readGridContents(self):
         """
@@ -307,6 +335,11 @@ class GridBlueprint(yamlize.Object):
             return
         elif self.latticeMap:
             self._readGridContentsLattice()
+
+        if self.gridContents is None:
+            # Make sure we have at least something; clients shouldn't have to worry
+            # about whether gridContents exist at all.
+            self.gridContents = dict()
 
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.

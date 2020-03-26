@@ -21,6 +21,7 @@ import numpy
 from six.moves import cPickle
 
 from armi.reactor import grids
+from armi.reactor import geometry
 from numpy.testing.utils import assert_allclose
 
 
@@ -56,11 +57,11 @@ class TestSpatialLocator(unittest.TestCase):
         to the different way steps and bounds are set up.
         """
         # build meshes just like how they're used on a regular system.
-        reactorGrid = grids.cartesianGridFromRectangle(1.0, 1.0)  # 2-D grid
-        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)))  # 1-D z-mesh
-        blockGrid = grids.cartesianGridFromRectangle(
-            0.1, 0.1
-        )  # pins sit in this 2-D grid.
+        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)  # 2-D grid
+        # 1-D z-mesh
+        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)))
+        # pins sit in this 2-D grid.
+        blockGrid = grids.Grid.fromRectangle(0.1, 0.1)
 
         reactorLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
         assemblyLoc = MockLocator(2, 3, 0, reactorGrid)
@@ -90,11 +91,10 @@ class TestSpatialLocator(unittest.TestCase):
 
     def test_recursionPin(self):
         """Ensure pin the center assem has axial coordinates consistent with a pin in an off-center assembly."""
-        reactorGrid = grids.cartesianGridFromRectangle(1.0, 1.0)  # 2-D grid
+        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)  # 2-D grid
         assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)))  # 1-D z-mesh
-        blockGrid = grids.cartesianGridFromRectangle(
-            0.1, 0.1
-        )  # pins sit in this 2-D grid.
+        # pins sit in this 2-D grid.
+        blockGrid = grids.Grid.fromRectangle(0.1, 0.1)
 
         reactorLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
         assemblyLoc = MockLocator(0, 0, 0, reactorGrid)
@@ -134,26 +134,26 @@ class TestGrid(unittest.TestCase):
         self.assertEqual(grid.getLabel((1, 1, 2)), "A1001C")
 
     def test_isAxialOnly(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         self.assertEqual(grid.isAxialOnly, False)
 
         grid2 = grids.axialUnitGrid(10)
         self.assertEqual(grid2.isAxialOnly, True)
 
     def test_lookupFactory(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         self.assertEqual(grid[10, 5, 0].i, 10)
 
     def test_quasiReduce(self):
         """Make sure our DB-friendly version of reduce works."""
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
 
 
 class TestHexGrid(unittest.TestCase):
     def testPositions(self):
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1.5 * side, 0.5, 0.0))
@@ -175,14 +175,14 @@ class TestHexGrid(unittest.TestCase):
         assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
 
     def testNeighbors(self):
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         neighbs = grid.getNeighboringCellIndices(0, 0, 0)
         self.assertEqual(len(neighbs), 6)
         self.assertIn((1, -1, 0), neighbs)
 
     def testRingPosFromIndices(self):
         """Test conversion from<-->to ring/position based on hand-prepared right answers."""
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         for indices, ringPos in [
             ((0, 0), (1, 1)),
             ((1, 0), (2, 1)),
@@ -203,13 +203,13 @@ class TestHexGrid(unittest.TestCase):
             self.assertEqual(ringPos, grid.getRingPos(indices))
 
     def testLabel(self):
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         indices = grid.getIndicesFromRingAndPos(12, 5)
         self.assertEqual(grid.getLabel(indices), "B2005")
         self.assertEqual(grid.getLabel(indices + (5,)), "B2005F")
 
     def test_overlapsWhichSymmetryLine(self):
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
         self.assertEqual(
             grid.overlapsWhichSymmetryLine(grid.getIndicesFromRingAndPos(5, 3)),
             grids.BOUNDARY_60_DEGREES,
@@ -224,19 +224,18 @@ class TestHexGrid(unittest.TestCase):
         )
 
     def test_getSymmetricIdenticalsThird(self):
-        grid = grids.hexGridFromPitch(1.0)
-        self.assertEqual(grid.getSymmetricIdenticalsThird((3, -2)), [(-1, 3), (-2, -1)])
-        self.assertEqual(grid.getSymmetricIdenticalsThird((2, 1)), [(-3, 2), (1, -3)])
+        grid = grids.HexGrid.fromPitch(1.0)
+        grid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
+        self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
-        symmetrics = grid.getSymmetricIdenticalsThird(
-            grid.getIndicesFromRingAndPos(5, 3)
-        )
+        symmetrics = grid.getSymmetricEquivalents(grid.getIndicesFromRingAndPos(5, 3))
         self.assertEqual(
             [(5, 11), (5, 19)], [grid.getRingPos(indices) for indices in symmetrics]
         )
 
     def test_triangleCoords(self):
-        grid = grids.hexGridFromPitch(8.15)
+        grid = grids.HexGrid.fromPitch(8.15)
         indices1 = grid.getIndicesFromRingAndPos(5, 3) + (0,)
         indices2 = grid.getIndicesFromRingAndPos(5, 23) + (0,)
         indices3 = grid.getIndicesFromRingAndPos(3, 4) + (0,)
@@ -251,7 +250,7 @@ class TestHexGrid(unittest.TestCase):
         ]
         assert_allclose(cur, ref)
 
-        cur = grids.hexGridFromPitch(2.5).triangleCoords(indices2)
+        cur = grids.HexGrid.fromPitch(2.5).triangleCoords(indices2)
         ref = [
             (9.381_941_874_331_42, 0.416_666_666_666_666_7),
             (8.660_254_037_844_387, 0.833_333_333_333_333_4),
@@ -262,7 +261,7 @@ class TestHexGrid(unittest.TestCase):
         ]
         assert_allclose(cur, ref)
 
-        cur = grids.hexGridFromPitch(3.14).triangleCoords(indices3)
+        cur = grids.HexGrid.fromPitch(3.14).triangleCoords(indices3)
         ref = [
             (-1.812_879_845_255_425, 5.233_333_333_333_333),
             (-2.719_319_767_883_137_6, 5.756_666_666_666_667),
@@ -275,25 +274,25 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getIndexBounds(self):
         numRings = 5
-        grid = grids.hexGridFromPitch(1.0, numRings=numRings)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=numRings)
         boundsIJK = grid.getIndexBounds()
         self.assertEqual(
             boundsIJK, ((-numRings, numRings), (-numRings, numRings), (0, 1))
         )
 
     def test_getAllIndices(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         indices = grid.getAllIndices()
         self.assertIn((1, 2, 0), indices)
 
     def test_buildLocations(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         loc1 = grid[1, 2, 0]
         self.assertEqual(loc1.i, 1)
         self.assertEqual(loc1.j, 2)
 
     def test_is_pickleable(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         loc = grid[1, 1, 0]
         for protocol in range(cPickle.HIGHEST_PROTOCOL + 1):
             buf = BytesIO()
@@ -303,14 +302,14 @@ class TestHexGrid(unittest.TestCase):
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitch(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         v1 = grid.getCoordinates((1, 0, 0))
         grid.changePitch(2.0)
         v2 = grid.getCoordinates((1, 0, 0))
         assert_allclose(2 * v1, v2)
 
     def test_badIndices(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=3)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
 
         # this is actually ok because step-defined grids are infinite
         self.assertEqual(grid.getCoordinates((-100, 2000, 5))[2], 0.0)
@@ -320,7 +319,7 @@ class TestHexGrid(unittest.TestCase):
             grid.getCoordinates((0, 5, -1))
 
     def test_isInFirstThird(self):
-        grid = grids.hexGridFromPitch(1.0, numRings=10)
+        grid = grids.HexGrid.fromPitch(1.0, numRings=10)
         self.assertTrue(grid.isInFirstThird(grid[0, 0, 0]))
         self.assertTrue(grid.isInFirstThird(grid[1, 0, 0]))
         self.assertTrue(grid.isInFirstThird(grid[3, -1, 0]))

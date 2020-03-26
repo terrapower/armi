@@ -37,8 +37,10 @@ See Also
 reactor.blueprints.reactorBlueprint
 """
 
+import enum
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from copy import copy
 import os
 import sys
 
@@ -49,6 +51,50 @@ import voluptuous as vol
 from armi import runLog
 from armi.reactor import grids
 from armi.utils import asciimaps
+from armi.utils import directoryChangers
+
+
+class GeomType(enum.Enum):
+    """
+    Enumeration of geometry types.
+
+    Historically, ARMI has used strings to specify and express things like geometry type
+    and symmetry conditions. This makes interpretation of user input straightforward,
+    but is less ergonomic, less efficient, and more error-prone within the code. For
+    instance:
+     - is "quarter reflective" the same as "reflective quarter"? Should it be?
+     - code that needs to interpret these need to use string operations, which are
+       non-trivial compared to enum comparisons.
+     - rules about mutual exclusion (hex and Cartesian can't both be used in the same
+       context) and composability (geometry type + domain + symmetry type) are harder to
+       enforce.
+
+    Instead, we hope to parse user input into a collection of enumerations and use those
+    internally throughout the code. Future work should expand this to satisfy all needs
+    of the geometry system and refactor to replace use of the string constants.
+    """
+
+    HEX = 1
+    CARTESIAN = 2
+    RZT = 3
+    RZ = 4
+
+    @classmethod
+    def fromStr(cls, geomStr):
+        # case-insensitive
+        canonical = geomStr.lower().strip()
+        if canonical == HEX:
+            return cls.HEX
+        elif canonical == CARTESIAN:
+            return cls.CARTESIAN
+        elif canonical == RZT:
+            return cls.RZT
+        elif canonical == RZ:
+            return cls.RZ
+
+        # use the original geomStr with preserved capitalization for better
+        # error-finding.
+        raise ValueError("Unrecognized geometry type: `{}`".format(geomStr))
 
 
 SYSTEMS = "systems"
@@ -58,6 +104,7 @@ HEX = "hex"
 RZT = "thetarz"
 RZ = "rz"
 CARTESIAN = "cartesian"
+
 DODECAGON = "dodecagon"
 REC_PRISM = "RecPrism"
 HEX_PRISM = "HexPrism"
@@ -174,7 +221,7 @@ for symmetry in VALID_SYMMETRY:
 
 def loadFromCs(cs):
     """Function to load Geoemtry based on supplied ``CaseSettings``."""
-    from armi.utils import directoryChangers  # pylint: disable=import-outside-toplevel; circular import protection
+
     if not cs["geomFile"]:
         return None
     with directoryChangers.DirectoryChanger(cs.inputDirectory):
@@ -232,8 +279,14 @@ class SystemLayoutInput:
             self._readYaml(stream)
         self._applyMigrations()
 
-    def toGridBlueprint(self, name: str = "core"):
-        """Migrate old-style SystemLayoutInput to new GridBlueprint."""
+    def toGridBlueprints(self, name: str = "core"):
+        """
+        Migrate old-style SystemLayoutInput to new GridBlueprint.
+
+        Returns a list of GridBlueprint objects. There will at least be one entry,
+        containing the main core layout. If equilibrium fuel paths are specified, it
+        will occupy the second element.
+        """
         from armi.reactor.blueprints.gridBlueprint import GridBlueprint
 
         geom = self.geomType
@@ -244,9 +297,9 @@ class SystemLayoutInput:
         if self.geomType == RZT:
             # We need a grid in order to go from whats in the input to indices, and to
             # be able to provide grid bounds to the blueprint.
-            rztGrid = grids.thetaRZGridFromGeom(self)
+            rztGrid = grids.ThetaRZGrid.fromGeom(self)
             theta, r, _ = rztGrid.getBounds()
-            bounds = {"theta": theta, "r": r}
+            bounds = {"theta": theta.tolist(), "r": r.tolist()}
 
         gridContents = dict()
         for indices, spec in self.assemTypeByIndices.items():
@@ -256,7 +309,7 @@ class SystemLayoutInput:
                 i, j, _ = rztGrid.indicesOfBounds(*indices[0:4])
             else:
                 i, j = indices
-            gridContents[i, j] = spec
+            gridContents[(i, j)] = spec
 
         bp = GridBlueprint(
             name=name,
@@ -266,9 +319,34 @@ class SystemLayoutInput:
             gridBounds=bounds,
         )
 
-        bp.eqPathInput = self.eqPathInput
+        bps = [bp]
 
-        return bp
+        if any(val != (None, None) for val in self.eqPathInput.values()):
+            # We could probably just copy eqPathInput, but we don't want to preserve
+            # (None, None) entries.
+            eqPathContents = dict()
+            for idx, eqPath in self.eqPathInput.items():
+                if eqPath == (None, None):
+                    continue
+                if HEX in self.geomType:
+                    i, j = grids.getIndicesFromRingAndPos(*idx)
+                elif RZT in self.geomType:
+                    i, j, _ = rztGrid.indicesOfBounds(*idx[0:4])
+                else:
+                    i, j = idx
+                eqPathContents[i, j] = copy(self.eqPathInput[idx])
+
+            pathBp = GridBlueprint(
+                name=name + "EqPath",
+                gridContents=eqPathContents,
+                geom=geom,
+                symmetry=symmetry,
+                gridBounds=bounds,
+            )
+
+            bps.append(pathBp)
+
+        return bps
 
     def _readXml(self, stream):
         tree = ET.parse(stream)
@@ -502,12 +580,13 @@ class SystemLayoutInput:
                 )
             )
 
-        grid = grids.hexGridFromPitch(1.0)
+        grid = grids.HexGrid.fromPitch(1.0)
+        grid.symmetry = self.symmetry
 
         # need to cast to a list because we will modify during iteration
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
             indices = grids.getIndicesFromRingAndPos(ring, pos)
-            for symmetricI, symmetricJ in grid.getSymmetricIdenticalsThird(indices):
+            for symmetricI, symmetricJ in grid.getSymmetricEquivalents(indices):
                 symmetricRingPos = grids.indicesToRingPos(symmetricI, symmetricJ)
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 

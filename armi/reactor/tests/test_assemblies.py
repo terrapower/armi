@@ -171,7 +171,7 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
 
 
 def makeTestAssembly(numBlocks, assemNum, pitch=1.0, r=None):
-    coreGrid = r.core.spatialGrid if r is not None else grids.hexGridFromPitch(pitch)
+    coreGrid = r.core.spatialGrid if r is not None else grids.HexGrid.fromPitch(pitch)
     a = HexAssembly("TestAssem", assemNum=assemNum)
     a.spatialGrid = grids.axialUnitGrid(numBlocks)
     a.spatialGrid.armiObject = a
@@ -1179,7 +1179,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
             "verbosity"
         ] = "error"  # Print nothing to the screen that would normally go to the log.
         self.cs["stationaryBlocks"] = []
-        reactorGrid = grids.cartesianGridFromRectangle(1.0, 1.0)
+        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)
         a = self.CartesianAssembly = CartesianAssembly(
             "defaultType", assemNum=self.assemNum
         )

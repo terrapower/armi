@@ -1505,7 +1505,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""
-        self.HexBlock.spatialGrid = grids.hexGridFromPitch(1.0)
+        self.HexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
         self.HexBlock.setType("intercoolant")
         with self.HexBlock.retainState():
             self.HexBlock.setType("fuel")

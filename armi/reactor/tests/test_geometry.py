@@ -63,6 +63,20 @@ GEOM_INPUT_YAML = """reactor:
 """
 
 
+class TestGeomType(unittest.TestCase):
+    def testFromStr(self):
+        # note the bonkers case and extra whitespace to exercise the canonicalization
+        self.assertEqual(geometry.GeomType.fromStr("HeX"), geometry.GeomType.HEX)
+        self.assertEqual(
+            geometry.GeomType.fromStr("cARTESIAN"), geometry.GeomType.CARTESIAN
+        )
+        self.assertEqual(geometry.GeomType.fromStr(" thetaRZ"), geometry.GeomType.RZT)
+        self.assertEqual(geometry.GeomType.fromStr("rZ  "), geometry.GeomType.RZ)
+
+        with self.assertRaises(ValueError):
+            geometry.GeomType.fromStr("what even is this?")
+
+
 class TestSystemLayoutInput(unittest.TestCase):
     def testReadHexGeomXML(self):
         geom = geometry.SystemLayoutInput()
