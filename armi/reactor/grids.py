@@ -837,7 +837,7 @@ class Grid:
         potentially the location of the requested indices. E.g.,
         third-core will return the two sets of indices at the matching location in the
         other two thirds of the grid, unless it is the central location, in which case
-        no indeces will be returned.
+        no indices will be returned.
         """
         raise NotImplementedError
 

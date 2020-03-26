@@ -36,6 +36,7 @@ armi.utils.asciimaps
 
 Examples
 --------
+::
 
     grids:
         control:
@@ -300,10 +301,10 @@ class GridBlueprint(yamlize.Object):
         Unfold the blueprints to represent full symmetry.
 
         .. note:: This relatively rudimentary, and copies entries from the
-        currently-represented domain to their corresponding locations in full symmetry.
-        This may not produce the desired behavior for some scenarios, such as when
-        expanding fuel shuffling paths or the like. Future work may make this more
-        sophisticated.
+            currently-represented domain to their corresponding locations in full
+            symmetry.  This may not produce the desired behavior for some scenarios,
+            such as when expanding fuel shuffling paths or the like. Future work may
+            make this more sophisticated.
         """
         if geometry.FULL_CORE in self.symmetry:
             # No need!
