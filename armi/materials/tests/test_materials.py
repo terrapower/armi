@@ -530,12 +530,12 @@ class Inconel_TestCase(_Material_Test, unittest.TestCase):
         self.InconelPE16.setDefaultMassFracs()
 
         self.assertAlmostEqual(self.Inconel.getMassFrac("MO"), 0.09)
-        self.assertAlmostEqual(self.Inconel800.getMassFrac("AL27"), 0.00375)
+        self.assertAlmostEqual(self.Inconel800.getMassFrac("AL"), 0.00375)
         self.assertAlmostEqual(self.InconelPE16.getMassFrac("CR"), 0.165)
 
     def test_density(self):
         self.assertEqual(self.Inconel.density(), 8.3600)
-        self.assertEqual(self.Inconel800.density(), 7.94)
+        self.assertEqual(self.Inconel800.density(Tc=21.), 7.94)
         self.assertEqual(self.InconelPE16.density(), 8.00)
 
 

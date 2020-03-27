@@ -16,11 +16,22 @@
 Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts.
 """
 
-from armi.utils.units import getTk
+from armi.utils.units import getTk, getTc
 from armi.materials.material import Material
 
 
 class HastelloyN(Material):
+    r"""
+    Hastelloy N alloy (UNS N10003)
+
+    .. [Haynes] Haynes International, H-2052D 2020
+        (http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf)
+
+    .. [SAB] Sabharwall, et. al.
+        Feasibility Study of Secondary Heat Exchanger Concepts for the Advanced High Temperature Reactor
+        INL/EXT-11-23076, 2011
+        
+    """
     name = "HastelloyN"
     type = "Structural"
 
@@ -32,35 +43,39 @@ class HastelloyN(Material):
 
     # Dictionary of valid temperatures (in C) over which the property models are valid in the format
     # 'Property_Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)
-    propertyValidTemperature = {  #'yield strength': ((0, 800), 'C'),
-        "thermal conductivity": ((373.15, 973.15), "K"),
+    propertyValidTemperature = {
+        "thermal conductivity": ((473.15, 973.15), "K"),
         "heat capacity": ((373.15, 973.15), "K"),
+        "thermal expansion": ((293.15, 1173.15), "K"),
     }
 
     def setDefaultMassFracs(self):
-        # from Haynes Internations (http://www.haynesintl.com/pdf/h2052.pdf)
-        self.setMassFrac("NI", 0.71)
+        r"""
+        Hastelloy N mass fractions
+
+        From [Haynes]_.
+        """
         self.setMassFrac("CR", 0.07)
         self.setMassFrac("MO", 0.16)
-        self.setMassFrac("FE", 0.05)
-        self.setMassFrac("SI", 0.01)
-        self.setMassFrac("MN55", 0.0080)
-        self.setMassFrac("C", 0.0008)
-        self.setMassFrac("CO59", 0.0020)
-        self.setMassFrac("CU", 0.0035)
-        self.setMassFrac("W182", 0.00131143377)
-        self.setMassFrac("W183", 0.0007120653)
-        self.setMassFrac("W184", 0.00153297716)
-        self.setMassFrac("W186", 0.00143786762)
-        self.setMassFrac("AL27", 0.00175)
-        self.setMassFrac("TI", 0.00175)
+        self.setMassFrac("FE", 0.04)  # max.
+        self.setMassFrac("SI", 0.01)  # max.
+        self.setMassFrac("MN", 0.0080)  # max.
+        self.setMassFrac("V", 0.0005)  # max.
+        self.setMassFrac("C", 0.0006)
+        self.setMassFrac("CO", 0.0020)  # max.
+        self.setMassFrac("CU", 0.0035)  # max.
+        self.setMassFrac("W", 0.005)  # max.
+        self.setMassFrac("AL", 0.0025)  # max.
+        self.setMassFrac("TI", 0.0025)  # max.
+        self.setMassFrac("NI", 1.0 - sum(self.p.massFrac.values()))  # balance
 
-        self.p.refTempK = 273.15 + 22
+        self.p.refTempK = 273.15 + 20
         self.p.refDens = 8.86
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
-        Calculates the thermal conductivity of Hastelloy N
+        Calculates the thermal conductivity of Hastelloy N. 
+        Second order polynomial fit to data from [Haynes]_.
 
         Parameters
         ----------
@@ -79,22 +94,14 @@ class HastelloyN(Material):
         (TLowerLimit, TUpperLimit) = self.propertyValidTemperature[
             "thermal conductivity"
         ][0]
-        # 100 - 700
         self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "thermal conductivity")
-        thermalConductivity = (
-            -3.81441015e01
-            + 3.97910693e-01 * Tk
-            - 1.29474249e-03 * Tk ** 2
-            + 2.13159780e-06 * Tk ** 3
-            - 1.71326610e-09 * Tk ** 4
-            + 5.41666667e-13 * Tk ** 5
-        )
-        return thermalConductivity  # W/m-K
+        return 1.92857e-05 * Tc ** 2 + 3.12857e-03 * Tc + 1.17743e01  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""
         Calculates the specific heat capacity of Hastelloy N.
-
+        Sixth order polynomial fit to data from Table 2-20 [SAB]_ (R^2=0.97). 
+        
         Parameters
         ----------
         Tk : float
@@ -105,18 +112,64 @@ class HastelloyN(Material):
 
         Returns
         -------
-        SS316 specific heat capacity (J/kg-K)
+        Hastelloy N specific heat capacity (J/kg-C)
 
         """
-        Tk = getTk(Tc, Tk)
+        Tc = getTc(Tc, Tk)
         (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["heat capacity"][0]
         self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "heat capacity")
         return (
-            -1.62743324e03
-            + 2.96283219e01 * Tk
-            - 1.64632142e-01 * Tk ** 2
-            + 4.54953485e-04 * Tk ** 3
-            - 6.64662604e-07 * Tk ** 4
-            + 4.90884449e-10 * Tk ** 5
-            - 1.44036064e-13 * Tk ** 6
+            +3.19981e02
+            + 2.47421e00 * Tk
+            - 2.49306e-02 * Tk ** 2
+            + 1.32517e-04 * Tk ** 3
+            - 3.58872e-07 * Tk ** 4
+            + 4.69003e-10 * Tk ** 5
+            - 2.32692e-13 * Tk ** 6
         )
+
+    def linearExpansionPercent(self, Tk=None, Tc=None):
+        r"""
+        average thermal expansion dL/L. Used for computing hot dimensions
+
+        Parameters
+        ----------
+        Tk : float
+            temperature in (K)
+        Tc : float
+            Temperature in (C)
+
+        Returns
+        -------
+        %dLL(T) in m/m/K
+
+        """
+        Tc = getTc(Tc, Tk)
+        refTempC = getTc(Tk=self.p.refTempK)
+        return 100.0 * self.meanCoefficientThermalExpansion(Tc=Tc) * (Tc - refTempC)
+
+    def meanCoefficientThermalExpansion(self, Tk=None, Tc=None):
+        r"""
+        Mean coefficient of thermal expansion for Hastelloy N.
+        Second order polynomial fit of data from [Haynes]_.
+
+        Parameters
+        ----------
+        Tk : float
+            temperature in (K)
+        Tc : float
+            Temperature in (C)
+
+        Returns
+        -------
+        mean coefficient of thermal expansion in m/m/C
+
+        """
+        Tc = getTc(Tc, Tk)
+        Tk = getTk(Tc, Tk)
+        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
+            0
+        ]
+        # 100 - 700
+        self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "thermal expansion")
+        return 2.60282e-12 * Tc ** 2 + 7.69859e-10 * Tc + 1.21036e-05
