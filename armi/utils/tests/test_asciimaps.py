@@ -15,6 +15,7 @@
 """Test ASCII maps."""
 import unittest
 import io
+import sys
 
 from armi.utils import asciimaps
 
@@ -25,24 +26,46 @@ CARTESIAN_MAP = """2 2 2 2 2
 2 2 2 2 2
 """
 
-HEX_THIRD_MAP = """ -   -   3   3
-   -   3   3   3
-     3   2   2   3
-   3   2   2   2   3
-     2   1   1   2   3
-       1   1   1   2   3
-     1   1   1   1   2   3
-       1   1   1   1   2   3
-         1   1   1   1   2
-       1   1   1   1   1   3
-         1   1   1   1   2   3
-           1   1   1   1   2
-         1   1   1   1   1   3
-           1   1   1   1   2
-             1   1   1   1   3
-           1   1   1   1   2
-             1   1   1   1   3
-           1   1   1   1   2
+HEX_THIRD_MAP = """- - 3 3
+ - 3 3 3
+  3 2 2 3
+ 3 2 2 2 3
+  2 1 1 2 3
+   1 1 1 2 3
+  1 1 1 1 2 3
+   1 1 1 1 2 3
+    1 1 1 1 2
+   1 1 1 1 1 3
+    1 1 1 1 2 3
+     1 1 1 1 2
+    1 1 1 1 1 3
+     1 1 1 1 2
+      1 1 1 1 3
+     1 1 1 1 2
+      1 1 1 1 3
+     1 1 1 1 2
+"""
+
+# This core map is from refTestBase, and exhibited some issues when trying to read with
+# an older implementation of the 1/3 hex lattice reader.
+HEX_THIRD_MAP_2 = """-   -   SH  SH
+  -   SH  SH  SH
+    SH  OC  OC  SH
+  SH  OC  OC  OC  SH
+    OC  EX  EX  OC  SH
+      EX  EX  EX  OC  SH
+    EX  MC  MC  EX  OC  SH
+      MC  HX  MC  EX  OC  SH
+        MC  MC  PC  EX  OC
+      MC  IC  MC  MC  EX  SH
+        IC  IC  MC  MC  OC  SH
+          PC  IC  MC  EX  OC
+        FA  FA  IC  TG  EX  SH
+          IC  FA  IC  MC  OC
+            IC  US  MC  EX  SH
+          EX  IC  IC  MC  OC
+            EX  FA  MC  EX  SH
+          EX  IC  IC  PC  OC
 """
 
 HEX_FULL_MAP = """
@@ -105,6 +128,15 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             output = stream.read()
             self.assertEqual(output, HEX_THIRD_MAP)
+
+    def test_troublesomeHexThird(self):
+        reader = asciimaps.AsciiMapHexThird()
+        lattice = reader.readMap(HEX_THIRD_MAP_2)
+        writer = asciimaps.AsciiMapHexThird(lattice)
+        with io.StringIO() as stream:
+            writer.writeMap(stream)
+            asStr = stream.getvalue()
+            self.assertEqual(asStr, HEX_THIRD_MAP_2)
 
     def test_hexFull(self):
         """Test sample full hex map against known answers."""

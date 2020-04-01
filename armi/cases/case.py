@@ -426,7 +426,7 @@ class Case:
         bool
             True if the inputs are all good, False otherwise
         """
-        with DirectoryChanger(self.cs.inputDirectory):
+        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             operatorClass = operators.getOperatorClassFromSettings(self.cs)
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]

@@ -30,6 +30,10 @@ armi.reactor.blueprints.latticeBlueprint : user input of generic lattices
 armi.reactor.geometry : a specific usage of lattices, for core maps
 
 """
+import itertools
+
+
+PLACEHOLDER = "-"
 
 
 class AsciiMap(object):
@@ -69,6 +73,8 @@ class AsciiMap(object):
             for col, char in enumerate(line.split()):
                 i, j = self._getIndices(base, col)
                 self.lattice[i, j] = char
+
+        self.lattice = {k: v for k, v in self.lattice.items() if v != PLACEHOLDER}
         return self.lattice
 
     def writeMap(self, stream):
@@ -79,7 +85,7 @@ class AsciiMap(object):
             if line and i == 0:
                 stream.write(" ".join(line) + "\n")
                 line = []
-            line.append(f"{self.lattice.get((i,j),'-')}")
+            line.append(f"{self.lattice.get((i,j), PLACEHOLDER)}")
         stream.write(" ".join(line) + "\n")
 
     @staticmethod
@@ -180,22 +186,44 @@ class AsciiMapHexThird(AsciiMap):
         return iBase + col * 2, jBase - col
 
     def writeMap(self, stream):
-        """Writing this is easiest if we just make a big ascii map and fill it in."""
+        """Write the lattice to a text stream"""
         grid = {}
+        # The length of the largest string contents. Useful for spacing everything out
+        # nicely
+        maxSize = len(str(next(iter(self.lattice.values()))))
         for (i, j), val in self.lattice.items():
+            maxSize = max(len(str(val)), maxSize)
             x = i * 2
             y = j * 2 + i
             grid[x, y] = val
 
-        allI, allJ = zip(*grid.keys())
+        nRows = max(y for _x, y in grid)
+        minX = min(self._getRowBase(row)[0] for row in range(nRows+1))
 
-        lines = []
-        for y in reversed(range(min(allJ) - 1, max(allJ) + 1)):
-            line = []
-            for x in range(min(allI) - 1, max(allI) + 1):
-                line.append(f"{grid.get((x,y),' ')}")
-            lines.append("".join(line).rstrip())
-        stream.write("\n".join(lines))
+        spacer = " "*maxSize
+
+        for row in reversed(range(nRows+1)):
+            base = self._getRowBase(row)
+            foundContents = False
+
+            padding = self._getIndices(base, 0)[0] - minX
+            rowContents = []
+            for col in itertools.count(0):
+                i, j = self._getIndices(base, col)
+
+                contents = self.lattice.get((i, j), None)
+                if contents is None and foundContents:
+                    # we have gotten to the end of the contents for this row; break out
+                    # of our otherwise infinite loop
+                    break
+                if contents is None:
+                    contents = PLACEHOLDER
+                elif not foundContents:
+                    foundContents = True
+
+                rowContents.append(contents.center(maxSize))
+
+            stream.write(" "*padding*maxSize + spacer.join(rowContents) + "\n")
 
 
 class AsciiMapHexFullTipsUp(AsciiMap):
