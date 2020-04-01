@@ -33,6 +33,9 @@ armi.reactor.geometry : a specific usage of lattices, for core maps
 import itertools
 
 
+PLACEHOLDER = "-"
+
+
 class AsciiMap(object):
     """
     Base class for maps.
@@ -71,7 +74,7 @@ class AsciiMap(object):
                 i, j = self._getIndices(base, col)
                 self.lattice[i, j] = char
 
-        self.lattice = {k: v for k, v in self.lattice.items() if v != "-"}
+        self.lattice = {k: v for k, v in self.lattice.items() if v != PLACEHOLDER}
         return self.lattice
 
     def writeMap(self, stream):
@@ -82,7 +85,7 @@ class AsciiMap(object):
             if line and i == 0:
                 stream.write(" ".join(line) + "\n")
                 line = []
-            line.append(f"{self.lattice.get((i,j),'-')}")
+            line.append(f"{self.lattice.get((i,j), PLACEHOLDER)}")
         stream.write(" ".join(line) + "\n")
 
     @staticmethod
@@ -214,7 +217,7 @@ class AsciiMapHexThird(AsciiMap):
                     # of our otherwise infinite loop
                     break
                 if contents is None:
-                    contents = '-'
+                    contents = PLACEHOLDER
                 elif not foundContents:
                     foundContents = True
 
