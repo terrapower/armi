@@ -45,9 +45,11 @@ from armi.localization import strings
 from armi.localization import warnings
 from armi.localization import exceptions
 
-_HASH_BUFFER_SIZE = (
-    1024 * 1024
-)  # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
+# Read in file 1 MB at a time to reduce memory burden of reading entire file at once
+_HASH_BUFFER_SIZE = 1024 * 1024
+
+# special pattern to deal with FORTRAN-produced scipats without E, like 3.2234-234
+SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 
 def coverageReportHelper(config, dataPaths):
@@ -149,9 +151,10 @@ def fixThreeDigitExp(strToFloat):
     just fine, and they are valid floating point numbers.  It would not be a useful effort,
     in terms of time, trying to get FORTRAN to behave differently.
     The approach has been to write a routine in the reading code which will interpret these.
+
+    This helps when the scientific number exponent does not fit.
     """
-    scipat = r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)"
-    match = re.match(scipat, strToFloat)
+    match = SCIPAT_SPECIAL.match(strToFloat)
     return float("{}E{}".format(*match.groups()))
 
 
