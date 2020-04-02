@@ -72,6 +72,10 @@ class Category:
 
     multiGroupQuantities = "multi-group quantities"
 
+    detailedAxialExpansion = "detailedAxialExpansion"
+
+    neutronics = "neutronics"
+
 
 class ParamLocation(enum.Flag):
     """Represents point which a parameter is physically meaningful."""
