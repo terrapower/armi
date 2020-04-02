@@ -12,20 +12,90 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Inconel 800."""
+"""Incoloy 800."""
+
+from armi.utils.units import getTc
 from armi.materials.material import Material
 
 
 class Inconel800(Material):
+    r"""
+    Incoloy 800/800H (UNS N08800/N08810)
+
+    .. [SM] Special Metals - Incoloy alloy 800
+        (https://www.specialmetals.com/assets/smc/documents/alloys/incoloy/incoloy-alloy-800.pdf)
+    """
     name = "Inconel800"
 
-    def setDefaultMassFracs(self):
-        self.setMassFrac("NI", 0.325)
-        self.setMassFrac("CR", 0.21)
-        self.setMassFrac("FE", 0.457)
-        self.setMassFrac("C", 0.0005)
-        self.setMassFrac("AL27", 0.00375)
-        self.setMassFrac("TI", 0.00375)
+    propertyValidTemperature = {"thermal expansion": ((20.0, 800.0), "C")}
 
-    def density(self, Tk=None, Tc=None):
-        return 7.94
+    def setDefaultMassFracs(self):
+        r"""
+        Incoloy 800H mass fractions
+
+        From [SM]_.
+        """
+        self.setMassFrac("NI", 0.325)  # ave.
+        self.setMassFrac("CR", 0.21)  # ave.
+        self.setMassFrac("C", 0.00075)  # ave. 800H
+        self.setMassFrac("MN", 0.015)  # max.
+        self.setMassFrac("S", 0.00015)  # max.
+        self.setMassFrac("SI", 0.01)  # max.
+        self.setMassFrac("CU", 0.0075)  # max.
+        self.setMassFrac("AL", 0.00375)  # ave.
+        self.setMassFrac("TI", 0.00375)  # ave.
+        self.setMassFrac(
+            "FE", 1.0 - sum(self.p.massFrac.values())
+        )  # balance, 0.395 min.
+
+        self.p.refTempK = 273.15 + 21.0
+        self.p.refDens = 7.94
+
+    def linearExpansionPercent(self, Tk=None, Tc=None):
+        r"""
+        average thermal expansion dL/L. Used for computing hot dimensions
+
+        Parameters
+        ----------
+        Tk : float
+            temperature in (K)
+        Tc : float
+            Temperature in (C)
+
+        Returns
+        -------
+        %dLL(T) in m/m/K
+
+        """
+        Tc = getTc(Tc, Tk)
+        refTempC = getTc(Tk=self.p.refTempK)
+        return 100.0 * self.meanCoefficientThermalExpansion(Tc=Tc) * (Tc - refTempC)
+
+    def meanCoefficientThermalExpansion(self, Tk=None, Tc=None):
+        r"""
+        Mean coefficient of thermal expansion for Incoloy 800.
+        Third order polynomial fit of table 5 from [SM]_.
+
+        Parameters
+        ----------
+        Tk : float
+            temperature in (K)
+        Tc : float
+            Temperature in (C)
+
+        Returns
+        -------
+        mean coefficient of thermal expansion in m/m/C
+
+        """
+        Tc = getTc(Tc, Tk)
+        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
+            0
+        ]
+        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "thermal expansion")
+        return (
+            2.52525e-14 * Tc ** 3
+            - 3.77814e-11 * Tc ** 2
+            + 2.06360e-08 * Tc
+            + 1.28071e-05
+        )
