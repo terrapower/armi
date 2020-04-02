@@ -89,6 +89,10 @@ class Inconel800(Material):
 
         """
         Tc = getTc(Tc, Tk)
+        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
+            0
+        ]
+        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "thermal expansion")
         return (
             2.52525e-14 * Tc ** 3
             - 3.77814e-11 * Tc ** 2

@@ -538,6 +538,27 @@ class Inconel_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(self.Inconel800.density(Tc=21.), 7.94)
         self.assertEqual(self.InconelPE16.density(), 8.00)
 
+    def test_Iconel800_linearExpansion(self):
+        TcList = [100, 200, 300, 400, 500, 600, 700, 800]
+        refList = [
+            0.11469329415,
+            0.27968864560,
+            0.454195022850,
+            0.63037690440,
+            0.80645936875,
+            0.98672809440,
+            1.18152935985,
+            1.4072700436,
+        ]
+
+        for Tc, val in zip(TcList, refList):
+            cur = self.Inconel800.linearExpansionPercent(Tc=Tc)
+            ref = val
+            errorMsg = "\n\nIncorrect Inconel 800 linearExpansionPercent()\nReceived:{}\nExpected:{}\n".format(
+                cur, ref
+            )
+            self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
+
 
 class Inconel600_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Inconel600
@@ -838,6 +859,93 @@ class Alloy200_TestCase(unittest.TestCase):
         from armi.materials.alloy200 import Alloy200
 
         self.assertGreater(Alloy200().p.massFrac["NI"], 0.99)
+
+class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.HastelloyN
+    
+    def test_thermalConductivity(self):
+        TcList = [100, 200, 300, 400, 500, 600, 700, 800]
+        refList = [
+            12.280014,
+            13.171442,
+            14.448584,
+            16.11144,
+            18.16001,
+            20.594294,
+            23.414292,
+            26.620004,
+        ]
+
+        for Tc, val in zip(TcList, refList):
+            cur = self.mat.thermalConductivity(Tc=Tc)
+            ref = val
+            errorMsg = "\n\nIncorrect Hastelloy N thermalConductivity()\nReceived:{}\nExpected:{}\n".format(
+                cur, ref
+            )
+            self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
+
+    def test_heatCapacity(self):
+        TcList = [100, 200, 300, 400, 500, 600, 700]
+        refList = [
+            419.183138,
+            438.728472,
+            459.630622,
+            464.218088,
+            480.092250,
+            556.547128,
+            573.450902,
+        ]
+
+        for Tc, val in zip(TcList, refList):
+            cur = self.mat.heatCapacity(Tc=Tc)
+            ref = val
+            errorMsg = "\n\nIncorrect Hastelloy N heatCapacity()\nReceived:{}\nExpected:{}\n".format(
+                cur, ref
+            )
+            self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
+
+
+    def test_linearExpansionPercent(self):
+        TcList = [100, 200, 300, 400, 500, 600, 700, 800]
+        refList = [
+            0.0976529128,
+            0.2225103228,
+            0.351926722,
+            0.4874638024,
+            0.630683256,
+            0.7831467748,
+            0.9464160508,
+            1.122052776,
+        ]
+
+        for Tc, val in zip(TcList, refList):
+            cur = self.mat.linearExpansionPercent(Tc=Tc)
+            ref = val
+            errorMsg = "\n\nIncorrect Hastelloy N linearExpansionPercent()\nReceived:{}\nExpected:{}\n".format(
+                cur, ref
+            )
+            self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
+
+    def test_meanCoefficientThermalExpansion(self):
+        TcList = [100, 200, 300, 400, 500, 600, 700, 800]
+        refList = [
+            1.22066141e-05,
+            1.23616846e-05,
+            1.25688115e-05,
+            1.28279948e-05,
+            1.31392345e-05,
+            1.35025306e-05,
+            1.39178831e-05,
+            1.4385292e-05,
+        ]
+
+        for Tc, val in zip(TcList, refList):
+            cur = self.mat.meanCoefficientThermalExpansion(Tc=Tc)
+            ref = val
+            errorMsg = "\n\nIncorrect Hastelloy N meanCoefficientThermalExpansion()\nReceived:{}\nExpected:{}\n".format(
+                cur, ref
+            )
+            self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
 
 class TZM_TestCase(_Material_Test, unittest.TestCase):

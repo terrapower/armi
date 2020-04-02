@@ -90,6 +90,7 @@ class HastelloyN(Material):
         Hastelloy N thermal conductivity (W/m-K)
 
         """
+        Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
         (TLowerLimit, TUpperLimit) = self.propertyValidTemperature[
             "thermal conductivity"
@@ -116,16 +117,17 @@ class HastelloyN(Material):
 
         """
         Tc = getTc(Tc, Tk)
+        Tk = getTk(Tc, Tk)
         (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["heat capacity"][0]
         self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "heat capacity")
         return (
             +3.19981e02
-            + 2.47421e00 * Tk
-            - 2.49306e-02 * Tk ** 2
-            + 1.32517e-04 * Tk ** 3
-            - 3.58872e-07 * Tk ** 4
-            + 4.69003e-10 * Tk ** 5
-            - 2.32692e-13 * Tk ** 6
+            + 2.47421e00 * Tc
+            - 2.49306e-02 * Tc ** 2
+            + 1.32517e-04 * Tc ** 3
+            - 3.58872e-07 * Tc ** 4
+            + 4.69003e-10 * Tc ** 5
+            - 2.32692e-13 * Tc ** 6
         )
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
@@ -170,6 +172,5 @@ class HastelloyN(Material):
         (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
             0
         ]
-        # 100 - 700
         self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "thermal expansion")
         return 2.60282e-12 * Tc ** 2 + 7.69859e-10 * Tc + 1.21036e-05
