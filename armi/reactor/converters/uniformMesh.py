@@ -16,8 +16,12 @@
 Converts reactor with arbitrary axial meshing (e.g. multiple assemblies with different
 axial meshes) to one with a global uniform axial mesh.
 
-Useful for preparing DIF3D, etc. structured mesh neutronics runs from flexible ARMI
-reactor
+Useful for preparing inputs for physics codes that require structured meshes
+from a more flexible ARMI reactor mesh.
+
+This is implemented generically but includes a concrete subclass for
+neutronics-specific parameters. This is used for build input files
+for codes like DIF3D which require axially uniform meshes.
 
 Requirements
 ------------
@@ -29,8 +33,7 @@ Requirements
 
 Examples
 --------
-
-converter = uniformMesh.UniformMeshGeometryConverter()
+converter = uniformMesh.NeutronicsUniformMeshConverter()
 uniformReactor = converter.convert(reactor)
 # do calcs, then:
 converter.applyStateToOriginal()
@@ -79,26 +82,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return self.convReactor
 
     def _checkConversion(self):
-        """
-        Make sure both reactors have the same power and that it's equal to user-input.
-
-        On the initial neutronics run, of course source power will be zero.
-        """
-        sourcePow = self._sourceReactor.core.getTotalBlockParam("power")
-        convPow = self.convReactor.core.getTotalBlockParam("power")
-        expectedPow = (
-            self._sourceReactor.core.p.power / self._sourceReactor.core.powerMultiplier
-        )
-        if abs(sourcePow - convPow) / sourcePow > 1e-5:
-            runLog.info(
-                f"Source reactor power ({sourcePow}) is too different from "
-                f"converted power ({convPow})."
-            )
-        if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
-            raise ValueError(
-                f"Source reactor power ({sourcePow}) is too different from "
-                f"user-input power ({expectedPow})."
-            )
+        """Perform checks to ensure conversion occurred properly."""
 
     @staticmethod
     def initNewReactor(sourceReactor):
@@ -144,9 +128,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         The new assemblies must have appropriately mapped number densities as
         input for a neutronics solve. They must also have other relevant
-        neutronics parameters for follow-on neutronics steps (e.g. a fixed
-        source gamma transport step that needs appropriate fission rates).
-        Thus, this maps many parameters from the ARMI mesh to the uniform mesh.
+        state parameters for follow-on steps. Thus, this maps many parameters 
+        from the ARMI mesh to the uniform mesh.
 
         See Also
         --------
@@ -233,6 +216,83 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _setParamsToUpdate(self):
         """Gather a list of parameters that will be mapped between reactors."""
+
+    def _clearStateOnReactor(self, reactor):
+        """
+        Delete existing state that will be updated so they don't increment.
+
+        The summations should start at zero but will happen for all overlaps.
+        """
+        runLog.debug("Clearing params from source reactor that will be converted.")
+        for rp in self.reactorParamNames:
+            reactor.core.p[rp] = 0.0
+
+        for b in reactor.core.getBlocks():
+            for bp in self.blockParamNames:
+                b.p[bp] = 0.0
+
+    def applyStateToOriginal(self):
+        """
+        Now that state is computed on the uniform mesh, map it back to ARMI mesh.
+        """
+        runLog.extra(
+            "Applying uniform neutronics mesh results on {0} to ARMI mesh on {1}".format(
+                self.convReactor, self._sourceReactor
+            )
+        )
+        self._clearStateOnReactor(self._sourceReactor)
+        self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
+
+    def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
+        """
+        Map parameters from one reactor to another.
+
+        Used for preparing and uniform reactor as well as for mapping its results
+        back to the original reactor.
+        """
+
+
+class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
+    """
+    A uniform mesh converter that specifically maps neutronics parameters.
+
+    This is useful for codes like DIF3D.
+
+    Notes
+    -----
+    If a case runs where two mesh conversions happen one after the other
+    (e.g. a fixed source gamma transport step that needs appropriate 
+    fission rates), it is essential that the neutronics params be
+    mapped onto the newly converted reactor as well as off of it
+    back to the source reactor.
+    """
+
+    def _checkConversion(self):
+        """
+        Make sure both reactors have the same power and that it's equal to user-input.
+
+        On the initial neutronics run, of course source power will be zero.
+        """
+        UniformMeshGeometryConverter._checkConversion(self)
+        sourcePow = self._sourceReactor.core.getTotalBlockParam("power")
+        convPow = self.convReactor.core.getTotalBlockParam("power")
+        expectedPow = (
+            self._sourceReactor.core.p.power / self._sourceReactor.core.powerMultiplier
+        )
+        if abs(sourcePow - convPow) / sourcePow > 1e-5:
+            runLog.info(
+                f"Source reactor power ({sourcePow}) is too different from "
+                f"converted power ({convPow})."
+            )
+        if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
+            raise ValueError(
+                f"Source reactor power ({sourcePow}) is too different from "
+                f"user-input power ({expectedPow})."
+            )
+
+    def _setParamsToUpdate(self):
+        """Activate conversion of various neutronics paramters."""
+        UniformMeshGeometryConverter._setParamsToUpdate(self)
         b = self._sourceReactor.core.getFirstBlock()
 
         self.blockParamNames = b.p.paramDefs.inCategory(
@@ -255,41 +315,18 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _clearStateOnReactor(self, reactor):
         """
-        Delete existing state that will be updated so they don't increment.
-        
-        The summations should start at zero but will happen for all overlaps.
+        Also clear mgFlux params.
         """
-        runLog.debug("Clearing params from source reactor that will be converted.")
-        for rp in self.reactorParamNames:
-            reactor.core.p[rp] = 0.0
+        UniformMeshGeometryConverter._clearStateOnReactor(self, reactor)
 
         for b in reactor.core.getBlocks():
             b.p.mgFlux = []
             b.p.adjMgFlux = []
-            for bp in self.blockParamNames:
-                b.p[bp] = 0.0
-
-    def applyStateToOriginal(self):
-        """
-        Now that flux/power, etc. is computed on the uniform mesh (newReactor), map it back to ARMI mesh (sourceReactor)
-
-        this runs after the neutronics has been computed on the neutronics mesh
-        """
-        runLog.extra(
-            "Applying uniform neutronics mesh results on {0} to ARMI mesh on {1}".format(
-                self.convReactor, self._sourceReactor
-            )
-        )
-        self._clearStateOnReactor(self._sourceReactor)
-        self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
 
     def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
-        """
-        Map parameters from one reactor to another.
-
-        Used for preparing and uniform reactor as well as for mapping its results
-        back to the original reactor.
-        """
+        UniformMeshGeometryConverter._mapStateFromReactorToOther(
+            self, sourceReactor, destReactor
+        )
 
         def paramSetter(armiObject, vals, paramNames):
             for paramName, val in zip(paramNames, vals):

@@ -395,7 +395,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if self.options.detailedAxialExpansion:
             converter = self.geomConverters.get("axial")
             if not converter:
-                converter = uniformMesh.UniformMeshGeometryConverter(None)
+                converter = uniformMesh.NeutronicsUniformMeshConverter(None)
                 neutronicsReactor = converter.convert(self.r)
                 if makePlots:
                     converter.plotConvertedReactor()

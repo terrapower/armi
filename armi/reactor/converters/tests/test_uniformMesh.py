@@ -43,7 +43,7 @@ class TestUniformMeshComponents(unittest.TestCase):
         a[2].setHeight(a[2].getHeight() * 1.05)
 
     def setUp(self):
-        self.converter = uniformMesh.UniformMeshGeometryConverter()
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
         self.converter._sourceReactor = self.r
 
     def test_computeAverageAxialMesh(self):
@@ -88,7 +88,7 @@ class TestUniformMesh(unittest.TestCase):
 
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
-        self.converter = uniformMesh.UniformMeshGeometryConverter()
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
@@ -168,7 +168,7 @@ class TestParamConversion(unittest.TestCase):
         self.destinationAssem[0].setHeight(self.height1 + self.height2)
         self.destinationAssem.calculateZCoords()
 
-        self.converter = uniformMesh.UniformMeshGeometryConverter()
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
     def test_setStateFromOverlaps(self):
         """
