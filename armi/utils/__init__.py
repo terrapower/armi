@@ -154,7 +154,7 @@ def fixThreeDigitExp(strToFloat):
 
     This helps when the scientific number exponent does not fit.
     """
-    match = re.match(SCIPAT_SPECIAL, strToFloat)
+    match = SCIPAT_SPECIAL.match(strToFloat)
     return float("{}E{}".format(*match.groups()))
 
 
