@@ -1111,70 +1111,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "fastFluence",
-            units="#/cm^2",
-            description="Fast spectrum fluence",
-            categories=["cumulative"],
-        )
-
-        pb.defParam(
-            "fastFluencePeak",
-            units="#/cm^2",
-            description="Fast spectrum fluence with a peaking factor",
-            categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "fluence", units="#/cm^2", description="Fluence", categories=["cumulative"]
-        )
-
-        pb.defParam(
-            "flux",
-            units="n/cm^2/s",
-            description="neutron flux",
-            categories=[
-                "detailedAxialExpansion",
-                parameters.Category.retainOnReplacement,
-                parameters.Category.fluxQuantities,
-            ],
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxAdj", units="", description="Adjoint flux"  # adjoint flux is unitless
-        )
-
-        pb.defParam(
-            "pdens",
-            units="W/cm$^3$",
-            description="Average volumetric power density",
-            categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "pdensDecay",
-            units="W/cm$^3$",
-            description="Decay power density from decaying radionuclides",
-            categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "power",
-            units="W",
-            description="Total power",
-            location=ParamLocation.VOLUME_INTEGRATED,
-            categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "powerDecay",
-            units="W",
-            description="Total decay power",
-            location=ParamLocation.VOLUME_INTEGRATED,
-            categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
             "powerRx", units="W/cm$^3$", description="?", location=ParamLocation.AVERAGE
         )
 
@@ -1187,34 +1123,6 @@ def getBlockParameterDefinitions():
             units="He/s/cm$^3$",
             description="?",
             location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateAbs",
-            units="1/cm^3/s",
-            description="Total absorption rate in this block (fisson + capture).",
-        )
-
-        pb.defParam(
-            "rateCap",
-            units="1/cm^3/s",
-            description="Parasitic capture rate in this block.",
-        )
-
-        pb.defParam(
-            "rateFis", units="1/cm^3/s", description="Fission rate in this block."
-        )
-
-        pb.defParam(
-            "rateProdFis",
-            units="1/cm^3/s",
-            description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
-        )
-
-        pb.defParam(
-            "rateProdN2n",
-            units="1/cm^3/s",
-            description="Production rate of neutrons from n2n reactions.",
         )
 
         pb.defParam(
@@ -1776,20 +1684,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "arealPd",
-            units="MW/m^2",
-            description="Power divided by XY area",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "arealPdGamma",
-            units="MW/m^2",
-            description="Areal gamma power density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "assemNum",
             units="None",
             description="Index that refers, nominally, to the assemNum parameter of "
@@ -2104,88 +1998,6 @@ def getBlockParameterDefinitions():
             saveToDB=False,
         )
 
-        pb.defParam("fertileBonus", units=None, description="The fertile bonus")
-
-        pb.defParam(
-            "fisDens",
-            units="fissions/cm^3/s",
-            description="Fission density in a pin (scaled up from homogeneous)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fisDensHom", units="1/cm^3/s", description="Homogenized fissile density"
-        )
-
-        pb.defParam(
-            "fluxDeltaFromRef",
-            units="None",
-            description="Relative difference between the current flux and the directly-computed perturbed flux.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxDif3d",
-            units="1/cm^2/s",
-            description="Average scalar neutron flux before gamma step",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxDirect",
-            units="n/cm^2/s",
-            description="Flux is computed with a direct method",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxGamma",
-            units="g/cm^2/s",
-            description="Gamma scalar flux",
-            categories=[
-                "detailedAxialExpansion",
-                parameters.Category.retainOnReplacement,
-                parameters.Category.fluxQuantities,
-            ],
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxPeak",
-            units="n/cm^2/s",
-            description="Peak neutron flux calculated within the mesh",
-            location=ParamLocation.AVERAGE,
-            categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirect",
-            units="None",
-            description="Relative difference between the perturbed flux and the directly-computed perturbed flux",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirectfluxRefWeighted",
-            units="None",
-            description="",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxPerturbed",
-            units="1/cm^2/s",
-            description="Flux is computed by MEPT",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fluxRef",
-            units="1/cm^2/s",
-            description="Reference flux",
-            location=ParamLocation.AVERAGE,
-        )
-
         pb.defParam(
             "heightBOL",
             units="cm",
@@ -2205,13 +2017,6 @@ def getBlockParameterDefinitions():
             "intrinsicSourceDecayed",
             units="?",
             description="Intrinsic source from spontaneous fissions after a decay period",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "kInf",
-            units="None",
-            description="Neutron production rate in this block/neutron absorption rate in this block. Not truly kinf but a reasonable approximation of reactivity.",
             location=ParamLocation.AVERAGE,
         )
 
@@ -2237,18 +2042,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "medAbsE", units="eV", description="Median neutron absorption energy"
-        )
-
-        pb.defParam(
-            "medFisE",
-            units="eV",
-            description="Median energy of neutron causing fission",
-        )
-
-        pb.defParam("medFlxE", units="eV", description="Median neutron flux energy")
-
-        pb.defParam(
             "mreg",
             units="None",
             description="SASSYS/DIF3D-K radial region index assignment",
@@ -2272,45 +2065,10 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "pdensGamma",
-            units="W/cm^3",
-            description="Average volumetric gamma power density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "pdensNeutron",
-            units="W/cm^3",
-            description="Average volumetric neutron power density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "percentBuPeak",
             units="%FIMA",
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "powerGenerated",
-            units=" W",
-            description="Generated power. Different than b.p.power only when gamma transport is activated.",
-            location=ParamLocation.VOLUME_INTEGRATED,
-        )
-
-        pb.defParam(
-            "powerGamma",
-            units="W",
-            description="Total gamma power",
-            location=ParamLocation.VOLUME_INTEGRATED,
-        )
-
-        pb.defParam(
-            "powerNeutron",
-            units="W",
-            description="Total neutron power",
-            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
@@ -2328,94 +2086,9 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "ppdens",
-            units="W/cm^3",
-            description="Peak power density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "ppdensGamma",
-            units="W/cm^3",
-            description="Peak gamma density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "puFrac",
             units="None",
             description="Current Pu number density relative to HM at BOL",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateBalance",
-            units="1/cm^3/s",
-            description="Numerical balance between particle production and destruction (should be small)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateExtSrc",
-            units="1/cm^3/s",
-            description="Rate of production of neutrons from an external source.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateFisAbs",
-            units="1/cm^3/s",
-            description="Neutron abs. rate in fissile material",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "capturePowerFrac",
-            units=None,
-            description="Fraction of the power produced through capture in a block.",
-            location=ParamLocation.AVERAGE,
-            saveToDB="True",
-        )
-
-        pb.defParam(
-            "rateFisSrc",
-            units="1/cm^3/s",
-            description="Fission source rate. This is related to production rate in fissile by a factor of keff",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateLeak",
-            units="1/cm^3/s",
-            description="Rate that neutrons leak out of this block.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateParasAbs",
-            units="1/cm^3/s",
-            description="Rate of parasitic absorption (absorption in non-fertile/fissionable material)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateProdNet",
-            units="1/cm^3/s",
-            description="Net production rate of neutrons",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateScatIn",
-            units="1/cm^3/s",
-            description="Rate neutrons in-scatter in this block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rateScatOut",
-            units="1/cm^3/s",
-            description="Rate that neutrons out-scatter in this block (removal - absorption)",
             location=ParamLocation.AVERAGE,
         )
 
