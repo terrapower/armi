@@ -18,10 +18,7 @@ import os
 import re
 import io
 import pathlib
-from typing import List, Tuple, Union, Optional
-
-import ruamel
-from ruamel.yaml.error import FileMark
+from typing import List, Tuple, Union, Optional, TextIO
 
 from armi import runLog
 from armi.utils import directoryChangers
@@ -29,63 +26,92 @@ from armi.localization import strings
 
 
 _INCLUDE_CTOR = False
+_INCLUDE_RE = re.compile(r"^(.*\s+)?!include\s+(.*)\n?$")
+_INDENT_RE = re.compile(r"^[\s\-\?:]*([^\s\-\?:].*)?$")
 
 
-def registerYamlIncludeConstructor():
+class FileMark:
+    def __init__(self, fName, line, column):
+        self.fName = fName
+        self.line = line
+        self.column = column
+
+    def __str__(self):
+        return "{}, line {}, column {}".format(self.fName, self.line, self.column)
+
+
+def _processIncludes(
+    src,
+    out,
+    includes: List[Tuple[pathlib.Path, FileMark]],
+    indentation=0,
+    currentFile="<stream>",
+):
     """
-    Register a custom !include tag constructor with ruamel.yaml.
+    This is the workhorse of ``resolveMarkupInclusions`` and friends.
 
-    This teaches the ruamel.yaml parser to interpret ``!include`` tags as essentially a
-    textual inclusion. This is somewhat of a weird feature, as tags are typically used
-    to represent custom objects in YAML, rather than to directly manipulate the YAML
-    itself. As such it leads to interesting interactions with the yamlize library that
-    we use to do much of our input processing.
-
-    See Also
-    --------
-    resolveMarkupInclusions
+    Recursively inserts the contents of !included YAML files into the output stream,
+    keeping track of indentation and a list of included files along the way.
     """
-    global _INCLUDE_CTOR
-    if _INCLUDE_CTOR:
-        # already done; short circuit
-        return
 
-    def includeCtor(loader, node):
-        y = loader.loader
-        typ = getattr(y, "typ", None)
-        pure = getattr(y, "pure", None)
-        yaml = ruamel.yaml.YAML(typ=typ, pure=pure)
-        path = pathlib.Path(os.getcwd()) / node.value
-        return yaml.load(path)
+    def _beginningOfContent(line: str) -> int:
+        """
+        Return the position of the first "content" character.
 
-    ruamel.yaml.Constructor.add_constructor("!include", includeCtor)
-    ruamel.yaml.constructor.SafeConstructor.add_constructor("!include", includeCtor)
-    ruamel.yaml.constructor.RoundTripConstructor.add_constructor("!include", includeCtor)
+        This follows the YAML spec at https://yaml.org/spec/current.html#id2519916
 
-    _INCLUDE_CTOR = True
+        In short, it will return the position of the first character that is not
+        whitespace or one of the special "block collection" markers ("-", "?", and ":")
+        """
+        m = _INDENT_RE.match(line)
+        if m and m.group(1) is not None:
+            return m.start(1)
+        else:
+            return 0
+
+    indentSpace = " " * indentation
+    for i, line in enumerate(src.readlines()):
+        leadingSpace = indentSpace if i > 0 else ""
+        m = _INCLUDE_RE.match(line)
+        if m:
+            # this line has an !include on it
+            if m.group(1) is not None:
+                out.write(leadingSpace + m.group(1))
+            path = pathlib.Path(m.group(2))
+            if not path.exists():
+                raise ValueError(
+                    "The !included file, `{}` does not exist from {}!".format(
+                        path, os.getcwd()
+                    )
+                )
+            includes.append((path, FileMark(currentFile, i, m.start(2))))
+
+            with open(path, "r") as includedFile:
+                firstCharacterPos = _beginningOfContent(line)
+                newIndent = indentation + firstCharacterPos
+                _processIncludes(includedFile, out, includes, indentation=newIndent,
+                        currentFile=path)
+        else:
+            out.write(leadingSpace + line)
 
 
 def resolveMarkupInclusions(
-    src: Union[io.TextIOBase, pathlib.Path],
-    typ: str = None,
-    root: Optional[pathlib.Path] = None,
+    src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
 ) -> io.StringIO:
     """
-    Process a YAML stream, appropriately handling ``!include`` tags."
+    Process a text stream, appropriately handling ``!include`` tags.
 
-    This will take the passed string or file path, and attempt to parse it as YAML. In
-    the process, any instances of ``!include [path]`` will be replaced with the
-    appropriate contents of the ``!include`` file.
+    This will take the passed IO stream or file path, replacing any instances of
+    ``!include [path]`` with the appropriate contents of the ``!include`` file.
+
+    What is returned is a new text stream, containing the contents of all of the files
+    stitched together.
 
     Parameters
     ----------
     src : TextIOBase or Path
-        If a Path is provided, read YAML from there. If is stream is provided, consume
-        read text from the stream. If a stream is provided, ``root`` must also be
-        provided.
-    typ : str
-        A valid parse type for the ruamel YAML library. Defaults to "rt" to preserve
-        round-trip data.
+        If a Path is provided, read text from there. If is stream is provided, consume
+        text from the stream. If a stream is provided, ``root`` must also be provided.
     root : Optional Path
         The root directory to use for resolving relative paths in !include tags. If a
         stream is provided for ``src``, ``root`` must be provided. Otherwise, the
@@ -93,79 +119,78 @@ def resolveMarkupInclusions(
 
     Notes
     -----
-    This does a full (albeit not Yamlize) parse of the input YAML into the appropriate
-    data structure, resolving the textual inclusions along the way. Then, the resulting
-    data are re-serialized to a new YAML stream. As such, this is not super efficient.
-    We do it this way because we don't have a whole lot of control over how yamlize
-    handles the parsing. For instance, yamlize will not honor the custom !include tag.
-    This sort of makes sense, as yamlize and YAML tags are two distinct approaches to
-    representing custom objects in YAML.
+    While the use of ``!include`` appears as though it would invoke some sort of special
+    custom YAML constructor code, this does not do that. Processing these inclusions as
+    part of the document parsing/composition that comes with pyyaml or ruamel.yaml could
+    work, but has a number of prohibitive drawbacks (or at least reasons why it might
+    not be worth doing). Using a custom constructor is more-or-less supported by
+    ruamel.yaml (which we do use, as it is what underpins the yamlize package), but it
+    carries limitations about how anchors and aliases can cross included-file
+    boundaries. Getting around this requires either monkey-patching ruamel.yaml, or
+    subclassing it, which in turn would require monkey-patching yamlize.
 
-    For now, this is not handling cross-document anchors and aliases, which sucks. We
-    may wish to resolve this, but methods to do so are rather complex and not without
-    their own drawbacks. There is some pure gold on that topic here:
+    Instead, we treat the ``!include``\ s as a sort of pre-processor directive, which
+    essentially pastes the contents of the ``!include``\ d file into the location of the
+    ``!include``. The result is a text stream containing the entire contents, with all
+    ``!include``\ s resolved. The only degree of sophistication lies in how indentation
+    is handled; since YAML cares about indentation to keep track of object hierarchy,
+    care must be taken that the included file contents are indented appropriately.
+
+    To precisely describe how the indentation works, it helps to have some definitions:
+
+     - Included file: The file specified in the ``!include [Included file]``
+     - Including line: The line that actually contains the ``!include [Included file]``
+     - Meaningful YAML content: Text in a YAML file that is not either indentation or a
+       special character like "-", ":" or "?".
+
+    The contents of the included file will be indented such that that the first
+    character of each line in the included file will be found at the first column in the
+    including line that contains meaningful YAML content. The only exception is the
+    first line of the included file, which starts at the location of the ``!include``
+    itself and is not deliberately indented.
+
+    In the future, we may wish to do the more sophisticated processing of the
+    ``!include``\ s as part of the YAML parse. For future reference, there is some pure
+    gold on that topic here:
     https://stackoverflow.com/questions/44910886/pyyaml-include-file-and-yaml-aliases-anchors-references
     """
-    registerYamlIncludeConstructor()
-
-    if isinstance(src, pathlib.Path):
-        root = root or src.parent.absolute()
-    else:
-        root = root or pathlib.Path(os.getcwd()).absolute()
-
-    with directoryChangers.DirectoryChanger(root):
-        yaml = ruamel.yaml.YAML(typ=typ, pure=True)
-        data = yaml.load(src)
-
-    out = io.StringIO()
-
-    yaml.dump(data, out)
-    out.seek(0)
-    if isinstance(src, io.TextIOBase):
-        src.seek(0)
-
-    return out
+    return _resolveMarkupInclusions(src, root)[0]
 
 
 def findYamlInclusions(
-    src: Union[io.TextIOBase, pathlib.Path], root: Optional[pathlib.Path] = None
+    src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
 ) -> List[Tuple[pathlib.Path, FileMark]]:
     """
-    Return a list of paths to ``!include`` files.
-
-    src : TextIOBase or Path
-        If a Path is provided, read YAML from there. If is stream is provided, consume
-        read text from the stream. If a stream is provided, ``root`` must also be
-        provided.
-    root : Optional Path
-        The root directory to use for resolving relative paths in !include tags. If a
-        stream is provided for ``src``, the current working directory is implied.
-        Otherwise, the directory containing the ``src`` path will be used by default.
-
-    This is useful for determining which files need to be copied in order to have a
-    complete input, without explicitly inserting the content from ``!include`` tags.
+    Return a list containing all of the !included YAML files from a root file.
     """
+    return _resolveMarkupInclusions(src, root)[1]
+
+
+def _resolveMarkupInclusions(
+    src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
+) -> Tuple[io.StringIO, List[Tuple[pathlib.Path, FileMark]]]:
     if isinstance(src, pathlib.Path):
         root = root or src.parent.absolute()
-    else:
+
+        # this is inefficient, but avoids having to play with io buffers
+        with open(src, "r") as rootFile:
+            src = io.StringIO(rootFile.read())
+
+    elif isinstance(src, io.TextIOBase):
         root = root or pathlib.Path(os.getcwd()).absolute()
+    else:
+        raise TypeError("Unsupported source type: `{}`!".format(type(src)))
 
+    out = io.StringIO()
     includes = []
+    with directoryChangers.DirectoryChanger(root, dumpOnException=False):
+        _processIncludes(src, out, includes)
 
-    def includeCtor(loader, node):
-        y = loader.loader
-        yaml = ruamel.yaml.YAML(typ=y.typ, pure=y.pure)
-        includes.append((root / pathlib.Path(node.value), node.start_mark))
-        return yaml.load(root / pathlib.Path(node.value))
+    out.seek(0)
+    # be kind; rewind
+    src.seek(0)
 
-    yaml = ruamel.yaml.YAML(typ="safe", pure=True)
-    yaml.Constructor.add_constructor("!include", includeCtor)
-    yaml.load(src)
-
-    if isinstance(src, io.TextIOBase):
-        src.seek(0)
-
-    return includes
+    return out, includes
 
 
 class SequentialReader:

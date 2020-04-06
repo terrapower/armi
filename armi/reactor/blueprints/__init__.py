@@ -70,7 +70,6 @@ import pathlib
 import traceback
 import typing
 
-import ruamel
 import tabulate
 import yamlize
 import yamlize.objects
@@ -108,12 +107,10 @@ def loadFromCs(cs):
     # pylint: disable=import-outside-toplevel; circular import protection
     from armi.utils import directoryChangers
 
-    textProcessors.registerYamlIncludeConstructor()
-
-    with directoryChangers.DirectoryChanger(cs.inputDirectory):
+    with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         with open(cs["loadingFile"], "r") as bpYaml:
-            # Make sure that the !include constructor is registered
-            bpYaml = textProcessors.resolveMarkupInclusions(bpYaml)
+            root = pathlib.Path(cs["loadingFile"]).parent.absolute()
+            bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
             try:
                 bp = Blueprints.load(bpYaml)
             except yamlize.yamlizing_error.YamlizingError as err:

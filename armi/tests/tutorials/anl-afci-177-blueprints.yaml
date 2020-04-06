@@ -338,7 +338,8 @@ systems:
           y: 0.0
           z: 0.0
 grids:
-    core: !include anl-afci-177-coreMap.yaml
+    core:
+        !include anl-afci-177-coreMap.yaml
 
 # end-systems-section
 

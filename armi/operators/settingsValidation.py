@@ -291,7 +291,9 @@ class Inspector:
 
     def _setGeomType(self):
         if self.cs["geomFile"]:
-            with directoryChangers.DirectoryChanger(self.cs.inputDirectory):
+            with directoryChangers.DirectoryChanger(
+                self.cs.inputDirectory, dumpOnException=False
+            ):
                 geom = geometry.SystemLayoutInput()
                 geom.readGeomFromFile(self.cs["geomFile"])
 

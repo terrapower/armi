@@ -180,7 +180,9 @@ class CaseSuite:
                 newDir = os.path.dirname(os.path.relpath(case.cs.path, oldRoot))
             else:
                 newDir = case.title
-            with ForcedCreationDirectoryChanger(newDir, clean=True):
+            with ForcedCreationDirectoryChanger(
+                newDir, clean=True, dumpOnException=False
+            ):
                 clone.add(case.clone(modifiedSettings=modifiedSettings))
         return clone
 

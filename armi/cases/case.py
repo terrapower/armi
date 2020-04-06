@@ -392,7 +392,7 @@ class Case:
 
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
-        with DirectoryChanger(self.cs.inputDirectory):
+        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             self._initBurnChain()
             o = operators.factory(self.cs)
             if not r:
@@ -465,7 +465,7 @@ class Case:
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
         settings.setMasterCs(self.cs)
         o = self.initializeOperator()
-        with DirectoryChanger(self.cs.inputDirectory):
+        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             # There are global variables that are modified when a report is
             # generated, so reset it all
             six.moves.reload_module(report)  # pylint: disable=too-many-function-args
@@ -566,9 +566,18 @@ class Case:
         copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
         with open(self.cs["loadingFile"], "r") as f:
-            for includePath, mark in textProcessors.findYamlInclusions(
-                f, root=pathlib.Path(self.cs.inputDirectory)
-            ):
+            # The root for handling YMAL includes is relative to the YAML file, not the
+            # settings file
+            root = (
+                pathlib.Path(self.cs.inputDirectory)
+                / pathlib.Path(self.cs["loadingFile"]).parent
+            )
+            cloneRoot = (
+                pathlib.Path(clone.cs.inputDirectory)
+                / pathlib.Path(clone.cs["loadingFile"]).parent
+            )
+            for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
+                includePath = root / includePath
                 if not includePath.exists():
                     raise OSError(
                         "The input file file `{}` referenced at {} does not exist.".format(
@@ -580,7 +589,7 @@ class Case:
                         includePath, mark
                     ),
                     fromPath(includePath),
-                    clone.cs.inputDirectory,
+                    cloneRoot,
                 )
 
         for fileName in additionalFiles or []:
@@ -652,7 +661,9 @@ class Case:
             Similar to this but doesn't let you write out new/modified
             geometry or blueprints objects
         """
-        with ForcedCreationDirectoryChanger(self.cs.inputDirectory):
+        with ForcedCreationDirectoryChanger(
+            self.cs.inputDirectory, dumpOnException=False
+        ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
             self.bp

@@ -4,6 +4,7 @@ bobby: &bobby
 
 billy:
     full_name: William Person
+    # comment
     children:
         - *bobby
         - !include includeA.yaml

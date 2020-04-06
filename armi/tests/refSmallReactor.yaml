@@ -444,4 +444,5 @@ grids:
         lattice pitch:
             x: 50.0
             y: 50.0
-        grid contents: !include sfpGeom.yaml
+        grid contents:
+            !include sfpGeom.yaml
