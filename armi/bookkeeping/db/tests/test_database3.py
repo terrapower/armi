@@ -13,16 +13,15 @@
 # limitations under the License.
 
 import unittest
-import os
 
 import numpy
-import numpy.testing
 import h5py
 
-from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, ARMI_RUN_PATH
-
 from armi.bookkeeping.db import database3 as database
+from armi.reactor import grids
+from armi.reactor.tests import test_reactors
+
+from armi.tests import TEST_ROOT
 
 
 class TestDatabase3(unittest.TestCase):
@@ -112,8 +111,12 @@ class TestDatabase3(unittest.TestCase):
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
         database._writeAttrs(
-            tnGroup["layout/serialNum"], tnGroup, {"fakeBigData": numpy.eye(6400),
-                "someString": "this isn't a reference to another dataset"}
+            tnGroup["layout/serialNum"],
+            tnGroup,
+            {
+                "fakeBigData": numpy.eye(6400),
+                "someString": "this isn't a reference to another dataset",
+            },
         )
 
         db2 = database.Database3("restartDB.h5", "w")
@@ -124,8 +127,10 @@ class TestDatabase3(unittest.TestCase):
             tnGroup = db2.getH5Group(self.r)
 
             # this test is a little bit implementation-specific, but nice to be explicit
-            self.assertEqual(tnGroup["layout/serialNum"].attrs["fakeBigData"],
-                    "@/c01n00/attrs/0_fakeBigData")
+            self.assertEqual(
+                tnGroup["layout/serialNum"].attrs["fakeBigData"],
+                "@/c01n00/attrs/0_fakeBigData",
+            )
 
             # actually exercise the _resolveAttrs function
             attrs = database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
@@ -146,6 +151,31 @@ class TestDatabase3(unittest.TestCase):
             self.assertTrue(newDb["c00n00/Reactor/cycleLength"][()] == 1)
             self.assertTrue("c02n00" not in newDb)
             self.assertTrue(newDb.attrs["databaseVersion"] == database.DB_VERSION)
+
+
+class Test_LocationPacking(unittest.TestCase):
+    def test_locationPacking(self):
+        # pylint: disable=protected-access
+        loc1 = grids.IndexLocation(1, 2, 3, None)
+        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
+        loc3 = grids.MultiIndexLocation(None)
+        loc3.append(grids.IndexLocation(7, 8, 9, None))
+        loc3.append(grids.IndexLocation(10, 11, 12, None))
+
+        tp, data = database._packLocation(loc1)
+        self.assertEqual(tp, database.LOC_INDEX)
+        unpacked = database._unpackLocation([tp], data)
+        self.assertEqual(unpacked[0], (1, 2, 3))
+
+        tp, data = database._packLocation(loc2)
+        self.assertEqual(tp, database.LOC_COORD)
+        unpacked = database._unpackLocation([tp], data)
+        self.assertEqual(unpacked[0], (4.0, 5.0, 6.0))
+
+        tp, data = database._packLocation(loc3)
+        self.assertEqual(tp, database.LOC_MULTI + "2")
+        unpacked = database._unpackLocation([tp], data)
+        self.assertEqual(unpacked[0], (7, 8, 9))
 
 
 if __name__ == "__main__":

@@ -12,3 +12,4 @@ settings:
   comment: C5G7 LWR Benchmark inputs
   genXS: Neutron
   numProcessors: 1
+  genReports: false

@@ -11,6 +11,15 @@ in `NEA/NSC/DOC(2003)16 <https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-
 .. tip:: The full inputs created in this tutorial are available for download at the bottom of
 	this page.
 
+.. warning:: ARMI was historically developed in support of fast reactors and most
+    features have been used and tested in fast reactor contexts. This
+    tutorial shows that simple LWR cases can be defined in input,
+    but there is still a lot of work to make sure all ARMI capabilities
+    are operational in this context. Thus, be warned that
+    as of 2020, doing LWR analysis with ARMI will certainly require
+    new developments. We are excited to expand ARMI scope fully
+    into LWR relevant analysis.
+
 Setting up the blueprints
 =========================
 This tutorial is shorter than the previous, focusing mostly on the new information.

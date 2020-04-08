@@ -19,6 +19,9 @@ from armi.utils import directoryChangers
 from armi.tests import TEST_ROOT
 from armi.reactor.flags import Flags
 import armi
+from armi.bookkeeping import db
+
+TEST_INPUT_TITLE = "c5g7-settings"
 
 
 class C5G7ReactorTests(unittest.TestCase):
@@ -38,7 +41,7 @@ class C5G7ReactorTests(unittest.TestCase):
         """
         Load the C5G7 case and check basic counts.
         """
-        o = armi.init(fName="c5g7-settings.yaml")
+        o = armi.init(fName=TEST_INPUT_TITLE + ".yaml")
         b = o.r.core.getFirstBlock(Flags.MOX)
         # there are 100 of each high, medium, and low MOX pins
         fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)
@@ -46,3 +49,11 @@ class C5G7ReactorTests(unittest.TestCase):
 
         gt = b.getComponent(Flags.GUIDE_TUBE)
         self.assertEqual(gt.getDimension("mult"), 24)
+
+    def test_runC5G7(self):
+        """
+        Run C5G7 in basic no-op app and load from the result.
+        """
+        o = armi.init(fName=TEST_INPUT_TITLE + ".yaml")
+        o.operate()
+        o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)

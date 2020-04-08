@@ -26,16 +26,17 @@ All other modules can just assume there's a LFP collection and use it as needed.
 Examples
 --------
 
-from armi.physics.neutronics.fissionProductModel import fissionProductModel
-fpInterface = fissionProductModel.FissionProductModel()
-lfp = fpInterface.getGlobalLumpedFissionProducts()
-lfp['LFP35']
-lfp35 = lfp['LFP35']
-lfp35.printDensities(0.05)
-lfp35.values()
-allFPs = [(fpY, fpNuc) for (fpNuc,fpY) in lfp35.items()]
-allFPs.sort()
-lfp35.keys()
+    from armi.physics.neutronics.fissionProductModel import fissionProductModel
+    fpInterface = fissionProductModel.FissionProductModel()
+    lfp = fpInterface.getGlobalLumpedFissionProducts()
+    lfp['LFP35']
+    lfp35 = lfp['LFP35']
+    lfp35.printDensities(0.05)
+    lfp35.values()
+    allFPs = [(fpY, fpNuc) for (fpNuc,fpY) in lfp35.items()]
+    allFPs.sort()
+    lfp35.keys()
+
 """
 
 from armi import runLog
