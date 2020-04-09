@@ -22,8 +22,8 @@ import glob
 import os
 import subprocess
 import re
-
-from six.moves import zip_longest
+import shutil
+import itertools
 
 from armi import interfaces
 from armi import runLog
@@ -122,7 +122,7 @@ class MainInterface(interfaces.Interface):
             # if any files to copy, then use the first as the default, i.e. len() == 1,
             # otherwise assume '.'
             default = copyFilesTo[0] if any(copyFilesTo) else "."
-            for filename, dest in zip_longest(
+            for filename, dest in itertools.zip_longest(
                 copyFilesFrom, copyFilesTo, fillvalue=default
             ):
                 pathTools.copyOrWarn("copyFilesFrom", filename, dest)
@@ -165,6 +165,8 @@ class MainInterface(interfaces.Interface):
 
     def updateClusterProgress(self):
         """Updates the status window on the Windows HPC client."""
+        if not shutil.which("job"):
+            return
         totalSteps = max(
             (self.cs["burnSteps"] + 1) * self.cs["nCycles"] - 1, 1
         )  # 0 through 5 if 2 cycles
