@@ -7,4 +7,4 @@ billy:
     # comment
     children:
         - *bobby
-        - !include includeA.yaml
+        - !include lower/includeA.yaml

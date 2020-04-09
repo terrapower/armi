@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py"""
+import pathlib
 import random
 import unittest
 
@@ -576,7 +577,9 @@ class Assembly_TestCase(unittest.TestCase):
         with directoryChangers.DirectoryChanger(TEST_ROOT):
             self.cs["loadingFile"] = "refSmallReactor.yaml"
             with open(self.cs["loadingFile"], "r") as y:
-                y = textProcessors.resolveMarkupInclusions(y)
+                y = textProcessors.resolveMarkupInclusions(
+                    y, pathlib.Path(self.cs.inputDirectory)
+                )
                 self.r.blueprints = blueprints.Blueprints.load(y)
 
             self.r.blueprints._prepConstruction(self.cs)

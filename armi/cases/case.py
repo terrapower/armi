@@ -101,7 +101,7 @@ class Case:
         self.enabled = True
 
         # NOTE: in order to prevent slow submission times for loading massively large
-        # blueprints (e.g. ZPPR or other computer-generated input files),
+        # blueprints (e.g. certain computer-generated input files),
         # self.bp and self.geom can be None.
         self.cs = cs
         self._bp = bp
@@ -566,7 +566,7 @@ class Case:
         copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
         with open(self.cs["loadingFile"], "r") as f:
-            # The root for handling YMAL includes is relative to the YAML file, not the
+            # The root for handling YAML includes is relative to the YAML file, not the
             # settings file
             root = (
                 pathlib.Path(self.cs.inputDirectory)
@@ -577,19 +577,24 @@ class Case:
                 / pathlib.Path(clone.cs["loadingFile"]).parent
             )
             for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
-                includePath = root / includePath
-                if not includePath.exists():
+                if not includePath.is_absolute():
+                    includeSrc = root / includePath
+                    includeDest = cloneRoot / includePath
+                else:
+                    # don't bother copying absolute files
+                    continue
+                if not includeSrc.exists():
                     raise OSError(
                         "The input file file `{}` referenced at {} does not exist.".format(
-                            includePath, mark
+                            includeSrc, mark
                         )
                     )
                 pathTools.copyOrWarn(
                     "auxiliary input file `{}` referenced at {}".format(
-                        includePath, mark
+                        includeSrc, mark
                     ),
-                    fromPath(includePath),
-                    cloneRoot,
+                    includeSrc,
+                    includeDest,
                 )
 
         for fileName in additionalFiles or []:

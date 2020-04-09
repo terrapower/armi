@@ -26,24 +26,28 @@ from armi.localization import strings
 
 
 _INCLUDE_CTOR = False
-_INCLUDE_RE = re.compile(r"^(.*\s+)?!include\s+(.*)\n?$")
+_INCLUDE_RE = re.compile(r"^([^#]*\s+)?!include\s+(.*)\n?$")
 _INDENT_RE = re.compile(r"^[\s\-\?:]*([^\s\-\?:].*)?$")
 
 
 class FileMark:
-    def __init__(self, fName, line, column):
-        self.fName = fName
+    def __init__(self, fName, line, column, relativeTo):
+        self.path = fName
         self.line = line
         self.column = column
+        # if the path is relative, where is it relative to? We need this to be able to
+        # normalize relative paths to a root file.
+        self.relativeTo = relativeTo
 
     def __str__(self):
-        return "{}, line {}, column {}".format(self.fName, self.line, self.column)
+        return "{}, line {}, column {}".format(self.path, self.line, self.column)
 
 
 def _processIncludes(
     src,
     out,
     includes: List[Tuple[pathlib.Path, FileMark]],
+    root,
     indentation=0,
     currentFile="<stream>",
 ):
@@ -77,20 +81,27 @@ def _processIncludes(
             # this line has an !include on it
             if m.group(1) is not None:
                 out.write(leadingSpace + m.group(1))
-            path = pathlib.Path(m.group(2))
+            fName = pathlib.Path(m.group(2))
+            path = root / fName
             if not path.exists():
                 raise ValueError(
                     "The !included file, `{}` does not exist from {}!".format(
-                        path, os.getcwd()
+                        fName, root
                     )
                 )
-            includes.append((path, FileMark(currentFile, i, m.start(2))))
+            includes.append((fName, FileMark(currentFile, i, m.start(2), root)))
 
             with open(path, "r") as includedFile:
                 firstCharacterPos = _beginningOfContent(line)
                 newIndent = indentation + firstCharacterPos
-                _processIncludes(includedFile, out, includes, indentation=newIndent,
-                        currentFile=path)
+                _processIncludes(
+                    includedFile,
+                    out,
+                    includes,
+                    path.parent,
+                    indentation=newIndent,
+                    currentFile=path,
+                )
         else:
             out.write(leadingSpace + line)
 
@@ -157,34 +168,64 @@ def resolveMarkupInclusions(
     return _resolveMarkupInclusions(src, root)[0]
 
 
+def _getRootFromSrc(
+    src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path]
+) -> pathlib.Path:
+    if isinstance(src, pathlib.Path):
+        root = root or src.parent.absolute()
+    elif isinstance(src, io.TextIOBase):
+        if root is None:
+            raise ValueError("A stream was provided without a root directory.")
+    else:
+        raise TypeError("Unsupported source type: `{}`!".format(type(src)))
+
+    return root
+
+
 def findYamlInclusions(
     src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
 ) -> List[Tuple[pathlib.Path, FileMark]]:
     """
     Return a list containing all of the !included YAML files from a root file.
+
+    This will attempt to "normalize" relative paths to the passed root. If that is not
+    possible, then an absolute path will be used instead. For example, if a file (A)
+    !includes another file (B) by an absolute path, which in turn !includes more files
+    relative to (B), all of (B)'s relative includes will be turned into absolute paths
+    from the perspective of the root file (A).
     """
-    return _resolveMarkupInclusions(src, root)[1]
+    includes = _resolveMarkupInclusions(src, root)[1]
+    root = _getRootFromSrc(src, root)
+    normalizedIncludes = []
+
+    for path, mark in includes:
+        if not path.is_absolute():
+            try:
+                path = (mark.relativeTo / path).relative_to(root or os.getcwd())
+            except ValueError as _:
+                # Can't make a relative path. IMO, pathlib gives up a little too early,
+                # but we still probably want to decay to absolute paths if the files
+                # arent in the same tree.
+                path = (mark.relativeTo / path).absolute()
+
+        normalizedIncludes.append((path, mark))
+
+    return normalizedIncludes
 
 
 def _resolveMarkupInclusions(
     src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
 ) -> Tuple[io.StringIO, List[Tuple[pathlib.Path, FileMark]]]:
-    if isinstance(src, pathlib.Path):
-        root = root or src.parent.absolute()
+    root = _getRootFromSrc(src, root)
 
+    if isinstance(src, pathlib.Path):
         # this is inefficient, but avoids having to play with io buffers
         with open(src, "r") as rootFile:
             src = io.StringIO(rootFile.read())
 
-    elif isinstance(src, io.TextIOBase):
-        root = root or pathlib.Path(os.getcwd()).absolute()
-    else:
-        raise TypeError("Unsupported source type: `{}`!".format(type(src)))
-
     out = io.StringIO()
     includes = []
-    with directoryChangers.DirectoryChanger(root, dumpOnException=False):
-        _processIncludes(src, out, includes)
+    _processIncludes(src, out, includes, root)
 
     out.seek(0)
     # be kind; rewind
