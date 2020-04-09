@@ -101,7 +101,10 @@ class _SettingsReader(object):
         self.format = self.FORMAT_FROM_EXT[ext]
         self.inputPath = path
         with open(path, "r") as f:
-            self.readFromStream(f, handleInvalids, self.format)
+            try:
+                self.readFromStream(f, handleInvalids, self.format)
+            except Exception as ee:
+                raise exceptions.InvalidSettingsFileError(path, str(ee))
 
     def readFromStream(self, stream, handleInvalids=True, fmt=SettingsInputFormat.YAML):
         """Read from a file-like stream."""

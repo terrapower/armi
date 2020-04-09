@@ -149,26 +149,27 @@ class CaseSuite:
         """
         Clone a CaseSuite to a new place.
 
-        Creates a clone for each case within a CaseSuite. If ``oldRoot`` is not specified, then each
-        case clone is made in a directory with the title of the case. If ``oldRoot`` is specified,
-        then a relative path from ``oldRoot`` will be used to determine a new relative path to the
-        current directory ``oldRoot``.
+        Creates a clone for each case within a CaseSuite. If ``oldRoot`` is not
+        specified, then each case clone is made in a directory with the title of the
+        case. If ``oldRoot`` is specified, then a relative path from ``oldRoot`` will be
+        used to determine a new relative path to the current directory ``oldRoot``.
 
         Parameters
         ----------
         oldRoot : str (optional)
-            root directory of original case suite used to help filter when a suite contains one or
-            more cases with the same case title.
+            root directory of original case suite used to help filter when a suite
+            contains one or more cases with the same case title.
 
         Notes
         -----
-        By design, a CaseSuite has no location dependence; this allows any set of cases to compose
-        a CaseSuite. The thought is that the post-analysis capabilities without restricting a root
-        directory could be beneficial. For example, this allows one to perform analysis on cases
-        analyzed by Person A and Person B, even if the analyses were performed in completely
-        different locations. As a consequence, when you want to clone, we need to infer a "root"
-        of the original cases to attempt to mirror whatever existing directory structure there
-        may have been.
+        By design, a CaseSuite has no location dependence; this allows any set of cases
+        to compose a CaseSuite. The thought is that the post-analysis capabilities
+        without restricting a root directory could be beneficial. For example, this
+        allows one to perform analysis on cases analyzed by Person A and Person B, even
+        if the analyses were performed in completely different locations. As a
+        consequence, when you want to clone, we need to infer a "root" of the original
+        cases to attempt to mirror whatever existing directory structure there may have
+        been.
         """
         clone = CaseSuite(self.cs.duplicate())
 
@@ -180,7 +181,9 @@ class CaseSuite:
                 newDir = os.path.dirname(os.path.relpath(case.cs.path, oldRoot))
             else:
                 newDir = case.title
-            with ForcedCreationDirectoryChanger(newDir, clean=True):
+            with ForcedCreationDirectoryChanger(
+                newDir, clean=True, dumpOnException=False
+            ):
                 clone.add(case.clone(modifiedSettings=modifiedSettings))
         return clone
 
@@ -190,8 +193,8 @@ class CaseSuite:
 
         .. warning: Suite running may not work yet if the cases have interdependencies.
                     We typically run on a HPC but are still working on a platform
-                    independent way of handling HPCs. 
-                    
+                    independent way of handling HPCs.
+
         """
         for case in self:
             case.run()

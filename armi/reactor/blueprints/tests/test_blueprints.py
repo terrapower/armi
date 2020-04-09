@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file"""
+import os
 import pathlib
 import unittest
 
@@ -55,10 +56,11 @@ class TestBlueprints(unittest.TestCase):
         cls.directoryChanger.open()
         isotopicDepletion.applyDefaultBurnChain()
 
-        with open("refSmallReactor.yaml", "r") as y:
-            y = textProcessors.resolveMarkupInclusions(y)
-            cls.blueprints = blueprints.Blueprints.load(y)
-            cls.blueprints._prepConstruction(cls.cs)
+        y = textProcessors.resolveMarkupInclusions(
+            pathlib.Path(os.getcwd()) / "refSmallReactor.yaml"
+        )
+        cls.blueprints = blueprints.Blueprints.load(y)
+        cls.blueprints._prepConstruction(cls.cs)
 
     @classmethod
     def tearDownClass(cls):

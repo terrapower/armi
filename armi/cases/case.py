@@ -101,7 +101,7 @@ class Case:
         self.enabled = True
 
         # NOTE: in order to prevent slow submission times for loading massively large
-        # blueprints (e.g. ZPPR or other computer-generated input files),
+        # blueprints (e.g. certain computer-generated input files),
         # self.bp and self.geom can be None.
         self.cs = cs
         self._bp = bp
@@ -392,7 +392,7 @@ class Case:
 
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
-        with DirectoryChanger(self.cs.inputDirectory):
+        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             self._initBurnChain()
             o = operators.factory(self.cs)
             if not r:
@@ -465,7 +465,7 @@ class Case:
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
         settings.setMasterCs(self.cs)
         o = self.initializeOperator()
-        with DirectoryChanger(self.cs.inputDirectory):
+        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             # There are global variables that are modified when a report is
             # generated, so reset it all
             six.moves.reload_module(report)  # pylint: disable=too-many-function-args
@@ -566,21 +566,35 @@ class Case:
         copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
         with open(self.cs["loadingFile"], "r") as f:
-            for includePath, mark in textProcessors.findYamlInclusions(
-                f, root=pathlib.Path(self.cs.inputDirectory)
-            ):
-                if not includePath.exists():
+            # The root for handling YAML includes is relative to the YAML file, not the
+            # settings file
+            root = (
+                pathlib.Path(self.cs.inputDirectory)
+                / pathlib.Path(self.cs["loadingFile"]).parent
+            )
+            cloneRoot = (
+                pathlib.Path(clone.cs.inputDirectory)
+                / pathlib.Path(clone.cs["loadingFile"]).parent
+            )
+            for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
+                if not includePath.is_absolute():
+                    includeSrc = root / includePath
+                    includeDest = cloneRoot / includePath
+                else:
+                    # don't bother copying absolute files
+                    continue
+                if not includeSrc.exists():
                     raise OSError(
                         "The input file file `{}` referenced at {} does not exist.".format(
-                            includePath, mark
+                            includeSrc, mark
                         )
                     )
                 pathTools.copyOrWarn(
                     "auxiliary input file `{}` referenced at {}".format(
-                        includePath, mark
+                        includeSrc, mark
                     ),
-                    fromPath(includePath),
-                    clone.cs.inputDirectory,
+                    includeSrc,
+                    includeDest,
                 )
 
         for fileName in additionalFiles or []:
@@ -652,7 +666,9 @@ class Case:
             Similar to this but doesn't let you write out new/modified
             geometry or blueprints objects
         """
-        with ForcedCreationDirectoryChanger(self.cs.inputDirectory):
+        with ForcedCreationDirectoryChanger(
+            self.cs.inputDirectory, dumpOnException=False
+        ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
             self.bp

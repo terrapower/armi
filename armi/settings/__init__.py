@@ -38,6 +38,8 @@ import glob
 import shutil
 from typing import Union
 
+from ruamel import yaml
+
 import armi
 from armi import runLog
 from armi.localization import exceptions
@@ -120,6 +122,12 @@ def recursivelyLoadSettingsFiles(
             runLog.extra("loaded {}".format(possibleSettingsFile))
         except exceptions.InvalidSettingsFileError as ee:
             runLog.info("skipping {}\n    {}".format(possibleSettingsFile, ee))
+        except yaml.composer.ComposerError as ee:
+            runLog.info(
+                "skipping {}; it appears to be an incomplete YAML snippet\n    {}".format(
+                    possibleSettingsFile, ee
+                )
+            )
         except Exception as ee:
             runLog.error(
                 "Failed to parse {}.\nIt looked like a settings file but gave this exception:\n{}: {}".format(

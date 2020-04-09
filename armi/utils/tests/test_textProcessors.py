@@ -30,7 +30,7 @@ RES_DIR = os.path.join(THIS_DIR, "resources")
 
 
 class YamlIncludeTest(unittest.TestCase):
-    def testIncludeCtor(self):
+    def testResolveIncludes(self):
         with open(os.path.join(RES_DIR, "root.yaml")) as f:
             resolved = textProcessors.resolveMarkupInclusions(
                 f, root=pathlib.Path(RES_DIR)
@@ -66,9 +66,11 @@ class YamlIncludeTest(unittest.TestCase):
         self.assertTrue(anchorFound)
 
     def testFindIncludes(self):
-        includes = textProcessors.findYamlInclusions(pathlib.Path(RES_DIR) / "root.yaml")
+        includes = textProcessors.findYamlInclusions(
+            pathlib.Path(RES_DIR) / "root.yaml"
+        )
         for i, _mark in includes:
-            self.assertTrue(i.exists())
+            self.assertTrue((RES_DIR/i).exists())
 
         self.assertEqual(len(includes), 2)
 
