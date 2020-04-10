@@ -1316,20 +1316,37 @@ def _packLocation(
     """
     oldStyle = version[0] == 3 and version[1] < 3
     if oldStyle:
-        locationType = loc.__class__.__name__
+        locationType, locationData = _packLocationOld(loc)
+    else:
+        locationType, locationData = _packLocationNew(loc)
+    return locationType, locationData
+
+
+def _packLocationOld(loc: grids.LocationBase):
+    """Delete when reading v <=3.2 DB's no longer wanted."""
+    locationType = loc.__class__.__name__
     if loc is None:
-        if oldStyle:
-            locationType = "None"
-        else:
-            locationType = LOC_NONE
+        locationType = "None"
         locData = [(0.0, 0.0, 0.0)]
     elif loc.__class__ is grids.CoordinateLocation:
-        if not oldStyle:
-            locationType = LOC_COORD
         locData = [loc.indices]
     elif loc.__class__ is grids.IndexLocation:
-        if not oldStyle:
-            locationType = LOC_INDEX
+        locData = [loc.indices]
+    else:
+        raise ValueError(f"Invalid location type: {loc}")
+
+    return locationType, locData
+
+
+def _packLocationNew(loc: grids.LocationBase):
+    if loc is None:
+        locationType = LOC_NONE
+        locData = [(0.0, 0.0, 0.0)]
+    elif loc.__class__ is grids.CoordinateLocation:
+        locationType = LOC_COORD
+        locData = [loc.indices]
+    elif loc.__class__ is grids.IndexLocation:
+        locationType = LOC_INDEX
         locData = [loc.indices]
     elif loc.__class__ is grids.MultiIndexLocation:
         # encode number of sub-locations to allow in-line unpacking.
@@ -1351,17 +1368,42 @@ def _unpackLocation(
     when multiindex locations are used.
     """
     oldStyle = version[0] == 3 and version[1] < 3
+    if oldStyle:
+        return _unpackLocationOld(locationTypes, locData)
+    else:
+        return _unpackLocationNew(locationTypes, locData)
+
+
+def _unpackLocationOld(locationTypes, locData):
+    """Delete when reading v <=3.2 DB's no longer wanted."""
     locsIter = iter(locData)
     unpackedLocs = []
     for lt in locationTypes:
-        if (oldStyle and lt == "None") or lt == LOC_NONE:
+        if lt == "None":
             loc = next(locsIter)
             unpackedLocs.append(None)
-        elif (oldStyle and lt == "IndexLocation") or lt == LOC_INDEX:
+        elif lt == "IndexLocation":
             loc = next(locsIter)
             # the data is stored as float, so cast back to int
             unpackedLocs.append(tuple(int(i) for i in loc))
-        elif oldStyle or lt == LOC_COORD:
+        else:
+            loc = next(locsIter)
+            unpackedLocs.append(tuple(loc))
+    return unpackedLocs
+
+
+def _unpackLocationNew(locationTypes, locData):
+    locsIter = iter(locData)
+    unpackedLocs = []
+    for lt in locationTypes:
+        if lt == LOC_NONE:
+            loc = next(locsIter)
+            unpackedLocs.append(None)
+        elif lt == LOC_INDEX:
+            loc = next(locsIter)
+            # the data is stored as float, so cast back to int
+            unpackedLocs.append(tuple(int(i) for i in loc))
+        elif lt == LOC_COORD:
             loc = next(locsIter)
             unpackedLocs.append(tuple(loc))
         elif lt.startswith(LOC_MULTI):
