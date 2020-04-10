@@ -44,6 +44,9 @@ Minor revision changelog
    for reading previous versions, and for performing a ``mergeHistory()`` and converting
    to the new reference strategy, but the old version cannot be written.
 
+ - 3.3: Compress the way locations are stored in the database and allow MultiIndex locations
+   to be read and written.
+
 """
 import collections
 import copy
@@ -89,12 +92,19 @@ from armi.reactor import geometry
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
-DB_VERSION = "3.2"
+DB_MAJOR = 3
+DB_MINOR = 3
+DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
 
 ATTR_LINK = re.compile("^@(.*)$")
 
 _SERIALIZER_NAME = "serializerName"
 _SERIALIZER_VERSION = "serializerVersion"
+
+LOC_NONE = "N"
+LOC_COORD = "C"
+LOC_INDEX = "I"
+LOC_MULTI = "M:"
 
 
 def getH5GroupName(cycle, timeNode, statePointName=None):
@@ -809,7 +819,7 @@ class Database3(database.Database):
         # _createLayout is recursive
         h5group = self.getH5Group(reactor, statePointName)
         runLog.info("Writing to database for statepoint: {}".format(h5group.name))
-        layout = Layout(comp=reactor)
+        layout = Layout(comp=reactor, version=(self.versionMajor, self.versionMinor))
         layout.writeToDB(h5group)
         groupedComps = layout.groupedComps
 
@@ -850,7 +860,7 @@ class Database3(database.Database):
 
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 
-        layout = Layout(h5group=h5group)
+        layout = Layout(h5group=h5group, version=(self.versionMajor, self.versionMinor))
         comps, groupedComps = layout._initComps(cs, bp)
 
         # populate data onto initialized components
@@ -1191,7 +1201,9 @@ class Database3(database.Database):
 
             cycle = h5TimeNodeGroup.attrs["cycle"]
             timeNode = h5TimeNodeGroup.attrs["timeNode"]
-            layout = Layout(h5group=h5TimeNodeGroup)
+            layout = Layout(
+                h5group=h5TimeNodeGroup, version=(self.versionMajor, self.versionMinor)
+            )
 
             for compType, compsBySerialNum in compsByTypeThenSerialNum.items():
                 compTypeName = compType.__name__
@@ -1284,6 +1296,129 @@ class Database3(database.Database):
         return histData
 
 
+def _packLocation(
+    loc: grids.LocationBase, version: Tuple[int, int] = (DB_MAJOR, DB_MINOR)
+) -> Tuple[str, List]:
+    """
+    Extract information from a location needed to write it to this DB.
+
+    Each locator has one locationType and up to N location-defining datums,
+    where N is the number of entries in a possible multiindex, or just 1
+    for everything else.
+
+    Shrink grid locator names for storage efficiency.
+    
+    Notes
+    -----
+    Contains some conditionals to still load databases made before
+    db version 3.3 which can be removed once no users care about
+    those DBs anymore.
+    """
+    oldStyle = version[0] == 3 and version[1] < 3
+    if oldStyle:
+        locationType, locationData = _packLocationOld(loc)
+    else:
+        locationType, locationData = _packLocationNew(loc)
+    return locationType, locationData
+
+
+def _packLocationOld(loc: grids.LocationBase):
+    """Delete when reading v <=3.2 DB's no longer wanted."""
+    locationType = loc.__class__.__name__
+    if loc is None:
+        locationType = "None"
+        locData = [(0.0, 0.0, 0.0)]
+    elif loc.__class__ is grids.CoordinateLocation:
+        locData = [loc.indices]
+    elif loc.__class__ is grids.IndexLocation:
+        locData = [loc.indices]
+    else:
+        raise ValueError(f"Invalid location type: {loc}")
+
+    return locationType, locData
+
+
+def _packLocationNew(loc: grids.LocationBase):
+    if loc is None:
+        locationType = LOC_NONE
+        locData = [(0.0, 0.0, 0.0)]
+    elif loc.__class__ is grids.CoordinateLocation:
+        locationType = LOC_COORD
+        locData = [loc.indices]
+    elif loc.__class__ is grids.IndexLocation:
+        locationType = LOC_INDEX
+        locData = [loc.indices]
+    elif loc.__class__ is grids.MultiIndexLocation:
+        # encode number of sub-locations to allow in-line unpacking.
+        locationType = LOC_MULTI + f"{len(loc)}"
+        locData = [subloc.indices for subloc in loc]
+    else:
+        raise ValueError(f"Invalid location type: {loc}")
+
+    return locationType, locData
+
+
+def _unpackLocation(
+    locationTypes, locData, version: Tuple[int, int] = (DB_MAJOR, DB_MINOR)
+):
+    """
+    Convert location data as read from DB back into data structure for building reactor model.
+
+    location and locationType will only have different lengths
+    when multiindex locations are used.
+    """
+    oldStyle = version[0] == 3 and version[1] < 3
+    if oldStyle:
+        return _unpackLocationOld(locationTypes, locData)
+    else:
+        return _unpackLocationNew(locationTypes, locData)
+
+
+def _unpackLocationOld(locationTypes, locData):
+    """Delete when reading v <=3.2 DB's no longer wanted."""
+    locsIter = iter(locData)
+    unpackedLocs = []
+    for lt in locationTypes:
+        if lt == "None":
+            loc = next(locsIter)
+            unpackedLocs.append(None)
+        elif lt == "IndexLocation":
+            loc = next(locsIter)
+            # the data is stored as float, so cast back to int
+            unpackedLocs.append(tuple(int(i) for i in loc))
+        else:
+            loc = next(locsIter)
+            unpackedLocs.append(tuple(loc))
+    return unpackedLocs
+
+
+def _unpackLocationNew(locationTypes, locData):
+    locsIter = iter(locData)
+    unpackedLocs = []
+    for lt in locationTypes:
+        if lt == LOC_NONE:
+            loc = next(locsIter)
+            unpackedLocs.append(None)
+        elif lt == LOC_INDEX:
+            loc = next(locsIter)
+            # the data is stored as float, so cast back to int
+            unpackedLocs.append(tuple(int(i) for i in loc))
+        elif lt == LOC_COORD:
+            loc = next(locsIter)
+            unpackedLocs.append(tuple(loc))
+        elif lt.startswith(LOC_MULTI):
+            # extract number of sublocations from e.g. "M:345" string.
+            numSubLocs = int(lt.split(":")[1])
+            for _ in range(numSubLocs):
+                subLoc = next(locsIter)
+                # All multiindexes sublocs are index locs
+                unpackedLocs.append(tuple(int(i) for i in subLoc))
+        else:
+            raise ValueError(f"Read unknown location type {lt}. Invalid DB.")
+
+    return unpackedLocs
+
+
 class Layout(object):
     """
     The Layout class describes the hierarchical layout of the composite structure in a flat representation.
@@ -1300,7 +1435,7 @@ class Layout(object):
     Layout.
     """
 
-    def __init__(self, h5group=None, comp=None):
+    def __init__(self, h5group=None, comp=None, version=None):
         self.type = []
         self.name = []
         self.serialNum = []
@@ -1316,6 +1451,7 @@ class Layout(object):
         self._seenGridParams = dict()
         # actual list of grid parameters, with stable order for safe indexing
         self.gridParams = []
+        self.version = version
 
         self.groupedComps = collections.defaultdict(list)
 
@@ -1341,8 +1477,19 @@ class Layout(object):
         )
 
     def _createLayout(self, comp):
-        """Recursive function to populate a hierarchical representation and group the
-        items by type."""
+        """
+        Populate a hierarchical representation and group the reactor model items by type.
+
+        This is used when writing a reactor model to the database.
+
+        Notes
+        -----
+        This is recursive.
+
+        See Also
+        --------
+        _readLayout : does the opposite
+        """
         compList = self.groupedComps[type(comp)]
         compList.append(comp)
 
@@ -1361,12 +1508,7 @@ class Layout(object):
         else:
             self.gridIndex.append(None)
 
-        if comp.spatialLocator is None:
-            self.locationType.append("None")
-            self.location.append((0.0, 0.0, 0.0))
-        else:
-            self.locationType.append(comp.spatialLocator.__class__.__name__)
-            self.location.append(comp.spatialLocator.indices)
+        self._addSpatialLocatorData(comp.spatialLocator)
 
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
@@ -1376,16 +1518,30 @@ class Layout(object):
             self.material.append("")
 
         try:
-            comps = sorted([c for c in comp])
+            comps = sorted(list(comp))
         except ValueError:
             runLog.error(
                 "Failed to sort some collection of ArmiObjects for database output: {} "
-                "value {}".format(type(comp), [c for c in comp])
+                "value {}".format(type(comp), list(comp))
             )
             raise
 
         for c in comps:
             self._createLayout(c)
+
+    def _addSpatialLocatorData(self, locator):
+        """
+        Extend ``locationType`` and ``location`` attributes with location info.
+
+        Notes
+        -----
+        There are several types of locators and they must be encoded properly.
+        Most complicated are the MultiIndexLocations from grids, which
+        have multiple indices per component.
+        """
+        locationType, locations = _packLocation(locator, self.version)
+        self.locationType.append(locationType)
+        self.location.extend(locations)
 
     def _readLayout(self, h5group):
         try:
@@ -1395,16 +1551,7 @@ class Layout(object):
             self.locationType = numpy.char.decode(
                 h5group["layout/locationType"][:]
             ).tolist()
-            self.location = locs = []
-            for l, lt in zip(locations, self.locationType):
-                if lt == "None":
-                    locs.append(None)
-                elif lt == "IndexLocation":
-                    # the data is stored as float, so cast back to int
-                    locs.append(tuple(int(i) for i in l))
-                else:
-                    locs.append(tuple(l))
-
+            self.location = _unpackLocation(self.locationType, locations, self.version)
             self.type = numpy.char.decode(h5group["layout/type"][:])
             self.name = numpy.char.decode(h5group["layout/name"][:])
             self.serialNum = h5group["layout/serialNum"][:]

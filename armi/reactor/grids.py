@@ -429,6 +429,10 @@ class MultiIndexLocation(IndexLocation):
     def pop(self, location: IndexLocation):
         self._locations.pop(location)
 
+    @property
+    def indices(self):
+        raise NotImplementedError
+
 
 class CoordinateLocation(IndexLocation):
     """
