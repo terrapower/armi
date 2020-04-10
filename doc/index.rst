@@ -25,13 +25,27 @@ improving analysis quality.
 *  :ref:`search`
 
 
+.. list-table:: Quick links
+   :widths: 30 70
+
+   * - Source code
+     - https://github.com/terrapower/armi
+   * - Documentation
+     - https://terrapower.github.io/armi
+   * - Bug tracker
+     - https://github.com/terrapower/armi/issues
+   * - Plugin directory
+     - https://github.com/terrapower/armi-plugin-directory
+   * - Contact
+     - armi-devs@terrapower.com
+
 TerraPower and ARMI are registered trademarks of TerraPower, LLC.
 Other trademarks and registered trademarks used in this Manual are the property of the 
 respective trademark holders.
 
 The ARMI system is governed by the following license::
 
-	Copyright 2009-2019 TerraPower, LLC
+	Copyright 2009-2020 TerraPower, LLC
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.

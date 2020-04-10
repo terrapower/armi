@@ -174,6 +174,54 @@ this benchmark problem entirely.
 There! You have now created all the ARMI inputs, from scratch, needed to
 represent the C5G7 benchmark problem.
 
+Ok, so now what?
+================
+You can run the default ARMI app on these inputs, which will run a 
+few cycles and make an output database::
+
+    $ python -m armi run c5g7-settings.yaml
+
+But since the baseline
+app doesn't do any real calculations, it won't have a lot in it.
+You have to add plugins to do calculations (see the 
+`plugin directory <https://github.com/terrapower/armi-plugin-directory>`_). 
+
+Of course, you can fiddle around with the reactor in memory. For example, in an
+ipython session, you can plot one of the assembly's pin locations.
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    import armi
+    from armi.reactor.flags import Flags
+
+    armi.configure()
+
+    o = armi.init(fName = "c5g7-settings.yaml")
+    b = o.r.core.getFirstBlock(Flags.MOX)
+
+    flags = [Flags.LOW, Flags.MEDIUM, Flags.HIGH]
+    colors = ["green", "yellow", "red"]
+
+    for f, c in zip(flags, colors): 
+        x, y=[], []
+        pin = b.getComponent(Flags.FUEL| f)
+        for loc in pin.spatialLocator:
+            xi, yi, zi = loc.getGlobalCoordinates()
+            x.append(xi)
+            y.append(yi)
+        plt.scatter(x, y, color=c)
+    plt.show()
+
+
+This should show a simple representation of the block. 
+
+.. figure:: https://terrapower.github.io/armi/_static/c5g7-mox.png
+   :figclass: align-center
+
+   **Figure 1.** A representation of a C5G7 fuel assembly. 
+
+
 Here are the full files used in this example:
 
 * :download:`Blueprints <../../../armi/tests/tutorials/c5g7-blueprints.yaml>`
