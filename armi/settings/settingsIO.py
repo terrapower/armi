@@ -97,10 +97,13 @@ class _SettingsReader(object):
 
     def readFromFile(self, path, handleInvalids=True):
         """Load file and read it."""
-        ext = os.path.splitext(path)[1].lower()
-        self.format = self.FORMAT_FROM_EXT[ext]
-        self.inputPath = path
+
         with open(path, "r") as f:
+            # make sure that we can actually open the file before trying to guess its
+            # format. This will yield better error messages when things go awry.
+            ext = os.path.splitext(path)[1].lower()
+            self.format = self.FORMAT_FROM_EXT[ext]
+            self.inputPath = path
             try:
                 self.readFromStream(f, handleInvalids, self.format)
             except Exception as ee:
