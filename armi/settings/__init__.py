@@ -17,20 +17,8 @@ Settings are various key-value pairs that determine a bunch of modeling and simu
 
 They are one of the key inputs to an ARMI run. They say which modules to run and which
 modeling approximations to apply and how many cycles to run and at what power and
-availability fraction and things like that.
-
-Notes
------
-Originally, these were just a Python module ``settings.py`` that had Python types in it.
-We transitioned to XML because it was trendy. Later, we wanted better uniformity across
-our input formats so we made it do YAML, too. We then added the ability to provide new
-Settings from plugins, which introduced the ``setting2`` module. As a result of this
-history, there are now two implementations of the ``Setting`` class, which, while they
-are not related through inheritance, do expose very similar interfaces and can largely
-be used interchangeably. There are no insances of the old ``Setting`` format, but we are
-leaving it in the code for now to facilitate input migrations from older versions of
-ARMI. We plan to remove the old implementation, and replace it with the new
-implementation in ``setting2`` very soon.
+availability fraction and things like that. The ARMI Framework itself has many settings
+of its own, and plugins typically register some of their own settings as well.
 """
 import fnmatch
 import os
@@ -46,25 +34,14 @@ from armi.localization import exceptions
 from armi.settings.caseSettings import Settings
 from armi.utils import pathTools
 
-from armi.settings.setting import Setting, BoolSetting
-from armi.settings.setting2 import Setting as Setting2
+from armi.settings.setting import Setting
 
 NOT_ENABLED = ""  # An empty setting value implies that the feature
 
 
-def isBoolSetting(setting: Union[Setting, Setting2]) -> bool:
-    """Return whether the passed setting represents a boolean value.
-
-    This is useful during the transition from old to new settings. The old settings used
-    to be "strongly" typed, wheras the new once are a little bit looser in that their
-    types are largely enforced by their schemas. In situations where we want to treat
-    bool-y settings special (e.g., when we want to make command-line toggles out of
-    them), this provides the appropriate logic depending on which Setting class is being
-    used.
-    """
-    return isinstance(setting, BoolSetting) or (
-        isinstance(setting, Setting2) and isinstance(setting.default, bool)
-    )
+def isBoolSetting(setting:Setting) -> bool:
+    """Return whether the passed setting represents a boolean value."""
+    return isinstance(setting.default, bool)
 
 
 def recursivelyLoadSettingsFiles(

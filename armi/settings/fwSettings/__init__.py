@@ -17,7 +17,7 @@ This package contains the settings that control the base/framework-level ARMI fu
 """
 from typing import List
 
-from armi.settings import setting2 as setting
+from armi.settings import setting
 from . import globalSettings
 from . import xsSettings
 from . import databaseSettings

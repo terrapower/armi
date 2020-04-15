@@ -27,7 +27,7 @@ See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/lattic
 """
 import voluptuous as vol
 
-from armi.settings.setting2 import Setting
+from armi.settings import Setting
 
 from armi.physics.neutronics.crossSectionGroupManager import (
     BLOCK_COLLECTIONS,

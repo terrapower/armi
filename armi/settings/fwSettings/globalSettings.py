@@ -27,7 +27,7 @@ from typing import List
 import voluptuous as vol
 
 from armi import context
-from armi.settings import setting2 as setting
+from armi.settings import setting
 
 
 # Framework settings

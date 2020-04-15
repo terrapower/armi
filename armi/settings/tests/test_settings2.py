@@ -25,7 +25,7 @@ import armi
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi import settings
 from armi.settings import caseSettings
-from armi.settings import setting2 as setting
+from armi.settings import setting
 from armi.operators import settingsValidation
 from armi import plugins
 

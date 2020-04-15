@@ -14,7 +14,7 @@
 
 """Settings related to the report generation."""
 
-from armi.settings import setting2 as setting
+from armi.settings import setting
 
 
 CONF_GEN_REPORTS = "genReports"

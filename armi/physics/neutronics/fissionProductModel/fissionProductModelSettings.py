@@ -14,7 +14,7 @@
 
 """Settings related to the fission product model."""
 
-from armi.settings import setting2 as setting
+from armi.settings import setting
 
 
 CONF_FP_MODEL = "fpModel"

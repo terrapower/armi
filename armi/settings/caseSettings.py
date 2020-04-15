@@ -35,10 +35,9 @@ import armi
 from armi import runLog
 from armi.localization import exceptions
 from armi.settings import fwSettings
-from armi.settings import setting
 from armi.settings import settingsIO
 from armi.utils import pathTools
-from armi.settings import setting2
+from armi.settings import setting
 
 
 class Settings:
@@ -106,7 +105,7 @@ class Settings:
 
         for pluginSettings in pm.hook.defineSettings():
             for pluginSetting in pluginSettings:
-                if isinstance(pluginSetting, setting2.Setting):
+                if isinstance(pluginSetting, setting.Setting):
                     name = pluginSetting.name
                     if name in self.settings:
                         raise ValueError(
@@ -119,7 +118,7 @@ class Settings:
                         self.settings[name].addOptions(optionsCache.pop(name))
                     if name in defaultsCache:
                         self.settings[name].changeDefault(defaultsCache.pop(name))
-                elif isinstance(pluginSetting, setting2.Option):
+                elif isinstance(pluginSetting, setting.Option):
                     if pluginSetting.settingName in self.settings:
                         # modifier loaded after setting, so just apply it (no cache needed)
                         self.settings[pluginSetting.settingName].addOption(
@@ -128,7 +127,7 @@ class Settings:
                     else:
                         # no setting yet, cache it and apply when it arrives
                         optionsCache[pluginSetting.settingName].append(pluginSetting)
-                elif isinstance(pluginSetting, setting2.Default):
+                elif isinstance(pluginSetting, setting.Default):
                     if pluginSetting.settingName in self.settings:
                         # modifier loaded after setting, so just apply it (no cache needed)
                         self.settings[pluginSetting.settingName].changeDefault(
@@ -210,7 +209,7 @@ class Settings:
 
         See Also
         --------
-        armi.settings.setting2.Setting.__getstate__ : removes schema
+        armi.settings.setting.Setting.__getstate__ : removes schema
         """
         self.settings = {}
         self.loadAllDefaults()
@@ -222,15 +221,8 @@ class Settings:
                 setattr(self, key, val)
         # with schema restored, restore all setting values
         for name, settingState in state["settings"].items():
-            if isinstance(settingState, setting.Setting):
-                # old style. fully pickleable, restore entire setting object
-                self.settings[name] = settingState
-            else:
-                # new style, just restore value from dict.
-                # sorry about this being ugly.
-                self.settings[
-                    name
-                ]._value = settingState.value  # pylint: disable=protected-access
+            # pylint: disable=protected-access
+            self.settings[name]._value = settingState.value
 
     def keys(self):
         return self.settings.keys()
@@ -337,8 +329,8 @@ class Settings:
         for dirname, _dirnames, filenames in os.walk(armi.RES):
             for filename in filenames:
                 if filename.lower().endswith("settings.xml"):
-                    reader = settingsIO.SettingsDefinitionReader(self)
-                    reader.readFromFile(os.path.join(dirname, filename))
+                    #KILLME
+                    raise RuntimeError("Old settings are deprecated")
 
         for fwSetting in fwSettings.getFrameworkSettings():
             self.settings[fwSetting.name] = fwSetting

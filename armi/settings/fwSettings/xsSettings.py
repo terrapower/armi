@@ -14,7 +14,7 @@
 
 """Settings related to the cross section."""
 
-from armi.settings import setting2 as setting
+from armi.settings import setting
 
 
 CONF_CLEAR_XS = "clearXS"

@@ -20,7 +20,6 @@ import six
 
 import armi
 from armi import settings
-from armi.settings import setting
 from armi import runLog
 
 
@@ -196,13 +195,6 @@ class EntryPoint:
                 helpMessage = argparse.SUPPRESS
             else:
                 helpMessage = settingsInstance.description.replace("%", "%%")
-                if isinstance(settingsInstance, setting.StrSetting):
-                    if settingsInstance.enforcedOptions:
-                        choices = settingsInstance.options
-                    if settingsInstance.options:
-                        helpMessage += " The standard choices are: {}".format(
-                            ", ".join(settingsInstance.options)
-                        )
 
             aliases = ["--" + settingName]
             if additionalAlias is not None:

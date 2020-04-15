@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Some generic neutronics-related settings."""
-from armi.settings import setting2 as setting
+from armi.settings import setting
 
 
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"

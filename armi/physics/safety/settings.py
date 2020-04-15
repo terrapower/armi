@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from armi.settings import setting2 as setting
+from armi.settings import setting
 
 
 CONF_BETA_COMPONENTS = "betaComponents"

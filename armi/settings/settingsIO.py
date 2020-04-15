@@ -32,7 +32,6 @@ from armi import runLog
 from armi.physics.thermalHydraulics import const
 from armi.localization import exceptions
 from armi.settings import setting
-from armi.settings import setting2
 from armi.settings import settingsRules
 from armi.reactor import geometry
 
@@ -56,7 +55,6 @@ class _SettingsReader(object):
     See Also
     --------
     SettingsReader
-    SettingsDefinitionReader
     """
 
     class SettingsInputFormat(enum.Enum):
@@ -310,60 +308,6 @@ def applyTypeConversions(settingObj, value):
     return value
 
 
-class SettingsDefinitionReader(_SettingsReader):
-    """A specialized _SettingsReader which creates new setting instances."""
-
-    def __init__(self, cs):
-        _SettingsReader.__init__(self, cs, Roots.DEFINITION)
-        self._occupied_names = set(cs.settings.keys())
-
-    def _interpretSetting(self, settingElement):
-        settingName = settingElement.tag
-        attributes = settingElement.attrib
-
-        if "type" not in attributes or "default" not in attributes:
-            raise exceptions.InvalidSettingDefinition(settingName, attributes)
-
-        default = attributes["default"]  # always a string at this point
-        settingValues = self.applyConversions(settingName, default)
-        # check for a new error conditions
-        for correctedName, correctedDefault in settingValues.items():
-            if correctedName != settingName:
-                raise exceptions.SettingException(
-                    "Settings definition file {} contained setting named {},\n"
-                    "but it was changed to {}.".format(
-                        self.inputPath, settingName, correctedName
-                    )
-                )
-            if correctedDefault != default:
-                # problem here when default is like, an string empty list '[]'
-                # and it gets corrected to a real list. So hack:
-                if default != "[]":
-                    raise exceptions.SettingException(
-                        "Settings definition file {} contained setting named {}, "
-                        "but the value was changed from {} to {}. Change default "
-                        "something that does not get auto-corrected.".format(
-                            self.inputPath,
-                            settingName,
-                            repr(default),
-                            repr(correctedDefault),
-                        )
-                    )
-            if settingName.lower() in self._occupied_names:
-                raise exceptions.SettingNameCollision(
-                    'Duplicate definition for the setting "{}" found in {}.'.format(
-                        settingName, self.inputPath
-                    )
-                )
-
-        # everything is good, time to create an actual setting object
-        self.cs.settings[settingName] = setting.Setting.factory(settingName, attributes)
-        self._occupied_names.add(settingName.lower())
-
-    def _resolveProblems(self):
-        self._checkInvalidSettings()
-
-
 class SettingsWriter(object):
     """Writes settings out to files.
 
@@ -406,9 +350,6 @@ class SettingsWriter(object):
         tree = ET.ElementTree(root)
 
         for settingObj, settingDatum in settingData.items():
-            if isinstance(settingObj, setting2.Setting):
-                # do not write new-style settings to old-style XML. It fails on read.
-                continue
             settingNode = ET.SubElement(root, settingObj.name)
             for attribName, attribValue in settingDatum.items():
                 settingNode.set(attribName, str(attribValue))
@@ -441,9 +382,7 @@ class SettingsWriter(object):
         for settingObj, settingDatum in settingData.items():
             if "value" in settingDatum and len(settingDatum) == 1:
                 # ok to flatten
-                val = settingDatum["value"]
-                if isinstance(settingObj, setting2.Setting):
-                    val = settingObj.dump()
+                val = settingObj.dump()
                 cleanedData[settingObj.name] = val
             else:
                 cleanedData[settingObj.name] = settingDatum
