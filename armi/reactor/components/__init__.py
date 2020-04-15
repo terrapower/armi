@@ -28,8 +28,9 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 
 """
 from armi.reactor.components.component import *  # pylint: disable=wildcard-import
-from armi.reactor.components.shapes import *  # pylint: disable=wildcard-import
+from armi.reactor.components.componentCategories import *  # pylint: disable=wildcard-import
 from armi.reactor.components.basicShapes import *  # pylint: disable=wildcard-import
+from armi.reactor.components.complexShapes import *  # pylint: disable=wildcard-import
 from armi.reactor.components.volumetricShapes import *  # pylint: disable=wildcard-import
 
 

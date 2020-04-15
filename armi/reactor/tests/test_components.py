@@ -26,7 +26,7 @@ from armi.reactor.components import (
     NullComponent,
     Circle,
     Hexagon,
-    ShieldBlock,
+    HoledHexagon,
     Helix,
     Sphere,
     Cube,
@@ -101,7 +101,6 @@ class TestComponentFactory(unittest.TestCase):
             thisAttrs["name"] = "banana{}".format(i)
             if "modArea" in thisAttrs:
                 thisAttrs["modArea"] = None
-
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
@@ -667,8 +666,8 @@ class TestHexagon(TestShapedComponent):
             self.assertEqual(cur, ref[i])
 
 
-class TestShieldBlock(TestShapedComponent):
-    componentCls = ShieldBlock
+class TestHoledHexagon(TestShapedComponent):
+    componentCls = HoledHexagon
     componentDims = {
         "Tinput": 25.0,
         "Thot": 430.0,

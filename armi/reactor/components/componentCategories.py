@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Component subclasses that have shape.
+Basic component categories.
 """
 import math
 

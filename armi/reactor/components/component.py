@@ -65,7 +65,7 @@ def componentTypeIsValid(component, name):
       `DerivedShape` if the coolant dimensions are not provided.
 
     """
-    from armi.reactor.components.shapes import NullComponent
+    from armi.reactor.components.componentCategories import NullComponent
 
     if name.lower() == "coolant":
         invalidComponentTypes = [Component, NullComponent]

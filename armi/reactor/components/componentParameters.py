@@ -141,14 +141,24 @@ def getHexagonParameterDefinitions():
     return pDefs
 
 
-def getShieldBlockParameterDefinitions():
-    """Return parameters for ShieldBlock."""
+def getHoledHexagonParameterDefinitions():
+    """Return parameters for HoledHexagon."""
 
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("holeOD", units="?", description="?")
 
         pb.defParam("nHoles", units="?", description="?")
+
+    return pDefs
+
+
+def getHoledRectangleParameterDefinitions():
+    """Return parameters for HoledRectangle."""
+
+    pDefs = parameters.ParameterDefinitionCollection()
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
+        pb.defParam("holeOD", units="?", description="?")
 
     return pDefs
 
