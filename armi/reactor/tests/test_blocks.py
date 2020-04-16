@@ -24,7 +24,7 @@ from armi.reactor import blocks
 from armi.reactor import components
 import armi.runLog as runLog
 import armi.settings as settings
-from armi.reactor.components import shapes
+from armi.reactor.components import UnshapedComponent
 from armi import materials
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
@@ -1126,7 +1126,7 @@ class Block_TestCase(unittest.TestCase):
         block = blocks.HexBlock("TestHexBlock", location=None)
         outerPitch = 2.0
         block.addComponent(
-            shapes.UnshapedComponent(
+            UnshapedComponent(
                 "TestComponent", "Void", Tinput=25.0, Thot=25.0, op=outerPitch
             )
         )

@@ -26,7 +26,9 @@ from armi.reactor.components import (
     NullComponent,
     Circle,
     Hexagon,
-    ShieldBlock,
+    HoledHexagon,
+    HoledRectangle,
+    HoledSquare,
     Helix,
     Sphere,
     Cube,
@@ -101,7 +103,6 @@ class TestComponentFactory(unittest.TestCase):
             thisAttrs["name"] = "banana{}".format(i)
             if "modArea" in thisAttrs:
                 thisAttrs["modArea"] = None
-
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
@@ -667,8 +668,8 @@ class TestHexagon(TestShapedComponent):
             self.assertEqual(cur, ref[i])
 
 
-class TestShieldBlock(TestShapedComponent):
-    componentCls = ShieldBlock
+class TestHoledHexagon(TestShapedComponent):
+    componentCls = HoledHexagon
     componentDims = {
         "Tinput": 25.0,
         "Thot": 430.0,
@@ -703,6 +704,75 @@ class TestShieldBlock(TestShapedComponent):
         for i, d in enumerate(expandedDims):
             cur = d in self.component.THERMAL_EXPANSION_DIMS
             self.assertEqual(cur, ref[i])
+
+
+class TestHoledRectangle(TestShapedComponent):
+    """Tests HoledRectangle, and provides much support for HoledSquare test."""
+
+    componentCls = HoledRectangle
+    componentDims = {
+        "Tinput": 25.0,
+        "Thot": 430.0,
+        "lengthOuter": 16.0,
+        "widthOuter": 10.0,
+        "holeOD": 3.6,
+        "mult": 1.0,
+    }
+
+    dimsToTestExpansion = ["lengthOuter", "widthOuter", "holeOD", "mult"]
+
+    def setUp(self):
+        TestShapedComponent.setUp(self)
+        self.setClassDims()
+
+    def setClassDims(self):
+        # This enables subclassing testing for square
+        self.length = self.component.getDimension("lengthOuter")
+        self.width = self.component.getDimension("widthOuter")
+
+    def test_getBoundingCircleOuterDiameter(self):
+        # hypotenuse
+        ref = (self.length ** 2 + self.width ** 2) ** 0.5
+        cur = self.component.getBoundingCircleOuterDiameter()
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getArea(self):
+        rectArea = self.length * self.width
+        odHole = self.component.getDimension("holeOD")
+        mult = self.component.getDimension("mult")
+        holeArea = math.pi * ((odHole / 2.0) ** 2)
+        ref = mult * (rectArea - holeArea)
+        cur = self.component.getArea()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_thermallyExpands(self):
+        self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
+
+    def test_dimensionThermallyExpands(self):
+        ref = [True] * len(self.dimsToTestExpansion)
+        ref[-1] = False  # mult shouldn't expand
+        for i, d in enumerate(self.dimsToTestExpansion):
+            cur = d in self.component.THERMAL_EXPANSION_DIMS
+            self.assertEqual(cur, ref[i])
+
+
+class TestHoledSquare(TestHoledRectangle):
+
+    componentCls = HoledSquare
+
+    componentDims = {
+        "Tinput": 25.0,
+        "Thot": 430.0,
+        "widthOuter": 16.0,
+        "holeOD": 3.6,
+        "mult": 1.0,
+    }
+
+    dimsToTestExpansion = ["widthOuter", "holeOD", "mult"]
+
+    def setClassDims(self):
+        # This enables subclassing testing for square
+        self.width = self.length = self.component.getDimension("widthOuter")
 
 
 class TestHelix(TestShapedComponent):

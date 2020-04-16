@@ -21,7 +21,7 @@ are defined in this subpackage.
 
 import math
 
-from armi.reactor.components.shapes import ShapedComponent
+from armi.reactor.components import ShapedComponent
 from armi.reactor.components import componentParameters
 
 
@@ -143,126 +143,6 @@ class Hexagon(ShapedComponent):
         mult = self.getDimension("mult", Tc)
         perimeter = 6 * (ip / math.sqrt(3)) * mult
         return perimeter
-
-
-class ShieldBlock(Hexagon):
-    """Solid hexagonal block with n uniform circular holes hollowed out of it."""
-
-    is3D = False
-
-    THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
-
-    pDefs = componentParameters.getShieldBlockParameterDefinitions()
-
-    def __init__(
-        self,
-        name,
-        material,
-        Tinput,
-        Thot,
-        op,
-        holeOD,
-        nHoles,
-        mult=1.0,
-        modArea=None,
-        isotopics=None,
-        mergeWith=None,
-        components=None,
-    ):
-        ShapedComponent.__init__(
-            self,
-            name,
-            material,
-            Tinput,
-            Thot,
-            isotopics=isotopics,
-            mergeWith=mergeWith,
-            components=components,
-        )
-        self._linkAndStoreDimensions(
-            components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea
-        )
-
-    def getComponentArea(self, cold=False):
-        r"""Computes the area for the hexagon with n number of circular holes in cm^2."""
-        op = self.getDimension("op", cold=cold)
-        holeOD = self.getDimension("holeOD", cold=cold)
-        nHoles = self.getDimension("nHoles", cold=cold)
-        mult = self.getDimension("mult")
-        hexArea = math.sqrt(3.0) / 2.0 * (op ** 2)
-        circularArea = nHoles * math.pi * ((holeOD / 2.0) ** 2)
-        area = mult * (hexArea - circularArea)
-        return area
-
-
-class Helix(ShapedComponent):
-    """A spiral wire component used to model a pin wire-wrap.
-
-    Notes
-    -----
-    http://mathworld.wolfram.com/Helix.html
-    In a single rotation with an axial climb of P, the length of the helix will be a factor of
-    2*pi*sqrt(r^2+c^2)/2*pi*c longer than vertical length L. P = 2*pi*c.
-    """
-
-    is3D = False
-
-    THERMAL_EXPANSION_DIMS = {"od", "id", "axialPitch", "helixDiameter"}
-
-    pDefs = componentParameters.getHelixParameterDefinitions()
-
-    def __init__(
-        self,
-        name,
-        material,
-        Tinput,
-        Thot,
-        od=None,
-        axialPitch=None,
-        mult=None,
-        helixDiameter=None,
-        id=0.0,
-        modArea=None,
-        isotopics=None,
-        mergeWith=None,
-        components=None,
-    ):
-        ShapedComponent.__init__(
-            self,
-            name,
-            material,
-            Tinput,
-            Thot,
-            isotopics=isotopics,
-            mergeWith=mergeWith,
-            components=components,
-        )
-        self._linkAndStoreDimensions(
-            components,
-            od=od,
-            axialPitch=axialPitch,
-            mult=mult,
-            helixDiameter=helixDiameter,
-            id=id,
-            modArea=modArea,
-        )
-
-    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        return self.getDimension("od", Tc, cold) + self.getDimension(
-            "helixDiameter", Tc, cold=cold
-        )
-
-    def getComponentArea(self, cold=False):
-        """Computes the area for the helix in cm^2."""
-        ap = self.getDimension("axialPitch", cold=cold)
-        hd = self.getDimension("helixDiameter", cold=cold)
-        id = self.getDimension("id", cold=cold)
-        od = self.getDimension("od", cold=cold)
-        mult = self.getDimension("mult")
-        c = ap / (2.0 * math.pi)
-        helixFactor = math.sqrt((hd / 2.0) ** 2 + c ** 2) / c
-        area = mult * math.pi * ((od / 2.0) ** 2 - (id / 2.0) ** 2) * helixFactor
-        return area
 
 
 class Rectangle(ShapedComponent):
@@ -434,8 +314,20 @@ class Square(Rectangle):
         area = mult * (widthO * widthO - widthI * widthI)
         return area
 
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        widthO = self.getDimension("widthOuter", Tc, cold=cold)
+        return math.sqrt(widthO ** 2 + widthO ** 2)
+
 
 class Triangle(ShapedComponent):
+    """
+    Triangle with defined base and height.
+    
+    Notes
+    -----
+    The exact angles of the triangle are undefined. The exact side lenths and angles
+    are not critical to calculation of component area, so area can still be calculated.
+    """
 
     is3D = False
 

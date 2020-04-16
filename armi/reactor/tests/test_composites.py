@@ -27,9 +27,8 @@ from armi.reactor import composites
 from armi.reactor import batch
 from armi.reactor import blocks
 from armi.reactor import assemblies
-from armi.reactor.components import shapes
 from armi.reactor.components import basicShapes
-from armi.reactor.components.shapes import UnshapedVolumetricComponent
+from armi.reactor.components import UnshapedVolumetricComponent
 from armi.materials import custom
 from armi.reactor import locations
 from armi.reactor import grids
@@ -438,7 +437,7 @@ class TestBatchMethodsOnArmiObjectAndCompositeObject(unittest.TestCase):
         mass = 1.0
 
         aB = batch.Batch("testBatch")
-        c = shapes.UnshapedVolumetricComponent(
+        c = UnshapedVolumetricComponent(
             "batchMassAdditionComponent", custom.Custom(), 0.0, 0.0, volume=1
         )
         b = blocks.Block("testBlock", location=loc)
@@ -482,7 +481,7 @@ class TestBatchMethodsOnArmiObjectAndCompositeObject(unittest.TestCase):
         mass = 1.0
 
         aB = batch.Batch("testBatch")
-        c = shapes.UnshapedVolumetricComponent(
+        c = UnshapedVolumetricComponent(
             "batchMassAdditionComponent", custom.Custom(), 0.0, 0.0, volume=1
         )
         b = blocks.Block("testBlock", location=loc)
