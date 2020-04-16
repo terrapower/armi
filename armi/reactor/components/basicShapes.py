@@ -21,7 +21,7 @@ are defined in this subpackage.
 
 import math
 
-from armi.reactor.components.componentCategories import ShapedComponent
+from armi.reactor.components import ShapedComponent
 from armi.reactor.components import componentParameters
 
 
@@ -313,6 +313,10 @@ class Square(Rectangle):
         mult = self.getDimension("mult")
         area = mult * (widthO * widthO - widthI * widthI)
         return area
+
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        widthO = self.getDimension("widthOuter", Tc, cold=cold)
+        return math.sqrt(widthO ** 2 + widthO ** 2)
 
 
 class Triangle(ShapedComponent):

@@ -65,7 +65,7 @@ def componentTypeIsValid(component, name):
       `DerivedShape` if the coolant dimensions are not provided.
 
     """
-    from armi.reactor.components.componentCategories import NullComponent
+    from armi.reactor.components import NullComponent
 
     if name.lower() == "coolant":
         invalidComponentTypes = [Component, NullComponent]
@@ -1238,6 +1238,12 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
+
+
+class ShapedComponent(Component):
+    """A component with well-defined dimensions."""
+
+    pass
 
 
 def getReactionRateDict(nucName, lib, xsType, mgFlux, nDens):

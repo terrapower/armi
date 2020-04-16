@@ -18,7 +18,7 @@ Components represented by complex shapes, and typically less widely used.
 
 import math
 
-from armi.reactor.components.componentCategories import ShapedComponent
+from armi.reactor.components import ShapedComponent
 from armi.reactor.components import componentParameters
 from armi.reactor.components import basicShapes
 
