@@ -308,38 +308,32 @@ def applyTypeConversions(settingObj, value):
     return value
 
 
-class SettingsWriter(object):
+class SettingsWriter:
     """Writes settings out to files.
 
-    This can write in three styles:
-    
-    definition
-        setting definitions listing, includes every setting
+    This can write in two styles:
+
     short
         setting values that are not their defaults only
-    full 
+    full
         all setting values regardless of default status
 
     """
 
-    class Styles(object):
-        """Collection of valid output styles"""
+    class Styles:
+        """Enumeration of valid output styles"""
 
-        definition = "definition"
         short = "short"
         full = "full"
 
     def __init__(self, settings_instance, style="short"):
         self.cs = settings_instance
         self.style = style
-        if style not in {self.Styles.definition, self.Styles.short, self.Styles.full}:
+        if style not in {self.Styles.short, self.Styles.full}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
 
     def _getVersion(self):
-        if self.style == self.Styles.definition:
-            tag, attrib = Roots.DEFINITION, {}
-        else:
-            tag, attrib = Roots.CUSTOM, {Roots.VERSION: armi.__version__}
+        tag, attrib = Roots.CUSTOM, {Roots.VERSION: armi.__version__}
         return tag, attrib
 
     def writeXml(self, stream):
@@ -355,11 +349,7 @@ class SettingsWriter(object):
                 settingNode.set(attribName, str(attribValue))
 
         stream.write('<?xml version="1.0" ?>\n')
-        stream.write(
-            self.prettyPrintXmlRecursively(
-                tree.getroot(), spacing=self.style == self.Styles.definition
-            )
-        )
+        stream.write(self.prettyPrintXmlRecursively(tree.getroot(), spacing=False))
 
     def writeYaml(self, stream):
         """Write settings to YAML file."""
@@ -403,11 +393,8 @@ class SettingsWriter(object):
         ):
             if self.style == self.Styles.short and not settingObject.offDefault:
                 continue
-            attribs = (
-                settingObject.getDefaultAttributes().items()
-                if self.style == self.Styles.definition
-                else settingObject.getCustomAttributes().items()
-            )
+
+            attribs = settingObject.getCustomAttributes().items()
             settingDatum = {}
             for (attribName, attribValue) in attribs:
                 if isinstance(attribValue, type):
