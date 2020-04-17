@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2020 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import os
 import unittest
 
 import armi
+from armi.cli import entryPoint
 from armi.utils import directoryChangers
 from armi import settings
 from armi.settings import setting
@@ -66,3 +67,28 @@ class SettingsWriterTests(unittest.TestCase):
         self.cs.writeToYamlFile(self.filepathYaml)
         self.cs.loadFromInputFile(self.filepathYaml)
         self.assertEqual(self.cs["nCycles"], 55)
+
+
+class MockEntryPoint(entryPoint.EntryPoint):
+    name = "dummy"
+
+
+class SettingArgsTests(unittest.TestCase):
+    def setUp(self):
+        self.cs = None
+
+    def test_commandLineSetting(self):
+        ep = MockEntryPoint()
+        self.cs = cs = ep.cs
+
+        self.assertEqual(cs["nCycles"], 1)
+        ep.createOptionFromSetting("nCycles")
+        ep.parse_args(["--nCycles", "5"])
+        self.assertEqual(cs["nCycles"], 5)
+
+    def test_cannotLoadSettingsAfterParsingCommandLineSetting(self):
+        self.test_commandLineSetting()
+
+        with self.assertRaises(exceptions.StateError):
+            self.cs.loadFromInputFile("somefile.xml")
+
