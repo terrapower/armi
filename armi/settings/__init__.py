@@ -24,7 +24,7 @@ import fnmatch
 import os
 import glob
 import shutil
-from typing import Union
+from typing import List, Union
 
 from ruamel import yaml
 
@@ -39,13 +39,17 @@ from armi.settings.setting import Setting
 NOT_ENABLED = ""  # An empty setting value implies that the feature
 
 
-def isBoolSetting(setting:Setting) -> bool:
+def isBoolSetting(setting: Setting) -> bool:
     """Return whether the passed setting represents a boolean value."""
     return isinstance(setting.default, bool)
 
 
 def recursivelyLoadSettingsFiles(
-    rootDir, patterns, recursive=True, ignorePatterns=None, handleInvalids=True
+    rootDir,
+    patterns: List[str],
+    recursive=True,
+    ignorePatterns: List[str] = None,
+    handleInvalids=True,
 ):
     """
     Scans path for valid xml files and returns their paths.
@@ -69,6 +73,14 @@ def recursivelyLoadSettingsFiles(
     csFiles : list
         list of :py:class:`~armi.settings.caseSettings.Settings` objects.
     """
+    assert not isinstance(
+        ignorePatterns, str
+    ), "Bare string passed as ignorePatterns. Make sure to pass a list"
+
+    assert not isinstance(
+        patterns, str
+    ), "Bare string passed as patterns. Make sure to pass a list"
+
     possibleSettings = []
     runLog.info("Finding potential settings files matching {}.".format(patterns))
     if recursive:

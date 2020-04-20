@@ -28,6 +28,7 @@ from armi.settings import caseSettings
 from armi.settings import setting
 from armi.operators import settingsValidation
 from armi import plugins
+from armi.utils import directoryChangers
 
 THIS_DIR = os.path.dirname(__file__)
 TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
@@ -200,7 +201,6 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(cs["extendableOption"], "PLUGIN")
         cs["extendableOption"] = "PLUGIN"
 
-
     def test_default(self):
         """Make sure default updating mechanism works."""
         a = setting.Setting("testsetting", 0)
@@ -221,6 +221,51 @@ class TestSettingsConversion(unittest.TestCase):
         cs = caseSettings.Settings()
         cs["buGroups"] = []
         self.assertEqual(cs["buGroups"], [])
+
+
+class TestSettingsUtils(unittest.TestCase):
+    """Tests for utility functions"""
+
+    def setUp(self):
+        self.dc = directoryChangers.TemporaryDirectoryChanger()
+        self.dc.__enter__()
+
+        # Create a little case suite on the fly. Whipping it up from defaults should be
+        # more evergreen than committing settings files as a test resource
+        cs = caseSettings.Settings()
+        cs.writeToYamlFile("settings1.yaml")
+        cs.writeToYamlFile("settings2.yaml")
+        with open("notSettings.yaml", "w") as f:
+            f.write("some: other\n"
+                    "yaml: file\n")
+        os.mkdir("subdir")
+        cs.writeToYamlFile("subdir/settings3.yaml")
+        cs.writeToYamlFile("subdir/skipSettings.yaml")
+
+    def tearDown(self):
+        self.dc.__exit__(None, None, None)
+
+    def test_recursiveScan(self):
+        loadedSettings = settings.recursivelyLoadSettingsFiles(
+            ".", ["*.yaml"], ignorePatterns=["skip*"]
+        )
+        names = {cs.caseTitle for cs in loadedSettings}
+        self.assertIn("settings1", names)
+        self.assertIn("settings2", names)
+        self.assertIn("settings3", names)
+        self.assertNotIn("skipSettings", names)
+
+        loadedSettings = settings.recursivelyLoadSettingsFiles(
+            ".", ["*.yaml"], recursive=False, ignorePatterns=["skip*"]
+        )
+        names = {cs.caseTitle for cs in loadedSettings}
+        self.assertIn("settings1", names)
+        self.assertIn("settings2", names)
+        self.assertNotIn("settings3", names)
+
+    def test_prompt(self):
+        selection = settings.promptForSettingsFile(1)
+        self.assertEqual(selection, "settings1.yaml")
 
 
 if __name__ == "__main__":
