@@ -14,7 +14,7 @@
 
 """Settings related to fuel performance."""
 
-from armi.settings import setting2 as setting
+from armi.settings import setting
 from armi.operators.settingsValidation import Query
 
 

@@ -323,9 +323,9 @@ class ArmiPlugin:
         See also
         --------
         armi.physics.neutronics.NeutronicsPlugin.defineSettings
-        armi.settings.setting2.Setting
-        armi.settings.setting2.Option
-        armi.settings.setting2.Default
+        armi.settings.setting.Setting
+        armi.settings.setting.Option
+        armi.settings.setting.Default
 
         """
         return []

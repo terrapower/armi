@@ -25,9 +25,10 @@ import armi
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi import settings
 from armi.settings import caseSettings
-from armi.settings import setting2 as setting
+from armi.settings import setting
 from armi.operators import settingsValidation
 from armi import plugins
+from armi.utils import directoryChangers
 
 THIS_DIR = os.path.dirname(__file__)
 TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
@@ -53,7 +54,22 @@ class DummyPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        return [setting.Option("PLUGIN", "extendableOption")]
+        return [
+            setting.Option("PLUGIN", "extendableOption"),
+            setting.Default("PLUGIN", "extendableOption"),
+        ]
+
+
+class TestCaseSettings(unittest.TestCase):
+    def setUp(self):
+        self.cs = caseSettings.Settings()
+
+    def test_tempSet(self):
+        startVal = self.cs["nCycles"]
+        self.cs.temporarilySet("nCycles", 55)
+        self.assertEqual(self.cs["nCycles"], 55)
+        self.cs.unsetTemporarySettings()
+        self.assertEqual(self.cs["nCycles"], startVal)
 
 
 class TestSettings2(unittest.TestCase):
@@ -157,7 +173,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             )
         )
 
-    def test_options(self):
+    def test_pluginSettings(self):
         pm = armi.getPluginManagerOrFail()
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
@@ -170,9 +186,10 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         pm.register(DummyPlugin2)
         cs = caseSettings.Settings()
-        self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["extendableOption"], "PLUGIN")
         # Now we should have the option from plugin 2; make sure that works
         cs["extendableOption"] = "PLUGIN"
+        self.assertIn("extendableOption", cs.keys())
         pm.unregister(DummyPlugin2)
         pm.unregister(DummyPlugin1)
 
@@ -181,7 +198,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummyPlugin2)
         pm.register(DummyPlugin1)
         cs = caseSettings.Settings()
-        self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["extendableOption"], "PLUGIN")
         cs["extendableOption"] = "PLUGIN"
 
     def test_default(self):
@@ -204,6 +221,51 @@ class TestSettingsConversion(unittest.TestCase):
         cs = caseSettings.Settings()
         cs["buGroups"] = []
         self.assertEqual(cs["buGroups"], [])
+
+
+class TestSettingsUtils(unittest.TestCase):
+    """Tests for utility functions"""
+
+    def setUp(self):
+        self.dc = directoryChangers.TemporaryDirectoryChanger()
+        self.dc.__enter__()
+
+        # Create a little case suite on the fly. Whipping it up from defaults should be
+        # more evergreen than committing settings files as a test resource
+        cs = caseSettings.Settings()
+        cs.writeToYamlFile("settings1.yaml")
+        cs.writeToYamlFile("settings2.yaml")
+        with open("notSettings.yaml", "w") as f:
+            f.write("some: other\n"
+                    "yaml: file\n")
+        os.mkdir("subdir")
+        cs.writeToYamlFile("subdir/settings3.yaml")
+        cs.writeToYamlFile("subdir/skipSettings.yaml")
+
+    def tearDown(self):
+        self.dc.__exit__(None, None, None)
+
+    def test_recursiveScan(self):
+        loadedSettings = settings.recursivelyLoadSettingsFiles(
+            ".", ["*.yaml"], ignorePatterns=["skip*"]
+        )
+        names = {cs.caseTitle for cs in loadedSettings}
+        self.assertIn("settings1", names)
+        self.assertIn("settings2", names)
+        self.assertIn("settings3", names)
+        self.assertNotIn("skipSettings", names)
+
+        loadedSettings = settings.recursivelyLoadSettingsFiles(
+            ".", ["*.yaml"], recursive=False, ignorePatterns=["skip*"]
+        )
+        names = {cs.caseTitle for cs in loadedSettings}
+        self.assertIn("settings1", names)
+        self.assertIn("settings2", names)
+        self.assertNotIn("settings3", names)
+
+    def test_prompt(self):
+        selection = settings.promptForSettingsFile(1)
+        self.assertEqual(selection, "settings1.yaml")
 
 
 if __name__ == "__main__":

@@ -39,7 +39,7 @@ from armi import plugins
 from armi import operators
 from armi.utils import directoryChangers
 from armi.operators import RunTypes
-from armi.settings import setting2 as setting
+from armi.settings import setting
 from armi.operators import settingsValidation
 
 from armi.physics.fuelCycle import fuelHandlers

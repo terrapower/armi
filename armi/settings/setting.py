@@ -12,82 +12,159 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-This defines a Setting object and its subclasses that populate the Settings object.
-
-This module is really only needed for its interactions with the submitter GUI.
 """
-import os
+System to handle basic configuration settings.
+
+Notes
+-----
+Rather than having subclases for each setting type, we simply derive
+the type based on the type of the default, and we enforce it with
+schema validation. This also allows for more complex schema validation
+for settings that are more complex dictionaries (e.g. XS, rx coeffs, etc.).
+
+One reason for complexity of the previous settings implementation was
+good interoperability with the GUI widgets.
+
+We originally thought putting settings definitions in XML files would
+help with future internationalization. This is not the case.
+Internationalization will likely be added later with string interpolators given
+the desire to internationalize, which is nicely compatible with this
+code-based re-implementation.
+"""
+
 import copy
-import collections
-import warnings
+from collections import namedtuple
+from typing import List
 
-import armi
-from armi.utils import parsing
+import voluptuous as vol
+
+from armi import runLog
 
 
-class Setting(object):
-    r"""Helper class to Settings
+# Options are used to imbue existing settings with new Options. This allows a setting
+# like `neutronicsKernel` to strictly enforce options, even though the plugin that
+# defines it does not know all possible options, which may be provided from other
+# plugins.
+Option = namedtuple("Option", ["option", "settingName"])
+Default = namedtuple("Default", ["value", "settingName"])
 
-    Holds a factory to instantiate the correct sub-type based on the input dictionary with a few expected
-    keywords. Setting objects hold all associated information of a setting in ARMI and should typically be accessed
-    through the Settings class methods rather than directly. The exception being the SettingAdapter class designed
-    for additional GUI related functionality
+
+class Setting:
+    """
+    A particular setting.
+
+    Setting objects hold all associated information of a setting in ARMI and should
+    typically be accessed through the Settings class methods rather than directly. The
+    exception being the SettingAdapter class designed for additional GUI related
+    functionality.
+
+    Setting subclasses can implement custom ``load`` and ``dump`` methods
+    that can enable serialization (to/from dicts) of custom objects. When
+    you set a setting's value, the value will be unserialized into
+    the custom object and when you call ``dump``, it will be serialized.
+    Just accessing the value will return the actual object in this case.
 
     """
-    __slots__ = ["name", "description", "label", "underlyingType", "_value", "_default"]
-    _allSlots = {}
 
-    def __init__(self, name, underlyingType, attrib):
-        r"""Initialization used in all subclass calls, some values are to be overwritten
-         as they are either uniquely made or optional values.
-
-        All set values should be run through the convertType(self.name,) function as Setting is
-        so closely tied to python types being printed to strings and parsed back, convertType(self.name,)
-        should cleanly fetch any python values.
+    def __init__(
+        self,
+        name,
+        default,
+        description=None,
+        label=None,
+        options=None,
+        schema=None,
+        enforcedOptions=False,
+        subLabels=None,
+        isEnvironment=False,
+    ):
+        """
+        Initialize a Setting object.
 
         Parameters
         ----------
         name : str
             the setting's name
-        underlyingType : type
-            The setting's type
-        attrib : dict
-            the storage bin with the strictly named attributes of the setting
-
-        Attributes
-        ----------
-        self.underlyingType : type
-            explicity states the type of setting, usually a python type, but potentially something like 'file'
-        self.value : select allowed python types
-            the setting value stored
-        self.default : always the same as value
-            the backup value of self.value to regress to if desired
-        self.description : str
-            the helpful description of the purpose and use of a setting, primarily used for GUI tooltip strings
-        self.label : str
+        default : object
+            The setting's default value
+        description : str, optional
+            The description of the setting
+        label : str, optional
             the shorter description used for the ARMI GUI
+        options : list, optional
+            Legal values (useful in GUI drop-downs)
+        schema : callable, optional
+            A function that gets called with the configuration
+            VALUES that build this setting. The callable will
+            either raise an exception, safely modify/update,
+            or leave unchanged the value. If left blank,
+            a type check will be performed against the default.
+        enforcedOptions : bool, optional
+            Require that the value be one of the valid options.
+        subLabels : tuple, optional
+            The names of the fields in each tuple for a setting that accepts a list
+            of tuples. For example, if a setting is a list of (assembly name, file name)
+            tuples, the sublabels would be ("assembly name", "file name").
+            This is needed for building GUI widgets to input such data.
+        isEnvironment : bool, optional
+            Whether this should be considered an "environment" setting. These can be
+            used by the Case system to propagate environment options through
+            command-line flags.
 
         """
-        warnings.warn(
-            "The old Setting class is being deprecated, and will "
-            "be replaced with the new implementation presently in the setting2 "
-            "module."
-        )
         self.name = name
-        self.description = str(attrib.get("description", ""))
-        self.label = str(attrib.get("label", self.name))
+        self.description = description or name
+        self.label = label or name
+        self.options = options
+        self.enforcedOptions = enforcedOptions
+        self.subLabels = subLabels
+        self.isEnvironment = isEnvironment
 
-        self.underlyingType = underlyingType
-        self._value = None
-        self._default = None
-
-        self.setValue(attrib["default"])
-        self._default = copy.deepcopy(self._value)
+        self._default = default
+        # Retain the passed schema so that we don't accidentally stomp on it in
+        # addOptions(), et.al.
+        self._customSchema = schema
+        self._setSchema(schema)
+        self._value = copy.deepcopy(default)  # break link from _default
 
     @property
-    def schema(self):
-        return lambda val: val
+    def underlyingType(self):
+        """Useful in categorizing settings, e.g. for GUI."""
+        return type(self._default)
+
+    @property
+    def containedType(self):
+        """The subtype for lists."""
+        # assume schema set to [int] or [str] or something similar
+        try:
+            containedSchema = self.schema.schema[0]
+            if isinstance(containedSchema, vol.Coerce):
+                # special case for Coerce objects, which
+                # store their underlying type as ``.type``.
+                return containedSchema.type
+            return containedSchema
+        except TypeError:
+            # cannot infer. fall back to str
+            return str
+
+    def _setSchema(self, schema):
+        """Apply or auto-derive schema of the value."""
+        if schema:
+            self.schema = schema
+        elif self.options and self.enforcedOptions:
+            self.schema = vol.Schema(vol.In(self.options))
+        else:
+            # Coercion is needed to convert XML-read migrations (for old cases)
+            # as well as in some GUI instances where lists are getting set
+            # as strings.
+            if isinstance(self.default, list) and self.default:
+                # Non-empty default: assume the default has the desired contained type
+                # Coerce all values to the first entry in the default so mixed floats and ints work.
+                # Note that this will not work for settings that allow mixed
+                # types in their lists (e.g. [0, '10R']), so those all need custom schemas.
+                self.schema = vol.Schema([vol.Coerce(type(self.default[0]))])
+            else:
+                self.schema = vol.Schema(vol.Coerce(type(self.default)))
 
     @property
     def default(self):
@@ -98,43 +175,95 @@ class Setting(object):
         return self._value
 
     @value.setter
-    def value(self, v):
-        self.setValue(v)
+    def value(self, val):
+        """
+        Set the value directly.
 
-    @classmethod
-    def _getSlots(cls):
-        r"""This method is caches the slots for all subclasses so that they can quickly be retrieved during __getstate__
-        and __setstate__."""
-        slots = cls._allSlots.get(cls, None)
-        if slots is None:
-            slots = [
-                slot
-                for klass in cls.__mro__
-                for slot in getattr(klass, "__slots__", [])
-            ]
-            cls._allSlots[cls] = slots
-        return slots
+        Notes
+        -----
+        Can't just decorate ``setValue`` with ``@value.setter`` because
+        some callers use setting.value=val and others use setting.setValue(val)
+        and the latter fails with ``TypeError: 'XSSettings' object is not callable``
+        """
+        return self.setValue(val)
 
-    def __getstate__(self):
-        """Get the state of the setting; required when __slots__ are defined"""
-        return [
-            getattr(self, slot) for slot in self.__class__._getSlots()
-        ]  # pylint: disable=protected-access
+    def setValue(self, val):
+        """
+        Set value of a setting.
 
-    def __setstate__(self, state):
-        """Set the state of the setting; required when __slots__ are defined"""
-        for slot, value in zip(
-            self.__class__._getSlots(), state
-        ):  # pylint: disable=protected-access
-            setattr(self, slot, value)
+        This validates it against its value schema on the way in.
 
-    def setValue(self, v):
-        raise NotImplementedError
+        Some setting values are custom serializable objects.
+        Rather than writing them directly to YAML using
+        YAML's Python object-writing features, we prefer
+        to use our own custom serializers on subclasses.
+        """
+        try:
+            val = self.schema(val)
+        except vol.error.MultipleInvalid:
+            runLog.error(f"Error in setting {self.name}, val: {val}.")
+            raise
+
+        self._value = self._load(val)
+
+    def addOptions(self, options: List[Option]):
+        """Extend this Setting's options with extra options."""
+        self.options.extend([o.option for o in options])
+        self._setSchema(self._customSchema)
+
+    def addOption(self, option: Option):
+        """Extend this Setting's options with an extra option."""
+        self.addOptions(
+            [option,]
+        )
+
+    def changeDefault(self, newDefault: Default):
+        """Change the default of a setting, and also the current value."""
+        self._default = newDefault.value
+        self.value = newDefault.value
+
+    def _load(self, inputVal):
+        """
+        Create setting value from input value.
+
+        In some custom settings, this can return a custom object
+        rather than just the input value.
+        """
+        return inputVal
+
+    def dump(self):
+        """
+        Return a serializable version of this setting's value.
+
+        Override to define custom deserializers for custom/compund settings.
+        """
+        return self._value
 
     def __repr__(self):
         return "<{} {} value:{} default:{}>".format(
             self.__class__.__name__, self.name, self.value, self.default
         )
+
+    def __getstate__(self):
+        """
+        Remove schema during pickling because it is often unpickleable.
+
+        Notes
+        -----
+        Errors are often with
+        ``AttributeError: Can't pickle local object '_compile_scalar.<locals>.validate_instance'``
+
+        See Also
+        --------
+        armi.settings.caseSettings.Settings.__setstate__ : regenerates the schema upon load
+            Note that we don't do it at the individual setting level because it'd be too
+            O(N^2).
+        """
+        state = copy.deepcopy(self.__dict__)
+        for trouble in ("schema", "_customSchema"):
+            if trouble in state:
+                del state[trouble]
+        return state
 
     def revertToDefault(self):
         """
@@ -161,368 +290,17 @@ class Setting(object):
         """Return True if the setting is not the default value for that setting."""
         return not self.isDefault()
 
-    def getDefaultAttributes(self):
-        """Returns values associated with the default initialization write out of settings
-
-        Excludes the stored name of the setting
-
-        """
-        return collections.OrderedDict(
-            [
-                ("type", self.underlyingType),
-                ("default", self.default),
-                ("description", self.description),
-                ("label", self.label),
-            ]
-        )
-
     def getCustomAttributes(self):
-        """Returns values associated with a more terse write out of settings
-
-        """
+        """Hack to work with settings writing system until old one is gone."""
         return {"value": self.value}
 
-    @staticmethod
-    def factory(key, attrib):
-        """
-        The initialization method for the subclasses of Setting.
-        """
-        try:
-            return SUBSETTING_MAP[attrib["type"]](key, attrib)
-        except KeyError:
-            raise TypeError(
-                "Cannot create a setting for {0} around {1} "
-                "as no subsetting exists to manage its declared type.".format(
-                    key, attrib
-                )
-            )
-
-
-class BoolSetting(Setting):
-    """Setting surrounding a python boolean
-
-    No new attributes have been added
-
-    """
-
-    __slots__ = []
-
-    def __init__(self, name, attrib):
-        Setting.__init__(self, name, bool, attrib)
-
-    def setValue(self, v):
-        """Protection against setting the value to an invalid/unexpected type
-
-        """
-        try:
-            tenative_value = parsing.parseValue(v, bool, True)
-        except ValueError:
-            raise ValueError(
-                "Cannot set {0} value to {1} as it is not a valid value for {2} "
-                "and cannot be converted to one".format(
-                    self.name, v, self.__class__.__name__
-                )
-            )
-
-        self._value = tenative_value
-
-
-class _NumericSetting(Setting):
-    """Between Setting and the numeric subclasses, used for ints and floats
-
-    Attributes
-    ----------
-    self.units : str
-        OPTIONAL - a descriptor of the setting, not used internally
-    self.min : int or float, as specified by the subclass initializing this
-        OPTIONAL - used to enforce values higher than itself
-    self.max : int or float, as specified by the sublcass initializing this
-        OPTIONAL - used to enforce values lower than itself
-
-    """
-
-    __slots__ = ["units", "min", "max"]
-
-    def __init__(self, name, underlyingType, attrib):
-        self.units = str(attrib.get("units", ""))
-        self.min = parsing.parseValue(
-            attrib.get("min", None), underlyingType, True, False
-        )
-        self.max = parsing.parseValue(
-            attrib.get("max", None), underlyingType, True, False
-        )
-        Setting.__init__(self, name, underlyingType, attrib)
-
     def getDefaultAttributes(self):
-        """Adds in the new attributes to the default attribute grab of the base
-
         """
-        attrib = Setting.getDefaultAttributes(self)
-        attrib["units"] = self.units
-        attrib["min"] = self.min
-        attrib["max"] = self.max
-        return attrib
+        Additional hack, residual from when settings system could write settings definitions.
 
-    def setValue(self, v):
-        """Protection against setting the value to an invalid/unexpected type
-
-        """
-        try:
-            tenative_value = parsing.parseValue(v, self.underlyingType, True)
-        except ValueError:
-            raise ValueError(
-                "Cannot set {0} value to {1} as it is not a valid value for {2} "
-                "and cannot be converted to one".format(
-                    self.name, v, self.__class__.__name__
-                )
-            )
-
-        if self.min and tenative_value < self.min:
-            raise ValueError(
-                "Cannot set {0} value to {1} as it does not exceed the set minimum of {2}".format(
-                    self.name, tenative_value, self.min
-                )
-            )
-        elif self.max and tenative_value > self.max:
-            raise ValueError(
-                "Cannot set {0} value to {1} as it exceeds the set maximum of {2}".format(
-                    self.name, tenative_value, self.max
-                )
-            )
-
-        self._value = tenative_value
-
-
-class IntSetting(_NumericSetting):
-    """Setting surrounding a python integer"""
-
-    __slots__ = []
-
-    def __init__(self, name, attrib):
-        _NumericSetting.__init__(self, name, int, attrib)
-
-
-class FloatSetting(_NumericSetting):
-    """Setting surrounding a python float"""
-
-    __slots__ = []
-
-    def __init__(self, name, attrib):
-        _NumericSetting.__init__(self, name, float, attrib)
-
-
-class StrSetting(Setting):
-    """Setting surrounding a python string
-
-    Attributes
-    ----------
-    self.options : list
-        OPTIONAL - a list of strings that self.value is allowed to be set as
-    self.enforcedOptions : bool
-        OPTIONAL - toggles whether or not we care about self.options
-
-    """
-
-    __slots__ = ["options", "enforcedOptions"]
-
-    def __init__(self, name, attrib):
-        self.options = [
-            item for item in parsing.parseValue(attrib.get("options", None), list, True)
-        ]
-        self.enforcedOptions = parsing.parseValue(
-            attrib.get("enforcedOptions", None), bool, True
-        )
-        if self.enforcedOptions and not self.options:
-            raise AttributeError(
-                "Cannot use enforcedOptions in ({}) {} without supplying options.".format(
-                    self.__class__.__name__, self.name
-                )
-            )
-        Setting.__init__(self, name, str, attrib)
-
-    def setValue(self, v):
-        """Protection against setting the value to an invalid/unexpected type
-
-        """
-        if (
-            v is None
-        ):  # done for consistency with the rest of the methods using parsing module
-            tenative_value = None
-        else:
-            tenative_value = str(v)
-
-        if self.options and self.enforcedOptions and tenative_value not in self.options:
-            raise ValueError(
-                "Cannot set {0} value to {1} as it isn't in the allowed options "
-                "{2}".format(self.name, tenative_value, self.options)
-            )
-
-        self._value = tenative_value
-
-    def getDefaultAttributes(self):
-        """Adds in the new attributes to the default attribute grab of the base
-
-        """
-        attrib = Setting.getDefaultAttributes(self)
-        attrib["options"] = self.options
-        attrib["enforcedOptions"] = self.enforcedOptions
-        return attrib
-
-
-class PathSetting(StrSetting):
-    """Setting surrounding a python string file path
-
-    Allows for paths relative to various dynamic ARMI environment variables"""
-
-    __slots__ = ["relativeTo", "mustExist"]
-
-    _REMAPS = {
-        "RES": armi.context.RES,
-        "ROOT": armi.context.ROOT,
-        "DOC": armi.context.DOC,
-        "FAST_PATH": armi.context.FAST_PATH,
-    }
-
-    def __init__(self, name, attrib):
-        self.relativeTo = attrib.get("relativeTo", None)
-        self.mustExist = parsing.parseValue(attrib.get("mustExist", None), bool, True)
-        StrSetting.__init__(self, name, attrib)
-
-    def setValue(self, v):
-        """Protection against setting the value to an invalid/unexpected type
-
-        """
-        if v is not None:
-            if self.relativeTo is not None:
-                # Use relative path if the provided path does not exist
-                if not os.path.exists(v):
-                    v = os.path.join(self._REMAPS[self.relativeTo], v)
-            if self.mustExist and not os.path.exists(v):
-                raise ValueError(
-                    "Cannot set {0} value to {1} as it doesn't exist".format(
-                        self.name, v
-                    )
-                )
-        StrSetting.setValue(self, v)
-
-    def getDefaultAttributes(self):
-        """Adds in the new attributes to the default attribute grab of the base
-
-        """
-        attrib = Setting.getDefaultAttributes(self)
-        attrib["relativeTo"] = self.relativeTo
-        attrib["mustExist"] = self.mustExist
-        return attrib
-
-
-class ListSetting(Setting):
-    """Setting surrounding a python list
-
-    Attributes
-    ----------
-    self.containedType : any python type
-        OPTIONAL - used to ensure all items in the list conform to this specified type,
-        if omitted the list is free to hold anything
-
-    """
-
-    __slots__ = ["containedType", "options", "enforcedOptions"]
-
-    def __init__(self, name, attrib):
-        self.containedType = parsing.parseType(attrib.get("containedType", None), True)
-        self.options = [
-            item for item in parsing.parseValue(attrib.get("options", None), list, True)
-        ]
-        self.enforcedOptions = parsing.parseValue(
-            attrib.get("enforcedOptions", None), bool, True
-        )
-
-        if self.enforcedOptions and not self.options:
-            raise AttributeError(
-                "Cannot use enforcedOptions in ({}) {} without supplying options.".format(
-                    self.__class__.__name__, self.name
-                )
-            )
-
-        if self.containedType and self.containedType == type(None):
-            raise RuntimeError(
-                "Do not use NoneType for containedType in ListSetting. "
-                "That does seem helpful and it will cause pickling issues."
-            )
-        Setting.__init__(self, name, list, attrib)
-        self._default = tuple(
-            self.default or []
-        )  # convert mutable list to tuple so no one changes it after def.
-
-    @property
-    def value(self):
-        return list(self._value)
-
-    @property
-    def default(self):
-        return list(self._default or [])
-
-    def setValue(self, v):
-        """Protection against setting the value to an invalid/unexpected type
-
-        """
-        try:
-            tentative_value = parsing.parseValue(v, list, True)
-        except ValueError:
-            raise ValueError(
-                "Cannot set {0} value to {1} as it is not a valid value for {2} "
-                "and cannot be converted to one".format(
-                    self.name, v, self.__class__.__name__
-                )
-            )
-
-        if self.containedType and tentative_value:
-            ct = self.containedType
-            try:
-                if ct == str:
-                    tentative_value = [str(i) for i in tentative_value]
-                else:
-                    tentative_value = [
-                        parsing.parseValue(i, ct, False) for i in tentative_value
-                    ]
-            except ValueError:
-                raise ValueError(
-                    "Cannot set {0} value to {1} as it contains items not of the correct type {2}".format(
-                        self.name, tentative_value, self.containedType
-                    )
-                )
-
-        if (
-            self.options
-            and self.enforcedOptions
-            and any([value not in self.options for value in tentative_value])
-        ):
-            raise ValueError(
-                "Cannot set {0} value to {1} as it isn't in the allowed options {2}".format(
-                    self.name, tentative_value, self.options
-                )
-            )
-
-        self._value = tuple(tentative_value or [])
-
-    def getDefaultAttributes(self):
-        """Adds in the new attributes to the default attribute grab of the base
-
-        """
-        attrib = Setting.getDefaultAttributes(self)
-        attrib["containedType"] = self.containedType
-        attrib["options"] = self.options
-        attrib["enforcedOptions"] = self.enforcedOptions
-        return attrib
-
-
-# help direct python types to the respective setting type
-SUBSETTING_MAP = {
-    "bool": BoolSetting,
-    "int": IntSetting,
-    "long": IntSetting,
-    "float": FloatSetting,
-    "str": StrSetting,
-    "list": ListSetting,
-    "path": PathSetting,
-}
+        This is only needed here due to the unit tests in test_settings."""
+        return {
+            "value": self.value,
+            "type": type(self.default),
+            "default": self.default,
+        }
