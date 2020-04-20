@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
 import os
 import unittest
 
@@ -20,6 +21,7 @@ from armi.cli import entryPoint
 from armi.utils import directoryChangers
 from armi import settings
 from armi.settings import setting
+from armi.settings import settingsIO
 from armi.localization import exceptions
 
 
@@ -37,6 +39,15 @@ class SettingsFailureTests(unittest.TestCase):
             ss.loadFromInputFile(None)
         with self.assertRaises(IOError):
             ss.loadFromInputFile("this-settings-file-does-not-exist.xml")
+
+    def test_invalidFile(self):
+        with self.assertRaises(exceptions.InvalidSettingsFileError):
+            cs = settings.caseSettings.Settings()
+            reader = settingsIO.SettingsReader(cs)
+            reader.readFromStream(
+                io.StringIO(r"<uselessTag>¯\_(ツ)_/¯</uselessTag>"),
+                fmt=settingsIO.SettingsReader.SettingsInputFormat.XML,
+            )
 
 
 class SettingsWriterTests(unittest.TestCase):
@@ -91,4 +102,3 @@ class SettingArgsTests(unittest.TestCase):
 
         with self.assertRaises(exceptions.StateError):
             self.cs.loadFromInputFile("somefile.xml")
-

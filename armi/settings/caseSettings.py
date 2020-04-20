@@ -316,22 +316,7 @@ class Settings:
 
     def loadAllDefaults(self):
         r"""Initializes all setting objects from the default files
-
-        Crawls the res folder for all XML files, tries to load them as settings files
-        and sets all default settings from there. (if there is a duplicate setting it
-        will throw an error)
-
-        Also grabs explicitly-defined Settings objects for framework settings.
-
-        The formatting of the file name is important as it clues it in to what's valid.
-
         """
-        for dirname, _dirnames, filenames in os.walk(armi.RES):
-            for filename in filenames:
-                if filename.lower().endswith("settings.xml"):
-                    #KILLME
-                    raise RuntimeError("Old settings are deprecated")
-
         for fwSetting in fwSettings.getFrameworkSettings():
             self.settings[fwSetting.name] = fwSetting
 

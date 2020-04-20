@@ -41,26 +41,6 @@ _str_types = {
 _type_strs = {v: k for k, v in _str_types.items()}
 
 
-def parseType(source, allowNone=False):
-    """Tries to parse a Python type, expecting input to be the type or a string."""
-    # evaluation
-    try:
-        evaluated_source = copy.deepcopy(_str_types[source])
-    except KeyError:
-        evaluated_source = source
-
-    # none logic
-    potential_none_value = tryLiteralEval(evaluated_source)
-    if allowNone and not potential_none_value:
-        return potential_none_value
-
-    # assert everything went well
-    if not isinstance(evaluated_source, type):
-        raise TypeError("Cannot evaluate a python type from source {}".format(source))
-
-    return evaluated_source
-
-
 # python's matching truth evaluations of Nones in different primitive types
 # str's and unicodes omitted because parseValue denies their use.
 _none_types = {

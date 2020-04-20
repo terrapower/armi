@@ -50,15 +50,6 @@ class LiteralEvalTest(unittest.TestCase):
         self.assertEqual(parsing.tryLiteralEval("apple"), "apple")
         self.assertEqual(parsing.tryLiteralEval(tuple), tuple)
 
-    def test_parseType(self):
-        self.assertEqual(parsing.parseType("int"), int)
-        self.assertEqual(parsing.parseType(int), int)
-        self.assertEqual(parsing.parseType("int", True), int)
-        with self.assertRaises(TypeError):
-            parsing.parseType("banana", True)
-        with self.assertRaises(TypeError):
-            parsing.parseType("banana")
-
     def test_parseValue(self):
         self.assertEqual(parsing.parseValue("5", int), 5)
         self.assertEqual(parsing.parseValue(5, int), 5)

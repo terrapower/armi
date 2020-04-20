@@ -267,17 +267,6 @@ class SettingNameCollision(SettingException):
     """Exception raise when a setting has already been given the same case-insensitive name"""
 
 
-class InvalidSettingDefinition(SettingException):
-    """Exception raised when specials cannot be processed in settings file"""
-
-    def __init__(self, name, attrs):
-        SettingException.__init__(
-            self,
-            "Setting {} found to not have well formed attributes for definition. "
-            " Recieved {}.".format(name, attrs),
-        )
-
-
 class NonexistentSettingsFileError(SettingException):
     """Settings file does not exist"""
 

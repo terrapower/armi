@@ -53,7 +53,22 @@ class DummyPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        return [setting.Option("PLUGIN", "extendableOption")]
+        return [
+            setting.Option("PLUGIN", "extendableOption"),
+            setting.Default("PLUGIN", "extendableOption"),
+        ]
+
+
+class TestCaseSettings(unittest.TestCase):
+    def setUp(self):
+        self.cs = caseSettings.Settings()
+
+    def test_tempSet(self):
+        startVal = self.cs["nCycles"]
+        self.cs.temporarilySet("nCycles", 55)
+        self.assertEqual(self.cs["nCycles"], 55)
+        self.cs.unsetTemporarySettings()
+        self.assertEqual(self.cs["nCycles"], startVal)
 
 
 class TestSettings2(unittest.TestCase):
@@ -157,7 +172,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             )
         )
 
-    def test_options(self):
+    def test_pluginSettings(self):
         pm = armi.getPluginManagerOrFail()
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
@@ -170,9 +185,10 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         pm.register(DummyPlugin2)
         cs = caseSettings.Settings()
-        self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["extendableOption"], "PLUGIN")
         # Now we should have the option from plugin 2; make sure that works
         cs["extendableOption"] = "PLUGIN"
+        self.assertIn("extendableOption", cs.keys())
         pm.unregister(DummyPlugin2)
         pm.unregister(DummyPlugin1)
 
@@ -181,8 +197,9 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummyPlugin2)
         pm.register(DummyPlugin1)
         cs = caseSettings.Settings()
-        self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["extendableOption"], "PLUGIN")
         cs["extendableOption"] = "PLUGIN"
+
 
     def test_default(self):
         """Make sure default updating mechanism works."""
