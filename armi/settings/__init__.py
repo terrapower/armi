@@ -140,7 +140,7 @@ def promptForSettingsFile(choice=None):
     """
     runLog.info("Welcome to the ARMI Loader")
     runLog.info("Scanning for ARMI settings files...")
-    files = glob.glob("*.yaml") + glob.glob("*.xml")  # phase out xml later
+    files = sorted(glob.glob("*.yaml") + glob.glob("*.xml"))  # phase out xml later
     if not files:
         runLog.info(
             "No eligible settings files found. Creating settings without choice"
