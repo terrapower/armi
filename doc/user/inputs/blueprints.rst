@@ -675,7 +675,7 @@ are now four components, but only three that have actual area and composition::
                     mult:1.0
 
 
-This can similarly be done for hex geometry and and a hexagon with Outer Pitch (`op`).
+This can similarly be done for hex geometry and and a hexagon with Outer Pitch (``op``).
 
 ---------
 
