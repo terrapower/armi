@@ -1352,7 +1352,6 @@ class Block(composites.Composite):
         if self.p.percentBuByPin is None or len(self.p.percentBuByPin) < mult:
             # this may be a little wasteful, but we can fix it later...
             self.p.percentBuByPin = [0.0] * mult
-
         self._updatePitchComponent(c)
 
     def addComponent(self, c):
@@ -1846,20 +1845,16 @@ class Block(composites.Composite):
         setPitch : sets pitch
 
         """
-        c, p = self._pitchDefiningComponent
+        c, _p = self._pitchDefiningComponent
 
-        # Admittedly awkward here, but allows for a clean comparison when adding components to the
-        # block as opposed to initializing _pitchDefiningComponent to (None, None)
         if c is None:
-            p = None
-        else:
-            # ask component for dimensions, since they could have changed
-            p = c.getDimension("op")
+            raise ValueError("{} has no valid pitch defining component".format(self))
 
-        if returnComp:
-            return p, c
-        else:
-            return p
+        # ask component for dimensions, since they could have changed,
+        # due to temperature, for example.
+        p = c.getPitchData()
+
+        return (p, c) if returnComp else p
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
@@ -2343,7 +2338,8 @@ class Block(composites.Composite):
         # update moles at BOL for each pin
         self.p.molesHmBOLByPin = []
         for pinNum, pin in enumerate(self.iterComponents(Flags.FUEL)):
-            pin.p.flags = fuelFlags  # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
+            # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
+            pin.p.flags = fuelFlags
             self.p.molesHmBOLByPin.append(pin.getHMMoles())
             pin.p.massHmBOL /= nPins
 
@@ -2432,10 +2428,7 @@ class HexBlock(Block):
 
     LOCATION_CLASS = locations.HexLocation
 
-    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (
-        components.UnshapedComponent,
-        components.Hexagon,
-    )
+    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
     def __init__(self, name, height=1.0, location=None):
         Block.__init__(self, name, height, location)
@@ -2702,7 +2695,8 @@ class HexBlock(Block):
             face to face in cm.
         """
         if self.LOCATION_CLASS is None:
-            return None  # can't assume anything about dimensions if there is no location type
+            # can't assume anything about dimensions if there is no location type
+            return None
 
         wire = self.getComponent(Flags.WIRE)
         ducts = sorted(self.getChildrenWithFlags(Flags.DUCT))
@@ -2882,7 +2876,7 @@ class CartesianBlock(Block):
     LOCATION_CLASS = locations.CartesianLocation
 
     PITCH_DIMENSION = "widthOuter"
-    PITCH_COMPONENT_TYPE = (components.UnshapedComponent, components.Rectangle)
+    PITCH_COMPONENT_TYPE = components.Rectangle
 
     def getMaxArea(self):
         """Get area of this block if it were totally full."""
@@ -2894,30 +2888,6 @@ class CartesianBlock(Block):
             "Directly setting the pitch of a cartesian block is currently "
             "not supported"
         )
-
-    def getPitch(self, returnComp=False):
-        """
-        Get xw and yw of the block.
-
-        See Also
-        --------
-        Block.getPitch
-        """
-        c, _p = self._pitchDefiningComponent
-
-        # Admittedly awkward here, but allows for a clean comparison when adding components to the
-        # block as opposed to initializing _pitchDefiningComponent to (None, None)
-        if c is None:
-            raise ValueError("{} has no valid pitch".format(self))
-        else:
-            # ask component for dimensions, since they could have changed
-            maxLength = c.getDimension("lengthOuter")
-            maxWidth = c.getDimension("widthOuter")
-
-        if returnComp:
-            return (maxLength, maxWidth), c
-        else:
-            return (maxLength, maxWidth)
 
     def getSymmetryFactor(self):
         """

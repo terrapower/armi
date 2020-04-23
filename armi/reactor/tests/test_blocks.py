@@ -30,6 +30,7 @@ from armi.nucDirectory import nucDir, nuclideBases
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 from armi.tests import TEST_ROOT
 from armi.utils import units
+from armi.utils import hexagon
 from armi.reactor.flags import Flags
 from armi import tests
 from armi.reactor import grids
@@ -1118,20 +1119,6 @@ class Block_TestCase(unittest.TestCase):
             self.Block.getComponent(Flags.INTERCOOLANT).getDimension("op"), pitch
         )
 
-    def test_UnshapedGetPitch(self):
-        """
-        Test that a homogenous block can be created with a specific pitch.
-        This functionality is necessary for making simple homogenous reactors.
-        """
-        block = blocks.HexBlock("TestHexBlock", location=None)
-        outerPitch = 2.0
-        block.addComponent(
-            UnshapedComponent(
-                "TestComponent", "Void", Tinput=25.0, Thot=25.0, op=outerPitch
-            )
-        )
-        self.assertEqual(block.getPitch(), outerPitch)
-
     def test106_getAreaFractions(self):
 
         cur = self.Block.getVolumeFractions()
@@ -1522,13 +1509,171 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertNotAlmostEqual(x[1], x[2])
         self.assertEqual(len(xyz), self.HexBlock.getNumPins())
 
+    def test_getPitchHomogenousBlock(self):
+        """
+        Demonstrate how to communicate pitch on a hex block with unshaped components.
+
+        Notes
+        -----
+        This assumes there are 3 materials in the homogeneous block, one with half
+        the area fraction, and 2 with 1/4 each.
+        """
+        desiredPitch = 14.0
+        hexTotalArea = hexagon.area(desiredPitch)
+
+        compArgs = {"Tinput": 273.0, "Thot": 273.0}
+        areaFractions = [0.5, 0.25, 0.25]
+        materials = ["HT9", "UZr", "Sodium"]
+
+        # There are 2 ways to do this, the first is to pick a component to be the pitch
+        # defining component, and given it the shape of a hexagon to define the pitch
+        # The hexagon outer pitch (op) is defined by the pitch of the block/assembly.
+        # the ip is defined by whatever thickness is necessary to have the desired area
+        # fraction. The second way is shown in the second half of this test.
+        hexBlock = blocks.HexBlock("TestHexBlock")
+
+        hexComponentArea = areaFractions[0] * hexTotalArea
+
+        # Picking 1st material to use for the hex component here, but really the choice
+        # is arbitrary.
+        # area grows quadratically with op
+        ipNeededForCorrectArea = desiredPitch * areaFractions[0] ** 0.5
+        self.assertEqual(
+            hexComponentArea, hexTotalArea - hexagon.area(ipNeededForCorrectArea)
+        )
+
+        hexArgs = {"op": desiredPitch, "ip": ipNeededForCorrectArea, "mult": 1.0}
+        hexArgs.update(compArgs)
+        pitchDefiningComponent = components.Hexagon(
+            "pitchComp", materials[0], **hexArgs
+        )
+        hexBlock.addComponent(pitchDefiningComponent)
+
+        # hex component is added, now add the rest as unshaped.
+        for aFrac, material in zip(areaFractions[1:], materials[1:]):
+            unshapedArgs = {"area": hexTotalArea * aFrac}
+            unshapedArgs.update(compArgs)
+            name = f"unshaped {material}"
+            comp = components.UnshapedComponent(name, material, **unshapedArgs)
+            hexBlock.addComponent(comp)
+
+        self.assertEqual(desiredPitch, hexBlock.getPitch())
+        self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
+        self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
+
+        # For this second way, we will simply define the 3 components as unshaped, with
+        # the desired area fractions, and make a 4th component that is an infinitely
+        # thin hexagon with the the desired pitch. The downside of this method is that
+        # now the block has a fourth component with no volume.
+        hexBlock = blocks.HexBlock("TestHexBlock")
+        for aFrac, material in zip(areaFractions, materials):
+            unshapedArgs = {"area": hexTotalArea * aFrac}
+            unshapedArgs.update(compArgs)
+            name = f"unshaped {material}"
+            comp = components.UnshapedComponent(name, material, **unshapedArgs)
+            hexBlock.addComponent(comp)
+
+        # We haven't set a pitch defining component this time so set it now with 0 area.
+        pitchDefiningComponent = components.Hexagon(
+            "pitchComp", "Void", op=desiredPitch, ip=desiredPitch, mult=1, **compArgs
+        )
+        hexBlock.addComponent(pitchDefiningComponent)
+        self.assertEqual(desiredPitch, hexBlock.getPitch())
+        self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
+        self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
+
 
 class CartesianBlock_TestCase(unittest.TestCase):
+    """Tests for blocks with rectangular/square outer shape."""
+
+    PITCH = 70
+
     def setUp(self):
         caseSetting = settings.Settings()
-        caseSetting["xw"] = 5.0
-        caseSetting["yw"] = 3.0
-        self.CartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
+        self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
+
+        self.cartesianComponent = components.HoledSquare(
+            "duct",
+            "UZr",
+            Tinput=273.0,
+            Thot=273.0,
+            holeOD=68.0,
+            widthOuter=self.PITCH,
+            mult=1.0,
+        )
+        self.cartesianBlock.addComponent(self.cartesianComponent)
+        self.cartesianBlock.addComponent(
+            components.Circle(
+                "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
+            )
+        )
+
+    def test_getPitchSquare(self):
+        self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
+
+    def test_getPitchHomogenousBlock(self):
+        """
+        Demonstrate how to communicate pitch on a hex block with unshaped components.
+
+        Notes
+        -----
+        This assumes there are 3 materials in the homogeneous block, one with half
+        the area fraction, and 2 with 1/4 each.
+        """
+        desiredPitch = (10.0, 12.0)
+        rectTotalArea = desiredPitch[0] * desiredPitch[1]
+
+        compArgs = {"Tinput": 273.0, "Thot": 273.0}
+        areaFractions = [0.5, 0.25, 0.25]
+        materials = ["HT9", "UZr", "Sodium"]
+
+        # There are 2 ways to do this, the first is to pick a component to be the pitch
+        # defining component, and given it the shape of a rectangle to define the pitch
+        # The rectangle outer dimensions is defined by the pitch of the block/assembly.
+        # the inner dimensions is defined by whatever thickness is necessary to have
+        # the desired area fraction.
+        # The second way is to define all physical material components as unshaped, and
+        # add an additional infinitely thin Void component (no area) that defines pitch.
+        # See second part of HexBlock_TestCase.test_getPitchHomogenousBlock for
+        # demonstration.
+        cartBlock = blocks.CartesianBlock("TestCartBlock")
+
+        hexComponentArea = areaFractions[0] * rectTotalArea
+
+        # Picking 1st material to use for the hex component here, but really the choice
+        # is arbitrary.
+        # area grows quadratically with outer dimensions.
+        # Note there are infinitely many inner dims that would preserve area,
+        # this is just one of them.
+        innerDims = [dim * areaFractions[0] ** 0.5 for dim in desiredPitch]
+        self.assertAlmostEqual(
+            hexComponentArea, rectTotalArea - innerDims[0] * innerDims[1]
+        )
+
+        rectArgs = {
+            "lengthOuter": desiredPitch[0],
+            "lengthInner": innerDims[0],
+            "widthOuter": desiredPitch[1],
+            "widthInner": innerDims[1],
+            "mult": 1.0,
+        }
+        rectArgs.update(compArgs)
+        pitchDefiningComponent = components.Rectangle(
+            "pitchComp", materials[0], **rectArgs
+        )
+        cartBlock.addComponent(pitchDefiningComponent)
+
+        # Rectangle component is added, now add the rest as unshaped.
+        for aFrac, material in zip(areaFractions[1:], materials[1:]):
+            unshapedArgs = {"area": rectTotalArea * aFrac}
+            unshapedArgs.update(compArgs)
+            name = f"unshaped {material}"
+            comp = components.UnshapedComponent(name, material, **unshapedArgs)
+            cartBlock.addComponent(comp)
+
+        self.assertEqual(desiredPitch, cartBlock.getPitch())
+        self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
+        self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
 
 
 class MassConservationTests(unittest.TestCase):
@@ -1538,7 +1683,6 @@ class MassConservationTests(unittest.TestCase):
 
     def setUp(self):
         # build a block that has some basic components in it.
-        cs = settings.Settings()
         self.b = blocks.HexBlock("fuel", height=10.0)
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
