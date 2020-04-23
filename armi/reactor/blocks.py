@@ -1352,7 +1352,6 @@ class Block(composites.Composite):
         if self.p.percentBuByPin is None or len(self.p.percentBuByPin) < mult:
             # this may be a little wasteful, but we can fix it later...
             self.p.percentBuByPin = [0.0] * mult
-
         self._updatePitchComponent(c)
 
     def addComponent(self, c):
@@ -2429,10 +2428,7 @@ class HexBlock(Block):
 
     LOCATION_CLASS = locations.HexLocation
 
-    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (
-        components.UnshapedComponent,
-        components.Hexagon,
-    )
+    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
     def __init__(self, name, height=1.0, location=None):
         Block.__init__(self, name, height, location)
@@ -2880,7 +2876,7 @@ class CartesianBlock(Block):
     LOCATION_CLASS = locations.CartesianLocation
 
     PITCH_DIMENSION = "widthOuter"
-    PITCH_COMPONENT_TYPE = (components.UnshapedComponent, components.Rectangle)
+    PITCH_COMPONENT_TYPE = components.Rectangle
 
     def getMaxArea(self):
         """Get area of this block if it were totally full."""
