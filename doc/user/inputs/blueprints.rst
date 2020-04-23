@@ -597,11 +597,85 @@ Here is a complete fuel block definition::
                     od: 0.1
 
 
-.. note::
+Making blocks with unshaped components
+--------------------------------------
 
-    Purely homogeneous blocks can most easily be modeled as a series of generic ``Components`` for
-    each material type (*e.g.*, SS316, Sodium) in the block. In such a case, the homogeneous block
-    should contain at least one ``Component`` with the hexagonal outer pitch (``op)`` specified.
+Sometimes you will want to make a homogenous block,  which is a mixture of multiple
+materials, and will not want to define an exact shape for each of the components in
+the block. In this case unshaped components can be used, but ARMI still requires there
+to be at least one component with shape to define the pitch of the block.
+
+In the example below, the block is a rectangular pitch so one of the
+components is defined as a rectangle to indicate this. Its outer dimensions determine
+the pitch of the block. The inner dimensions can be whatever is necessary to
+preserve the area fraction. Note that rectangular blocks have pitch defined by two
+numbers, since they may not be a square. In this case the rectangle component is half
+the area fraction and the other two components are one quarter::
+
+        blocks:
+            fuel:
+                clad:
+                    shape: Rectangle
+                    material: HT9
+                    Tinput: 25.0
+                    Thot: 25.0
+                    lengthOuter: 3.0
+                    lengthInner: 2.4
+                    widthOuter: 2.0
+                    widthInner: 1.25
+                    mult:1.0
+                fuel:
+                    shape: UnshapedComponent
+                    material: UZr
+                    Tinput: 25.0
+                    Thot: 25.0
+                    area = 1.5
+                coolant:
+                    shape: UnshapedComponent
+                    material: Sodium
+                    Tinput: 25.0
+                    Thot: 25.0
+                    area = 1.5
+
+.. warning:: When using this method avoid thermal expansion by setting TInput=THot, or
+   your pitch component dimensions might change, thus changing your pitch.
+
+
+Alternatively, a void (empty) component with zero area can be added for defining the
+pitch, and then all three components can be defined as unshaped. The downside, is there
+are now four components, but only three that have actual area and composition::
+
+        blocks:
+            fuel:
+                clad:
+                    shape: UnshapedComponent
+                    material: HT9
+                    Tinput: 25.0
+                    Thot: 25.0
+                    area: 3.0
+                fuel:
+                    shape: UnshapedComponent
+                    material: UZr
+                    Tinput: 25.0
+                    Thot: 25.0
+                    area = 1.5
+                coolant:
+                    shape: UnshapedComponent
+                    material: Sodium
+                    Tinput: 25.0
+                    Thot: 25.0
+                    area = 1.5
+                PitchDefiningComponent:
+                    shape: Rectangle
+                    material: Void
+                    lengthOuter: 3.0
+                    lengthInner: 3.0
+                    widthOuter: 2.0
+                    widthInner: 2.0
+                    mult:1.0
+
+
+This can similarly be done for hex geometry and and a hexagon with Outer Pitch (`op`).
 
 ---------
 

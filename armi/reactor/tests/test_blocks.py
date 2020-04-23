@@ -1632,7 +1632,10 @@ class CartesianBlock_TestCase(unittest.TestCase):
         # The rectangle outer dimensions is defined by the pitch of the block/assembly.
         # the inner dimensions is defined by whatever thickness is necessary to have
         # the desired area fraction.
-        # The second way is shown in the second half of this test.
+        # The second way is to define all physical material components as unshaped, and
+        # add an additional infinitely thin Void component (no area) that defines pitch.
+        # See second part of HexBlock_TestCase.test_getPitchHomogenousBlock for
+        # demonstration.
         cartBlock = blocks.CartesianBlock("TestCartBlock")
 
         hexComponentArea = areaFractions[0] * rectTotalArea
@@ -1668,34 +1671,6 @@ class CartesianBlock_TestCase(unittest.TestCase):
             comp = components.UnshapedComponent(name, material, **unshapedArgs)
             cartBlock.addComponent(comp)
 
-        self.assertEqual(desiredPitch, cartBlock.getPitch())
-        self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
-        self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
-
-        # For this second way, we will simply define the 3 components as unshaped, with
-        # the desired area fractions, and make a 4th component that is an infinitely
-        # thin rectangle with desired pitch. the downside of this method is that now
-        # the block has a fourth component with no volume.
-        cartBlock = blocks.CartesianBlock("TestCartBlock")
-        for aFrac, material in zip(areaFractions, materials):
-            unshapedArgs = {"area": rectTotalArea * aFrac}
-            unshapedArgs.update(compArgs)
-            name = f"unshaped {material}"
-            comp = components.UnshapedComponent(name, material, **unshapedArgs)
-            cartBlock.addComponent(comp)
-
-        # We haven't set a pitch defining component this time so set it now with 0 area.
-        pitchDefiningComponent = components.Rectangle(
-            "pitchComp",
-            "Void",
-            lengthOuter=desiredPitch[0],
-            lengthInner=desiredPitch[0],
-            widthOuter=desiredPitch[1],
-            widthInner=desiredPitch[1],
-            mult=1,
-            **compArgs,
-        )
-        cartBlock.addComponent(pitchDefiningComponent)
         self.assertEqual(desiredPitch, cartBlock.getPitch())
         self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
