@@ -20,7 +20,6 @@ import unittest
 import numpy
 from numpy.testing import assert_allclose
 
-import tparmi
 from armi.reactor import blocks
 from armi.reactor import components
 import armi.runLog as runLog
