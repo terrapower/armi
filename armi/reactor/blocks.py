@@ -1846,20 +1846,16 @@ class Block(composites.Composite):
         setPitch : sets pitch
 
         """
-        c, p = self._pitchDefiningComponent
+        c, _p = self._pitchDefiningComponent
 
-        # Admittedly awkward here, but allows for a clean comparison when adding components to the
-        # block as opposed to initializing _pitchDefiningComponent to (None, None)
         if c is None:
-            p = None
-        else:
-            # ask component for dimensions, since they could have changed
-            p = c.getDimension("op")
+            raise ValueError("{} has no valid pitch defining component".format(self))
 
-        if returnComp:
-            return p, c
-        else:
-            return p
+        # ask component for dimensions, since they could have changed,
+        # due to temperature, for example.
+        p = c.getPitchData()
+
+        return (p, c) if returnComp else p
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
@@ -2896,33 +2892,6 @@ class CartesianBlock(Block):
             "Directly setting the pitch of a cartesian block is currently "
             "not supported"
         )
-
-    def getPitch(self, returnComp=False):
-        """
-        Get xw and yw of the block.
-
-        See Also
-        --------
-        Block.getPitch
-        """
-        c, _p = self._pitchDefiningComponent
-
-        # Admittedly awkward here, but allows for a clean comparison when adding components to the
-        # block as opposed to initializing _pitchDefiningComponent to (None, None)
-        if c is None:
-            raise ValueError("{} has no valid pitch".format(self))
-
-        # ask component for dimensions, since they could have changed
-        elif isinstance(c, components.Square):
-            maxLength = maxWidth = c.getDimension("widthOuter")
-        else:
-            maxLength = c.getDimension("lengthOuter")
-            maxWidth = c.getDimension("widthOuter")
-
-        if returnComp:
-            return (maxLength, maxWidth), c
-        else:
-            return (maxLength, maxWidth)
 
     def getSymmetryFactor(self):
         """

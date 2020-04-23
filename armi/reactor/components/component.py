@@ -1239,6 +1239,21 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
 
+    def getPitchData(self):
+        """
+        Return the pitch data that should be used to determine block pitch.
+
+        Notes
+        -----
+        This pitch data should only be used if this is the pitch defining component in
+        a block. The block is responsible for determining which component in it is the
+        pitch defining component.
+        """
+        raise NotImplementedError(
+            f"Method not implemented on component {self}. "
+            "Please implement if this component type can be a pitch defining component."
+        )
+
 
 class ShapedComponent(Component):
     """A component with well-defined dimensions."""

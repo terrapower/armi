@@ -1118,20 +1118,6 @@ class Block_TestCase(unittest.TestCase):
             self.Block.getComponent(Flags.INTERCOOLANT).getDimension("op"), pitch
         )
 
-    def test_UnshapedGetPitch(self):
-        """
-        Test that a homogenous block can be created with a specific pitch.
-        This functionality is necessary for making simple homogenous reactors.
-        """
-        block = blocks.HexBlock("TestHexBlock", location=None)
-        outerPitch = 2.0
-        block.addComponent(
-            UnshapedComponent(
-                "TestComponent", "Void", Tinput=25.0, Thot=25.0, op=outerPitch
-            )
-        )
-        self.assertEqual(block.getPitch(), outerPitch)
-
     def test106_getAreaFractions(self):
 
         cur = self.Block.getVolumeFractions()
