@@ -20,6 +20,7 @@ import unittest
 import numpy
 from numpy.testing import assert_allclose
 
+import tparmi
 from armi.reactor import blocks
 from armi.reactor import components
 import armi.runLog as runLog
@@ -1524,11 +1525,32 @@ class HexBlock_TestCase(unittest.TestCase):
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
+    """Tests for blocks with rectangular/square outer shape."""
+
+    PITCH = 70
+
     def setUp(self):
         caseSetting = settings.Settings()
-        caseSetting["xw"] = 5.0
-        caseSetting["yw"] = 3.0
-        self.CartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
+        self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
+
+        self.cartesianComponent = components.HoledSquare(
+            "duct",
+            "UZr",
+            Tinput=273.0,
+            Thot=273.0,
+            holeOD=68.0,
+            widthOuter=self.PITCH,
+            mult=1.0,
+        )
+        self.cartesianBlock.addComponent(self.cartesianComponent)
+        self.cartesianBlock.addComponent(
+            components.Circle(
+                "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
+            )
+        )
+
+    def test_getPitch(self):
+        self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
 
 
 class MassConservationTests(unittest.TestCase):
@@ -1538,7 +1560,6 @@ class MassConservationTests(unittest.TestCase):
 
     def setUp(self):
         # build a block that has some basic components in it.
-        cs = settings.Settings()
         self.b = blocks.HexBlock("fuel", height=10.0)
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}

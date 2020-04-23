@@ -2343,7 +2343,8 @@ class Block(composites.Composite):
         # update moles at BOL for each pin
         self.p.molesHmBOLByPin = []
         for pinNum, pin in enumerate(self.iterComponents(Flags.FUEL)):
-            pin.p.flags = fuelFlags  # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
+            # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
+            pin.p.flags = fuelFlags
             self.p.molesHmBOLByPin.append(pin.getHMMoles())
             pin.p.massHmBOL /= nPins
 
@@ -2702,7 +2703,8 @@ class HexBlock(Block):
             face to face in cm.
         """
         if self.LOCATION_CLASS is None:
-            return None  # can't assume anything about dimensions if there is no location type
+            # can't assume anything about dimensions if there is no location type
+            return None
 
         wire = self.getComponent(Flags.WIRE)
         ducts = sorted(self.getChildrenWithFlags(Flags.DUCT))
@@ -2909,8 +2911,11 @@ class CartesianBlock(Block):
         # block as opposed to initializing _pitchDefiningComponent to (None, None)
         if c is None:
             raise ValueError("{} has no valid pitch".format(self))
+
+        # ask component for dimensions, since they could have changed
+        elif isinstance(c, components.Square):
+            maxLength = maxWidth = c.getDimension("widthOuter")
         else:
-            # ask component for dimensions, since they could have changed
             maxLength = c.getDimension("lengthOuter")
             maxWidth = c.getDimension("widthOuter")
 
