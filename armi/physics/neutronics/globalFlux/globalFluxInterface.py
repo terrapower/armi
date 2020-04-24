@@ -16,6 +16,7 @@
 The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
 """
 import math
+import os
 
 
 import numpy
@@ -46,7 +47,7 @@ class GlobalFluxInterface(interfaces.Interface):
     Should be subclassed by more specific implementations.
     """
 
-    name = None  # make sure to set this in subclasses
+    name = "GlobalFlux"  # make sure to set this in subclasses
     function = "globalFlux"
     _ENERGY_BALANCE_REL_TOL = 1e-5
 
@@ -313,6 +314,11 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         This is not required; these options can alternatively be set programmatically.
         """
         self.kernelName = cs["neutronicsKernel"]
+        self.runDir = os.path.join(
+            armi.FAST_PATH, f"{cs.caseTitle}-{self.label}-{armi.context.MPI_RANK}"
+        )
+        if cs["restartNeutronics"]:
+            self.isRestart = True
         self.isRestart = cs["restartNeutronics"]
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
@@ -489,7 +495,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
     def _renormalizeNeutronFluxByBlock(self, renormalizationCorePower):
         """
         Normalize the neutron flux within each block to meet the renormalization power.
-        
+
         Parameters
         ----------
         renormalizationCorePower: float
@@ -501,14 +507,16 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         getTotalEnergyGenerationConstants
         """
         # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
-        currentCorePower = sum(
-            [
-                numpy.dot(
-                    b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
-                )
-                for b in self.r.core.getBlocks()
-            ]
-        )
+        # update the block power param here as well so
+        # the ratio/multiplications below are consistent
+        currentCorePower = 0.0
+        for b in self.r.core.getBlocks():
+            b.p.power = numpy.dot(
+                b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
+            )
+            b.p.flux = sum(b.getMgFlux())
+            currentCorePower += b.p.power
+
         powerRatio = renormalizationCorePower / currentCorePower
         runLog.info(
             "Renormalizing the neutron flux in {:<s} by a factor of {:<8.5e}, "

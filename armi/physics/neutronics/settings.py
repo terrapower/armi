@@ -28,14 +28,28 @@ CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_EIGEN_PROB = "eigenProb"
 CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
+CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
 CONF_EPS_FSPOINT = "epsFSPoint"
 
-# used for dpa/dose analysis
+# used for dpa/dose analysis. These should be relocated to more
+# design-specific places
 CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
 CONF_LOAD_PAD_LENGTH = "loadPadLength"
+CONF_ACLP_DOSE_LIMIT = "aclpDoseLimit"
+CONF_DPA_XS_SET = "dpaXsSet"
+CONF_GRID_PLATE_DPA_XS_SET = "gridPlateDpaXsSet"
+
+CONF_OPT_DPA = [
+    "",
+    "dpa_EBRII_INC600",
+    "dpa_EBRII_INCX750",
+    "dpa_EBRII_HT9",
+    "dpa_EBRII_PE16",
+    "dpa_EBRII_INC625",
+]
 
 
 def defineSettings():
@@ -169,6 +183,32 @@ def defineSettings():
             default=0.0,
             label="Load pad length (cm)",
             description="The length of the load pad. Used to compute average and peak dose.",
+        ),
+        setting.Setting(
+            CONF_ACLP_DOSE_LIMIT,
+            default=80.0,
+            label="ALCP dose limit",
+            description="Dose limit in dpa used to position the ACLP",
+        ),
+        setting.Setting(
+            CONF_RESTART_NEUTRONICS,
+            default=False,
+            label="Restart neutronics",
+            description="Restart global flux case using outputs from last time as a guess",
+        ),
+        setting.Setting(
+            CONF_GRID_PLATE_DPA_XS_SET,
+            default="dpa_EBRII_HT9",
+            label="Grid plate DPA XS",
+            description="The cross sections to use for grid plate blocks DPA when computing displacements per atom.",
+            options=CONF_OPT_DPA,
+        ),
+        setting.Setting(
+            CONF_DPA_XS_SET,
+            default="dpa_EBRII_HT9",
+            label="DPA Cross Sections",
+            description="The cross sections to use when computing displacements per atom.",
+            options=CONF_OPT_DPA,
         ),
     ]
 
