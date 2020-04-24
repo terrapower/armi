@@ -28,14 +28,13 @@ from armi import utils
 from armi.bookkeeping import historyTracker
 from armi.reactor import blocks
 from armi.reactor.flags import Flags
-from armi.utils import pathTools
 from armi import settings
 from armi.utils import directoryChangers
 from armi.reactor import grids
 from armi.cases import case
 from armi.tests import ArmiTestHelper
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)  # b/c tests don't run in this folder
+THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
 TUTORIAL_DIR = os.path.join(armi.context.ROOT, "tests", "tutorials")
 CASE_TITLE = "anl-afci-177"
 
