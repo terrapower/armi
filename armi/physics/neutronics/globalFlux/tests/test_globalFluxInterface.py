@@ -6,21 +6,22 @@ import unittest
 import numpy
 
 from armi import settings
-from armi.reactor import reactors
 
-from armi.physics.neutronics.globalFlux import globalFluxInterface as gi
+from armi.physics.neutronics.globalFlux import globalFluxInterface
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO import isotxs
 
-
+# pylint: disable=missing-class-docstring
+# pylint: disable=abstract-method
+# pylint: disable=protected-access
 class MockParams:
     pass
 
 
 class MockCore:
     def __init__(self):
-        self.geomType = "spiral"
+        self.geomType = "spiral"  # dummy, not actually supported.
         self.symmetry = "full"
         self.p = MockParams()
 
@@ -31,31 +32,35 @@ class MockReactor:
         self.o = None
 
 
-class MockGlobalFluxInterface(gi.GlobalFluxInterface):
+class MockGlobalFluxInterface(globalFluxInterface.GlobalFluxInterface):
     """
     Add fake keff calc to a the general gf interface.
-    
+
     This simulates a 1000 pcm keff increase over 1 step.
     """
 
     def interactBOC(self, cycle=None):
-        gi.GlobalFluxInterface.interactBOC(self, cycle=cycle)
+        globalFluxInterface.GlobalFluxInterface.interactBOC(self, cycle=cycle)
         self.r.core.p.keff = 1.00
 
     def interactEveryNode(self, cycle, node):
-        gi.GlobalFluxInterface.interactEveryNode(self, cycle, node)
+        globalFluxInterface.GlobalFluxInterface.interactEveryNode(self, cycle, node)
         self.r.core.p.keff = 1.01
 
 
-class MockGlobalFluxWithExecuters(gi.GlobalFluxInterfaceUsingExecuters):
+class MockGlobalFluxWithExecuters(
+    globalFluxInterface.GlobalFluxInterfaceUsingExecuters
+):
     def getExecuterCls(self):
         return MockGlobalFluxExecuter
 
 
-class MockGlobalFluxExecuter(gi.GlobalFluxExecuter):
+class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
+    """Tests for code that uses Executers, which rely on OutputReaders to update state."""
+
     def _readOutput(self):
         class MockOutputReader:
-            def apply(self, r):
+            def apply(self, r):  # pylint: disable=no-self-use
                 r.core.p.keff += 0.01
 
         return MockOutputReader()
@@ -64,13 +69,13 @@ class MockGlobalFluxExecuter(gi.GlobalFluxExecuter):
 class TestGlobalFluxOptions(unittest.TestCase):
     def test_readFromSettings(self):
         cs = settings.Settings()
-        opts = gi.GlobalFluxOptions("neutronics-run")
+        opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromUserSettings(cs)
         self.assertFalse(opts.adjoint)
 
     def test_readFromReactors(self):
         reactor = MockReactor()
-        opts = gi.GlobalFluxOptions("neutronics-run")
+        opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromReactor(reactor)
         self.assertEqual(opts.geomType, "spiral")
 
@@ -83,7 +88,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
         cs = settings.Settings()
-        o, r = test_reactors.loadTestReactor()
+        _o, r = test_reactors.loadTestReactor()
         gfi = MockGlobalFluxInterface(r, cs)
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
@@ -114,12 +119,22 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
 
 class TestGlobalFluxResultMapper(unittest.TestCase):
+    """
+    Test that global flux result mappings run.
+
+    Notes
+    -----
+    This does not test that the flux mapping is correct. That has to be done
+    at another level.
+    """
+
     def test_mapper(self):
-        MCC2_SETTINGS = {"xsKernel": "MC2v2"}  # compat with ISOAA test lib
-        _o, r = test_reactors.loadTestReactor(customSettings=MCC2_SETTINGS)
+        # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible
+        # with actually doing some math using the ISOAA test microscopic library
+        _o, r = test_reactors.loadTestReactor(customSettings={"xsKernel": "MC2v2"})
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        mapper = gi.GlobalFluxResultMapper()
+        mapper = globalFluxInterface.GlobalFluxResultMapper()
         mapper.r = r
         mapper._renormalizeNeutronFluxByBlock(100)
         self.assertAlmostEqual(r.core.calcTotalParam("power", generationNum=2), 100)
@@ -132,8 +147,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertGreater(r.core.getFirstBlock().p.detailedDpaRate, 0)
 
         self.assertEqual(r.core.getFirstBlock().p.detailedDpa, 0)
-        opts = gi.GlobalFluxOptions("test")
-        dosemapper = gi.DoseResultsMapper(1000, opts)
+        opts = globalFluxInterface.GlobalFluxOptions("test")
+        dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
         dosemapper.apply(r)
         self.assertGreater(r.core.getFirstBlock().p.detailedDpa, 0)
 

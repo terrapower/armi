@@ -317,8 +317,6 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.runDir = os.path.join(
             armi.FAST_PATH, f"{cs.caseTitle}-{self.label}-{armi.context.MPI_RANK}"
         )
-        if cs["restartNeutronics"]:
-            self.isRestart = True
         self.isRestart = cs["restartNeutronics"]
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
@@ -506,11 +504,11 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         --------
         getTotalEnergyGenerationConstants
         """
-        # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
         # update the block power param here as well so
         # the ratio/multiplications below are consistent
         currentCorePower = 0.0
         for b in self.r.core.getBlocks():
+            # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
             b.p.power = numpy.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
             )

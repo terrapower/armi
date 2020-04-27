@@ -176,7 +176,11 @@ def defineSettings():
             CONF_LOAD_PAD_ELEVATION,
             default=0.0,
             label="Load pad elevation (cm)",
-            description="The elevation of the bottom of the above-core load pad (ACLP) in cm from the bottom of the upper grid plate. Used for calculating the load pad dose",
+            description=(
+                "The elevation of the bottom of the above-core load pad (ACLP) in cm "
+                "from the bottom of the upper grid plate. Used for calculating the load "
+                "pad dose"
+            ),
         ),
         setting.Setting(
             CONF_LOAD_PAD_LENGTH,
@@ -188,7 +192,7 @@ def defineSettings():
             CONF_ACLP_DOSE_LIMIT,
             default=80.0,
             label="ALCP dose limit",
-            description="Dose limit in dpa used to position the ACLP",
+            description="Dose limit in dpa used to position the above-core load pad (if one exists)",
         ),
         setting.Setting(
             CONF_RESTART_NEUTRONICS,
@@ -200,7 +204,10 @@ def defineSettings():
             CONF_GRID_PLATE_DPA_XS_SET,
             default="dpa_EBRII_HT9",
             label="Grid plate DPA XS",
-            description="The cross sections to use for grid plate blocks DPA when computing displacements per atom.",
+            description=(
+                "The cross sections to use for grid plate blocks DPA when computing "
+                "displacements per atom."
+            ),
             options=CONF_OPT_DPA,
         ),
         setting.Setting(

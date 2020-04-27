@@ -221,7 +221,7 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         clean=False,
     ):
         if not destination:
-            raise ValueError("Non-empty destination directory must be provided.")
+            raise ValueError("A destination directory must be provided.")
         DirectoryChanger.__init__(
             self, destination, filesToMove, filesToRetrieve, dumpOnException
         )
