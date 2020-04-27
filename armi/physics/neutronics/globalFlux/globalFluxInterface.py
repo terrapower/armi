@@ -547,6 +547,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 b.p.arealPd = b.p.power / area * conversion
             a.p.arealPd = a.calcTotalParam("arealPd")
         self.r.core.p.maxPD = self.r.core.getMaxParam("arealPd")
+        self._updateAssemblyLevelParams()
 
     def updateDpaRate(self, blockList=None):
         """
@@ -596,15 +597,11 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         maxGridDose = self.r.core.getMaxBlockParam("detailedDpaPeak", Flags.GRID_PLATE)
         self.r.core.p.maxGridDpa = maxGridDose
 
-    def updateAssemblyLevelParams(self, excludedBlockTypes=None):
+    def _updateAssemblyLevelParams(self):
         for a in self.r.core.getAssemblies():
-            if excludedBlockTypes is None:
-                excludedBlockTypes = []
             totalAbs = 0.0  # for calculating assembly average k-inf
             totalSrc = 0.0
             for b in a:
-                if b.getType() in excludedBlockTypes:
-                    continue
                 totalAbs += b.p.rateAbs
                 totalSrc += b.p.rateProdNet
 

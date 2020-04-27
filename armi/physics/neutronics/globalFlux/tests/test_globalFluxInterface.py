@@ -63,6 +63,9 @@ class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
             def apply(self, r):  # pylint: disable=no-self-use
                 r.core.p.keff += 0.01
 
+            def getKeff(self):
+                return 1.05
+
         return MockOutputReader()
 
 
@@ -105,17 +108,24 @@ class TestGlobalFluxInterface(unittest.TestCase):
 class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     """Tests for the default global flux execution."""
 
-    def test_executerInteraction(self):
+    @classmethod
+    def setUpClass(cls):
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor()
-        r.core.p.keff = 1.0
-        gfi = MockGlobalFluxWithExecuters(r, cs)
+        _o, cls.r = test_reactors.loadTestReactor()
+        cls.r.core.p.keff = 1.0
+        cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)
+
+    def test_executerInteraction(self):
+        gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
         r.p.timeNode += 1
         gfi.interactEveryNode(0, 1)
         gfi.interactEOC()
         self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+
+    def test_calculateKeff(self):
+        self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
 
 
 class TestGlobalFluxResultMapper(unittest.TestCase):
@@ -144,13 +154,17 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertGreater(r.core.p.maxFlux, 0.0)
 
         mapper.updateDpaRate()
-        self.assertGreater(r.core.getFirstBlock().p.detailedDpaRate, 0)
+        block = r.core.getFirstBlock()
+        self.assertGreater(block.p.detailedDpaRate, 0)
 
-        self.assertEqual(r.core.getFirstBlock().p.detailedDpa, 0)
+        self.assertEqual(block.p.detailedDpa, 0)
         opts = globalFluxInterface.GlobalFluxOptions("test")
         dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
         dosemapper.apply(r)
-        self.assertGreater(r.core.getFirstBlock().p.detailedDpa, 0)
+        self.assertGreater(block.p.detailedDpa, 0)
+
+        mapper.clearFlux()
+        self.assertFalse(block.p.mgFlux)
 
 
 def applyDummyFlux(r, ng=33):
