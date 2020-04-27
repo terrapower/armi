@@ -144,6 +144,18 @@ class Hexagon(ShapedComponent):
         perimeter = 6 * (ip / math.sqrt(3)) * mult
         return perimeter
 
+    def getPitchData(self):
+        """
+        Return the pitch data that should be used to determine block pitch.
+
+        Notes
+        -----
+        This pitch data should only be used if this is the pitch defining component in
+        a block. The block is responsible for determining which component in it is the
+        pitch defining component.
+        """
+        return self.getDimension("op")
+
 
 class Rectangle(ShapedComponent):
     """A rectangle component."""
@@ -208,6 +220,19 @@ class Rectangle(ShapedComponent):
     def isLatticeComponent(self):
         """Return true if the component is a `lattice component` containing void material and zero area."""
         return self.containsVoidMaterial() and self.getArea() == 0.0
+
+    def getPitchData(self):
+        """
+        Return the pitch data that should be used to determine block pitch.
+
+        Notes
+        -----
+        For rectangular components there are two pitches, one for each dimension.
+        This pitch data should only be used if this is the pitch defining component in
+        a block. The block is responsible for determining which component in it is the
+        pitch defining component.
+        """
+        return (self.getDimension("lengthOuter"), self.getDimension("widthOuter"))
 
 
 class SolidRectangle(Rectangle):
@@ -317,6 +342,20 @@ class Square(Rectangle):
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
         return math.sqrt(widthO ** 2 + widthO ** 2)
+
+    def getPitchData(self):
+        """
+        Return the pitch data that should be used to determine block pitch.
+
+        Notes
+        -----
+        For rectangular components there are two pitches, one for each dimension.
+        This pitch data should only be used if this is the pitch defining component in
+        a block. The block is responsible for determining which component in it is the
+        pitch defining component.
+        """
+        # both dimensions are the same for a square.
+        return (self.getDimension("widthOuter"), self.getDimension("widthOuter"))
 
 
 class Triangle(ShapedComponent):

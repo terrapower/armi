@@ -119,7 +119,6 @@ class UnshapedComponent(Component):
         Tinput,
         Thot,
         area=numpy.NaN,
-        op=None,
         modArea=None,
         isotopics=None,  # pylint: disable=too-many-arguments
         mergeWith=None,
@@ -136,7 +135,7 @@ class UnshapedComponent(Component):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(components, op=op, modArea=modArea)
+        self._linkAndStoreDimensions(components, modArea=modArea)
 
     def getComponentArea(self, cold=False):
         """

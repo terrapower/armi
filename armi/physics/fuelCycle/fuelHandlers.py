@@ -597,60 +597,10 @@ class FuelHandler:
                             rot = possibleRotation
 
             else:
-                # aPrev has no pin-detail, so we must resort to using the corner fast fluxes.
-                # These corner quantities will be set for ALL assemblies whenever fluxRecon runs,
-                # even if only a few assemblies have pin-detail.
-                # We rotate the assembly so that the highest-BU pin is closest to the lowest-fast-flux corner.
-
-                # First find the corner with the LOWEST fast flux when aPrev was located here.
-                prevAssemFastFluxCornerMIN = 0.0
-                cornerMinFastFlux = -1
-                prevBlock = aPrev[bIndexMaxBu]
-                for possibleRotation in range(6):
-
-                    fastFlux = prevBlock.p.fastFlux[possibleRotation]
-
-                    if fastFlux < prevAssemFastFluxCornerMIN:
-                        prevAssemFastFluxCornerMIN = fastFlux
-                        cornerMinFastFlux = possibleRotation
-
-                # Find the x,y coordinates of this corner
-                xCor = (a.getPitch() / math.sqrt(3.0)) * math.cos(
-                    math.pi * (cornerMinFastFlux + 1) / 3.0
-                )  # cm
-                yCor = (a.getPitch() / math.sqrt(3.0)) * math.sin(
-                    math.pi * (cornerMinFastFlux + 1) / 3.0
-                )  # cm
-
-                # print('xCor,yCor =')
-                # print(xCor,yCor)
-
-                # Find the assembly rotation that will result in the MINIMUM distance
-                # between the highest-BU pin and the lowest-fast-flux corner
-                distanceToCorMIN = float("inf")
-                for possibleRotation in range(6):  # k = 0,1,2,3,4,5
-
-                    # get rotated pin index
-                    indexLookup = numpy.array(
-                        prevBlock.rotatePins(possibleRotation, justCompute=True)
-                    )
-                    pinLocationOfMaxBuInThisRotation = indexLookup[maxBuPinIndexAssem]
-
-                    x = a.pinXVals[pinLocationOfMaxBuInThisRotation]  # cm
-                    y = a.pinYVals[pinLocationOfMaxBuInThisRotation]  # cm
-
-                    distanceToCor = math.sqrt(
-                        (xCor - x) ** 2.0 + (yCor - y) ** 2.0
-                    )  # cm
-                    if distanceToCor < distanceToCorMIN:
-                        distanceToCorMIN = distanceToCor
-                        rot = possibleRotation
-
-                    runLog.debug(
-                        "Distance to low flux corner in rotation {0} is {1:.2E}W".format(
-                            possibleRotation, distanceToCor
-                        )
-                    )
+                raise ValueError(
+                    "Cannot perform detailed rotation analysis without pin-level "
+                    "flux information."
+                )
 
             runLog.debug("Best relative rotation is {0}".format(rot))
             return rot
@@ -1889,125 +1839,6 @@ class FuelHandler:
 
         return loadChains, loopChains, enriches, loadChargeTypes, loadNames, alreadyDone
 
-    def assignXSValues(self, a):
-        r"""
-        Takes in an assembly and assigns the correct xs values to it for the given enrichment
-
-        Notes
-        -----
-        This is only used for booster assemblies with strange enrichment distributions
-        """
-
-        xsList = [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
-            "I",
-            "J",
-            "K",
-            "L",
-            "M",
-            "N",
-            "O",
-            "P",
-            "S",
-            "T",
-            "U",
-            "V",
-            "W",
-            "X",
-        ]
-        enrichList = [
-            0,
-            0.01,
-            0.02,
-            0.03,
-            0.04,
-            0.05,
-            0.06,
-            0.07,
-            0.08,
-            0.09,
-            0.1,
-            0.11,
-            0.12,
-            0.13,
-            0.14,
-            0.15,
-            0.16,
-            0.17,
-            0.18,
-            0.19,
-            0.2,
-            1,
-        ]
-
-        if len(xsList) != len(enrichList):
-            print(xsList)
-            print(enrichList)
-            raise ValueError("lengths are not the same")
-
-        for b in a:
-            if b.hasFlags(Flags.FUEL):
-                # make sure we have the correct enrichment
-                c = b.getComponent(Flags.FUEL)
-                enrich = c.getMassEnrichment()
-
-                # get the location in the enrichList
-                counter = 0
-                for val in enrichList:
-                    if enrich < val:
-                        break
-                    counter += 1
-
-                # set the xsType of the block to the new xsType based on enrichment
-                b.p.xsType = xsList[counter - 1]
-
-    def guessAssemblyType(self, enrichList):
-        r"""
-        Guess the assembly type of an assembly based on its enrichment
-
-        Parameters
-        ----------
-        enrichList : list
-            floats of enriches of each block
-
-        Returns
-        -------
-        assemblyType : str
-            The guessed assembly type
-
-        Notes
-        -----
-        Useful for repeating shuffles from legacy shuffles files.
-        since the assembly type isn't specified, we will make an educated guess
-        based on the convention of the time.  So this will either be a "feed fuel" (depleted uranium)
-        or a booster assembly that is enriched.  So, just have to look at the enrichments.
-
-        """
-
-        if max(enrichList) > 0.01:
-            # looks like there is a higher than 1% enrichment.  This assembly is a booster
-            assemblyType = "booster fuel"
-        else:
-            assemblyType = "feed fuel"  # looks like a feed fuel
-
-        # check to see if that type is in the bolAssems, if not, error!
-        if assemblyType not in self.r.blueprints.assemDesigns:
-            runLog.error(
-                "Assembly type {} not in bol Assems: {}".format(
-                    assemblyType, ", ".join(self.r.blueprints.assemDesigns)
-                )
-            )
-            raise RuntimeError("Failed to find assembly in BOL Assems.")
-
-        return assemblyType
-
     def doRepeatShuffle(
         self, loadChains, loopChains, enriches, loadChargeTypes, loadNames
     ):
@@ -2050,15 +1881,6 @@ class FuelHandler:
         for assemblyChain, enrichList, assemblyType, assemblyName in zip(
             loadChains, enriches, loadChargeTypes, loadNames
         ):
-            # initialize swap chains and enrichment information
-            if not assemblyType:
-                if not enrichList:
-                    raise RuntimeError(
-                        "Cannot determine assemblyType for {0} in {1} with enrich {2}"
-                        "".format(assemblyName, assemblyChain, enrichList)
-                    )
-                assemblyType = self.guessAssemblyType(enrichList)
-
             # convert the labels into actual assemblies to be swapped
             assemblyList = self.r.core.getLocationContents(
                 assemblyChain, assemblyLevel=True, locContents=locContents

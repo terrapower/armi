@@ -358,14 +358,6 @@ blocks:
         coolant: *component_fuel_coolant
         duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
-    homog fuel:
-        fuel:
-            shape: UnshapedComponent
-            material: UZr
-            Tinput: 25.0
-            Thot: 25.0
-            area: 100.0
-            op: 1.5
 assemblies:
     heights: &standard_heights [25.0, 25.0, 25.0, 25.0, 75.0]
     axial mesh points: &standard_axial_mesh_points [1, 1, 1, 1, 4]
