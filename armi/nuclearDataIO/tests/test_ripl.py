@@ -21,11 +21,10 @@ import math
 import six
 
 from armi.nuclearDataIO import ripl
-from armi.utils import pathTools
 from armi.nucDirectory import nuclideBases
 from armi.utils.units import SECONDS_PER_HOUR
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 SAMPLE_RIPL_MASS = """#
 #  Z   A s fl     Mexp      Err       Mth      Emic    beta2   beta3   beta4   beta6
 #                [MeV]     [MeV]     [MeV]     [MeV]

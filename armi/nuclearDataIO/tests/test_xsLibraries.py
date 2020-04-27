@@ -32,12 +32,11 @@ from armi.nuclearDataIO import isotxs
 from armi.nuclearDataIO import pmatrx
 from armi.nuclearDataIO import gamiso
 from armi.nuclearDataIO import xsLibraries
-from armi.utils import pathTools
 from armi.utils import directoryChangers
 from armi.utils import properties
 from armi.utils import outputCache
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
 FIXTURE_DIR = os.path.join(THIS_DIR, "fixtures")
 

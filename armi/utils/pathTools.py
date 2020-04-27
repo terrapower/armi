@@ -99,27 +99,9 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
     except Exception as e:
         runLog.warning(
             "Could not copy {} from {} to {}\nError was: {}".format(
-                fileDescription, sourcePath, destinationPath, e)
+                fileDescription, sourcePath, destinationPath, e
+            )
         )
-
-
-def armiAbsDirFromName(modName):
-    """
-    Convert a module name to a path.
-
-    Notes
-    -----
-    This is often required in a Cython'd pyd extension where ``__file__`` is otherwise invalid.
-    """
-    if modName == "__main__":
-        # allows it to work when a file is called directly (Python only, not cython).
-        # But this fails when running via the Pydev debugger because the stack's non-standard
-        # so we loop until we find a non-debugger file.
-        for item in reversed(inspect.stack()):
-            fname = inspect.getfile(item[0])
-            if "pydevd" not in fname:
-                return os.path.abspath(os.path.dirname(fname))
-    return os.path.join(*([ROOT] + modName.split(".")[1:-1]))
 
 
 def isFilePathNewer(path1, path2):
