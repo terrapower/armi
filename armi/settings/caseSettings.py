@@ -164,7 +164,7 @@ class Settings:
 
     @property
     def caseTitle(self):
-        if self.path is None:
+        if not self.path:
             return self.defaultCaseTitle
         else:
             return os.path.splitext(os.path.basename(self.path))[0]
