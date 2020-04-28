@@ -42,6 +42,11 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(method("bond1"), flags.Flags.BOND)
         self.assertEqual(method("bond 2"), flags.Flags.BOND)
         self.assertEqual(method("fuel test"), flags.Flags.FUEL | flags.Flags.TEST)
+        # test the more strict GRID conversion, which can cause collisions with
+        # GRID_PLATE
+        self.assertEqual(
+            flags.Flags.fromStringIgnoreErrors("grid_plate"), flags.Flags.GRID_PLATE
+        )
 
     def test_lookup(self):
         """Make sure lookup table is working."""
@@ -53,9 +58,18 @@ class TestFlags(unittest.TestCase):
         )
         # order in CONVERSIONS can matter for multi word flags.
         # tests that order is good.
-        for conv, flag in flags.CONVERSIONS.items():
-            if len(conv.split()) > 1:
-                self.assertEqual(flags.Flags.fromString(conv), flag)
+        for conv, flag in flags._CONVERSIONS.items():
+            # the conversions are specified as RE patterns, so we need to do a little
+            # work to get them into something that can serve as candidate input (i.e. a
+            # string that the pattern would match). Since we are only using \b and \s+,
+            # this is pretty straightforward. If any more complicated patterns work
+            # their way in there, this will need to become more sophisticated. One might
+            # be tempted to bake the plain-text versions of the conversions in the
+            # collection in the flags module, but this is pretty much only needed for
+            # testing, so that wouldn't be appropriate.
+            exampleInput = conv.pattern.replace(r"\b", "")
+            exampleInput = exampleInput.replace(r"\s+", " ")
+            self.assertEqual(flags.Flags.fromString(exampleInput), flag)
 
     def test_convertsStringsWithNonFlags(self):
         # Useful for varifying block / assembly names convert to Flags.

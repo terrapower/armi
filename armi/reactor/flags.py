@@ -80,7 +80,8 @@ True
 [<component fuel1>, <component fuel2>, ...]
 
 """
-from typing import Optional, Sequence, Union
+import re
+from typing import Any, Dict, Optional, Sequence, Union
 
 from armi.utils.flags import Flag, auto
 
@@ -95,10 +96,11 @@ def __fromStringGeneral(cls, typeSpec, updateMethod):
     """Helper method to minimize code repeat in other fromString methods."""
     result = cls(0)
     typeSpec = typeSpec.upper()
-    for conversion in CONVERSIONS:
-        if conversion in typeSpec:
-            typeSpec = typeSpec.replace(conversion, "")
-            result |= CONVERSIONS[conversion]
+    for conversion in _CONVERSIONS:
+        m = conversion.search(typeSpec)
+        if m:
+            typeSpec = re.sub(conversion, "", typeSpec)
+            result |= _CONVERSIONS[conversion]
 
     for name in typeSpec.split():
         # ignore numbers so we don't have to define flags up to 217+ (number of pins/assem)
@@ -292,24 +294,24 @@ def registerPluginFlags(pm):
 
 
 # string conversions for multiple-word flags
-CONVERSIONS = {
-    "GRID PLATE": Flags.GRID_PLATE,
-    "GRID": Flags.GRID_PLATE,  # often used as component in "grid plate" block
-    "INLET NOZZLE": Flags.INLET_NOZZLE,
-    "NOZZLE": Flags.INLET_NOZZLE,
-    "HANDLING SOCKET": Flags.HANDLING_SOCKET,
-    "GUIDE TUBE": Flags.GUIDE_TUBE,
-    "FISSION CHAMBER": Flags.FISSION_CHAMBER,
-    "SOCKET": Flags.HANDLING_SOCKET,
-    "SHIELD BLOCK": Flags.SHIELD_BLOCK,
-    "SHIELDBLOCK": Flags.SHIELD_BLOCK,
-    "CORE BARREL": Flags.CORE_BARREL,
-    "INNERDUCT": Flags.INNER | Flags.DUCT,
-    "GAP1": Flags.GAP | Flags.A,
-    "GAP2": Flags.GAP | Flags.B,
-    "GAP3": Flags.GAP | Flags.C,
-    "GAP4": Flags.GAP | Flags.D,
-    "GAP5": Flags.GAP | Flags.E,
-    "LINER1": Flags.LINER | Flags.A,
-    "LINER2": Flags.LINER | Flags.B,
+_CONVERSIONS = {
+    re.compile(r"GRID\s+PLATE"): Flags.GRID_PLATE,
+    re.compile(r"\bGRID\b"): Flags.GRID_PLATE,  # often used as component in "grid plate" block
+    re.compile(r"INLET\s+NOZZLE"): Flags.INLET_NOZZLE,
+    re.compile("NOZZLE"): Flags.INLET_NOZZLE,
+    re.compile(r"HANDLING\s+SOCKET"): Flags.HANDLING_SOCKET,
+    re.compile(r"GUIDE\s+TUBE"): Flags.GUIDE_TUBE,
+    re.compile(r"FISSION\s+CHAMBER"): Flags.FISSION_CHAMBER,
+    re.compile("SOCKET"): Flags.HANDLING_SOCKET,
+    re.compile(r"SHIELD\s+BLOCK"): Flags.SHIELD_BLOCK,
+    re.compile("SHIELDBLOCK"): Flags.SHIELD_BLOCK,
+    re.compile(r"CORE\s+BARREL"): Flags.CORE_BARREL,
+    re.compile("INNERDUCT"): Flags.INNER | Flags.DUCT,
+    re.compile("GAP1"): Flags.GAP | Flags.A,
+    re.compile("GAP2"): Flags.GAP | Flags.B,
+    re.compile("GAP3"): Flags.GAP | Flags.C,
+    re.compile("GAP4"): Flags.GAP | Flags.D,
+    re.compile("GAP5"): Flags.GAP | Flags.E,
+    re.compile("LINER1"): Flags.LINER | Flags.A,
+    re.compile("LINER2"): Flags.LINER | Flags.B,
 }
