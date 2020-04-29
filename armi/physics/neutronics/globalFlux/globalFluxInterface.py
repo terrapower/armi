@@ -314,9 +314,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         This is not required; these options can alternatively be set programmatically.
         """
         self.kernelName = cs["neutronicsKernel"]
-        self.runDir = os.path.join(
-            armi.FAST_PATH, f"{cs.caseTitle}-{self.label}-{armi.context.MPI_RANK}"
-        )
+        self.setRunDirFromCaseTitle(cs.caseTitle)
         self.isRestart = cs["restartNeutronics"]
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
