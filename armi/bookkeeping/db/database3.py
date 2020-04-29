@@ -91,6 +91,8 @@ from armi.bookkeeping.db import database
 from armi.reactor import geometry
 from armi.utils.textProcessors import resolveMarkupInclusions
 
+from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
+
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 DB_MAJOR = 3
 DB_MINOR = 3
@@ -206,6 +208,8 @@ class DatabaseInterface(interfaces.Interface):
                 time.time() - self.r.core.timeOfStart
             ) / 60.0
             self._db.writeToDB(self.r)
+            if self.cs[CONF_SYNC_AFTER_WRITE]:
+                self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
         """In case anything changed since last cycle (e.g. rxSwing), update DB. """
@@ -239,6 +243,20 @@ class DatabaseInterface(interfaces.Interface):
             self._db.close(False)
         except:  # pylint: disable=bare-except; we're already responding to an error
             pass
+
+    def interactDistributeState(self):
+        """
+        Reconnect to pre-existing database.
+
+        DB is created and managed by the master node only but we can still connect to it
+        from workers to enable things like history tracking.
+        """
+        if armi.MPI_RANK > 0:
+            dbPath = self.cs.caseTitle + ".h5"
+            # DB may not exist if distribute state is called early.
+            if os.path.exists(dbPath):
+                self._db = Database3(dbPath, "r")
+                self._db.open()
 
     def distributable(self):
         return self.Distribute.SKIP
@@ -825,6 +843,23 @@ class Database3(database.Database):
 
         for comps in groupedComps.values():
             self._writeParams(h5group, comps)
+
+    def syncToSharedFolder(self):
+        """
+        Copy DB to run working directory.
+
+        Needed when multiple MPI processes need to read the same db, for example
+        when a history is needed from independent runs (e.g. for fuel performance on
+        a variety of assemblies).
+
+        Notes
+        -----
+        At some future point, we may implement a client-server like DB system which
+        would render this kind of operation unnecessary.
+        """
+        runLog.extra("Copying DB to shared working directory.")
+        self.h5db.flush()
+        shutil.copy(self._fullPath, self._fileName)
 
     def load(self, cycle, node, cs=None, bp=None, statePointName=None):
         """Load a new reactor from (cycle, node).

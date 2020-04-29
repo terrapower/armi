@@ -9,6 +9,7 @@ import os
 
 from armi.utils import directoryChangers
 from armi import runLog
+from armi.context import FAST_PATH, MPI_RANK
 
 
 class ExecutionOptions:
@@ -56,6 +57,9 @@ class ExecutionOptions:
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: {self.label}>"
+
     def fromUserSettings(self, cs):
         """Set options from a particular CaseSettings object."""
         raise NotImplementedError()
@@ -66,6 +70,16 @@ class ExecutionOptions:
 
     def resolveDerivedOptions(self):
         """Called by executers right before executing."""
+
+    def setRunDirFromCaseTitle(self, caseTitle):
+        """
+        Set run directory derived from case title and label.
+
+        This is optional (you can set runDir to whatever you want). If you
+        use this, you will get a relatively consistent naming convention
+        for your fast-past folders.
+        """
+        self.runDir = os.path.join(FAST_PATH, f"{caseTitle}-{self.label}-{MPI_RANK}")
 
     def describe(self):
         """Make a string summary of all options."""
