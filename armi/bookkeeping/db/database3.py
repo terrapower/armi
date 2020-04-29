@@ -91,6 +91,8 @@ from armi.bookkeeping.db import database
 from armi.reactor import geometry
 from armi.utils.textProcessors import resolveMarkupInclusions
 
+from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
+
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 DB_MAJOR = 3
 DB_MINOR = 3
@@ -206,7 +208,7 @@ class DatabaseInterface(interfaces.Interface):
                 time.time() - self.r.core.timeOfStart
             ) / 60.0
             self._db.writeToDB(self.r)
-            if self.cs["syncDbAfterWrite"]:
+            if self.cs[CONF_SYNC_AFTER_WRITE]:
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
