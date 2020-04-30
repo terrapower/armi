@@ -21,6 +21,7 @@ than usual.
 """
 import unittest
 import os
+import pathlib
 import shutil
 
 import armi
@@ -33,6 +34,7 @@ from armi.utils import directoryChangers
 from armi.reactor import grids
 from armi.cases import case
 from armi.tests import ArmiTestHelper
+from armi.bookkeeping.tests._constants import TUTORIAL_FILES
 
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
 TUTORIAL_DIR = os.path.join(armi.context.ROOT, "tests", "tutorials")
@@ -43,11 +45,10 @@ def runTutorialNotebook():
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor
 
-    with directoryChangers.DirectoryChanger(TUTORIAL_DIR):
-        with open("data_model.ipynb") as f:
-            nb = nbformat.read(f, as_version=4)
-        ep = ExecutePreprocessor(timeout=600, kernel_name="python")
-        ep.preprocess(nb, {})
+    with open("data_model.ipynb") as f:
+        nb = nbformat.read(f, as_version=4)
+    ep = ExecutePreprocessor(timeout=600, kernel_name="python")
+    ep.preprocess(nb, {})
 
 
 class TestHistoryTracker(ArmiTestHelper):
@@ -55,22 +56,38 @@ class TestHistoryTracker(ArmiTestHelper):
 
     @classmethod
     def setUpClass(cls):
+        # Not using a directory changer since it isn't important that we go back in the
+        # first place, and we don't want to get tangled with the directory change below.
+        # We need to be in the TUTORIAL_DIR in the first place so that for `filesToMove`
+        # to work right.
+        os.chdir(TUTORIAL_DIR)
+
+        # Make sure to do this work in a temporary directory to avoid race conditions
+        # when running tests in parallel with xdist.
+        cls.dirChanger = directoryChangers.TemporaryDirectoryChanger(
+            filesToMove=TUTORIAL_FILES
+        )
+        cls.dirChanger.__enter__()
         runTutorialNotebook()
-        with directoryChangers.DirectoryChanger(TUTORIAL_DIR):
-            reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
-            reloadCs.caseTitle = "armiRun"
-            reloadCs["db"] = True
-            reloadCs["reloadDBName"] = f"{CASE_TITLE}.h5"
-            reloadCs["runType"] = "Snapshots"
-            reloadCs["loadStyle"] = "fromDB"
-            reloadCs["detailAssemLocationsBOL"] = ["A1001"]
-            o = armi.init(cs=reloadCs)
-            cls.o = o
+
+        reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
+        reloadCs.caseTitle = "armiRun"
+        reloadCs["db"] = True
+        reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+        reloadCs["runType"] = "Snapshots"
+        reloadCs["loadStyle"] = "fromDB"
+        reloadCs["detailAssemLocationsBOL"] = ["A1001"]
+        o = armi.init(cs=reloadCs)
+        cls.o = o
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(os.path.join(TUTORIAL_DIR, f"{CASE_TITLE}.yaml"))
+        cs = settings.Settings(f"{CASE_TITLE}.yaml")
         cs["db"] = True
-        cs["reloadDBName"] = os.path.join(TUTORIAL_DIR, f"{CASE_TITLE}.h5")
+        cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         cs["loadStyle"] = "fromDB"
         cs["detailAssemLocationsBOL"] = ["A1001"]
         cs["startNode"] = 1

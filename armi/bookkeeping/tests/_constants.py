@@ -12,12 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Bookkeeping test package.
+Plain old data for the bookkeeping tests.
 
-This may seem a little bit over-engineered, but the jupyter notebooks that get run by
-the test_historyTracker are also used in the documentation system, so providing a list
-of related files from this package is useful. Also, these are organized like this to
-prevent having to import the world just to get something like a list of strings.
+These are stored here so that they can be accessed from within this test package, but
+also re-exported by `__init__.py`, so that other things (like the documentation system)
+can use it without having to import the rest of ARMI.
 """
 
-from ._constants import *
+# These files are needed to run the data_model ipython notebook, which is done in
+# test_historyTracker, and when building the docs.
+TUTORIAL_FILES = [
+    "anl-afci-177-blueprints.yaml",
+    "anl-afci-177-coreMap.yaml",
+    "anl-afci-177-fuelManagement.py",
+    "anl-afci-177.yaml",
+    "data_model.ipynb",
+]

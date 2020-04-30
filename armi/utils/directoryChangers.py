@@ -31,7 +31,7 @@ def _changeDirectory(destination):
         )
 
 
-class DirectoryChanger(object):
+class DirectoryChanger:
     """
     Utility to change directory.
 
