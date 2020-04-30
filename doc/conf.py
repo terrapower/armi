@@ -28,6 +28,7 @@
 
 import datetime
 import os
+import pathlib
 import sys
 import subprocess
 import shutil
@@ -40,6 +41,7 @@ from docutils import nodes, statemachine
 
 import armi
 from armi import apps
+from armi.bookkeeping import tests as bookkeepingTests
 
 # Configure the baseline framework "App" for framework doc building
 armi.configure(apps.App())
@@ -226,12 +228,21 @@ class PyReverse(Directive):
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 APIDOC_DIR = APIDOC_REL
+_TUTORIAL_FILES = [pathlib.Path(SOURCE_DIR) / "tests" / "tutorials" / fName for
+        fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
 
 
 def setup(app):
     """Method to make `python setup.py build_sphinx` generate api documentation"""
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+
+    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but
+    # the working directory for running the notebooks is the directory of the link
+    # itself, so relative paths don't work.
+    for path in _TUTORIAL_FILES:
+        shutil.copy(path, pathlib.Path("user") / "tutorials")
+
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
