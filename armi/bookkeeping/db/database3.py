@@ -345,7 +345,7 @@ class DatabaseInterface(interfaces.Interface):
                     )
                 )
             raise RuntimeError(
-                "Cannot load state @ {}".format(
+                "Cannot load state from <unspecified file> @ {}".format(
                     getH5GroupName(cycle, timeNode, timeStepName)
                 )
             )
