@@ -1075,7 +1075,15 @@ def getBlockParameterDefinitions():
             setter=buGroupNum,
         )
 
-        pb.defParam("buRate", units="", description="?")
+        pb.defParam(
+            "buRate",
+            units="%FIMA/day",
+            # This is very related to power, but normalized to %FIMA.
+            description=(
+                "Current rate of burnup accumulation. Useful for estimating times when "
+                "burnup limits may be exceeded."
+            ),
+        )
 
         pb.defParam(
             "detailedDpa",
