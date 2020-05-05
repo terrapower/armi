@@ -38,6 +38,8 @@ from armi.physics import executers
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
+RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
+RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
 # pylint: disable=too-many-public-methods
 class GlobalFluxInterface(interfaces.Interface):
@@ -953,7 +955,21 @@ def computeDpaRate(mgFlux, dpaXs):
 
 def calcReactionRates(obj, keff, lib):
     r"""
-    Computes 1-group reaction rates for this object (usually a block.)
+    Compute 1-group reaction rates for this object (usually a block.)
+
+    Parameters
+    ----------
+    obj : Block
+        The object to compute reaction rates on. Notionally this could be upgraded to be
+        any kind of ArmiObject but with params defined as they are it currently is only
+        implemented for a block.
+
+    keff : float
+        The keff of the core. This is required to get the neutron production rate correct
+        via the neutron balance statement (since nuSigF has a 1/keff term).
+
+    lib : XSLibrary
+        Microscopic cross sections to use in computing the reaction rates.
 
     Notes
     -----
@@ -963,7 +979,7 @@ def calcReactionRates(obj, keff, lib):
     * nufission
     * n2n
     * absorption
-    
+
     Scatter could be added as well. This function is quite slow so it is 
     skipped for now as it is uncommonly needed.
 
@@ -976,16 +992,14 @@ def calcReactionRates(obj, keff, lib):
                       Int_E in g (phi(E) dE)
     """
     rate = {}
-    absMicroLabels = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
-    paramNames = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
-    for simple in paramNames:
+    for simple in RX_PARAM_NAMES:
         rate[simple] = 0.0
 
     numberDensities = obj.getNumberDensities()
 
     for nucName, numberDensity in numberDensities.items():
         nucrate = {}
-        for simple in paramNames:
+        for simple in RX_PARAM_NAMES:
             nucrate[simple] = 0.0
         tot = 0.0
 
@@ -998,10 +1012,10 @@ def calcReactionRates(obj, keff, lib):
 
             tot += micros.total[g, 0] * dphi
             # absorption is fission + capture (no n2n here)
-            for name in absMicroLabels:
+            for name in RX_ABS_MICRO_LABELS:
                 nucrate["rateAbs"] += dphi * micros[name][g]
 
-            for name in absMicroLabels:
+            for name in RX_ABS_MICRO_LABELS:
                 if name != "fission":
                     nucrate["rateCap"] += dphi * micros[name][g]
 
@@ -1012,7 +1026,7 @@ def calcReactionRates(obj, keff, lib):
             # this n2n xs is reaction based. Multiply by 2.
             nucrate["rateProdN2n"] += 2.0 * dphi * micros.n2n[g]
 
-        for simple in paramNames:
+        for simple in RX_PARAM_NAMES:
             if nucrate[simple]:
                 rate[simple] += nucrate[simple]
 

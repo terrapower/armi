@@ -72,6 +72,8 @@ class Category:
 
     multiGroupQuantities = "multi-group quantities"
 
+    # This is used to tell the UniformMesh converter to map these parameters back and
+    # forth between the source and destination meshs.
     detailedAxialExpansion = "detailedAxialExpansion"
 
     neutronics = "neutronics"
