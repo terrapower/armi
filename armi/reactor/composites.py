@@ -651,8 +651,27 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Set the object type.
 
-        If Flags are provided, use them directly. Otherwise, attempt to derive flags
-        from the passed type.
+        Parameters
+        ----------
+        typ : str
+            The desired "type" for the object. Type describes the general class of the
+            object, and typically corresponds to the name of the blueprint that created
+            it.
+
+        flags : Flags, optional
+            The set of Flags to apply to the object. If these are omitted, then Flags
+            will be derived from the ``typ``.
+
+        Warning
+        -------
+        We are in the process of developing more robust definitions for things like
+        "name" and "type". "type" will generally refer to the name of the blueprint that
+        created a particular object. When present, a "name" will refer to a specific
+        instance of an object of a particular "type". Think unique names for each
+        assembly in a core, even if they are all created from the same blueprint and
+        therefore have the same "type". When this work is complete, it will be strongly
+        discouraged, or even disallowed to change the type of an object after it has
+        been created, and ``setType()`` may be removed entirely.
         """
         self.p.flags = flags or Flags.fromStringIgnoreErrors(typ)
         self.p.type = typ
