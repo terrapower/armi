@@ -647,10 +647,15 @@ class ArmiObject(metaclass=CompositeModelType):
         """Return the object type."""
         return self.p.type
 
-    def setType(self, newType):
-        """Set the object type."""
-        self.p.flags = Flags.fromStringIgnoreErrors(newType)
-        self.p.type = newType
+    def setType(self, typ, flags: Optional[Flags] = None):
+        """
+        Set the object type.
+
+        If Flags are provided, use them directly. Otherwise, attempt to derive flags
+        from the passed type.
+        """
+        self.p.flags = flags or Flags.fromStringIgnoreErrors(typ)
+        self.p.type = typ
 
     def getVolume(self):
         return sum(child.getVolume() for child in self)

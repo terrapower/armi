@@ -230,6 +230,7 @@ cladding as the fuel pins. ::
         fuel: &block_fuel
             grid name: fuelgrid
             fuel:
+                flags: fuel test
                 shape: Circle
                 material: UZr
                 Tinput: 25.0
@@ -253,23 +254,29 @@ cladding as the fuel pins. ::
 
 .. _naming-flags:
 
-About naming
-============
+Flags and naming
+================
 
-The treatment of components, blocks, and assemblies by various physics kernels
-often depend on the user supplied name.  The name is a way to indicate how a
-specific component, block, or assembly should be treated by the various physics
-packages.
+All objects in the ARMI Reactor Model possess a set of
+:py:class:`armi.reactor.flags.Flags`, which affect the way that the various physics
+kernels treat each object. For instance, an object with the ``DEPLETABLE`` flag set will
+participate in isotopic depletion analysis, whereas objects without the ``DEPLETION``
+flag set will not. Some parts of the ARMI ecosystem use the flags like ``FUEL``,
+``CLAD``, or ``WIRE`` to guess at an object's function.
 
-Note that the user supplied names themselves can be whatever the user would like. However, some
-words (space separated) have special meaning in the physics packages.
+The set of specific flags that should be set on an object can be specified in one of two
+ways for each object defined in the blueprints. The most precise way is to use include a
+``flags:`` entry for the object blueprint in question. In the example above, the
+``fuel`` component sets the ``FUEL`` and ``TEST`` flags. When specifying flags in this
+way, the value specified must be completely and unambiguously convertible into valid
+Flags. If it cannot, it will lead to an error when constructing the object.
 
-For example, if the word "fuel" is in the block name, a lattice physics module
-(provided by the user) may use this block to generate cross sections.  If
-"fuel" is omitted, the module will not know that there is fissile material and
-will use a different block to generate cross sections.
+If ``flags:`` is empty, or not specified, then the name of the object blueprint will be
+used to infer as many flags as possible. In the above example, the ``clad`` component
+will get the ``CLAD`` flag from its name.
 
-The following special names should be used in the **blueprints** input to achieve specific behavior.
+The following special names should be used in the **blueprints** input to achieve
+specific behavior.
 
 .. exec::
     from armi.reactor.flags import Flags

@@ -23,6 +23,7 @@ import armi
 from armi import runLog
 from armi.reactor import blocks
 from armi.reactor import parameters
+from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.converters import blockConverters
 from armi.reactor.locations import AXIAL_CHARS
@@ -46,6 +47,7 @@ class BlockBlueprint(yamlize.KeyedList):
     key_attr = componentBlueprint.ComponentBlueprint.name
     name = yamlize.Attribute(key="name", type=str)
     gridName = yamlize.Attribute(key="grid name", type=str, default=None)
+    flags = yamlize.Attribute(type=str, default=None)
     _geomOptions = _configureGeomOptions()
 
     def _getBlockClass(self, outerComponent):
@@ -137,7 +139,11 @@ class BlockBlueprint(yamlize.KeyedList):
             if val is not None:
                 b.p[paramDef.name] = val
 
-        b.setType(self.name)
+        flags = None
+        if self.flags is not None:
+            flags = Flags.fromString(self.flags)
+
+        b.setType(self.name, flags)
         for c in components.values():
             b.addComponent(c)
         b.p.nPins = b.getNumPins()
