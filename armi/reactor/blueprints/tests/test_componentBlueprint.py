@@ -21,6 +21,7 @@ import unittest
 
 from armi import settings
 from armi.reactor import blueprints
+from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
 
 
@@ -30,6 +31,7 @@ class TestComponentBlueprint(unittest.TestCase):
 blocks:
     block: &block
         component:
+            flags: fuel test
             shape: Hexagon
             material: {material} # This is being used to format a string to allow for different materials to be added
             {isotopics} # This is being used to format a string to allow for different isotopics to be added
@@ -109,6 +111,12 @@ assemblies:
             self.assertIn(nuc, a[0][0].getNuclides())
         for nuc in unexpectedNuclides:
             self.assertNotIn(nuc, a[0][0].getNuclides())
+
+        c = a[0][0]
+        # Watch out, depletion is adding DEPLETABLE, so this can be a bit brittle
+        self.assertEqual(c.p.flags, Flags.FUEL|Flags.DEPLETABLE|Flags.TEST)
+        # More robust test, but worse unittest.py output when it fails
+        self.assertTrue(c.hasFlags(Flags.FUEL|Flags.TEST))
 
     def test_componentInitializationAmericiumCustomIsotopics(self):
         nuclideFlags = (

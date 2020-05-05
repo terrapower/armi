@@ -61,10 +61,60 @@ blocks:
             ip: duct.op
             mult: 1.0
             op: 16.75
+    other fuel: &block_fuel_other
+        grid name: fuelgrid
+        flags: fuel test
+        fuel:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.86602
+            latticeIDs: [1]
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            latticeIDs: [1,2]
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 16.0
+            mult: 1.0
+            op: 16.6
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            ip: duct.op
+            mult: 1.0
+            op: 16.75
 assemblies:
     fuel:
         specifier: IC
-        blocks:  [*block_fuel, *block_fuel]
+        blocks:  [*block_fuel, *block_fuel_other]
+        height: [25.0, 25.0]
+        axial mesh points:  [1, 1]
+        material modifications:
+            U235_wt_frac: [0.11, 0.11]
+            ZR_wt_frac:  [0.06, 0.06]
+        xs types: [A, A]
+    fuel other:
+        flags: fuel test
+        specifier: ID
+        blocks:  [*block_fuel, *block_fuel_other]
         height: [25.0, 25.0]
         axial mesh points:  [1, 1]
         material modifications:
@@ -125,6 +175,24 @@ class TestGriddedBlock(unittest.TestCase):
             if locator == (1, 0, 0):
                 seen = True
         self.assertTrue(seen)
+
+    def test_explicitFlags(self):
+        a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
+            self.cs, self.blueprints
+        )
+        b1 = a1[0]
+        b2 = a1[1]
+
+        a2 = self.blueprints.assemDesigns.bySpecifier["ID"].construct(
+            self.cs, self.blueprints
+        )
+
+        self.assertTrue(b1.hasFlags(Flags.FUEL, exact=True))
+        self.assertTrue(b2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
+
+        self.assertEqual(a1.p.flags, Flags.FUEL)
+        self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
+        self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
 
 
 if __name__ == "__main__":

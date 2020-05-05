@@ -97,11 +97,11 @@ class Assembly(composites.Composite):
         if ringDum % 2
     ]
 
-    def __init__(self, designName, assemNum=None):
+    def __init__(self, typ, assemNum=None):
         """
         Parameters
         ----------
-        designName : str
+        typ : str
             Name of assembly design (e.g. the name from the blueprints input file).
 
         assemNum : int, optional
@@ -113,7 +113,7 @@ class Assembly(composites.Composite):
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
-        self.setType(designName)
+        self.setType(typ)
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
         self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
