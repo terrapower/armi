@@ -31,6 +31,15 @@ Requirements
 3. For neutronics cases, all neutronics-related block params should be translated, as
    well as the multigroup real and adjoint flux.
 
+
+.. warning: This procedure can cause numerical diffusion in some cases. For example, 
+    if a control rod tip block has a large coolant block below it, things like peak
+    absorption rate can get lost into it. We recalculate some but not all 
+    reaction rates in the re-mapping process based on a flux remapping. To avoid this,
+    finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
+    convergence for your needs.
+
+
 Examples
 --------
 converter = uniformMesh.NeutronicsUniformMeshConverter()
@@ -54,6 +63,9 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
+
+# unfortunate physics coupling, but still in the framework
+from armi.physics.neutronics.globalFlux import globalFluxInterface
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -365,13 +377,19 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
         for aSource in sourceReactor.core:
             aDest = destReactor.core.getAssemblyByName(aSource.getName())
-            _setStateFromOverlaps(
-                aSource, aDest, paramSetter, paramGetter, self.blockParamNames
-            )
             _setStateFromOverlaps(aSource, aDest, fluxSetter, fluxGetter, ["mgFlux"])
             _setStateFromOverlaps(
                 aSource, aDest, adjointFluxSetter, adjointFluxGetter, ["adjMgFlux"]
             )
+            _setStateFromOverlaps(
+                aSource, aDest, paramSetter, paramGetter, self.blockParamNames
+            )
+            # Now recalculate derived params with the mapped flux to minimize
+            # potential numerical diffusion (e.g. control rod tip into large coolant)
+            for b in aDest:
+                globalFluxInterface.calcReactionRates(
+                    b, destReactor.core.p.keff, destReactor.core.lib
+                )
 
 
 def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):

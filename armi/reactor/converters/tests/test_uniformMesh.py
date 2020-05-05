@@ -22,7 +22,8 @@ import numpy
 
 from armi.reactor.tests import test_reactors
 from armi.reactor.tests import test_assemblies
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, ISOAA_PATH
+from armi.nuclearDataIO import isotxs
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 
@@ -37,7 +38,10 @@ class TestUniformMeshComponents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         random.seed(987324987234)  # so it's always the same
-        cls.o, cls.r = test_reactors.loadTestReactor(TEST_ROOT)
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
+        )
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         # make the mesh a little non-uniform
         a = cls.r.core[4]
         a[2].setHeight(a[2].getHeight() * 1.05)
@@ -87,7 +91,10 @@ class TestUniformMesh(unittest.TestCase):
     """
 
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
+        )
+        self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
     def test_convertNumberDensities(self):

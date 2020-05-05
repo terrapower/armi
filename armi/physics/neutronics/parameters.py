@@ -118,35 +118,7 @@ def _getNeutronicsBlockParams():
         location=ParamLocation.AVERAGE,
         categories=[parameters.Category.detailedAxialExpansion],
     ) as pb:
-        # Neutronics reaction rate params
-        pb.defParam(
-            "rateAbs",
-            units="1/cm^3/s",
-            description="Total absorption rate in this block (fisson + capture).",
-        )
-
-        pb.defParam(
-            "rateCap",
-            units="1/cm^3/s",
-            description="Parasitic capture rate in this block.",
-        )
-
-        pb.defParam(
-            "rateFis", units="1/cm^3/s", description="Fission rate in this block."
-        )
-
-        pb.defParam(
-            "rateProdFis",
-            units="1/cm^3/s",
-            description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
-        )
-
-        pb.defParam(
-            "rateProdN2n",
-            units="1/cm^3/s",
-            description="Production rate of neutrons from n2n reactions.",
-        )
-
+        # Neutronics reaction rate params that are not re-derived in mesh conversion
         pb.defParam(
             "rateBalance",
             units="1/cm^3/s",
@@ -344,6 +316,38 @@ def _getNeutronicsBlockParams():
         pb.defParam("ppdens", units="W/cm^3", description="Peak power density")
 
         pb.defParam("ppdensGamma", units="W/cm^3", description="Peak gamma density")
+
+    # rx rate params that are derived during mesh conversion.
+    # We'd like all things that can be derived from flux and XS to be
+    # in this category to minimize numerical diffusion but it is a WIP.
+    with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE,) as pb:
+        pb.defParam(
+            "rateAbs",
+            units="1/cm^3/s",
+            description="Total absorption rate in this block (fisson + capture).",
+        )
+
+        pb.defParam(
+            "rateCap",
+            units="1/cm^3/s",
+            description="Parasitic capture rate in this block.",
+        )
+
+        pb.defParam(
+            "rateFis", units="1/cm^3/s", description="Fission rate in this block."
+        )
+
+        pb.defParam(
+            "rateProdFis",
+            units="1/cm^3/s",
+            description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
+        )
+
+        pb.defParam(
+            "rateProdN2n",
+            units="1/cm^3/s",
+            description="Production rate of neutrons from n2n reactions.",
+        )
 
     with pDefs.createBuilder(
         default=0.0,

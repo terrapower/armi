@@ -9,6 +9,7 @@ from armi import settings
 
 from armi.physics.neutronics.globalFlux import globalFluxInterface
 from armi.reactor.tests import test_reactors
+from armi.reactor.tests import test_blocks
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO import isotxs
 
@@ -165,6 +166,20 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
 
         mapper.clearFlux()
         self.assertFalse(block.p.mgFlux)
+
+
+class TestGlobalFluxUtils(unittest.TestCase):
+    def test_calcReactionRates(self):
+        """
+        Test that the reaction rate code executes and sets a param > 0.0.
+        
+        .. warning: This does not validate the reaction rate calculation.
+        """
+        b = test_blocks.loadTestBlock()
+        test_blocks.applyDummyData(b)
+        self.assertAlmostEqual(b.p.rateAbs, 0.0)
+        globalFluxInterface.calcReactionRates(b, 1.01, b.r.core.lib)
+        self.assertGreater(b.p.rateAbs, 0.0)
 
 
 def applyDummyFlux(r, ng=33):

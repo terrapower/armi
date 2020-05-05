@@ -44,6 +44,7 @@ def loadTestBlock(cold=True):
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
     settings.setMasterCs(caseSetting)
+    caseSetting["xsKernel"] = "MC2v2"
     runLog.setVerbosity("error")
     caseSetting["nCycles"] = 1
     r = tests.getEmptyHexReactor()
@@ -204,6 +205,57 @@ def loadTestBlock(cold=True):
     Assembly.add(block)
     r.core.add(Assembly)
     return block
+
+
+# pylint: disable=protected-access
+def applyDummyData(block):
+    """Add some dummy data to a block for physics-like tests."""
+    # typical SFR-ish flux in 1/cm^2/s
+    flux = [
+        161720716762.12997,
+        2288219224332.647,
+        11068159130271.139,
+        26473095948525.742,
+        45590249703180.945,
+        78780459664094.23,
+        143729928505629.06,
+        224219073208464.06,
+        229677567456769.22,
+        267303906113313.16,
+        220996878365852.22,
+        169895433093246.28,
+        126750484612975.31,
+        143215138794766.53,
+        74813432842005.5,
+        32130372366225.85,
+        21556243034771.582,
+        6297567411518.368,
+        22365198294698.45,
+        12211256796917.86,
+        5236367197121.363,
+        1490736020048.7847,
+        1369603135573.731,
+        285579041041.55945,
+        73955783965.98692,
+        55003146502.73623,
+        18564831886.20426,
+        4955747691.052108,
+        3584030491.076041,
+        884015567.3986057,
+        4298964991.043116,
+        1348809158.0353086,
+        601494405.293505,
+    ]
+    xslib = isotxs.readBinary(ISOAA_PATH)
+    # slight hack here because the test block was created
+    # by hand rather than via blueprints and so elemental expansion
+    # of isotopics did not occur. But, the ISOTXS library being used
+    # did go through an isotopic expansion, so we map nuclides here.
+    xslib._nuclides["NAAA"] = xslib._nuclides["NA23AA"]
+    xslib._nuclides["WAA"] = xslib._nuclides["W184AA"]
+    xslib._nuclides["MNAA"] = xslib._nuclides["MN55AA"]
+    block.p.mgFlux = flux
+    block.r.core.lib = xslib
 
 
 def getComponentDataFromBlock(component, block):
@@ -1240,60 +1292,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getMfp(self):
         """Test mean free path."""
-        # typical SFR-ish flux in 1/cm^2/s
-        flux = [
-            161720716762.12997,
-            2288219224332.647,
-            11068159130271.139,
-            26473095948525.742,
-            45590249703180.945,
-            78780459664094.23,
-            143729928505629.06,
-            224219073208464.06,
-            229677567456769.22,
-            267303906113313.16,
-            220996878365852.22,
-            169895433093246.28,
-            126750484612975.31,
-            143215138794766.53,
-            74813432842005.5,
-            32130372366225.85,
-            21556243034771.582,
-            6297567411518.368,
-            22365198294698.45,
-            12211256796917.86,
-            5236367197121.363,
-            1490736020048.7847,
-            1369603135573.731,
-            285579041041.55945,
-            73955783965.98692,
-            55003146502.73623,
-            18564831886.20426,
-            4955747691.052108,
-            3584030491.076041,
-            884015567.3986057,
-            4298964991.043116,
-            1348809158.0353086,
-            601494405.293505,
-        ]
-        xslib = isotxs.readBinary(ISOAA_PATH)
-        # slight hack here because the test block was created
-        # by hand rather than via blueprints and so elemental expansion
-        # of isotopics did not occur. But, the ISOTXS library being used
-        # did go through an isotopic expansion, so we map nuclides here.
-        xslib._nuclides["NAAA"] = xslib._nuclides[
-            "NA23AA"
-        ]  # pylint: disable=protected-access
-        xslib._nuclides["WAA"] = xslib._nuclides[
-            "W184AA"
-        ]  # pylint: disable=protected-access
-        xslib._nuclides["MNAA"] = xslib._nuclides[
-            "MN55AA"
-        ]  # pylint: disable=protected-access
-        # macroCreator = xsCollections.MacroscopicCrossSectionCreator()
-        # macros = macroCreator.createMacrosFromMicros(xslib, self.Block)
-        self.Block.p.mgFlux = flux
-        self.Block.r.core.lib = xslib
+        applyDummyData(self.Block)
         # These are unverified numbers, just the result of this calculation.
         mfp, mfpAbs, diffusionLength = self.Block.getMfp()
         # no point testing these number to high accuracy.
