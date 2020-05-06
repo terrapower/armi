@@ -173,6 +173,17 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
         Implementation of settings inspections for fuel cycle settings.
         """
         queries = []
+
+        queries.append(settingsValidation.Query(
+                lambda: bool(inspector.cs["shuffleLogic"]) ^
+                bool(inspector.cs["fuelHandlerName"]),
+                "A value was provided for `fuelHandlerName` or `shuffleLogic`, but not "
+                "the other. Either both `fuelHandlerName` and `shuffleLogic` should be "
+                "defined, or neither of them.",
+                "",
+                inspector.NO_ACTION,
+            ))
+
         # Check for code fixes for input code on the fuel shuffling outside the version control of ARMI
         # These are basically auto-migrations for untracked code using
         # the ARMI API. (This may make sense at a higher level)
