@@ -72,6 +72,16 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "buRate",
+            units="%FIMA/day",
+            # This is very related to power, but normalized to %FIMA.
+            description=(
+                "Current rate of burnup accumulation. Useful for estimating times when "
+                "burnup limits may be exceeded."
+            ),
+        )
+
+        pb.defParam(
             "massHmBOL",
             units="grams",
             description="Mass of heavy metal at BOL",
