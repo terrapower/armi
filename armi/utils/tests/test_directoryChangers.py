@@ -108,3 +108,36 @@ class TestDirectoryChangers(unittest.TestCase):
             tempName = dc.destination
 
         self.assertFalse(os.path.exists(tempName))
+
+    def test_file_retrieval(self):
+        """
+        Make sure requested files and/or globs get copied back.
+
+        * Checks basic copy feature
+        * Checks rename feature
+        * Checks glob expansion
+        """
+
+        def f(name):
+            """Utility to avoid test clashes during cleanups"""
+            return self._testMethodName + name
+
+        with directoryChangers.TemporaryDirectoryChanger(
+            filesToRetrieve=[(f("file1.txt"), f("newfile1.txt"))]
+        ) as dc:
+            Path(f("file1.txt")).touch()
+            Path(f("file2.txt")).touch()
+
+        self.assertTrue(os.path.exists(f("newfile1.txt")))
+        os.remove(f("newfile1.txt"))
+
+        with directoryChangers.TemporaryDirectoryChanger(
+            filesToRetrieve=[f("file*.txt")]
+        ) as dc:
+            Path(f("file1.txt")).touch()
+            Path(f("file2.txt")).touch()
+
+        self.assertTrue(os.path.exists(f("file1.txt")))
+        self.assertTrue(os.path.exists(f("file2.txt")))
+        os.remove(f("file1.txt"))
+        os.remove(f("file2.txt"))

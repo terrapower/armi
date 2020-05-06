@@ -16,6 +16,7 @@ import os
 import random
 import shutil
 import string
+import glob
 
 import armi
 from armi import runLog
@@ -133,6 +134,19 @@ class DirectoryChanger:
     def _transferFiles(initialPath, destinationPath, fileList):
         """
         Transfer files into or out of the directory.
+        
+        Parameters
+        ----------
+        initialPath : str
+            Path to the folder to find files in.
+        destinationPath: str
+            Path to the folder to move file to.
+        fileList : list of str or list of tuple
+            File names to move from initial to destination. If this is a 
+            simple list of strings, the files will be transferred. Alternatively
+            tuples of (initialName, finalName) are allowed if you want the file
+            renamed during transit. In the non-tuple option, globs/wildcards
+            are allowed.
 
         .. warning:: On Windows the max number of characters in a path is 260.
             If you exceed this you will see FileNotFound errors here.
@@ -142,17 +156,23 @@ class DirectoryChanger:
             return
         if not os.path.exists(destinationPath):
             os.mkdir(destinationPath)
-        for ff in fileList:
-            if isinstance(ff, tuple):
+        for pattern in fileList:
+            if isinstance(pattern, tuple):
                 # allow renames in transit
-                fromName, destName = ff
+                fromName, destName = pattern
+                copies = [(fromName, destName)]
             else:
-                fromName, destName = ff, ff
+                # expand globs if they're given
+                copies = []
+                for ff in glob.glob(pattern):
+                    # renaming not allowed with globs
+                    copies.append((ff, ff))
 
-            fromPath = os.path.join(initialPath, fromName)
-            toPath = os.path.join(destinationPath, destName)
-            runLog.extra("Copying {} to {}".format(fromPath, toPath))
-            shutil.copy(fromPath, toPath)
+            for fromName, destName in copies:
+                fromPath = os.path.join(initialPath, fromName)
+                toPath = os.path.join(destinationPath, destName)
+                runLog.extra("Copying {} to {}".format(fromPath, toPath))
+                shutil.copy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):
