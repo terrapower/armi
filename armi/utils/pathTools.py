@@ -163,18 +163,18 @@ def getModAndClassFromPath(path):
 def separateModuleAndAttribute(pathAttr):
     """
     Return True of the specified python module, and attribute of the module exist.
-    
-    
+
+
     Parameters
     ----------
     pathAttr : str
         Path to a python module followed by the desired attribute.
         e.g.: `/path/to/my/thing.py:MyClass`
-    
+
     Notes
     -----
     The attribute of the module could be a class, function, variable, etc.
-    
+
     Raises
     ------
     ValueError:
@@ -190,17 +190,20 @@ def separateModuleAndAttribute(pathAttr):
 def importCustomPyModule(modulePath):
     """
     Dynamically import a custom module.
-    
+
     Parameters
     ----------
     modulePath : str
         Path to a python module.
-        
+
     Returns
     -------
     userSpecifiedModule : module
         The imported python module.
     """
+    modulePath = pathlib.Path(modulePath)
+    if not modulePath.exists() or not modulePath.is_file():
+        raise IOError(r"Cannot import module from the given path: `{modulePath}`")
     _dir, moduleName = os.path.split(modulePath)
     moduleName = os.path.splitext(moduleName)[0]  # take off the extension
     spec = importlib.util.spec_from_file_location(moduleName, modulePath)
@@ -212,19 +215,19 @@ def importCustomPyModule(modulePath):
 def moduleAndAttributeExist(pathAttr):
     """
     Return True if the specified python module, and attribute of the module exist.
-    
-    
+
+
     Parameters
     ----------
     pathAttr : str
         Path to a python module followed by the desired attribute.
         e.g.: `/path/to/my/thing.py:MyClass`
-        
-    Returns 
+
+    Returns
     -------
-    bool 
+    bool
         True if the specified python module, and attribute of the module exist.
-    
+
     Notes
     -----
     The attribute of the module could be a class, function, variable, etc.
