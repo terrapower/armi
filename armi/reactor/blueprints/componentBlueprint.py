@@ -151,9 +151,16 @@ class ComponentBlueprint(yamlize.Object):
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
         component = components.factory(self.shape.strip().lower(), [], kwargs)
+
+        # the component __init__ calls setType(), which gives us our initial guess at
+        # what the flags should be.
         if self.flags is not None:
+            # override the flags from __init__ with the ones from the blueprint
             component.p.flags = Flags.fromString(self.flags)
-        _insertDepletableNuclideKeys(component, blueprint)
+        else:
+            # potentially add the DEPLETABLE flag. Don't do this if we set flags
+            # explicitly
+            _insertDepletableNuclideKeys(component, blueprint)
         return component
 
     def _conformKwargs(self, blueprint, matMods):
