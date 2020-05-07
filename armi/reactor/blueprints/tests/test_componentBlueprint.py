@@ -31,7 +31,7 @@ class TestComponentBlueprint(unittest.TestCase):
 blocks:
     block: &block
         component:
-            flags: fuel test
+            flags: {flags}
             shape: Hexagon
             material: {material} # This is being used to format a string to allow for different materials to be added
             {isotopics} # This is being used to format a string to allow for different isotopics to be added
@@ -71,7 +71,7 @@ assemblies:
         )
         bp = blueprints.Blueprints.load(
             nuclideFlagsFuelWithBurn
-            + self.componentString.format(material="UZr", isotopics="")
+            + self.componentString.format(material="UZr", isotopics="", flags="")
         )
         cs = settings.Settings()
         with self.assertRaises(ValueError):
@@ -101,7 +101,38 @@ assemblies:
         )
         bp = blueprints.Blueprints.load(
             nuclideFlags
-            + self.componentString.format(material="Custom", isotopics="isotopics: B4C")
+            + self.componentString.format(material="Custom", isotopics="isotopics: B4C",
+                flags="")
+        )
+        cs = settings.Settings()
+        a = bp.constructAssem("hex", cs, "assembly")
+
+    def test_autoDepletable(self):
+        nuclideFlags = (
+            inspect.cleandoc(
+                r"""
+            nuclide flags:
+                U234: {burn: true, xs: true}
+                U235: {burn: true, xs: true}
+                U238: {burn: true, xs: true}
+                B10: {burn: true, xs: true}
+                B11: {burn: true, xs: true}
+                C: {burn: true, xs: true}
+                DUMP1: {burn: true, xs: true}
+            custom isotopics:
+                B4C:
+                    input format: number densities
+                    B10: 1.0
+                    B11: 1.0
+                    C: 1.0
+            """
+            )
+            + "\n"
+        )
+        bp = blueprints.Blueprints.load(
+            nuclideFlags
+            + self.componentString.format(material="Custom", isotopics="isotopics: B4C",
+                flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem("hex", cs, "assembly")
@@ -113,8 +144,26 @@ assemblies:
             self.assertNotIn(nuc, a[0][0].getNuclides())
 
         c = a[0][0]
-        # Watch out, depletion is adding DEPLETABLE, so this can be a bit brittle
-        self.assertEqual(c.p.flags, Flags.FUEL|Flags.DEPLETABLE|Flags.TEST)
+
+        # Since we didn't supply flags, we should get the DEPLETABLE flag added
+        # automatically, since this one has depletable nuclides
+        self.assertEqual(c.p.flags, Flags.DEPLETABLE)
+        # More robust test, but worse unittest.py output when it fails
+        self.assertTrue(c.hasFlags(Flags.DEPLETABLE))
+
+
+        # repeat the process with some flags set explicitly
+        bp = blueprints.Blueprints.load(
+            nuclideFlags
+            + self.componentString.format(material="Custom", isotopics="isotopics: B4C",
+                flags="fuel test")
+        )
+        cs = settings.Settings()
+        a = bp.constructAssem("hex", cs, "assembly")
+        c = a[0][0]
+
+        # Since we supplied flags, we should NOT get the DEPLETABLE flag added
+        self.assertEqual(c.p.flags, Flags.FUEL|Flags.TEST)
         # More robust test, but worse unittest.py output when it fails
         self.assertTrue(c.hasFlags(Flags.FUEL|Flags.TEST))
 
@@ -169,7 +218,8 @@ assemblies:
         )
         bp = blueprints.Blueprints.load(
             nuclideFlags
-            + self.componentString.format(material="Custom", isotopics="isotopics: AM")
+            + self.componentString.format(material="Custom", isotopics="isotopics: AM",
+                flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem("hex", cs, "assembly")
@@ -259,7 +309,7 @@ assemblies:
         bp = blueprints.Blueprints.load(
             nuclideFlags
             + self.componentString.format(
-                material="Custom", isotopics="isotopics: Thorium"
+                material="Custom", isotopics="isotopics: Thorium", flags=""
             )
         )
         cs = settings.Settings()
@@ -285,7 +335,7 @@ assemblies:
         bp = blueprints.Blueprints.load(
             nuclideFlags
             + self.componentString.format(
-                material="Custom", isotopics="isotopics: Thorium"
+                material="Custom", isotopics="isotopics: Thorium", flags=""
             )
         )
         cs = settings.Settings()
