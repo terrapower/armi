@@ -20,7 +20,7 @@ import os
 import unittest
 
 from six.moves import cPickle
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 import armi
 
 from armi.materials import uZr
@@ -35,7 +35,7 @@ from armi.reactor import blocks
 from armi.reactor import grids
 from armi.reactor import locations
 from armi.reactor import reactors
-from armi.reactor.components import Hexagon
+from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
@@ -44,26 +44,54 @@ from armi.physics.neutronics import isotopicDepletion
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
 
-def buildOperatorOfEmptyBlocks(customSettings=None):
+def buildOperatorOfEmptyBlocks(customSettings=None, reactorType="Hex"):
     """
     Builds a operator w/ a reactor object with some assemblies and blocks, but all are empty
 
     Doesn't depend on inputs and loads quickly.
+
+    Params
+    ------
+    customSettings : dict
+        Dictionary of off-default settings to update
+
+    reactorType : str
+        Str with value of ``Hex`` or `Cartesian``.
     """
+    if reactorType not in {"Hex", "Cartesian"}:
+        raise ValueError(f"{reactorType} is not supported by this method.")
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
     cs["db"] = False  # stop use of database
     if customSettings is not None:
         cs.update(customSettings)
-    r = tests.getEmptyHexReactor()
+    if reactorType == "Hex":
+        r = tests.getEmptyHexReactor()
+        AssemClass = assemblies.HexAssembly
+        BlockClass = blocks.HexBlock
+        CompClass = Hexagon
+        dims = {"op": 16.0, "ip": 1}
+    elif reactorType == "Cartesian":
+        r = tests.getEmptyCartesianReactor()
+        AssemClass = assemblies.CartesianAssembly
+        BlockClass = blocks.CartesianBlock
+        CompClass = Rectangle
+        dims = {
+            "widthOuter": 16.0,
+            "lengthOuter": 10.0,
+            "widthInner": 1,
+            "lengthInner": 1,
+        }
+
     o = operators.Operator(cs)
     o.initializeInterfaces(r)
-    a = assemblies.HexAssembly("fuel")
+
+    a = AssemClass("fuel")
     a.spatialGrid = grids.axialUnitGrid(1)
-    b = blocks.HexBlock("TestBlock")
+    b = BlockClass("TestBlock")
     b.setType("fuel")
-    dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1.0, "mult": 1}
-    c = Hexagon("fuel", uZr.UZr(), **dims)
+    dims.update({"Tinput": 600, "Thot": 600, "mult": 1})
+    c = CompClass("fuel", uZr.UZr(), **dims)
     b.add(c)
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
@@ -153,7 +181,7 @@ class _ReactorTests(unittest.TestCase):
         cls.directoryChanger.close()
 
 
-class ReactorTests(_ReactorTests):
+class HexReactorTests(_ReactorTests):
     def setUp(self):
         self.o, self.r = loadTestReactor(self.directoryChanger.destination)
 
@@ -350,6 +378,9 @@ class ReactorTests(_ReactorTests):
         self.r.core.add(newA)
         self.assertTrue(next(self.r.core.genAssembliesAddedThisCycle()) is newA)
 
+    def test_getAssemblyPitch(self):
+        self.assertEqual(self.r.core.getAssemblyPitch(), 16.75)
+
     def test_getNumAssembliesWithAllRingsFilledOut(self):
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
@@ -539,6 +570,16 @@ class ReactorTests(_ReactorTests):
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass() / 3.0)
+
+
+class CartesianReactorTests(_ReactorTests):
+    def setUp(self):
+        self.o = buildOperatorOfEmptyBlocks(reactorType="Cartesian")
+        self.r = self.o.r
+
+    def test_getAssemblyPitch(self):
+        # Cartesian pitch should have 2 dims since it could be a rectangle that is not square.
+        assert_equal(self.r.core.getAssemblyPitch(), [10.0, 16.0])
 
 
 if __name__ == "__main__":

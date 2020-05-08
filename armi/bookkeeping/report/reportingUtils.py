@@ -33,15 +33,15 @@ from armi import runLog
 from armi import utils
 from armi.utils import iterables
 from armi.utils import units
-from armi.utils import pathTools
 from armi.utils import textProcessors
+from armi.utils import plotting
 from armi import interfaces
 from armi.bookkeeping import report
 from armi.reactor.flags import Flags
 from armi.reactor.components import ComponentType
 from armi.operators import RunTypes
 from armi.localization import strings
-from armi.localization import warnings
+
 
 # Set to prevent the image and text from being too small to read.
 MAX_ASSEMS_PER_ASSEM_PLOT = 6
@@ -934,7 +934,8 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         report.data.Report.groupsOrderFirst.insert(-1, assemPlotImage)
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
         assemPlotName = os.path.abspath(
-            core.plotAssemblyTypes(
+            plotting.plotAssemblyTypes(
+                core,
                 assemBatch,
                 plotNum,
                 maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
@@ -973,7 +974,8 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     ]
 
     fName = "".join([cs.caseTitle, "RadialCoreMap.", cs["outputFileExtension"]])
-    corePlotName = core.plotFaceMap(
+    corePlotName = plotting.plotFaceMap(
+        core,
         title="{} Radial Core Map".format(cs.caseTitle),
         fName=fName,
         cmapName="RdYlBu",

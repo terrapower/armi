@@ -50,6 +50,7 @@ import numpy
 from armi import runLog
 from armi import utils
 from armi.utils import iterables
+from armi.utils import plotting
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
@@ -210,8 +211,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def plotConvertedReactor(self):
         assemsToPlot = self.convReactor.core[:12]
         for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=1):
-            self.convReactor.core.plotAssemblyTypes(
-                assemBatch, plotNum, maxAssems=6, showBlockAxMesh=True
+            plotting.plotAssemblyTypes(
+                self.convReactor.core,
+                assemBatch,
+                plotNum,
+                maxAssems=6,
+                showBlockAxMesh=True,
             )
 
     def _setParamsToUpdate(self):

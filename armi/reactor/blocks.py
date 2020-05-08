@@ -1846,14 +1846,12 @@ class Block(composites.Composite):
 
         """
         c, _p = self._pitchDefiningComponent
-
         if c is None:
             raise ValueError("{} has no valid pitch defining component".format(self))
 
         # ask component for dimensions, since they could have changed,
         # due to temperature, for example.
         p = c.getPitchData()
-
         return (p, c) if returnComp else p
 
     def hasPinPitch(self):
@@ -2885,8 +2883,7 @@ class CartesianBlock(Block):
 
     def setPitch(self, val, updateBolParams=False, updateNumberDensityParams=True):
         raise NotImplementedError(
-            "Directly setting the pitch of a cartesian block is currently "
-            "not supported"
+            "Directly setting the pitch of a cartesian block is currently not supported."
         )
 
     def getSymmetryFactor(self):
