@@ -329,7 +329,9 @@ def plotFaceMap(
         colbar.ax.tick_params(labelsize=16)
 
     if legendMap is not None:
-        legend = _createFaceMapLegend(legendMap, cmapName, collection.norm)
+        legend = _createFaceMapLegend(
+            legendMap, matplotlib.cm.get_cmap(cmapName), collection.norm
+        )
     else:
         legend = None
 
@@ -430,6 +432,9 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
             text = ax.text(
                 x, y, label, zorder=1, ha="center", va="center", fontsize=fontSize
             )
+        else:
+            # labelFmt was none, so they don't want any text plotted
+            continue
         texts.append(text)
 
 
