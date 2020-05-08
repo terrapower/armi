@@ -23,10 +23,9 @@ import numpy
 
 from armi import settings
 from armi.nuclearDataIO import NHFLUX
-from armi.utils import pathTools
 
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 
 SIMPLE_HEXZ_INP = os.path.join(THIS_DIR, "simple_hexz.inp")
 SIMPLE_HEXZ_NHFLUX = os.path.join(THIS_DIR, "fixtures", "simple_hexz.nhflux")

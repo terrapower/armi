@@ -20,12 +20,10 @@ import pathlib
 import unittest
 
 import ruamel
-from ruamel import yaml
 
 from armi.utils import textProcessors
-from armi.utils import pathTools
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 RES_DIR = os.path.join(THIS_DIR, "resources")
 
 
@@ -70,7 +68,7 @@ class YamlIncludeTest(unittest.TestCase):
             pathlib.Path(RES_DIR) / "root.yaml"
         )
         for i, _mark in includes:
-            self.assertTrue((RES_DIR/i).exists())
+            self.assertTrue((RES_DIR / i).exists())
 
         self.assertEqual(len(includes), 2)
 

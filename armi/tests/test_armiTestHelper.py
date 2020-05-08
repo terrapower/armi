@@ -17,9 +17,8 @@ import os
 import unittest
 
 from armi.tests import ArmiTestHelper
-from armi.utils import pathTools
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 
 
 class TestArmiTestHelper(ArmiTestHelper):

@@ -406,5 +406,5 @@ The ARMI system is licensed as follows:
     :target: https://travis-ci.com/terrapower/armi
 
 .. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master
-    :target: https://coveralls.io/github/terrapower/armi?branch=toxCov
+    :target: https://coveralls.io/github/terrapower/armi?branch=master
 

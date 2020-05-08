@@ -27,8 +27,7 @@ import yamlize
 import armi
 from armi import runLog
 from armi.reactor import assemblies
-
-# justification=required to populate assembly parameter definitions
+from armi.reactor.flags import Flags
 from armi.reactor import parameters
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor import grids
@@ -58,6 +57,7 @@ class AssemblyBlueprint(yamlize.Object):
     """
 
     name = yamlize.Attribute(type=str)
+    flags = yamlize.Attribute(type=str, default=None)
     specifier = yamlize.Attribute(type=str)
     blocks = yamlize.Attribute(type=blockBlueprint.BlockList)
     height = yamlize.Attribute(type=yamlize.FloatList)
@@ -120,6 +120,11 @@ class AssemblyBlueprint(yamlize.Object):
 
         assemblyClass = self.getAssemClass(blocks)
         a = assemblyClass(self.name)
+        flags = None
+        if self.flags is not None:
+            flags = Flags.fromString(self.flags)
+            a.p.flags = flags
+
         # set a basic grid with the right number of blocks with bounds to be adjusted.
         a.spatialGrid = grids.axialUnitGrid(len(blocks))
         a.spatialGrid.armiObject = a

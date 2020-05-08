@@ -222,7 +222,7 @@ def fuelHandlerFactory(operator):
 
     # User did request a custom fuel handler. We must go find and import it
     # from the input directory.
-    with directoryChangers.DirectoryChanger(cs.inputDirectory):
+    with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         try:
             module = pathTools.importCustomPyModule(fuelHandlerModulePath)
 

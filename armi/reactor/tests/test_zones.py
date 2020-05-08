@@ -15,9 +15,9 @@
 """Test for Zones"""
 import copy
 import unittest
+import os
 
 import armi
-from armi import settings
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import geometry
@@ -26,10 +26,9 @@ from armi.reactor import reactors
 from armi.reactor import zones
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.utils import pathTools
 from armi.settings.fwSettings import globalSettings
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 
 
 class Zone_TestCase(unittest.TestCase):

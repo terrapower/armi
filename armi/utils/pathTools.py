@@ -99,27 +99,9 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
     except Exception as e:
         runLog.warning(
             "Could not copy {} from {} to {}\nError was: {}".format(
-                fileDescription, sourcePath, destinationPath, e)
+                fileDescription, sourcePath, destinationPath, e
+            )
         )
-
-
-def armiAbsDirFromName(modName):
-    """
-    Convert a module name to a path.
-
-    Notes
-    -----
-    This is often required in a Cython'd pyd extension where ``__file__`` is otherwise invalid.
-    """
-    if modName == "__main__":
-        # allows it to work when a file is called directly (Python only, not cython).
-        # But this fails when running via the Pydev debugger because the stack's non-standard
-        # so we loop until we find a non-debugger file.
-        for item in reversed(inspect.stack()):
-            fname = inspect.getfile(item[0])
-            if "pydevd" not in fname:
-                return os.path.abspath(os.path.dirname(fname))
-    return os.path.join(*([ROOT] + modName.split(".")[1:-1]))
 
 
 def isFilePathNewer(path1, path2):
@@ -181,18 +163,18 @@ def getModAndClassFromPath(path):
 def separateModuleAndAttribute(pathAttr):
     """
     Return True of the specified python module, and attribute of the module exist.
-    
-    
+
+
     Parameters
     ----------
     pathAttr : str
         Path to a python module followed by the desired attribute.
         e.g.: `/path/to/my/thing.py:MyClass`
-    
+
     Notes
     -----
     The attribute of the module could be a class, function, variable, etc.
-    
+
     Raises
     ------
     ValueError:
@@ -208,17 +190,20 @@ def separateModuleAndAttribute(pathAttr):
 def importCustomPyModule(modulePath):
     """
     Dynamically import a custom module.
-    
+
     Parameters
     ----------
     modulePath : str
         Path to a python module.
-        
+
     Returns
     -------
     userSpecifiedModule : module
         The imported python module.
     """
+    modulePath = pathlib.Path(modulePath)
+    if not modulePath.exists() or not modulePath.is_file():
+        raise IOError(r"Cannot import module from the given path: `{modulePath}`")
     _dir, moduleName = os.path.split(modulePath)
     moduleName = os.path.splitext(moduleName)[0]  # take off the extension
     spec = importlib.util.spec_from_file_location(moduleName, modulePath)
@@ -230,19 +215,19 @@ def importCustomPyModule(modulePath):
 def moduleAndAttributeExist(pathAttr):
     """
     Return True if the specified python module, and attribute of the module exist.
-    
-    
+
+
     Parameters
     ----------
     pathAttr : str
         Path to a python module followed by the desired attribute.
         e.g.: `/path/to/my/thing.py:MyClass`
-        
-    Returns 
+
+    Returns
     -------
-    bool 
+    bool
         True if the specified python module, and attribute of the module exist.
-    
+
     Notes
     -----
     The attribute of the module could be a class, function, variable, etc.

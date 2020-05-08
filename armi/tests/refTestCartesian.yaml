@@ -20,7 +20,7 @@ settings:
   geomFile: cartesian-geom.xml
   jumpRingNum: 9
   loadingFile: refSmallCartesian.yaml
-  loadNode: 1
+  startNode: 1
   loadPadElevation: 200.0
   max2SigmaCladIDT: 630.0
   maxFlowZones: 12

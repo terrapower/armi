@@ -34,6 +34,7 @@ CONF_UPDATE_INDIVIDUAL_ASSEMBLY_NUMBERS_ON_DB_LOAD = (
 )
 CONF_DB_STORAGE_AFTER_CYCLE = "dbStorageAfterCycle"
 CONF_ZERO_OUT_NUCLIDES_NOT_IN_DB = "zeroOutNuclidesNotInDB"
+CONF_SYNC_AFTER_WRITE = "syncDbAfterWrite"
 
 
 def defineSettings():
@@ -98,6 +99,15 @@ def defineSettings():
             default=True,
             label="Load Nuclides not in Database",
             description="If a nuclide was added to the problem after a previous case was run, deactivate this to let it survive in a restart run",
+        ),
+        setting.Setting(
+            CONF_SYNC_AFTER_WRITE,
+            default=False,
+            label="Sync DB after write",
+            description=(
+                "Copy the output DB from the fast scratch space to the shared network drive "
+                "after each write."
+            ),
         ),
     ]
     return settings

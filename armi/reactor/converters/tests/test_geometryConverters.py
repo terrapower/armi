@@ -19,18 +19,16 @@ import unittest
 
 from armi import runLog
 from armi import settings
-from armi.utils import pathTools
 from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.tests import TEST_ROOT
-from armi.nucDirectory import nuclideBases
 from armi.reactor.converters import geometryConverters
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.flags import Flags
 from armi.reactor import locations
 
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 
 
 class TestGeometryConverters(unittest.TestCase):

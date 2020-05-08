@@ -121,6 +121,7 @@ class ComponentBlueprint(yamlize.Object):
     """
 
     name = yamlize.Attribute(type=str)
+    flags = yamlize.Attribute(type=str, default=None)
 
     @name.validator
     def name(self, name):  # pylint: disable=no-self-use; reason=yamlize requirement
@@ -150,7 +151,16 @@ class ComponentBlueprint(yamlize.Object):
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
         component = components.factory(self.shape.strip().lower(), [], kwargs)
-        _insertDepletableNuclideKeys(component, blueprint)
+
+        # the component __init__ calls setType(), which gives us our initial guess at
+        # what the flags should be.
+        if self.flags is not None:
+            # override the flags from __init__ with the ones from the blueprint
+            component.p.flags = Flags.fromString(self.flags)
+        else:
+            # potentially add the DEPLETABLE flag. Don't do this if we set flags
+            # explicitly
+            _insertDepletableNuclideKeys(component, blueprint)
         return component
 
     def _conformKwargs(self, blueprint, matMods):
@@ -168,6 +178,10 @@ class ComponentBlueprint(yamlize.Object):
             elif attr.name == "latticeIDs":
                 # Don't pass latticeIDs on to the component constructor.
                 # They're applied during block construction.
+                continue
+            elif attr.name == "flags":
+                # Don't pass these to the component constructor. These are used to
+                # override the flags derived from the type, if present.
                 continue
             else:
                 value = attr.get_value(self)

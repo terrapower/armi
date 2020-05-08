@@ -268,16 +268,6 @@ class Interface(object):
     def getInterface(self, *args, **kwargs):
         return self.o.getInterface(*args, **kwargs) if self.o else None
 
-    def updateAssemblyLevelParams(
-        self, a, excludedBlockTypes=None
-    ):  # pylint-disable=no-self-use
-        """
-        Called during loads from snapshots.
-
-        Allows block params to go derive the assembly-level params (such as massFlow).
-        """
-        pass
-
     def interactInit(self):
         """
         Interacts immediately after the interfaces are created.

@@ -19,9 +19,8 @@ import unittest
 import os
 
 from armi.nuclearDataIO import labels
-from armi.utils import pathTools
 
-THIS_DIR = pathTools.armiAbsDirFromName(__name__)
+THIS_DIR = os.path.dirname(__file__)
 
 
 class TestLabels(unittest.TestCase):
