@@ -88,7 +88,7 @@ class TestSystemLayoutInput(unittest.TestCase):
         os.remove(out)
 
     def testReadReactor(self):
-        reactor = test_reactors.buildOperatorOfEmptyBlocks().r
+        reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
         reactor.core.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
         geom = geometry.fromReactor(reactor)
         self.assertEqual(geom.assemTypeByIndices[(2, 1)], "fuel")

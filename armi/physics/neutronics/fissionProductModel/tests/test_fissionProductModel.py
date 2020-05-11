@@ -18,7 +18,7 @@ Test the fission product module to ensure all FP are available.
 import unittest
 
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor.tests.test_reactors import buildOperatorOfEmptyBlocks
+from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 
@@ -29,7 +29,7 @@ class TestFissionProductModel(unittest.TestCase):
     """
 
     def setUp(self):
-        o = buildOperatorOfEmptyBlocks()
+        o = buildOperatorOfEmptyHexBlocks()
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         o.removeAllInterfaces()
         o.addInterface(self.fpModel)

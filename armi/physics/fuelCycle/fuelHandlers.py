@@ -27,14 +27,10 @@ This module also handles repeat shuffles when doing a restart.
 """
 import re
 import os
-import collections
-import math
-import importlib.util
 import warnings
 
 import numpy
 
-import armi
 from armi import interfaces
 from armi import runLog
 from armi.localization.exceptions import InputError
@@ -42,6 +38,7 @@ from armi.reactor.flags import Flags
 from armi.operators import RunTypes
 from armi.utils import directoryChangers, pathTools
 from armi import utils
+from armi.utils import plotting
 
 
 class FuelHandlerInterface(interfaces.Interface):
@@ -130,7 +127,8 @@ class FuelHandlerInterface(interfaces.Interface):
         fh.outage(shuffleFactors)  # move the assemblies around
         if self.cs["plotShuffleArrows"]:
             arrows = fh.makeShuffleArrows()
-            self.r.core.plotFaceMap(
+            plotting.plotFaceMap(
+                self.r.core,
                 "percentBu",
                 labelFmt=None,
                 fName="{}.shuffles_{}.png".format(self.cs.caseTitle, self.r.p.cycle),
