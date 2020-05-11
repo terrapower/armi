@@ -602,13 +602,7 @@ class DepthSlider(Slider):
         Slider.set_val(self, val)
 
     def next(self, _event):
-        """
-        Move forward to the next depth (page).
-        
-        Notes
-        -----
-        valmin/valmax are set on the parent to 0 and len(depths).
-        """
+        """Move forward to the next depth (page)."""
         self.set_val(self.val + 1)
 
     def previous(self, _event):
