@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import matplotlib.text as mpl_text
 import matplotlib.collections
 import matplotlib.patches
+from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
 
 from armi import runLog
@@ -145,20 +146,19 @@ def plotBlockDepthMap(
     fig.subplots_adjust(bottom=0.15)
 
     ax_slider = fig.add_axes([0.1, 0.05, 0.8, 0.04])
-    slider = PageSlider(ax_slider, "Depth(m)", elevations, activecolor="green")
 
     # This controls what the slider does.
-    def update(val):
-        i = int(slider.val)
+    def update(i):
+        # int, since we are indexing an array.
+        i = int(i)
         collection.set_array(data[i, :])
         for valToPrint, text in zip(data[i, :], texts):
             text.set_text(labelFmt.format(valToPrint))
 
-    slider.on_changed(update)
-
-    # right now plot is set to max values, set to a specific elevation's value.
-    slider.set_val(depthIndex)  # sets the vals on the plot
-    slider._colorize(depthIndex)  # changes to the right page
+    # Slider doesn't seem to work unless assigned to variable
+    _slider = DepthSlider(
+        ax_slider, "Depth(cm)", elevations, update, "green", valInit=depthIndex
+    )
 
     if fName:
         plt.savefig(fName, dpi=150)
@@ -494,108 +494,148 @@ def _createFaceMapLegend(legendMap, cmap, norm):
     return legend
 
 
-class PageSlider(matplotlib.widgets.Slider):
+class DepthSlider(Slider):
     """
     Page slider used to view params at different depths.
-
-    Notes
-    -----
-    Largly based off of:
-    https://stackoverflow.com/questions/41143782/paging-scrolling-through-set-of-2d-heat-maps-in-matplotlib
     """
 
-    def __init__(self, ax, label, depths, valinit=0, valfmt="%1d", **kwargs):
+    def __init__(
+        self,
+        ax,
+        sliderLabel,
+        depths,
+        updateFunc,
+        selectedDepthColor,
+        fontsize=8,
+        valInit=0,
+        **kwargs,
+    ):
+        # The color of the currently displayed depth page.
+        self.selectedDepthColor = selectedDepthColor
+        self.nonSelectedDepthColor = "w"
 
-        self.facecolor = kwargs.get("facecolor", "w")
-        self.activecolor = kwargs.pop("activecolor", "b")
-        self.fontsize = kwargs.pop("fontsize", 7)
         self.depths = depths
 
-        super(PageSlider, self).__init__(
-            ax, label, 0, len(depths), valinit=valinit, valfmt=valfmt, **kwargs
-        )
-
-        self.poly.set_visible(False)
-        self.vline.set_visible(False)
-        self.pageRects = []
-        numpages = len(depths)
-        for i, depth in enumerate(depths):
-            facecolor = self.activecolor if i == valinit else self.facecolor
-            rectangle = matplotlib.patches.Rectangle(
-                (float(i) / numpages, 0),
-                1.0 / numpages,
+        # Make the selection depth buttons
+        self.depthSelections = []
+        numDepths = float(len(depths))
+        rectangleBot = 0
+        textYCoord = 0.5
+        # startBoundaries go from zero to just below 1.
+        leftBoundary = [i / numDepths for i, _depths in enumerate(depths)]
+        for leftBoundary, depth in zip(leftBoundary, depths):
+            # First depth (leftBoundary==0) is on, rest are off.
+            if leftBoundary == 0:
+                color = self.selectedDepthColor
+            else:
+                color = self.nonSelectedDepthColor
+            depthSelectBox = matplotlib.patches.Rectangle(
+                (leftBoundary, rectangleBot),
+                1.0 / numDepths,
                 1,
                 transform=ax.transAxes,
-                facecolor=facecolor,
+                facecolor=color,
             )
-            ax.add_artist(rectangle)
-            self.pageRects.append(rectangle)
+            ax.add_artist(depthSelectBox)
+            self.depthSelections.append(depthSelectBox)
+
+            # Make text halfway into box
+            textXCoord = leftBoundary + 0.5 / numDepths
             ax.text(
-                float(i) / numpages + 0.5 / numpages,
-                0.5,
+                textXCoord,
+                textYCoord,
                 "{:.1f}".format(depth),
                 ha="center",
                 va="center",
                 transform=ax.transAxes,
-                fontsize=self.fontsize,
+                fontsize=fontsize,
             )
+
+        # Make forward and backward button
+        backwardArrow, forwardArrow = "$\u25C0$", "$\u25B6$"
+        divider = axes_grid1.make_axes_locatable(ax)
+        buttonWidthPercent = "5%"
+        backwardAxes = divider.append_axes("right", size=buttonWidthPercent, pad=0.03)
+        forwardAxes = divider.append_axes("right", size=buttonWidthPercent, pad=0.03)
+        self.backButton = matplotlib.widgets.Button(
+            backwardAxes,
+            label=backwardArrow,
+            color=self.nonSelectedDepthColor,
+            hovercolor=self.selectedDepthColor,
+        )
+        self.backButton.label.set_fontsize(fontsize)
+        self.backButton.on_clicked(self.previous)
+        self.forwardButton = matplotlib.widgets.Button(
+            forwardAxes,
+            label=forwardArrow,
+            color=self.nonSelectedDepthColor,
+            hovercolor=self.selectedDepthColor,
+        )
+        self.forwardButton.label.set_fontsize(fontsize)
+        self.forwardButton.on_clicked(self.next)
+
+        # init at end since slider will set val to 0, and it needs to have state
+        # setup before doing that
+        Slider.__init__(self, ax, sliderLabel, 0, len(depths), valinit=0, **kwargs)
+        self.on_changed(updateFunc)
+        self.set_val(valInit)  # need to set after updateFunc is added.
+
+        # Turn off value visibility since the buttons text shows the value
         self.valtext.set_visible(False)
 
-        divider = axes_grid1.make_axes_locatable(ax)
-        bax = divider.append_axes("right", size="5%", pad=0.05)
-        fax = divider.append_axes("right", size="5%", pad=0.05)
-        self.button_back = matplotlib.widgets.Button(
-            bax, label="$\u25C0$", color=self.facecolor, hovercolor=self.activecolor
-        )
-        self.button_forward = matplotlib.widgets.Button(
-            fax, label="$\u25B6$", color=self.facecolor, hovercolor=self.activecolor
-        )
-        self.button_back.label.set_fontsize(self.fontsize)
-        self.button_forward.label.set_fontsize(self.fontsize)
-        self.button_back.on_clicked(self.backward)
-        self.button_forward.on_clicked(self.forward)
-
-    def _update(self, event):
-        super(PageSlider, self)._update(event)
-        i = int(self.val)
-        if i >= self.valmax:
+    def set_val(self, val):
+        """
+        Set the value and update the color.
+        
+        Notes
+        -----
+        valmin/valmax are set on the parent to 0 and len(depths).
+        """
+        val = int(val)
+        # valmax is not allowed, since it is out of the array.
+        # valmin is allowed since 0 index is in depth array.
+        if val < self.valmin or val >= self.valmax:
+            # invalid, so ignore
             return
-        self._colorize(i)
+        # activate color is first since we still have access to self.val
+        self.updatePageDepthColor(val)
+        Slider.set_val(self, val)
 
-    def _colorize(self, i):
-        for j in range(len(self.depths)):
-            self.pageRects[j].set_facecolor(self.facecolor)
-        self.pageRects[i].set_facecolor(self.activecolor)
+    def next(self, _event):
+        """
+        Move forward to the next depth (page).
+        
+        Notes
+        -----
+        valmin/valmax are set on the parent to 0 and len(depths).
+        """
+        self.set_val(self.val + 1)
 
-    def forward(self, event):
-        """Move forward to the next depth (page)."""
-        current_i = int(self.val)
-        i = current_i + 1
-        if (i < self.valmin) or (i >= self.valmax):
-            return
-        self.set_val(i)
-        self._colorize(i)
-
-    def backward(self, event):
+    def previous(self, _event):
         """Move backward to the previous depth (page)."""
-        current_i = int(self.val)
-        i = current_i - 1
-        if (i < self.valmin) or (i >= self.valmax):
-            return
-        self.set_val(i)
-        self._colorize(i)
+        self.set_val(self.val - 1)
+
+    def updatePageDepthColor(self, newVal):
+        """Update the page colors."""
+        self.depthSelections[self.val].set_facecolor(self.nonSelectedDepthColor)
+        self.depthSelections[newVal].set_facecolor(self.selectedDepthColor)
 
 
 def plotAssemblyTypes(
-    core, assems=None, plotNumber=1, maxAssems=None, showBlockAxMesh=True
+    blueprints,
+    coreName,
+    assems=None,
+    plotNumber=1,
+    maxAssems=None,
+    showBlockAxMesh=True,
 ):
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
 
     Parameters
     ----------
-    core: Core
-        The core to plot assembly types of.
+    bluepprints: Blueprints
+        The blueprints to plot assembly types of.
 
     assems: list
         list of assembly objects to be plotted.
@@ -611,7 +651,7 @@ def plotAssemblyTypes(
     """
 
     if assems is None:
-        assems = list(core.parent.blueprints.assemblies.values())
+        assems = list(blueprints.assemblies.values())
     if not isinstance(assems, (list, set, tuple)):
         assems = [assems]
     if not isinstance(plotNumber, int):
@@ -669,13 +709,13 @@ def plotAssemblyTypes(
     ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
-    ax.set_title("Assembly Designs for {}".format(core.name), y=1.03)
+    ax.set_title("Assembly Designs for {}".format(coreName), y=1.03)
     ax.set_ylabel("Thermally Expanded Axial Heights (cm)".upper(), labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
 
     # Plot and save figure
     ax.plot()
-    figName = core.name + "AssemblyTypes{}.png".format(plotNumber)
+    figName = coreName + "AssemblyTypes{}.png".format(plotNumber)
     runLog.debug("Writing assem layout {} in {}".format(figName, os.getcwd()))
     fig.savefig(figName)
     plt.close(fig)

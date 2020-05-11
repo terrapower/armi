@@ -224,7 +224,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         assemsToPlot = self.convReactor.core[:12]
         for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=1):
             plotting.plotAssemblyTypes(
-                self.convReactor.core,
+                self.convReactor.core.parent.blueprints,
+                self.convReactor.core.name,
                 assemBatch,
                 plotNum,
                 maxAssems=6,

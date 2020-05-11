@@ -44,9 +44,9 @@ from armi.physics.neutronics import isotopicDepletion
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
 
-def buildOperatorOfEmptyBlocks(customSettings=None, reactorType="Hex"):
+def buildOperatorOfEmptyHexBlocks(customSettings=None):
     """
-    Builds a operator w/ a reactor object with some assemblies and blocks, but all are empty
+    Builds a operator w/ a reactor object with some hex assemblies and blocks, but all are empty
 
     Doesn't depend on inputs and loads quickly.
 
@@ -54,44 +54,63 @@ def buildOperatorOfEmptyBlocks(customSettings=None, reactorType="Hex"):
     ------
     customSettings : dict
         Dictionary of off-default settings to update
-
-    reactorType : str
-        Str with value of ``Hex`` or `Cartesian``.
     """
-    if reactorType not in {"Hex", "Cartesian"}:
-        raise ValueError(f"{reactorType} is not supported by this method.")
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
     cs["db"] = False  # stop use of database
     if customSettings is not None:
         cs.update(customSettings)
-    if reactorType == "Hex":
-        r = tests.getEmptyHexReactor()
-        AssemClass = assemblies.HexAssembly
-        BlockClass = blocks.HexBlock
-        CompClass = Hexagon
-        dims = {"op": 16.0, "ip": 1}
-    elif reactorType == "Cartesian":
-        r = tests.getEmptyCartesianReactor()
-        AssemClass = assemblies.CartesianAssembly
-        BlockClass = blocks.CartesianBlock
-        CompClass = Rectangle
-        dims = {
-            "widthOuter": 16.0,
-            "lengthOuter": 10.0,
-            "widthInner": 1,
-            "lengthInner": 1,
-        }
-
+    r = tests.getEmptyHexReactor()
     o = operators.Operator(cs)
     o.initializeInterfaces(r)
 
-    a = AssemClass("fuel")
+    a = assemblies.HexAssembly("fuel")
     a.spatialGrid = grids.axialUnitGrid(1)
-    b = BlockClass("TestBlock")
+    b = blocks.HexBlock("TestBlock")
     b.setType("fuel")
-    dims.update({"Tinput": 600, "Thot": 600, "mult": 1})
-    c = CompClass("fuel", uZr.UZr(), **dims)
+    dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
+    c = Hexagon("fuel", uZr.UZr(), **dims)
+    b.add(c)
+    a.add(b)
+    a.spatialLocator = r.core.spatialGrid[1, 0, 0]
+    o.r.core.add(a)
+    return o
+
+
+def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
+    """
+    Builds a operator w/ a reactor object with some Cartesian assemblies and blocks, but all are empty
+
+    Doesn't depend on inputs and loads quickly.
+
+    Params
+    ------
+    customSettings : dict
+        Dictionary of off-default settings to update
+    """
+    settings.setMasterCs(None)  # clear
+    cs = settings.getMasterCs()  # fetch new
+    cs["db"] = False  # stop use of database
+    if customSettings is not None:
+        cs.update(customSettings)
+    r = tests.getEmptyCartesianReactor()
+    o = operators.Operator(cs)
+    o.initializeInterfaces(r)
+
+    a = assemblies.CartesianAssembly("fuel")
+    a.spatialGrid = grids.axialUnitGrid(1)
+    b = blocks.CartesianBlock("TestBlock")
+    b.setType("fuel")
+    dims = {
+        "Tinput": 600,
+        "Thot": 600,
+        "widthOuter": 16.0,
+        "lengthOuter": 10.0,
+        "widthInner": 1,
+        "lengthInner": 1,
+        "mult": 1,
+    }
+    c = Rectangle("fuel", uZr.UZr(), **dims)
     b.add(c)
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
@@ -574,7 +593,7 @@ class HexReactorTests(_ReactorTests):
 
 class CartesianReactorTests(_ReactorTests):
     def setUp(self):
-        self.o = buildOperatorOfEmptyBlocks(reactorType="Cartesian")
+        self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
 
     def test_getAssemblyPitch(self):
