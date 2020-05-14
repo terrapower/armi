@@ -175,13 +175,14 @@ class DatabaseInterface(interfaces.Interface):
         interface stack (so that all the parameters have been updated) while the Main
         Interface interacts first.
         """
-        if self.cs["reloadDBName"].lower() == (self.cs.caseTitle + ".h5").lower():
+        databaseName = self.cs.caseTitle + ".h5"
+        if os.path.exists(os.path.abspath(databaseName)):
             raise ValueError(
-                "It appears that reloadDBName is the same as the case "
-                "title. This could lead to data loss! Rename the reload DB or the "
-                "case."
+                "There is already a database file {}.\nIt would be overwritten. "
+                "Please rename your case (settings file) to a name that does not yet "
+                "have a database.".format(os.path.abspath(databaseName))
             )
-        self._db = Database3(self.cs.caseTitle + ".h5", "w")
+        self._db = Database3(databaseName, "w")
         self._db.open()
 
         # Grab geomString here because the DB-level has no access to the reactor or

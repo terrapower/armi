@@ -332,12 +332,14 @@ class TestDatabaseReading(unittest.TestCase):
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
         dbi = DatabaseInterface(None, cs)
+        with open("aRmIRuN.h5", "w"):  # check case insensitive
+            pass  # just make file, don't do anything with it
         with self.assertRaises(ValueError):
             # an error should be raised when the database loaded from
             # has the same name as the run to avoid overwriting.
             dbi.initDB()
+        os.remove("aRmIRuN.h5")
 
 
 class TestStandardFollowOn(unittest.TestCase):
