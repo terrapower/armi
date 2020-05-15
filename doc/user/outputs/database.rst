@@ -8,6 +8,52 @@ the text of the input files that were used to create the case, and for each time
 the values of all composite parameters as well as layout information to help fully
 reconstruct the structure of the reactor model.
 
+Loading Reactor State
+=====================
+Among other things, the database file can be used to recover an ARMI reactor model from
+any of the time nodes that it contains. This can be useful for performing restart runs,
+or for doing custom post-processing tasks. To load a reactor state, you will need to
+open the database file into a ``Database`` object. From there, you can call the
+:py:meth:`armi.bookkeeping.db.Database3.load()` method to get a recovered
+reactor object. For instance, given a database file called ``myDatabase.h5``, we could
+load the reactor state at cycle 5, time node 2 with the following::
+
+   from armi.bookkeeping.db import databaseFactory
+
+   db = databaseFactory("myDatabase.h5", "r")
+
+   # The underlying file is not left open when we can help it. Use the handy context
+   # manager to temporarily open the file and interact with the data:
+   with db:
+       r = db.load(5, 2)
+
+Extracting Reactor History
+==========================
+Not only can the database reproduce reactor state for a given time node, it can also
+extract a history of specific parameters for specific objects through the
+:py:meth:`armi.bookkeeping.db.Database3.getHistory()` and
+:py:meth:`armi.bookkeeping.db.Database3.getHistories()` methods.
+For example, given the reactor object, ``r`` from the example above, we could get the
+entire history of an assembly's ring, position and areal power density with the
+following::
+
+   from armi.reactor.flags import Flags
+
+   # grab a fuel assembly from the reactor
+   a = r.core.getAssemblies(Flags.FUEL)
+
+   # Don't forget to open the database!
+   with db:
+       aHist = db.getHistory(a, ["ring", "pos", "arealPd"])
+
+
+Extracting Settings and Blueprints
+==================================
+As well as the reactor states for each time node, the database file also stores the
+input files (blueprints and settings files) used to run the case that generated it.
+These can be recovered using the `extract-inputs` ARMI entry point. Use `python -m armi
+extract-inputs --help` for more information.
+
 File format
 ===========
 

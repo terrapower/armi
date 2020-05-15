@@ -1196,9 +1196,10 @@ class Database3(database.Database):
 
         This implementation is unaware of the state of the reactor outside of the
         database itself, and is therefore not usually what client code should be calling
-        directly. It only knows about historical data that actually exists in the
-        database. Usually one wants to be able to get historical, plus current data, for
-        which the similar method on the DatabaseInterface is more useful.
+        directly during normal ARMI operation. It only knows about historical data that
+        have actually been written to the database. Usually one wants to be able to get
+        historical, plus current data, for which the similar method on the
+        DatabaseInterface may be more useful.
 
         Parameters
         ==========
