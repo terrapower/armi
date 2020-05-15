@@ -24,6 +24,18 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
     """
     Return an appropriate object for interacting with a database file.
 
+    Parameters
+    ----------
+    dbName: str
+        Path to db file, e.g. `baseCase.h5`
+    permission: str
+        String defining permission, `r` for read only. See armi.bookeeping.db.permissions
+    version: str, optional
+        Version of database you want to read or write. In many cases ARMI will 
+        auto-detect. For advanced users.
+    
+    Notes
+    -----
     This is not a proper factory, as the different database versions do not present a
     common interface. However, this is useful code, since it at least creates an object
     based on some knowledge of how to probe around. This allows client code to just
