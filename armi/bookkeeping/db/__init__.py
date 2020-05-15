@@ -67,6 +67,15 @@ from .compareDB3 import compareDatabases
 from .factory import databaseFactory
 
 
+__all__ = [
+    "Database3",
+    "DatabaseInterface",
+    "XTViewDatabase",
+    "compareDatabases",
+    "databaseFactory",
+]
+
+
 def loadOperator(pathToDb, loadCycle, loadNode):
     """
     Return an operator given the path to a database.
