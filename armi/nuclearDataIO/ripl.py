@@ -30,7 +30,7 @@ from armi.utils import units
 from armi.settings.caseSettings import Settings
 
 DECAY_CONSTANTS = {}
-MINIMUM_HALFLIFE = 1.0e-06
+MINIMUM_HALFLIFE = 2.8e-7
 STABLE_FLAG = -1
 UNKNOWN_HALFLIFE = -2
 EXIT_DATA_FILE = -3
@@ -96,10 +96,6 @@ def getNuclideDecayConstants(fileName):
                         m += 1
 
                     else:
-                        msg = "metastable state for {}m{} greater than 1 -- skipping".format(
-                            symb, m
-                        )
-                        runLog.warning(msg)
                         level += numLevels + 1
 
                 elif halflife < MINIMUM_HALFLIFE or halflife == UNKNOWN_HALFLIFE:

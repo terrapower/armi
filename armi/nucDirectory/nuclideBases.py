@@ -16,6 +16,12 @@ r"""
 The nuclideBases module classes for providing *base* nuclide information, such as
 Z, A, state and energy release.
 
+By default the data used to create the nuclides comes from a subset of the RIPL-3
+database, which ships with ARMI. The entire RIPL-3 database can be downloaded from
+`<https://www-nds.iaea.org/RIPL-3/levels/>`_. If the ``ARMI_RIPL_PATH`` environment
+is set to a location containing the full RIPL-3 database, all nuclides will be read
+from there.
+
 The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
 
 .. _nuclide-bases-class-diagram:
@@ -101,8 +107,10 @@ Table of All nuclides:
 """
 
 import os
+import pathlib
+import hashlib
+
 import yaml
-import collections
 
 import armi
 from armi.nucDirectory import elements
@@ -115,6 +123,7 @@ from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 # unphysically. This is a bit of a crutch for the global state that is the nuclide
 # directory.
 _burnChainImposed = False
+_burnChainHash = None
 
 instances = []
 
@@ -128,7 +137,6 @@ byLabel = {}
 byMccId = {}
 
 byMcnpId = {}
-
 
 byAAAZZZSId = {}
 
@@ -147,6 +155,8 @@ BASE_ENDFB7_MAT_NUM = {
     "CF": 240,
     "TC": 99,
 }
+
+RIPL_PATH = None
 
 
 def isotopes(z):
@@ -378,15 +388,25 @@ def imposeBurnChain(burnChainStream):
     armi.nucDirectory.transmutations : describes file format
     """
     global _burnChainImposed  # pylint: disable=global-statement
+    global _burnChainHash  # pylint: disable=global-statement
     if _burnChainImposed:
-        # We cannot apply more than one burn chain at a time, as this would lead to
-        # unphysical traits in the nuclide directory (e.g., duplicate decays and
-        # transmutations)
-        runLog.warning(
-            "Applying a burn chain when one has already been applied; "
-            "resetting the nuclide directory to it's default state first."
-        )
-        factory(True)
+        streamHash = hashlib.sha1()
+        streamHash.update(burnChainStream.read().encode())
+        burnChainStream.seek(0)
+        if _burnChainHash is not None:
+            if streamHash.digest() != _burnChainHash:
+                # We cannot apply more than one burn chain at a time, as this would lead to
+                # unphysical traits in the nuclide directory (e.g., duplicate decays and
+                # transmutations)
+                runLog.warning(
+                    "Applying a burn chain when one has already been applied; "
+                    "resetting the nuclide directory to it's default state first."
+                )
+                # Probably the only reason to do this is
+                # for unit tests
+                factory(True)
+        _burnChainHash = streamHash.digest()
+
     _burnChainImposed = True
     burnData = yaml.load(burnChainStream, Loader=yaml.FullLoader)
     for nucName, burnInfo in burnData.items():
@@ -440,6 +460,46 @@ def factory(force=False):
         __readMc2Nuclides()
         _completeNaturalNuclideBases()
         elements.deriveNaturalWeights()
+        riplDataPath = _findRiplData()
+        if riplDataPath is not None:
+            from armi.nuclearDataIO import ripl
+
+            ripl.makeDecayConstantTable(directory=riplDataPath)
+
+
+def _findRiplData():
+    """
+    Validates that the ``ARMI_RIPL_PATH`` environment variable has been set
+    and points to a valid directory for reading in the RIPL database files.
+    """
+    global RIPL_PATH
+
+    riplEnvironVariable = "ARMI_RIPL_PATH"
+    if riplEnvironVariable not in os.environ:
+        return None
+
+    path = pathlib.Path(os.environ.get(riplEnvironVariable))
+    if not path.exists() or not path.is_dir():
+        raise ValueError(f"`{riplEnvironVariable}`: {path} is invalid.")
+
+    # Check for all (.dat) data files within the directory. These
+    # are ordered from z000.dat to z117.dat. If all files do not
+    # exist then an exception is thrown for the missing data files.
+    numRIPLDataFiles = 118
+    dataFileNames = ["z{:>03d}.dat".format(i) for i in range(0, numRIPLDataFiles)]
+    missingFileNames = []
+    for df in dataFileNames:
+        expectedDataFilePath = os.path.abspath(os.path.join(path, df))
+        if not os.path.exists(expectedDataFilePath):
+            missingFileNames.append(df)
+    if missingFileNames:
+        raise ValueError(
+            f"There are {len(missingFileNames)} missing RIPL data files in `{riplEnvironVariable}`: {path}.\n"
+            f"The following data files were expected: {missingFileNames}"
+        )
+
+    RIPL_PATH = path
+    return path
 
 
 def _completeNaturalNuclideBases():
