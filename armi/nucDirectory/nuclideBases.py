@@ -13,14 +13,10 @@
 # limitations under the License.
 
 r"""
-The nuclideBases module classes for providing *base* nuclide information, such as
-Z, A, state and energy release.
+The nuclideBases module classes for providing *base* nuclide information, such as Z, A, state and energy release.
 
-By default the data used to create the nuclides comes from a subset of the RIPL-3
-database, which ships with ARMI. The entire RIPL-3 database can be downloaded from
-`<https://www-nds.iaea.org/RIPL-3/levels/>`_. If the ``ARMI_RIPL_PATH`` environment
-is set to a location containing the full RIPL-3 database, all nuclides will be read
-from there.
+For details on how to setup the RIPL-3 data files to process extra nuclide data see:
+:doc:`/user/user_install`
 
 The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
 
@@ -67,34 +63,27 @@ Retrieve U-235 by the AAAZZZS ID.
 <NuclideBase U235: Z:92, A:235, S:0, label:U235, mc2id:U-2355>
 U235_7
 
-
-Table of All nuclides:
-
 .. exec::
     from tabulate import tabulate
     from armi.nucDirectory import nuclideBases
 
-    attributes = [ 'type',
-                    'name',
-                    'a',
-                    'z',
-                    'state',
-                    'weight',
-                    'label',
-                    'mc2id',
-                    'getMcc3Id']
+    attributes = ['name',
+                  'a',
+                  'z',
+                  'state',
+                  'weight',
+                  'label',
+                  'type']
 
     def getAttributes(nuc):
         return [
-            ':py:class:`~armi.nucDirectory.nuclideBases.{}`'.format(nuc.__class__.__name__),
             '``{}``'.format(nuc.name),
             '``{}``'.format(nuc.a),
             '``{}``'.format(nuc.z),
             '``{}``'.format(nuc.state),
             '``{}``'.format(nuc.weight),
             '``{}``'.format(nuc.label),
-            '``{}``'.format(nuc.mc2id),
-            '``{}``'.format(nuc.getMcc3Id()),
+            ':py:class:`~armi.nucDirectory.nuclideBases.{}`'.format(nuc.__class__.__name__),
         ]
 
     sortedNucs = sorted(nuclideBases.instances, key=lambda nb: (nb.z, nb.a))
@@ -102,13 +91,13 @@ Table of All nuclides:
     return create_table(tabulate(tabular_data=[getAttributes(nuc) for nuc in sortedNucs],
                                  headers=attributes,
                                  tablefmt='rst'),
-                        caption='List of nulides')
+                        caption='List of nuclides')
 
 """
 
 import os
 import pathlib
-import hashlib
+import zlib
 
 import yaml
 
@@ -156,6 +145,7 @@ BASE_ENDFB7_MAT_NUM = {
     "TC": 99,
 }
 
+_riplEnvironVariable = "ARMI_RIPL_PATH"
 RIPL_PATH = None
 
 
@@ -390,11 +380,17 @@ def imposeBurnChain(burnChainStream):
     global _burnChainImposed  # pylint: disable=global-statement
     global _burnChainHash  # pylint: disable=global-statement
     if _burnChainImposed:
-        streamHash = hashlib.sha1()
-        streamHash.update(burnChainStream.read().encode())
+
+        # Check that the hash of the burnChain is the same or
+        # different. If different then re-init the nuclides.
+        # The burn chain should really only be changing for
+        # special cases (e.g., unit testing). Note: after
+        # hashing is performed, the stream location has to
+        # be reset.
+        streamHash = zlib.crc32(burnChainStream.read().encode())
         burnChainStream.seek(0)
         if _burnChainHash is not None:
-            if streamHash.digest() != _burnChainHash:
+            if streamHash != _burnChainHash:
                 # We cannot apply more than one burn chain at a time, as this would lead to
                 # unphysical traits in the nuclide directory (e.g., duplicate decays and
                 # transmutations)
@@ -402,10 +398,8 @@ def imposeBurnChain(burnChainStream):
                     "Applying a burn chain when one has already been applied; "
                     "resetting the nuclide directory to it's default state first."
                 )
-                # Probably the only reason to do this is
-                # for unit tests
                 factory(True)
-        _burnChainHash = streamHash.digest()
+        _burnChainHash = streamHash
 
     _burnChainImposed = True
     burnData = yaml.load(burnChainStream, Loader=yaml.FullLoader)
@@ -460,27 +454,38 @@ def factory(force=False):
         __readMc2Nuclides()
         _completeNaturalNuclideBases()
         elements.deriveNaturalWeights()
-        riplDataPath = _findRiplData()
-        if riplDataPath is not None:
-            from armi.nuclearDataIO import ripl
-
-            ripl.makeDecayConstantTable(directory=riplDataPath)
+        __readRiplDecayData()
 
 
-def _findRiplData():
+def __readRiplDecayData():
     """
-    Validates that the ``ARMI_RIPL_PATH`` environment variable has been set
-    and points to a valid directory for reading in the RIPL database files.
+    Read in the RIPL-3 decay data files and update nuclide bases.
+    
+    Notes
+    -----
+    This makes an assumption that the RIPL-3 data files have a 
+    `z???.dat` naming convention and assumes that there are 118 
+    total data files in the package.
+    
+    The processing is skipped if the ``ARMI_RIPL_PATH`` environment 
+    variable has not been set.
+       
+    Raises
+    ------
+    ValueError
+        If the ``ARMI_RIPL_PATH`` is defined, but set incorrectly.
     """
+    from armi.nuclearDataIO import ripl
+
     global RIPL_PATH
 
-    riplEnvironVariable = "ARMI_RIPL_PATH"
-    if riplEnvironVariable not in os.environ:
+    riplPath = os.environ.get(_riplEnvironVariable, None)
+    if riplPath is None:
         return None
 
-    path = pathlib.Path(os.environ.get(riplEnvironVariable))
+    path = pathlib.Path(riplPath)
     if not path.exists() or not path.is_dir():
-        raise ValueError(f"`{riplEnvironVariable}`: {path} is invalid.")
+        raise ValueError(f"`{_riplEnvironVariable}`: {path} is invalid.")
 
     # Check for all (.dat) data files within the directory. These
     # are ordered from z000.dat to z117.dat. If all files do not
@@ -494,12 +499,12 @@ def _findRiplData():
             missingFileNames.append(df)
     if missingFileNames:
         raise ValueError(
-            f"There are {len(missingFileNames)} missing RIPL data files in `{riplEnvironVariable}`: {path}.\n"
+            f"There are {len(missingFileNames)} missing RIPL data files in `{_riplEnvironVariable}`: {path}.\n"
             f"The following data files were expected: {missingFileNames}"
         )
 
+    ripl.makeDecayConstantTable(directory=path)
     RIPL_PATH = path
-    return path
 
 
 def _completeNaturalNuclideBases():
