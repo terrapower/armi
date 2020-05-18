@@ -21,7 +21,6 @@ maintained to allow conversions between database formats and visualization.
 # pylint: disable=too-many-public-methods
 
 import copy
-import math
 import io
 import os
 import re
@@ -30,24 +29,23 @@ import traceback
 import itertools
 
 import numpy
+import h5py
 
 import armi
 from armi import runLog
 from armi import settings
 from armi import utils
-from armi.bookkeeping import db
 from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.reactor import reactors
 from armi.reactor import blocks
-from armi.reactor import assemblies
 from armi.reactor import locations
 from armi.reactor import parameters
 from armi.reactor import geometry
 from armi.reactor.flags import Flags
 from armi.utils import exceptions
 
-import h5py
+import armi.physics.fuelPerformance.utils as fuelUtils
 
 
 class XTViewDatabase:
@@ -603,7 +601,7 @@ class XTViewDatabase:
         according to the bondRemoved param.
         """
         for b in reactor.core.getBlocks(Flags.FUEL):
-            b.enforceBondRemovalFraction(b.p.bondRemoved)
+            fuelUtils.enforceBondRemovalFraction(b, b.p.bondRemoved)
 
     def lookupGeometry(self):
         """

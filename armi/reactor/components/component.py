@@ -737,10 +737,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             The value to set on the dimension
         retainLink : bool, optional
-            If True, the val will be applied to the dimension of linked component which indirectly
-            changes this component's dimensions.
+            If True, the val will be applied to the dimension of linked 
+            component which indirectly changes this component's dimensions.
         cold : book, optional
-            If True sets the component to the dimension that would cause the hot dimension to be the specified value.
+            If True sets the component to the dimension that would cause 
+            the hot dimension to be the specified value.
         """
         if not key:
             return
@@ -801,9 +802,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Clear this cache and any other dependent volumes."""
         self.clearCache()
         if self.parent:  # pylint: disable=no-member
-            self.parent.cached = (
-                {}
-            )  # changes in dimensions can affect cached variables such as pitch
+            # changes in dimensions can affect cached variables such as pitch
+            self.parent.cached = {}
             for c in self.getLinkedComponents():
                 # no clearCache since parent already updated derivedMustUpdate in self.clearCache()
                 c.p.volume = None

@@ -137,6 +137,8 @@ class HistoryTrackerInterface(interfaces.Interface):
     def interactBOC(self, cycle=None):
         """Look for any new assemblies that are asked for and add them to tracking."""
         self.addDetailAssemsByAssemNums()
+        if self.cs["detailAllAssems"]:
+            self.addAllFuelAssems()
 
     def interactEOL(self):
         """Generate the history reports."""
@@ -164,13 +166,17 @@ class HistoryTrackerInterface(interfaces.Interface):
                 self.addDetailAssembly(a)
 
         if self.cs["detailAllAssems"]:
-            for a in self.r.getAssemblies():
-                if a.hasFlags(Flags.FUEL):
-                    self.addDetailAssembly(a)
+            self.addAllFuelAssems()
 
         # This also gets called at BOC but we still
         # do it here for operators that do not call BOC.
         self.addDetailAssemsByAssemNums()
+
+    def addAllFuelAssems(self):
+        """Add all fuel assems as detail assems."""
+        for a in self.r.core:
+            if a.hasFlags(Flags.FUEL):
+                self.addDetailAssembly(a)
 
     def addDetailAssemsByAssemNums(self):
         """
@@ -230,8 +236,10 @@ class HistoryTrackerInterface(interfaces.Interface):
         return sorted(trackedParams)
 
     def addDetailAssembly(self, a):
-        """Track the name of all assemblies flagged for detailed treatment."""
-        self.detailAssemblyNames.append(a.getName())
+        """Track the name of assemblies that are flagged for detailed treatment."""
+        aName = a.getName()
+        if aName not in self.detailAssemblyNames:
+            self.detailAssemblyNames.append(aName)
 
     def getDetailAssemblies(self):
         r"""returns the assemblies that have been signaled as detail assemblies."""

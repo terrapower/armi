@@ -1265,31 +1265,6 @@ class Block_TestCase(unittest.TestCase):
         moles3 = b.p.molesHmBOL
         self.assertAlmostEqual(moles2, moles3)
 
-    def test_enforceBondRemovalFraction(self):
-        b = self.Block
-        bond = b.getComponent(Flags.BOND)
-        bondRemovalFrac = 0.705
-        ndensBefore = b.getNumberDensity("NA")
-        bondNdensBefore = bond.getNumberDensity("NA")
-        b.p.bondBOL = bondNdensBefore
-        b.enforceBondRemovalFraction(bondRemovalFrac)
-        bondNdensAfter = bond.getNumberDensity("NA")
-        ndensAfter = b.getNumberDensity("NA")
-
-        self.assertAlmostEqual(
-            bondNdensAfter / bondNdensBefore, (1.0 - bondRemovalFrac)
-        )
-        self.assertAlmostEqual(ndensBefore, ndensAfter)
-
-        # make sure it doesn't change if you run it twice
-        b.enforceBondRemovalFraction(bondRemovalFrac)
-        bondNdensAfter = bond.getNumberDensity("NA")
-        ndensAfter = b.getNumberDensity("NA")
-        self.assertAlmostEqual(
-            bondNdensAfter / bondNdensBefore, (1.0 - bondRemovalFrac)
-        )
-        self.assertAlmostEqual(ndensBefore, ndensAfter)
-
     def test_getMfp(self):
         """Test mean free path."""
         applyDummyData(self.Block)
