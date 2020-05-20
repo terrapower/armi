@@ -355,9 +355,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "linPow",
             units="W/m",
-            description="Linear heat generation rate",
+            description="Pin-averaged linear heat generation rate",
             location=ParamLocation.AVERAGE,
             default=0.0,
+            categories=[parameters.Category.detailedAxialExpansion],
         )
 
         pb.defParam(
