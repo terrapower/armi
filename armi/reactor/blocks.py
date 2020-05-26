@@ -613,7 +613,15 @@ class Block(composites.Composite):
             self.setNDensParam(nucName, ndens)
 
     def updateAllNumberDensityParams(self):
-        """Update all block-level ndens params for visualization."""
+        """
+        Update all block-level ndens params.
+        Notes
+        -----
+        Recall that actual number densities are not the same as the number
+        density params (they're really stored on the components). These
+        params are still useful for plotting block-level number density
+        information in database viewers, etc.
+        """
         for nucName, ndens in self.getNumberDensities().items():
             self.setNDensParam(nucName, ndens)
 

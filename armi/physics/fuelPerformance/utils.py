@@ -72,13 +72,16 @@ def enforceBondRemovalFraction(block, bondRemovedFrac):
 
 def applyFuelDisplacement(block, displacementInCm):
     r"""
-    Expands the fuel in a pin. 
+    Expands the fuel radius in a pin by a number of cm.
 
     Assumes there's thermal bond in it to displace.
     This adjusts the dimension of the fuel while conserving its mass.
 
     The bond mass is not conserved; it is assumed to be pushed up into the plenum
     but the modeling of this is not done yet by this method.
+    
+    .. warning:: A 0.5% buffer is included to avoid overlaps. This should be analyzed
+        in detail as a methodology before using in any particular analysis.
 
     .. math::
 
