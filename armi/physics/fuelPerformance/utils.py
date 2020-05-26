@@ -98,4 +98,4 @@ def applyFuelDisplacement(block, displacementInCm):
     fuel.setDimension("od", newHotODInCm, retainLink=True, cold=False)
     # reduce number density of fuel to conserve number of atoms (and mass)
     fuel.changeNDensByFactor(originalHotODInCm ** 2 / newHotODInCm ** 2)
-    block.updateAllNumberDensityParams()
+    block.buildNumberDensityParams()

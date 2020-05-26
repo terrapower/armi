@@ -612,9 +612,10 @@ class Block(composites.Composite):
         for nucName, ndens in numberDensities.items():
             self.setNDensParam(nucName, ndens)
 
-    def updateAllNumberDensityParams(self):
+    def buildNumberDensityParams(self, nucNames=None):
         """
-        Update all block-level ndens params.
+        Copy homogenized density onto self.p for storing in the DB.
+
         Notes
         -----
         Recall that actual number densities are not the same as the number
@@ -622,8 +623,12 @@ class Block(composites.Composite):
         params are still useful for plotting block-level number density
         information in database viewers, etc.
         """
-        for nucName, ndens in self.getNumberDensities().items():
-            self.setNDensParam(nucName, ndens)
+        if nucNames is None:
+            nucNames = self.getNuclides()
+        nucBases = [nuclideBases.byName[nn] for nn in nucNames]
+        nucDensities = self.getNuclideNumberDensities(nucNames)
+        for nb, ndens in zip(nucBases, nucDensities):
+            self.p[nb.getDatabaseName()] = ndens
 
     def setNDensParam(self, nucName, ndens):
         """
@@ -2021,15 +2026,6 @@ class Block(composites.Composite):
         for nucName, nucDens in numberDensities.items():
             lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
         return lines
-
-    def buildNumberDensityParams(self, nucNames=None):
-        """Copy homogenized density onto self.p for storing in the DB."""
-        if nucNames is None:
-            nucNames = self.getNuclides()
-        nucBases = [nuclideBases.byName[nn] for nn in nucNames]
-        nucDensities = self.getNuclideNumberDensities(nucNames)
-        for nb, ndens in zip(nucBases, nucDensities):
-            self.p[nb.getDatabaseName()] = ndens
 
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
