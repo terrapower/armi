@@ -440,6 +440,8 @@ class ParameterDefinitionCollection(object):
             self._representedTypes
         )
         assert self is not other
+        if other is None:
+            raise ValueError(f"Cannot extend {self} with `None`.")
         for pd in other:
             self.add(pd)
 

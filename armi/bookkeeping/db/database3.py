@@ -397,7 +397,7 @@ class DatabaseInterface(interfaces.Interface):
         """
         Get historical parameter values for one or more objects.
 
-        This is mostly a wrapper around the same fumction on the ``Database3`` class,
+        This is mostly a wrapper around the same function on the ``Database3`` class,
         but knows how to return the current value as well.
 
         See Also

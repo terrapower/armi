@@ -79,4 +79,25 @@ def _getFuelPerformanceBlockParams():
             location=ParamLocation.AVERAGE,
         )
 
+        pb.defParam(
+            "gasPorosity",
+            units="",
+            description="Fraction of fuel volume that is occupied by gas pores",
+            default=0.0,
+            categories=["eq cumulative shift"],
+        )
+
+        pb.defParam(
+            "liquidPorosity",
+            units="",
+            description="Fraction of fuel volume that is occupied by liquid filled pores",
+            default=0.0,
+        )
+
+        pb.defParam(
+            "fuelRadialDisplacement",
+            units="cm",
+            description="Radial fuel displacement from irradiation",
+        )
+
     return pDefs
