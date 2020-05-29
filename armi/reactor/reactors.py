@@ -293,8 +293,9 @@ class Core(composites.Composite):
     def lib(self):
         """"Get the microscopic cross section library."""
         if self._lib is None:
-            runLog.info("Loading microscopic cross section library ISOTXS")
-            self._lib = nuclearDataIO.ISOTXS()
+            runLog.warning(
+                f"A cross section library has not yet been assigned to {self}."
+            )
         return self._lib
 
     @lib.setter

@@ -126,7 +126,6 @@ class TestHexToRZConverter(unittest.TestCase):
             "thetaBins": 1,
             "axialMesh": [50, 100, 150, 175],
             "thetaMesh": [2 * math.pi],
-            "hexRingGeometryConversion": False,
         }
 
         expectedMassDict, expectedNuclideList = self._getExpectedData()
