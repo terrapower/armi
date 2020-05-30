@@ -32,8 +32,8 @@ import time
 import numpy
 
 import armi
-from armi import nuclearDataIO
 from armi import runLog
+from armi import nuclearDataIO
 from armi import settings
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -66,7 +66,6 @@ class Reactor(composites.Composite):
 
     def __init__(self, name, blueprints):
         composites.Composite.__init__(self, "R-{}".format(name))
-
         self.o = None
         self.spatialGrid = None
         self.spatialLocator = None
@@ -214,6 +213,7 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
+        self._libPath = None
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -224,6 +224,7 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
+        self._libPath = cs["initialXSFilePath"]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """
@@ -293,9 +294,10 @@ class Core(composites.Composite):
     def lib(self):
         """"Get the microscopic cross section library."""
         if self._lib is None:
-            runLog.warning(
-                f"A cross section library has not yet been assigned to {self}."
+            runLog.info(
+                f"Loading microscopic cross section library from {self._libPath}"
             )
+            self._lib = nuclearDataIO.ISOTXS(self._libPath)
         return self._lib
 
     @lib.setter

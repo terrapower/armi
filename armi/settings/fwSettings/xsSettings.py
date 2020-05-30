@@ -18,6 +18,7 @@ from armi.settings import setting
 
 
 CONF_CLEAR_XS = "clearXS"
+CONF_INITIAL_XS_FILE_PATH = "initialXSFilePath"
 CONF_DPA_XS_DIRECTORY_PATH = "DPAXSDirectoryPath"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
@@ -40,6 +41,15 @@ def defineSettings():
             default=False,
             label="Clear XS",
             description="Delete all cross section libraries before regenerating them.",
+        ),
+        setting.Setting(
+            CONF_INITIAL_XS_FILE_PATH,
+            default="",
+            label="XS File Path",
+            description=(
+                "Path to a valid ISOTXS XS file to load onto the core library attribute during construction. "
+                "This is helpful for analyses where the lattice physics interface is not being run and XS are still needed."
+            ),
         ),
         setting.Setting(
             CONF_DPA_XS_DIRECTORY_PATH,
