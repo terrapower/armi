@@ -55,10 +55,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
         from armi.physics.neutronics.fissionProductModel import fissionProductModel
 
         interfaceInfo = []
-        for mod in (
-            crossSectionGroupManager,
-            fissionProductModel,
-        ):
+        for mod in (crossSectionGroupManager, fissionProductModel):
             interfaceInfo += plugins.collectInterfaceDescriptions(mod, cs)
 
         return interfaceInfo
@@ -172,11 +169,12 @@ REAL_CALC = "real"
 ADJREAL_CALC = "both"
 
 # Constants for boundary conditions
-INFINITE = (
-    "Infinite"  # All external boundary conditions are set to zero outward current
-)
 
-REFLECTIVE = "Reflective"  # "Planar" external boundaries conditions are set to zero outward current
+# All external boundary conditions are set to zero outward current
+INFINITE = "Infinite"
+
+# "Planar" external boundaries conditions are set to zero outward current
+REFLECTIVE = "Reflective"
 
 # Generalized boundary conditions D * PHI PRIME + A * PHI = 0 where A is user-specified constant,
 # D is the diffusion coefficient, PHI PRIME and PHI are the outward current and flux at the

@@ -18,7 +18,6 @@ from armi.settings import setting
 
 
 CONF_CLEAR_XS = "clearXS"
-CONF_PRELOAD_CORE_XS = "preloadCoreXS"
 CONF_DPA_XS_DIRECTORY_PATH = "DPAXSDirectoryPath"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
@@ -41,15 +40,6 @@ def defineSettings():
             default=False,
             label="Clear XS",
             description="Delete all cross section libraries before regenerating them.",
-        ),
-        setting.Setting(
-            CONF_PRELOAD_CORE_XS,
-            default=False,
-            label="Preload Core XS",
-            description=(
-                "When enabled, the ISOTXS in the working directory will be loaded onto the core. "
-                "This is useful when a XS set is not being generated explicitly, but XS data is still needed for the analysis. "
-            ),
         ),
         setting.Setting(
             CONF_DPA_XS_DIRECTORY_PATH,

@@ -224,7 +224,7 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
-        self._preloadCoreXS = cs["preloadCoreXS"]
+        self._preloadCoreXS = True if not cs["genXS"] else False
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """
@@ -296,7 +296,10 @@ class Core(composites.Composite):
         if self._lib is None:
             if self._preloadCoreXS:
                 runLog.info(
-                    "Loading an existing ISOTXS microscopic cross section library"
+                    "A microscopic cross sections library is not already "
+                    f"provided on {self}. Because `genXS` is disabled, an "
+                    "existing `ISOTXS` microscopic cross section library "
+                    "within the working directory is being loaded instead."
                 )
                 self._lib = nuclearDataIO.ISOTXS()
             else:
