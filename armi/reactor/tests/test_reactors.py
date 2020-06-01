@@ -17,6 +17,7 @@ testing for reactors.py
 import copy
 import os
 import unittest
+import shutil
 
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
@@ -597,13 +598,14 @@ class HexReactorTests(_ReactorTests):
         # By default there should be no XS library
         # assigned to the core during initialization.
         o = buildOperatorOfEmptyHexBlocks()
-        with self.assertRaises(FileNotFoundError):
-            _lib = o.r.core.lib
+        self.assertIsNone(o.r.core.lib)
 
-        o = buildOperatorOfEmptyHexBlocks(
-            customSettings={"initialXSFilePath": ISOAA_PATH}
-        )
+        # Copy over an existing ISOTXS into the working directory to
+        # be preloaded onto the core.
+        shutil.copy(ISOAA_PATH, "ISOTXS")
+        o = buildOperatorOfEmptyHexBlocks(customSettings={"preloadCoreXS": True})
         self.assertTrue(isinstance(o.r.core.lib, xsLibraries.IsotxsLibrary))
+        os.remove("ISOTXS")
 
 
 class CartesianReactorTests(_ReactorTests):

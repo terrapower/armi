@@ -213,7 +213,7 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
-        self._libPath = None
+        self._preloadCoreXS = False
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -224,7 +224,7 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
-        self._libPath = cs["initialXSFilePath"]
+        self._preloadCoreXS = cs["preloadCoreXS"]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """
@@ -293,11 +293,9 @@ class Core(composites.Composite):
     @property
     def lib(self):
         """"Get the microscopic cross section library."""
-        if self._lib is None:
-            runLog.info(
-                f"Loading microscopic cross section library from {self._libPath}"
-            )
-            self._lib = nuclearDataIO.ISOTXS(self._libPath)
+        if self._lib is None and self._preloadCoreXS:
+            runLog.info(f"Loading existing ISOTXS microscopic cross section library")
+            self._lib = nuclearDataIO.ISOTXS()
         return self._lib
 
     @lib.setter
