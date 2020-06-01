@@ -293,9 +293,20 @@ class Core(composites.Composite):
     @property
     def lib(self):
         """"Get the microscopic cross section library."""
-        if self._lib is None and self._preloadCoreXS:
-            runLog.info(f"Loading existing ISOTXS microscopic cross section library")
-            self._lib = nuclearDataIO.ISOTXS()
+        if self._lib is None:
+            if self._preloadCoreXS:
+                runLog.info(
+                    "Loading an existing ISOTXS microscopic cross section library"
+                )
+                self._lib = nuclearDataIO.ISOTXS()
+            else:
+                raise ValueError(
+                    f"A microscopic cross section library has not been loaded onto {self}. "
+                    "Either enable an interface to create a cross section library or enable "
+                    "the `preloadCoreXS` setting and place an existing `ISOTXS` file in the "
+                    "working directory."
+                )
+
         return self._lib
 
     @lib.setter

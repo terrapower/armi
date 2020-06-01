@@ -598,7 +598,8 @@ class HexReactorTests(_ReactorTests):
         # By default there should be no XS library
         # assigned to the core during initialization.
         o = buildOperatorOfEmptyHexBlocks()
-        self.assertIsNone(o.r.core.lib)
+        with self.assertRaises(ValueError):
+            _lib = o.r.core.lib
 
         # Copy over an existing ISOTXS into the working directory to
         # be preloaded onto the core.
