@@ -42,6 +42,15 @@ class MockCoordLocator(grids.CoordinateLocation):
         return self._parent
 
 
+class MockArmiObject:
+    """
+    Any sort of object that can serve as a grid's armiObject attribute.
+    """
+
+    def __init__(self, parent=None):
+        self.parent = parent
+
+
 class TestSpatialLocator(unittest.TestCase):
     def test_add(self):
         loc1 = grids.IndexLocation(1, 2, 0, None)
@@ -56,22 +65,29 @@ class TestSpatialLocator(unittest.TestCase):
         is in the center of the central cube radially and the bottom axially due
         to the different way steps and bounds are set up.
         """
+
+        core = MockArmiObject()
+        assem = MockArmiObject(core)
+        block = MockArmiObject(assem)
+
         # build meshes just like how they're used on a regular system.
-        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)  # 2-D grid
+        coreGrid = grids.Grid.fromRectangle(1.0, 1.0, armiObject=core)  # 2-D grid
         # 1-D z-mesh
-        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)))
+        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)), armiObject=assem)
         # pins sit in this 2-D grid.
-        blockGrid = grids.Grid.fromRectangle(0.1, 0.1)
+        blockGrid = grids.Grid.fromRectangle(0.1, 0.1, armiObject=block)
 
-        reactorLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
-        assemblyLoc = MockLocator(2, 3, 0, reactorGrid)
-        blockLoc = MockLocator(0, 0, 3, assemblyGrid)
-        pinIndexLoc = MockLocator(1, 5, 0, blockGrid)
-        pinFree = MockCoordLocator(1.0, 2.0, 3.0, blockGrid)
+        coreLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
+        core.spatialLocator = coreLoc
 
-        pinIndexLoc._parent = pinFree._parent = blockLoc
-        blockLoc._parent = assemblyLoc
-        assemblyLoc._parent = reactorLoc
+        assemblyLoc = grids.IndexLocation(2, 3, 0, coreGrid)
+        assem.spatialLocator = assemblyLoc
+
+        blockLoc = grids.IndexLocation(0, 0, 3, assemblyGrid)
+        block.spatialLocator = blockLoc
+
+        pinIndexLoc = grids.IndexLocation(1, 5, 0, blockGrid)
+        pinFree = grids.CoordinateLocation(1.0, 2.0, 3.0, blockGrid)
 
         assert_allclose(blockLoc.getCompleteIndices(), numpy.array((2, 3, 3)))
         assert_allclose(blockLoc.getGlobalCoordinates(), (2.0, 3.0, 3.5))
@@ -91,19 +107,24 @@ class TestSpatialLocator(unittest.TestCase):
 
     def test_recursionPin(self):
         """Ensure pin the center assem has axial coordinates consistent with a pin in an off-center assembly."""
-        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)  # 2-D grid
-        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)))  # 1-D z-mesh
+        core = MockArmiObject()
+        assem = MockArmiObject(core)
+        block = MockArmiObject(assem)
+
+        # 2-D grid
+        coreGrid = grids.Grid.fromRectangle(1.0, 1.0, armiObject=core)
+        # 1-D z-mesh
+        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)), armiObject=assem)
         # pins sit in this 2-D grid.
-        blockGrid = grids.Grid.fromRectangle(0.1, 0.1)
+        blockGrid = grids.Grid.fromRectangle(0.1, 0.1, armiObject=block)
 
-        reactorLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
-        assemblyLoc = MockLocator(0, 0, 0, reactorGrid)
-        blockLoc = MockLocator(0, 0, 3, assemblyGrid)
-        pinIndexLoc = MockLocator(1, 5, 0, blockGrid)
-
-        pinIndexLoc._parent = blockLoc
-        blockLoc._parent = assemblyLoc
-        assemblyLoc._parent = reactorLoc
+        coreLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
+        core.spatialLocator = coreLoc
+        assemblyLoc = grids.IndexLocation(0, 0, 0, coreGrid)
+        assem.spatialLocator = assemblyLoc
+        blockLoc = grids.IndexLocation(0, 0, 3, assemblyGrid)
+        block.spatialLocator = blockLoc
+        pinIndexLoc = grids.IndexLocation(1, 5, 0, blockGrid)
 
         assert_allclose(pinIndexLoc.getCompleteIndices(), (1, 5, 0))
 

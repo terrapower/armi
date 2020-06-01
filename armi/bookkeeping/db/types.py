@@ -15,9 +15,11 @@
 from typing import Dict, Tuple, Any
 
 from armi.reactor.composites import ArmiObject
+from armi.reactor.grids import LocationBase
 
 
 # Return type for the getHistories() method
 #              param       time node      value
 History = Dict[str, Dict[Tuple[int, int], Any]]
 Histories = Dict[ArmiObject, History]
+LocationHistories = Dict[LocationBase, History]

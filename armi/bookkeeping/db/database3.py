@@ -44,8 +44,14 @@ Minor revision changelog
    for reading previous versions, and for performing a ``mergeHistory()`` and converting
    to the new reference strategy, but the old version cannot be written.
 
- - 3.3: Compress the way locations are stored in the database and allow MultiIndex locations
-   to be read and written.
+ - 3.3: Compress the way locations are stored in the database and allow MultiIndex
+   locations to be read and written.
+
+ - 3.4: Modified the way that locations are stored in the database to include complete
+   indices for indices that can be composed from multiple grids. This was done since the
+   space is already being used to be able to store them, and because having complete
+   indices allows for more efficient means of extracting information based on location
+   without having to compose the full model.
 
 """
 import collections
@@ -61,6 +67,7 @@ import shutil
 from typing import (
     Optional,
     Tuple,
+    Type,
     Dict,
     Any,
     List,
@@ -86,7 +93,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
-from armi.bookkeeping.db.types import History, Histories
+from armi.bookkeeping.db.types import History, Histories, LocationHistories
 from armi.bookkeeping.db import database
 from armi.reactor import geometry
 from armi.utils.textProcessors import resolveMarkupInclusions
@@ -95,7 +102,7 @@ from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 DB_MAJOR = 3
-DB_MINOR = 3
+DB_MINOR = 4
 DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
 
 ATTR_LINK = re.compile("^@(.*)$")
@@ -107,6 +114,13 @@ LOC_NONE = "N"
 LOC_COORD = "C"
 LOC_INDEX = "I"
 LOC_MULTI = "M:"
+
+LOCATION_TYPE_LABELS = {
+    type(None): LOC_NONE,
+    grids.CoordinateLocation: LOC_COORD,
+    grids.IndexLocation: LOC_INDEX,
+    grids.MultiIndexLocation: LOC_MULTI,
+}
 
 
 def getH5GroupName(cycle, timeNode, statePointName=None):
@@ -837,7 +851,7 @@ class Database3(database.Database):
         # _createLayout is recursive
         h5group = self.getH5Group(reactor, statePointName)
         runLog.info("Writing to database for statepoint: {}".format(h5group.name))
-        layout = Layout(comp=reactor, version=(self.versionMajor, self.versionMinor))
+        layout = Layout((self.versionMajor, self.versionMinor), comp=reactor)
         layout.writeToDB(h5group)
         groupedComps = layout.groupedComps
 
@@ -895,7 +909,7 @@ class Database3(database.Database):
 
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 
-        layout = Layout(h5group=h5group, version=(self.versionMajor, self.versionMinor))
+        layout = Layout((self.versionMajor, self.versionMinor), h5group=h5group)
         comps, groupedComps = layout._initComps(cs, bp)
 
         # populate data onto initialized components
@@ -981,7 +995,7 @@ class Database3(database.Database):
             if isinstance(child, Component):
                 childComponents[child.name] = child
 
-        for childName, child in childComponents.items():
+        for _childName, child in childComponents.items():
             child._resolveLinkedDims(childComponents)
 
         for child in children:
@@ -1091,10 +1105,8 @@ class Database3(database.Database):
                         "`{}` was already in `{}`. This time node "
                         "should have been empty".format(paramDef.name, g)
                     )
-                else:
-                    dataset = g.create_dataset(
-                        paramDef.name, data=data, compression="gzip"
-                    )
+
+                dataset = g.create_dataset(paramDef.name, data=data, compression="gzip")
                 if any(attrs):
                     _writeAttrs(dataset, h5group, attrs)
             except Exception as e:
@@ -1160,6 +1172,203 @@ class Database3(database.Database):
                         f"{str(ae)}\nSkipping load of invalid param `{paramName}`"
                         " (possibly loading from old DB)\n"
                     )
+
+    def getHistoryByLocation(
+        self,
+        comp: ArmiObject,
+        anchor: Optional[ArmiObject] = None,
+        params: Optional[List[str]] = None,
+        timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
+    ) -> History:
+        """
+        Get the parameter histories at a specific location.
+        """
+
+        return self.getHistoriesByLocation(
+            [comp], anchor=anchor, params=params, timeSteps=timeSteps
+        )[comp]
+
+    def getHistoriesByLocation(
+        self,
+        comps: Sequence[ArmiObject],
+        anchor: Optional[ArmiObject] = None,
+        params: Optional[List[str]] = None,
+        timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
+    ) -> Histories:
+        """
+        Get the parameter histories at a series of specific locations.
+
+        This has a number of limitations:
+         - The passed locations must be IndexLocations. This type of operation doesn't
+           make much sense otherwise.
+         - The passed locations must exist in a grid that has an ArmiObject parent.
+         - All passed locations must exist under the **same** location-defining parent
+           object, or `anchor`. Location-defining means the parent that provides a full
+           set of indices (e.g., for Blocks, the location-defining parent is the Core,
+           rather than the Assembly).
+
+        Parameters
+        ==========
+        comps : list of ArmiObject
+            The components/composites that currently occupy the location that you want
+            histories at. ArmiObjects are passed, rather than locations, because this
+            makes it easier to figure out things related to layout.
+        anchor : ArmiObject, optional
+            The common ancestor that is used to anchor the locations. If not passed, the
+            first ancestor Core object will be used.
+        params : List of str, optional
+            The parameter names for the parameters that we want the history of. If None,
+            all parameter history is given
+        timeSteps : List of (cycle, node) tuples, optional
+            The time nodes that you want history for. If None, all available time nodes
+            will be returned.
+        """
+        if self.versionMinor < 4:
+            raise ValueError(
+                f"Location-based histories are only supported for db "
+                "version 3.4 and greater. This database is version "
+                "{self.versionMajor}, {self.versionMinor}."
+            )
+
+        locations = [c.spatialLocator.getCompleteIndices() for c in comps]
+
+        histData: Histories = {
+            c: collections.defaultdict(collections.OrderedDict) for c in comps
+        }
+
+        # Check our assumptions about the passed locations:
+        # All locations must have the same parent and bear the same relationship to the
+        # anchor object
+        if anchor is None:
+            anchors = {
+                obj.getAncestorWithDistance(lambda a: isinstance(a, Core))
+                for obj in comps
+            }
+        else:
+            anchors = {
+                obj.getAncestorWithDistance(lambda a: a is anchor) for obj in comps
+            }
+
+        if len(anchors) != 1:
+            raise ValueError(
+                "The passed objects do not have the same anchor or distance to that "
+                "anchor; encountered the following: {}".format(anchors)
+            )
+        anchor, anchorDistance = anchors.pop()
+        anchorSerialNum = anchor.p.serialNum
+        print(anchor, anchorSerialNum)
+
+        # All objects of the same type
+        objectTypes = {type(obj) for obj in comps}
+        if len(objectTypes) != 1:
+            raise ValueError(
+                "The passed objects must be the same type; got objects of "
+                "types `{}`".format(objectTypes)
+            )
+
+        compType = objectTypes.pop()
+        objClassName = compType.__name__
+
+        locToComp = {c.spatialLocator.getCompleteIndices(): c for c in comps}
+
+        for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
+            if "layout" not in h5TimeNodeGroup:
+                # layout hasnt been written for this time step, so we can't get anything
+                # useful here. Perhaps the current value is of use
+                continue
+
+            cycle = h5TimeNodeGroup.attrs["cycle"]
+            timeNode = h5TimeNodeGroup.attrs["timeNode"]
+            layout = Layout(
+                (self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup
+            )
+
+            ancestors = layout.computeAncestors(
+                layout.serialNum, layout.numChildren, depth=anchorDistance
+            )
+
+            lLocation = layout.location
+            # filter for objects that live under the desired ancestor and at a desired
+            # location
+            # TODO: There might be a numpy way of doing this faster, were we to treat
+            # the locations as a numpy array. The elements are tuple of int, tuple of
+            # float, or sometimes even None, as determined by the pack/unpackLocations
+            # implementations, so it might not be possible, let alone trivial to do
+            # this. One approach could be to go back to the locations in their raw
+            # HDF5 form, then list index into that, along with locationType, and
+            # re-unpack them. 🤔
+            objectIndicesInLayout = numpy.array(
+                [
+                    i
+                    for i, (ancestor, loc) in enumerate(zip(ancestors, lLocation))
+                    if ancestor == anchorSerialNum and loc in locations
+                ]
+            )
+
+            # This could also be way more efficient if lLocation were a numpy array
+            objectLocationsInLayout = [lLocation[i] for i in objectIndicesInLayout]
+
+            objectIndicesInData = numpy.array(layout.indexInData)[
+                objectIndicesInLayout
+            ].tolist()
+
+            try:
+                h5GroupForType = h5TimeNodeGroup[objClassName]
+            except KeyError as ee:
+                runLog.error(
+                    "{} not found in {} of {}".format(
+                        objClassName, h5TimeNodeGroup, self
+                    )
+                )
+                raise ee
+
+            for paramName in params or h5GroupForType.keys():
+                if paramName == "location":
+                    # location is special, since it is stored in layout/
+                    data = numpy.array(layout.location)[objectIndicesInLayout]
+                elif paramName in h5GroupForType:
+                    dataSet = h5GroupForType[paramName]
+                    try:
+                        data = dataSet[objectIndicesInData]
+                    except:
+                        runLog.error(
+                            "Failed to load index {} from {}@{}".format(
+                                objectIndicesInData, dataSet, (cycle, timeNode)
+                            )
+                        )
+                        raise
+
+                    if data.dtype.type is numpy.string_:
+                        data = numpy.char.decode(data)
+
+                    if dataSet.attrs.get("specialFormatting", False):
+                        if dataSet.attrs.get("nones", False):
+                            data = replaceNonsenseWithNones(data, paramName)
+                        else:
+                            raise ValueError(
+                                "History tracking for non-None, "
+                                "special-formatted parameters is not supported: "
+                                "{}, {}".format(
+                                    paramName, {k: v for k, v in dataSet.attrs.items()}
+                                )
+                            )
+                else:
+                    # Nothing in the database for this param, so use the default value
+                    data = numpy.repeat(
+                        parameters.byNameAndType(paramName, compType).default,
+                        len(comps),
+                    )
+
+                # store data to the appropriate comps. This is where taking components
+                # as the argument (rather than locations) is a little bit peculiar.
+                #
+                # At this point, `data` are arranged by the order of elements in
+                # `objectIndicesInData`, which corresponds to the order of
+                # `objectIndicesInLayout`
+                for loc, val in zip(objectLocationsInLayout, data.tolist()):
+                    comp = locToComp[loc]
+                    histData[comp][paramName][cycle, timeNode] = val
+        return histData
 
     def getHistory(
         self,
@@ -1238,19 +1447,20 @@ class Database3(database.Database):
             cycle = h5TimeNodeGroup.attrs["cycle"]
             timeNode = h5TimeNodeGroup.attrs["timeNode"]
             layout = Layout(
-                h5group=h5TimeNodeGroup, version=(self.versionMajor, self.versionMinor)
+                (self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup
             )
 
             for compType, compsBySerialNum in compsByTypeThenSerialNum.items():
                 compTypeName = compType.__name__
                 try:
                     h5GroupForType = h5TimeNodeGroup[compTypeName]
-                except KeyError:
+                except KeyError as ee:
                     runLog.error(
                         "{} not found in {} of {}".format(
                             compTypeName, h5TimeNodeGroup, self
                         )
                     )
+                    raise ee
                 layoutIndicesForType = numpy.where(layout.type == compTypeName)[0]
                 serialNumsForType = layout.serialNum[layoutIndicesForType].tolist()
                 layoutIndexInData = layout.indexInData[layoutIndicesForType].tolist()
@@ -1332,9 +1542,9 @@ class Database3(database.Database):
         return histData
 
 
-def _packLocation(
-    loc: grids.LocationBase, version: Tuple[int, int] = (DB_MAJOR, DB_MINOR)
-) -> Tuple[str, List]:
+def _packLocations(
+    locations: List[grids.LocationBase], minorVersion: int = DB_MINOR
+) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """
     Extract information from a location needed to write it to this DB.
 
@@ -1343,74 +1553,115 @@ def _packLocation(
     for everything else.
 
     Shrink grid locator names for storage efficiency.
-    
+
     Notes
     -----
     Contains some conditionals to still load databases made before
     db version 3.3 which can be removed once no users care about
     those DBs anymore.
     """
-    oldStyle = version[0] == 3 and version[1] < 3
-    if oldStyle:
-        locationType, locationData = _packLocationOld(loc)
+    if minorVersion <= 2:
+        locationTypes, locationData = _packLocationsV1(locations)
+    elif minorVersion == 3:
+        locationTypes, locationData = _packLocationsV2(locations)
+    elif minorVersion > 3:
+        locationTypes, locationData = _packLocationsV3(locations)
     else:
-        locationType, locationData = _packLocationNew(loc)
-    return locationType, locationData
+        raise ValueError("Unsupported minor version: {}".format(minorVersion))
+    return locationTypes, locationData
 
 
-def _packLocationOld(loc: grids.LocationBase):
+def _packLocationsV1(
+    locations: List[grids.LocationBase]
+) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """Delete when reading v <=3.2 DB's no longer wanted."""
-    locationType = loc.__class__.__name__
-    if loc is None:
-        locationType = "None"
-        locData = [(0.0, 0.0, 0.0)]
-    elif loc.__class__ is grids.CoordinateLocation:
-        locData = [loc.indices]
-    elif loc.__class__ is grids.IndexLocation:
-        locData = [loc.indices]
-    else:
-        raise ValueError(f"Invalid location type: {loc}")
+    locTypes = []
+    locData: List[Tuple[int, int, int]] = []
+    for loc in locations:
+        locationType = loc.__class__.__name__
+        if loc is None:
+            locationType = "None"
+            locDatum = [(0.0, 0.0, 0.0)]
+        elif isinstance(loc, grids.IndexLocation):
+            locDatum = [loc.indices]
+        else:
+            raise ValueError(f"Invalid location type: {loc}")
 
-    return locationType, locData
+        locTypes.append(locationType)
+        locData.extend(locDatum)
 
-
-def _packLocationNew(loc: grids.LocationBase):
-    if loc is None:
-        locationType = LOC_NONE
-        locData = [(0.0, 0.0, 0.0)]
-    elif loc.__class__ is grids.CoordinateLocation:
-        locationType = LOC_COORD
-        locData = [loc.indices]
-    elif loc.__class__ is grids.IndexLocation:
-        locationType = LOC_INDEX
-        locData = [loc.indices]
-    elif loc.__class__ is grids.MultiIndexLocation:
-        # encode number of sub-locations to allow in-line unpacking.
-        locationType = LOC_MULTI + f"{len(loc)}"
-        locData = [subloc.indices for subloc in loc]
-    else:
-        raise ValueError(f"Invalid location type: {loc}")
-
-    return locationType, locData
+    return locTypes, locData
 
 
-def _unpackLocation(
-    locationTypes, locData, version: Tuple[int, int] = (DB_MAJOR, DB_MINOR)
-):
+def _packLocationsV2(
+    locations: List[grids.LocationBase]
+) -> Tuple[List[str], List[Tuple[int, int, int]]]:
+    locTypes = []
+    locData: List[Tuple[int, int, int]] = []
+    for loc in locations:
+        locationType = LOCATION_TYPE_LABELS[type(loc)]
+        if loc is None:
+            locDatum = [(0.0, 0.0, 0.0)]
+        elif loc.__class__ is grids.CoordinateLocation:
+            locDatum = [loc.indices]
+        elif loc.__class__ is grids.IndexLocation:
+            locDatum = [loc.indices]
+        elif loc.__class__ is grids.MultiIndexLocation:
+            # encode number of sub-locations to allow in-line unpacking.
+            locationType += f"{len(loc)}"
+            locDatum = [subloc.indices for subloc in loc]
+        else:
+            raise ValueError(f"Invalid location type: {loc}")
+
+        locTypes.append(locationType)
+        locData.extend(locDatum)
+
+    return locTypes, locData
+
+
+def _packLocationsV3(
+    locations: List[grids.LocationBase]
+) -> Tuple[List[str], List[Tuple[int, int, int]]]:
+    locTypes = []
+    locData: List[Tuple[int, int, int]] = []
+
+    for loc in locations:
+        locationType = LOCATION_TYPE_LABELS[type(loc)]
+        if loc is None:
+            locDatum = [(0.0, 0.0, 0.0)]
+        elif type(loc) is grids.IndexLocation:
+            locDatum = [loc.getCompleteIndices()]
+        elif type(loc) is grids.CoordinateLocation:
+            # CoordinateLocations do not implement getCompleteIndices properly, and we
+            # do not really have a motivation to store them as we do with index
+            # locations.
+            locDatum = [loc.indices]
+        elif type(loc) is grids.MultiIndexLocation:
+            locationType += f"{len(loc)}"
+            locDatum = [subloc.indices for subloc in loc]
+        else:
+            raise ValueError(f"Invalid location type: {loc}")
+
+        locTypes.append(locationType)
+        locData.extend(locDatum)
+
+    return locTypes, locData
+
+
+def _unpackLocations(locationTypes, locData, minorVersion: int = DB_MINOR):
     """
     Convert location data as read from DB back into data structure for building reactor model.
 
-    location and locationType will only have different lengths
-    when multiindex locations are used.
+    location and locationType will only have different lengths when multiindex locations
+    are used.
     """
-    oldStyle = version[0] == 3 and version[1] < 3
-    if oldStyle:
-        return _unpackLocationOld(locationTypes, locData)
+    if minorVersion < 3:
+        return _unpackLocationsV1(locationTypes, locData)
     else:
-        return _unpackLocationNew(locationTypes, locData)
+        return _unpackLocationsV2(locationTypes, locData)
 
 
-def _unpackLocationOld(locationTypes, locData):
+def _unpackLocationsV1(locationTypes, locData):
     """Delete when reading v <=3.2 DB's no longer wanted."""
     locsIter = iter(locData)
     unpackedLocs = []
@@ -1428,7 +1679,7 @@ def _unpackLocationOld(locationTypes, locData):
     return unpackedLocs
 
 
-def _unpackLocationNew(locationTypes, locData):
+def _unpackLocationsV2(locationTypes, locData):
     locsIter = iter(locData)
     unpackedLocs = []
     for lt in locationTypes:
@@ -1455,7 +1706,7 @@ def _unpackLocationNew(locationTypes, locData):
     return unpackedLocs
 
 
-class Layout(object):
+class Layout:
     """
     The Layout class describes the hierarchical layout of the composite structure in a flat representation.
 
@@ -1471,28 +1722,35 @@ class Layout(object):
     Layout.
     """
 
-    def __init__(self, h5group=None, comp=None, version=None):
-        self.type = []
-        self.name = []
-        self.serialNum = []
-        self.indexInData = []
-        self.numChildren = []
-        self.locationType = []
-        self.location = []
-        self.gridIndex = []
-        self.temperatures = []
-        self.material = []
+    def __init__(self, version: Tuple[int, int], h5group=None, comp=None):
+        self.type: List[str] = []
+        self.name: List[str] = []
+        self.serialNum: List[int] = []
+        self.indexInData: List[int] = []
+        self.numChildren: List[int] = []
+        self.locationType: List[str] = []
+        self.location: List[Tuple[int, int, int]] = []
+        self.gridIndex: List[int] = []
+        self.temperatures: List[float] = []
+        self.material: List[str] = []
+        # Used to cache all of the spatial locators so that we can pack them all at
+        # once. The benefit here is that the version checking can happen up front and
+        # less branching down below
+        self._spatialLocators: List[grids.LocationBase] = []
         # set of grid parameters that have been seen in _createLayout. For efficient
         # checks for uniqueness
-        self._seenGridParams = dict()
+        self._seenGridParams: Dict[Any, Any] = dict()
         # actual list of grid parameters, with stable order for safe indexing
-        self.gridParams = []
+        self.gridParams: List[Any] = []
         self.version = version
 
-        self.groupedComps = collections.defaultdict(list)
+        self.groupedComps: Dict[
+            Type[ArmiObject], List[ArmiObject]
+        ] = collections.defaultdict(list)
 
         if comp is not None:
             self._createLayout(comp)
+            self.locationType, self.location = _packLocations(self._spatialLocators)
         else:
             self._readLayout(h5group)
 
@@ -1544,7 +1802,7 @@ class Layout(object):
         else:
             self.gridIndex.append(None)
 
-        self._addSpatialLocatorData(comp.spatialLocator)
+        self._spatialLocators.append(comp.spatialLocator)
 
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
@@ -1565,20 +1823,6 @@ class Layout(object):
         for c in comps:
             self._createLayout(c)
 
-    def _addSpatialLocatorData(self, locator):
-        """
-        Extend ``locationType`` and ``location`` attributes with location info.
-
-        Notes
-        -----
-        There are several types of locators and they must be encoded properly.
-        Most complicated are the MultiIndexLocations from grids, which
-        have multiple indices per component.
-        """
-        locationType, locations = _packLocation(locator, self.version)
-        self.locationType.append(locationType)
-        self.location.extend(locations)
-
     def _readLayout(self, h5group):
         try:
             # location is either an index, or a point
@@ -1587,7 +1831,9 @@ class Layout(object):
             self.locationType = numpy.char.decode(
                 h5group["layout/locationType"][:]
             ).tolist()
-            self.location = _unpackLocation(self.locationType, locations, self.version)
+            self.location = _unpackLocations(
+                self.locationType, locations, self.version[1]
+            )
             self.type = numpy.char.decode(h5group["layout/type"][:])
             self.name = numpy.char.decode(h5group["layout/name"][:])
             self.serialNum = h5group["layout/serialNum"][:]
@@ -1775,6 +2021,65 @@ class Layout(object):
         except RuntimeError:
             runLog.error("Failed to create datasets in: {}".format(h5group))
             raise
+
+    @staticmethod
+    def computeAncestors(serialNum, numChildren, depth=1) -> List[Optional[int]]:
+        """
+        Return a list containing the serial number of the parent corresponding to each
+        object at the given depth.
+
+        Depth in this case means how many layers to reach up before reaching the desired
+        ancestor.
+
+        The zero-th element will always be None, as the first object has no parent.
+        Subsequent depths will result in more Nones.
+
+        This function is useful for forming a lightweight sense of how the database
+        contents stitch together, without having to go to the trouble of fully unpacking
+        the Reactor model.
+
+        Note
+        ----
+        This is not using a recursive approach for a couple of reasons. First, the
+        iterative form isn't so bad; we just need two stacks. Second, the interface of
+        the recursive function would be pretty unwieldy. We are progressively
+        consuming two lists, of which we would need to keep passing down with an
+        index/cursor, or progressively slice them as we go, which would be pretty
+        inefficient.
+        """
+        ancestors: List[Optional[int]] = [None]
+
+        snStack = [serialNum[0]]
+        ncStack = [numChildren[0]]
+
+        for sn, nc in zip(serialNum[1:], numChildren[1:]):
+            ncStack[-1] -= 1
+            if nc > 0:
+                ancestors.append(snStack[-1])
+                snStack.append(sn)
+                ncStack.append(nc)
+            else:
+                ancestors.append(snStack[-1])
+
+            while ncStack and ncStack[-1] == 0:
+                snStack.pop()
+                ncStack.pop()
+
+        if depth > 1:
+            # handle deeper scenarios. This is a bit tricky. Store the original
+            # ancestors for the first generation, since that ultimately contains all of
+            # the information that we need. Then in a loop, keep hopping one more layer
+            # of indirection, and indexing into the corresponding locaition in the
+            # original ancestor array
+            indexMap = {sn: i for i, sn in enumerate(serialNum)}
+            origAncestors = ancestors
+            for generation in range(depth - 1):
+                ancestors = [
+                    origAncestors[indexMap[ia]] if ia is not None else None
+                    for ia in ancestors
+                ]
+
+        return ancestors
 
 
 def allSubclasses(cls):
@@ -2030,19 +2335,19 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
         shapes = attrs["shapes"]
         ndim = len(shapes[0])
         emptyArray = numpy.ndarray(ndim * (0,), dtype=data.dtype)
-        unpackedData: List[Optional[numpy.ndarray]] = []
+        unpackedJaggedData: List[Optional[numpy.ndarray]] = []
         for offset, shape in zip(offsets, shapes):
             if tuple(shape) == ndim * (0,):
                 # Start with an empty array. This may be replaced with a None later
-                unpackedData.append(emptyArray)
+                unpackedJaggedData.append(emptyArray)
             else:
-                unpackedData.append(
+                unpackedJaggedData.append(
                     numpy.ndarray(shape, dtype=data.dtype, buffer=data[offset:])
                 )
         for i in attrs["noneLocations"]:
-            unpackedData[i] = None
+            unpackedJaggedData[i] = None
 
-        return numpy.array(unpackedData)
+        return numpy.array(unpackedJaggedData)
     if attrs.get("dict", False):
         keys = numpy.char.decode(attrs["keys"])
         unpackedData = []

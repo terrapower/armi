@@ -152,7 +152,7 @@ class Serializer:
     # This will accompany the packed data as an attribute when written, and will be
     # provided to the unpack() method when reading. If the underlying format of the data
     # changes, make sure to change this.
-    version = None
+    version: Optional[str] = None
 
     @staticmethod
     def pack(data: Sequence[any]) -> Tuple[numpy.ndarray, Dict[str, any]]:

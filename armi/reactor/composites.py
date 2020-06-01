@@ -34,7 +34,7 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import timeit
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Type, Tuple
 
 import numpy
 import tabulate
@@ -1392,6 +1392,26 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return self.parent.getAncestor(fn)
 
+    def getAncestorWithDistance(
+        self, fn, _distance=0
+    ) -> Optional[Tuple["ArmiObject", int]]:
+        """
+        Return the first ancestor that satisfies the supplied predicate, along with how
+        many levels above self the ancestor lies.
+
+        Parameters
+        ----------
+        fn : Function-like object
+            The predicate used to test the validity of an ancestor. Should return true
+            if the ancestor satisfies the caller's requirements
+        """
+        if fn(self):
+            return self, _distance
+        if self.parent is None:
+            return None
+        else:
+            return self.parent.getAncestorWithDistance(fn, _distance + 1)
+
     def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
         """
         Return the first ancestor that matches the passed flags.
@@ -1914,59 +1934,6 @@ class ArmiObject(metaclass=CompositeModelType):
             if nucDir.isHeavyMetal(nucName):
                 return True
         return False
-
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return all armi.reactor.component.Component within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
-
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if compLabel is None.
-
-        Returns
-        -------
-        list of Component
-            items matching compLabel and exact criteria
-        """
-        return list(self.iterComponents(typeSpec, exact))
-
-    def getComponentNames(self):
-        r"""
-        Get all unique component names of this Composite.
-
-        Returns
-        -------
-        set or str
-            A set of all unique component names found in this Composite.
-        """
-        return set(c.getName() for c in self.iterComponents())
-
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return an iterator of armi.reactor.component.Component objects within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
-
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if typeSpec is None.
-
-        Returns
-        -------
-        iterator of Component
-            items matching typeSpec and exact criteria
-        """
-        return (c for child in self for c in child.iterComponents(typeSpec, exact))
 
     def getNuclides(self):
         """
@@ -2523,6 +2490,60 @@ class Composite(ArmiObject):
             if child.getType() == typeName:
                 children.append(child)
         return children
+
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return all armi.reactor.component.Component within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the
+            flags specified.
+
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'.  This has no impact if compLabel is None.
+
+        Returns
+        -------
+        list of Component
+            items matching compLabel and exact criteria
+        """
+        return list(self.iterComponents(typeSpec, exact))
+
+    def getComponentNames(self):
+        r"""
+        Get all unique component names of this Composite.
+
+        Returns
+        -------
+        set or str
+            A set of all unique component names found in this Composite.
+        """
+        return set(c.getName() for c in self.iterComponents())
+
+    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return an iterator of armi.reactor.component.Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the
+            flags specified.
+
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'.  This has no impact if typeSpec is None.
+
+        Returns
+        -------
+        iterator of Component
+            items matching typeSpec and exact criteria
+        """
+        return (c for child in self for c in child.iterComponents(typeSpec, exact))
+
 
     def syncMpiState(self):
         """
