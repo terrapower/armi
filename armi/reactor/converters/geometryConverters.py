@@ -535,14 +535,6 @@ class HexToRZThetaConverter(GeometryConverter):
 
         self._sourceReactor = r
         self._setupSourceReactorForConversion()
-        reactorConversionMethod = (
-            "hexagonal"
-            if self.converterSettings["hexRingGeometryConversion"]
-            else "circular"
-        )
-        runLog.extra(
-            "Converting reactor using {} rings".format(reactorConversionMethod)
-        )
         rztSpatialGrid = self._generateConvertedReactorMesh()
         runLog.info(rztSpatialGrid)
         self._setupConvertedReactor(rztSpatialGrid)
@@ -635,12 +627,9 @@ class HexToRZThetaConverter(GeometryConverter):
     def _getAssembliesInCurrentRadialZone(self, lowerRing, upperRing):
         ringAssems = []
         for ring in range(lowerRing, upperRing):
-            if self.converterSettings["hexRingGeometryConversion"]:
-                ringAssems.extend(
-                    self._sourceReactor.core.getAssembliesInSquareOrHexRing(ring)
-                )
-            else:
-                ringAssems.extend(self._sourceReactor.core.getAssembliesInRing(ring))
+            ringAssems.extend(
+                self._sourceReactor.core.getAssembliesInSquareOrHexRing(ring)
+            )
         return ringAssems
 
     def _setupSourceReactorForConversion(self):

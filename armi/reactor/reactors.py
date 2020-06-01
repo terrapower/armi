@@ -32,8 +32,8 @@ import time
 import numpy
 
 import armi
-from armi import nuclearDataIO
 from armi import runLog
+from armi import nuclearDataIO
 from armi import settings
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -66,7 +66,6 @@ class Reactor(composites.Composite):
 
     def __init__(self, name, blueprints):
         composites.Composite.__init__(self, "R-{}".format(name))
-
         self.o = None
         self.spatialGrid = None
         self.spatialLocator = None
@@ -214,6 +213,7 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
+        self._preloadCoreXS = False
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -224,6 +224,7 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
+        self._preloadCoreXS = True if not cs["genXS"] else False
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """
@@ -293,8 +294,22 @@ class Core(composites.Composite):
     def lib(self):
         """"Get the microscopic cross section library."""
         if self._lib is None:
-            runLog.info("Loading microscopic cross section library ISOTXS")
-            self._lib = nuclearDataIO.ISOTXS()
+            if self._preloadCoreXS:
+                runLog.info(
+                    "A microscopic cross sections library is not already "
+                    f"provided on {self}. Because `genXS` is disabled, an "
+                    "existing `ISOTXS` microscopic cross section library "
+                    "within the working directory is being loaded instead."
+                )
+                self._lib = nuclearDataIO.ISOTXS()
+            else:
+                raise ValueError(
+                    f"A microscopic cross section library has not been loaded onto {self}. "
+                    "Either enable an interface to create a cross section library or enable "
+                    "the `preloadCoreXS` setting and place an existing `ISOTXS` file in the "
+                    "working directory."
+                )
+
         return self._lib
 
     @lib.setter

@@ -113,7 +113,6 @@ CONF_DEFERRED_INTERFACE_NAMES = "deferredInterfaceNames"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
-CONF_HEX_RING_GEOMETRY_CONVERSION = "hexRingGeometryConversion"
 
 
 def defineSettings() -> List[setting.Setting]:
@@ -713,12 +712,6 @@ def defineSettings() -> List[setting.Setting]:
                 "This allows users to specify to get materials out of a plugin rather "
                 "than from the framework."
             ),
-        ),
-        setting.Setting(
-            CONF_HEX_RING_GEOMETRY_CONVERSION,
-            default=False,
-            label="Convert Using Hexagonal Ring Zones",
-            description="Convert the core geometry model to RZ/RZT using hexagonal ring zones. Note: If this is disabled, circular ring zones will be used.",
         ),
     ]
     return settings

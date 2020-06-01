@@ -88,7 +88,8 @@ def defineSettings():
             label="Multigroup Cross Sections Generation",
             description="Generate multigroup cross sections for the selected particle "
             "type(s) using the specified lattice physics kernel (see Lattice Physics "
-            "tab).",
+            "tab). When not set, the XS library will be auto-loaded from an existing ISOTXS "
+            "within then working directory and fail if the ISOTXS does not exist.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -125,7 +126,7 @@ def defineSettings():
             default="DIF3D-Nodal",
             label="Neutronics Kernel",
             description="The neutronics / depletion solver for global flux solve.",
-            options=["DIF3D-Nodal", "DIF3D-FD", "VARIANT", "DIFNT",],  # lol
+            options=["DIF3D-Nodal", "DIF3D-FD", "VARIANT", "DIFNT"],
             enforcedOptions=True,
         ),
         setting.Setting(

@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 r"""
 testing for reactors.py
 """
 import copy
 import os
 import unittest
+import shutil
 
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
@@ -29,6 +29,7 @@ from armi import operators
 from armi import runLog
 from armi import settings
 from armi import tests
+from armi.tests import ISOAA_PATH
 from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
@@ -40,6 +41,7 @@ from armi.reactor.converters import geometryConverters
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
 from armi.physics.neutronics import isotopicDepletion
+from armi.nuclearDataIO import xsLibraries
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -61,6 +63,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     if customSettings is not None:
         cs.update(customSettings)
     r = tests.getEmptyHexReactor()
+    r.core.setOptionsFromCs(cs)
     o = operators.Operator(cs)
     o.initializeInterfaces(r)
 
@@ -94,6 +97,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     if customSettings is not None:
         cs.update(customSettings)
     r = tests.getEmptyCartesianReactor()
+    r.core.setOptionsFromCs(cs)
     o = operators.Operator(cs)
     o.initializeInterfaces(r)
 
@@ -589,6 +593,20 @@ class HexReactorTests(_ReactorTests):
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass() / 3.0)
+
+    def test_initializeCoreWithISOTXS(self):
+        # By default there should be no XS library
+        # assigned to the core during initialization.
+        o = buildOperatorOfEmptyHexBlocks(customSettings={"genXS": "neutron"})
+        with self.assertRaises(ValueError):
+            _lib = o.r.core.lib
+
+        # Copy over an existing ISOTXS into the working directory to
+        # be preloaded onto the core.
+        shutil.copy(ISOAA_PATH, "ISOTXS")
+        o = buildOperatorOfEmptyHexBlocks(customSettings={"genXS": ""})
+        self.assertTrue(isinstance(o.r.core.lib, xsLibraries.IsotxsLibrary))
+        os.remove("ISOTXS")
 
 
 class CartesianReactorTests(_ReactorTests):
