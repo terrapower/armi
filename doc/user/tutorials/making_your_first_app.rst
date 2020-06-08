@@ -36,7 +36,7 @@ application code. Make a folder structure that works as a `normal Python package
 <https://packaging.python.org/tutorials/packaging-projects/>`_, and create some empty
 files for us to fill in, like this::
 
-    my_package/
+    my_armi_project/
         myapp/
             __init__.py
             __main__.py
@@ -51,17 +51,17 @@ files for us to fill in, like this::
 
 These files are:
 
-* The outer :file:`my_package` root directory is a container for your app. The name does not
-  matter to ARMI; you can rename it to anything.
+* The outer :file:`my_armi_project` root directory is a container for your app. The name
+  does not matter to ARMI; you can rename it to anything.
 
-* The inner :file:`myapp` directory is the actual Python package for your app. Its name is the
-  Python package name you will use to import anything inside (e.g. ``myapp.plugins``).
+* The inner :file:`myapp` directory is the actual Python package for your app. Its name is
+  the Python package name you will use to import anything inside (e.g. ``myapp.plugins``).
 
-* :file:`myapp/__init__.py` tells Python that this directory is a Python package and registers
-  the application with the ARMI framework.
+* :file:`myapp/__init__.py` tells Python that this directory is a Python package and
+  registers the application with the ARMI framework.
 
-* :file:`myapp/__main__.py` provides one or more entry points for users of your app (including
-  you!) to start running it.
+* :file:`myapp/__main__.py` provides one or more entry points for users of your app
+  (including you!) to start running it.
 
 * :file:`myapp/app.py` contains the actual app registration code that will be called by
   :file:`__init__.py`. This can be named anything as long as it is consistent with the
@@ -151,14 +151,12 @@ put it in the :file:`myapp/plugins.py` file.
 .. note:: For "serious" plugins, we recommend mirroring the ``armi/physics/[subphysics]``
     structure of the ARMI framework physics plugin folder.
 
-We will start the plugin by pointing to the two physics kernels we wish to
-register. We hook them in and tell ARMI the ``ORDER`` they should be run in based on
-the built-in ``STACK_ORDER`` attribute. We will come back to this plugin definition later
-on to add a little more to the plugin.
+We will start the plugin by pointing to the two physics kernels we wish to register. We
+hook them in and tell ARMI the ``ORDER`` they should be run in based on the built-in
+``STACK_ORDER`` attribute (defined and discussed :py:class:`here
+<armi.interfaces.STACK_ORDER>`).  We will come back to this plugin definition later on to
+add a little more to the plugin.
 
-.. admonition:: What is ``STACK_ORDER``?
-    The ``STACK_ORDER`` attribute is defined and discussed
-    :py:class:`here <armi.interfaces.STACK_ORDER>`.
 
 
 .. code-block:: python
@@ -355,7 +353,7 @@ called ARMI whack-a-mole).
 We must make sure our ``PYTHONPATH`` contains both the armi framework itself as well as
 the directory that contains our app. For testing, an example value for this might be::
 
-    $ export PYTHONPATH=/path/to/armi:/path/to/my_package
+    $ export PYTHONPATH=/path/to/armi:/path/to/my_armi_project
 
 Make a run directory with some input files in it. You can use the same SFR input files
 we've used in previous tutorials for starters (but quickly transition to your own inputs
@@ -412,7 +410,7 @@ setting). In our case, we want to set it at the app level, so we will add the fo
 the :file:`myapp/__init__.py` file:
 
 .. code-block:: python
-    :caption: Addition to ``_myapp/__init__.py``
+    :caption: Addition to ``myapp/__init__.py``
 
     from armi import materials
     materials.setMaterialNamespaceOrder(
