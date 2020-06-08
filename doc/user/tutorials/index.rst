@@ -15,5 +15,6 @@ demonstrate in more detail how to interact with ARMI.
     walkthrough_inputs
     walkthrough_lwr_inputs
     data_model.ipynb
+    making_your_first_app.rst
     param_sweep.ipynb
 

@@ -6,6 +6,11 @@ Loading a reactor into the ARMI Framework is just the first step in pushing the 
 of reactor design and analysis. Activating a powerful collection of plugins and
 interfaces to automate your work is the next step to unlocking ARMI's potential.
 
+.. admonition:: Heads up
+
+    A full :doc:`tutorial on making an ARMI-based app is here
+    </user/tutorials/making_your_first_app>`.
+
 To really make ARMI your own, you will need to understand a couple of concepts that
 enable developers to adapt and extend ARMI to their liking:
 
@@ -38,18 +43,19 @@ system! The :py:mod:`armi.plugins` module contains all of the plugin "hook" defi
 and their associated documentation. It is recommended to peruse those docs before
 getting started to get an idea of what is available.
 
-.. note::
+.. admonition:: Setting expectations
+
    The Plugin API is relatively new, and is expected to change and evolve. We hope at
    some point to mark parts of the API as stable, but we simply are not there yet. A
    stable Plugin API is a major goal for a v1.0 release.
 
-   It is important to mention that the original Plugin API was designed to support the
-   extraction of the Framework from TerraPower's proprietary code suite. Effort has
-   been made to design the Plugin API to be general, and to anticipate future needs.
-   However, we expect that the API may be lacking for unexpected use cases, requiring it
-   to be extended. If you find yourself needing additional means of customization, or
-   if any of the semantics of the Plugin API are causing you problems, please open an
-   issue and we would be happy to work with you to improve it.
+   It is important to mention that the original Plugin API was designed to enable the
+   separation of the Framework from TerraPower's internal code suite. Effort has been made
+   to design the Plugin API to be general, and to anticipate future needs.  However, we
+   expect that the API has plenty of room for improvement and extension. If you find
+   yourself needing additional means of customization, or if any of the semantics of the
+   Plugin API are causing you problems, please open an issue and we would be happy to work
+   with you to improve it.
 
 Some implementation details
 ---------------------------
