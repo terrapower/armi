@@ -347,6 +347,13 @@ is recommended.
 The original developer's HPC environment has been Windows based, so some development is
 needed to support the more traditional Linux HPC environments.
 
+.. _getting-help:
+
+Getting help
+------------
+You can get help with ARMI by either making issues on `our github page
+<https://github.com/terrapower/armi/issues>`_ or by e-mailing armi-devs@terrapower.com.
+
 Disclaimers
 -----------
 Due to TerraPower goals and priorities, many ARMI modules were developed with the

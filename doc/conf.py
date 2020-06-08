@@ -349,7 +349,7 @@ release = armi.__version__
 'library/xml*' – ignores all files and directories starting with library/xml
 '**/.svn' – ignores all .svn directories (replaces entry in exclude_dirnames)
 """
-exclude_patterns = ["**/Python27*", "**/ccl*", "**.ipynb_checkpoints"]  # , '**/tests*']
+exclude_patterns = ["**/Python27*", "**/ccl*", "**.ipynb_checkpoints", "_build"]  # , '**/tests*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None

@@ -1410,6 +1410,8 @@ def _indicesAndEdgeFromRingAndPos(ring, position):
     pos = position - 1
 
     if ring == 0:
+        if pos != 0:
+            raise ValueError(f"Position in center ring must be 1, not {pos}")
         return 0, 0, 0
 
     # # Edge indicates which edge of the ring in which the hexagon resides.
