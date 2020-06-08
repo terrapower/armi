@@ -3,7 +3,7 @@ Making your first ARMI-based App
 ================================
 
 In this tutorial we will build a nuclear analysis application that runs (dummy) neutron
-flux and thermal/hydraulics calculations. Real applications that do real analysis can be
+flux and thermal/hydraulics calculations. Applications that do real analysis can be
 modeled after this starting point.
 
 We'll assume you have the :doc:`ARMI Framework installed </user/user_install>` already.
@@ -27,7 +27,7 @@ ARMI-based applications can take on many forms, depending on your workflow. Exam
 * Application and plugins together under one folder
 * Application in one folder, plugins in separate ones
 
-For simplicity, we will build an application that contains one plugin that runs
+We will build an application that contains one plugin that runs
 neutronics and thermal hydraulics in one folder. This architecture will be a good starting
 point for many projects, and can always be separated if needed.
 
@@ -73,7 +73,8 @@ These files are:
 
 * :file:`myapp/thermalSolver.py` contains the thermal/hydraulics solver
 
-* :file:`setup.py` the python package installation file to help users install your
+* :file:`setup.py` the `python package installation file
+  <https://docs.python.org/3/distutils/setupscript.html>`_ to help users install your
   application.
 
 * :file:`README.md` and :file:`LICENSE.md` are an optional description and license of your
@@ -96,7 +97,7 @@ this, we put the following code in the top-level :file:`__init__.py` module:
 Defining the app class
 ======================
 We define our app in the :file:`myapp/app.py` module. For this example, the app class is
-relatively simple: it will just register our one custom plugin. We will actually create
+relatively small: it will just register our one custom plugin. We will actually create
 the plugin shortly.
 
 .. admonition:: Apps vs. plugins vs. interfaces
@@ -105,7 +106,8 @@ the plugin shortly.
     collections of plugins intended to perform analysis on a certain type of reactor.
     Plugins are independent and mixable collections of relatively arbitrary code that
     might bring in special materials, contain certain engineering methodologies, and/or
-    Interfaces with one or more physics kernels.
+    Interfaces with one or more physics kernels. See :doc:`/developer/guide` for more
+    info on architecture.
 
 .. code-block:: python
     :caption: ``myapp/app.py``
@@ -143,16 +145,20 @@ Now we will create the plugin that will coordinate our dummy physics modules.
 
     See :py:mod:`armi.plugins` more for info.
 
-Plugin code can exist in any directory structure in an app. In this very simple app we
-simply put it in the :file:`myapp/plugins.py` file.
+Plugin code can exist in any directory structure in an app. In this app we
+put it in the :file:`myapp/plugins.py` file.
 
 .. note:: For "serious" plugins, we recommend mirroring the ``armi/physics/[subphysics]``
     structure of the ARMI framework physics plugin folder.
 
-We will start the plugin simply by pointing to the two physics kernels we wish to
+We will start the plugin by pointing to the two physics kernels we wish to
 register. We hook them in and tell ARMI the ``ORDER`` they should be run in based on
 the built-in ``STACK_ORDER`` attribute. We will come back to this plugin definition later
-on to do add a little more to the plugin. 
+on to add a little more to the plugin.
+
+.. admonition:: What is ``STACK_ORDER``?
+    The ``STACK_ORDER`` attribute is defined and discussed
+    :py:class:`here <armi.interfaces.STACK_ORDER>`.
 
 
 .. code-block:: python
@@ -435,76 +441,4 @@ to bring the ARMI state back to any state point from the run for analysis.
 
 A generic description of the outputs is provided in :doc:`/user/outputs/index`. 
 
-Adding new output
------------------
-Besides adding new state variables to the ARMI database, your plugins and applications may
-also find it beneficial to generate new output files, such as plots or other reports.
-Let's add automatic plots of coolant temperature at runtime in our application. 
-
-We can use the :ref:`detail assembly feature <detail-assems>` to allow users to
-choose which assembly will get printed out, since you may not want plots for every
-assembly.
-
-Open up the ``thermalSolver.py`` plugin code and add the following function to plot a
-single assembly:
-
-.. code-block:: python
-    :caption: ``myapp/thermalSolver.py``
-
-    import matplotlib.pyplot as plt
-
-    def plotOutput(a, fname):
-        """Make a temperature vs. height plot for a single assem"""
-        heights = []
-        temperatures = []
-        height = 0.0 
-
-        for b in a:
-            heights.append(height)
-            temperatures.append(b.p.THcoolantAverageT)
-            height += b.getHeight()
-
-        plt.figure()
-        plt.plot(heights, temperatures, "-o")
-        plt.title(f"Temperatures for {a}")
-        plt.xlabel("Axial height (cm)")
-        plt.ylabel("Coolant temperature (°C)")
-        plt.savefig(fname)
-        plt.close()
-
-To get the code to run on the detail assemblies, we change the ``interactEveryNode`` hook
-to call the plot function, as follows: 
-
-.. code-block:: python
-    :caption: ``myapp/thermalSolver.py``
-
-    def interactEveryNode(self, cycle=None, timeNode=None):
-        runLog.info("Computing idealized flow rate")
-        for assembly in self.r.core:
-            runThermalHydraulics(assembly)
-
-        history = self.getInterface("history")
-        for a in history.getDetailAssemblies():
-            fname = f"temps-{a.getName()}-c{self.r.p.cycle}-n{self.r.p.timeNode}.png"
-            plotOutput(a, fname)
-
-Finally, we tell ARMI which assemblies to treat as detailed by adjusting the
-``detailAssemLocationsBOL`` setting in the run directory input file.
-
-.. code-block:: yaml
-    :caption: ``runDir/anl-afci-177.yaml``
-
-    detailAssemLocationsBOL:
-      - A7001
-
-Rerunning the application in the run directory should result in a series of plots::
-
-    (armi) $ python -m myapp run anl-afci-177.yaml
-
-In the run directory, you should find a series of images that look like this:
-
-.. image:: /.static/temps-A0044-c1-n2.png
-
-
-
-
+You can add your own outputs from your plugins.
