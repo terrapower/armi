@@ -20,7 +20,7 @@ The key classes of the reactor package are shown below:
 
 .. _reactor-class-diagram:
 
-.. pyreverse:: armi.reactor -A -k --ignore=componentParameters.py,dodecaShapes.py,volumetricShapes.py,tests,converters,blockParameters.pya,assemblyParameters.py,reactorParameters.py,batchParameters.py,basicShapes.py,shapes.py,zones.py,parameters.py,flags.py,geometry.py,blueprints.py,batch.py,assemblyLists.py,blueprintSchema.py,locations.py
+.. pyreverse:: armi.reactor -A -k --ignore=complexShapes.py,grids.py,componentParameters.py,dodecaShapes.py,volumetricShapes.py,tests,converters,blockParameters.py,assemblyParameters.py,reactorParameters.py,batchParameters.py,basicShapes.py,shapes.py,zones.py,parameters,flags.py,geometry.py,blueprints,batch.py,assemblyLists.py,locations.py,plugins.py
     :align: center
     :alt: Reactor class diagram
     :width: 90%

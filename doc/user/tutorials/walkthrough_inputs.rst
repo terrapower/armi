@@ -336,7 +336,7 @@ geometry file from the ``systems`` section of the ``blueprints`` file:
 
 And then, in the core map file (``anl-afci-177-coreMap.yaml``):
 
-.. literalinclude:: ../../../armi/tests/tutorials/anl-afci-177-coremap.yaml
+.. literalinclude:: ../../../armi/tests/tutorials/anl-afci-177-coreMap.yaml
     :language: yaml
 
 
@@ -423,7 +423,7 @@ Here are the full files used in this example:
 
 * :download:`Blueprints <../../../armi/tests/tutorials/anl-afci-177-blueprints.yaml>`
 * :download:`Settings <../../../armi/tests/tutorials/anl-afci-177.yaml>`
-* :download:`Core map <../../../armi/tests/tutorials/anl-afci-177-coremap.yaml>`
+* :download:`Core map <../../../armi/tests/tutorials/anl-afci-177-coreMap.yaml>`
 * :download:`Fuel management <../../../armi/tests/tutorials/anl-afci-177-fuelManagement.py>`
 
 The next tutorial will guide you through inputs for a classic LWR benchmark problem (C5G7).

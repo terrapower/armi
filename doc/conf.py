@@ -162,14 +162,15 @@ class PyReverse(Directive):
         sys.stdout, sys.stderr = StringIO(), StringIO()
         try:
             args = list(self.arguments)
-            args.append("--project {}".format(args[0]))
+            args.append("--project")
+            args.append(f"{args[0]}")
             args.append("-opng")
 
             # cannot use "pylint.pyreverse.main.Run" because it calls `sys.exit`. why?
             fig_name = self.options.get("filename", "classes_{}.png".format(args[0]))
-            command = r"python -m pylint.pyreverse.main {}".format(" ".join(args))
-            print("Running {}".format(command))
-            subprocess.check_call(command)
+            command = [sys.executable,"-m", "pylint.pyreverse.main"]
+            print("Running {}".format(command+args))
+            subprocess.check_call(command+args)
 
             try:
                 os.remove(os.path.join(APIDOC_DIR, fig_name))

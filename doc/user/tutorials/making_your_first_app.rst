@@ -55,7 +55,7 @@ These files are:
   does not matter to ARMI; you can rename it to anything.
 
 * The inner :file:`myapp` directory is the actual Python package for your app. Its name is
-  the Python package name you will use to import anything inside (e.g. ``myapp.plugins``).
+  the Python package name you will use to import anything inside (e.g. ``myapp.plugin``).
 
 * :file:`myapp/__init__.py` tells Python that this directory is a Python package and
   registers the application with the ARMI framework.
@@ -136,20 +136,20 @@ Now we will create the plugin that will coordinate our dummy physics modules.
 
 .. admonition:: What are plugins again? 
 
-    Plugins are the basic modular building block of ARMI-based apps. In some cases, one plugin
-    will be associated with one physics kernel (like MCNP). This is a reasonable practice when
-    you expect to be mixing and matching various combinations of plugins between related
-    teams. It is also possible to have a plugin that performs a whole cacophony of analyses
-    using multiple codes, which some smaller research teams may find preferable. The
-    flexibility is very broad.
+    Plugins are the basic modular building block of ARMI-based apps. In some cases, one
+    plugin will be associated with one physics kernel (like COBRA or MCNP). This is a
+    reasonable practice when you expect to be mixing and matching various combinations of
+    plugins between related teams. It is also possible to have a plugin that performs a
+    whole cacophony of analyses using multiple codes, which some smaller research teams
+    may find preferable. The flexibility is very broad.
 
     See :py:mod:`armi.plugins` more for info.
 
 Plugin code can exist in any directory structure in an app. In this app we
-put it in the :file:`myapp/plugins.py` file.
+put it in the :file:`myapp/plugin.py` file.
 
 .. note:: For "serious" plugins, we recommend mirroring the ``armi/physics/[subphysics]``
-    structure of the ARMI framework physics plugin folder.
+    structure of the ARMI framework :py:mod:`physics plugin subpackage <armi.physics>`.
 
 We will start the plugin by pointing to the two physics kernels we wish to register. We
 hook them in and tell ARMI the ``ORDER`` they should be run in based on the built-in
@@ -251,12 +251,20 @@ called by the ARMI main loop.
 
 We'll make a somewhat meaningful (but still totally academic) flow solver here that uses
 energy conservation to determine an idealized coolant flow rate. To do this it will
-compute the total power produced by each assembly.
+compute the total power produced by each assembly to get the required mass flow rate and
+then apply that mass flow rate from the bottom of the assembly to the top, computing a
+block-level temperature (and flow velocity) distribution as we go.
 
 .. math::
 
     q''' = \dot{m} C_p \Delta T
 
+.. admonition:: Refactoring alert
+
+    We set some thermal/hydraulic-related state parameters in the code below. These are
+    supposed to be defined in the framework-level :py:mod:`thermal/hydraulic plugin
+    <armi.physics.thermalHydraulics>` but are currently defined :py:mod:`elsewhere
+    <armi.reactor.blockParameters>`. This is a transitory state; they will be moved soon.
 
 .. code-block:: python
     :caption: ``myapp/thermalSolver.py``
@@ -266,6 +274,7 @@ compute the total power produced by each assembly.
     from armi import runLog
 
     # hard coded inlet/outlet temperatures
+    # NOTE: can make these user settings
     inletInC = 360.0
     outletInC = 520.0
 
@@ -326,9 +335,9 @@ compute the total power produced by each assembly.
 Adding entry points
 ===================
 In order to call our application directly, we need to add the :file:`__main__.py` file to
-the package. We could add all manner of entry points here for different operations we want
-our application to perform. For now, we can just inherit from the default ARMI entry
-points by adding the following code:
+the package. We could add all manner of :py:mod:`entry points <armi.cli.entryPoint`> here
+for different operations we want our application to perform. For now, we can just inherit
+from the default ARMI entry points (including ``run``) by adding the following code:
 
 .. code-block:: python
     :caption: ``myapp/__main__.py``
@@ -354,6 +363,11 @@ We must make sure our ``PYTHONPATH`` contains both the armi framework itself as 
 the directory that contains our app. For testing, an example value for this might be::
 
     $ export PYTHONPATH=/path/to/armi:/path/to/my_armi_project
+
+.. admonition:: Windows tip
+
+    If you're using Windows, the slashes will be the other way, you use ``set`` instead of
+    ``export``, and you use ``;`` to separate entries (or just use the GUI).
 
 Make a run directory with some input files in it. You can use the same SFR input files
 we've used in previous tutorials for starters (but quickly transition to your own inputs
@@ -381,6 +395,7 @@ capacity! Here we can either submit a PR adding it to the ARMI Framework (prefer
 things), or make our own material and register it through the plugin.
 
 .. admonition:: Yet another way
+
     You could alternatively make a totally new plugin that only has your team's special
     material properties.
 
@@ -432,9 +447,10 @@ Most important is the ``anl-afci-177.h5`` HDF5 binary database file. You can use
 to bring the ARMI state back to any state point from the run for analysis. 
 
 .. admonition:: Is there a general DB viewer?
+
     TerraPower uses an internal HDF5 viewer called *XTVIEW* to view the state in the HDF5
     database. At some point this tool will either be made available, or we or someone else
-    will create a plugin for a more generic visulaization tools like VisIT or Paraview.
+    will create a plugin for a more generic visualization tools like VisIT or Paraview.
     For now you are stuck exploring the HDF5 output via the ARMI API. 
 
 A generic description of the outputs is provided in :doc:`/user/outputs/index`. 
