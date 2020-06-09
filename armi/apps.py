@@ -74,6 +74,7 @@ class App:
         from armi.physics import fuelPerformance
         from armi.physics import neutronics
         from armi.physics import safety
+        from armi.physics import thermalHydraulics
         from armi import reactor
 
         self._pm = plugins.getNewPluginManager()
@@ -84,6 +85,7 @@ class App:
             fuelPerformance.FuelPerformancePlugin,
             neutronics.NeutronicsPlugin,
             safety.SafetyPlugin,
+            thermalHydraulics.ThermalHydraulicsPlugin,
             reactor.ReactorPlugin,
         ):
             self._pm.register(plugin)

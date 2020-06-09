@@ -47,7 +47,7 @@ def runTutorialNotebook():
 
     with open("data_model.ipynb") as f:
         nb = nbformat.read(f, as_version=4)
-    ep = ExecutePreprocessor(timeout=600, kernel_name="python")
+    ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
     ep.preprocess(nb, {})
 
 

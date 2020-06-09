@@ -29,7 +29,6 @@ import xml.etree.ElementTree as ET
 
 import armi
 from armi import runLog
-from armi.physics.thermalHydraulics import const
 from armi.localization import exceptions
 from armi.settings import setting
 from armi.settings import settingsRules
@@ -166,6 +165,7 @@ class _SettingsReader(object):
         -----
         This is intended to replace the XML stuff as we converge on consistent input formats.
         """
+        from armi.physics.thermalHydraulics import const  # avoid circular import
         yaml = YAML()
         tree = yaml.load(stream)
         if "settings" not in tree:
