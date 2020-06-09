@@ -303,7 +303,7 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
 
-nbsphinx_kernel_name = "python"
+nbsphinx_kernel_name = "python3"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = [".templates"]
