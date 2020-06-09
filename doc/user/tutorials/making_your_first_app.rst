@@ -335,7 +335,7 @@ block-level temperature (and flow velocity) distribution as we go.
 Adding entry points
 ===================
 In order to call our application directly, we need to add the :file:`__main__.py` file to
-the package. We could add all manner of :py:mod:`entry points <armi.cli.entryPoint`> here
+the package. We could add all manner of :py:mod:`entry points <armi.cli.entryPoint>` here
 for different operations we want our application to perform. For now, we can just inherit
 from the default ARMI entry points (including ``run``) by adding the following code:
 
