@@ -17,4 +17,8 @@ analyzing ARMI output files,
    inputs/index
    outputs/index
    manual_data_access
+   reactor_parameters_report
+   core_parameters_report
+   assembly_parameters_report
+   block_parameters_report
    assorted_guide
