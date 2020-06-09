@@ -237,3 +237,60 @@ def reset():
     """
     for pd in ALL_DEFINITIONS:
         pd.assigned = NEVER
+
+def generateTable(klass, fwParams, app = None):
+    """
+    Return a string containing one or more restructured text list tables containing
+    parameter descriptions for the passed ArmiObject class.
+
+    Parameters
+    ----------
+    klass : ArmiObject subclass
+        The Class for which parameter tables should be generated
+
+    fwParams : ParameterDefinitionCollection
+        A parameter definition collection containing the parameters that are always
+        defined for the passed ``klass``. The rest of the parameters come from the
+        plugins registered with the passed ``app``
+
+    app : App, optional
+        The ARMI-based application to draw plugins from.
+    """
+    from armi import apps
+
+    if app is None:
+        app = apps.App()
+
+    defs = {None: fwParams}
+
+    app = apps.App()
+    for plugin in app.pluginManager.get_plugins():
+        plugParams = plugin.defineParameters()
+        if plugParams is not None:
+            pDefs = plugParams.get(klass, None)
+            if pDefs is not None:
+                defs[plugin] = pDefs
+
+    header_content = """
+    .. list-table:: {} Parameters from {{}}
+       :header-rows: 1
+       :widths: 30 40 30
+
+       * - Name
+         - Description
+         - Units
+    """.format(klass.__name__)
+
+    content = ""
+
+    for plugin, pdefs in defs.items():
+        srcName = plugin.__name__ if plugin is not None else "Framework"
+        pluginContent = header_content.format(srcName)
+        for pd in pdefs:
+            pluginContent += f"""   * - {pd.name}
+         - {pd.description}
+         - {pd.units}
+    """
+        content += pluginContent + "\n\n"
+
+    return content
