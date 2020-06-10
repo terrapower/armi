@@ -97,11 +97,6 @@ loop. When any operator is instantiated, several actions occur:
     5. The ``interactInit`` method is called on all interfaces, and
     6. Restart information is processed (if this is a restart run).
 
-These operations are depicted in the following image.
-
-    .. image:: /.static/armi_objects_2.png
-           :width: 100%
-
 After that, depending on the type of Operator at hand, one of several operational loops
 will begin via ``operate()``. Operator types are chosen by the ``runType`` setting,
 which is featured on the first tab of the ARMI GUI.
