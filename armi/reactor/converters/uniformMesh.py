@@ -392,9 +392,6 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             )
             # Now recalculate derived params with the mapped flux to minimize
             # potential numerical diffusion (e.g. control rod tip into large coolant)
-
-        if destReactor.core.lib is not None:
-            runLog.extra(f"Computing block-level reaction rates for {destReactor.core}")
             for b in aDest:
                 globalFluxInterface.calcReactionRates(
                     b, destReactor.core.p.keff, destReactor.core.lib
