@@ -8,7 +8,7 @@ import io
 
 
 class TestRunSuiteSuite(unittest.TestCase):
-    def testListCommand(self):
+    def test_listCommand(self):
         """Ensure run-suite entry point is registered."""
         from armi import cli
 

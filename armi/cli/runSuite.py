@@ -55,14 +55,14 @@ class RunSuiteCommand(RunEntryPoint):
             "-l",
             action="store_true",
             default=False,
-            help="Just list the settings files found, don't actually submit them.",
+            help="Just list the settings files found, don't actually run them.",
         )
         self.parser.add_argument(
             "--suiteDir",
             type=str,
             default=os.getcwd(),
             help=(
-                "The path containing the case suite to submit. Default current "
+                "The path containing the case suite to run. Default current "
                 "working directory."
             ),
         )
@@ -74,22 +74,7 @@ class RunSuiteCommand(RunEntryPoint):
             suite = cases.CaseSuite(self.cs)
             suite.discover(patterns=self.args.patterns, ignorePatterns=self.args.ignore)
             if self.args.list:
-                runLog.important("Found the following settings ")
-                tableData = []
-                for case in suite:
-                    tableData.append(
-                        (
-                            case.title,
-                            case.cs.path,
-                            ",".join(pp.title for pp in case.dependencies),
-                        )
-                    )
-                runLog.important(
-                    tabulate.tabulate(
-                        tableData,
-                        headers=["Case title", "Settings path", "Parent tasks"],
-                    )
-                )
+                suite.echoConfiguration()
             else:
                 for ci, case in enumerate(suite):
                     runLog.important(f"Running case {ci+1}/{len(suite)}: {case}")
