@@ -64,6 +64,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
             backupDatabases,
             cleanTemps,
             database,
+            runSuite,
         )
 
         entryPoints = []
@@ -76,6 +77,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
         entryPoints.append(migrateInputs.MigrateInputs)
         entryPoints.append(modify.ModifyCaseSettingsCommand)
         entryPoints.append(run.RunEntryPoint)
+        entryPoints.append(runSuite.RunSuiteCommand)
 
         # testing
         entryPoints.append(backupDatabases.BackUpInUseTestDabases)
