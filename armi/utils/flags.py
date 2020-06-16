@@ -312,3 +312,9 @@ class Flag(metaclass=_FlagMeta):
 
     def __hash__(self):
         return hash(self._value)
+
+# Type alias to reliably check for a proper Flag type. This cannot just be `Flag`, since
+# mypy gets confused by `auto` because it doesn't go to the trouble of resolving them in
+# the metaclass.
+FlagType = Union[Flag, auto]
+
