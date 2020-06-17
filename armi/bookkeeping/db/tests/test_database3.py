@@ -21,6 +21,7 @@ from armi.bookkeeping import db
 from armi.bookkeeping.db import database3
 from armi.reactor import grids
 from armi.reactor.tests import test_reactors
+from armi.settings import caseSettings
 
 from armi.tests import TEST_ROOT
 
@@ -28,8 +29,11 @@ from armi.tests import TEST_ROOT
 class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
-        self.db: db.Database3 = db.Database3(self._testMethodName + ".h5", "w")
-        self.db.open()
+        cs = caseSettings.Settings()
+
+        self.dbi = database3.DatabaseInterface(self.r, cs)
+        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.db: db.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -84,6 +88,12 @@ class TestDatabase3(unittest.TestCase):
                 self.r.p.cycleLength = cycle
 
                 self.db.writeToDB(self.r)
+        # add some more data that isnt written to the database to test the
+        # DatabaseInterface API
+        self.r.p.cycle = 3
+        self.r.p.timeNode = 0
+        self.r.p.cycleLength = cycle
+        self.r.core[0].p.chargeTime = 3
 
     def _compareArrays(self, ref, src):
         """
@@ -178,11 +188,9 @@ class TestDatabase3(unittest.TestCase):
             database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
 
-    def test_locationHistory(self) -> None:
+    def test_history(self) -> None:
         self.makeShuffleHistory()
 
-        pLoc = self.r.core[0][0].spatialLocator.parentLocation
-        pLoc = self.r.core[0].spatialLocator.parentLocation
         grid = self.r.core.spatialGrid
         testAssem = self.r.core.childrenByLocator[grid[0, 0, 0]]
         testBlock = testAssem[-1]
@@ -206,6 +214,15 @@ class TestDatabase3(unittest.TestCase):
         # cant mix blocks and assems, since they are different distance from core
         with self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
+
+        # if requested time step isnt written, return no content
+        hist = self.dbi.getHistory(
+            self.r.core[0],
+            params=["chargeTime", "serialNum"],
+            byLocation=True
+        )
+        self.assertIn((3,0), hist["chargeTime"].keys())
+        self.assertEqual(hist["chargeTime"][(3,0)], 3)
 
     def test_replaceNones(self):
         """

@@ -154,6 +154,7 @@ class DatabaseInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self._db = None
+        self._dbPath : Optional[pathlib.Path] = None
 
     def __repr__(self):
         return "<{} '{}' {} >".format(
@@ -178,7 +179,7 @@ class DatabaseInterface(interfaces.Interface):
         if not self._db:
             self.initDB()
 
-    def initDB(self):
+    def initDB(self, fName: Optional[os.PathLike]=None):
         """
         Open the underlying database to be written to, and write input files to DB.
 
@@ -189,13 +190,18 @@ class DatabaseInterface(interfaces.Interface):
         interface stack (so that all the parameters have been updated) while the Main
         Interface interacts first.
         """
-        if self.cs["reloadDBName"].lower() == (self.cs.caseTitle + ".h5").lower():
+        if fName is None:
+            self._dbPath = pathlib.Path(self.cs.caseTitle + ".h5")
+        else:
+            self._dbPath = pathlib.Path(fName)
+
+        if self.cs["reloadDBName"].lower() == str(self._dbPath).lower():
             raise ValueError(
                 "It appears that reloadDBName is the same as the case "
                 "title. This could lead to data loss! Rename the reload DB or the "
                 "case."
             )
-        self._db = Database3(self.cs.caseTitle + ".h5", "w")
+        self._db = Database3(self._dbPath, "w")
         self._db.open()
 
         # Grab geomString here because the DB-level has no access to the reactor or
@@ -266,10 +272,9 @@ class DatabaseInterface(interfaces.Interface):
         from workers to enable things like history tracking.
         """
         if armi.MPI_RANK > 0:
-            dbPath = self.cs.caseTitle + ".h5"
             # DB may not exist if distribute state is called early.
-            if os.path.exists(dbPath):
-                self._db = Database3(dbPath, "r")
+            if os.path.exists(self._dbPath):
+                self._db = Database3(self._dbPath, "r")
                 self._db.open()
 
     def distributable(self):
@@ -374,6 +379,7 @@ class DatabaseInterface(interfaces.Interface):
         comp: ArmiObject,
         params: Optional[Sequence[str]] = None,
         timeSteps: Optional[MutableSequence[Tuple[int, int]]] = None,
+        byLocation: bool = False
     ) -> History:
         """
         Get historical parameter values for a single object.
@@ -385,13 +391,19 @@ class DatabaseInterface(interfaces.Interface):
         --------
         Database3.getHistory
         """
+        # make a copy so that we can potentially remove timesteps without affecting the
+        # caller
+        timeSteps = copy.copy(timeSteps)
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None
         if timeSteps is not None and now in timeSteps:
             nowRequested = True
             timeSteps.remove(now)
 
-        history = self.database.getHistory(comp, params, timeSteps)
+        if byLocation:
+            history = self.database.getHistoryByLocation(comp, params, timeSteps)
+        else:
+            history = self.database.getHistory(comp, params, timeSteps)
 
         if nowRequested:
             for param in params or history.keys():
@@ -407,6 +419,7 @@ class DatabaseInterface(interfaces.Interface):
         comps: Sequence[ArmiObject],
         params: Optional[Sequence[str]] = None,
         timeSteps: Optional[MutableSequence[Tuple[int, int]]] = None,
+        byLocation: bool = False
     ) -> Histories:
         """
         Get historical parameter values for one or more objects.
@@ -421,12 +434,17 @@ class DatabaseInterface(interfaces.Interface):
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None
         if timeSteps is not None:
+            # make a copy so that we can potentially remove timesteps without affecting
+            # the caller
             timeSteps = copy.copy(timeSteps)
         if timeSteps is not None and now in timeSteps:
             nowRequested = True
             timeSteps.remove(now)
 
-        histories = self.database.getHistories(comps, params, timeSteps)
+        if byLocation:
+            histories = self.database.getHistoriesByLocation(comps, params, timeSteps)
+        else:
+            histories = self.database.getHistories(comps, params, timeSteps)
 
         if nowRequested:
             for c in comps:
@@ -455,7 +473,7 @@ class Database3(database.Database):
 
     timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
 
-    def __init__(self, fileName: str, permission: str):
+    def __init__(self, fileName: os.PathLike, permission: str):
         """
         Create a new Database3 object.
 
@@ -696,10 +714,15 @@ class Database3(database.Database):
             csString = stream.read()
 
         if bpString is None:
-            # Ensure that the input as stored in the DB is complete
-            bpString = resolveMarkupInclusions(
-                pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
-            ).read()
+            bpPath = pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+            # only store blueprints if we actually loaded from them
+            if bpPath.exists() and bpPath.is_file():
+                # Ensure that the input as stored in the DB is complete
+                bpString = resolveMarkupInclusions(
+                    pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+                ).read()
+            else:
+                bpString = ""
 
         self.h5db["inputs/settings"] = csString
         self.h5db["inputs/geomFile"] = geomString
@@ -1176,7 +1199,6 @@ class Database3(database.Database):
     def getHistoryByLocation(
         self,
         comp: ArmiObject,
-        anchor: Optional[ArmiObject] = None,
         params: Optional[List[str]] = None,
         timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
     ) -> History:
@@ -1185,27 +1207,28 @@ class Database3(database.Database):
         """
 
         return self.getHistoriesByLocation(
-            [comp], anchor=anchor, params=params, timeSteps=timeSteps
+            [comp], params=params, timeSteps=timeSteps
         )[comp]
 
     def getHistoriesByLocation(
         self,
         comps: Sequence[ArmiObject],
-        anchor: Optional[ArmiObject] = None,
         params: Optional[List[str]] = None,
         timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
     ) -> Histories:
         """
-        Get the parameter histories at a series of specific locations.
+        Get the parameter histories at specific locations.
 
-        This has a number of limitations:
+        This has a number of limitations, which should in practice not be too limiting:
          - The passed locations must be IndexLocations. This type of operation doesn't
            make much sense otherwise.
-         - The passed locations must exist in a grid that has an ArmiObject parent.
-         - All passed locations must exist under the **same** location-defining parent
-           object, or `anchor`. Location-defining means the parent that provides a full
-           set of indices (e.g., for Blocks, the location-defining parent is the Core,
-           rather than the Assembly).
+         - The passed locations must exist in a hierarchy of grids that lead to a Core
+           object which serves as an anchor, fully defining all index locations. This
+           could possibly be made more general by extending grids, but that gets a
+           little more complicated.
+         - All requested objects must exist under the **same** anchor object, and at the
+           same depth below it.
+         - All requested objects must have the same type.
 
         Parameters
         ==========
@@ -1213,9 +1236,6 @@ class Database3(database.Database):
             The components/composites that currently occupy the location that you want
             histories at. ArmiObjects are passed, rather than locations, because this
             makes it easier to figure out things related to layout.
-        anchor : ArmiObject, optional
-            The common ancestor that is used to anchor the locations. If not passed, the
-            first ancestor Core object will be used.
         params : List of str, optional
             The parameter names for the parameters that we want the history of. If None,
             all parameter history is given
@@ -1239,15 +1259,9 @@ class Database3(database.Database):
         # Check our assumptions about the passed locations:
         # All locations must have the same parent and bear the same relationship to the
         # anchor object
-        if anchor is None:
-            anchors = {
-                obj.getAncestorWithDistance(lambda a: isinstance(a, Core))
-                for obj in comps
-            }
-        else:
-            anchors = {
-                obj.getAncestorWithDistance(lambda a: a is anchor) for obj in comps
-            }
+        anchors = {
+            obj.getAncestorWithDistance(lambda a: isinstance(a, Core)) for obj in comps
+        }
 
         if len(anchors) != 1:
             raise ValueError(
@@ -1260,7 +1274,7 @@ class Database3(database.Database):
         # All objects of the same type
         objectTypes = {type(obj) for obj in comps}
         if len(objectTypes) != 1:
-            raise ValueError(
+            raise TypeError(
                 "The passed objects must be the same type; got objects of "
                 "types `{}`".format(objectTypes)
             )
@@ -1273,7 +1287,8 @@ class Database3(database.Database):
         for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
             if "layout" not in h5TimeNodeGroup:
                 # layout hasnt been written for this time step, so we can't get anything
-                # useful here. Perhaps the current value is of use
+                # useful here. Perhaps the current value is of use, in which case the
+                # DatabaseInterface should be used.
                 continue
 
             cycle = h5TimeNodeGroup.attrs["cycle"]
@@ -1372,8 +1387,8 @@ class Database3(database.Database):
     def getHistory(
         self,
         comp: ArmiObject,
-        params: Sequence[str] = None,
-        timeSteps: Sequence[Tuple[int, int]] = None,
+        params: Optional[Sequence[str]] = None,
+        timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
     ) -> History:
         """
         Get parameter history for a single ARMI Object.
@@ -1390,7 +1405,6 @@ class Database3(database.Database):
         dict
             Dictionary of str/list pairs.
         """
-        # XXX: this can be optimized significantly
         return self.getHistories([comp], params, timeSteps)[comp]
 
     def getHistories(
