@@ -70,6 +70,9 @@ from typing import Tuple, List, Optional, Sequence
 import collections
 
 import numpy.linalg
+import numpy as np
+import bisect
+import cmath
 
 from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
 from armi.utils import hexagon
@@ -581,7 +584,7 @@ class Grid:
         # these lists contain the indices representing which dimensions for which steps
         # are used, or for which bounds are used. index 0 is x direction, etc.
         self._boundDims = []
-        self._stepDims = []
+        self._stepDims  = []
         for dimensionIndex, bound in enumerate(bounds):
             if bound is None:
                 self._stepDims.append(dimensionIndex)
@@ -849,9 +852,45 @@ class Grid:
         i, j, k = indices
         return ((i, j, k + 1), (i, j, k - 1))
 
-    def cellIndicesContainingPoint(self, x, y=0.0, z=0.0):
-        """Return the indices of a mesh cell that contains a point."""
-        raise NotImplementedError
+    def cellIndicesContainingPoint(self, x, y, z):
+        """ Return the indices the mesh cell the point is contained in.
+        
+        The cell indices is returned as a list (i,j,k)
+        The parameters are from cartesian space and evaluated in cartesian grid space 
+        This function can handle points on the bounds
+        if the the point is outside the grid bounds an Assertion Error is raised 
+        
+        Parameters
+        --------- 
+        x : float
+        y : float
+        z : float
+        
+        Returns
+        -------
+        list
+            A list is returned in the form [i,j,k] which is the mesh grid cell containing the point
+        
+        Raises
+        ------
+        AssertionError
+            If one of the coordinates(x,y,z) is outside the grid bounds
+        """
+        xBound,yBound,zBound = self.getBounds()[0],self.getBounds()[1],self.getBounds()[2]
+        # Will iterate through the bounds to find the cell indices where the x,y,z point is located in
+        i = int(bisect.bisect_right(xBound, x)-1)
+        if i < 0 or i >= len(xBound):
+            print("x value is outside the grid indices")
+            raise AssertionError
+        j = int(bisect.bisect_right(yBound, y)-1)
+        if j < 0 or j >= len(yBound):
+            print("y value is outside the grid indices")
+            raise AssertionError 
+        k = int(bisect.bisect_right(zBound, z)-1)
+        if k < 0 or k >= len(zBound):
+            print("The coordinate:'z value is outside the grid indices")
+            raise AssertionError
+        return [i,j,k]
 
     def overlapsWhichSymmetryLine(self, indices):
         return None
@@ -1282,6 +1321,76 @@ class ThetaRZGrid(Grid):
         return ThetaRZGrid(
             bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject
         )
+        
+    def coordinateTransXyzTrz(self,x,y,z):
+        """ Return the indices the mesh cell the point is contained in.
+        
+        The coordinates are converted into (theta,r,z) in the form of a tuple
+        The parameters are from cartesian space and evaluated in cartesian grid space 
+         
+        Parameters
+        --------- 
+        x : float
+        y : float
+        z : float
+        
+        Returns
+        -------
+        tuple
+            A tuple is returned in the form (theta,r,z) which is the xyz polar coordinates equivalent
+        
+        """
+        z = z
+        r,theta = cmath.polar(complex(x,y))
+        print()
+        if theta <0:
+            theta +=2*math.pi
+        return (theta,r,z)
+    
+    def cellIndicesContainingPoint(self, x, y, z):
+        """ Return the indices the mesh cell the point is contained in.
+        
+        The cell indices is returned as a list (i,j,k)
+        The parameters are from cartesian space and evaluated in Theta,R,Z grid space 
+        The x,y,z coordinates are converted into their respective polar coordinates
+        This function can handle points on the bounds
+        if the the point is outside the grid bounds an Assertion Error is raised 
+        
+        Parameters
+        --------- 
+        x : float
+        y : float
+        z : float
+        
+        Returns
+        -------
+        list
+            A list is returned in the form [i,j,k] which is the mesh grid cell containing the point
+        
+        Raises
+        ------
+        AssertionError
+            If one of the coordinates(x,y,z) is outside the grid bounds
+            
+        """
+        # Converts the x,y,z point to theta,r,z
+        TRZ = self.coordinateTransXyzTrz(x,y,z)
+        # Retrieve the bounds of RZTheta Grid
+        thetaBound,radialBound,zetaBound = self.getBounds()[0],self.getBounds()[1],self.getBounds()[2]
+        # Will iterate through the bounds to find the cell indices where the x,y,z point is located in
+        i = bisect.bisect_right(thetaBound, TRZ[0]) -1
+        if i < 0 or i >= len(thetaBound):
+            print("theta value is outside the grid indices")
+            raise AssertionError
+        j = bisect.bisect_right(radialBound, TRZ[1]) -1
+        if j < 0 or j >= len(radialBound):
+            print("r value is outside the grid indices")
+            raise AssertionError
+        k = bisect.bisect_right(zetaBound, TRZ[2]) -1
+        if k < 0 or k >= len(zetaBound):
+            print("z value is outside the grid indices")
+            raise AssertionError
+        return [i,j,k]
 
     def getCoordinates(self, indices, nativeCoords=False):
         meshCoords = theta, r, z = Grid.getCoordinates(self, indices)
@@ -1321,7 +1430,6 @@ class ThetaRZGrid(Grid):
         j = int(numpy.abs(self._bounds[1] - rad0).argmin())
 
         return (i, j, 0)
-
 
 def axialUnitGrid(numCells, armiObject=None):
     """

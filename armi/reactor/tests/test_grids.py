@@ -17,6 +17,9 @@ import unittest
 import math
 from io import BytesIO
 
+import sys
+import armi
+
 import numpy
 from six.moves import cPickle
 
@@ -24,6 +27,7 @@ from armi.reactor import grids
 from armi.reactor import geometry
 from numpy.testing.utils import assert_allclose
 
+import timeit
 
 class MockLocator(grids.IndexLocation):
     """
@@ -170,8 +174,41 @@ class TestGrid(unittest.TestCase):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
-
-
+        
+    def testcellIndicesContainingPointGridXYZ(self):
+        """This test is a test that measures the accuracy of the function cellIndicesContainingPoint
+        the first portion instantiates a grid with known cell indices for 10 x,y,z points
+        A test is performed on a point on the boundaries and on a point outside of the boundaries
+        a point outside the boundary will raise an assert error"""
+        xBounds,yBounds,zBounds = numpy.linspace(-30,0,5),numpy.linspace(-30,0,5),numpy.linspace(-50,50,5)
+        xyz_grid = grids.Grid(bounds=(xBounds,yBounds,zBounds))
+        testX = [-22.95710008,-22.98720285,-25.5380141,-28.4683899,-25.91757865,
+                -29.07586238,-22.50211648,-22.95087145,-25.16205338,-27.89942923]
+        testY = [-28.12867168,-25.4221468,-28.00614743,-25.05421535,-22.47021473,
+                -22.22179002,-28.19774525,-25.57094143,-28.04957078,-25.3713433]
+        testZ = [-33.0753019,-38.22692293,-35.68253068,-33.06058995,-35.6049822,
+                -37.9641096,-22.54355865,-27.9397493,-25.18057438,-22.64483478]
+        knownCellIndicesXYZ = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,1,0],[0,1,0],[0,0,1],[0,0,0],[0,0,0],[0,0,1]]
+        for i,(x,y,z) in enumerate(zip(testX,testY,testZ),0):
+            numpy.testing.assert_almost_equal(xyz_grid.cellIndicesContainingPoint(x, y, z),knownCellIndicesXYZ[i])        
+        #Test the function for a point on the boundary
+        numpy.testing.assert_almost_equal(xyz_grid.cellIndicesContainingPoint(-30, -30,-50),[0,0,0])
+        #Test the function for points outside the boundaries, it expects a failure
+        with self.assertRaises(AssertionError):    
+            xyz_grid.cellIndicesContainingPoint(-31, -31, -51)    
+    
+    @unittest.skip('Not Speed Testing cellIndicesContainingPoint')
+    def testSpeedCellIndicesFromPoint(self):
+        N = 100
+        testValX, testValY, testValZ = numpy.linspace(0.0, 2*math.pi,100_000), numpy.linspace(0,71,100_000), numpy.linspace(-50,49,100_000)        
+        largeTBounds, largeRBounds, largeZBounds = numpy.linspace(0.0, 2*math.pi,N), numpy.linspace(0,72,N), numpy.linspace(-50,50,N)
+        rz_grid1 = grids.ThetaRZGrid(bounds=(largeTBounds, largeRBounds, largeZBounds))
+        start = timeit.default_timer()
+        for (x,y,z) in zip(testValX,testValY,testValZ):
+            rz_grid1.cellIndicesContainingPoint(x, y, z)
+        end = timeit.default_timer()
+        print('The total time',(end-start))
+        
 class TestHexGrid(unittest.TestCase):
     def testPositions(self):
         grid = grids.HexGrid.fromPitch(1.0)
@@ -371,15 +408,54 @@ class TestBoundsDefinedGrid(unittest.TestCase):
 
 
 class TestThetaRZGrid(unittest.TestCase):
+    def testcellIndicesContainingPointGridTRZ(self):
+        N = 5 
+        theta ,rad,z = numpy.linspace(0.0, 2*math.pi,N) ,numpy.linspace(0,72,N),numpy.linspace(-50,50,N)
+        rz_grid = grids.ThetaRZGrid(bounds=(theta, rad, z))
+        testX = [-22.95710008,-22.98720285,-25.5380141,-28.4683899,-25.91757865,
+                -29.07586238,-22.50211648,-22.95087145,-25.16205338,-27.89942923]
+        testY = [-28.12867168,-25.4221468,-28.00614743,-25.05421535,-22.47021473,
+                -22.22179002,-28.19774525,-25.57094143,-28.04957078,-25.3713433]
+        testZ = [-33.0753019,-38.22692293,-35.68253068,-33.06058995,-35.6049822,
+                -37.9641096,-22.54355865,-27.9397493,-25.18057438,-22.64483478]
+        knownCellIndicesTRZ = [[2,2,0],[2,1,0],[2,2,0],[2,2,0],[2,1,0],[2,2,0],[2,2,1],[2,1,0],[2,2,0],[2,2,1]]
+        #Test the function against known point indices
+        for i,(x,y,z) in enumerate(zip(testX,testY,testZ),0):
+            numpy.testing.assert_almost_equal(rz_grid.cellIndicesContainingPoint(x, y, z),knownCellIndicesTRZ[i])
+        #Test the function for points on the boundaries
+        numpy.testing.assert_almost_equal(rz_grid.cellIndicesContainingPoint(0, 0,-50),[0,0,0])
+        #This function will test a point outside the boundaries and fail 
+        with self.assertRaises(AssertionError):    
+            rz_grid.cellIndicesContainingPoint(-31, -31, -51)
+             
+    def testCoordinateTransXyzTrz(self):
+        testX = [-22.95710008,-22.98720285,-25.5380141,-28.4683899,-25.91757865,
+                -29.07586238,-22.50211648,-22.95087145,-25.16205338,-27.89942923]
+        testY = [-28.12867168,-25.4221468,-28.00614743,-25.05421535,-22.47021473,
+                -22.22179002,-28.19774525,-25.57094143,-28.04957078,-25.3713433]
+        testZ = [-33.0753019,-38.22692293,-35.68253068,-33.06058995,-35.6049822,
+                -37.9641096,-22.54355865,-27.9397493,-25.18057438,-22.64483478]
+        knownTheta = [4.027880222,3.977247505,3.973053495,3.863287734,3.855866496,
+                      3.794163764,4.038861899,3.980936203,3.981202433,3.879569117]
+        knownR = [36.30772114,34.27385363,37.90164189,37.92311868,34.30206164,
+                  36.59526916,36.07572706,34.36008652,37.68165801,37.71051858]
+        knownZ = [-33.0753019,-38.22692293,-35.68253068,-33.06058995,-35.6049822,
+                  -37.9641096,-22.54355865,-27.9397493,-25.18057438,-22.64483478]
+        knownConversions = list(zip(knownTheta,knownR,knownZ))
+        grid = grids.ThetaRZGrid(bounds=(numpy.linspace(0, 2 * math.pi, 13), 
+                    [0, 2, 2.5, 3], [0, 10, 20, 30]))
+        for i, (x,y,z) in enumerate(zip(testX,testY,testZ),0):
+            numpy.testing.assert_almost_equal(grid.coordinateTransXyzTrz(x,y,z),knownConversions[i])
+            
     def testPositions(self):
         grid = grids.ThetaRZGrid(
-            bounds=(numpy.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30])
+            bounds=(numpy.linspace(0, 2 * math.pi, 13), 
+                    [0, 2, 2.5, 3], [0, 10, 20, 30])
         )
         assert_allclose(
             grid.getCoordinates((1, 0, 1)), (math.sqrt(2) / 2, math.sqrt(2) / 2, 15.0)
         )
-
-
+    
 if __name__ == "__main__":
     import sys
 
