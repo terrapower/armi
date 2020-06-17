@@ -74,7 +74,6 @@ class TestDatabase3(unittest.TestCase):
             a2.moveTo(olda1Loc)
             c = self.r.core.childrenByLocator[grid[0, 0, 0]]
             self.centralAssemSerialNums.append(c.p.serialNum)
-            print(type(c), type(c[-1]))
             self.centralTopBlockSerialNums.append(c[-1].p.serialNum)
 
             for node in range(3):
@@ -85,8 +84,6 @@ class TestDatabase3(unittest.TestCase):
                 self.r.p.cycleLength = cycle
 
                 self.db.writeToDB(self.r)
-        print(self.centralAssemSerialNums)
-        print(self.centralTopBlockSerialNums)
 
     def _compareArrays(self, ref, src):
         """
@@ -189,7 +186,6 @@ class TestDatabase3(unittest.TestCase):
         grid = self.r.core.spatialGrid
         testAssem = self.r.core.childrenByLocator[grid[0, 0, 0]]
         testBlock = testAssem[-1]
-        print(testBlock.p.serialNum)
 
         # Test assem
         hist = self.db.getHistoryByLocation(
@@ -210,12 +206,6 @@ class TestDatabase3(unittest.TestCase):
         # cant mix blocks and assems, since they are different distance from core
         with self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
-
-        import pprint
-
-        pp = pprint.PrettyPrinter(indent=2, width=1000)
-        pp.pprint(hist)
-        pp.pprint(hists)
 
         raise Exception("wrench")
 

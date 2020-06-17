@@ -1256,7 +1256,6 @@ class Database3(database.Database):
             )
         anchor, anchorDistance = anchors.pop()
         anchorSerialNum = anchor.p.serialNum
-        print(anchor, anchorSerialNum)
 
         # All objects of the same type
         objectTypes = {type(obj) for obj in comps}
