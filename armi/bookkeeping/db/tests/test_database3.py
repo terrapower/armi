@@ -207,8 +207,6 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
 
-        raise Exception("wrench")
-
     def test_replaceNones(self):
         """
         This definitely needs some work.
