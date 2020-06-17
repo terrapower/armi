@@ -155,6 +155,7 @@ class SuiteBuilder(object):
                     )
 
                 previousMods.append(type(mod))
+                case.bp._prepConstruction(case.cs)
                 mod(case.cs, case.bp, case.geom)
                 case.independentVariables.update(mod.independentVariable)
 

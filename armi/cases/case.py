@@ -34,6 +34,7 @@ import time
 import textwrap
 import ast
 from typing import Optional, Sequence
+import glob
 
 import tabulate
 import six
@@ -698,6 +699,9 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
 
     This enables developers to add new inputs in a plugin-dependent/
     modular way.
+
+    In parameter sweeps, these often have a sourceDir associated with them that is
+    different from the cs.inputDirectory.
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
@@ -706,12 +710,12 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
             # Don't consider disabled interfaces
             continue
         interfaceFileNames = klass.specifyInputs(cs)
-        for label, fileNames in interfaceFileNames.items():
-            for f in fileNames:
-                if not f:
-                    continue
-                pathTools.copyOrWarn(
-                    label,
-                    pathTools.armiAbsPath(sourceDir, f),
-                    os.path.join(destination, f),
-                )
+        for label, relativeGlobs in interfaceFileNames.items():
+            for relativeGlob in relativeGlobs:
+                for sourceFullPath in glob.glob(os.path.join(sourceDir, relativeGlob)):
+                    if not sourceFullPath:
+                        continue
+                    _sourceDir, sourceName = os.path.split(sourceFullPath)
+                    pathTools.copyOrWarn(
+                        label, sourceFullPath, os.path.join(destination, sourceName),
+                    )
