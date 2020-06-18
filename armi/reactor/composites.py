@@ -1392,7 +1392,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return self.parent.getAncestor(fn)
 
-    def getAncestorWithDistance(
+    def getAncestorAndDistance(
         self, fn, _distance=0
     ) -> Optional[Tuple["ArmiObject", int]]:
         """
@@ -1410,7 +1410,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if self.parent is None:
             return None
         else:
-            return self.parent.getAncestorWithDistance(fn, _distance + 1)
+            return self.parent.getAncestorAndDistance(fn, _distance + 1)
 
     def getAncestorWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
         """

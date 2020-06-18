@@ -33,6 +33,8 @@ for a given object or collection of object from the database file. When interact
 the database file, the ``Layout`` class is used to help map the hierarchical Composite
 Reactor Model to the flat representation in the database.
 
+Refer to :py:mod:`armi.bookkeeping.db` for notes about versioning.
+
 Minor revision changelog
 ------------------------
  - 3.1: Improve the handling of reading/writing grids.
@@ -1220,11 +1222,11 @@ class Database3(database.Database):
         Get the parameter histories at specific locations.
 
         This has a number of limitations, which should in practice not be too limiting:
-         - The passed locations must be IndexLocations. This type of operation doesn't
+         - The passed objects must have IndexLocations. This type of operation doesn't
            make much sense otherwise.
-         - The passed locations must exist in a hierarchy of grids that lead to a Core
-           object which serves as an anchor, fully defining all index locations. This
-           could possibly be made more general by extending grids, but that gets a
+         - The passed objects must exist in a hierarchy that leads to a Core
+           object, which serves as an anchor that can fully define all index locations.
+           This could possibly be made more general by extending grids, but that gets a
            little more complicated.
          - All requested objects must exist under the **same** anchor object, and at the
            same depth below it.
@@ -1609,6 +1611,9 @@ def _packLocationsV1(
 def _packLocationsV2(
     locations: List[grids.LocationBase]
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
+    """
+    Location packing implementation for minor version 3. See release notes above.
+    """
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
     for loc in locations:
@@ -1635,6 +1640,9 @@ def _packLocationsV2(
 def _packLocationsV3(
     locations: List[grids.LocationBase]
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
+    """
+    Location packing implementation for minor version 4. See release notes above.
+    """
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
 
@@ -1693,6 +1701,9 @@ def _unpackLocationsV1(locationTypes, locData):
 
 
 def _unpackLocationsV2(locationTypes, locData):
+    """
+    Location unpacking implementation for minor version 3+. See release notes above.
+    """
     locsIter = iter(locData)
     unpackedLocs = []
     for lt in locationTypes:
@@ -2041,15 +2052,23 @@ class Layout:
         Return a list containing the serial number of the parent corresponding to each
         object at the given depth.
 
-        Depth in this case means how many layers to reach up before reaching the desired
-        ancestor.
+        Depth in this case means how many layers to reach up to find the desired
+        ancestor. A depth of 1 will yield the direct parent of each element, depth of 2
+        would yield the elemen's parent's parent, and so on.
 
-        The zero-th element will always be None, as the first object has no parent.
-        Subsequent depths will result in more Nones.
+        The zero-th element will always be None, as the first object is the root element
+        and so has no parent. Subsequent depths will result in more Nones.
 
         This function is useful for forming a lightweight sense of how the database
         contents stitch together, without having to go to the trouble of fully unpacking
         the Reactor model.
+
+        Parameters
+        ----------
+        serialNum : List of int
+            List of serial numbers for each object/element, as laid out in Layout
+        numChildren : List of int
+            List of numbers of children for each object/element, as laid out in Layout
 
         Note
         ----

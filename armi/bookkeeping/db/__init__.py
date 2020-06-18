@@ -45,10 +45,12 @@ fix bugs.
 
 Being a serialization format, the code associated with reading and writing database
 files may not benefit from Don't Repeat Yourself (DRY) practices in the same way as
-other code. Therefore, we do not share much code between different major versions of the
-databases. Minor revisions (e.g. M.(N+1)) to the database structure should be simple
-enough that specialized logic can be used to support all minor versions without posing a
-maintenance burden. A detailed change log should be maintained of each minor revision.
+other code. Therefore, we do not share much, if any, code between different major
+versions of the databases. As such, new major-versioned database implementations should
+exist in their own modules. Minor revisions (e.g. M.(N+1)) to the database structure
+should be simple enough that specialized logic can be used to support all minor versions
+without posing a maintenance burden. A detailed change log should be maintained of each
+minor revision.
 """
 import os
 from typing import Optional, List, Tuple
