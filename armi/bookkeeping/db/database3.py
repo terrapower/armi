@@ -1262,7 +1262,7 @@ class Database3(database.Database):
         # All locations must have the same parent and bear the same relationship to the
         # anchor object
         anchors = {
-            obj.getAncestorWithDistance(lambda a: isinstance(a, Core)) for obj in comps
+            obj.getAncestorAndDistance(lambda a: isinstance(a, Core)) for obj in comps
         }
 
         if len(anchors) != 1:
