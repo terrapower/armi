@@ -41,6 +41,7 @@ tags
 .venv*/
 .mypy_cache/
 **/__pycache__
+**/.coverage*
 
 # Misc. exclusions
 *.html

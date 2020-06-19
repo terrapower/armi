@@ -1388,6 +1388,44 @@ class Block_TestCase(unittest.TestCase):
             os.remove("flux.txt")  # secondarily created during the call.
             os.remove("flux.png")  # created during the call.
 
+    def test_pinMgFluxes(self):
+        """
+        Test setting/getting of pin-wise fluxes.
+
+        .. warning:: This will likely be pushed to the component level.
+
+        """
+        fluxes = numpy.ones((33, 10))
+        self.Block.setPinMgFluxes(fluxes, 10)
+        self.Block.setPinMgFluxes(fluxes * 2, 10, adjoint=True)
+        self.Block.setPinMgFluxes(fluxes * 3, 10, gamma=True)
+        self.assertEqual(self.Block.p.pinMgFluxes[0][2], 1.0)
+        self.assertEqual(self.Block.p.pinMgFluxesAdj[0][2], 2.0)
+        self.assertEqual(self.Block.p.pinMgFluxesGamma[0][2], 3.0)
+
+    def test_getComponentsInLinkedOrder(self):
+        comps = self.Block.getComponentsInLinkedOrder()
+        self.assertEqual(len(comps), len(self.Block))
+
+        comps.pop(0)
+        with self.assertRaises(RuntimeError):
+            comps2 = self.Block.getComponentsInLinkedOrder(comps)
+
+    def test_mergeWithBlock(self):
+        fuel1 = self.Block.getComponent(Flags.FUEL)
+        fuel1.setNumberDensity("CM246", 0.0)
+        block2 = loadTestBlock()
+        fuel2 = block2.getComponent(Flags.FUEL)
+        fuel2.setNumberDensity("CM246", 0.02)
+        self.assertEqual(self.Block.getNumberDensity("CM246"), 0.0)
+        self.Block.mergeWithBlock(block2, 0.1)
+        self.assertGreater(self.Block.getNumberDensity("CM246"), 0.0)
+        self.assertLess(self.Block.getNumberDensity("CM246"), 0.02)
+
+    def test_getDimensions(self):
+        dims = self.Block.getDimensions("od")
+        self.assertIn(self.Block.getComponent(Flags.FUEL).p.od, dims)
+
 
 class HexBlock_TestCase(unittest.TestCase):
     def setUp(self):
