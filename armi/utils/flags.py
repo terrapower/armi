@@ -44,6 +44,17 @@ class auto:
     specified as well.
     """
 
+    def __iter__(self):
+        """
+        Dummy __iter__ implementation
+
+        This is only needed to make mypy happy when it type checks things that have
+        FlagTypes in them, since these can normally be iterated over, but mypy doesn't
+        know that the metaclass consumes the autos.
+        """
+        raise NotImplementedError("__iter__() is not actually implemented on "
+                "{}; it is only defined to appease mypy.".format(type(self)))
+
 
 class _FlagMeta(type):
     """
