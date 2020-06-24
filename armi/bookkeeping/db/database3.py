@@ -1751,6 +1751,27 @@ class Layout:
     Temperatures, specifically, are rather complicated beasts in ARMI, and more
     fundamental changes to how we deal with them may allow us to remove them from
     Layout.
+
+    Notes
+    -----
+    As this format is liable to be consumed by other code, it is important to specify
+    its structure so that code attempting to read/write Layouts can make safe
+    assumptions. Below is a list of things to be aware of. More will be added as issues
+    arise or things become more precise:
+
+     * Elements in Layout are stored in depth-first order. This permits use of
+       algorithms such as Pre-Order Tree Traversal for efficient traversal of regions of
+       the model.
+
+     * ``indexInData`` increases monotonically within each object ``type``. This means
+       that, for instance, the data for all ``HexBlock`` children of a given parent
+       are stored contiguously within the ``HexBlock`` group, and will not be
+       interleaved with data from the ``HexBlock`` children of any of the parent's
+       siblings.
+
+     * Aside from the hierarchy itself, there is no guarantee what order objects are
+       stored in the layout.  "`The` ``Core``" is not necessarily the first child of the
+       ``Reactor``, and is not guaranteed to use the zeroth grid.
     """
 
     def __init__(self, version: Tuple[int, int], h5group=None, comp=None):
