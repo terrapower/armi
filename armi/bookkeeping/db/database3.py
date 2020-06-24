@@ -677,8 +677,14 @@ class Database3(database.Database):
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        stream = io.StringIO(self.h5db["inputs/blueprints"][()])
+        bpString = self.h5db["inputs/blueprints"][()]
+        if not bpString:
+            # looks like no blueprints contents
+            return None
+
+        stream = io.StringIO(bpString)
         stream = blueprints.Blueprints.migrate(stream)
+
         bp = blueprints.Blueprints.load(stream)
         return bp
 
@@ -942,7 +948,8 @@ class Database3(database.Database):
             self._readParams(h5group, compType, compTypeList)
 
         # assign params from blueprints
-        self._assignBlueprintsParams(bp, groupedComps)
+        if bp is not None:
+            self._assignBlueprintsParams(bp, groupedComps)
 
         # stitch together
         self._compose(iter(comps), cs)

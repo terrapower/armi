@@ -29,7 +29,7 @@ from armi.tests import TEST_ROOT
 class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
-        cs = caseSettings.Settings()
+        cs = self.o.cs
 
         self.dbi = database3.DatabaseInterface(self.r, cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
