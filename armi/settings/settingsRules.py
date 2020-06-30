@@ -297,26 +297,6 @@ def PumpInertiaPercentChange(_cs, name, value):
     return {"pumpInertia": newVal}
 
 
-@include_as_rule("nodal")
-def newDif3dRebusOptions(cs, _name, value):
-    """
-    Update the `neutronicsKernel` setting to either `YYYY-Nodal` or `YYYY-FD` based on deprecated nodal setting, where
-    YYYY refers to either DIF3D or REBUS solver.
-    """
-    if cs["neutronicsKernel"] not in cs.settings["neutronicsKernel"].options:
-        if value == "False":
-            nk = cs["neutronicsKernel"] + "-FD"
-        else:
-            nk = cs["neutronicsKernel"] + "-Nodal"
-        runLog.warning(
-            "The `neutronicsKernel` option has been set to {} based on the deprecated `nodal` setting."
-            "".format(nk)
-        )
-        return {"neutronicsKernel": nk}
-    else:
-        return {}
-
-
 @include_as_rule("saveNeutronicsOutputs")
 def resetNeutronicsOutputsToSaveAfterRename(_cs, _name, value):
     """

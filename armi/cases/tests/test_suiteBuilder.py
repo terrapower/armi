@@ -301,19 +301,6 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         )
         builder.addDegreeOfFreedom((suiteBuilder.FullCoreModifier(),))
 
-        neutronicKernelOpts = (
-            {"neutronicsKernel": neutronics.DIF3DFD, "numberMeshPerEdge": 1},
-            {"neutronicsKernel": neutronics.DIF3DFD, "numberMeshPerEdge": 2},
-            {"neutronicsKernel": neutronics.DIF3DFD, "numberMeshPerEdge": 3},
-            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-7, "epsFSAvg": 1e-5},
-            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-9, "epsFSAvg": 1e-6},
-            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-12, "epsFSAvg": 1e-7},
-            {"neutronicsKernel": neutronics.VARIANT, "epsEig": 1e-13, "epsFSAvg": 1e-8},
-        )
-        builder.addDegreeOfFreedom(
-            NeutronicsKernelOpts(opts) for opts in neutronicKernelOpts
-        )
-
         with directoryChangers.TemporaryDirectoryChanger():
             suite = builder.buildSuite()
             for c in suite:

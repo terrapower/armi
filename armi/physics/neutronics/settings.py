@@ -123,10 +123,10 @@ def defineSettings():
         ),
         setting.Setting(
             CONF_NEUTRONICS_KERNEL,
-            default="DIF3D-Nodal",
+            default="",
             label="Neutronics Kernel",
             description="The neutronics / depletion solver for global flux solve.",
-            options=["DIF3D-Nodal", "DIF3D-FD", "VARIANT", "DIFNT"],
+            options=[],
             enforcedOptions=True,
         ),
         setting.Setting(
