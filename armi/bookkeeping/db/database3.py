@@ -275,7 +275,7 @@ class DatabaseInterface(interfaces.Interface):
         """
         if armi.MPI_RANK > 0:
             # DB may not exist if distribute state is called early.
-            if os.path.exists(self._dbPath):
+            if self._dbPath is not None and os.path.exists(self._dbPath):
                 self._db = Database3(self._dbPath, "r")
                 self._db.open()
 
