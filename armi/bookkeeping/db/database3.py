@@ -95,7 +95,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
-from armi.bookkeeping.db.types import History, Histories, LocationHistories
+from armi.bookkeeping.db.typedefs import History, Histories, LocationHistories
 from armi.bookkeeping.db import database
 from armi.reactor import geometry
 from armi.utils.textProcessors import resolveMarkupInclusions
@@ -156,7 +156,7 @@ class DatabaseInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self._db = None
-        self._dbPath : Optional[pathlib.Path] = None
+        self._dbPath: Optional[pathlib.Path] = None
 
     def __repr__(self):
         return "<{} '{}' {} >".format(
@@ -181,7 +181,7 @@ class DatabaseInterface(interfaces.Interface):
         if not self._db:
             self.initDB()
 
-    def initDB(self, fName: Optional[os.PathLike]=None):
+    def initDB(self, fName: Optional[os.PathLike] = None):
         """
         Open the underlying database to be written to, and write input files to DB.
 
@@ -266,7 +266,7 @@ class DatabaseInterface(interfaces.Interface):
         except:  # pylint: disable=bare-except; we're already responding to an error
             pass
 
-    def interactDistributeState(self):
+    def interactDistributeState(self) -> None:
         """
         Reconnect to pre-existing database.
 
@@ -381,7 +381,7 @@ class DatabaseInterface(interfaces.Interface):
         comp: ArmiObject,
         params: Optional[Sequence[str]] = None,
         timeSteps: Optional[MutableSequence[Tuple[int, int]]] = None,
-        byLocation: bool = False
+        byLocation: bool = False,
     ) -> History:
         """
         Get historical parameter values for a single object.
@@ -421,7 +421,7 @@ class DatabaseInterface(interfaces.Interface):
         comps: Sequence[ArmiObject],
         params: Optional[Sequence[str]] = None,
         timeSteps: Optional[MutableSequence[Tuple[int, int]]] = None,
-        byLocation: bool = False
+        byLocation: bool = False,
     ) -> Histories:
         """
         Get historical parameter values for one or more objects.
@@ -1208,9 +1208,9 @@ class Database3(database.Database):
         Get the parameter histories at a specific location.
         """
 
-        return self.getHistoriesByLocation(
-            [comp], params=params, timeSteps=timeSteps
-        )[comp]
+        return self.getHistoriesByLocation([comp], params=params, timeSteps=timeSteps)[
+            comp
+        ]
 
     def getHistoriesByLocation(
         self,
@@ -1270,7 +1270,15 @@ class Database3(database.Database):
                 "The passed objects do not have the same anchor or distance to that "
                 "anchor; encountered the following: {}".format(anchors)
             )
-        anchor, anchorDistance = anchors.pop()
+
+        anchorInfo = anchors.pop()
+        if anchorInfo is not None:
+            anchor, anchorDistance = anchorInfo
+        else:
+            raise ValueError(
+                "Could not determine an anchor object for the passed components"
+            )
+
         anchorSerialNum = anchor.p.serialNum
 
         # All objects of the same type
