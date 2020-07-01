@@ -474,18 +474,18 @@ class InputWriter(object):
 class OutputReader(object):
     """
     A generic representation of a particular module's output.
-    
+
     Attributes
     ----------
     success : bool
         False by default, set to True if the run is considered
         to have completed without error.
-        
+
     Notes
     -----
     Should ideally not require r, eci, and fname arguments
     and would rather just have an apply(reactor) method.
-    
+
     """
 
     def __init__(self, r=None, externalCodeInterface=None, fName=None):
@@ -513,7 +513,7 @@ class OutputReader(object):
     def apply(self, reactor):
         """
         Apply the output back to a reactor state.
-        
+
         This provides a generic interface for the output data of anything
         to be applied to a reactor state. The application could involve
         reading text or binary output or simply parameters to appropriate
@@ -577,23 +577,3 @@ class InterfaceInfo(NamedTuple):
     order: int
     interfaceCls: Interface
     kwargs: dict
-
-
-class InterfaceFactory(metaclass=ABCMeta):
-    """Base class for choosing ARMI Interfaces."""
-
-    def __init__(self, cs):
-        self.cs = cs
-
-    @abstractmethod
-    def getInterfaceInfo(self):
-        """
-        Return a list of Interface info
-
-        Returns
-        -------
-        classData
-            list of InterfaceInfo structs
-
-        """
-        pass

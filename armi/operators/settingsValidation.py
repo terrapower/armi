@@ -571,8 +571,7 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-                neutronics.MCNP not in self.cs["neutronicsKernel"]
-                and self.cs["boundaries"] != neutronics.GENERAL_BC
+                self.cs["boundaries"] != neutronics.GENERAL_BC
                 and self.cs["bcCoefficient"]
             ),
             "General neutronic boundary condition was not selected, but `bcCoefficient` was defined. "

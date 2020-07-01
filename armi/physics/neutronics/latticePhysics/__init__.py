@@ -22,12 +22,3 @@ from armi import interfaces
 from armi.physics import neutronics
 
 ORDER = interfaces.STACK_ORDER.CROSS_SECTIONS
-
-
-def neutronicsKernelNeedsLatticePhysics(cs):
-    """Return True if the neutronics kernel requires cross sections from lattice physics"""
-    return cs["neutronicsKernel"] not in [neutronics.MCNP, neutronics.MCNP_DISTORTED]
-
-
-def latticePhysicsActive(cs):
-    return cs["globalFluxActive"] and neutronicsKernelNeedsLatticePhysics(cs)

@@ -148,15 +148,6 @@ RESTARTFILES = "Restart files"
 INPUTOUTPUT = "Input/Output"
 FLUXFILES = "Flux files"
 
-# Neutronics kernel constants
-VARIANT = "VARIANT"
-GAMSOR = "GAMSOR"
-MCNP = "MCNP"
-DIF3DNODAL = "DIF3D-Nodal"
-DIF3DFD = "DIF3D-FD"
-MCNP_DISTORTED = "MCNP_Distorted"
-PARTISN = "PARTISN"
-
 # ARC and CCCC cross section file format names
 COMPXS = "COMPXS"
 PMATRX = "PMATRX"
