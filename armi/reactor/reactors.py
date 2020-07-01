@@ -187,9 +187,6 @@ class Core(composites.Composite):
         self.spatialGrid = None
         self.xsIndex = {}
         self.p.numMoves = 0
-        self.p.beta = 0.0
-        self.p.betaComponents = [0.0] * 6
-        self.p.betaDecayConstants = [0.0] * 6
 
         # build a spent fuel pool for this reactor
         runLog.debug("Building spent fuel pools")

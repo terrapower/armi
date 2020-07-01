@@ -704,9 +704,10 @@ def defineCoreParameters():
         location=ParamLocation.AVERAGE,
         categories=["reactivity coefficients", "kinetics"],
     ) as pb:
-
+        
+    
         pb.defParam(
-            "beta", units=None, description="Effective delayed neutron fraction"
+            "beta", units=None, description="Effective delayed neutron fraction", default=None
         )
 
         pb.defParam(
