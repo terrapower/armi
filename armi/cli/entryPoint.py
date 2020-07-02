@@ -54,7 +54,7 @@ class EntryPoint:
     """
 
     # The <command-name> that is used to call the command from the command line
-    name : Optional[str] = None
+    name: Optional[str] = None
 
     # A string summarizing the command's actions. This is summary that is printed when
     # you run `python -m armi --list-commands` or `python -m armi <command-name>
@@ -62,7 +62,7 @@ class EntryPoint:
     # instead. In general, the docstring is probably sufficient but this argument allows
     # you to provide a short description of the command while retaining a long and
     # detailed docstring.
-    description : Optional[str] = None
+    description: Optional[str] = None
 
     # One of {'optional', 'required', None}, or unspecified.
     # Specifies whether a settings file argument is to be added to the
@@ -70,11 +70,11 @@ class EntryPoint:
     # file is a required positional argument. If settingsArgument == 'optional',
     # then it is an optional positional argument. Finally, if settingsArgument is
     # None, then no settings file argument is added.
-    settingsArgument : Union[str, None] = None
+    settingsArgument: Union[str, None] = None
 
     # One of {armi.Mode.Batch, armi.Mode.Interactive, armi.Mode.Gui}, optional.
     # Specifies the ARMI mode in which the command is run. Default is armi.Mode.Batch.
-    mode : Optional[int] = None
+    mode: Optional[int] = None
 
     def __init__(self):
         if self.name is None:

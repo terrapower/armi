@@ -296,7 +296,9 @@ def registerPluginFlags(pm):
 # string conversions for multiple-word flags
 _CONVERSIONS = {
     re.compile(r"GRID\s+PLATE"): Flags.GRID_PLATE,
-    re.compile(r"\bGRID\b"): Flags.GRID_PLATE,  # often used as component in "grid plate" block
+    re.compile(
+        r"\bGRID\b"
+    ): Flags.GRID_PLATE,  # often used as component in "grid plate" block
     re.compile(r"INLET\s+NOZZLE"): Flags.INLET_NOZZLE,
     re.compile("NOZZLE"): Flags.INLET_NOZZLE,
     re.compile(r"HANDLING\s+SOCKET"): Flags.HANDLING_SOCKET,

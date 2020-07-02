@@ -202,7 +202,9 @@ class Flag(metaclass=_FlagMeta):
         """
         Return a list of all field names, sorted by increasing integer value.
         """
-        return [i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])]
+        return [
+            i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])
+        ]
 
     @classmethod
     def extend(cls, fields: Dict[str, Union[int, auto]]):
@@ -313,8 +315,8 @@ class Flag(metaclass=_FlagMeta):
     def __hash__(self):
         return hash(self._value)
 
+
 # Type alias to reliably check for a proper Flag type. This cannot just be `Flag`, since
 # mypy gets confused by `auto` because it doesn't go to the trouble of resolving them in
 # the metaclass.
 FlagType = Union[Flag, auto]
-

@@ -166,6 +166,7 @@ class _SettingsReader(object):
         This is intended to replace the XML stuff as we converge on consistent input formats.
         """
         from armi.physics.thermalHydraulics import const  # avoid circular import
+
         yaml = YAML()
         tree = yaml.load(stream)
         if "settings" not in tree:

@@ -198,11 +198,11 @@ class AsciiMapHexThird(AsciiMap):
             grid[x, y] = val
 
         nRows = max(y for _x, y in grid)
-        minX = min(self._getRowBase(row)[0] for row in range(nRows+1))
+        minX = min(self._getRowBase(row)[0] for row in range(nRows + 1))
 
-        spacer = " "*maxSize
+        spacer = " " * maxSize
 
-        for row in reversed(range(nRows+1)):
+        for row in reversed(range(nRows + 1)):
             base = self._getRowBase(row)
             foundContents = False
 
@@ -223,7 +223,7 @@ class AsciiMapHexThird(AsciiMap):
 
                 rowContents.append(contents.center(maxSize))
 
-            stream.write(" "*padding*maxSize + spacer.join(rowContents) + "\n")
+            stream.write(" " * padding * maxSize + spacer.join(rowContents) + "\n")
 
 
 class AsciiMapHexFullTipsUp(AsciiMap):

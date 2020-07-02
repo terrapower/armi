@@ -47,7 +47,8 @@ CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_BURN_STEPS = "burnSteps"
-CONF_BETA = "beta"
+CONF_BETA_COMPONENTS = "betaComponents"
+CONF_DECAY_CONSTANTS = "decayConstants"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -265,6 +266,18 @@ def defineSettings() -> List[setting.Setting]:
             label="Effective delayed neutron fraction",
             description="Effective delayed neutron fraction. You may need to enter the "
             "precursor groups in detail elsewhere to do kinetics.",
+        ),
+        setting.Setting(
+            CONF_BETA_COMPONENTS,
+            default=[],
+            label="Beta Components",
+            description="Manually set individual precursor group delayed neutron fractions.",
+        ),
+        setting.Setting(
+            CONF_DECAY_CONSTANTS,
+            default=[],
+            label="Decay Constants",
+            description="Manually set individual precursor group delayed neutron decay constants",
         ),
         setting.Setting(
             CONF_BRANCH_VERBOSITY,

@@ -535,7 +535,7 @@ class Inconel_TestCase(_Material_Test, unittest.TestCase):
 
     def test_density(self):
         self.assertEqual(self.Inconel.density(), 8.3600)
-        self.assertEqual(self.Inconel800.density(Tc=21.), 7.94)
+        self.assertEqual(self.Inconel800.density(Tc=21.0), 7.94)
         self.assertEqual(self.InconelPE16.density(), 8.00)
 
     def test_Iconel800_linearExpansion(self):
@@ -860,9 +860,10 @@ class Alloy200_TestCase(unittest.TestCase):
 
         self.assertGreater(Alloy200().p.massFrac["NI"], 0.99)
 
+
 class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.HastelloyN
-    
+
     def test_thermalConductivity(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
@@ -903,7 +904,6 @@ class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
                 cur, ref
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
-
 
     def test_linearExpansionPercent(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]

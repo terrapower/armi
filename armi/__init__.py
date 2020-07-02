@@ -338,7 +338,7 @@ def _cleanupOnCancel(signum, _frame):
     sys.exit(1)  # since we're handling the signal we have to cancel
 
 
-def configure(app: Optional[apps.App]=None):
+def configure(app: Optional[apps.App] = None):
     """
     Set the plugin manager for the Framework and configure internals to those plugins.
 

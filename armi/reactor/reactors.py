@@ -220,6 +220,54 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
+        self._setupEffectiveDelayedNeutronFraction(cs)
+
+    def _setupEffectiveDelayedNeutronFraction(self, cs):
+        """Process the settings for the delayed neutron fraction and precursor decay constants."""
+        # Verify and set the core beta parameters based on the user-supplied settings
+        if not bool(cs["decayConstants"]) or bool(cs["betaComponents"]):
+            runLog.info(
+                "Delayed neutron fraction and precursor decay constants were not supplied. "
+                f"Skip applying them to {self}."
+            )
+            return
+        else:
+            runLog.info(
+                "Applying user-supplied delayed neutron fraction and precursor decay constants "
+                f"to {self}."
+            )
+
+        if not bool(cs["decayConstants"]):
+            runLog.info(
+                "The `decayConstants` setting has not been user-supplied and will "
+                f"not be set on the state of {self}."
+            )
+        else:
+            decayConstants = numpy.array(cs["decayConstants"])
+
+        if not bool(cs["betaComponents"]):
+            runLog.info(
+                "The `betaComponents` setting has not been user-supplied and will "
+                f"not be set on the state of {self}."
+            )
+        else:
+            betaComponents = numpy.array(cs["betaComponents"])
+            beta = betaComponents.sum()
+
+        self.p.betaComponents = betaComponents
+        self.p.beta = beta
+        self.p.betaDecayConstants = decayConstants
+        data = [
+            ("Delayed Neutron Fraction Components", self.p.betaComponents),
+            ("Total Delayed Neutron Fraction", self.p.beta)(
+                "Precursor Decay Constants", self.p.betaDecayConstants
+            ),
+        ]
+        runLog.info(
+            tabulate.tabulate(
+                tabular_data=data, headers=["Component", "Value"], tablefmt="armi"
+            )
+        )
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """
