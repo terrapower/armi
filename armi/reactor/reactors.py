@@ -286,8 +286,11 @@ class Core(composites.Composite):
                     f"({decayConstants}) are not consistent lengths."
                 )
 
+            self.p.beta = sum(beta)
             self.p.betaComponents = numpy.array(beta)
             self.p.betaDecayConstants = numpy.array(decayConstants)
+
+            reportTableData.append(("Total Delayed Neutron Fraction", self.p.beta))
             reportTableData.append(
                 ("Group-wise Delayed Neutron Fractions", self.p.betaComponents)
             )

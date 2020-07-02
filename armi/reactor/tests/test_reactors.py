@@ -213,7 +213,7 @@ class ReactorTests(unittest.TestCase):
         o = buildOperatorOfEmptyHexBlocks(
             customSettings={"beta": [0.0] * 6, "decayConstants": [0.0] * 6,},
         )
-        self.assertIsNone(o.r.core.p.beta)
+        self.assertEqual(o.r.core.p.beta, sum(o.cs["beta"]))
         self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["beta"])
         self.assertListEqual(
             list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
@@ -238,7 +238,7 @@ class ReactorTests(unittest.TestCase):
         o = buildOperatorOfEmptyHexBlocks(
             customSettings={"beta": [0.0], "decayConstants": [0.0]},
         )
-        self.assertIsNone(o.r.core.p.beta)
+        self.assertEqual(o.r.core.p.beta, sum(o.cs["beta"]))
         self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["beta"])
         self.assertListEqual(
             list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
