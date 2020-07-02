@@ -217,12 +217,10 @@ class TestDatabase3(unittest.TestCase):
 
         # if requested time step isnt written, return no content
         hist = self.dbi.getHistory(
-            self.r.core[0],
-            params=["chargeTime", "serialNum"],
-            byLocation=True
+            self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
         )
-        self.assertIn((3,0), hist["chargeTime"].keys())
-        self.assertEqual(hist["chargeTime"][(3,0)], 3)
+        self.assertIn((3, 0), hist["chargeTime"].keys())
+        self.assertEqual(hist["chargeTime"][(3, 0)], 3)
 
     def test_replaceNones(self):
         """

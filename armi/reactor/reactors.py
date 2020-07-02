@@ -225,53 +225,14 @@ class Core(composites.Composite):
     def _setupEffectiveDelayedNeutronFraction(self, cs):
         """Process the settings for the delayed neutron fraction and precursor decay constants."""
         # Verify and set the core beta parameters based on the user-supplied settings
-
-        def _betaValidator(value):
-            """
-            Validate the input for beta.
-            
-            Notes
-            -----
-            Beta can either be provided as a float or list of floats.
-            If the list has a single value or is a float, this is 
-            interpreted as the total delayed neutron fraction. Otherwise,
-            the value is interpreted as the group-wise delayed neutron
-            fractions.
-            """
-            if value is None:
-                return None
-
-            if isinstance(value, list):
-                return [float(val) for val in value]
-            elif isinstance(value, float):
-                return value
-            else:
-                raise ValueError(
-                    "`beta` must be set as a float or a list of floats. "
-                    f"Attempted to assign {value}."
-                )
-
-        def _decayConstantsValidator(value):
-            """Validate the input for precursor decay constants."""
-            if value is None:
-                return None
-
-            if isinstance(value, list):
-                return [float(val) for val in value]
-            else:
-                raise ValueError(
-                    "`decayConstants` must be set as a list of floats. "
-                    f"Attempted to assign {value}."
-                )
-
         runLog.info(
             "Checking for user-supplied `beta` and `decayConstants` settings and attempting to "
             f"apply them to state of {self}."
         )
-        beta = _betaValidator(cs["beta"])
-        decayConstants = _decayConstantsValidator(cs["decayConstants"])
+        beta = cs["beta"]
+        decayConstants = cs["decayConstants"]
 
-        # If beta is interpreted as a single float value, then assign it to
+        # If beta is interpreted as a float, then assign it to
         # the total delayed neutron fraction parameter. Otherwise, setup the
         # group-wise delayed neutron fractions and precursor decay constants.
         reportTableData = []
@@ -303,15 +264,14 @@ class Core(composites.Composite):
             runLog.warning(
                 f"Delayed neutron fraction(s) - {beta} and decay constants - {decayConstants} have not been applied."
             )
-            return
-
-        runLog.info(
-            tabulate.tabulate(
-                tabular_data=reportTableData,
-                headers=["Component", "Value"],
-                tablefmt="armi",
+        else:
+            runLog.info(
+                tabulate.tabulate(
+                    tabular_data=reportTableData,
+                    headers=["Component", "Value"],
+                    tablefmt="armi",
+                )
             )
-        )
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """

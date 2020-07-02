@@ -2544,7 +2544,6 @@ class Composite(ArmiObject):
         """
         return (c for child in self for c in child.iterComponents(typeSpec, exact))
 
-
     def syncMpiState(self):
         """
         Synchronize all parameters of this object and all children to all worker nodes

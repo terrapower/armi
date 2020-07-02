@@ -111,25 +111,23 @@ precursor decay constants to the Core parameters during initialization.
 These settings come with a few caveats:
 
     1. The ``beta`` setting supports two different meanings depending on
-       the type that is provided. If a float is given, then this setting
+       the type that is provided. If a single value is given, then this setting
        is interpreted as the effective delayed neutron fraction for the
-       system and is applied to the Core's ``beta`` parameter. If a list
-       of floats is provided, then this setting is interpreted as the
-       group-wise (precursor family) delayed neutron fractions (useful for
-       reactor kinetics simulations). In this case, the values
-       will be stored on the Core's ``betaComponents`` parameter.
+       system. If a list of values is provided, then this setting is interpreted
+       as the group-wise (precursor family) delayed neutron fractions (useful for
+       reactor kinetics simulations).
 
     2. The ``decayConstants`` setting is used to define the precursor
-       decay constants for each group (family). When set, it must be
-       provided with a corresponding ``beta`` parameter that has the
+       decay constants for each group. When set, it must be
+       provided with a corresponding ``beta`` setting that has the
        same number of groups. For example, if six-group delayed neutron
        fractions are provided, the decay constants must also be provided
-       in the same six-group structure. This setting is applied to Core's
-       ``betaDecayConstants`` parameter. If instead ``beta`` is interpreted
-       as the effective delayed neutron fraction, the ``betaDecayConstants``
-       parameter will not be set.
+       in the same six-group structure.
 
-    3. If both the group-wise ``beta`` and ``decayConstants`` are consistent,
-       then the effective delayed neutron fraction for the system is calculated
-       as the summation of the group-wise delayed neutron fractions and also
-       stored on the Core's ``beta`` parameter.
+    3. If ``beta`` is interpreted as the effective delayed neutron fraction for
+       the system, then the ``decayConstants`` setting will not be utilized.
+
+    4. If both the group-wise ``beta`` and ``decayConstants`` are provided
+       and their number of groups are consistent, then the effective delayed
+       neutron fraction for the system is calculated as the summation of the
+       group-wise delayed neutron fractions.

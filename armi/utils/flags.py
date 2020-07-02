@@ -52,8 +52,10 @@ class auto:
         FlagTypes in them, since these can normally be iterated over, but mypy doesn't
         know that the metaclass consumes the autos.
         """
-        raise NotImplementedError("__iter__() is not actually implemented on "
-                "{}; it is only defined to appease mypy.".format(type(self)))
+        raise NotImplementedError(
+            "__iter__() is not actually implemented on "
+            "{}; it is only defined to appease mypy.".format(type(self))
+        )
 
 
 class _FlagMeta(type):

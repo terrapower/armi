@@ -1602,7 +1602,7 @@ def _packLocations(
 
 
 def _packLocationsV1(
-    locations: List[grids.LocationBase]
+    locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """Delete when reading v <=3.2 DB's no longer wanted."""
     locTypes = []
@@ -1624,7 +1624,7 @@ def _packLocationsV1(
 
 
 def _packLocationsV2(
-    locations: List[grids.LocationBase]
+    locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """
     Location packing implementation for minor version 3. See release notes above.
@@ -1653,7 +1653,7 @@ def _packLocationsV2(
 
 
 def _packLocationsV3(
-    locations: List[grids.LocationBase]
+    locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """
     Location packing implementation for minor version 4. See release notes above.

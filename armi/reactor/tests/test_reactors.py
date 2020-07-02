@@ -203,101 +203,130 @@ class ReactorTests(unittest.TestCase):
 
     def test_kineticsParameterAssignment(self):
         """Test that the delayed neutron fraction and precursor decay constants are applied from settings."""
-        o = buildOperatorOfEmptyHexBlocks()
-        self.assertIsNone(o.r.core.p.beta)
-        self.assertIsNone(o.r.core.p.betaComponents)
-        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        def _getModifiedSettings(customSettings):
+            cs = settings.Settings()
+            for key, val in customSettings.items():
+                cs[key] = val
+            return cs
+
+        r = tests.getEmptyHexReactor()
+        self.assertIsNone(r.core.p.beta)
+        self.assertIsNone(r.core.p.betaComponents)
+        self.assertIsNone(r.core.p.betaDecayConstants)
 
         # Test that the group-wise beta and decay constants are assigned
         # together given that they are the same length.
-        o = buildOperatorOfEmptyHexBlocks(
-            customSettings={"beta": [0.0] * 6, "decayConstants": [0.0] * 6,},
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(
+            customSettings={"beta": [0.0] * 6, "decayConstants": [0.0] * 6,}
         )
-        self.assertEqual(o.r.core.p.beta, sum(o.cs["beta"]))
-        self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["beta"])
-        self.assertListEqual(
-            list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
-        )
+        r.core.setOptionsFromCs(cs)
+        self.assertEqual(r.core.p.beta, sum(cs["beta"]))
+        self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
+        self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
 
         # Test the assignment of total beta as a float
-        o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": 0.00670},)
-        self.assertEqual(o.r.core.p.beta, o.cs["beta"])
-        self.assertIsNone(o.r.core.p.betaComponents)
-        self.assertIsNone(o.r.core.p.betaDecayConstants)
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(customSettings={"beta": 0.00670},)
+        r.core.setOptionsFromCs(cs)
+        self.assertEqual(r.core.p.beta, cs["beta"])
+        self.assertIsNone(r.core.p.betaComponents)
+        self.assertIsNone(r.core.p.betaDecayConstants)
 
         # Test that nothing is assigned if the beta is specified as a list
         # without a corresponding decay constants list.
-        o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": [0.0] * 6,},)
-        self.assertIsNone(o.r.core.p.beta)
-        self.assertIsNone(o.r.core.p.betaComponents)
-        self.assertIsNone(o.r.core.p.betaDecayConstants)
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(customSettings={"beta": [0.0] * 6,},)
+        r.core.setOptionsFromCs(cs)
+        self.assertIsNone(r.core.p.beta)
+        self.assertIsNone(r.core.p.betaComponents)
+        self.assertIsNone(r.core.p.betaDecayConstants)
 
         # Test that 1 group beta components and decay constants can be assigned.
         # Since beta is a list, ensure that it's assigned to the `betaComponents`
         # parameter.
-        o = buildOperatorOfEmptyHexBlocks(
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(
             customSettings={"beta": [0.0], "decayConstants": [0.0]},
         )
-        self.assertEqual(o.r.core.p.beta, sum(o.cs["beta"]))
-        self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["beta"])
-        self.assertListEqual(
-            list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
-        )
+        r.core.setOptionsFromCs(cs)
+        self.assertEqual(r.core.p.beta, sum(cs["beta"]))
+        self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
+        self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
 
         # Test that decay constants are not assigned without a corresponding
         # group-wise beta input.
-        o = buildOperatorOfEmptyHexBlocks(customSettings={"decayConstants": [0.0] * 6},)
-        self.assertIsNone(o.r.core.p.beta)
-        self.assertIsNone(o.r.core.p.betaComponents)
-        self.assertIsNone(o.r.core.p.betaDecayConstants)
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(customSettings={"decayConstants": [0.0] * 6},)
+        r.core.setOptionsFromCs(cs)
+        self.assertIsNone(r.core.p.beta)
+        self.assertIsNone(r.core.p.betaComponents)
+        self.assertIsNone(r.core.p.betaDecayConstants)
 
         # Test that decay constants are not assigned without a corresponding
         # group-wise beta input. This also demonstrates that the total beta
         # is still assigned.
-        o = buildOperatorOfEmptyHexBlocks(
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(
             customSettings={"decayConstants": [0.0] * 6, "beta": 0.0},
         )
-        self.assertEqual(o.r.core.p.beta, o.cs["beta"])
-        self.assertIsNone(o.r.core.p.betaComponents)
-        self.assertIsNone(o.r.core.p.betaDecayConstants)
+        r.core.setOptionsFromCs(cs)
+        self.assertEqual(r.core.p.beta, cs["beta"])
+        self.assertIsNone(r.core.p.betaComponents)
+        self.assertIsNone(r.core.p.betaDecayConstants)
 
         # Test the demonstrates that None values are acceptable
         # and that nothing is assigned.
-        o = buildOperatorOfEmptyHexBlocks(
+        r = tests.getEmptyHexReactor()
+        cs = _getModifiedSettings(
             customSettings={"decayConstants": None, "beta": None},
         )
-        self.assertEqual(o.r.core.p.beta, o.cs["beta"])
-        self.assertIsNone(o.r.core.p.betaComponents)
-        self.assertIsNone(o.r.core.p.betaDecayConstants)
+        r.core.setOptionsFromCs(cs)
+        self.assertEqual(r.core.p.beta, cs["beta"])
+        self.assertIsNone(r.core.p.betaComponents)
+        self.assertIsNone(r.core.p.betaDecayConstants)
 
         # Test that an error is raised if the decay constants
         # and group-wise beta are inconsistent sizes
         with self.assertRaises(ValueError):
-            o = buildOperatorOfEmptyHexBlocks(
+            r = tests.getEmptyHexReactor()
+            cs = _getModifiedSettings(
                 customSettings={"decayConstants": [0.0] * 6, "beta": [0.0]},
             )
+            r.core.setOptionsFromCs(cs)
 
         # Test that an error is raised if the decay constants
         # and group-wise beta are inconsistent sizes
         with self.assertRaises(ValueError):
-            o = buildOperatorOfEmptyHexBlocks(
+            r = tests.getEmptyHexReactor()
+            cs = _getModifiedSettings(
                 customSettings={"decayConstants": [0.0] * 6, "beta": [0.0] * 5},
             )
+            r.core.setOptionsFromCs(cs)
 
         # The following tests check the voluptuous schema definition. This
         # ensures that anything except NoneType, [float], float are not valid
         # inputs.
         with self.assertRaises(vol.AnyInvalid):
-            o = buildOperatorOfEmptyHexBlocks(customSettings={"decayConstants": [1]},)
+            r = tests.getEmptyHexReactor()
+            cs = _getModifiedSettings(customSettings={"decayConstants": [1]},)
+            r.core.setOptionsFromCs(cs)
 
         with self.assertRaises(vol.AnyInvalid):
-            o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": [1]},)
+            r = tests.getEmptyHexReactor()
+            cs = _getModifiedSettings(customSettings={"beta": [1]},)
+            r.core.setOptionsFromCs(cs)
 
         with self.assertRaises(vol.AnyInvalid):
-            o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": 1},)
+            r = tests.getEmptyHexReactor()
+            cs = _getModifiedSettings(customSettings={"beta": 1},)
+            r.core.setOptionsFromCs(cs)
 
         with self.assertRaises(vol.AnyInvalid):
-            o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": (1, 2, 3)},)
+            r = tests.getEmptyHexReactor()
+            cs = _getModifiedSettings(customSettings={"beta": (1, 2, 3)},)
+            r.core.setOptionsFromCs(cs)
 
 
 class HexReactorTests(ReactorTests):
