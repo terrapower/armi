@@ -188,7 +188,7 @@ def loadTestReactor(
     return o, o.r
 
 
-class _ReactorTests(unittest.TestCase):
+class ReactorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # prepare the input files. This is important so the unit tests run from wherever
@@ -200,8 +200,43 @@ class _ReactorTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directoryChanger.close()
 
+    def test_kineticsParameterAssignment(self):
+        """Test that the delayed neutron fraction and precursor decay constants are applied from settings."""
+        o = buildOperatorOfEmptyHexBlocks()
+        self.assertIsNone(o.r.core.p.beta)
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
 
-class HexReactorTests(_ReactorTests):
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={"betaComponents": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]},
+        )
+        self.assertEqual(o.r.core.p.beta, sum(o.cs["betaComponents"]))
+        self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["betaComponents"])
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={"decayConstants": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]},
+        )
+        self.assertIsNone(o.r.core.p.beta)
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertListEqual(
+            list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
+        )
+
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={
+                "betaComponents": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+                "decayConstants": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            },
+        )
+        self.assertEqual(o.r.core.p.beta, sum(o.cs["betaComponents"]))
+        self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["betaComponents"])
+        self.assertListEqual(
+            list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
+        )
+
+
+class HexReactorTests(ReactorTests):
     def setUp(self):
         self.o, self.r = loadTestReactor(self.directoryChanger.destination)
 
@@ -592,7 +627,7 @@ class HexReactorTests(_ReactorTests):
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass() / 3.0)
 
 
-class CartesianReactorTests(_ReactorTests):
+class CartesianReactorTests(ReactorTests):
     def setUp(self):
         self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r

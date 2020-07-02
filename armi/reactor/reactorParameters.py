@@ -706,16 +706,23 @@ def defineCoreParameters():
     ) as pb:
 
         pb.defParam(
+            "beta",
+            units=None,
+            description="Effective delayed neutron fraction",
+            default=None,
+        )
+
+        pb.defParam(
             "betaComponents",
             units=None,
-            description="Group-wise delayed neutron component",
+            description="Group-wise delayed neutron fractions",
             default=None,
         )
 
         pb.defParam(
             "betaDecayConstants",
             units="1/s",
-            description="Group-wise decay constant for precursor",
+            description="Group-wise precursor decay constants",
             default=None,
         )
 

@@ -261,13 +261,6 @@ def defineSettings() -> List[setting.Setting]:
             "length/n+1.",
         ),
         setting.Setting(
-            CONF_BETA,
-            default=0.0,
-            label="Effective delayed neutron fraction",
-            description="Effective delayed neutron fraction. You may need to enter the "
-            "precursor groups in detail elsewhere to do kinetics.",
-        ),
-        setting.Setting(
             CONF_BETA_COMPONENTS,
             default=[],
             label="Beta Components",

@@ -225,7 +225,7 @@ class Core(composites.Composite):
     def _setupEffectiveDelayedNeutronFraction(self, cs):
         """Process the settings for the delayed neutron fraction and precursor decay constants."""
         # Verify and set the core beta parameters based on the user-supplied settings
-        if not bool(cs["decayConstants"]) or bool(cs["betaComponents"]):
+        if not bool(cs["decayConstants"]) and not bool(cs["betaComponents"]):
             runLog.info(
                 "Delayed neutron fraction and precursor decay constants were not supplied. "
                 f"Skip applying them to {self}."
@@ -243,7 +243,7 @@ class Core(composites.Composite):
                 f"not be set on the state of {self}."
             )
         else:
-            decayConstants = numpy.array(cs["decayConstants"])
+            self.p.betaDecayConstants = numpy.array(cs["decayConstants"])
 
         if not bool(cs["betaComponents"]):
             runLog.info(
@@ -251,17 +251,13 @@ class Core(composites.Composite):
                 f"not be set on the state of {self}."
             )
         else:
-            betaComponents = numpy.array(cs["betaComponents"])
-            beta = betaComponents.sum()
+            self.p.betaComponents = numpy.array(cs["betaComponents"])
+            self.p.beta = self.p.betaComponents.sum()
 
-        self.p.betaComponents = betaComponents
-        self.p.beta = beta
-        self.p.betaDecayConstants = decayConstants
         data = [
             ("Delayed Neutron Fraction Components", self.p.betaComponents),
-            ("Total Delayed Neutron Fraction", self.p.beta)(
-                "Precursor Decay Constants", self.p.betaDecayConstants
-            ),
+            ("Total Delayed Neutron Fraction", self.p.beta),
+            ("Precursor Decay Constants", self.p.betaDecayConstants),
         ]
         runLog.info(
             tabulate.tabulate(
