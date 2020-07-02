@@ -225,43 +225,88 @@ class Core(composites.Composite):
     def _setupEffectiveDelayedNeutronFraction(self, cs):
         """Process the settings for the delayed neutron fraction and precursor decay constants."""
         # Verify and set the core beta parameters based on the user-supplied settings
-        if not bool(cs["decayConstants"]) and not bool(cs["betaComponents"]):
-            runLog.info(
-                "Delayed neutron fraction and precursor decay constants were not supplied. "
-                f"Skip applying them to {self}."
+
+        def _betaValidator(value):
+            """
+            Validate the input for beta.
+            
+            Notes
+            -----
+            Beta can either be provided as a float or list of floats.
+            If the list has a single value or is a float, this is 
+            interpreted as the total delayed neutron fraction. Otherwise,
+            the value is interpreted as the group-wise delayed neutron
+            fractions.
+            """
+            if value is None:
+                return None
+
+            if isinstance(value, list):
+                return [float(val) for val in value]
+            elif isinstance(value, float):
+                return value
+            else:
+                raise ValueError(
+                    "`beta` must be set as a float or a list of floats. "
+                    f"Attempted to assign {value}."
+                )
+
+        def _decayConstantsValidator(value):
+            """Validate the input for precursor decay constants."""
+            if value is None:
+                return None
+
+            if isinstance(value, list):
+                return [float(val) for val in value]
+            else:
+                raise ValueError(
+                    "`decayConstants` must be set as a list of floats. "
+                    f"Attempted to assign {value}."
+                )
+
+        runLog.info(
+            "Checking for user-supplied `beta` and `decayConstants` settings and attempting to "
+            f"apply them to state of {self}."
+        )
+        beta = _betaValidator(cs["beta"])
+        decayConstants = _decayConstantsValidator(cs["decayConstants"])
+
+        # If beta is interpreted as a single float value, then assign it to
+        # the total delayed neutron fraction parameter. Otherwise, setup the
+        # group-wise delayed neutron fractions and precursor decay constants.
+        reportTableData = []
+        if isinstance(beta, float):
+            self.p.beta = beta
+            reportTableData.append(("Total Delayed Neutron Fraction", self.p.beta))
+
+        elif isinstance(beta, list) and isinstance(decayConstants, list):
+            if len(beta) != len(decayConstants):
+                raise ValueError(
+                    f"The values for `beta` ({beta}) and `decayConstants` "
+                    f"({decayConstants}) are not consistent lengths."
+                )
+
+            self.p.betaComponents = numpy.array(beta)
+            self.p.betaDecayConstants = numpy.array(decayConstants)
+            reportTableData.append(
+                ("Group-wise Delayed Neutron Fractions", self.p.betaComponents)
+            )
+            reportTableData.append(
+                ("Group-wise Precursor Decay Constants", self.p.betaDecayConstants)
+            )
+
+        # Report to the user the values were not applied.
+        if not reportTableData and (beta is not None or decayConstants is not None):
+            runLog.warning(
+                f"Delayed neutron fraction(s) - {beta} and decay constants - {decayConstants} have not been applied."
             )
             return
-        else:
-            runLog.info(
-                "Applying user-supplied delayed neutron fraction and precursor decay constants "
-                f"to {self}."
-            )
 
-        if not bool(cs["decayConstants"]):
-            runLog.info(
-                "The `decayConstants` setting has not been user-supplied and will "
-                f"not be set on the state of {self}."
-            )
-        else:
-            self.p.betaDecayConstants = numpy.array(cs["decayConstants"])
-
-        if not bool(cs["betaComponents"]):
-            runLog.info(
-                "The `betaComponents` setting has not been user-supplied and will "
-                f"not be set on the state of {self}."
-            )
-        else:
-            self.p.betaComponents = numpy.array(cs["betaComponents"])
-            self.p.beta = self.p.betaComponents.sum()
-
-        data = [
-            ("Delayed Neutron Fraction Components", self.p.betaComponents),
-            ("Total Delayed Neutron Fraction", self.p.beta),
-            ("Precursor Decay Constants", self.p.betaDecayConstants),
-        ]
         runLog.info(
             tabulate.tabulate(
-                tabular_data=data, headers=["Component", "Value"], tablefmt="armi"
+                tabular_data=reportTableData,
+                headers=["Component", "Value"],
+                tablefmt="armi",
             )
         )
 

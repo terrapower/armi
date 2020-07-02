@@ -333,8 +333,12 @@ class Inspector:
         )
         self.addQuery(
             lambda: (
-                (self.cs["betaComponents"] and not self.cs["decayConstants"])
-                or (self.cs["decayConstants"] and not self.cs["betaComponents"])
+                (
+                    self.cs["beta"]
+                    and isinstance(self.cs["beta"], list)
+                    and not self.cs["decayConstants"]
+                )
+                or (self.cs["decayConstants"] and not self.cs["beta"])
             ),
             "Both beta components and decay constants should be provided if either are "
             "being supplied.",

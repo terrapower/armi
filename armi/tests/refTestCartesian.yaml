@@ -1,7 +1,7 @@
 metadata:
   version: uncontrolled
 settings:
-  betaComponents: [0.003454]
+  beta: 0.003454
   BOL: true
   buGroups:
     - 100

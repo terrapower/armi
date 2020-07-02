@@ -47,7 +47,7 @@ CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_BURN_STEPS = "burnSteps"
-CONF_BETA_COMPONENTS = "betaComponents"
+CONF_BETA = "beta"
 CONF_DECAY_CONSTANTS = "decayConstants"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
@@ -261,16 +261,22 @@ def defineSettings() -> List[setting.Setting]:
             "length/n+1.",
         ),
         setting.Setting(
-            CONF_BETA_COMPONENTS,
-            default=[],
-            label="Beta Components",
-            description="Manually set individual precursor group delayed neutron fractions.",
+            CONF_BETA,
+            default=None,
+            label="Delayed neutron fraction",
+            description="Set individual precursor group delayed neutron fractions.",
+            schema=vol.Any(
+                [float], None, float, msg="Expected NoneType, float, or list of floats."
+            ),
         ),
         setting.Setting(
             CONF_DECAY_CONSTANTS,
-            default=[],
+            default=None,
             label="Decay Constants",
-            description="Manually set individual precursor group delayed neutron decay constants",
+            description="Set individual precursor group delayed neutron decay constants.",
+            schema=vol.Any(
+                [float], None, float, msg="Expected NoneType, float, or list of floats."
+            ),
         ),
         setting.Setting(
             CONF_BRANCH_VERBOSITY,
