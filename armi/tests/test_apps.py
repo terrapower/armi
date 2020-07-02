@@ -80,7 +80,7 @@ class TestApps(unittest.TestCase):
         app = armi.getApp()
         app.pluginManager.register(TestPlugin1)
         app.pluginManager.register(TestPlugin4)
-        app._paramRenames = None # need to implement better cache invalidation rules
+        app._paramRenames = None  # need to implement better cache invalidation rules
 
         renames = app.getParamRenames()
         self.assertIn("oldType", renames)
@@ -90,7 +90,7 @@ class TestApps(unittest.TestCase):
         self.assertEqual(renames["arealPD"], "arealPowerDensity")
 
         app.pluginManager.register(TestPlugin2)
-        app._paramRenames = None # need to implement better cache invalidation rules
+        app._paramRenames = None  # need to implement better cache invalidation rules
         with self.assertRaisesRegex(
             plugins.PluginError,
             ".*parameter renames are already defined by another plugin.*",

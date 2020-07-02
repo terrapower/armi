@@ -4,7 +4,6 @@
 	<aclpMaterial value="SS316" />
 	<armiLocation value="\\albert\apps\dev\armi\master" />
 	<axialExpansion value="True" />
-	<beta value="-1.0" />
 	<bondRemoval value="True" />
 	<branchVerbosity value="extra" />
 	<buGroups value="[3, 10, 20, 100]" />

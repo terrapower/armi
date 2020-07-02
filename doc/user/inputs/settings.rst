@@ -97,3 +97,39 @@ Detail assembly numbers
 
 Detail all assemblies
     The ``detailAllAssems`` setting makes all assemblies in the problem detail assemblies
+
+.. _kinetics-settings:
+
+Kinetics settings
+-----------------
+In reactor physics analyses it is standard practice to represent reactivity
+in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To
+support this functionality, the framework supplies the ``beta`` and
+``decayConstants`` settings to apply the delayed neutron fraction and
+precursor decay constants to the Core parameters during initialization.
+
+These settings come with a few caveats:
+
+    1. The ``beta`` setting supports two different meanings depending on
+       the type that is provided. If a float is given, then this setting
+       is interpreted as the effective delayed neutron fraction for the
+       system and is applied to the Core's ``beta`` parameter. If a list
+       of floats is provided, then this setting is interpreted as the
+       group-wise (precursor family) delayed neutron fractions (useful for
+       reactor kinetics simulations). In this case, the values
+       will be stored on the Core's ``betaComponents`` parameter.
+
+    2. The ``decayConstants`` setting is used to define the precursor
+       decay constants for each group (family). When set, it must be
+       provided with a corresponding ``beta`` parameter that has the
+       same number of groups. For example, if six-group delayed neutron
+       fractions are provided, the decay constants must also be provided
+       in the same six-group structure. This setting is applied to Core's
+       ``betaDecayConstants`` parameter. If instead ``beta`` is interpreted
+       as the effective delayed neutron fraction, the ``betaDecayConstants``
+       parameter will not be set.
+
+    3. If both the group-wise ``beta`` and ``decayConstants`` are consistent,
+       then the effective delayed neutron fraction for the system is calculated
+       as the summation of the group-wise delayed neutron fractions and also
+       stored on the Core's ``beta`` parameter.

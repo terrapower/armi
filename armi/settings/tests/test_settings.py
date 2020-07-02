@@ -236,8 +236,7 @@ class TestSettingsUtils(unittest.TestCase):
         cs.writeToYamlFile("settings1.yaml")
         cs.writeToYamlFile("settings2.yaml")
         with open("notSettings.yaml", "w") as f:
-            f.write("some: other\n"
-                    "yaml: file\n")
+            f.write("some: other\n" "yaml: file\n")
         os.mkdir("subdir")
         cs.writeToYamlFile("subdir/settings3.yaml")
         cs.writeToYamlFile("subdir/skipSettings.yaml")

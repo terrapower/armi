@@ -134,4 +134,3 @@ class Sodium(material.Fluid):
             124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
         )
         return thermalConductivity
-

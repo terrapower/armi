@@ -385,9 +385,7 @@ class Assembly(composites.Composite):
                     abs(heightChopped - heightToChop) > 1e-5
                 ):  # stop when they are equal. floating point.
                     # update which ref block we're on (does nothing on the first pass)
-                    refB = refA[
-                        i + newBlocks
-                    ]
+                    refB = refA[i + newBlocks]
                     newB = copy.deepcopy(b)
                     newB.setHeight(refB.getHeight())  # make block match ref mesh
                     newBlockStack.append(newB)

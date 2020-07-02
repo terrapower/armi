@@ -722,6 +722,7 @@ class FuelMaterial(Material):
 
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
+
     pDefs = materialParameters.getFuelMaterialParameterDefinitions()
 
     def applyInputParams(

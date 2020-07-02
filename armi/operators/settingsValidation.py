@@ -331,6 +331,20 @@ class Inspector:
             "",
             self.NO_ACTION,
         )
+        self.addQuery(
+            lambda: (
+                (
+                    self.cs["beta"]
+                    and isinstance(self.cs["beta"], list)
+                    and not self.cs["decayConstants"]
+                )
+                or (self.cs["decayConstants"] and not self.cs["beta"])
+            ),
+            "Both beta components and decay constants should be provided if either are "
+            "being supplied.",
+            "",
+            self.NO_ACTION,
+        ),
 
         self.addQuery(
             lambda: self.cs["skipCycles"] > 0 and not self.cs["reloadDBName"],

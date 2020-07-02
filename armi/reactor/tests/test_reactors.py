@@ -18,6 +18,7 @@ import copy
 import os
 import unittest
 
+import voluptuous as vol
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
 import armi
@@ -188,7 +189,7 @@ def loadTestReactor(
     return o, o.r
 
 
-class _ReactorTests(unittest.TestCase):
+class ReactorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # prepare the input files. This is important so the unit tests run from wherever
@@ -200,8 +201,106 @@ class _ReactorTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directoryChanger.close()
 
+    def test_kineticsParameterAssignment(self):
+        """Test that the delayed neutron fraction and precursor decay constants are applied from settings."""
+        o = buildOperatorOfEmptyHexBlocks()
+        self.assertIsNone(o.r.core.p.beta)
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
 
-class HexReactorTests(_ReactorTests):
+        # Test that the group-wise beta and decay constants are assigned
+        # together given that they are the same length.
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={"beta": [0.0] * 6, "decayConstants": [0.0] * 6,},
+        )
+        self.assertEqual(o.r.core.p.beta, sum(o.cs["beta"]))
+        self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["beta"])
+        self.assertListEqual(
+            list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
+        )
+
+        # Test the assignment of total beta as a float
+        o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": 0.00670},)
+        self.assertEqual(o.r.core.p.beta, o.cs["beta"])
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        # Test that nothing is assigned if the beta is specified as a list
+        # without a corresponding decay constants list.
+        o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": [0.0] * 6,},)
+        self.assertIsNone(o.r.core.p.beta)
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        # Test that 1 group beta components and decay constants can be assigned.
+        # Since beta is a list, ensure that it's assigned to the `betaComponents`
+        # parameter.
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={"beta": [0.0], "decayConstants": [0.0]},
+        )
+        self.assertEqual(o.r.core.p.beta, sum(o.cs["beta"]))
+        self.assertListEqual(list(o.r.core.p.betaComponents), o.cs["beta"])
+        self.assertListEqual(
+            list(o.r.core.p.betaDecayConstants), o.cs["decayConstants"]
+        )
+
+        # Test that decay constants are not assigned without a corresponding
+        # group-wise beta input.
+        o = buildOperatorOfEmptyHexBlocks(customSettings={"decayConstants": [0.0] * 6},)
+        self.assertIsNone(o.r.core.p.beta)
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        # Test that decay constants are not assigned without a corresponding
+        # group-wise beta input. This also demonstrates that the total beta
+        # is still assigned.
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={"decayConstants": [0.0] * 6, "beta": 0.0},
+        )
+        self.assertEqual(o.r.core.p.beta, o.cs["beta"])
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        # Test the demonstrates that None values are acceptable
+        # and that nothing is assigned.
+        o = buildOperatorOfEmptyHexBlocks(
+            customSettings={"decayConstants": None, "beta": None},
+        )
+        self.assertEqual(o.r.core.p.beta, o.cs["beta"])
+        self.assertIsNone(o.r.core.p.betaComponents)
+        self.assertIsNone(o.r.core.p.betaDecayConstants)
+
+        # Test that an error is raised if the decay constants
+        # and group-wise beta are inconsistent sizes
+        with self.assertRaises(ValueError):
+            o = buildOperatorOfEmptyHexBlocks(
+                customSettings={"decayConstants": [0.0] * 6, "beta": [0.0]},
+            )
+
+        # Test that an error is raised if the decay constants
+        # and group-wise beta are inconsistent sizes
+        with self.assertRaises(ValueError):
+            o = buildOperatorOfEmptyHexBlocks(
+                customSettings={"decayConstants": [0.0] * 6, "beta": [0.0] * 5},
+            )
+
+        # The following tests check the voluptuous schema definition. This
+        # ensures that anything except NoneType, [float], float are not valid
+        # inputs.
+        with self.assertRaises(vol.AnyInvalid):
+            o = buildOperatorOfEmptyHexBlocks(customSettings={"decayConstants": [1]},)
+
+        with self.assertRaises(vol.AnyInvalid):
+            o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": [1]},)
+
+        with self.assertRaises(vol.AnyInvalid):
+            o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": 1},)
+
+        with self.assertRaises(vol.AnyInvalid):
+            o = buildOperatorOfEmptyHexBlocks(customSettings={"beta": (1, 2, 3)},)
+
+
+class HexReactorTests(ReactorTests):
     def setUp(self):
         self.o, self.r = loadTestReactor(self.directoryChanger.destination)
 
@@ -592,7 +691,7 @@ class HexReactorTests(_ReactorTests):
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass() / 3.0)
 
 
-class CartesianReactorTests(_ReactorTests):
+class CartesianReactorTests(ReactorTests):
     def setUp(self):
         self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r

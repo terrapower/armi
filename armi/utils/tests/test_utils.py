@@ -130,16 +130,16 @@ class Utils_TestCase(unittest.TestCase):
         self.assertEqual(-2.4594981981654e-101, fixed)
 
     def test_capStrLen(self):
-        #Test with strings
-        str1 = utils.capStrLen('sodium', 5)
-        self.assertEqual('so...', str1)
+        # Test with strings
+        str1 = utils.capStrLen("sodium", 5)
+        self.assertEqual("so...", str1)
         str1 = utils.capStrLen("potassium", 6)
-        self.assertEqual('pot...', str1)
-        str1 = utils.capStrLen('rubidium', 7)
-        self.assertEqual('rubi...', str1)
-		
+        self.assertEqual("pot...", str1)
+        str1 = utils.capStrLen("rubidium", 7)
+        self.assertEqual("rubi...", str1)
+
     def test_list2str(self):
-        #Test with list of strings
+        # Test with list of strings
         list1 = ["One", "Two"]
         list2 = ["Three", "Four"]
         str1 = "OneTwo"
@@ -160,6 +160,7 @@ class Utils_TestCase(unittest.TestCase):
         str1 = "OneTwoThreeFourT...FourThreeFour T... Four "
         str2 = utils.list2str(list2, 4, list1, 5)
         self.assertEqual(str1, str2)
+
 
 class TestUnits(unittest.TestCase):
     def setUp(self):

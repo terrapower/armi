@@ -238,7 +238,8 @@ def reset():
     for pd in ALL_DEFINITIONS:
         pd.assigned = NEVER
 
-def generateTable(klass, fwParams, app = None):
+
+def generateTable(klass, fwParams, app=None):
     """
     Return a string containing one or more restructured text list tables containing
     parameter descriptions for the passed ArmiObject class.
@@ -279,7 +280,9 @@ def generateTable(klass, fwParams, app = None):
        * - Name
          - Description
          - Units
-    """.format(klass.__name__)
+    """.format(
+        klass.__name__
+    )
 
     content = ""
 

@@ -51,8 +51,11 @@ armi.configure(apps.App())
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 APIDOC_DIR = APIDOC_REL
-_TUTORIAL_FILES = [pathlib.Path(SOURCE_DIR) / "tests" / "tutorials" / fName for
-        fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
+_TUTORIAL_FILES = [
+    pathlib.Path(SOURCE_DIR) / "tests" / "tutorials" / fName
+    for fName in bookkeepingTests.TUTORIAL_FILES
+    if "ipynb" not in fName
+]
 
 
 def setup(app):
@@ -65,7 +68,6 @@ def setup(app):
     # itself, so relative paths don't work.
     for path in _TUTORIAL_FILES:
         shutil.copy(path, pathlib.Path("user") / "tutorials")
-
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -172,7 +174,12 @@ release = armi.__version__
 'library/xml*' – ignores all files and directories starting with library/xml
 '**/.svn' – ignores all .svn directories (replaces entry in exclude_dirnames)
 """
-exclude_patterns = ["**/Python27*", "**/ccl*", "**.ipynb_checkpoints", "_build"]  # , '**/tests*']
+exclude_patterns = [
+    "**/Python27*",
+    "**/ccl*",
+    "**.ipynb_checkpoints",
+    "_build",
+]  # , '**/tests*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None

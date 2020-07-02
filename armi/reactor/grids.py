@@ -905,7 +905,7 @@ class Grid:
         return tuple(indexBounds)
 
     def getBounds(
-        self
+        self,
     ) -> Tuple[
         Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]
     ]:

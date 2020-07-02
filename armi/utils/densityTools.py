@@ -376,9 +376,9 @@ def getChemicals(nuclideInventory):
     return chemicals
 
 
-def applyIsotopicsMix(material,
-                      enrichedMassFracs : Dict[str, float],
-                      fertileMassFracs: Dict[str, float]):
+def applyIsotopicsMix(
+    material, enrichedMassFracs: Dict[str, float], fertileMassFracs: Dict[str, float]
+):
     """
     Update material heavy metal mass fractions based on its enrichment and two nuclide feeds.
 
