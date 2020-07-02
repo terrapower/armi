@@ -15,23 +15,6 @@
 from armi.settings import setting
 
 
-CONF_BETA_COMPONENTS = "betaComponents"
-CONF_DECAY_CONSTANTS = "decayConstants"
-
-
 def defineSettings():
-    settings = [
-        setting.Setting(
-            CONF_BETA_COMPONENTS,
-            default=[],
-            label="Beta Components",
-            description="Manually set individual precursor group delayed neutron fractions",
-        ),
-        setting.Setting(
-            CONF_DECAY_CONSTANTS,
-            default=[],
-            label="Decay Constants",
-            description="Manually set individual precursor group delayed neutron decay constants",
-        ),
-    ]
+    settings = []
     return settings

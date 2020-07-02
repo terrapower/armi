@@ -187,9 +187,6 @@ class Core(composites.Composite):
         self.spatialGrid = None
         self.xsIndex = {}
         self.p.numMoves = 0
-        self.p.beta = 0.0
-        self.p.betaComponents = [0.0] * 6
-        self.p.betaDecayConstants = [0.0] * 6
 
         # build a spent fuel pool for this reactor
         runLog.debug("Building spent fuel pools")
@@ -223,6 +220,58 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
+        self._setupEffectiveDelayedNeutronFraction(cs)
+
+    def _setupEffectiveDelayedNeutronFraction(self, cs):
+        """Process the settings for the delayed neutron fraction and precursor decay constants."""
+        # Verify and set the core beta parameters based on the user-supplied settings
+        runLog.info(
+            "Checking for user-supplied `beta` and `decayConstants` settings and attempting to "
+            f"apply them to state of {self}."
+        )
+        beta = cs["beta"]
+        decayConstants = cs["decayConstants"]
+
+        # If beta is interpreted as a float, then assign it to
+        # the total delayed neutron fraction parameter. Otherwise, setup the
+        # group-wise delayed neutron fractions and precursor decay constants.
+        reportTableData = []
+        if isinstance(beta, float):
+            self.p.beta = beta
+            reportTableData.append(("Total Delayed Neutron Fraction", self.p.beta))
+
+        elif isinstance(beta, list) and isinstance(decayConstants, list):
+            if len(beta) != len(decayConstants):
+                raise ValueError(
+                    f"The values for `beta` ({beta}) and `decayConstants` "
+                    f"({decayConstants}) are not consistent lengths."
+                )
+
+            self.p.beta = sum(beta)
+            self.p.betaComponents = numpy.array(beta)
+            self.p.betaDecayConstants = numpy.array(decayConstants)
+
+            reportTableData.append(("Total Delayed Neutron Fraction", self.p.beta))
+            reportTableData.append(
+                ("Group-wise Delayed Neutron Fractions", self.p.betaComponents)
+            )
+            reportTableData.append(
+                ("Group-wise Precursor Decay Constants", self.p.betaDecayConstants)
+            )
+
+        # Report to the user the values were not applied.
+        if not reportTableData and (beta is not None or decayConstants is not None):
+            runLog.warning(
+                f"Delayed neutron fraction(s) - {beta} and decay constants - {decayConstants} have not been applied."
+            )
+        else:
+            runLog.info(
+                tabulate.tabulate(
+                    tabular_data=reportTableData,
+                    headers=["Component", "Value"],
+                    tablefmt="armi",
+                )
+            )
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components. """

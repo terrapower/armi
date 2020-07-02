@@ -101,8 +101,9 @@ assemblies:
         )
         bp = blueprints.Blueprints.load(
             nuclideFlags
-            + self.componentString.format(material="Custom", isotopics="isotopics: B4C",
-                flags="")
+            + self.componentString.format(
+                material="Custom", isotopics="isotopics: B4C", flags=""
+            )
         )
         cs = settings.Settings()
         a = bp.constructAssem("hex", cs, "assembly")
@@ -131,8 +132,9 @@ assemblies:
         )
         bp = blueprints.Blueprints.load(
             nuclideFlags
-            + self.componentString.format(material="Custom", isotopics="isotopics: B4C",
-                flags="")
+            + self.componentString.format(
+                material="Custom", isotopics="isotopics: B4C", flags=""
+            )
         )
         cs = settings.Settings()
         a = bp.constructAssem("hex", cs, "assembly")
@@ -151,21 +153,21 @@ assemblies:
         # More robust test, but worse unittest.py output when it fails
         self.assertTrue(c.hasFlags(Flags.DEPLETABLE))
 
-
         # repeat the process with some flags set explicitly
         bp = blueprints.Blueprints.load(
             nuclideFlags
-            + self.componentString.format(material="Custom", isotopics="isotopics: B4C",
-                flags="fuel test")
+            + self.componentString.format(
+                material="Custom", isotopics="isotopics: B4C", flags="fuel test"
+            )
         )
         cs = settings.Settings()
         a = bp.constructAssem("hex", cs, "assembly")
         c = a[0][0]
 
         # Since we supplied flags, we should NOT get the DEPLETABLE flag added
-        self.assertEqual(c.p.flags, Flags.FUEL|Flags.TEST)
+        self.assertEqual(c.p.flags, Flags.FUEL | Flags.TEST)
         # More robust test, but worse unittest.py output when it fails
-        self.assertTrue(c.hasFlags(Flags.FUEL|Flags.TEST))
+        self.assertTrue(c.hasFlags(Flags.FUEL | Flags.TEST))
 
     def test_componentInitializationAmericiumCustomIsotopics(self):
         nuclideFlags = (
@@ -218,8 +220,9 @@ assemblies:
         )
         bp = blueprints.Blueprints.load(
             nuclideFlags
-            + self.componentString.format(material="Custom", isotopics="isotopics: AM",
-                flags="")
+            + self.componentString.format(
+                material="Custom", isotopics="isotopics: AM", flags=""
+            )
         )
         cs = settings.Settings()
         a = bp.constructAssem("hex", cs, "assembly")

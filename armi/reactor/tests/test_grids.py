@@ -73,7 +73,9 @@ class TestSpatialLocator(unittest.TestCase):
         # build meshes just like how they're used on a regular system.
         coreGrid = grids.Grid.fromRectangle(1.0, 1.0, armiObject=core)  # 2-D grid
         # 1-D z-mesh
-        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)), armiObject=assem)
+        assemblyGrid = grids.Grid(
+            bounds=(None, None, numpy.arange(5)), armiObject=assem
+        )
         # pins sit in this 2-D grid.
         blockGrid = grids.Grid.fromRectangle(0.1, 0.1, armiObject=block)
 
@@ -114,7 +116,9 @@ class TestSpatialLocator(unittest.TestCase):
         # 2-D grid
         coreGrid = grids.Grid.fromRectangle(1.0, 1.0, armiObject=core)
         # 1-D z-mesh
-        assemblyGrid = grids.Grid(bounds=(None, None, numpy.arange(5)), armiObject=assem)
+        assemblyGrid = grids.Grid(
+            bounds=(None, None, numpy.arange(5)), armiObject=assem
+        )
         # pins sit in this 2-D grid.
         blockGrid = grids.Grid.fromRectangle(0.1, 0.1, armiObject=block)
 

@@ -158,6 +158,7 @@ RENAMES = {
     "cinderdat": "mcnpBurnxDepLib",
     "loadCycle": "startCycle",
     "loadNode": "startNode",
+    "betaComponents": "beta",
 }
 
 TARGETED_CONVERSIONS = {}

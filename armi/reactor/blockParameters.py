@@ -511,7 +511,6 @@ def getBlockParameterDefinitions():
         )
     )
 
-
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
         pb.defParam("bu", units="", description="?")
