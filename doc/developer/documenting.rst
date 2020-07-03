@@ -18,6 +18,14 @@ build with the most up-to-date code.
 
 Building the documentation
 --------------------------
+Before building documentation, ensure that you have installed the test requirements into
+your ARMI virtual environment with::
+
+    pip3 install -r requirements-testing.txt
+
+You also need to have `Graphviz <https://graphviz.org/>`_ and `Pandoc
+<https://pandoc.org/>`_ installed.
+
 To build the ARMI documentation, go to the ``doc`` folder and run ``make html``. This will invoke
 Sphinx and generate a series of html files in the ``_build/html`` folder. Open up ``index.html`` 
 to see the documentation from there. A copy of the documentation is hosted online at 
