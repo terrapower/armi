@@ -96,6 +96,7 @@ extensions = [
     "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",
+    "sphinxext.opengraph",
 ]
 
 # private-member docs are generally not great to link to in high-level implementation documentation
@@ -128,6 +129,10 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 nbsphinx_kernel_name = "python3"
+
+ogp_site_url = "https://terrapower.github.io/armi/"
+ogp_image = "https://terrapower.github.io/armi/_static/armiSchematicView.png"
+ogp_site_name = "Advanced Reactor Modeling Interface"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = [".templates"]
