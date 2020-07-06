@@ -132,6 +132,7 @@ nbsphinx_kernel_name = "python3"
 
 ogp_site_url = "https://terrapower.github.io/armi/"
 ogp_image = "https://terrapower.github.io/armi/_static/armiSchematicView.png"
+ogp_site_name = "Advanced Reactor Modeling Interface"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = [".templates"]
