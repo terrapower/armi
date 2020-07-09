@@ -28,10 +28,16 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, List
+import collections
 
+import armi
 from armi import plugins
+from armi import pluginManager
 from armi import meta
+
+from armi.settings import Setting
+from armi.settings import fwSettings
 from armi.reactor import parameters
 
 
@@ -49,12 +55,7 @@ class App:
     data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
     pain, as the results returned by the individual plugins may need to be merged and/or
     checked for errors. Adding that logic here reduces boilerplate throughout the rest
-    of the code. Another place where such code could go would be an ARMI subclass of the
-    ``pluggy.PluginManager`` class. For the time being, we are doing okay without having
-    to specialize the PluginManager, and we already have an App class to work with, so
-    this is a pretty good place. If at some point it makes sense to introduce stateful
-    plugins, or a more specialized PluginManager, then these methods should be migrated
-    there.
+    of the code.
     """
 
     name = "ARMI"
@@ -90,14 +91,86 @@ class App:
         ):
             self._pm.register(plugin)
 
-        self._paramRenames: Optional[Dict[str, str]] = None
+        self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
 
     @property
-    def pluginManager(self):
+    def pluginManager(self) -> pluginManager.ArmiPluginManager:
         """
         Return the App's PluginManager.
         """
         return self._pm
+
+    def getSettings(self) -> Dict[str, Setting]:
+        """
+        Return a dictionary containing all Settings defined by the framework and all plugins.
+        """
+        # Start with framework settings
+        settingDefs = {
+            setting.name: setting for setting in fwSettings.getFrameworkSettings()
+        }
+
+        # The optionsCache stores options that may have come from a plugin before the
+        # setting to which they apply. Whenever a new setting is added, we check to see
+        # if there are any options in the cache, popping them out and adding them to the
+        # setting.  If all plugins' settings have been processed and the cache is not
+        # empty, that's an error, because a plugin must have provided options to a
+        # setting that doesn't exist.
+        optionsCache: Dict[str, List[armi.settings.Option]] = collections.defaultdict(
+            list
+        )
+        defaultsCache: Dict[str, armi.settings.Default] = {}
+
+        for pluginSettings in self._pm.hook.defineSettings():
+            for pluginSetting in pluginSettings:
+                if isinstance(pluginSetting, armi.settings.Setting):
+                    name = pluginSetting.name
+                    if name in settingDefs:
+                        raise ValueError(
+                            f"The setting {pluginSetting.name} "
+                            "already exists and cannot be redefined."
+                        )
+                    settingDefs[name] = pluginSetting
+                    # handle when new setting has modifier in the cache (modifier loaded first)
+                    if name in optionsCache:
+                        settingDefs[name].addOptions(optionsCache.pop(name))
+                    if name in defaultsCache:
+                        settingDefs[name].changeDefault(defaultsCache.pop(name))
+                elif isinstance(pluginSetting, armi.settings.Option):
+                    if pluginSetting.settingName in settingDefs:
+                        # modifier loaded after setting, so just apply it (no cache needed)
+                        settingDefs[pluginSetting.settingName].addOption(pluginSetting)
+                    else:
+                        # no setting yet, cache it and apply when it arrives
+                        optionsCache[pluginSetting.settingName].append(pluginSetting)
+                elif isinstance(pluginSetting, armi.settings.Default):
+                    if pluginSetting.settingName in settingDefs:
+                        # modifier loaded after setting, so just apply it (no cache needed)
+                        settingDefs[pluginSetting.settingName].changeDefault(
+                            pluginSetting
+                        )
+                    else:
+                        # no setting yet, cache it and apply when it arrives
+                        defaultsCache[pluginSetting.settingName] = pluginSetting
+                else:
+                    raise TypeError(
+                        f"Invalid setting definition found: {pluginSetting}"
+                    )
+
+        if optionsCache:
+            raise ValueError(
+                "The following options were provided for settings that do "
+                "not exist. Make sure that the set of active plugins is "
+                "consistent.\n{}".format(optionsCache)
+            )
+
+        if defaultsCache:
+            raise ValueError(
+                "The following defaults were provided for settings that do "
+                "not exist. Make sure that the set of active plugins is "
+                "consistent.\n{}".format(defaultsCache)
+            )
+
+        return settingDefs
 
     def getParamRenames(self) -> Dict[str, str]:
         """
@@ -106,10 +179,18 @@ class App:
         This renders a merged dictionary containing all parameter renames from all of
         the registered plugins. It also performs simple error checking.
         """
-        if self._paramRenames is None:
+        cacheInvalid = False
+        if self._paramRenames is not None:
+            renames, counter = self._paramRenames
+            if counter != self._pm.counter:
+                cacheInvalid = True
+        else:
+            cacheInvalid = True
+
+        if cacheInvalid:
             currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
 
-            renames: Dict[str, str] = dict()
+            renames = dict()
             for (
                 pluginRenames
             ) in self._pm.hook.defineParameterRenames():  #  pylint: disable=no-member
@@ -126,8 +207,8 @@ class App:
                         "plugin:\n{}".format(pluginCollisions)
                     )
                 renames.update(pluginRenames)
-            self._paramRenames = renames
-        return self._paramRenames
+            self._paramRenames = renames, self._pm.counter
+        return renames
 
     @property
     def splashText(self):

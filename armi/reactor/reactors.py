@@ -534,7 +534,7 @@ class Core(composites.Composite):
             )
 
         if spatialLocator is not None:
-            # transfer spatialLocator to reactor one
+            # transfer spatialLocator to Core one
             spatialLocator = self.spatialGrid[tuple(spatialLocator.indices)]
             a.moveTo(spatialLocator)
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import io
 import os
 import unittest
@@ -48,6 +49,47 @@ class SettingsFailureTests(unittest.TestCase):
                 io.StringIO(r"<uselessTag>¯\_(ツ)_/¯</uselessTag>"),
                 fmt=settingsIO.SettingsReader.SettingsInputFormat.XML,
             )
+
+
+class SettingsRenameTests(unittest.TestCase):
+    testSettings = [
+        setting.Setting(
+            "testSetting1",
+            default=None,
+            oldNames=[("oSetting1", None), ("osetting1", datetime.date.today())],
+        ),
+        setting.Setting("testSetting2", default=None, oldNames=[("oSetting2", None)]),
+        setting.Setting("testSetting3", default=None),
+    ]
+
+    def test_rename(self):
+        renamer = settingsIO.SettingRenamer(
+            {setting.name: setting for setting in self.testSettings}
+        )
+
+        self.assertEqual(renamer.renameSetting("testSetting1"), ("testSetting1", False))
+        self.assertEqual(renamer.renameSetting("oSetting1"), ("testSetting1", True))
+        # this one is expired
+        self.assertEqual(renamer.renameSetting("osetting1"), ("osetting1", False))
+        self.assertEqual(renamer.renameSetting("oSetting2"), ("testSetting2", True))
+        self.assertEqual(renamer.renameSetting("testSetting2"), ("testSetting2", False))
+        self.assertEqual(renamer.renameSetting("testSetting3"), ("testSetting3", False))
+
+        # No rename; let it through
+        self.assertEqual(renamer.renameSetting("boo!"), ("boo!", False))
+
+    def test_collidingRenames(self):
+        settings = {
+            setting.name: setting
+            for setting in self.testSettings
+            + [
+                setting.Setting(
+                    "someOtherSetting", default=None, oldNames=[("oSetting1", None)]
+                )
+            ]
+        }
+        with self.assertRaises(exceptions.SettingException):
+            renamer = settingsIO.SettingRenamer(settings)
 
 
 class SettingsWriterTests(unittest.TestCase):

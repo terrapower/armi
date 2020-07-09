@@ -153,7 +153,9 @@ def defineSettings():
             CONF_NUMBER_MESH_PER_EDGE,
             default=1,
             label="Number of Mesh per Edge",
-            description="Number of mesh per block edge for finite-difference planar mesh refinement.",
+            description="Number of mesh per block edge for finite-difference planar "
+            "mesh refinement.",
+            oldNames=[("hexSideSubdivisions", None)],
         ),
         setting.Setting(
             CONF_EPS_EIG,

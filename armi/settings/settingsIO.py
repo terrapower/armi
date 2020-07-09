@@ -16,58 +16,142 @@
 :py:class:`~armi.settings.caseSettings.Settings`, and the contained
 :py:class:`~armi.settings.setting.Setting`.
 """
-import re
-import collections
-import warnings
-import os
-import enum
 import ast
+import collections
+import datetime
+import enum
+import os
+import re
+from typing import Dict, Tuple, List, Set, Optional
+import warnings
+import xml.etree.ElementTree as ET
 
 from ruamel.yaml import YAML
 import ruamel.yaml.comments
-import xml.etree.ElementTree as ET
 
 import armi
 from armi import runLog
 from armi.localization import exceptions
-from armi.settings import setting
+from armi.settings.setting import Setting
 from armi.settings import settingsRules
 from armi.reactor import geometry
 
 
-class Roots(object):
+class Roots:
     """XML tree root node common strings"""
 
     CUSTOM = "settings"
-    DEFINITION = "settings-definitions"
     VERSION = "version"
 
 
-class _SettingsReader(object):
+class SettingRenamer:
+    """
+    Utility class to help with setting rename migrations.
+
+    This class stores a cache of renaming maps, derived from the ``Setting.oldNames``
+    values of the passed ``settings``. Expired renames are retained, so that meaningful
+    warning messages can be generated if one attempts to use one of them. The renaming
+    logic follows the rules described in :py:meth:`renameSetting`.
+    """
+    def __init__(self, settings: Dict[str, Setting]):
+        self._currentNames: Set[str] = set()
+        self._activeRenames: Dict[str, str] = dict()
+        self._expiredRenames: Set[Tuple[str, str, datetime.date]] = set()
+
+        today = datetime.date.today()
+
+        for name, s in settings.items():
+            self._currentNames.add(name)
+            for oldName, expiry in s.oldNames:
+                if expiry is not None:
+                    expired = expiry <= today
+                else:
+                    expired = False
+                if expired:
+                    self._expiredRenames.add((oldName, name, expiry))
+                else:
+                    if oldName in self._activeRenames:
+                        raise exceptions.SettingException(
+                            "The setting rename from {0}->{1} collides with another "
+                            "rename {0}->{2}".format(
+                                oldName, name, self._activeRenames[oldName]
+                            )
+                        )
+                    self._activeRenames[oldName] = name
+
+    def renameSetting(self, name) -> Tuple[str, bool]:
+        """
+        Attempt to rename a candidate setting.
+
+        Renaming follows these rules:
+         - If the ``name`` corresponds to a current setting name, do not attempt to
+           rename it.
+         - If the ``name`` does not correspond to a current setting name, but is one of
+           the active renames, return the corresponding active rename.
+         - If the ``name`` does not correspond to a current setting name, but is one of
+           the expired renamse, produce a warning and do not rename it.
+
+        Parameters
+        ----------
+        name : str
+            The candidate setting name to potentially rename.
+
+        Returns
+        -------
+        name : str
+            The potentially-renamed setting
+        renamed : bool
+            Whether the setting was actually renamed
+        """
+        if name in self._currentNames:
+            return name, False
+
+        activeRename = self._activeRenames.get(name, None)
+        if activeRename is not None:
+            runLog.warning(
+                "Invalid setting {} found. Renaming to {}.".format(name, activeRename)
+            )
+            return activeRename, True
+
+        expiredCandidates = {
+            val[1]: val[2] for val in self._expiredRenames if val[0] == name
+        }
+
+        if expiredCandidates:
+            msg = "\n".join(
+                [
+                    "   {}: {}".format(expiredRename, date)
+                    for expiredRename, date in expiredCandidates.items()
+                ]
+            )
+            runLog.warning(
+                "Encountered an invalid setting `{}`. There are expired "
+                "renames to newer setting names:\n{}".format(name, msg)
+            )
+
+        return name, False
+
+
+class SettingsReader:
     """Abstract class for processing settings files.
 
     Parameters
     ----------
     cs : CaseSettings
         The settings object to read into
-
-    See Also
-    --------
-    SettingsReader
     """
 
     class SettingsInputFormat(enum.Enum):
         XML = enum.auto()
         YAML = enum.auto()
 
-    FORMAT_FROM_EXT = {
-        ".xml": SettingsInputFormat.XML,
-        ".yaml": SettingsInputFormat.YAML,
-    }
+        @classmethod
+        def fromExt(cls, ext):
+            return {".xml": cls.XML, ".yaml": cls.YAML}[ext]
 
-    def __init__(self, cs, rootTag):
+    def __init__(self, cs):
         self.cs = cs
-        self.rootTag = rootTag
+        self.rootTag = Roots.CUSTOM
         self.format = self.SettingsInputFormat.YAML
         self.inputPath = "<stream>"
 
@@ -75,8 +159,12 @@ class _SettingsReader(object):
         self.settingsAlreadyRead = set()
         self.liveVersion = armi.__version__
         self.inputVersion = armi.__version__
-        # the input version will be overwritten if explicitly stated in input file
-        # otherwise it's assumed to precede the version inclusion change and should be treated as alright
+
+        self._renamer = SettingRenamer(self.cs.settings)
+
+        # the input version will be overwritten if explicitly stated in input file.
+        # otherwise, it's assumed to precede the version inclusion change and should be
+        # treated as alright
 
     def __getitem__(self, key):
         return self.cs[key]
@@ -99,7 +187,7 @@ class _SettingsReader(object):
             # make sure that we can actually open the file before trying to guess its
             # format. This will yield better error messages when things go awry.
             ext = os.path.splitext(path)[1].lower()
-            self.format = self.FORMAT_FROM_EXT[ext]
+            self.format = self.SettingsInputFormat.fromExt(ext)
             self.inputPath = path
             try:
                 self.readFromStream(f, handleInvalids, self.format)
@@ -152,10 +240,10 @@ class _SettingsReader(object):
             )
 
         for settingElement in list(settingRoot):
-            self._interpretSetting(settingElement)
+            self._interpretXmlSetting(settingElement)
 
         if handleInvalids:
-            self._resolveProblems()
+            self._checkInvalidSettings()
 
     def _readYaml(self, stream, handleInvalids=True):
         """
@@ -183,9 +271,6 @@ class _SettingsReader(object):
         for settingName, settingVal in caseSettings.items():
             self._applySettings(settingName, settingVal)
 
-    def _resolveProblems(self):
-        raise NotImplementedError
-
     def _checkInvalidSettings(self):
         if not self.invalidSettings:
             return
@@ -206,37 +291,7 @@ class _SettingsReader(object):
         else:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
-    def _interpretSetting(self, settingElement):
-        raise NotImplementedError()
-
-    def applyConversions(self, name, value):
-        """
-        Applies conversion rules to give special behavior to certain named settings.
-
-        Intended to be applied on setting names and attributes as soon as they're read in
-        keep in mind everything in the attributes dictionary is still a string even if it's intended to be
-        something else later, that happens at a later stage.
-
-        """
-        # general needs to come first for things like renaming.
-        settingsToApply = {}
-        for func in settingsRules.GENERAL_CONVERSIONS:
-            settingsToApply.update(func(self.cs, name, value))
-
-        func = settingsRules.TARGETED_CONVERSIONS.get(name, None)
-        if func is not None:
-            settingsToApply.update(func(self.cs, name, value))
-
-        return settingsToApply
-
-
-class SettingsReader(_SettingsReader):
-    """A specialized _SettingsReader which only assigns values to existing settings."""
-
-    def __init__(self, cs):
-        _SettingsReader.__init__(self, cs, Roots.CUSTOM)
-
-    def _interpretSetting(self, settingElement):
+    def _interpretXmlSetting(self, settingElement):
         settingName = settingElement.tag
         attributes = settingElement.attrib
         if settingName in self.settingsAlreadyRead:
@@ -275,7 +330,9 @@ class SettingsReader(_SettingsReader):
         self._applySettings(settingName, attributes["value"])
 
     def _applySettings(self, name, val):
-        settingsToApply = self.applyConversions(name, val)
+        nameToSet, renamed = self._renamer.renameSetting(name)
+
+        settingsToApply = self.applyConversions(nameToSet, val)
         for settingName, value in settingsToApply.items():
             if settingName not in self.cs.settings:
                 self.invalidSettings.add(settingName)
@@ -293,8 +350,24 @@ class SettingsReader(_SettingsReader):
                     raise
                 self.cs[settingName] = value
 
-    def _resolveProblems(self):
-        self._checkInvalidSettings()
+    def applyConversions(self, name, value):
+        """
+        Applies conversion rules to give special behavior to certain named settings.
+
+        Intended to be applied on setting names and attributes as soon as they're read
+        in keep in mind everything in the attributes dictionary is still a string even
+        if it's intended to be something else later, that happens at a later stage.
+        """
+        # general needs to come first for things like renaming.
+        settingsToApply = {}
+        for func in settingsRules.GENERAL_CONVERSIONS:
+            settingsToApply.update(func(self.cs, name, value))
+
+        func = settingsRules.TARGETED_CONVERSIONS.get(name, None)
+        if func is not None:
+            settingsToApply.update(func(self.cs, name, value))
+
+        return settingsToApply
 
 
 def applyTypeConversions(settingObj, value):

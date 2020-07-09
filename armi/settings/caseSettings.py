@@ -78,82 +78,15 @@ class Settings:
         """
         self.path = ""
 
-        self.settings = {}
-        self.loadAllDefaults()
-        self._loadPluginSettings()
+        app = armi.getApp()
+        assert(app is not None)
+        self.settings = app.getSettings()
         if not Settings.instance:
             Settings.instance = self
         self._backedup = {}
 
         if fName:
             self.loadFromInputFile(fName)
-
-    def _loadPluginSettings(self):
-        # The optionsCache stores options that may have come from a plugin before the
-        # setting to which they apply. Whenever a new setting is added, we check to see
-        # if there are any options in the cache, popping them out and adding them to the
-        # setting.  If all plugins' settings have been processed and the cache is not
-        # empty, that's an error, because a plugin must have provided options to a
-        # setting that doesn't exist.
-        optionsCache = collections.defaultdict(list)
-        defaultsCache = {}
-
-        pm = armi.getPluginManager()
-        if pm is None:
-            runLog.warning("no plugin manager defined when settings were made")
-            return
-
-        for pluginSettings in pm.hook.defineSettings():
-            for pluginSetting in pluginSettings:
-                if isinstance(pluginSetting, setting.Setting):
-                    name = pluginSetting.name
-                    if name in self.settings:
-                        raise ValueError(
-                            f"The setting {pluginSetting.name} "
-                            "already exists and cannot be redefined."
-                        )
-                    self.settings[name] = pluginSetting
-                    # handle when new setting has modifier in the cache (modifier loaded first)
-                    if name in optionsCache:
-                        self.settings[name].addOptions(optionsCache.pop(name))
-                    if name in defaultsCache:
-                        self.settings[name].changeDefault(defaultsCache.pop(name))
-                elif isinstance(pluginSetting, setting.Option):
-                    if pluginSetting.settingName in self.settings:
-                        # modifier loaded after setting, so just apply it (no cache needed)
-                        self.settings[pluginSetting.settingName].addOption(
-                            pluginSetting
-                        )
-                    else:
-                        # no setting yet, cache it and apply when it arrives
-                        optionsCache[pluginSetting.settingName].append(pluginSetting)
-                elif isinstance(pluginSetting, setting.Default):
-                    if pluginSetting.settingName in self.settings:
-                        # modifier loaded after setting, so just apply it (no cache needed)
-                        self.settings[pluginSetting.settingName].changeDefault(
-                            pluginSetting
-                        )
-                    else:
-                        # no setting yet, cache it and apply when it arrives
-                        defaultsCache[pluginSetting.settingName] = pluginSetting
-                else:
-                    raise TypeError(
-                        f"Invalid setting definition found: {pluginSetting}"
-                    )
-
-        if optionsCache:
-            raise ValueError(
-                "The following options were provided for settings that do "
-                "not exist. Make sure that the set of active plugins is "
-                "consistent.\n{}".format(optionsCache)
-            )
-
-        if defaultsCache:
-            raise ValueError(
-                "The following defaults were provided for settings that do "
-                "not exist. Make sure that the set of active plugins is "
-                "consistent.\n{}".format(defaultsCache)
-            )
 
     @property
     def inputDirectory(self):
@@ -211,9 +144,7 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        self.settings = {}
-        self.loadAllDefaults()
-        self._loadPluginSettings()
+        self.settings = armi.getApp().getSettings()
 
         # restore non-setting instance attrs
         for key, val in state.items():
@@ -313,12 +244,6 @@ class Settings:
             runLog.setVerbosity(self["branchVerbosity"])
 
         return reader
-
-    def loadAllDefaults(self):
-        r"""Initializes all setting objects from the default files
-        """
-        for fwSetting in fwSettings.getFrameworkSettings():
-            self.settings[fwSetting.name] = fwSetting
 
     def _applyReadSettings(self, path=None):
         if armi.MPI_RANK == 0:

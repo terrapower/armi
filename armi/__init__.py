@@ -54,8 +54,6 @@ import sys
 from typing import Optional, List, Type
 import warnings
 
-import pluggy
-
 # The _bootstrap module performs operations that may need to occur before it is
 # necessarily safe to import the rest of the ARMI system. Things like:
 # - configure the MPI environment
@@ -83,6 +81,7 @@ from armi.context import (
 from armi.context import Mode
 from armi.meta import __version__
 from armi import apps
+from armi import pluginManager
 from armi import plugins
 from armi import runLog
 from armi import materials
@@ -275,7 +274,7 @@ def getDefaultPlugins() -> List[Type[plugins.ArmiPlugin]]:
     return defaultPlugins
 
 
-def getDefaultPluginManager() -> pluggy.PluginManager:
+def getDefaultPluginManager() -> pluginManager.ArmiPluginManager:
     """
     Return a plugin manager containing the default set of ARMI Framework plugins.
 
@@ -296,7 +295,7 @@ def isConfigured():
     return _app is not None
 
 
-def getPluginManager() -> Optional[pluggy.PluginManager]:
+def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
     """
     Return the plugin manager, if there is one.
     """
@@ -306,7 +305,7 @@ def getPluginManager() -> Optional[pluggy.PluginManager]:
     return _app.pluginManager
 
 
-def getPluginManagerOrFail() -> pluggy.PluginManager:
+def getPluginManagerOrFail() -> pluginManager.ArmiPluginManager:
     """
     Return the plugin manager. Raise an error if there is none.
     """
