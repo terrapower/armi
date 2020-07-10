@@ -12,7 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains rules supporting custom actions taken on the reading of setting inputs"""
+"""
+This module contains rules supporting custom actions taken on the reading of setting inputs
+
+Note
+----
+The ``settingsRules`` system was developed before the pluginification of ARMI, and
+doesn't play very nicely with the post-plugin world. This is mainly because
+registration of new rules happens at import time of the rule itself, which is
+unreliable and difficult to control, and even sort of implicit and sneaky. They are
+also somewhate redundant with the
+:py:class:`armi.operators.settingsValidation.Query`/:py:class:`armi.operators.settingsValidation.Inspector`
+system. It is not recommended for plugins to define settings rules using the mechanism
+in this module, which may be removed in the future.
+"""
 import re
 
 from armi import runLog
@@ -27,138 +40,6 @@ OLD_TAGS = {
     "boolean": "bool",
     "string": "str",
     "list": "list",
-}
-
-# old : new
-RENAMES = {
-    "hexSideSubdivisions": "numberMeshPerEdge",
-    "generateFluxReconImagePlots": "plotReconAxialPower",
-    "snapShotDB": "reloadDBName",
-    "summarizer": "genReports",
-    "asymtoticExtrapolationPowerIters": "asymptoticExtrapolationPowerIters",
-    "old1PhaseHTC": "SinglePhaseHTC",
-    "1PhaseHTC": "SinglePhaseHTC",
-    "movesFile": "explicitRepeatShuffles",
-    "shuffleFileName": "explicitRepeatShuffles",
-    "intrinsicsourceDecayTime": "intrinsicSourceDecayTime",
-    "handlingSocketLength": "HandlingSocketLength",
-    "VoidWorth": "voidWorth",
-    # start of SASSYS settings rename
-    "useFileforGenericUncertainty": "useFileForGenericUncertainty",
-    "VoideddopplerCoeff": "voidedDopplerCoeff",
-    "structDensityCoeff": "structureDensityCoeff",
-    "cladaxialparams": "cladAxialParams",
-    "cladaxialParams": "cladAxialParams",
-    "cladaxialdistrib": "cladAxialDistrib",
-    "cladaxialDistrib": "cladAxialDistrib",
-    "structureaxialParams": "structureAxialParams",
-    "structureaxialDistrib": "structureAxialDistrib",
-    "fuelaxialparams": "fuelAxialParams",
-    "fuelaxialParams": "fuelAxialParams",
-    "fuelaxialdistrib": "fuelAxialDistrib",
-    "fuelaxialDistrib": "fuelAxialDistrib",
-    "cladaxialdistrib": "cladaxialDistrib",
-    "coolantparams": "coolantParams",
-    "coolantdistrib": "coolantDistrib",
-    "crdlparams": "crdlParams",
-    "crdldistrib": "crdlDistrib",
-    "dopplerparams": "dopplerParams",
-    "dopplerdistrib": "dopplerDistrib",
-    "fuelaxialparams": "fuelaxialParams",
-    "fuelaxialdistrib": "fuelaxialDistrib",
-    "radialparams": "radialParams",
-    "radialdistrib": "radialDistrib",
-    "ACRDEX": "acrDex",
-    "BCRDEX": "bcrDex",
-    "CPfe": "cpFe",
-    "CRWorthFile": "crWorthFile",
-    "numberofCases": "numberOfCases",
-    "numCaseforSassysSensitivity": "numCaseForSassysSensitivity",
-    "PowerFlowUncerCases": "powerFlowUncerCases",
-    "PowertoFlowRatioList": "powerToFlowRatioList",
-    "reCRDL": "reCrdl",
-    "sascases": "sasCases",
-    "TinFactor": "tinFactor",
-    "UTOPreactivity": "utopReactivity",
-    "Param10blockstartlocation": "param10BlockStartLocation",
-    "Param10Distrib": "param10Distrib",
-    "Param10name": "param10Name",
-    "Param10nominalvalue": "param10NominalValue",
-    "Param10Params": "param10Params",
-    "Param1blockstartlocation": "param1BlockStartLocation",
-    "Param1Distrib": "param1Distrib",
-    "Param1name": "param1Name",
-    "Param1nominalvalue": "param1NominalValue",
-    "Param1Params": "param1Params",
-    "Param2blockstartlocation": "param2BlockStartLocation",
-    "Param2Distrib": "param2Distrib",
-    "Param2name": "param2Name",
-    "Param2nominalvalue": "param2NominalValue",
-    "Param2Params": "param2Params",
-    "Param3blockstartlocation": "param3BlockStartLocation",
-    "Param3Distrib": "param3Distrib",
-    "Param3name": "param3Name",
-    "Param3nominalvalue": "param3NominalValue",
-    "Param3Params": "param3Params",
-    "Param4blockstartlocation": "param4BlockStartLocation",
-    "Param4Distrib": "param4Distrib",
-    "Param4name": "param4Name",
-    "Param4nominalvalue": "param4NominalValue",
-    "Param4Params": "param4Params",
-    "Param5blockstartlocation": "param5BlockStartLocation",
-    "Param5Distrib": "param5Distrib",
-    "Param5name": "param5Name",
-    "Param5nominalvalue": "param5NominalValue",
-    "Param5Params": "param5Params",
-    "Param6blockstartlocation": "param6BlockStartLocation",
-    "Param6Distrib": "param6Distrib",
-    "Param6name": "param6Name",
-    "Param6nominalvalue": "param6NominalValue",
-    "Param6Params": "param6Params",
-    "Param7blockstartlocation": "param7BlockStartLocation",
-    "Param7Distrib": "param7Distrib",
-    "Param7name": "param7Name",
-    "Param7nominalvalue": "param7NominalValue",
-    "Param7Params": "param7Params",
-    "Param8Distrib": "param8Distrib",
-    "Param8name": "param8Name",
-    "Param8nominalvalue": "param8NominalValue",
-    "Param8Params": "param8Params",
-    "Param9blockstartlocation": "param9BlockStartLocation",
-    "Param9Distrib": "param9Distrib",
-    "Param9name": "param9Name",
-    "Param9nominalvalue": "param9NominalValue",
-    "Param9Params": "param9Params",
-    "steadystate.txt": "steadyState.txt",
-    "lockrotor.txt": "lockRotor.txt",
-    "powerdefect.txt": "powerDefect.txt",
-    "control0name": "control0Name",
-    "control0location": "control0Location",
-    "control0value": "control0Value",
-    "control1name": "control1Name",
-    "control1location": "control1Location",
-    "control1value": "control1Value",
-    "control2name": "control2Name",
-    "control2location": "control2Location",
-    "control2value": "control2Value",
-    "SASdensityCoeff": "calcSpatialRxCoeffs",
-    # end of sassys setting rename
-    "turnOnProfiler": "profile",
-    "mc2.path": "mc2v3.path",
-    "mc2.minimumFissileFraction": "minimumFissileFraction",
-    "DLAYXSFilePath": "mc2DLAYXSFilePath",
-    "mc2BucklingConvergence": "bucklingConvergence",
-    "inactiveCycles": "mcnpInactiveCycles",
-    "mcnpBurnsPerAssem": "mcnpBurnRegionsPerBlock",
-    "particlesPerCycle": "mcnpParticlesPerCycle",
-    "mcnpCycles": "mcnpTotalCycles",
-    "burnTime": "cycleLength",
-    "capacityFactor": "availabilityFactor",
-    "covarianceFileName": "covariancePath",
-    "cinderdat": "mcnpBurnxDepLib",
-    "loadCycle": "startCycle",
-    "loadNode": "startNode",
-    "betaComponents": "beta",
 }
 
 TARGETED_CONVERSIONS = {}
@@ -196,13 +77,14 @@ def include_as_rule(*args):
 
 
 @include_as_rule
-def rename(_cs, name, value):
-    if name in RENAMES:
-        runLog.warning(
-            "Invalid setting {} found. Renaming to {}.".format(name, RENAMES[name])
-        )
-        name = RENAMES[name]
+def nullRule(_cs, name, value):
+    """
+    Pass setting values through.
 
+    All settings are passed through these settings rules when being read, with the
+    filtered results actually being used. Therefore, settings that aren't manipulated
+    need to be returned by something.
+    """
     return {name: value}
 
 

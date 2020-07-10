@@ -16,13 +16,13 @@
 Plugins allow various built-in or external functionality to be brought into the ARMI ecosystem.
 
 This module defines the hooks that may be defined within plugins. Plugins are ultimately
-incorporated into a ``PluginManager``, which live inside of a :py:class:`armi.apps.App`
-object.
+incorporated into a :py:class:`armi.pluginManager.ArmiPluginManager`, which live inside
+of a :py:class:`armi.apps.App` object.
 
-The ``PluginManager`` is a class provided by the ``pluggy`` package, which provides a
-registry of known plugins. Rather than create one directly, we use the
-:py:func:`armi.plugins.getNewPluginManager()` function, which handles some of the setup
-for us.
+The ``ArmiPluginManager`` is derived from the ``PluginManager`` class provided by the
+``pluggy`` package, which provides a registry of known plugins. Rather than create one
+directly, we use the :py:func:`armi.plugins.getNewPluginManager()` function, which
+handles some of the setup for us.
 
 From a high-altitude perspective, the plugins provide numerous "hooks", which allow for
 ARMI to be extended in various ways. Some of these extensions are subtle and play a part
@@ -82,7 +82,7 @@ considerably). Examples:
     much of the class's behavior through metaclassing. Therefore, we need to be able
     to import all plugins *before* importing blueprints.
 
-Plugins are stateless. They do not have ``__init__()`` methods, and when they are
+Plugins are currently stateless. They do not have ``__init__()`` methods, and when they are
 registered with the PluginMagager, the PluginManager gets the Plugin's class object
 rather than an instance of that class. Also notice that all of the hooks are
 ``@staticmethod``\ s. As a result, they can be called directly off of the class object,
@@ -94,6 +94,7 @@ from typing import Dict, Union
 
 import pluggy
 
+from armi import pluginManager
 from armi.utils import flags
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
@@ -475,11 +476,11 @@ class ArmiPlugin:
         """
 
 
-def getNewPluginManager() -> pluggy.PluginManager:
+def getNewPluginManager() -> pluginManager.ArmiPluginManager:
     """
     Return a new plugin manager with all of the hookspecs pre-registered.
     """
-    pm = pluggy.PluginManager("armi")
+    pm = pluginManager.ArmiPluginManager("armi")
     pm.add_hookspecs(ArmiPlugin)
     return pm
 

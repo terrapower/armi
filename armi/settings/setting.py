@@ -34,7 +34,8 @@ code-based re-implementation.
 
 import copy
 from collections import namedtuple
-from typing import List
+import datetime
+from typing import List, Optional, Tuple
 
 import voluptuous as vol
 
@@ -77,6 +78,7 @@ class Setting:
         enforcedOptions=False,
         subLabels=None,
         isEnvironment=False,
+        oldNames: Optional[List[Tuple[str, Optional[datetime.date]]]] = None
     ):
         """
         Initialize a Setting object.
@@ -110,7 +112,12 @@ class Setting:
             Whether this should be considered an "environment" setting. These can be
             used by the Case system to propagate environment options through
             command-line flags.
-
+        oldNames : list of tuple, optional
+            List of previous names that this setting used to have, along with optional
+            expiration dates. These can aid in automatic migration of old inputs. When
+            provided, if it is appears that the expiration date has passed, old names
+            will result in errors, requiring to user to update their input by hand to
+            use more current settings.
         """
         self.name = name
         self.description = description or name
@@ -119,6 +126,7 @@ class Setting:
         self.enforcedOptions = enforcedOptions
         self.subLabels = subLabels
         self.isEnvironment = isEnvironment
+        self.oldNames: List[Tuple[str, Optional[datetime.date]]] = oldNames or []
 
         self._default = default
         # Retain the passed schema so that we don't accidentally stomp on it in

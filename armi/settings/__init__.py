@@ -35,6 +35,9 @@ from armi.settings.caseSettings import Settings
 from armi.utils import pathTools
 
 from armi.settings.setting import Setting
+from armi.settings.setting import Option
+from armi.settings.setting import Default
+
 
 NOT_ENABLED = ""  # An empty setting value implies that the feature
 

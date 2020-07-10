@@ -40,6 +40,7 @@ def defineSettings():
             default="",
             label="Database Input File",
             description="Name of the database file to load initial conditions from",
+            oldNames=[("snapShotDB", None)]
         ),
         setting.Setting(
             CONF_LOAD_FROM_DB_EVERY_NODE,

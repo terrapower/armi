@@ -30,13 +30,16 @@ def defineSettings():
             CONF_GEN_REPORTS,
             default=True,
             label="Enable Reports",
-            description="Employ the use of the reporting utility for ARMI, generating HTML and ASCII summaries of the run",
+            description="Employ the use of the reporting utility for ARMI, generating "
+            "HTML and ASCII summaries of the run",
+            oldNames=[("summarizer", None)]
         ),
         setting.Setting(
             CONF_ASSEM_POW_SUMMARY,
             default=False,
             label="Summarize Assembly Power",
-            description="Print out a summary of how much power is in each assembly type at every timenode.",
+            description="Print out a summary of how much power is in each assembly "
+            "type at every timenode.",
         ),
         setting.Setting(
             CONF_ZONE_FLOW_SUMMARY,
@@ -54,7 +57,8 @@ def defineSettings():
             CONF_TIMELINE_INCLUSION_CUTOFF,
             default=0.03,
             label="Timer Cutoff",
-            description="Timers who are not active for this percent of the run will not be presented in the timeline graphic.",
+            description="Timers who are not active for this percent of the run will "
+            "not be presented in the timeline graphic.",
         ),
     ]
     return settings
