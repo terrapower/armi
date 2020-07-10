@@ -409,8 +409,10 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         fiss = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isFissile())
         hm = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isHeavyMetal())
 
-        if fiss / hm < minFrac:
+        if hm and fiss / hm < minFrac:
             pu239 = nuclideBases.byName["PU239"]
+            if not pu239:
+                return
             old, temp, msg = nucDensities[pu239]
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
             nucDensities[pu239] = (new, temp, msg)
