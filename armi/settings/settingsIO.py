@@ -89,7 +89,7 @@ class SettingRenamer:
          - If the ``name`` does not correspond to a current setting name, but is one of
            the active renames, return the corresponding active rename.
          - If the ``name`` does not correspond to a current setting name, but is one of
-           the expired renamse, produce a warning and do not rename it.
+           the expired renames, produce a warning and do not rename it.
 
         Parameters
         ----------

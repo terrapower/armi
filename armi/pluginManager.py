@@ -9,7 +9,7 @@ class ArmiPluginManager(pluggy.PluginManager):
     PluginManager implementation with ARMI-specific features.
 
     The main point of this subclass is to make it possible to detect when the plugin
-    manager has been mutated, allowing for safe cacheing of expensive results derived
+    manager has been mutated, allowing for safe caching of expensive results derived
     from the set of registered plugins. This is done by exposing a counter that is
     incremented any time the set of registered plugins is modified. If a client caches
     any results derived from calling plugin hooks, caching this counter along with that

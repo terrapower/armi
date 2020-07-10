@@ -177,7 +177,10 @@ class App:
         Return the parameter renames from all registered plugins.
 
         This renders a merged dictionary containing all parameter renames from all of
-        the registered plugins. It also performs simple error checking.
+        the registered plugins. It also performs simple error checking. The result of
+        this operation is cached, since it is somewhat expensive to perform. If the App
+        detects that its plugin manager's set of registered plugins has changed, the
+        cache will be invalidated and recomputed.
         """
         cacheInvalid = False
         if self._paramRenames is not None:

@@ -116,7 +116,8 @@ class Setting:
             List of previous names that this setting used to have, along with optional
             expiration dates. These can aid in automatic migration of old inputs. When
             provided, if it is appears that the expiration date has passed, old names
-            will result in errors.
+            will result in errors, requiring to user to update their input by hand to
+            use more current settings.
         """
         self.name = name
         self.description = description or name
