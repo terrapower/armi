@@ -173,7 +173,9 @@ def _getGammaKeywords(cycle, suffix, xsID):
         elif xsID is not None:
             keywords = [xsID]
             if suffix not in [None, ""]:
-                keywords.append("-" + suffix)
+                if not suffix.startswith("-"):
+                    suffix = "-" + suffix
+                keywords.append(suffix)
         else:
             raise ValueError("The cycle or XS ID must be specified.")
         keywords.append(".")

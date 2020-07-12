@@ -200,8 +200,22 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
                 for nuc in neutronLibrary.nuclides
                 if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
             ]
+
+            gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(suffix=xsLibrarySuffix, xsID=xsID)
+            pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(suffix=xsLibrarySuffix, xsID=xsID)
+
+            # Check if the gamiso and pmatrx data paths exist with the xs library suffix so that
+            # these are merged in. If they don't both exist then that is OK and we can just
+            # revert back to expecting the files just based on the XS ID.
+            if not (os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)):
+                runLog.warning(f"One of GAMISO or PMATRX data exist for "
+                               f"XS ID {xsID} with suffix {xsLibrarySuffix}. "
+                               f"Attempting to find GAMISO/PMATRX data with "
+                               f"only XS ID {xsID} instead.")
+                gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID)
+                pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID)
+
             # GAMISO data
-            gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID)
             gammaLibrary = gamiso.readBinary(gamisoLibraryPath)
             addedDummyData = gamiso.addDummyNuclidesToLibrary(
                 gammaLibrary, dummyNuclides
@@ -215,8 +229,8 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
                 librariesToMerge.append(gammaLibraryDummyData)
             else:
                 librariesToMerge.append(gammaLibrary)
+
             # PMATRX data
-            pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID)
             pmatrxLibrary = pmatrx.readBinary(pmatrxLibraryPath)
             addedDummyData = pmatrx.addDummyNuclidesToLibrary(
                 pmatrxLibrary, dummyNuclides
