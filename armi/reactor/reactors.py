@@ -52,6 +52,7 @@ from armi.utils import units
 from armi.utils.iterables import Sequence
 from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings import globalSettings
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.nuclearDataIO import xsLibraries
 
@@ -118,10 +119,10 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
     """
     Build a reactor from input settings, blueprints and geometry.
     """
+def defaultReactorMethod(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
     from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
@@ -145,6 +146,23 @@ def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
         for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
                 structure.construct(cs, bp, r)
+
+    return r
+
+
+def factory(cs, bp):
+    """
+    Build a reactor from input settings, blueprints and geometry.
+    """
+    if (
+        cs[globalSettings.CONF_REACTOR_CONSTRUCT_METHOD]
+        == globalSettings.CONF_OPT_RX_CONSTRUCT_BLUEPRINTS
+    ):
+        r = defaultReactorMethod(cs, bp)
+    else:
+        # Building the Reactor with a custom method
+        methods = armi.getPluginManagerOrFail().hook.defineReactorConstructionMethods()
+        r = methods[cs[globalSettings.CONF_REACTOR_CONSTRUCT_METHOD]](cs, bp)
 
     runLog.debug("Reactor: {}".format(r))
     return r

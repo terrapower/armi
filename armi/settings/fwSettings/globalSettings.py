@@ -110,12 +110,24 @@ CONF_DEFERRED_INTERFACE_NAMES = "deferredInterfaceNames"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
+CONF_REACTOR_CONSTRUCT_METHOD = "reactorConstructionMethod"
+
+CONF_OPT_RX_CONSTRUCT_BLUEPRINTS = "fromBlueprints"
 
 
 def defineSettings() -> List[setting.Setting]:
     """Return a list of global framework settings."""
 
     settings = [
+        setting.Setting(
+            CONF_REACTOR_CONSTRUCT_METHOD,
+            default=CONF_OPT_RX_CONSTRUCT_BLUEPRINTS,
+            label="Reactor Constructer",
+            description="Label for the reactor construction method to use to build the "
+            "Reactor model. By default, blueprints will be used. Plugins may provide "
+            "more sophisticated methodologies.",
+            options=[CONF_OPT_RX_CONSTRUCT_BLUEPRINTS],
+        ),
         setting.Setting(
             CONF_NUM_PROCESSORS,
             default=1,

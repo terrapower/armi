@@ -316,8 +316,62 @@ class ArmiPlugin:
         blueprints mainly because the schema is more flexible, allowing namespaces and
         hierarchical collections of settings. Perhaps in the near future it would make
         sense to enhance the settings system to support these features, moving the
-        blueprints extensions out into settings. This is discussed in more detail in
-        T1671.
+        blueprints extensions out into settings.
+        """
+
+    @staticmethod
+    @HOOKSPEC
+    def defineReactorConstructionMethods():
+        """
+        Return new methods by which a Reactor object can be created.
+
+        This allows for plugins to provide their own approach to Reactor model
+        construction than the default, Blueprints-defined method that comes with ARMI.
+        These can be useful for exotic reactor types which are not well served by the
+        Blueprints mechanism.
+
+        Returns
+        -------
+        methods : dict
+            Implementations should return a dictionary mapping of name to method,
+            where ``name`` is a unique string label for the corresponding method, and
+            ``method`` is a function-like object that takes a ``Settings`` object as its
+            only argument and returns a fully-constructed ``Reactor`` object.
+
+        Note
+        ----
+        Reactor construction is ultimately governed by the ``reactorConstructionMethod``
+        setting. To fully expose new methods, the names should also be provided as
+        Options to the ``reactorConstructionMethod`` setting as well.
+
+        See also
+        --------
+        defineSettings
+        armi.settings.setting.Option
+
+        Example
+        -------
+        In this example, we define a new function for creating a Reactor object. It uses
+        a new setting that we also provide to control its behavior. We also advertise
+        the method using the ``defineSettings()`` and
+        ``defineReactorConstructionMethods()`` hooks::
+
+            def fancyReactorMaker(cs):
+                r = reactors.Reactor(name=cs["fancyReactorName"], blueprints=None)
+                // Do more magic!
+                return r
+
+            class MyPlugin(ArmiPlugin):
+                def defineSettings():
+                    return [
+                        # This setting is used to control/parameterize the function
+                        # defined above.
+                        setting.Setting("fancyReactorName", default=""),
+                        setting.Option("reactorConstructionMethod", "fancyReactor")
+                    ]
+
+                def defineReactorConstructionMethods():
+                    return {"fancyReactor": fancyReactorMaker}
         """
 
     @staticmethod
