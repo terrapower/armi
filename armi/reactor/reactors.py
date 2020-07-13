@@ -161,7 +161,11 @@ def factory(cs, bp):
         r = defaultReactorMethod(cs, bp)
     else:
         # Building the Reactor with a custom method
-        methods = armi.getPluginManagerOrFail().hook.defineReactorConstructionMethods()
+        methods = dict()
+        for (
+            pluginMethods
+        ) in armi.getPluginManagerOrFail().hook.defineReactorConstructionMethods():
+            methods.update(pluginMethods)
         r = methods[cs[globalSettings.CONF_REACTOR_CONSTRUCT_METHOD]](cs, bp)
 
     runLog.debug("Reactor: {}".format(r))
