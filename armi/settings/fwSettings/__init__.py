@@ -19,7 +19,6 @@ from typing import List
 
 from armi.settings import setting
 from . import globalSettings
-from . import xsSettings
 from . import databaseSettings
 from . import reportSettings
 
@@ -28,7 +27,6 @@ def getFrameworkSettings() -> List[setting.Setting]:
     settings = []
     for mod in (
         globalSettings,
-        xsSettings,
         databaseSettings,
         reportSettings,
     ):
