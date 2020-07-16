@@ -51,6 +51,21 @@ CONF_OPT_DPA = [
     "dpa_EBRII_INC625",
 ]
 
+# moved from xsSettings
+CONF_CLEAR_XS = "clearXS"
+CONF_DPA_XS_DIRECTORY_PATH = "DPAXSDirectoryPath"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
+CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
+CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
+    "disableBlockTypeExclusionInXsGeneration"
+)
+CONF_XS_KERNEL = "xsKernel"
+CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
+CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
+CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
 
 def defineSettings():
     settings = [
@@ -219,6 +234,94 @@ def defineSettings():
             label="DPA Cross Sections",
             description="The cross sections to use when computing displacements per atom.",
             options=CONF_OPT_DPA,
+        ),
+        # moved from XSsettings
+        setting.Setting(
+            CONF_CLEAR_XS,
+            default=False,
+            label="Clear XS",
+            description="Delete all cross section libraries before regenerating them.",
+        ),
+        setting.Setting(
+            CONF_DPA_XS_DIRECTORY_PATH,
+            default="\\\\albert\\apps\\dev\\mc2\\3.2.2\\libraries\\endfb-vii.0\\damage_xs",
+            label="DPA XS Directory Path",
+            description="DPA XS Directory Path",
+            options=[
+                "\\\\albert\\apps\\dev\\mc2\\3.2.2\\libraries\\endfb-vii.0\\damage_xs"
+            ],
+        ),
+        setting.Setting(
+            CONF_MINIMUM_FISSILE_FRACTION,
+            default=0.045,
+            label="Minimum Fissile Fraction",
+            description="Minimum fissile fraction (fissile number densities / heavy metal number densities).",
+            oldNames=[("mc2.minimumFissileFraction", None)],
+        ),
+        setting.Setting(
+            CONF_MINIMUM_NUCLIDE_DENSITY,
+            default=1e-15,
+            label="Minimum nuclide density",
+            description="Density to use for nuclides and fission products at infinite dilution. This is also used as the minimum density.",
+        ),
+        setting.Setting(
+            CONF_INFINITE_DILUTE_CUTOFF,
+            default=1e-10,
+            label="Infinite Dillute Cutoff",
+            description="Do not model nuclides with density less than this cutoff. Used with PARTISN and SERPENT.",
+        ),
+        setting.Setting(
+            CONF_TOLERATE_BURNUP_CHANGE,
+            default=0.0,
+            label="Cross Section Burnup Group Tolerance",
+            description="Burnup window for computing cross sections. If the prior cross sections were computed within the window, new cross sections will not be generated and the prior calculated cross sections will be used.",
+        ),
+        setting.Setting(
+            CONF_XS_BLOCK_REPRESENTATION,
+            default="FluxWeightedAverage",
+            label="Cross Section Block Averaging Method",
+            description="The type of averaging to perform when creating cross sections for a group of blocks",
+            options=[
+                "Median",
+                "Average",
+                "FluxWeightedAverage",
+                "ComponentAverage1DSlab",
+            ],
+        ),
+        setting.Setting(
+            CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+            default=False,
+            label="Include All Block Types in XS Generation",
+            description="Use all blocks in a cross section group when generating a representative block. When this is disabled only `fuel` blocks will be considered",
+        ),
+        setting.Setting(
+            CONF_XS_KERNEL,
+            default="MC2v3",
+            label="Lattice Physics Kernel",
+            description="Method to determine broad group cross sections for assemblies",
+            options=["", "MC2v2", "MC2v3", "MC2v3-PARTISN", "SERPENT"],
+        ),
+        setting.Setting(
+            CONF_XS_SCATTERING_ORDER,
+            default=3,
+            label="Scattering Order",
+            description="Scattering order for the lattice physics calculation",
+        ),
+        setting.Setting(
+            CONF_XS_BUCKLING_CONVERGENCE,
+            default=1e-05,
+            label="Buckling Convergence Criteria",
+            description="The convergence criteria for the buckling iteration if it is available in the lattice physics solver",
+            oldNames=[
+                ("mc2BucklingConvergence", None),
+                ("bucklingConvergence", None),
+            ],
+        ),
+        setting.Setting(
+            CONF_XS_EIGENVALUE_CONVERGENCE,
+            default=1e-05,
+            label="Eigenvalue Convergence Criteria",
+            description="The convergence criteria for the eigenvalue",
         ),
     ]
 
