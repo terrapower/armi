@@ -51,6 +51,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import traceback
 from typing import Optional, List, Type
 import warnings
 
@@ -85,6 +86,7 @@ from armi import pluginManager
 from armi import plugins
 from armi import runLog
 from armi import materials
+from armi.localization import exceptions
 from armi.reactor import composites
 from armi.reactor import flags
 from armi.bookkeeping.db import Database3
@@ -97,6 +99,8 @@ from armi.nucDirectory import nuclideBases
 # explicitly taken place. An application should call `configure()` with its App class in
 # order for ARMI to work properly
 _app: Optional[apps.App] = None
+
+_ARMI_CONFIGURE_CONTEXT: Optional[str] = None
 
 
 def isStableReleaseVersion(version=None):
@@ -361,6 +365,13 @@ def configure(app: Optional[apps.App] = None):
     object). This will provide a number of benefits, the main one being that it will
     become trivial to re-configure the framework, which is currently not possible.
     """
+    global _app
+    global _ARMI_CONFIGURE_CONTEXT
+
+    if _app is not None:
+        # ARMI cannot be reconfigured!
+        raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
+
     assert not armi.context.BLUEPRINTS_IMPORTED, (
         "ARMI can no longer be configured after blueprints have been imported. "
         "Blueprints were imported from:\n{}".format(
@@ -368,9 +379,10 @@ def configure(app: Optional[apps.App] = None):
         )
     )
 
+    _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
+
     app = app or apps.App()
 
-    global _app
     _app = app
 
     pm = app.pluginManager
