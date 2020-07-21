@@ -21,6 +21,7 @@ import unittest
 
 import armi
 from armi import plugins
+from armi.localization import exceptions
 
 
 class TestPlugin1(plugins.ArmiPlugin):
@@ -118,3 +119,7 @@ class TestArmi(unittest.TestCase):
 
         self.assertTrue(pm is not pm2)
         self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
+
+    def test_overConfigured(self):
+        with self.assertRaises(exceptions.OverConfiguredError):
+            armi.configure()

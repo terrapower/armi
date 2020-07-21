@@ -63,6 +63,17 @@ class CcccRecordError(Exception):
     pass
 
 
+class OverConfiguredError(RuntimeError):
+    """An error that occurs when ARMI is configure()'d more than once."""
+
+    def __init__(self, context):
+        RuntimeError.__init__(
+            self,
+            "Multiple calls to armi.configure() are not allowed. "
+            "Previous call from:\n{}".format(context),
+        )
+
+
 class ReactivityCoefficientNonExistentComponentsInRepresentativeBlock(Exception):
     """
     An error that can occur when getting Doppler or Temperature reactivity coefficients within the core.
