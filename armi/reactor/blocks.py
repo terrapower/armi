@@ -1180,14 +1180,17 @@ class Block(composites.Composite):
         self.clearCache()
 
     @staticmethod
-    def plotFlux(core, fName, bList=None, peak=False, adjoint=False, bList2=None):
+    def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=None):
         """
         Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
 
+        Parameters
+        ----------
         core : Core
             Core object
-        fName : str
-            the name of the plot file to produce. If none, plot will be shown
+        fName : str, optional
+            the name of the plot file to produce. If none, plot will be shown. A text file with
+            the flux values will also be generated if this is non-empty.
         bList : iterable, optional
             is a single block or a list of blocks to average over. If no bList, full core is assumed.
         peak : bool, optional
@@ -1197,6 +1200,10 @@ class Block(composites.Composite):
         bList2 :
             a separate list of blocks that will also be plotted on a separate axis on the same plot.
             This is useful for comparing flux in some blocks with flux in some other blocks.
+
+        Notes
+        -----
+        This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
         """
         # process arguments
         if bList is None:
@@ -1237,19 +1244,19 @@ class Block(composites.Composite):
         if bList2:
             avg2 = avg2 / len(bList2)
 
-        title = os.path.splitext(fName)[0] + ".txt"  # convert pdf name to txt name.
-
         # lib required to get the energy structure of the groups for plotting.
         lib = core.lib
         if not lib:
             runLog.warning("No ISOTXS library attached so no flux plots.")
             return
 
-        # write a little flux text file.
-        with open(title, "w") as f:
-            f.write("Energy_Group Average_Flux Peak_Flux\n")
-            for g, eMax in enumerate(lib.neutronEnergyUpperBounds):
-                f.write("{0} {1} {2}\n".format(eMax / 1e6, avg[g], peakFlux[g]))
+        if fName:
+            # write a little flux text file.
+            txtFileName = os.path.splitext(fName)[0] + ".txt"
+            with open(txtFileName, "w") as f:
+                f.write("Energy_Group Average_Flux Peak_Flux\n")
+                for g, eMax in enumerate(lib.neutronEnergyUpperBounds):
+                    f.write("{0} {1} {2}\n".format(eMax / 1e6, avg[g], peakFlux[g]))
 
         x = []
         yAvg = []
@@ -1320,7 +1327,7 @@ class Block(composites.Composite):
             if peak and not adjoint:
                 plt.plot(x, yPeak2, "k--", label=label2)
             plt.legend(loc="lower left")
-        plt.title("Group flux for {0}".format(title))
+        plt.title("Group flux")
 
         if fName:
             plt.savefig(fName)
