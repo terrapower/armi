@@ -134,6 +134,7 @@ class FuelHandlerInterface(interfaces.Interface):
                 fName="{}.shuffles_{}.png".format(self.cs.caseTitle, self.r.p.cycle),
                 shuffleArrows=arrows,
             )
+            plotting.close()
 
     def makeShuffleReport(self):
         """

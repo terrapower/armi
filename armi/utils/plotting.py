@@ -269,17 +269,17 @@ def plotFaceMap(
     """
     if referencesToKeep:
         patches, collection, texts = referencesToKeep
+        fig, ax = plt.gcf(), plt.gca()
     else:
-        plt.figure(figsize=(12, 12), dpi=100)
+        fig, ax = plt.subplots(figsize=(12, 12), dpi=100)
         # set patch (shapes such as hexagon) heat map values
         patches = _makeAssemPatches(core)
         collection = matplotlib.collections.PatchCollection(
             patches, cmap=cmapName, alpha=1.0
         )
         texts = []
-    ax = plt.gca()
 
-    plt.title(title, size=titleSize)
+    ax.set_title(title, size=titleSize)
 
     # get param vals
     if data is None:
@@ -321,9 +321,9 @@ def plotFaceMap(
         collection2.set_array(numpy.array(data))
 
         if "radial" in cBarLabel:
-            colbar = plt.colorbar(collection2, ticks=[x + 1 for x in range(max(data))])
+            colbar = ax.colorbar(collection2, ticks=[x + 1 for x in range(max(data))])
         else:
-            colbar = plt.colorbar(collection2)
+            colbar = ax.colorbar(collection2)
 
         colbar.set_label(cBarLabel, size=20)
         colbar.ax.tick_params(labelsize=16)
@@ -358,8 +358,8 @@ def plotFaceMap(
         ax.spines["left"].set_visible(False)
         ax.spines["bottom"].set_visible(False)
     else:
-        plt.xlabel("x (cm)")
-        plt.ylabel("y (cm)")
+        ax.set_xlabel("x (cm)")
+        ax.set_ylabel("y (cm)")
 
     if fName:
         if legend:
@@ -380,8 +380,22 @@ def plotFaceMap(
     else:
         plt.show()
 
-    plt.close()
+    # don't close figure here. Have caller call plotting.close or plt.close when
+    # they are done with it.
+
     return fName
+
+
+def close(fig=None):
+    """
+    Wrapper for matplotlib close. 
+
+    This is useful to avoid needing to import plotting and matplotlib.
+    The plot functions cannot always close their figure if it is going 
+    to be used somewhere else after becoming active (e.g. in reports
+    or gallery examples).
+    """
+    plt.close(fig)
 
 
 def _makeAssemPatches(core):

@@ -975,7 +975,7 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     ]
 
     fName = "".join([cs.caseTitle, "RadialCoreMap.", cs["outputFileExtension"]])
-    corePlotName = plotting.plotFaceMap(
+    plotting.plotFaceMap(
         core,
         title="{} Radial Core Map".format(cs.caseTitle),
         fName=fName,
@@ -988,7 +988,8 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         titleSize=10,
         fontSize=8,
     )
+    plotting.close()
 
     report.setData(
-        "Radial Core Map", os.path.abspath(corePlotName), report.FACE_MAP, report.DESIGN
+        "Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN
     )
