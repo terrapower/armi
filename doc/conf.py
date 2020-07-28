@@ -30,16 +30,19 @@ import datetime
 import os
 import pathlib
 import sys
+import re
 import subprocess
 import shutil
 import inspect
 from io import StringIO
+import warnings
 
 import sphinx_rtd_theme
 from docutils.parsers.rst import Directive, directives
 from docutils import nodes, statemachine
 
 import armi
+from armi.context import RES
 from armi import apps
 from armi.bookkeeping import tests as bookkeepingTests
 from armi.utils.dochelpers import *
@@ -96,7 +99,8 @@ extensions = [
     "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",
-    "sphinxext.opengraph",
+    # "sphinxext.opengraph",
+    "sphinx_gallery.gen_gallery",
 ]
 
 # private-member docs are generally not great to link to in high-level implementation documentation
@@ -295,8 +299,14 @@ html_last_updated_fmt = "%Y-%m-%d"
 # Output file base name for HTML help builder.
 htmlhelp_basename = "ARMIdoc"
 
+# Need to manually add gallery css files or else the theme_fixes override them.
 html_context = {
-    "css_files": ["_static/theme_fixes.css"]  # overrides for wide tables in RTD theme
+    "css_files": [
+        "_static/theme_fixes.css",  # overrides for wide tables in RTD theme
+        "_static/gallery.css",  # for the sphinx-gallery plugin
+        "_static/gallery-binder.css",
+        "_static/gallery-dataframe.css",
+    ]
 }
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -343,3 +353,31 @@ latex_appendices = []
 
 # If false, no module index is generated.
 latex_domain_indices = ["py-modindex"]
+
+# Configuration for the sphinx-gallery
+from sphinx_gallery.sorting import ExplicitOrder
+
+sphinx_gallery_conf = {
+    "examples_dirs": ["gallery-src"],
+    "filename_pattern": re.escape(os.sep) + "run_",
+    "gallery_dirs": [os.path.join("user", "_gallery")],
+    "line_numbers": True,
+    "download_all_examples": False,
+    "subsection_order": ExplicitOrder(
+        [
+            os.path.join("gallery-src", "framework"),
+            os.path.join("gallery-src", "analysis"),
+            os.path.join("gallery-src", "applications"),
+        ]
+    ),
+    "default_thumb_file": os.path.join(RES, "images", "TerraPowerLogo.png"),
+}
+
+# filter out this warning which shows up in sphinx-gallery builds.
+# this is suggested in the sphinx-gallery example but doesn't actually work?
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message="Matplotlib is currently using agg, which is a non-GUI"
+    " backend, so cannot show the figure.",
+)

@@ -13,6 +13,7 @@ analyzing ARMI output files,
    :numbered:
 
    user_install
+   _gallery/index
    tutorials/index
    inputs/index
    outputs/index
