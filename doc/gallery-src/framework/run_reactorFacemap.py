@@ -7,12 +7,14 @@ power distribution from it. You can plot any
 """
 from armi.reactor.tests import test_reactors
 from armi.utils import plotting
+import armi
+
+armi.configure()
 
 operator, reactor = test_reactors.loadTestReactor()
+reactor.core.growToFullCore(None)
 # set dummy power
 for b in reactor.core.getBlocks():
     x, y, z = b.spatialLocator.getGlobalCoordinates()
     b.p.pdens = x ** 2 + y ** 2 + z ** 2
-plotting.plotFaceMap(
-    reactor.core, param="pdens",
-)
+plotting.plotFaceMap(reactor.core, param="pdens", labelFmt="{0:.1e}")
