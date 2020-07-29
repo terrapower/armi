@@ -26,20 +26,11 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import datetime
-import os
 import pathlib
-import sys
 import re
-import subprocess
-import shutil
-import inspect
-from io import StringIO
 import warnings
 
 import sphinx_rtd_theme
-from docutils.parsers.rst import Directive, directives
-from docutils import nodes, statemachine
 
 import armi
 from armi.context import RES
@@ -49,6 +40,15 @@ from armi.utils.dochelpers import *
 
 # Configure the baseline framework "App" for framework doc building
 armi.configure(apps.App())
+
+# some examples have import armi;armi.configure() in them that are intended
+# to be copy/pasted by new users. However, armi will crash with param locks if it is
+# configured twice. We often use if armi.isConfigured() to guard against
+# issues here, but prefer not to highlight that somewhat confusing
+# conditional if a user is just copy pasting fresh code
+# ("How on Earth," they might wonder "would it already be configured!?"). Thus,
+# we tell armi to simply disable future configure calls with this advanced flag
+armi._ignoreConfigures = True
 
 
 APIDOC_REL = ".apidocs"

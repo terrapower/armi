@@ -102,6 +102,9 @@ _app: Optional[apps.App] = None
 
 _ARMI_CONFIGURE_CONTEXT: Optional[str] = None
 
+# Advanced flag used in documentation builds to avoid isConfigured guards.
+_ignoreConfigures = False
+
 
 def isStableReleaseVersion(version=None):
     """Determine if the version should be considered a stable release"""
@@ -367,6 +370,9 @@ def configure(app: Optional[apps.App] = None):
     """
     global _app
     global _ARMI_CONFIGURE_CONTEXT
+
+    if _ignoreConfigures:
+        return
 
     if _app is not None:
         # ARMI cannot be reconfigured!

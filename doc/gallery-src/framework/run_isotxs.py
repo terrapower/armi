@@ -9,11 +9,12 @@ an existing binary cross section library file in :py:mod:`ISOTXS <armi.nuclearDa
 
 import matplotlib.pyplot as plt
 
-import armi
 from armi.utils import units
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO import isotxs
+import armi
 
+armi.configure()
 
 gs = units.getGroupStructure("ANL33")
 lib = isotxs.readBinary(ISOAA_PATH)
