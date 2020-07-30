@@ -58,7 +58,7 @@ for num in range(12):
     fuelHandler.swapAssemblies(high, low)
 
 # re-filter the remaining candidates and re-sort for more complex selections
-candidateAssems = [a for a in candidateAssems if a.getMaxParam('percentBu')<4.0]
+candidateAssems = [a for a in candidateAssems if a.getMaxParam("percentBu") < 4.0]
 candidateAssems.sort(key=criterion)
 for num in range(8):
     high = candidateAssems.pop()
