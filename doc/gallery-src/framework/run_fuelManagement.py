@@ -5,6 +5,10 @@ Fuel management in a LWR
 Demo of locating and swapping assemblies in a core with Cartesian geometry. Given a burnup
 distribution, this swaps high burnup assemblies with low ones.
 
+Assembly selection for moving and swapping is very flexible using the ARMI API and the
+high-level language features of Python. This allows highly complex fuel management
+algorithms to be expressed and parameterized.
+
 Because the ARMI framework does not come with a LWR global flux/depletion solver, actual
 flux/depletion results would need to be provided by a physics plugin before actually using
 ARMI to do fuel management. Thus, this example applies a dummy burnup distribution for
@@ -41,32 +45,25 @@ for b in reactor.core.getBlocks(Flags.FUEL):
 # show the initial burnup distribution
 plotting.plotFaceMap(reactor.core, param="percentBu")
 
-# swap fuel assemblies
 fuelHandler = fuelHandlers.FuelHandler(o)
-exclusions = []
-for num in range(12):
-    # find the 12 highest burnup fuel assemblies...
-    high = fuelHandler.findAssembly(
-        param="percentBu", compareTo=100, exclusions=exclusions, blockLevelMax=True
-    )
-    # and the 12 lowest burnup assemblies...
-    low = fuelHandler.findAssembly(
-        param="percentBu", compareTo=0, exclusions=exclusions, blockLevelMax=True
-    )
-    # and swap them!
-    fuelHandler.swapAssemblies(high, low)
-    exclusions.extend([high, low])
 
-# also swap out some slightly lower burnup ones
-for num in range(8):
-    high = fuelHandler.findAssembly(
-        param="percentBu", compareTo=4.0, exclusions=exclusions, blockLevelMax=True
-    )
-    low = fuelHandler.findAssembly(
-        param="percentBu", compareTo=0, exclusions=exclusions, blockLevelMax=True
-    )
+candidateAssems = reactor.core.getAssemblies(Flags.FUEL)
+criterion = lambda a: a.getMaxParam("percentBu")
+candidateAssems.sort(key=criterion)
+
+for num in range(12):
+    # swap the 12 highest burnup assemblies with the 12 lowest burnup ones
+    high = candidateAssems.pop()
+    low = candidateAssems.pop(0)
     fuelHandler.swapAssemblies(high, low)
-    exclusions.extend([high, low])
+
+# re-filter the remaining candidates and re-sort for more complex selections
+candidateAssems = [a for a in candidateAssems if a.getMaxParam('percentBu')<4.0]
+candidateAssems.sort(key=criterion)
+for num in range(8):
+    high = candidateAssems.pop()
+    low = candidateAssems.pop(0)
+    fuelHandler.swapAssemblies(high, low)
 
 # show final burnup distribution
 plotting.plotFaceMap(reactor.core, param="percentBu")
