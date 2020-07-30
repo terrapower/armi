@@ -1,6 +1,6 @@
 """
-Hex to RZ geometry conversion
-=============================
+Hex block to RZ geometry conversion
+===================================
 Often, parts of a reactor model must be transformed to a different geometry in order to
 perform a certain type of physics calculation. For example, in some fast reactor lattice
 physics calculations, detailed descriptions of control assemblies must be mapped to
