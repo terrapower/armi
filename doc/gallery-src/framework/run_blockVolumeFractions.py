@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
 """
-Computing Component Volume Fractions on a Block
-===============================================
+Computing Component Volume Fractions on a Block with Automatic Thermal Expansion
+================================================================================
 
 Given an :py:mod:`Block <armi.reactor.blocks.Block>`, compute
 the component volume fractions. Assess the change in volume
 of these components within the block as the temperatures of 
-the fuel and structure components are increased uniformly.
+the fuel and structure components are uniformly increased.
+
+Note: Thermal expansion is automatically considered with
+material data defined within :py:mod:`materials <armi.materials>`.
 """
 
 import collections
@@ -23,7 +27,7 @@ from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
 
 def writeInitialVolumeFractions(b):
     """Write out the initial temperatures and component volume fractions."""
-    headers = ["Component", "Temperature (C)", "Volume Fraction"]
+    headers = ["Component", "Temperature, °C", "Volume Fraction"]
     data = [(c, c.temperatureInC, volFrac) for c, volFrac in b.getVolumeFractions()]
     print(tabulate.tabulate(tabular_data=data, headers=headers) + "\n")
 
@@ -36,13 +40,13 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
 
     initialVols = {}
     relativeVols = collections.defaultdict(list)
-    for temp in uniformTemps:
+    for tempInC in uniformTemps:
 
-        print(f"Updating fuel/structure components to {temp} C")
+        print(f"Updating fuel/structure components to {tempInC} °C")
         # Modify the fuel/structure components to the
         # same uniform temperature
         for c in componentsToModify:
-            c.setTemperature(temp)
+            c.setTemperature(tempInC)
 
         writeInitialVolumeFractions(b)
 
@@ -50,7 +54,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
         # and volume fractions
         for c in b:
             # Set the initial volume fractions at the first uniform temperature
-            if temp == uniformTemps[0]:
+            if tempInC == uniformTempsInC[0]:
                 initialVols[c] = c.getVolume()
 
             relativeVols[c].append(
@@ -60,18 +64,19 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
     fig, ax = plt.subplots()
 
     for c in b.getComponents():
-        ax.plot(uniformTemps, relativeVols[c], label=c.name)
+        ax.plot(uniformTempsInC, relativeVols[c], label=c.name)
 
-    ax.set_ylabel(f"% Change in Volume from {uniformTemps[0]} C")
-    ax.set_xlabel("Uniform Fuel/Structure Temperature, C")
+    ax.set_title("Component Volume Fractions with Automatic Thermal Expansion")
+    ax.set_ylabel(f"% Change in Volume from {uniformTempsInC[0]} °C")
+    ax.set_xlabel("Uniform Fuel/Structure Temperature, °C")
     ax.legend()
     ax.grid()
 
-    fig.show()
+    plt.show()
 
 
-uniformTemps = [400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1200.0]
+uniformTempsInC = [400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1200.0]
 b = buildSimpleFuelBlock()
 
 writeInitialVolumeFractions(b)
-plotVolFracsWithComponentTemps(b, uniformTemps)
+plotVolFracsWithComponentTemps(b, uniformTempsInC)
