@@ -17,7 +17,6 @@ settings:
     - 13
     - 1
   freshFeedType: igniter fuel
-  geomFile: cartesian-geom.xml
   jumpRingNum: 9
   loadingFile: refSmallCartesian.yaml
   startNode: 1

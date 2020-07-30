@@ -51,9 +51,10 @@ class CartesianReactorTests(unittest.TestCase):
         )
         custom = fuel.getComponent(Flags.FUEL)
         self.assertEqual(self.r.core.geomType, geometry.CARTESIAN)
+        # from blueprints input file
         self.assertAlmostEqual(
             custom.getNumberDensity("U238"), 0.0134125
-        )  # from blueprints input file
+        )
 
 
 if __name__ == "__main__":
