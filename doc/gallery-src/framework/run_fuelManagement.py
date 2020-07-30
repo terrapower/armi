@@ -19,13 +19,8 @@ demonstration purposes.
 # sphinx_gallery_thumbnail_number = 2
 import math
 
-import matplotlib.pyplot as plt
-
-from armi.utils import directoryChangers
-from armi.tests import TEST_ROOT
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.reactor import geometry
 from armi.physics.fuelCycle import fuelHandlers
 
 from armi.utils import plotting
