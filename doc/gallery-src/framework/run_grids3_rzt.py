@@ -26,7 +26,9 @@ rz_grid = grids.ThetaRZGrid(bounds=(theta, rad, z))
 
 
 xyz = []
-for i, j, k in itertools.product(range(9), range(9), range(5)):
+for i, j, k in itertools.product(
+    range(len(theta) - 1), range(len(rad) - 1), range(len(z) - 1)
+):
     xyz.append(rz_grid[i, j, k].getGlobalCoordinates())
 ax = fig.add_subplot(1, 1, 1, projection="3d")
 x, y, z = zip(*xyz)

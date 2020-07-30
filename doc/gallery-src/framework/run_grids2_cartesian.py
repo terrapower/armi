@@ -24,7 +24,7 @@ cartesian_grid = grids.Grid(
 )
 xyz = []
 
-
+# the grid is infinite in i and j so we will just plot the first 10 items
 for i, j, k in itertools.product(range(10), range(10), range(len(zCoords) - 1)):
     xyz.append(cartesian_grid[i, j, k].getGlobalCoordinates())
 ax = fig.add_subplot(1, 1, 1, projection="3d")
