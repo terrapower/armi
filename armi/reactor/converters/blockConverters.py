@@ -402,13 +402,10 @@ class BlockAvgToCylConverter(BlockConverter):
             mainComponent=fuel,
         )
 
-    def plotConvertedBlock(self):
+    def plotConvertedBlock(self, fName=None):
         """Render an image of the converted block."""
-        figName = self._sourceBlock.name + "_1D_cylinder.svg"
         runLog.extra(
-            "Plotting equivalent cylindrical block of {} as {}".format(
-                self._sourceBlock, figName
-            )
+            "Plotting equivalent cylindrical block of {}".format( self._sourceBlock )
         )
         fig, ax = plt.subplots()
         fig.patch.set_visible(False)
@@ -430,13 +427,17 @@ class BlockAvgToCylConverter(BlockConverter):
             patches.append(circle)
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
-        p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.rainbow)
+        p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.YlGn)
         p.set_array(numpy.array(colors))
-        p.set_clim(0, 20)
         ax.add_collection(p)
         ax.autoscale_view(True, True, True)
-        plt.savefig(figName)
-        return figName
+        ax.set_aspect("equal")
+        fig.tight_layout()
+        if fName:
+            plt.savefig(fName)
+        else:
+            plt.show()
+        return fName
 
 
 class HexComponentsToCylConverter(BlockAvgToCylConverter):
