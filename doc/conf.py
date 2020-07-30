@@ -355,7 +355,7 @@ latex_appendices = []
 latex_domain_indices = ["py-modindex"]
 
 # Configuration for the sphinx-gallery
-from sphinx_gallery.sorting import ExplicitOrder
+from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
 
 sphinx_gallery_conf = {
     "examples_dirs": ["gallery-src"],
@@ -370,6 +370,7 @@ sphinx_gallery_conf = {
             os.path.join("gallery-src", "applications"),
         ]
     ),
+    "within_subsection_order": FileNameSortKey,
     "default_thumb_file": os.path.join(RES, "images", "TerraPowerLogo.png"),
 }
 

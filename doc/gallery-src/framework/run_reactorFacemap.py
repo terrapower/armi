@@ -3,7 +3,7 @@ Plot a reactor facemap
 ======================
 
 Load a test reactor from the test suite and plot a dummy
-power distribution from it. You can plot any 
+power distribution from it. You can plot any block parameter.
 """
 from armi.reactor.tests import test_reactors
 from armi.utils import plotting
