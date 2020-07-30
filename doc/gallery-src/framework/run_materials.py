@@ -18,14 +18,14 @@ import armi
 from armi import materials
 from armi.nucDirectory import nuclideBases
 
-MAX_Z = 96 # stop at Curium
+MAX_Z = 96  # stop at Curium
 
 armi.configure()
 
 materialNames = []
 mats = list(materials.iterAllMaterialClassesInNamespace(materials))
 
-numMats = len(mats) 
+numMats = len(mats)
 
 zVals = np.zeros((numMats, MAX_Z))
 
@@ -35,19 +35,18 @@ for mi, matCls in enumerate(mats):
     materialNames.append(m.name)
     for nucName, frac in m.p.massFrac.items():
         nb = nuclideBases.byName[nucName]
-        idx = mi, nb.z-1
+        idx = mi, nb.z - 1
         zVals[idx] += frac
 
-fig, ax = plt.subplots(figsize=(16,12))
+fig, ax = plt.subplots(figsize=(16, 12))
 im = ax.imshow(zVals, cmap="YlGn")
 
 ax.set_xticks(np.arange(MAX_Z))
 ax.set_yticks(np.arange(numMats))
-ax.set_xticklabels(np.arange(MAX_Z)+1, fontsize=6)
+ax.set_xticklabels(np.arange(MAX_Z) + 1, fontsize=6)
 ax.set_yticklabels(materialNames)
 ax.set_xlabel("Proton number (Z)")
-ax.grid(alpha=0.2, ls='--')
+ax.grid(alpha=0.2, ls="--")
 
 ax.set_title("Mass fractions in the ARMI material library")
 plt.show()
-
