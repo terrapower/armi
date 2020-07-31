@@ -103,13 +103,15 @@ extensions = [
     "sphinx_gallery.gen_gallery",
 ]
 
-# private-member docs are generally not great to link to in high-level implementation documentation
-# because the implementation may change rapidly. Prefer putting info in public entities. We
-# may render docs with private-members shown in some rare cases to get the full (and noisy!) documentation.
+# private-member docs are generally not great to link to in high-level implementation
+# documentation because the implementation may change rapidly. Prefer putting info in
+# public entities. We  render docs with private-members shown, however, because there
+# are important implementation details in them in many cases.
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
-}  # , 'private-members']
+    "private-members": True,
+}
 autodoc_member_order = "bysource"
 autoclass_content = "both"
 

@@ -26,6 +26,7 @@ import matplotlib.collections
 import matplotlib.patches
 from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
+import matplotlib.colors as mcolors
 
 from armi import runLog
 from armi.reactor.flags import Flags
@@ -34,26 +35,26 @@ from armi.reactor import grids
 
 def colorGenerator(skippedColors=10):
     """
-    Selects a color from the built-in wx color database.
+    Selects a color from the matplotlib css color database.
 
     Parameters
     ----------
     skippedColors: int
-        Number of colors to skip in the built-in wx color database when generating the next color. Without skipping
-        colors the next color may be similar to the previous color.
+        Number of colors to skip in the matplotlib CSS color database when generating the
+        next color. Without skipping colors the next color may be similar to the previous
+        color.
 
     Notes
     -----
     Will cycle indefinitely to accommodate large cores. Colors will repeat.
     """
-    from wx.lib.colourdb import getColourList
 
-    excludedColors = ["WHITE", "CREAM", "BLACK", "MINTCREAM"]
-    colors = getColourList()
+
+    colors = list(mcolors.CSS4_COLORS)
+
     for start in itertools.cycle(range(20, 20 + skippedColors)):
         for i in range(start, len(colors), skippedColors):
-            if colors[i] not in excludedColors:
-                yield colors[i]
+            yield colors[i]
 
 
 def plotBlockDepthMap(
@@ -224,6 +225,7 @@ def plotFaceMap(
 
     labelFmt : str, optional
         A format string that determines how the data is printed if ``labels`` is not provided.
+        E.g. ``"{:.1e}"``
 
     fontSize : int, optional
         Font size in points

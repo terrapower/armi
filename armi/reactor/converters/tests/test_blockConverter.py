@@ -149,8 +149,8 @@ class TestBlockConverter(unittest.TestCase):
             convertedBlock = converter.convert()
             self.assertAlmostEqual(area * numBlocks, convertedBlock.getArea())
             self._checkCiclesAreInContact(convertedBlock)
-            figureName = converter.plotConvertedBlock()
-            os.remove(figureName)
+            converter.plotConvertedBlock(fName="convertedBlock.svg")
+            os.remove("convertedBlock.svg")
 
             for c in list(reversed(convertedBlock))[:externalRings]:
                 self.assertTrue(c.isFuel(), "c was {}".format(c.name))
