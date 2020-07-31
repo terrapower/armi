@@ -657,7 +657,7 @@ NP237:
     branch: 1.0
     halfLifeInSeconds: 67531821640000.0
     products:
-    - TH233
+    - PA233
     - DUMP2
     type: ad
 NP238:

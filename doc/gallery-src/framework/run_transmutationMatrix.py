@@ -2,25 +2,31 @@
 Transmutation matrix
 ====================
 
-Plot a transmutation matrix. 
+Plot some of the transmutation and decay pathways for the actinides using the burn chain
+definition that is included with ARMI. Note that many of these reactions are shortcut for
+reactor analysis. For example, a U-238 capture goes directly to NP239 rather than first
+going to U239. Some (n,2n) reactions quickly beta decay, so the transmutation goes right
+to the product. For the decays, the arrow has been adjusted in width based on the
+branching ratio. The transmutations are all constant since their rates would depend on the
+neutron spectrum being modeled.
+
+Users can input their own transmutation matrix or use this one.
 """
 import os
 
 import matplotlib.patches as mpatch
-from matplotlib.patches import Arrow
 from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
-from armi.tests import ISOAA_PATH
-from armi.context import ROOT, RES
+from armi.context import RES
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import isotxs
 
 
 def plotNuc(nb, ax):
-    patch = mpatch.Rectangle((nb.a - nb.z, nb.z), 1.0, 1.0)
+    """Make a square patch for a single nuclide base."""
+    patch = mpatch.Rectangle((nb.a - nb.z - 0.5, nb.z - 0.5), 1.0, 1.0)
     rx, ry = patch.get_xy()
     cx = rx + patch.get_width() / 2.0
-    cy = ry + 3 * patch.get_height() / 4.0
+    cy = ry + (3 - 2 * nb.state) * patch.get_height() / 4.0
     ax.annotate(
         nb.name,
         (cx, cy),
@@ -33,40 +39,55 @@ def plotNuc(nb, ax):
     return patch
 
 
-with open(os.path.join(RES, "burn-chain.yaml")) as burnChainStream:
-    nuclideBases.imposeBurnChain(burnChainStream)
-lib = isotxs.readBinary(ISOAA_PATH)
-nucs = [nuc.name for nuc in lib.getNuclides("AA")]
-nbs = [nuclideBases.fromName(n) for n in nucs]
-fig, ax = plt.subplots(figsize=(15, 10))
+def plotAll():
+    """Plot all patches."""
+    with open(os.path.join(RES, "burn-chain.yaml")) as burnChainStream:
+        nuclideBases.imposeBurnChain(burnChainStream)
+    nbs = nuclideBases.instances
+    fig, ax = plt.subplots(figsize=(15, 10))
 
-patches = []
-for nb in nbs:
-    if nb.z < 91 and False:
-        continue
-    patch = plotNuc(nb, ax)
-    patches.append(patch)
-    for trans in nb.trans:
-        nbp = nuclideBases.fromName(trans.productNuclides[0])
-        if nbp.z == 0:
-            # LFP
-            continue
-        x, y, dx, dy = (
-            nb.a - nb.z,
-            nb.z,
-            ((nbp.a - nbp.z) - (nb.a - nb.z)),
-            (nbp.z - nb.z),
-        )
-        if abs(dx) > 2:
-            continue
-        # print(nbp, x,y,dx,dy)
-        arrow = ax.arrow(x + 0.5, y + 0.5, dx / 7, dy / 7, width=0.05, edgecolor="blue")
-        # patches.append(arrow)
+    patches = []
+    for nb in nbs:
+        if not nb.trans and not nb.decays:
+            # skip nuclides without any transmutations defined
+            pass
+        patch = plotNuc(nb, ax)
+        patches.append(patch)
+        # loop over all possible transmutations and decays
+        for trans in nb.trans + nb.decays:
+            nbp = nuclideBases.fromName(trans.productNuclides[0])
+            if nbp.z == 0:
+                # skip lumped fission products and DUMP nuclides
+                continue
+            x, y, xp, yp = (
+                nb.a - nb.z,
+                nb.z,
+                nbp.a - nbp.z,
+                nbp.z,
+            )
+            if trans in nb.trans:
+                color = "deeppink"
+            else:
+                color = "orangered"
+            ax.annotate(
+                "",
+                (xp, yp),
+                (x, y),
+                arrowprops=dict(
+                    width=2 * trans.branch, shrink=0.1, alpha=0.4, color=color
+                ),
+            )
 
-pc = PatchCollection(patches, facecolor="green", alpha=0.2, edgecolor="black")
-ax.add_collection(pc)
-ax.set_xlim((1, 155))
-ax.set_ylim((1, 97))
-ax.set_aspect("equal")
-plt.show()
-# ax.autoscale_view(True, True, True)
+    pc = PatchCollection(patches, facecolor="mistyrose", alpha=0.2, edgecolor="black")
+    ax.add_collection(pc)
+    ax.set_xlim((139.5, 154.5))
+    ax.set_ylim((89.5, 98.5))
+    ax.set_aspect("equal")
+    ax.set_xlabel("Neutrons (N)")
+    ax.set_ylabel("Protons (Z)")
+    ax.set_title("Actinide Transmutations and Decays (with branching)")
+    plt.show()
+
+
+if __name__ == "__main__":
+    plotAll()
