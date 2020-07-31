@@ -41,9 +41,7 @@ _o, r = test_reactors.loadTestReactor()
 bFuel = r.core.getBlocks(Flags.FUEL)[0]
 bControl = r.core.getBlocks(Flags.CONTROL)[0]
 converter = blockConverters.HexComponentsToCylConverter(
-    sourceBlock=bControl,
-    driverFuelBlock=bFuel,
-    numExternalRings=1
+    sourceBlock=bControl, driverFuelBlock=bFuel, numExternalRings=1
 )
 converter.convert()
 converter.plotConvertedBlock()

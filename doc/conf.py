@@ -99,7 +99,7 @@ extensions = [
     "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",
-    # "sphinxext.opengraph",
+    "sphinxext.opengraph",
     "sphinx_gallery.gen_gallery",
 ]
 

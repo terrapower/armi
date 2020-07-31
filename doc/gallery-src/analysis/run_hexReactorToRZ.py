@@ -38,9 +38,7 @@ converterSettings = {
     "thetaMesh": [2 * math.pi],
 }
 
-converter = geometryConverters.HexToRZConverter(
-    o.cs, converterSettings
-)
+converter = geometryConverters.HexToRZConverter(o.cs, converterSettings)
 # makes new reactor in converter.convReactor
 converter.convert(r)
 figs = converter.plotConvertedReactor()
