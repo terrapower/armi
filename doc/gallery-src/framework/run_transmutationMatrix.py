@@ -1,22 +1,26 @@
 """
-Transmutation matrix
-====================
+Transmutation and decay reactions
+=================================
 
-Plot some of the transmutation and decay pathways for the actinides using the burn chain
-definition that is included with ARMI. Note that many of these reactions are shortcut for
-reactor analysis. For example, a U-238 capture goes directly to NP239 rather than first
-going to U239. Some (n,2n) reactions quickly beta decay, so the transmutation goes right
-to the product. For the decays, the arrow has been adjusted in width based on the
-branching ratio. The transmutations are all constant since their rates would depend on the
-neutron spectrum being modeled.
+This plots some of the transmutation and decay pathways for the actinides using the burn
+chain definition that is included with ARMI. Note that many of these reactions are
+shortcut for reactor analysis. For example, a U-238 capture goes directly to NP-239 rather
+than first going to U-239. Some (n,2n) reactions quickly beta decay, so the transmutation
+goes right to the product. For the decays, the arrow has been adjusted in width based on
+the branching ratio. The transmutations are all constant since their rates would depend on
+the neutron spectrum being modeled.
 
 Users can input their own transmutation matrix or use this one.
+
+A Bateman equation/matrix exponential solver is required to actually *solve* transmutation and
+decay problems, which can be provided via a plugin.
 """
 import os
 
 import matplotlib.patches as mpatch
 from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
+
 from armi.context import RES
 from armi.nucDirectory import nuclideBases
 
@@ -39,8 +43,9 @@ def plotNuc(nb, ax):
     return patch
 
 
-def plotAll():
-    """Plot all patches."""
+def plotAll(xlim, ylim):
+    """Plot all nuclides and transformations."""
+    # load the burn chain input that comes with ARMI
     with open(os.path.join(RES, "burn-chain.yaml")) as burnChainStream:
         nuclideBases.imposeBurnChain(burnChainStream)
     nbs = nuclideBases.instances
@@ -53,7 +58,7 @@ def plotAll():
             pass
         patch = plotNuc(nb, ax)
         patches.append(patch)
-        # loop over all possible transmutations and decays
+        # loop over all possible transmutations and decays and draw arrows
         for trans in nb.trans + nb.decays:
             nbp = nuclideBases.fromName(trans.productNuclides[0])
             if nbp.z == 0:
@@ -77,17 +82,31 @@ def plotAll():
                     width=2 * trans.branch, shrink=0.1, alpha=0.4, color=color
                 ),
             )
+            # add reaction label towards the middle of the arrow
+            xlabel = xp - (xp - x) * 0.4
+            ylabel = yp - (yp - y) * 0.4
+            # pretty up the labels a bit with some LaTeX
+            rxnType = (
+                trans.type.replace("nGamma", r"n,$\gamma$")
+                .replace("nalph", r"n,$\alpha$")
+                .replace("ad", r"$\alpha$")
+                .replace("bmd", r"$\beta^-$")
+                .replace("bpd", r"$\beta^+$")
+            )
+            ax.text(xlabel, ylabel, rxnType, color="grey")
 
     pc = PatchCollection(patches, facecolor="mistyrose", alpha=0.2, edgecolor="black")
     ax.add_collection(pc)
-    ax.set_xlim((139.5, 154.5))
-    ax.set_ylim((89.5, 98.5))
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     ax.set_aspect("equal")
     ax.set_xlabel("Neutrons (N)")
     ax.set_ylabel("Protons (Z)")
-    ax.set_title("Actinide Transmutations and Decays (with branching)")
+    ax.set_title("Transmutations and Decays (with branching)")
     plt.show()
 
 
 if __name__ == "__main__":
-    plotAll()
+    # make two plots, one zoomed on actinides and another on light nuclides
+    plotAll(xlim=(139.5, 154.5), ylim=(89.5, 98.5))
+    plotAll(xlim=(0.5, 6.5), ylim=(0.5, 5.5))
