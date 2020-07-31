@@ -2,18 +2,21 @@
 Transmutation and decay reactions
 =================================
 
-This plots some of the transmutation and decay pathways for the actinides using the burn
-chain definition that is included with ARMI. Note that many of these reactions are
-shortcut for reactor analysis. For example, a U-238 capture goes directly to NP-239 rather
-than first going to U-239. Some (n,2n) reactions quickly beta decay, so the transmutation
-goes right to the product. For the decays, the arrow has been adjusted in width based on
-the branching ratio. The transmutations are all constant since their rates would depend on
-the neutron spectrum being modeled.
+This plots some of the transmutation and decay pathways for the actinides and some light
+nuclides using the burn chain definition that is included with ARMI. Note that many of
+these reactions are shortcut for reactor analysis. For example, a U-238 capture goes
+directly to NP-239 rather than first going to U-239. Some (n,2n) reactions quickly beta
+decay, so the transmutation goes right to the product. For the decays, the arrow has been
+adjusted in width based on the branching ratio. The transmutations are all constant since
+their rates would depend on the neutron spectrum being modeled. This is mostly a demo of
+more features of the :py:mod:`armi.nucDirectory` subpackage.
 
 Users can input their own transmutation matrix or use this one.
 
 A Bateman equation/matrix exponential solver is required to actually *solve* transmutation and
 decay problems, which can be provided via a plugin.
+
+
 """
 import os
 import math
@@ -31,6 +34,7 @@ def plotNuc(nb, ax):
     patch = mpatch.Rectangle((nb.a - nb.z - 0.5, nb.z - 0.5), 1.0, 1.0)
     rx, ry = patch.get_xy()
     cx = rx + patch.get_width() / 2.0
+    # bump label down for metastable nuclides
     cy = ry + (3 - 2 * nb.state) * patch.get_height() / 4.0
     ax.annotate(
         nb.name,
@@ -61,16 +65,16 @@ def plotAll(xlim, ylim):
         patches.append(patch)
         # loop over all possible transmutations and decays and draw arrows
         for ti, trans in enumerate(nb.trans + nb.decays):
-            nbp = nuclideBases.fromName(trans.productNuclides[0])
-            if nbp.z == 0:
+            product = nuclideBases.fromName(trans.productNuclides[0])
+            if product.z == 0:
                 # skip lumped fission products and DUMP nuclides
                 continue
             # add index-based y-offset to minimize overlaps
             x, y, xp, yp = (
                 nb.a - nb.z,
                 nb.z + ti * 0.05,
-                nbp.a - nbp.z,
-                nbp.z + ti * 0.05,
+                product.a - product.z,
+                product.z + ti * 0.05,
             )
             if trans in nb.trans:
                 color = "deeppink"
@@ -96,6 +100,7 @@ def plotAll(xlim, ylim):
                 .replace("bpd", r"$\beta^+$")
             )
             if xp != x:
+                # rotate the nuclide type label to sit right on the arrow
                 rotation = math.atan((yp - y) / (xp - x)) * 180 / math.pi
             else:
                 rotation = 0
