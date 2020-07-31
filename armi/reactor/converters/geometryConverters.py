@@ -1112,7 +1112,7 @@ class HexToRZThetaConverter(GeometryConverter):
                     innerAxial = outerAxial
                 innerRadius = outerRadius
             ax.set_title(
-                    "{} Core Map of from {} to {:.4f} revolutions".format(
+                    "{} Core Map from {} to {:.4f} revolutions".format(
                     self.convReactor.core.geomType.upper(),
                     innerTheta * units.RAD_TO_REV,
                     outerTheta * units.RAD_TO_REV,
