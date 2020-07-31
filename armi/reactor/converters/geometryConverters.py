@@ -1066,9 +1066,9 @@ class HexToRZThetaConverter(GeometryConverter):
         XTView can be used to view the RZT reactor but this is useful to examine the
         conversion of the hex-z reactor to the rzt reactor.
 
-        This makes plots of each individual theta mesh with auto-generated
-        names by default.
+        This makes plots of each individual theta mesh
         """
+
         runLog.info(
             "Generating plot(s) of the converted {} reactor".format(
                 self.convReactor.core.geomType.upper()
