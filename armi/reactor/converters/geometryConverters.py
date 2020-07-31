@@ -15,9 +15,14 @@
 """
 Change a reactor from one geometry to another.
 
-Examples may include going from Hex to R-Z or from Third-core to full core.
-This module contains **converters** (which create new reactor objects with different geometry),
-and **changers** (which modify a given reactor in place) in this module.
+Examples may include going from Hex to R-Z or from Third-core to full core.  This module
+contains **converters** (which create new reactor objects with different geometry), and
+**changers** (which modify a given reactor in place) in this module.
+
+Generally, mass is conserved in geometry conversions.
+
+.. warning:: These are mostly designed for hex geometry.
+
 """
 import collections
 import copy
@@ -424,9 +429,24 @@ class HexToRZThetaConverter(GeometryConverter):
 
     Parameters
     ----------
-    converterSettings: dictionary like object
-        Settings that specify how the mesh of the RZTheta reactor should be generated. Controls the number of theta
-        regions, how to group regions, etc.
+    converterSettings: dict
+        Settings that specify how the mesh of the RZTheta reactor should be generated.
+        Controls the number of theta regions, how to group regions, etc.
+
+        uniformThetaMesh
+            bool flag that determines if the theta mesh should be uniform or not
+
+        thetaBins
+            Number of theta bins to create
+
+        radialConversionType
+           * ``Ring Compositions`` -- to convert by composition
+
+        axialConversionType
+            * ``Axial Coordinates`` --  use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialCoordinates`
+            * ``Axial Bins`` -- use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialBins`
+
+
     expandReactor : bool
         If True, the HEX-Z reactor will be expanded to full core geometry prior to converting to the RZT reactor.
         Either way the converted RZTheta core will be full core.
@@ -512,16 +532,18 @@ class HexToRZThetaConverter(GeometryConverter):
 
         Notes
         -----
-        As a part of the RZT mesh converters it is possible to obtain a radial mesh that has repeated ring numbers.
-        For instance, if there are fuel assemblies and control assemblies within the same radial hex ring then it's
-        possible that a radial mesh output from the byRingComposition mesh converter method will look something like:
+        As a part of the RZT mesh converters it is possible to obtain a radial mesh that
+        has repeated ring numbers.  For instance, if there are fuel assemblies and control
+        assemblies within the same radial hex ring then it's possible that a radial mesh
+        output from the byRingComposition mesh converter method will look something like:
 
         self.meshConverter.radialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
 
-        In this instance the hex ring will remain the same for multiple iterations over radial direction when
-        homogenizing the hex core into the RZT geometry. In this case, the converter needs to keep track of the
-        compositions within this ring so that it can separate this repeated ring into multiple RZT rings. Each of the
-        RZT rings should have a single composition (fuel1, fuel2, control, etc.)
+        In this instance the hex ring will remain the same for multiple iterations over
+        radial direction when homogenizing the hex core into the RZT geometry. In this
+        case, the converter needs to keep track of the compositions within this ring so
+        that it can separate this repeated ring into multiple RZT rings. Each of the RZT
+        rings should have a single composition (fuel1, fuel2, control, etc.)
 
         See Also
         --------

@@ -2,7 +2,14 @@
 Hex reactor to RZ geometry conversion
 ===================================
 This shows how an entire reactor specified in full hex detail can be
-automatically converted to an equivalent 2-D or 3-D RZ case.
+automatically converted to a 2-D or 3-D RZ case with conserved mass.
+
+.. warning:: 
+    This uses :py:mod:`armi.reactor.converters.geometryConverters`, which
+    will only work on a constrained set of hex-based geometries. For your systems,
+    consider these an example and starting point and build your own converters as
+    appropriate.
+
 
 """
 # sphinx_gallery_thumbnail_number=2
@@ -34,6 +41,7 @@ converterSettings = {
 converter = geometryConverters.HexToRZConverter(
     o.cs, converterSettings
 )
+# makes new reactor in converter.convReactor
 converter.convert(r)
 figs = converter.plotConvertedReactor()
 

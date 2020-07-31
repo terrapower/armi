@@ -21,6 +21,12 @@ By automating these kinds of geometry conversions, ARMI allows core designers to
 the design in real geometry while still performing appropriate approximations for
 efficient analysis.
 
+.. warning:: 
+    This uses :py:mod:`armi.reactor.converters.blockConverters`, which
+    currently only works on a constrained set of hex-based geometries. For your systems,
+    consider these an example and starting point and build your own converters as
+    appropriate.
+
 """
 
 from armi.reactor.tests import test_reactors
@@ -30,12 +36,14 @@ import armi
 
 armi.configure()
 
-o, r = test_reactors.loadTestReactor()
+_o, r = test_reactors.loadTestReactor()
 
-bFuel = o.r.core.getBlocks(Flags.FUEL)[0]
-bControl = o.r.core.getBlocks(Flags.CONTROL)[0]
+bFuel = r.core.getBlocks(Flags.FUEL)[0]
+bControl = r.core.getBlocks(Flags.CONTROL)[0]
 converter = blockConverters.HexComponentsToCylConverter(
-    bControl, bFuel, numExternalRings=1
+    sourceBlock=bControl,
+    driverFuelBlock=bFuel,
+    numExternalRings=1
 )
 converter.convert()
 converter.plotConvertedBlock()

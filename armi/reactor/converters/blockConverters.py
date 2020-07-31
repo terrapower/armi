@@ -290,13 +290,15 @@ class BlockAvgToCylConverter(BlockConverter):
     Notes
     -----
     This converter is intended for use in building 1-Dimensional models of a set of block.
-    numInternalRings controls the number of rings to use for the source block, while the numExternalRings controls
-    the number of rungs for the driver fuel block.
-    The number of blocks to in each ring grows by 6 for each ring in hex geometry and 8 for each ring in Cartesian.
+    numInternalRings controls the number of rings to use for the source block, while the
+    numExternalRings controls the number of rings for the driver fuel block.  The number
+    of blocks to in each ring grows by 6 for each ring in hex geometry and 8 for each ring
+    in Cartesian.
 
     See Also
     --------
-    HexComponentsToCylConverter: This converter is more useful if the pin lattice is in a hex lattice.
+    HexComponentsToCylConverter: This converter is more useful if the pin lattice is in a
+    hex lattice.
     """
 
     def __init__(
@@ -444,11 +446,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     """
     Converts a hexagon full of pins into a circle full of concentric circles.
 
-    This is intended to capture heterogeneous effects while generating cross sections in MCC3. The resulting
-    1D cylindrical block will not be used in subsequent core calculations.
+    This is intended to capture heterogeneous effects while generating cross sections in
+    MCC3. The resulting 1D cylindrical block will not be used in subsequent core
+    calculations.
 
-    Repeated pins/coolant rings will be built, followed by the non-pins like duct/intercoolant
-    pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... | nonpins ...
+    Repeated pins/coolant rings will be built, followed by the non-pins like
+    duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
+    nonpins ...
     """
 
     def __init__(
