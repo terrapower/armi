@@ -16,6 +16,7 @@ A Bateman equation/matrix exponential solver is required to actually *solve* tra
 decay problems, which can be provided via a plugin.
 """
 import os
+import math
 
 import matplotlib.patches as mpatch
 from matplotlib.collections import PatchCollection
@@ -59,16 +60,17 @@ def plotAll(xlim, ylim):
         patch = plotNuc(nb, ax)
         patches.append(patch)
         # loop over all possible transmutations and decays and draw arrows
-        for trans in nb.trans + nb.decays:
+        for ti, trans in enumerate(nb.trans + nb.decays):
             nbp = nuclideBases.fromName(trans.productNuclides[0])
             if nbp.z == 0:
                 # skip lumped fission products and DUMP nuclides
                 continue
+            # add index-based y-offset to minimize overlaps
             x, y, xp, yp = (
                 nb.a - nb.z,
-                nb.z,
+                nb.z + ti * 0.05,
                 nbp.a - nbp.z,
-                nbp.z,
+                nbp.z + ti * 0.05,
             )
             if trans in nb.trans:
                 color = "deeppink"
@@ -83,9 +85,9 @@ def plotAll(xlim, ylim):
                 ),
             )
             # add reaction label towards the middle of the arrow
-            xlabel = xp - (xp - x) * 0.4
-            ylabel = yp - (yp - y) * 0.4
-            # pretty up the labels a bit with some LaTeX
+            xlabel = xp - (xp - x) * 0.5
+            ylabel = yp - (yp - y) * 0.5
+            # pretty up the labels a bit with some LaTeX and rotations
             rxnType = (
                 trans.type.replace("nGamma", r"n,$\gamma$")
                 .replace("nalph", r"n,$\alpha$")
@@ -93,7 +95,13 @@ def plotAll(xlim, ylim):
                 .replace("bmd", r"$\beta^-$")
                 .replace("bpd", r"$\beta^+$")
             )
-            ax.text(xlabel, ylabel, rxnType, color="grey")
+            if xp != x:
+                rotation = math.atan((yp - y) / (xp - x)) * 180 / math.pi
+            else:
+                rotation = 0
+            ax.text(
+                xlabel, ylabel, rxnType, color="grey", ha="center", rotation=rotation
+            )
 
     pc = PatchCollection(patches, facecolor="mistyrose", alpha=0.2, edgecolor="black")
     ax.add_collection(pc)

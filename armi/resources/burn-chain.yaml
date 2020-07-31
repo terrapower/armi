@@ -170,11 +170,13 @@ B11:
     - DUMP1
     type: nGamma
 - transmutation:
+    # n-alphas to Li-8 -> Be-8 -> 2 alphas
     branch: 1.0
     products:
-    - LI7
+    - HE4
     - DUMP1
     type: nalph
+    productParticle: HE4
 - transmutation:
     branch: 1.0
     products:
