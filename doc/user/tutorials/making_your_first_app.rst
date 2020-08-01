@@ -188,8 +188,8 @@ something. In your real app, this code will run your own industrial or research 
 perform your own methodology.  Here we just have it make up dummy values representing flux
 and temperatures.
 
-Making the dummy flux kernel
-----------------------------
+Making the (dummy) flux kernel
+------------------------------
 In a previous tutorial, we made a function that sets a dummy flux to all parts of the core
 based on a radial distance from the origin. Here we will re-use that code but package it
 more formally so that ARMI can actually run it for us from a user perspective.
@@ -204,7 +204,7 @@ These interaction hooks can call arbitrarily complex code. The code could, for e
 * Submit an external code to a cloud HPC and wait for it to complete
 * Run an internal physics tool
 
-Here it just a tiny bit of math locally.
+Here it just does a tiny bit of math locally.
 
 .. code-block:: python
     :caption: ``myapp/fluxSolver.py``
@@ -258,13 +258,6 @@ block-level temperature (and flow velocity) distribution as we go.
 .. math::
 
     q''' = \dot{m} C_p \Delta T
-
-.. admonition:: Refactoring alert
-
-    We set some thermal/hydraulic-related state parameters in the code below. These are
-    supposed to be defined in the framework-level :py:mod:`thermal/hydraulic plugin
-    <armi.physics.thermalHydraulics>` but are currently defined :py:mod:`elsewhere
-    <armi.reactor.blockParameters>`. This is a transitory state; they will be moved soon.
 
 .. code-block:: python
     :caption: ``myapp/thermalSolver.py``
@@ -391,12 +384,13 @@ stack, but will run into an error::
     NotImplementedError: Material Sodium does not implement heatCapacity
 
 The included academic Sodium material in the ARMI material library doesn't have any heat
-capacity! Here we can either submit a PR adding it to the ARMI Framework (preferred for generic
-things), or make our own material and register it through the plugin.
+capacity! Here we can either add heat capacity to the material and submit a pull request
+to include it in the ARMI Framework (preferred for generic things), or make our own
+material and register it through the plugin.
 
 .. admonition:: Yet another way
 
-    You could alternatively make a totally new plugin that only has your team's special
+    You could alternatively make a separate plugin that only has your team's special
     material properties.
 
 Adding a new material
