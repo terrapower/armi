@@ -129,12 +129,16 @@ class Assembly(composites.Composite):
         """
         Compare two assemblies by location.
 
-        This allow consistent sorting of assemblies based on location. If either
+        This allows for consistent sorting of assemblies based on location. If either
         assembly is not in the core (or more accurately a container), returns False.
+        This behavior may lead to some strange sorting behavior when two or more
+        Assemblies are being compared that do not live in the same grid. It may be
+        beneficial in the future to maintain the more strict behavior of ArmiObject's
+        ``__lt__`` implementation.
         """
         try:
-            return self.spatialLocator.getRingPos() < other.spatialLocator.getRingPos()
-        except:
+            return composites.ArmiObject.__lt__(self, other)
+        except ValueError:
             return False
 
     def makeUnique(self):
@@ -200,7 +204,14 @@ class Assembly(composites.Composite):
         return int(self.p.assemNum)
 
     def getLocation(self):
-        """Get string label representing this object's location."""
+        """
+        Get string label representing this object's location.
+
+        This function (and its friends) were created before the advent of both the
+        grid/spatialLocator system and the ability to represent things like the SFP as
+        siblings of a Core. In future, this will likely be re-implemented in terms of
+        just spatialLocator objects.
+        """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
             return self.LOAD_QUEUE
