@@ -78,6 +78,11 @@ class SystemBlueprint(yamlize.Object):
         if geom is not None:
             gridDesign = geom.toGridBlueprints("core")[0]
         else:
+            if not bp.gridDesigns:
+                raise ValueError(
+                    "The input must define grids to construct a reactor, but "
+                    "does not. Update input."
+                )
             gridDesign = bp.gridDesigns[self.gridName]
         spatialGrid = gridDesign.construct()
         container = reactors.Core(self.name)
