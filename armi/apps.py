@@ -153,7 +153,9 @@ class App:
                         defaultsCache[pluginSetting.settingName] = pluginSetting
                 else:
                     raise TypeError(
-                        f"Invalid setting definition found: {pluginSetting}"
+                        "Invalid setting definition found: {} ({})".format(
+                            pluginSetting, type(pluginSetting)
+                        )
                     )
 
         if optionsCache:

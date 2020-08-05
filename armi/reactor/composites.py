@@ -278,6 +278,11 @@ class ArmiObject(metaclass=CompositeModelType):
         restrictive, it can probably be relaxed or overridden on specific classes.
 
         """
+
+        if self.spatialLocator is None or other.spatialLocator is None:
+            runLog.error("could not compare {} and {}".format(self, other))
+            raise ValueError("One or more of the compared objects have no spatialLocator")
+
         if self.spatialLocator.grid is not other.spatialLocator.grid:
             runLog.error("could not compare {} and {}".format(self, other))
             raise ValueError(

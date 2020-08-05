@@ -1160,6 +1160,15 @@ class Core(composites.Composite):
         """
         Gets the first assembly in the reactor.
 
+        Warnings
+        --------
+        This function should be used with great care. There are **very** few
+        circumstances in which one wants the "first" of a given sort of assembly,
+        `whichever that may happen to be`. Precisely which assembly is returned is
+        sensitive to all sorts of implementation details in Grids, etc., which make the
+        concept of "first" rather slippery. Prefer using some sort of precise logic to
+        pick a specific assembly from the Core.
+
         Parameters
         ----------
         typeSpec : Flags or iterable of Flags, optional
@@ -1770,6 +1779,15 @@ class Core(composites.Composite):
         a : Assembly
             A new assembly
 
+        Notes
+        -----
+        This and similar fuel shuffle-enabling functionality on the Core are responsible
+        for coupling between the Core and Blueprints. Technically, it should not be
+        required to involve Blueprints at all in the construction of a Reactor model.
+        Therefore in some circumstances, this function will not work. Ultimately, this
+        should be purely the domain of blueprints themselves, and may be migrated out of
+        Core in the future.
+
         See Also
         --------
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
@@ -1787,7 +1805,7 @@ class Core(composites.Composite):
                 enrichList = itertools.cycle([enrichList])
             elif len(a) != len(enrichList):
                 raise RuntimeError(
-                    "{0} and enrichment list do not have the same number of blocks. Check repeat shuffles file".format(
+                    "{0} and enrichment list do not have the same number of blocks.".format(
                         a
                     )
                 )

@@ -939,6 +939,17 @@ class Grid:
 
         A tuple is returned so that it is easy to compare pairs of indices.
         """
+        # Regular grids dont really know about ring and position. We can try to see if
+        # their parent does!
+        if (
+            self.armiObject is not None
+            and self.armiObject.parent is not None
+            and self.armiObject.parent.spatialGrid is not None
+        ):
+            return self.armiObject.parent.spatialGrid.getRingPos(indices)
+
+        # For compatibility's sake, return __something__. TODO: We may want to just
+        # throw here, to be honest.
         return tuple(indices[:2])
 
     def changePitch(self, xw, yw):
