@@ -589,7 +589,7 @@ class HexReactorTests(ReactorTests):
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
-        self.assertAlmostEqual(aNew3.getMass(), bol.getMass() / 3.0)
+        self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
 
 
 class CartesianReactorTests(ReactorTests):

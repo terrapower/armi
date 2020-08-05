@@ -2631,9 +2631,10 @@ class HexBlock(Block):
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
         if (
-            self.core is not None
-            and self.spatialLocator.grid
-            and self.core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+            self.parent is not None
+            and self.parent.spatialLocator.grid is not None
+            and self.parent.spatialLocator.grid.symmetry
+            == geometry.THIRD_CORE + geometry.PERIODIC
         ):
             indices = self.spatialLocator.getCompleteIndices()
             if indices[0] == 0 and indices[1] == 0:

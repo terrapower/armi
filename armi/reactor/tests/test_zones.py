@@ -203,7 +203,11 @@ class Zones_InRZReactor(unittest.TestCase):
         # Create a single assembly zone to verify that it will not create a hot zone
         single = zones.Zone("single")
         daZones.add(single)
-        aLoc = r.core.getFirstAssembly(Flags.FUEL).getLocation()
+        aLoc = next(
+            a
+            for a in r.core.getAssemblies(Flags.FUEL)
+            if a.spatialLocator.getRingPos() == (1, 1)
+        ).getLocation()
         single.append(aLoc)
 
         # Set power and flow.

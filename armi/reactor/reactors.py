@@ -1805,7 +1805,7 @@ class Core(composites.Composite):
                 enrichList = itertools.cycle([enrichList])
             elif len(a) != len(enrichList):
                 raise RuntimeError(
-                    "{0} and enrichment list do not have the same number of blocks. Check repeat shuffles file".format(
+                    "{0} and enrichment list do not have the same number of blocks.".format(
                         a
                     )
                 )
