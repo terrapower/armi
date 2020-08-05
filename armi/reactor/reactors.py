@@ -1160,8 +1160,8 @@ class Core(composites.Composite):
         """
         Gets the first assembly in the reactor.
 
-        Warning
-        -------
+        Warnings
+        --------
         This function should be used with great care. There are **very** few
         circumstances in which one wants the "first" of a given sort of assembly,
         `whichever that may happen to be`. Precisely which assembly is returned is

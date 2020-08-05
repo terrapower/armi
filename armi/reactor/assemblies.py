@@ -129,12 +129,21 @@ class Assembly(composites.Composite):
         """
         Compare two assemblies by location.
 
-        This allows for consistent sorting of assemblies based on location. If either
-        assembly is not in the core (or more accurately a container), returns False.
-        This behavior may lead to some strange sorting behavior when two or more
-        Assemblies are being compared that do not live in the same grid. It may be
-        beneficial in the future to maintain the more strict behavior of ArmiObject's
-        ``__lt__`` implementation.
+        Notes
+        -----
+        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
+        are more permissive in the grid consistency checks to accomodate situations
+        where assemblies might be children of the same Core, but not in the same grid as
+        each other (as can be the case in the spent fuel or charge fuel pools). In these
+        situations, the operator returns ``False``.  This behavior may lead to some
+        strange sorting behavior when two or more Assemblies are being compared that do
+        not live in the same grid. It may be beneficial in the future to maintain the
+        more strict behavior of ArmiObject's ``__lt__`` implementation once the SFP/CFP
+        situation is cleared up.
+
+        See also
+        --------
+        armi.reactor.composites.ArmiObject.__lt__
         """
         try:
             return composites.ArmiObject.__lt__(self, other)
@@ -207,6 +216,8 @@ class Assembly(composites.Composite):
         """
         Get string label representing this object's location.
 
+        Notes
+        -----
         This function (and its friends) were created before the advent of both the
         grid/spatialLocator system and the ability to represent things like the SFP as
         siblings of a Core. In future, this will likely be re-implemented in terms of
