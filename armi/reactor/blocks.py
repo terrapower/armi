@@ -266,18 +266,26 @@ class Block(composites.Composite):
 
     def getSmearDensity(self, cold=True):
         """
-        Compute the smear density of this block.
+        Compute the smear density of pins in this block.
+
+        Smear density is the area of the fuel divided by the area of the space available
+        for fuel inside the cladding. Other space filled with solid materials is not
+        considered available. If all the area is fuel, it has 100% smear density. Lower
+        smear density allows more room for swelling.
+
+        .. warning:: This requires circular fuel and circular cladding. Designs that vary
+            from this will be wrong. It may make sense in the future to put this somewhere a
+            bit more design specific.
 
         Notes
         -----
-        1 - Smear density is the area of the fuel divided by the area of the space
-            available for fuel inside the cladding. Other space filled with solid
-            materials is not considered available. If all the area is fuel, it has 100%
-            smear density. Lower smear density allows more room for swelling.
-        2 - Negative areas can exist for void gaps in the fuel pin. A negative area in a
-            gap represents overlap area between two solid components. To account for
-            this additional space within the pin cladding the abs(negativeArea) is added
-            to the inner cladding area.
+        This only considers circular objects. If you have a cladding that is not a circle,
+        it will be ignored.
+
+        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap
+        represents overlap area between two solid components. To account for this
+        additional space within the pin cladding the abs(negativeArea) is added to the
+        inner cladding area.
 
         Parameters
         -----------
@@ -294,13 +302,14 @@ class Block(composites.Composite):
         if not fuels:
             return 0.0  # Smear density is not computed for non-fuel blocks
 
-        if not self.getComponentsOfShape(components.Circle):
+        circles = self.getComponentsOfShape(components.Circle)
+        if not circles:
             raise ValueError(
                 "Cannot get smear density of {}. There are no circular components.".format(
                     self
                 )
             )
-        clads = self.getComponents(Flags.CLAD)
+        clads = set(self.getComponents(Flags.CLAD)).intersection(set(circles))
         if not clads:
             raise ValueError(
                 "Cannot get smear density of {}. There are no clad components.".format(
@@ -316,7 +325,7 @@ class Block(composites.Composite):
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
         negativeArea = 0.0
-        for c in self.getSortedComponentsInsideOfComponent(clads[0]):
+        for c in self.getSortedComponentsInsideOfComponent(clads.pop()):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
