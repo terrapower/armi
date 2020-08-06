@@ -746,6 +746,7 @@ class ArmiObject(metaclass=CompositeModelType):
         from armi.reactor import components  # avoid circular import
 
         leftover = []
+        processed = [] # for input debugging
         totalVolume = 0.0
         for child in self.getChildren():
             # so far, only coolants do this. ThRZBlock's with these must have
@@ -754,6 +755,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 leftover.append(child)
             else:
                 totalVolume += child.getVolume()
+                processed.append(child)
         derivedVolume = 0.0
         if len(leftover) == 1:
             left = leftover[0]
@@ -763,12 +765,15 @@ class ArmiObject(metaclass=CompositeModelType):
                     "Negative remaining volume of {0} cm^3 for {1} in {2}. "
                     "Check geometry (is pitch correct?). \nMax volume in this object is {3}\n"
                     "Total of others is {4}\n"
+                    "Processed children include:\n{5}"
                     "".format(
-                        derivedVolume, left, self, self.getMaxVolume(), totalVolume
+                        derivedVolume, left, self, self.getMaxVolume(), totalVolume,
+                        "\n".join([f"{child:40s}, {child.getArea():.5e}" for child in
+                            processed])
                     )
                 )
                 raise RuntimeError(
-                    "Negative remaining volume ({}) in {}.".format(derivedVolume, self)
+                    "Negative remaining volume ({}) in {}".format(derivedVolume, self)
                 )
             left.setVolume(derivedVolume)
             totalVolume += derivedVolume

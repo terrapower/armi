@@ -66,7 +66,15 @@ def factory(shape, bcomps, kwargs):
 
     _removeDimensionNameSpaces(kwargs)
 
-    return class_(components=bcomps, **kwargs)
+    try:
+        return class_(components=bcomps, **kwargs)
+    except TypeError:
+        # TypeError raised when kwarg is missing. We add extra information
+        # to the error to indicate which component needs updating.
+        runLog.error(f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}."
+                " Check input.")
+        raise
+
 
 
 def _removeDimensionNameSpaces(attrs):
