@@ -132,6 +132,10 @@ def factory(cs, bp, geom: Optional[geometry.SystemLayoutInput] = None):
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
+        if not bp.systemDesigns:
+            raise ValueError(
+                "The input must define a `core` system, but does not. Update inputs"
+            )
         core = bp.systemDesigns["core"]
         core.construct(cs, bp, r, geom=geom)
         for structure in bp.systemDesigns:
