@@ -324,9 +324,9 @@ class Core(composites.Composite):
         not particularly representative of the state of the core as a whole.
         """
         key = lambda a: a.spatialLocator.getRingPos()
-        assems = self.getAssemblies(Flags.FUEL, key=key)
+        assems = self.getAssemblies(Flags.FUEL, sortKey=key)
         if not assems:
-            assems = self.getAssemblies(key=key)
+            assems = self.getAssemblies(sortKey=key)
 
         return assems[0]
 
@@ -1004,7 +1004,7 @@ class Core(composites.Composite):
     def getAssemblies(
         self,
         typeSpec=None,
-        key=None,
+        sortKey=None,
         includeBolAssems=False,
         includeSFP=False,
         includeCFP=False,
