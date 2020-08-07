@@ -1027,7 +1027,7 @@ class Core(composites.Composite):
         typeSpec : Flags or iterable of Flags, optional
             List of assembly types that will be returned
 
-        key : callable, optional
+        sortKey : callable, optional
             Sort predicate to use when sorting the assemblies.
 
         includeBolAssems : bool, optional
@@ -1063,7 +1063,7 @@ class Core(composites.Composite):
             and self.parent.blueprints is not None
         ):
             assems.extend(self.parent.blueprints.assemblies.values())
-        assems.extend(a for a in sorted(self, key=key))
+        assems.extend(a for a in sorted(self, key=sortKey))
 
         if includeSFP:
             assems.extend(self.sfp.getChildren())
