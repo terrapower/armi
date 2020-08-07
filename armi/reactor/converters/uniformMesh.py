@@ -115,7 +115,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         Computes an average axial mesh based on the first fuel assembly
         """
         src = self._sourceReactor
-        refAssem = src.core.getFirstAssembly(Flags.FUEL)
+        refAssem = src.core.refAssem
         refNumPoints = (
             len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=True)) - 1
         )  # pop off zero

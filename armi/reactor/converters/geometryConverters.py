@@ -148,9 +148,8 @@ class BlockNumberModifier(GeometryChanger):
         """
         refAssem = r.core.refAssem
         fuelI = refAssem.getBlocks().index(refAssem.getFirstBlock(Flags.FUEL))
-        origRefBlocks = len(
-            refAssem
-        )  # store this b/c the ref assem length will change.
+        # store this b/c the ref assem length will change.
+        origRefBlocks = len(refAssem)
 
         for a in r.core.getAssemblies(includeBolAssems=True):
             if len(a) == origRefBlocks:
@@ -1134,7 +1133,7 @@ class HexToRZThetaConverter(GeometryConverter):
                     innerAxial = outerAxial
                 innerRadius = outerRadius
             ax.set_title(
-                    "{} Core Map from {} to {:.4f} revolutions".format(
+                "{} Core Map from {} to {:.4f} revolutions".format(
                     self.convReactor.core.geomType.upper(),
                     innerTheta * units.RAD_TO_REV,
                     outerTheta * units.RAD_TO_REV,
@@ -1159,7 +1158,7 @@ class HexToRZThetaConverter(GeometryConverter):
             ax.set_xlabel("Radial Mesh (cm)".upper(), labelpad=20)
             ax.set_ylabel("Axial Mesh (cm)".upper(), labelpad=20)
             if fNameBase:
-                root, ext  = os.path.splitext(fNameBase)
+                root, ext = os.path.splitext(fNameBase)
                 fName = root + f"{i}" + ext
                 plt.savefig(fName)
                 plt.close()
