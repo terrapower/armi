@@ -451,7 +451,7 @@ class AxialExpansionModifier(MeshConverter):
 
         if not self._converterSettings["detailedAxialExpansion"]:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
-            refAssem = r.core.getFirstAssembly(Flags.FUEL) or r.core.getFirstAssembly()
+            refAssem = r.core.refAssem
             axMesh = refAssem.getAxialMesh()
             for a in r.core.getAssemblies(includeBolAssems=True):
                 # See ARMI Ticket #112 for explanation of the commented out code

@@ -311,7 +311,24 @@ class Core(composites.Composite):
 
     @property
     def refAssem(self):
-        return self.getFirstAssembly(Flags.FUEL) or self.getFirstAssembly()
+        """
+        Return the "reference" assembly for this Core.
+
+        The reference assembly is defined as the center-most assembly with a FUEL flag,
+        if any are present, or the center-most of any assembly otherwise.
+
+        Warnings
+        ========
+        The convenience of this property should be weighed against it's somewhat
+        arbitrary nature for any particular client. The center-most fueled assembly is
+        not particularly representative of the state of the core as a whole.
+        """
+        key = lambda a: a.spatialLocator.getRingPos()
+        assems = self.getAssemblies(Flags.FUEL, key=key)
+        if not assems:
+            assems = self.getAssemblies(key=key)
+
+        return assems[0]
 
     def summarizeReactorStats(self):
         """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
@@ -987,6 +1004,7 @@ class Core(composites.Composite):
     def getAssemblies(
         self,
         typeSpec=None,
+        key=None,
         includeBolAssems=False,
         includeSFP=False,
         includeCFP=False,
@@ -1008,6 +1026,9 @@ class Core(composites.Composite):
         ----------
         typeSpec : Flags or iterable of Flags, optional
             List of assembly types that will be returned
+
+        key : callable, optional
+            Sort predicate to use when sorting the assemblies.
 
         includeBolAssems : bool, optional
             Include the BOL assemblies as well as the ones that are in the core.
@@ -1042,7 +1063,7 @@ class Core(composites.Composite):
             and self.parent.blueprints is not None
         ):
             assems.extend(self.parent.blueprints.assemblies.values())
-        assems.extend(a for a in sorted(self))
+        assems.extend(a for a in sorted(self, key=key))
 
         if includeSFP:
             assems.extend(self.sfp.getChildren())
@@ -1868,7 +1889,8 @@ class Core(composites.Composite):
             if a.isOnWhichSymmetryLine() == symmetryLineID:
                 assembliesOnLine.append(a)
 
-        assembliesOnLine.sort()  # in order of innermost to outermost (for averaging)
+        # in order of innermost to outermost (for averaging)
+        assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
 
     def _addBlockToXsIndex(self, block):
@@ -1980,7 +2002,7 @@ class Core(composites.Composite):
         #  1. mode: (len(a) for a in self).mode(), or
         #  2. max: max(len(a) for a in self)
         # depending on what makes the most sense
-        refAssem = self.getFirstAssembly(Flags.FUEL) or self.getFirstAssembly()
+        refAssem = self.refAssem
 
         avgHeight = utils.average1DWithinTolerance(
             numpy.array(
