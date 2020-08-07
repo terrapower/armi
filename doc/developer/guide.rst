@@ -19,9 +19,9 @@ An approximation of `Composite Design Pattern
 in ARMI. In this hierarchy the **Reactor** object is a **Core** object, and potentially
 many generic **Composite** objects representing ex-core structures. The **Core** is made
 of **Assembly** objects, which are in turn made up as a collection of **Block** objects.
-:term:`State <reactor state>` variables may be stored at any level of this heirarchy
+:term:`State <reactor state>` variables may be stored at any level of this hierarchy
 using the :py:mod:`armi.reactor.parameters` system to contain results (e.g., ``keff``, ``flow rates``,
-``power``, ``flux``, etc.). Within each block are **Components** which define the
+``power``, ``flux``, etc.). Within each block are **Components** that define the
 pin-level geometry.  Associated with each Component are **Material** objects that
 contain material properties (``density``, ``conductivity``, ``heat capacity``, etc.) and
 isotopic mass fractions.
@@ -111,7 +111,7 @@ typical operational loop, which calls all the interfaces through their interacti
 in a sequential manner, marching from beginning-of-life through the number of cycles
 requested. This is how most quasistatic fuel cycle calculations are performed, which
 inform much of the analysis done during reactor design. The main code for this loop is
-found in the :py:meth:`mainOperate method <armi.operators.Operator.mainOperate>`. This 
+found in the :py:meth:`mainOperate method <armi.operators.Operator.mainOperate>`. This
 operator supports restart/continuation of past runs from an arbitrary time step.
 
 The Snapshots Operator
@@ -122,8 +122,8 @@ specific time steps. It simply loops through all snapshots that have been reques
 the Snapshot Request functionality (Lists -> Edit snapshot requests in the GUI). At each
 snapshot request, the state is loaded from a previous case, as determined by the
 ``reloadDBName`` setting and then the BOC, EveryNode, and EOC interaction hooks are
-executed from all the interfaces. Snapshots are intended to analyze an exact reactor 
-configuration. Therefore, interfaces which would significantly change the reactor 
+executed from all the interfaces. Snapshots are intended to analyze an exact reactor
+configuration. Therefore, interfaces which would significantly change the reactor
 configuration (such as Fuel management, and depletion) are disabled.
 
 The Interface Stack
