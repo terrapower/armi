@@ -273,10 +273,9 @@ class ArmiObject(metaclass=CompositeModelType):
 
         By default, this sorts using the spatial locator, in K, J, I order, which should
         give a relatively intuitive order. For safety, it makes sure that the objects
-        being sorted live in the same grid, however, since it probably doesn't make
+        being sorted live in the same grid, since it probably doesn't make
         sense to sort things across containers or scopes. If this ends up being too
         restrictive, it can probably be relaxed or overridden on specific classes.
-
         """
 
         if self.spatialLocator is None or other.spatialLocator is None:

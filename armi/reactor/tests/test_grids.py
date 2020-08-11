@@ -71,13 +71,15 @@ class TestSpatialLocator(unittest.TestCase):
         block = MockArmiObject(assem)
 
         # build meshes just like how they're used on a regular system.
-        coreGrid = grids.Grid.fromRectangle(1.0, 1.0, armiObject=core)  # 2-D grid
+        coreGrid = grids.CartesianGrid.fromRectangle(
+            1.0, 1.0, armiObject=core
+        )  # 2-D grid
         # 1-D z-mesh
         assemblyGrid = grids.Grid(
             bounds=(None, None, numpy.arange(5)), armiObject=assem
         )
         # pins sit in this 2-D grid.
-        blockGrid = grids.Grid.fromRectangle(0.1, 0.1, armiObject=block)
+        blockGrid = grids.CartesianGrid.fromRectangle(0.1, 0.1, armiObject=block)
 
         coreLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
         core.spatialLocator = coreLoc
@@ -114,13 +116,13 @@ class TestSpatialLocator(unittest.TestCase):
         block = MockArmiObject(assem)
 
         # 2-D grid
-        coreGrid = grids.Grid.fromRectangle(1.0, 1.0, armiObject=core)
+        coreGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0, armiObject=core)
         # 1-D z-mesh
         assemblyGrid = grids.Grid(
             bounds=(None, None, numpy.arange(5)), armiObject=assem
         )
         # pins sit in this 2-D grid.
-        blockGrid = grids.Grid.fromRectangle(0.1, 0.1, armiObject=block)
+        blockGrid = grids.CartesianGrid.fromRectangle(0.1, 0.1, armiObject=block)
 
         coreLoc = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
         core.spatialLocator = coreLoc
@@ -382,6 +384,159 @@ class TestThetaRZGrid(unittest.TestCase):
         assert_allclose(
             grid.getCoordinates((1, 0, 1)), (math.sqrt(2) / 2, math.sqrt(2) / 2, 15.0)
         )
+
+
+class TestCartesianGrid(unittest.TestCase):
+    def testRingPosNoSplit(self):
+        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, isOffset=True)
+
+        # ring/pos are acutally 1-based indexing; notice the sneaky +1 below
+        expectedRing = [
+            [2, 2, 2, 2, 2, 2],
+            [2, 1, 1, 1, 1, 2],
+            [2, 1, 0, 0, 1, 2],
+            [2, 1, 0, 0, 1, 2],
+            [2, 1, 1, 1, 1, 2],
+            [2, 2, 2, 2, 2, 2],
+        ]
+
+        expectedPos = [
+            [5 , 4 , 3 , 2 , 1 , 0],
+            [6 , 3 , 2 , 1 , 0 , 19],
+            [7 , 4 , 1 , 0 , 11, 18],
+            [8 , 5 , 2 , 3 , 10, 17],
+            [9 , 6 , 7 , 8 , 9 , 16],
+            [10, 11, 12, 13, 14, 15],
+        ]
+        expectedPos.reverse()
+
+        for j in range(-3, 3):
+            for i in range(-3, 3):
+                ring, pos = grid.getRingPos((i, j))
+                self.assertEqual(ring, expectedRing[j + 3][i + 3] + 1)
+                self.assertEqual(pos, expectedPos[j + 3][i + 3] + 1)
+
+    def testRingPosSplit(self):
+        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
+
+        # ring/pos are actually 1-based indexing; notice the sneaky +1 below
+        expectedRing = [
+            [3, 3, 3, 3, 3, 3, 3],
+            [3, 2, 2, 2, 2, 2, 3],
+            [3, 2, 1, 1, 1, 2, 3],
+            [3, 2, 1, 0, 1, 2, 3],
+            [3, 2, 1, 1, 1, 2, 3],
+            [3, 2, 2, 2, 2, 2, 3],
+            [3, 3, 3, 3, 3, 3, 3],
+        ]
+
+        expectedPos = [
+            [6, 5, 4, 3, 2, 1, 0],
+            [7, 4, 3, 2, 1, 0, 23],
+            [8, 5, 2, 1, 0, 15, 22],
+            [9, 6, 3, 0, 7, 14, 21],
+            [10, 7, 4, 5, 6, 13, 20],
+            [11, 8, 9, 10, 11, 12, 19],
+            [12, 13, 14, 15, 16, 17, 18],
+        ]
+        expectedPos.reverse()
+
+        for j in range(-3, 4):
+            for i in range(-3, 4):
+                ring, pos = grid.getRingPos((i, j))
+                self.assertEqual(ring, expectedRing[j + 3][i + 3] + 1)
+                self.assertEqual(pos, expectedPos[j + 3][i + 3] + 1)
+
+    def testSymmetry(self):
+        # PERIODIC, no split
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0, 1.0, symmetry=geometry.QUARTER_CORE + geometry.PERIODIC
+        )
+
+        expected = {
+            (0, 0): {(-1, 0), (-1, -1), (0, -1)},
+            (1, 0): {(-1, 1), (-2, -1), (0, -2)},
+            (2, 1): {(-2, 2), (-3, -2), (1, -3)},
+            (2, 2): {(-3, 2), (-3, -3), (2, -3)},
+            (0, 1): {(-2, 0), (-1, -2), (1, -1)},
+            (-2, 2): {(-3, -2), (1, -3), (2, 1)},
+        }
+
+        for idx, expectedEq in expected.items():
+            equivalents = {i for i in grid.getSymmetricEquivalents(idx)}
+
+            self.assertEqual(expectedEq, equivalents)
+
+        # PERIODIC, split
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0,
+            1.0,
+            symmetry=geometry.QUARTER_CORE
+            + geometry.PERIODIC
+            + geometry.THROUGH_CENTER_ASSEMBLY,
+        )
+
+        expected = {
+            (0, 0): set(),
+            (1, 0): {(0, 1), (-1, 0), (0, -1)},
+            (2, 2): {(-2, 2), (-2, -2), (2, -2)},
+            (2, 1): {(-1, 2), (-2, -1), (1, -2)},
+            (-1, 3): {(-3, -1), (1, -3), (3, 1)},
+            (0, 2): {(-2, 0), (0, -2), (2, 0)},
+        }
+
+        for idx, expectedEq in expected.items():
+            equivalents = {i for i in grid.getSymmetricEquivalents(idx)}
+
+            self.assertEqual(expectedEq, equivalents)
+
+        # REFLECTIVE, no split
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0, 1.0, symmetry=geometry.QUARTER_CORE + geometry.REFLECTIVE
+        )
+
+        expected = {
+            (0, 0): {(-1, 0), (-1, -1), (0, -1)},
+            (1, 0): {(-2, 0), (-2, -1), (1, -1)},
+            (-2, 2): {(-2, -3), (1, -3), (1, 2)},
+        }
+
+        for idx, expectedEq in expected.items():
+            equivalents = {i for i in grid.getSymmetricEquivalents(idx)}
+
+            self.assertEqual(expectedEq, equivalents)
+
+        # REFLECTIVE, split
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0,
+            1.0,
+            symmetry=geometry.QUARTER_CORE
+            + geometry.REFLECTIVE
+            + geometry.THROUGH_CENTER_ASSEMBLY,
+        )
+
+        expected = {
+            (0, 0): set(),
+            (1, 0): {(-1, 0)},
+            (-1, 2): {(-1, -2), (1, -2), (1, 2)},
+            (-2, 0): {(2, 0)},
+            (0, -2): {(0, 2)},
+        }
+
+        for idx, expectedEq in expected.items():
+            equivalents = {i for i in grid.getSymmetricEquivalents(idx)}
+
+            self.assertEqual(expectedEq, equivalents)
+
+        # Full core
+        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.FULL_CORE)
+        self.assertEqual(grid.getSymmetricEquivalents((5,6)), [])
+
+        # 1/8 core not supported yet
+        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.EIGHTH_CORE)
+        with self.assertRaises(NotImplementedError):
+            grid.getSymmetricEquivalents((5,6))
+
 
 
 if __name__ == "__main__":

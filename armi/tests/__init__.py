@@ -57,7 +57,7 @@ def getEmptyCartesianReactor():
     bp = blueprints.Blueprints()
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
-    reactor.core.spatialGrid = grids.HexGrid.fromRectangle(1.0, 1.0)
+    reactor.core.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
     reactor.core.spatialGrid.symmetry = (
         geometry.QUARTER_CORE + geometry.REFLECTIVE + geometry.THROUGH_CENTER_ASSEMBLY
     )

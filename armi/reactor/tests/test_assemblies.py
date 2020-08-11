@@ -327,7 +327,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_moveTo(self):
         location = locations.HexLocation(i1=3, i2=10)
-        i, j = grids.getIndicesFromRingAndPos(3, 10)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
         locator = self.r.core.spatialGrid[i, j, 0]
         self.Assembly.moveTo(locator)
 
@@ -1182,7 +1182,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
             "verbosity"
         ] = "error"  # Print nothing to the screen that would normally go to the log.
         self.cs["stationaryBlocks"] = []
-        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)
+        reactorGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
         a = self.CartesianAssembly = CartesianAssembly(
             "defaultType", assemNum=self.assemNum
         )

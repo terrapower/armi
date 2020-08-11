@@ -273,8 +273,8 @@ class GridBlueprint(yamlize.Object):
             isOffset = (
                 self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
             )
-            spatialGrid = grids.Grid.fromRectangle(
-                xw, yw, numRings=maxIndex, isOffset=isOffset
+            spatialGrid = grids.CartesianGrid.fromRectangle(
+                xw, yw, numRings=maxIndex + 1, isOffset=isOffset
             )
         runLog.debug("Built grid: {}".format(spatialGrid))
         # set geometric metadata on spatialGrid. This information is needed in various
@@ -294,7 +294,7 @@ class GridBlueprint(yamlize.Object):
         if self.gridContents:
             return max(itertools.chain(*zip(*self.gridContents.keys())))
         else:
-            return 5
+            return 6
 
     def expandToFull(self):
         """
@@ -318,7 +318,12 @@ class GridBlueprint(yamlize.Object):
             for idx2 in equivs:
                 newContents[idx2] = contents
         self.gridContents = newContents
-        self.symmetry = geometry.FULL_CORE
+        split = (
+            geometry.THROUGH_CENTER_ASSEMBLY
+            if geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
+            else ""
+        )
+        self.symmetry = geometry.FULL_CORE + split
 
     def _readGridContents(self):
         """

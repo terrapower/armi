@@ -951,7 +951,7 @@ class HexLocation(Location):
 
     def fromLocator(self, indices):
         i, j, self.axial = indices
-        self.i1, self.i2 = grids.indicesToRingPos(i, j)
+        self.i1, self.i2 = grids.HexGrid.indicesToRingPos(i, j)
         self.makeLabel()
 
 

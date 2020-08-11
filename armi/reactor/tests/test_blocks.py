@@ -712,14 +712,14 @@ class Block_TestCase(unittest.TestCase):
     def test_setLocation(self):
         b = self.Block
         # a bit obvious, but location is a property now...
-        i, j = grids.getIndicesFromRingAndPos(2, 3)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
         self.assertEqual(b.getLocation(), "A2003A")
         self.assertEqual(0, b.spatialLocator.k)
         self.assertEqual(b.getSymmetryFactor(), 1.0)
 
         # now if we don't specify axial, it will move to the new xy, location and have original z index
-        i, j = grids.getIndicesFromRingAndPos(4, 4)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(4, 4)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
         self.assertEqual(0, b.spatialLocator.k)
         self.assertEqual(b.getSymmetryFactor(), 1.0)
@@ -730,7 +730,7 @@ class Block_TestCase(unittest.TestCase):
             (geometry.THIRD_CORE + geometry.PERIODIC, 3),
         ):
             self.r.core.symmetry = symmetry
-            i, j = grids.getIndicesFromRingAndPos(1, 1)
+            i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)
             self.assertEqual(b.getSymmetryFactor(), powerMult)
