@@ -101,7 +101,9 @@ def createTestXSLibraryFiles(cachePath):
         ##                   GENERATE DLAYXS                      ##
         ##                                                        ##
         ############################################################
-        outputCache.cacheCall(cs, mc2v3, ["mc2v3-dlayxs.inp"], ["DLAYXS"])
+        outputCache.cacheCall(
+            cs["outputCacheLocation"], mc2v3, ["mc2v3-dlayxs.inp"], ["DLAYXS"]
+        )
         shutil.move("DLAYXS", DLAYXS_MCC3)
 
         ############################################################
@@ -110,7 +112,7 @@ def createTestXSLibraryFiles(cachePath):
         ##                                                        ##
         ############################################################
         outputCache.cacheCall(
-            cs,
+            cs["outputCacheLocation"],
             mc2v3,
             ["mc2v3-AA.inp"],
             ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged", "output.flux_ufg"],
@@ -121,7 +123,7 @@ def createTestXSLibraryFiles(cachePath):
         shutil.move("output.flux_ufg", UFG_FLUX_EDIT)
 
         outputCache.cacheCall(
-            cs,
+            cs["outputCacheLocation"],
             mc2v3,
             ["mc2v3-AB.inp"],
             ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged"],
@@ -136,16 +138,24 @@ def createTestXSLibraryFiles(cachePath):
         # ::                                                      ::
         # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        outputCache.cacheCall(cs, mc2v3, ["combine-AA-AB.inp"], ["ISOTXS.merged"])
+        outputCache.cacheCall(
+            cs["outputCacheLocation"], mc2v3, ["combine-AA-AB.inp"], ["ISOTXS.merged"]
+        )
         shutil.move("ISOTXS.merged", ISOTXS_AA_AB)
 
         outputCache.cacheCall(
-            cs, mc2v3, ["combine-AA-AB.pmatrx.inp"], ["PMATRX.merged"]
+            cs["outputCacheLocation"],
+            mc2v3,
+            ["combine-AA-AB.pmatrx.inp"],
+            ["PMATRX.merged"],
         )
         shutil.move("PMATRX.merged", PMATRX_AA_AB)
 
         outputCache.cacheCall(
-            cs, mc2v3, ["combine-AA-AB.gamiso.inp"], ["ISOTXS.merged"]
+            cs["outputCacheLocation"],
+            mc2v3,
+            ["combine-AA-AB.gamiso.inp"],
+            ["ISOTXS.merged"],
         )
         shutil.move("ISOTXS.merged", GAMISO_AA_AB)
 

@@ -169,7 +169,7 @@ def deleteCache(cachedFolder):
 
 
 def cacheCall(
-    cs, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None
+    cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None
 ):
     """
     Checks the cache to see if there are outputs for the run and returns them, otherwise calls the execute command.
@@ -185,7 +185,6 @@ def cacheCall(
     if execute is None:
         execute = lambda: subprocess.call([executablePath] + inputPaths)
 
-    cacheDir = cs["outputCacheLocation"]
     if not cacheDir:
         runLog.info("Executing {}".format(executablePath))
         execute()
