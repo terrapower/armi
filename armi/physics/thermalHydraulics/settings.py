@@ -17,10 +17,19 @@
 from armi.settings import setting
 from armi.operators.settingsValidation import Query
 
+CONF_DO_TH = "doTH"
+
 
 def defineSettings():
     """Define generic thermal/hydraulic settings."""
-    settings = []
+    settings = [
+        setting.Setting(
+            CONF_DO_TH,
+            default=False,
+            label="Run Thermal Hydraulics",
+            description="Run thermal hydraulics",
+        ),
+    ]
     return settings
 
 
