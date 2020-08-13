@@ -49,3 +49,58 @@ class TestFuelPerformanceUtils(unittest.TestCase):
         finalHotODInCm = fuel.getDimension("od")
 
         self.assertAlmostEqual(finalHotODInCm, originalHotODInCm + 2 * displacement)
+
+    def test_gasConductivityCorrection_morph0(self):
+        temp = 500  # C
+        porosity = 0.4
+
+        # No correction
+        chi = utils.gasConductivityCorrection(temp, porosity, 0)
+
+        ref = 1.0
+        self.assertAlmostEqual(chi, ref, 5)
+
+    def test_gasConductivityCorrection_morph1(self):
+        temp = 500  # C
+        porosity = 0.4
+
+        # Irregular Porosity, Bauer equation
+        chi = utils.gasConductivityCorrection(temp, porosity, 1)
+
+        ref = (1.0 - porosity) ** (1.5 * 1.00)
+        self.assertAlmostEqual(chi, ref, 5)
+
+    def test_gasConductivityCorrection_morph2(self):
+        temp = 500  # C
+        porosity = 0.4
+
+        # Irregular Porosity, Bauer equation
+        chi = utils.gasConductivityCorrection(temp, porosity, 2)
+
+        ref = (1.0 - porosity) ** (1.5 * 1.72)
+        self.assertAlmostEqual(chi, ref, 5)
+
+    def test_gasConductivityCorrection_morph3(self):
+        temp = 500  # C
+        porosity = 0.4
+
+        # Mixed Morphology, low temp
+        chi = utils.gasConductivityCorrection(temp, porosity, 3)
+        ref = (1.0 - porosity) ** (1.5 * 1.72)
+        self.assertAlmostEqual(chi, ref, 5)
+
+        # Mixed Morphology, high temp
+        temp = 700
+        chi = utils.gasConductivityCorrection(temp, porosity, 3)
+        ref = (1.0 - porosity) ** (1.5 * 1.00)
+        self.assertAlmostEqual(chi, ref, 5)
+
+    def test_gasConductivityCorrection_morph4(self):
+        temp = 500  # C
+        porosity = 0.4
+
+        # maxwell-eucken
+        chi = utils.gasConductivityCorrection(temp, porosity, 4)
+
+        ref = (1.0 - porosity) / (1.0 + 1.5 * porosity)
+        self.assertAlmostEqual(chi, ref, 5)
