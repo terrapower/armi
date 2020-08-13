@@ -188,7 +188,8 @@ class OperatorMPI(Operator):
                     )
             pm = armi.getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
-            if any(resetFlags):
+            # if any of the plugins vote to NOT reset, then we don't reset.
+            if not all(resetFlags):
                 self._resetWorker()
 
             # might be an mpi action which has a reactor and everything, preventing
