@@ -58,16 +58,17 @@ These files are:
   the Python package name you will use to import anything inside (e.g. ``myapp.plugin``).
 
 * :file:`myapp/__init__.py` tells Python that this directory is a Python package and
-  registers the application with the ARMI framework.
+  performs any app-specific configurations 
 
-* :file:`myapp/__main__.py` provides one or more entry points for users of your app
-  (including you!) to start running it.
+* :file:`myapp/__main__.py` registers the application with the ARMI framework
+  and provides one or more entry points for users of your app (including you!)
+  to start running it.
 
 * :file:`myapp/app.py` contains the actual app registration code that will be called by
   :file:`__init__.py`. This can be named anything as long as it is consistent with the
   registration code in :file:`myapp/__init__.py`. 
 
-* :file:`myapp/plugin.py` contains the code that defines the physics plugin we will create
+* :file:`myapp/plugin.py` contains the code that defines the physics plugins we will create
 
 * :file:`myapp/fluxSolver.py` contains the flux solver
 
@@ -85,14 +86,19 @@ Registering the app with ARMI
 =============================
 The ARMI Framework contains features to run the "main loop" of typical applications. In
 order to get access to these, we must register our new app with the ARMI framework. To do
-this, we put the following code in the top-level :file:`__init__.py` module:
+this, we put the following code in the top-level :file:`__main__.py` module:
 
 .. code-block:: python
-    :caption: ``myapp/__init__.py``
+    :caption: ``myapp/__main__.py``
 
     import armi
     from myapp import app
     armi.configure(app.ExampleApp())
+
+Similar code will be needed in scripts or other code where you would like your app to be used.
+
+.. tip:: You may find it appropriate to use the plugin registration mechanism in some cases
+    rather than the app registration. More info on plugins vs. apps coming soon. 
 
 Defining the app class
 ======================
