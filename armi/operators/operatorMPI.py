@@ -35,6 +35,7 @@ import time
 import re
 import os
 import gc
+import traceback
 
 import armi
 from armi.operators.operator import Operator
@@ -107,6 +108,7 @@ class OperatorMPI(Operator):
                 )
                 # bcasting quit won't work if the main is sitting around waiting for a
                 # different bcast or gather.
+                traceback.print_exc()
                 runLog.debug("Worker failed")
                 runLog.LOG.close()
                 raise
@@ -184,64 +186,42 @@ class OperatorMPI(Operator):
                             cmd
                         )
                     )
-
-            if self._workersShouldResetAfter(cmd):
-                # clear out the reactor on the workers to start anew.
-                # Note: This should build empty non-core systems too.
-                xsGroups = self.getInterface("xsGroups")
-                if xsGroups:
-                    xsGroups.clearRepresentativeBlocks()
-                cs = settings.getMasterCs()
-                bp = self.r.blueprints
-                spatialGrid = self.r.core.spatialGrid
-                self.detach()
-                self.r = reactors.Reactor(cs.caseTitle, bp)
-                core = reactors.Core("Core")
-                self.r.add(core)
-                core.spatialGrid = spatialGrid
-                self.reattach(self.r, cs)
+            pm = armi.getPluginManager()
+            resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
+            if any(resetFlags):
+                self._resetWorker()
 
             # might be an mpi action which has a reactor and everything, preventing
             # garbage collection
             del cmd
             gc.collect()
 
-    @staticmethod
-    def _workersShouldResetAfter(cmd):
+    def _resetWorker(self):
         """
-        Figure out when to reset the reactor on workers after an mpi action.
+        Clear out the reactor on the workers to start anew.
 
-        This only resets the reactor... not the interfaces.
+        Notes
+        -----
+        This was made to help minimize the amount of RAM that is used during some 
+        gigantic long-running cases. Resetting after building copies of reactors
+        or transforming their geometry is one approach. We hope to implement
+        more efficient solutions in the future.
 
-        * crWorth runs multiple passes often so we need to maintain the state.
-        * Memory profiling is small enough that we don't want to reset
-        * distributing state would be undone by this so we don't want that.
-        * Depletion matrices are supposed to stick around for predictor-corrector
-          (especially in equilibrium)
-
+        .. warning:: This should build empty non-core systems too.
         """
-        shouldReset = True  # default
-        if isinstance(cmd, str):
-            for whiteListed in ["crWorth-"]:
-                if whiteListed in cmd:
-                    shouldReset = False
-                    break
-        else:
-            from terrapower.physics.neutronics.reactivityCoefficients import (
-                rxCoeffAnalyzers,
-            )
-            from terrapower.physics.neutronics.mc2 import mc2ExecutionAgents
 
-            whiteListed = (
-                mpiActions.DistributeStateAction,
-                memoryProfiler.PrintSystemMemoryUsageAction,
-                memoryProfiler.ProfileMemoryUsageAction,
-                mpiActions.DistributionAction,
-                rxCoeffAnalyzers.RxCoeffAnalyzer,
-                mc2ExecutionAgents._Mc2ExecutionAgent,  # pylint: disable=protected-access
-            )
-            shouldReset = not isinstance(cmd, whiteListed)
-        return shouldReset
+        xsGroups = self.getInterface("xsGroups")
+        if xsGroups:
+            xsGroups.clearRepresentativeBlocks()
+        cs = settings.getMasterCs()
+        bp = self.r.blueprints
+        spatialGrid = self.r.core.spatialGrid
+        self.detach()
+        self.r = reactors.Reactor(cs.caseTitle, bp)
+        core = reactors.Core("Core")
+        self.r.add(core)
+        core.spatialGrid = spatialGrid
+        self.reattach(self.r, cs)
 
     @staticmethod
     def workerQuit():

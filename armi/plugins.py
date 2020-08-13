@@ -475,6 +475,31 @@ class ArmiPlugin:
                     "oldParam": "currentParam"}
         """
 
+    @staticmethod
+    @HOOKSPEC
+    def mpiActionRequiresReset(cmd) -> bool:
+        """
+        Flag indicating when a reactor reset is required.
+
+        Commands are sent through operators either as strings (old) or as MpiActions (newer).
+        After some are sent, the reactor must be reset. This hook says when to reset. The
+        reset operation is a (arguably suboptimal) response to some memory issues in
+        very large and long-running cases.
+
+        Parameters
+        ----------
+        cmd :  str or MpiAction
+            The ARMI mpi command being sent
+
+        Returns
+        -------
+        bool
+
+        See Also
+        --------
+        armi.operators.operatorMPI.OperatorMPI.workerOperate : Handles these flags
+        """
+
 
 def getNewPluginManager() -> pluginManager.ArmiPluginManager:
     """
