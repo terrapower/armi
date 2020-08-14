@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2020 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Script to back up the in-use test databases."""
+"""Copy database entry point."""
+
 import armi
 from armi import settings
 from armi.bookkeeping import db
 from armi.utils import directoryChangers
 from armi.cli.entryPoint import EntryPoint
-
-
-class BackUpInUseTestDabases(EntryPoint):
-    """Back up the test databases."""
-
-    name = "back-up-db"
-    settingsArgument = "optional"
-
-    def invoke(self):
-        from armi.inUseTestCases import inUseTestSuite
-
-        suite = inUseTestSuite.InUseTestSuite(self.cs)
-        suite.populate()
-        suite.backUpDatabases()
 
 
 class CopyDB(EntryPoint):
