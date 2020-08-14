@@ -28,13 +28,15 @@ class ConfigHandler(object):  # pylint: disable=missing-docstring
         """
         Exposes the contents of the config files in the TEMPLATE_DATA location to pythonic access
 
-        The config files are split logically into "user"/"u" files and "template"/"t" files.
-        Template files define what configuration values ARMI expects to exist, and will be duplicated
-        locally for the user, where thereafter they exist as user files. User files contain the customizations
-        of the user. Values that don't exist in the user file will be defaulted by the template files.
+        The config files are split logically into "user"/"u" files and "template"/"t"
+        files.  Template files define what configuration values ARMI expects to exist, and
+        will be duplicated locally for the user, where thereafter they exist as user
+        files. User files contain the customizations of the user. Values that don't exist
+        in the user file will be defaulted by the template files.
 
-        Configs are not loaded on construction, but rather on first access. This prevents potential race
-        conditions when multiple processes are running (MPI, xdist testing, etc.)
+        Configs are not loaded on construction, but rather on first access. This prevents
+        potential race conditions when multiple processes are running (MPI, xdist testing,
+        etc.)
         """
         self._configs = None
         self.submitter = None
@@ -86,7 +88,7 @@ class ConfigHandler(object):  # pylint: disable=missing-docstring
             self._configs = self.align_user_cfgs(t_parsers, u_parsers)
             self.save()
 
-        except (IOError, WindowsError):  # permission denied
+        except OSError:  # permission denied
             runLog.warning(
                 "No accessible appdata resources found nor is creation possible"
             )

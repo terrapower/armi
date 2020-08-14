@@ -23,12 +23,13 @@ It also contains code useful for traversing regular meshes (hexagons, etc.).
 
 The Location Object
 -------------------
-Each ARMI Block (and Assembly) contains a Location object whose purpose it is to identify where in the
-core the structure resides. Location objects are represented as strings when printed or written because
-their original primary usage was to be written directly to textual neutronics input files, but they contain
-much more functionality. An assembly location in ARMI is based on the DIF3D region definition and
-has a somewhat strange representation for this reason. The coordinate system is counterclockwise
-spiral, as seen in the figure below.
+Each ARMI Block (and Assembly) contains a Location object whose purpose it is to identify
+where in the core the structure resides. Location objects are represented as strings when
+printed or written because their original primary usage was to be written directly to
+textual neutronics input files, but they contain much more functionality. An assembly
+location in ARMI is based on the DIF3D region definition and has a somewhat strange
+representation for this reason. The coordinate system is counterclockwise spiral, as seen
+in the figure below.
 
 .. image:: /.static/coreMap.png
        :width: 100%

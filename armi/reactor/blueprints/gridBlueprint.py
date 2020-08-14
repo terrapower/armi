@@ -178,7 +178,7 @@ class GridBlueprint(yamlize.Object):
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
     @gridContents.validator
-    def gridContents(self, value):
+    def gridContents(self, value): # pylint: disable=method-hidden
         if value is None:
             return True
         if not all(isinstance(key, tuple) for key in value.keys()):

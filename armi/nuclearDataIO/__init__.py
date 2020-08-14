@@ -781,11 +781,12 @@ class VARSRC(NHFLUX):
         Parameters
         ----------
         numDataSetsToRead : int, optional
-            The number of whole-core flux data sets included in this NHFLUX/NAFLUX file that one wishes to be read.
-            Some NHFLUX/NAFLUX files, such as NAFLUX files written by SASSYS/DIF3D-K, contain more than one flux
-            data set. Each data set overwrites the previous one on the NHFLUX class object, which will contain
-            only the numDataSetsToRead-th data set. The first numDataSetsToRead-1 data sets are essentially
-            skipped over.
+            The number of whole-core flux data sets included in this NHFLUX/NAFLUX file
+            that one wishes to be read.  Some NHFLUX/NAFLUX files, such as NAFLUX files
+            written by SASSYS/DIF3D-K, contain more than one flux data set. Each data set
+            overwrites the previous one on the NHFLUX class object, which will contain
+            only the numDataSetsToRead-th data set. The first numDataSetsToRead-1 data
+            sets are essentially skipped over.
 
         Outputs
         -------
@@ -830,7 +831,7 @@ class VARSRC(NHFLUX):
                     self.srcMoments[:, z, :, gEff] = self.readFluxMoments3D()
 
     def _getNumberOfOddParityTerms(self, pnOrder):
-        return self_getNumberOfEvenParityTerms(pnOrder) + pnOrder + 1
+        return self._getNumberOfEvenParityTerms(pnOrder) + pnOrder + 1
 
     def _getNumberOfEvenParityTerms(self, pnOrder):
         return pnOrder * (pnOrder + 1) / 2
