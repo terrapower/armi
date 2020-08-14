@@ -36,7 +36,6 @@ import hashlib
 
 import numpy
 import scipy.optimize as sciopt
-from scipy import arange, array
 
 import armi
 from armi import runLog

@@ -19,12 +19,10 @@ manipulations.
 
 import os
 import shutil
-import inspect
 import importlib
 import pathlib
 
 from armi import runLog
-from armi.context import ROOT
 
 
 def getFullFileNames(directory=os.curdir, recursive=False):

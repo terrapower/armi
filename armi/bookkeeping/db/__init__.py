@@ -63,7 +63,7 @@ from armi.reactor import reactors
 
 # re-export package components for easier import
 from .permissions import Permissions
-from .database3 import Database3, DatabaseInterface
+from .database3 import Database3, DatabaseInterface, updateGlobalAssemblyNum
 from .xtviewDB import XTViewDatabase
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
@@ -142,7 +142,7 @@ def loadOperator(pathToDb, loadCycle, loadNode):
     # blueprints and does not have access to an operator, it is unlikely that there is
     # another reactor that has alter the global assem num. Fresh cases typically want
     # this updated.
-    database3.updateGlobalAssemblyNum(r)
+    updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
     runLog.warning(

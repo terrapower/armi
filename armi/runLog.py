@@ -387,7 +387,8 @@ def prompt(statement, question, *options):
     from armi.localization import exceptions
 
     if context.CURRENT_MODE == Mode.Gui:
-        import wx  # avoid hard dependency on wx
+        # avoid hard dependency on wx
+        import wx # pylint: disable=import-error
 
         msg = statement + "\n\n\n" + question
         if len(msg) < 300:
