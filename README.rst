@@ -21,6 +21,9 @@ More specifically, ARMI:
 
 * Provides useful utilities to assist in reactor development.
 
+A few demos of ARMI can be seen :doc:`in the ARMI example gallery
+</user/_gallery/index>`.
+
 Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can
 perform a full analysis of a reactor system and then repeat the same level of analysis
 with some changed input parameters for almost no additional cost. Even better, thousands
