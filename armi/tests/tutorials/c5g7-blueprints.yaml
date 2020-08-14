@@ -5,10 +5,10 @@ custom isotopics:
     UO2:
         input format: mass fractions
         U235: 1.0
-    mox low: 
+    mox low:
         input format: mass fractions
         U235: 1.0
-    mox medium: 
+    mox medium:
         input format: mass fractions
         U235: 1.0
     mox high:
@@ -94,7 +94,7 @@ blocks:
         pitch: *pitch
 # end-block-mox
     moderator: &block_mod
-        moderator: 
+        moderator:
             shape: Square
             material: SaturatedWater
             Tinput: 25.0
@@ -115,6 +115,7 @@ assemblies:
         - 2
 
     UO2:
+        flags: fuel
         specifier: UO2
         blocks:
             - *block_uo2
@@ -125,6 +126,7 @@ assemblies:
         axial mesh points: *mesh
         xs types: [A,A,A,A]
     mox:
+        flags: fuel
         specifier: MOX
         blocks:
             - *block_mox
@@ -154,25 +156,25 @@ systems:
           y: 0.0
           z: 0.0
 # end-systems
-grids: 
+grids:
     core:
-        symmetry: full
+        symmetry: quarter reflective
         geom: cartesian
         lattice pitch:
             x: 21.42
             y: 21.42
         lattice map: |
-         UO2 MOX MOD
-         MOX UO2 MOD
          MOD MOD MOD
+         MOX UO2 MOD
+         UO2 MOX MOD
 # end-grid-core
-    UO2 grid: 
+    UO2 grid:
         symmetry: full
         geom: cartesian
         lattice pitch:
             x: 1.26
             y: 1.26
-        lattice map: | 
+        lattice map: |
             U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
             U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
             U  U  U  U  U  GT U  U  GT U  U  GT U  U  U  U  U
@@ -197,7 +199,7 @@ grids:
         lattice pitch:
             x: 1.26
             y: 1.26
-        lattice map: | 
+        lattice map: |
             ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML
             ML MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM ML
             ML MM MM MM MM GT MM MM GT MM MM GT MM MM MM MM ML
@@ -217,7 +219,7 @@ grids:
             ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML
 # end-grid-MOX
 nuclide flags:
-    O: 
+    O:
         burn: false
         xs: true
         expandTo: ["O16"]
