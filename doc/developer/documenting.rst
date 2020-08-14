@@ -35,8 +35,9 @@ This will invoke Sphinx and generate a series of html files in the
 there. A copy of the documentation is hosted online at
 https://terrapower.github.io/armi/.
 
-You can make suggest a change to the built documentation by copying the built files to a clone
-of the documentation repository with a command like::
+You can suggest a change to the built documentation by copying the ``_build``
+files to a clone of the `documentation repository
+<https://github.com/terrapower/terrapower.github.io>`_ with a command like::
 
     rsync -ahv --delete _build/html/ path/to/terrapower.github.io/armi
 
