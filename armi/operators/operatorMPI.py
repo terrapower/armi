@@ -188,8 +188,8 @@ class OperatorMPI(Operator):
                     )
             pm = armi.getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
-            # if any of the plugins vote to NOT reset, then we don't reset.
-            if not all(resetFlags):
+            # only reset if all the plugins agree to reset
+            if all(resetFlags):
                 self._resetWorker()
 
             # might be an mpi action which has a reactor and everything, preventing
@@ -228,9 +228,8 @@ class OperatorMPI(Operator):
     def workerQuit():
         runLog.debug("Worker ending")
         runLog.LOG.close()  # no more messages.
-        armi.MPI_COMM.bcast(
-            "finished", root=0
-        )  # wait until all workers are closed so we can delete them.
+        # wait until all workers are closed so we can delete them.
+        armi.MPI_COMM.bcast("finished", root=0)
 
     def collapseAllStderrs(self):
         """Takes all the individual stderr files from each processor and arranges them nicely into one file"""
