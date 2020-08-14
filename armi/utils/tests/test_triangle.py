@@ -91,6 +91,67 @@ class triangleTests(unittest.TestCase):
         # generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(generalTriangleInOrOut)
 
+    def test_checkIfPointIsInTriangle2(self):
+        """Test that barycentricCheckIfPointIsInTriangle can  identify if a point is inside or outside of a triangle."""
+
+        # First check the right triangle case
+        xT1 = 0.0
+        yT1 = 0.0
+        xT2 = 1.0
+        yT2 = 0.0
+        xT3 = 0.0
+        yT3 = 1.0
+        xP = 0.5
+        yP = 0.5
+        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(
+            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+        )
+        self.assertTrue(rightTriangleInOrOut)
+
+        # Check a case that should cause failure for checkIfPointIsInTriangle since only two triangle can be drawn
+        x1 = 0.15
+        x2 = 0.0
+        x3 = 0.0
+        y1 = 0.17
+        y2 = 0.054
+        y3 = 0.376
+        xP = 0.0
+        yP = 0.17
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
+            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+        )
+        self.assertTrue(generalTriangleInOrOut)
+
+        # now create a case that should evaluate False
+        xP = 2.0
+        yP = 0.5
+        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(
+            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+        )
+        self.assertFalse(rightTriangleInOrOut)
+
+        # Now check non right triangle
+        xT1 = 26.0
+        yT1 = 10.0
+        xT2 = 100.0
+        yT2 = 0.0
+        xT3 = 0.0
+        yT3 = 100.0
+        xP = 50.0
+        yP = 50.0
+
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
+            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+        )
+        self.assertTrue(generalTriangleInOrOut)
+
+        # now check false case
+        xP = 1.0
+        yP = 60.0
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
+            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+        )
+        self.assertFalse(generalTriangleInOrOut)
 
 
 if __name__ == "__main__":
