@@ -761,7 +761,6 @@ class Grid:
         For instance, if we have a 1/3rd core hex grid, this would return False for
         locators that are outside of the first third of the grid.
         """
-        return True
         raise NotImplementedError("Not implemented on base Grid type.")
 
     def _evaluateMesh(self, indices, stepOperator, boundsOperator):
@@ -972,11 +971,22 @@ class CartesianGrid(Grid):
         """
         Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
 
+        Parameters
+        ----------
+        width : float
+            Width of the unit rectangle
+        width : float
+            Height of the unit rectangle
+        numRings : int
+            Number of rings that the grid should span
+        symmetry : str
+            The symmetry condition (see :py:mod:`armi.reactor.geometry`)
         isOffset : bool
             If True, the origin of the Grid's coordinate system will be placed at the
             bottom-left corner of the center-most cell. Otherwise, the origin will be
             placed at the center of the center-most cell.
-
+        armiObject : ArmiObject
+            An object in a Composite model that the Grid should be bound to.
         """
         unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
         offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
@@ -1105,8 +1115,8 @@ class CartesianGrid(Grid):
             )
         else:
             raise NotImplementedError(
-                "Unhandled symmetry condition for CartesianGrid: {}".format(
-                    self.symmetry
+                "Unhandled symmetry condition for {}: {}".format(
+                    type(self).__name__, self.symmetry
                 )
             )
 
