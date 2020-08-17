@@ -297,10 +297,6 @@ class Batch(blocks.Block):
         """
         return self.copy(newBatchName=self.name)
 
-    def getEnrichment(self):
-        """Return the uranium enrichment of this batch."""
-        return self.getMass("U235") / (self.getMass("U235") + self.getMass("U238"))
-
     def getReactionRates(self, nucName):
         """
         get reaction rates for (n,gamma), (n,fission), (n,2n), (n,alpha), (n,proton) reactions
