@@ -2370,12 +2370,12 @@ class Core(composites.Composite):
 
         return converter
 
-    def setPitchUniform(self, pitchInCm, updateNumberDensityParams=True):
+    def setPitchUniform(self, pitchInCm):
         """
         set the pitch in all blocks
         """
         for b in self.getBlocks():
-            b.setPitch(pitchInCm, updateNumberDensityParams=updateNumberDensityParams)
+            b.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
         self.spatialGrid.changePitch(pitchInCm)

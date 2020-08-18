@@ -17,11 +17,9 @@ import unittest
 import numpy
 import h5py
 
-from armi.bookkeeping import db
 from armi.bookkeeping.db import database3
 from armi.reactor import grids
 from armi.reactor.tests import test_reactors
-from armi.settings import caseSettings
 
 from armi.tests import TEST_ROOT
 

@@ -1608,22 +1608,6 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-    # TODO: this should be replaced with a number density vector (array) and a list of
-    # nuclides on the Reactor
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["number densities"]
-    ) as pb:
-        assert nuclideBases.instances, (
-            "Nuclide Bases have not been instantiated yet; cannot produce parameters "
-            "for them."
-        )
-        for nuc in nuclideBases.instances:
-            pb.defParam(
-                nuc.getDatabaseName(),
-                units="#/barn-cm",
-                description="{} number density".format(nuc.name),
-            )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
 
         pb.defParam("distortionReactivity", units="?", description="?")
