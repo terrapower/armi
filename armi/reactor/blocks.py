@@ -562,71 +562,6 @@ class Block(composites.Composite):
         else:
             return xsType + bu
 
-    def setNumberDensity(self, nucName, newHomogNDens):
-        """
-        Adds an isotope to the material or changes an existing isotope's number density
-
-        Parameters
-        ----------
-        nuc : str
-            a nuclide name like U235, PU240, FE
-        newHomogNDens : float
-            number density to set in units of atoms/barn-cm, which are equal to
-            atoms/cm^3*1e24
-
-        See Also
-        --------
-        getNumberDensity : gets the density of a nuclide
-        """
-        composites.Composite.setNumberDensity(self, nucName, newHomogNDens)
-        self.setNDensParam(nucName, newHomogNDens)
-
-    def setNumberDensities(self, numberDensities):
-        """
-        Update number densities.
-
-        Any nuclide in the block but not in numberDensities will be set to zero.
-
-        Special behavior for blocks: update block-level params for DB viewing/loading.
-        """
-        composites.Composite.setNumberDensities(self, numberDensities)
-        for nucName in self.getNuclides():
-            # make sure to clear out any non-listed number densities
-            self.setNDensParam(nucName, numberDensities.get(nucName, 0.0))
-
-    def updateNumberDensities(self, numberDensities):
-        """Set one or more multiple number densities. Leaves unlisted number densities alone."""
-        composites.Composite.updateNumberDensities(self, numberDensities)
-        for nucName, ndens in numberDensities.items():
-            self.setNDensParam(nucName, ndens)
-
-    def buildNumberDensityParams(self, nucNames=None):
-        """
-        Copy homogenized density onto self.p for storing in the DB.
-
-        Notes
-        -----
-        Recall that actual number densities are not the same as the number
-        density params (they're really stored on the components). These
-        params are still useful for plotting block-level number density
-        information in database viewers, etc.
-        """
-        if nucNames is None:
-            nucNames = self.getNuclides()
-        nucBases = [nuclideBases.byName[nn] for nn in nucNames]
-        nucDensities = self.getNuclideNumberDensities(nucNames)
-        for nb, ndens in zip(nucBases, nucDensities):
-            self.p[nb.getDatabaseName()] = ndens
-
-    def setNDensParam(self, nucName, ndens):
-        """
-        Set a block-level param with the homog. number density of a nuclide.
-
-        This can be read by the database in restart runs.
-        """
-        n = nuclideBases.byName[nucName]
-        self.p[n.getDatabaseName()] = ndens
-
     def setMass(self, nucName, mass, **kwargs):
         """
         Sets the mass in a block and adjusts the density of the nuclides in the block.
@@ -787,8 +722,6 @@ class Block(composites.Composite):
                 self.setNumberDensity("U235", tU * newEnrich)
                 self.setNumberDensity("U238", tU * (1.0 - newEnrich))
 
-        # fix up the params and burnup tracking.
-        self.buildNumberDensityParams()
         self.completeInitialLoading()
 
     def adjustSmearDensity(self, value, bolBlock=None):
@@ -842,7 +775,6 @@ class Block(composites.Composite):
             fuel.setDimension("od", newOD)
 
         # update things like hm at BOC and smear density parameters.
-        self.buildNumberDensityParams()
         self.completeInitialLoading(bolBlock=bolBlock)
 
     def adjustCladThicknessByOD(self, value):
@@ -1917,7 +1849,7 @@ class Block(composites.Composite):
                 largestComponent = c
         return largestComponent
 
-    def setPitch(self, val, updateBolParams=False, updateNumberDensityParams=True):
+    def setPitch(self, val, updateBolParams=False):
         """
         Sets outer pitch to some new value.
 
@@ -1943,9 +1875,6 @@ class Block(composites.Composite):
 
         if updateBolParams:
             self.completeInitialLoading()
-        if updateNumberDensityParams:
-            # may not want to do this if you will do it shortly thereafter.
-            self.buildNumberDensityParams()
 
     def getMfp(self, gamma=False):
         r"""calculates the mean free path for neutron or gammas in this block.
@@ -2748,7 +2677,7 @@ class CartesianBlock(Block):
         xw, yw = self.getPitch()
         return xw * yw
 
-    def setPitch(self, val, updateBolParams=False, updateNumberDensityParams=True):
+    def setPitch(self, val, updateBolParams=False):
         raise NotImplementedError(
             "Directly setting the pitch of a cartesian block is currently not supported."
         )

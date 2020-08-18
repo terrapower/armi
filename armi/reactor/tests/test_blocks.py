@@ -534,10 +534,6 @@ class Block_TestCase(unittest.TestCase):
             ref = refDict[nuc]
             places = 6
             self.assertAlmostEqual(cur, ref, places=places)
-            nucBase = nuclideBases.byName[nuc]
-            self.assertAlmostEqual(
-                b.p[nucBase.getDatabaseName()], ref
-            )  # required for DB viewing/loading
 
         # make sure U235 stayed fully contained in the fuel component
         fuelC = b.getComponent(Flags.FUEL)
