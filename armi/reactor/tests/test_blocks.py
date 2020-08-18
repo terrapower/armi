@@ -656,45 +656,6 @@ class Block_TestCase(unittest.TestCase):
         ref = 4.0 * self.Block.getFlowAreaPerPin() / self.Block.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
-    def test_getCladdingOR(self):
-        cur = self.Block.getCladdingOR()
-        ref = self.Block.getDim(Flags.CLAD, "od") / 2.0
-        self.assertAlmostEqual(cur, ref)
-
-    def test_getCladdingIR(self):
-        cur = self.Block.getCladdingIR()
-        ref = self.Block.getDim(Flags.CLAD, "id") / 2.0
-        self.assertAlmostEqual(cur, ref)
-
-    def test_getFuelRadius(self):
-        cur = self.Block.getFuelRadius()
-        ref = self.Block.getDim(Flags.FUEL, "od") / 2.0
-        self.assertAlmostEqual(cur, ref)
-
-    def test_adjustCladThicknessByOD(self):
-        thickness = 0.05
-        clad = self.Block.getComponent(Flags.CLAD)
-        ref = clad.getDimension("id", cold=True) + 2.0 * thickness
-        self.Block.adjustCladThicknessByOD(thickness)
-        cur = clad.getDimension("od", cold=True)
-        curThickness = (
-            clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)
-        ) / 2.0
-        self.assertAlmostEqual(cur, ref)
-        self.assertAlmostEqual(curThickness, thickness)
-
-    def test_adjustCladThicknessByID(self):
-        thickness = 0.05
-        clad = self.Block.getComponent(Flags.CLAD)
-        ref = clad.getDimension("od", cold=True) - 2.0 * thickness
-        self.Block.adjustCladThicknessByID(thickness)
-        cur = clad.getDimension("id", cold=True)
-        curThickness = (
-            clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)
-        ) / 2.0
-        self.assertAlmostEqual(cur, ref)
-        self.assertAlmostEqual(curThickness, thickness)
-
     def test_adjustUEnrich(self):
         self.Block.setHeight(100.0)
 
@@ -1724,41 +1685,6 @@ class MassConservationTests(unittest.TestCase):
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()
-
-    def test_adjustSmearDensity(self):
-        r"""
-        Tests the getting, setting, and getting of smear density functions
-
-        """
-        bolBlock = copy.deepcopy(self.b)
-
-        s = self.b.getSmearDensity(cold=False)
-
-        fuel = self.b.getComponent(Flags.FUEL)
-        clad = self.b.getComponent(Flags.CLAD)
-
-        self.assertAlmostEqual(
-            s, (fuel.getDimension("od") ** 2) / clad.getDimension("id") ** 2, 8
-        )
-
-        self.b.adjustSmearDensity(self.b.getSmearDensity(), bolBlock=bolBlock)
-
-        s2 = self.b.getSmearDensity(cold=False)
-
-        self.assertAlmostEqual(s, s2, 8)
-
-        self.b.adjustSmearDensity(0.733, bolBlock=bolBlock)
-        self.assertAlmostEqual(0.733, self.b.getSmearDensity(), 8)
-
-        # try annular fuel
-        clad = self.b.getComponent(Flags.CLAD)
-        fuel = self.b.getComponent(Flags.FUEL)
-
-        fuel.setDimension("od", clad.getDimension("id", cold=True))
-        fuel.setDimension("id", 0.0001)
-
-        self.b.adjustSmearDensity(0.733, bolBlock=bolBlock)
-        self.assertAlmostEqual(0.733, self.b.getSmearDensity(), 8)
 
     def test_heightExpansionDifferences(self):
         r"""  The point of this test is to determine if the number densities stay the same

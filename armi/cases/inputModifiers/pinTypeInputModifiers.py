@@ -2,6 +2,8 @@ from armi.reactor import flags
 from armi.reactor.components import component
 from armi.cases.inputModifiers import inputModifiers
 
+from armi.reactor.converters import pinTypeBlockConverters
+
 
 class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
     """
@@ -77,11 +79,6 @@ class SmearDensityModifier(_PinTypeAssemblyModifier):
 
     This is effectively how much of the space inside the cladding tube is occupied by
     fuel at fabrication.
-
-    See Also
-    --------
-    armi.reactor.blocks.Block.adjustSmearDensity
-        Actually adjusts the smeared density
     """
 
     def _getBlockTypesToModify(self):
@@ -90,7 +87,7 @@ class SmearDensityModifier(_PinTypeAssemblyModifier):
 
     def _adjustBlock(self, b):
         """Hook method for `__call__` template method."""
-        b.adjustSmearDensity(self.value)
+        pinTypeBlockConverters.adjustSmearDensity(b, self.value)
 
 
 class CladThicknessByODModifier(_PinTypeAssemblyModifier):
@@ -105,7 +102,7 @@ class CladThicknessByODModifier(_PinTypeAssemblyModifier):
         return ""
 
     def _adjustBlock(self, b):
-        b.adjustCladThicknessByOD(self.value)
+        pinTypeBlockConverters.adjustCladThicknessByOD(b, self.value)
 
 
 class CladThicknessByIDModifier(_PinTypeAssemblyModifier):
@@ -120,4 +117,4 @@ class CladThicknessByIDModifier(_PinTypeAssemblyModifier):
         return ""
 
     def _adjustBlock(self, b):
-        b.adjustCladThicknessByID(self.value)
+        pinTypeBlockConverters.adjustCladThicknessByID(b, self.value)
