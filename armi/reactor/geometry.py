@@ -13,28 +13,18 @@
 # limitations under the License.
 
 """
-Reads the input files that define where the major systems are and what's in them.
+This module contains constants and enumerations that are useful for describing system
+geometry.
 
-This includes the core-map, showing which assemblies are where in a core,
-and may also include a spent fuel pool, pumps, heat exchangers, etc.
-
-The blueprints input files define the low-level dimensions and compositions
-of parts, and this file maps those definitions to locations throughout the
-reactor model.
-
-It may eventually also describe the pin-maps within assemblies for solid fuel.
-
-Historically, this file was called the "Geometry Input File", but that's too
-generic so we changed it to reduce new user confusion.
-
-Where the original geom.xml file had just one set of assemblies
-in the core and other systems were pointed to in the blueprints
-file, we eventually anticipate moving all systems definitions
-to this geometry file.
+It also contains the soon-to-be defunct ``SystemLayoutInput`` class, which used to be
+used for specifying assembly locations in the core. This has been replaced by the
+``systems:`` and ``grids:`` sections of ``Blueprints``, but still exists to facilitate
+input migrations.
 
 See Also
 --------
 reactor.blueprints.reactorBlueprint
+reactor.blueprints.gridBlueprint
 """
 
 import enum
@@ -96,6 +86,31 @@ class GeomType(enum.Enum):
         # error-finding.
         raise ValueError("Unrecognized geometry type: `{}`".format(geomStr))
 
+    @property
+    def label(self):
+        """Human-presentable label"""
+
+        if self == self.HEX:
+            return "Hexagonal"
+        elif self == self.CARTESIAN:
+            return "Cartesian"
+        elif self == self.RZT:
+            return "R-Z-Theta"
+        elif self == self.RZ:
+            return "R-Z"
+
+    def __str__(self):
+        """Inverse of fromStr()"""
+
+        if self == self.HEX:
+            return HEX
+        elif self == self.CARTESIAN:
+            return CARTESIAN
+        elif self == self.RZT:
+            return RZT
+        elif self == self.RZ:
+            return RZ
+
 
 SYSTEMS = "systems"
 VERSION = "version"
@@ -126,6 +141,7 @@ THROUGH_CENTER_ASSEMBLY = (
 
 VALID_SYMMETRY = {
     FULL_CORE,
+    FULL_CORE + THROUGH_CENTER_ASSEMBLY,
     THIRD_CORE + PERIODIC,  # third core reflective is not geometrically consistent.
     QUARTER_CORE + PERIODIC,
     QUARTER_CORE + REFLECTIVE,
@@ -231,7 +247,13 @@ def loadFromCs(cs):
 
 
 class SystemLayoutInput:
-    """Geometry file. Contains 2-D mapping of geometry."""
+    """
+    Geometry file. Contains 2-D mapping of geometry.
+
+    This approach to specifying core layout has been deprecated in favor of the
+    :py:class:`armi.reactor.blueprints.gridBlueprints.GridBlueprints` and ``systems:``
+    section of :py:class:`armi.reactor.blueprints.Blueprints`
+    """
 
     _GEOM_FILE_EXTENSION = ".xml"
     ROOT_TAG = INP_SYSTEMS
@@ -304,7 +326,7 @@ class SystemLayoutInput:
         gridContents = dict()
         for indices, spec in self.assemTypeByIndices.items():
             if HEX in self.geomType:
-                i, j = grids.getIndicesFromRingAndPos(*indices)
+                i, j = grids.HexGrid.getIndicesFromRingAndPos(*indices)
             elif RZT in self.geomType:
                 i, j, _ = rztGrid.indicesOfBounds(*indices[0:4])
             else:
@@ -329,7 +351,7 @@ class SystemLayoutInput:
                 if eqPath == (None, None):
                     continue
                 if HEX in self.geomType:
-                    i, j = grids.getIndicesFromRingAndPos(*idx)
+                    i, j = grids.HexGrid.getIndicesFromRingAndPos(*idx)
                 elif RZT in self.geomType:
                     i, j, _ = rztGrid.indicesOfBounds(*idx[0:4])
                 else:
@@ -434,7 +456,7 @@ class SystemLayoutInput:
                 if spec == "-":
                     # skip whitespace placeholders
                     continue
-                ring, pos = grids.indicesToRingPos(i, j)
+                ring, pos = grids.HexGrid.indicesToRingPos(i, j)
                 self.assemTypeByIndices[(ring, pos)] = spec
                 self.maxRings = max(ring, self.maxRings)
         else:
@@ -549,11 +571,16 @@ class SystemLayoutInput:
         yaml.dump(fullData, stream)
 
     def _writeAsciiMap(self):
-        """Generate an ASCII map representation."""
+        """Generate an ASCII map representation.
+
+        Warning
+        -------
+        This only works for HexGrid.
+        """
         lattice = {}
         for ring, pos in sorted(list(self.assemTypeByIndices)):
             specifier = self.assemTypeByIndices[(ring, pos)]
-            i, j = grids.getIndicesFromRingAndPos(ring, pos)
+            i, j = grids.HexGrid.getIndicesFromRingAndPos(ring, pos)
             lattice[i, j] = specifier
 
         geomMap = asciimaps.AsciiMapHexThird(lattice)
@@ -585,9 +612,9 @@ class SystemLayoutInput:
 
         # need to cast to a list because we will modify during iteration
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
-            indices = grids.getIndicesFromRingAndPos(ring, pos)
+            indices = grids.HexGrid.getIndicesFromRingAndPos(ring, pos)
             for symmetricI, symmetricJ in grid.getSymmetricEquivalents(indices):
-                symmetricRingPos = grids.indicesToRingPos(symmetricI, symmetricJ)
+                symmetricRingPos = grids.HexGrid.indicesToRingPos(symmetricI, symmetricJ)
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
         self.symmetry = FULL_CORE

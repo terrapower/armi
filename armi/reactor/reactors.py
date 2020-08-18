@@ -136,8 +136,8 @@ def factory(cs, bp, geom: Optional[geometry.SystemLayoutInput] = None):
             raise ValueError(
                 "The input must define a `core` system, but does not. Update inputs"
             )
-        core = bp.systemDesigns["core"]
-        core.construct(cs, bp, r, geom=geom)
+        coreDesign = bp.systemDesigns["core"]
+        coreDesign.construct(cs, bp, r, geom=geom)
         for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
                 structure.construct(cs, bp, r)
@@ -448,8 +448,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        must clear auxiliary bookkeeping lists as well or else a regeneration step will auto-add 
-        assemblies back in.
+        must clear auxiliary bookkeeping lists as well or else a regeneration step will
+        auto-add assemblies back in.
         """
         assems = set(self)
         for a in assems:
@@ -523,7 +523,7 @@ class Core(composites.Composite):
         for b in a:
             self.blocksByName[b.getName()] = b
 
-        if self.geomType == geometry.HEX:
+        if self.geomType == geometry.GeomType.HEX:
             ring, _loc = self.spatialGrid.getRingPos(
                 a.spatialLocator.getCompleteIndices()
             )
@@ -815,7 +815,7 @@ class Core(composites.Composite):
 
         ## filter based on geomType
         if (
-            self.geomType == geometry.CARTESIAN
+            self.geomType == geometry.GeomType.CARTESIAN
         ):  # a ring in cartesian is basically a square.
             assems.select(
                 lambda a: any(xy == ring for xy in abs(a.spatialLocator.indices[:2]))
@@ -858,7 +858,7 @@ class Core(composites.Composite):
 
         """
 
-        if self.geomType == geometry.CARTESIAN:
+        if self.geomType == geometry.GeomType.CARTESIAN:
             # a ring in cartesian is basically a square.
             raise RuntimeError(
                 "A circular ring in cartesian coordinates has not been defined yet."
@@ -1930,7 +1930,7 @@ class Core(composites.Composite):
         -------
         meshVals : tuple
             ((i-vals), (j-vals,), (k-vals,))
-            
+
         See Also
         --------
         armi.reactor.assemblies.Assembly.getAxialMesh : get block mesh

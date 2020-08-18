@@ -2606,7 +2606,7 @@ class HexBlock(Block):
         grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
         for ring in range(numPinRings):
             for pos in range(hexagon.numPositionsInRing(ring + 1)):
-                i, j = grids.getIndicesFromRingAndPos(ring + 1, pos + 1)
+                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 xyz = grid[i, j, 0].getLocalCoordinates()
                 coordinates.append(xyz)
         return coordinates

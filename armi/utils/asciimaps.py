@@ -278,12 +278,14 @@ def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
 
     symmetry = symmetry.replace(geometry.PERIODIC, "")
     symmetry = symmetry.replace(geometry.REFLECTIVE, "")
+    symmetry = symmetry.replace(geometry.THROUGH_CENTER_ASSEMBLY, "")
 
     MAP_FROM_GEOM = {
         (geometry.HEX, geometry.THIRD_CORE): AsciiMapHexThird,
         (geometry.HEX, geometry.FULL_CORE): AsciiMapHexFullTipsUp,
         (geometry.CARTESIAN, None): AsciiMapCartesian,
         (geometry.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
+        (geometry.CARTESIAN, geometry.QUARTER_CORE): AsciiMapCartesian,
     }
 
     return MAP_FROM_GEOM[(geomType, symmetry)]

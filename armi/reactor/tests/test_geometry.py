@@ -76,6 +76,20 @@ class TestGeomType(unittest.TestCase):
         with self.assertRaises(ValueError):
             geometry.GeomType.fromStr("what even is this?")
 
+    def testLabel(self):
+        gt = geometry.GeomType.fromStr("hex")
+        self.assertEqual(gt.label, "Hexagonal")
+        gt = geometry.GeomType.fromStr("cartesian")
+        self.assertEqual(gt.label, "Cartesian")
+        gt = geometry.GeomType.fromStr("rz")
+        self.assertEqual(gt.label, "R-Z")
+        gt = geometry.GeomType.fromStr("thetarz")
+        self.assertEqual(gt.label, "R-Z-Theta")
+
+    def testStr(self):
+        for geom in {geometry.HEX, geometry.CARTESIAN, geometry.RZ, geometry.RZT}:
+            self.assertEqual(str(geometry.GeomType.fromStr(geom)),  geom)
+
 
 class TestSystemLayoutInput(unittest.TestCase):
     def testReadHexGeomXML(self):
