@@ -406,27 +406,6 @@ class Block(composites.Composite):
 
         return tempInC
 
-    def getEnrichment(self):
-        """
-        Return the mass enrichment of the fuel in the block.
-
-        If multiple fuel components exist, this returns the average enrichment.
-        """
-        enrichment = 0.0
-        if self.hasFlags(Flags.FUEL):
-            fuels = self.getComponents(Flags.FUEL)
-            if len(fuels) == 1:
-                # short circuit to avoid expensive mass read.
-                return fuels[0].getMassEnrichment()
-            hm = 0.0
-            fissile = 0.0
-            for c in fuels:
-                hmMass = c.getHMMass()
-                fissile += c.getMassEnrichment() * hmMass
-                hm += hmMass
-            enrichment = fissile / hm
-        return enrichment
-
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s]
@@ -1153,7 +1132,7 @@ class Block(composites.Composite):
             self.p.smearDensity = self.getSmearDensity()
         except ValueError:
             pass
-        self.p.enrichmentBOL = self.getEnrichment()
+        self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
         for child in self:
