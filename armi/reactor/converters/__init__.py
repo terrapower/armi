@@ -35,7 +35,10 @@ This subpackage contains code that does a certain subset of conversions along th
     sufficiently generic, we welcome it here. 
 
     In other words, some of these converters may at some point migrate to a more
-    design-specific plugin. 
+    design-specific plugin.
+    
+See Also
+--------
+armi.cases.inputModifiers 
+    Modify input files and re-write them.
 """
-
-

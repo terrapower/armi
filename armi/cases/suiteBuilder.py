@@ -60,9 +60,14 @@ class SuiteBuilder(object):
         self.baseCase = baseCase
         self.modifierSets = []
 
+        # pylint: disable=import-outside-toplevel; avoid circular import
+        from .inputModifiers import inputModifiers
+
         # use an instance variable instead of global lookup. this could allow someone to add their own
         # modifiers, and also prevents it memory usage / discovery from simply loading the module.
-        self._modifierLookup = {k.__name__: k for k in getInputModifiers(InputModifier)}
+        self._modifierLookup = {
+            k.__name__: k for k in getInputModifiers(inputModifiers.InputModifier)
+        }
 
     def __len__(self):
         return len(self.modifierSets)
