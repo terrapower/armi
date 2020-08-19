@@ -1,10 +1,7 @@
 """
 CLI entry point to spin up the GridEditor GUI.
 """
-import wx
-
 from armi.cli import entryPoint
-from armi.utils import gridEditor
 
 
 class GridGuiEntryPoint(entryPoint.EntryPoint):
@@ -19,6 +16,16 @@ class GridGuiEntryPoint(entryPoint.EntryPoint):
         help="Optional path to a blueprint file to open")
 
     def invoke(self):
+        # Import late since wxpython is kind of big and only needed when actually
+        # invoking the entry point
+        try:
+            import wx
+            from armi.utils import gridEditor
+        except ImportError:
+            raise RuntimeError("wxPython is not installed properly in this "
+                    "environment. wxPython is required for the Grid GUI. Refer to "
+                    "installation instructions to install wxPython.")
+
         app = wx.App()
 
         frame = wx.Frame(
