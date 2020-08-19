@@ -1,0 +1,5 @@
+[run]
+omit =
+    # Don't worry about coverage for the grid GUI (for now)
+    gridEditor.py
+    gridGui.py
