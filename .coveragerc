@@ -1,5 +1,5 @@
-[run]
+[report]
+# Don't worry about coverage for the grid GUI (for now)
 omit =
-    # Don't worry about coverage for the grid GUI (for now)
-    ../gridEditor.py
-    ../gridGui.py
+    armi/utils/gridEditor.py
+    armi/cli/gridGui.py
