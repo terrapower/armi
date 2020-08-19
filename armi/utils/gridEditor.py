@@ -1,7 +1,7 @@
 # USE AND DISTRIBUTION OF THIS CODE IS GOVERNED BY EXPORT CONTROL LAWS AND THE LICENSE IN LICENSE.txt.
 # @LICENSE:
 """
-GUI elements for manipulating core layout.
+GUI elements for manipulating grid layout and contents.
 
 This provides a handful of classes which provide wxPython Controls for manipulating
 grids and grid Blueprints.
@@ -66,8 +66,10 @@ from armi.settings.fwSettings import globalSettings
 UNIT_SIZE = 50  # pixels per assembly
 UNIT_MARGIN = 40  # offset applied to the draw area margins
 
-# Colors to use based on the flags that we have. All applicable colors will be blended
-# to get the final color for an assembly
+# The color to use for each object is based on the flags that that object has. All
+# applicable colors will be blended together to produce the final color for the object.
+# There are also plans to apply brush styles like cross-hatching or the like, which is
+# what the Nones are for below. Future work to employ these. Colors are RGB fractions.
 FLAG_STYLES = {
     # Red
     Flags.FUEL: (numpy.array([1.0, 0.0, 0.0]), None),
@@ -79,14 +81,17 @@ FLAG_STYLES = {
     Flags.REFLECTOR: (numpy.array([0.5, 0.5, 0.0]), None),
     # Paisley?
     Flags.INNER: (numpy.array([0.5, 0.5, 1.0]), None),
-    # Black (shouln't see many SECONDARYs on their own, so this will just darken
-    # whatever color we would otherwise get)
+    # We shouldn't see many SECONDARY, OUTER, MIDDLE, etc. on their own, so these
+    # will just darken or brighten whatever color we would otherwise get)
     Flags.SECONDARY: (numpy.array([0.0, 0.0, 0.0]), None),
+    Flags.OUTER: (numpy.array([0.0, 0.0, 0.0]), None),
     # WHITE (same as above, this will just lighten anything that it accompanies)
+    Flags.MIDDLE: (numpy.array([1.0, 1.0, 1.0]), None),
     Flags.ANNULAR: (numpy.array([1.0, 1.0, 1.0]), None),
 }
 
-
+# RGB weights for calculating luminance. We use this to decide whether we should put
+# white or black text on top of the color. These come from CCIR 601
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11])
 
 
@@ -94,9 +99,16 @@ def _filterOutsideDomain(gridBp):
     """
     Remove grid contents that lie outside the represented domain.
 
-    This removes extraneous assemblies and the like, because we allow the user input
-    to be over-specified. However, we do not want to save these extraneous grid
-    contents.
+    This removes extra objects; ARMI allows the user input specifiers in regions outside
+    of the represented domain, which is fine as long as the contained specifier is
+    consistent with the corresponding region in the represented domain given the
+    symmetry condition. For instance, if we have a 1/3-core hex model, it is typically
+    okay for an assembly to be specified outside of the first 1/3rd of the core, as long
+    as it is the same assembly as would be there when expanding the first 1/3rd into a
+    full-core model.
+
+    However, we do not really want these hanging around, since editing the represented
+    1/Nth of the core will probably lead to consistency issues, so we remove them.
     """
     grid = gridBp.construct()
 
@@ -178,7 +190,7 @@ def _getColorAndBrushFromFlags(f, bold=True):
 
     c = tuple(int(255 * ci) for ci in c)
 
-    brush = wx.Brush(wx.Colour(*c, 1.0))
+    brush = wx.Brush(wx.Colour(*c, 255))
     pen = wx.WHITE if dark else wx.BLACK
 
     return pen, brush
@@ -216,7 +228,7 @@ def _drawShape(
         Whether the object should be drawn with full saturation. Default ``True``
     """
     if description is None:
-        dc.SetBrush(wx.Brush(wx.Colour(200, 200, 200, 0)))
+        dc.SetBrush(wx.Brush(wx.Colour(200, 200, 200, 255)))
         color = wx.BLACK
     else:
         aFlags = Flags.fromStringIgnoreErrors(description)
@@ -224,7 +236,7 @@ def _drawShape(
         dc.SetBrush(brush)
 
     if geom == geometry.GeomType.HEX:
-        primitive = hexagon.corners(0)
+        primitive = hexagon.corners(rotation=0)
     elif geom == geometry.GeomType.CARTESIAN:
         primitive = [(-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5)]
     else:
@@ -279,9 +291,7 @@ class _GridControls(wx.Panel):
         self.labelMode.SetToolTip("Select what to display in each grid region.")
 
         self.saveButton = wx.Button(self, id=wx.ID_ANY, label="Save grid blueprints...")
-        self.saveButton.SetToolTip(
-            "Save just the grids section to its own file. "
-        )
+        self.saveButton.SetToolTip("Save just the grids section to its own file. ")
         self.openButton = wx.Button(self, id=wx.ID_ANY, label="Open blueprints...")
         self.openButton.SetToolTip(
             "Open a new top-level blueprints file. Top-level is "
@@ -512,14 +522,15 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
             dc.SelectObject(wx.NullBitmap)
 
+            img = wx.StaticBitmap(self, bitmap=bmap)
             button = wx.ToggleButton(self, wx.ID_ANY, key)
-            button.SetBitmap(bmap)
             self.assemButtons[button.GetId()] = button
             self.buttonIdBySpecifier[design.specifier] = button.GetId()
 
             self.Bind(wx.EVT_TOGGLEBUTTON, self.onToggle, button)
 
             buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+            buttonSizer.Add(img)
             buttonSizer.Add(button, 1, wx.EXPAND)
             buttonSizer.AddSpacer(20)
 
@@ -1383,7 +1394,11 @@ class GridBlueprintControl(wx.Panel):
             ):
                 message = (
                     "The chosen path, `{}` is the same as the main blueprints "
-                    "file. Try again with a different name.".format(path)
+                    'file. This tool only saves the "grids" section of the '
+                    "blueprints file, so saving over the original top-level blueprints "
+                    "will lead to data loss. Try again with a different name.".format(
+                        path
+                    )
                 )
 
                 with wx.MessageDialog(
@@ -1562,7 +1577,7 @@ tedious to do by hand in a text editor.
 
 Since this is not a general-purpose blueprint editor, this will only save the "grids"
 section of a blueprints file, which will then need to be incorporated into a top-level
-blueprints input, either by !include-ing it or copy-pasting into the host blueprints.
+blueprints input, typically by !include-ing from the host blueprints.
 
 When opening a blueprints file, the root blueprints should be provided, since the Editor
 uses the assembly designs to populate the assembly palette on the right.
