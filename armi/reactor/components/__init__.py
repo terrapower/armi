@@ -71,10 +71,11 @@ def factory(shape, bcomps, kwargs):
     except TypeError:
         # TypeError raised when kwarg is missing. We add extra information
         # to the error to indicate which component needs updating.
-        runLog.error(f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}."
-                " Check input.")
+        runLog.error(
+            f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}."
+            " Check input."
+        )
         raise
-
 
 
 def _removeDimensionNameSpaces(attrs):
@@ -168,6 +169,23 @@ class UnshapedComponent(Component):
         the outer component, it will never be allowed to be the outer one.
         """
         return math.sqrt(self.p.area / math.pi)
+
+    @staticmethod
+    def fromComponent(otherComponent):
+        """
+        Build a new UnshapedComponent that has area equal to that of another component.
+
+        This can be used to "freeze" a DerivedShape, among other things.
+        """
+        newC = UnshapedComponent(
+            name=otherComponent.name,
+            material=otherComponent.material,
+            Tinput=otherComponent.inputTemperatureInC,
+            Thot=otherComponent.temperatureInC,
+            area=otherComponent.getComponentArea(),
+        )
+
+        return newC
 
 
 class UnshapedVolumetricComponent(UnshapedComponent):
