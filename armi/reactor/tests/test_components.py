@@ -195,6 +195,11 @@ class TestUnshapedComponent(TestGeneralComponents):
     def test_getBoundingCircleOuterDiameter(self):
         self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 1.0)
 
+    def test_fromComponent(self):
+        circle = components.Circle("testCircle", "Material", 25, 25, 1.0)
+        unshaped = components.UnshapedComponent.fromComponent(circle)
+        self.assertEqual(circle.getComponentArea(), unshaped.getComponentArea())
+
 
 class TestShapedComponent(TestGeneralComponents):
     """Abstract class for all shaped components"""
