@@ -145,7 +145,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
         b.setType(self.name, flags)
         for c in components.values():
-            b.addComponent(c)
+            b.add(c)
         b.p.nPins = b.getNumPins()
         b.p.axMesh = _setBlueprintNumberOfAxialMeshes(
             axialMeshPoints, cs["axialMeshRefinementFactor"]

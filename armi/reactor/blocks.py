@@ -1189,14 +1189,6 @@ class Block(composites.Composite):
             self.p.percentBuByPin = [0.0] * mult
         self._updatePitchComponent(c)
 
-    def addComponent(self, c):
-        """adds a component for component-based blocks."""
-        self.add(c)
-
-    def removeComponent(self, c):
-        """ Removes a component from the component-based blocks."""
-        self.remove(c)
-
     def removeAll(self, recomputeAreaFractions=True):
         for c in self.getChildren():
             self.remove(c, recomputeAreaFractions=False)
@@ -2016,7 +2008,7 @@ class Block(composites.Composite):
             newC = copy.copy(fuel)
             newC.setName("fuel{0:03d}".format(i + 2))  # start with 002.
             newC.p.pinNum = i + 2
-            self.addComponent(newC)
+            self.add(newC)
 
         # update moles at BOL for each pin
         self.p.molesHmBOLByPin = []

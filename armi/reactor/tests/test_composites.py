@@ -322,7 +322,7 @@ class TestCompositeTree(unittest.TestCase):
     def test_getHMMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
-        self.Block.addComponent(self.fuelComponent)
+        self.Block.add(self.fuelComponent)
 
         self.Block.clearNumberDensities()
         self.refDict = {
@@ -352,7 +352,7 @@ class TestCompositeTree(unittest.TestCase):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         self.fuelComponent.material.setMassFrac("LFP38", 0.25)
-        self.Block.addComponent(self.fuelComponent)
+        self.Block.add(self.fuelComponent)
 
         refDict = {"LFP35": 0.1, "LFP38": 0.05, "LFP39": 0.7}
         self.fuelComponent.setNumberDensities(refDict)
