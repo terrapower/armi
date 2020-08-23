@@ -214,18 +214,6 @@ class Block(composites.Composite):
         """
         return self.getLocationObject()
 
-    @location.setter
-    def location(self, value):
-        """
-        Set spatialLocator based on a (old-style) location object.
-
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Blocks only have 1-D grid info so we only look at the axial portion.
-        """
-        k = value.axial
-        self.spatialLocator = self.parent.spatialGrid[0, 0, k]
-
     def makeName(self, assemNum, axialIndex):
         """
         Generate a standard block from assembly number.
@@ -347,56 +335,6 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def getTemperature(self, key, sigma=0):
-        """
-        Return the best temperature for key in degrees C.
-
-        Uses thInterface values if they exist
-
-        Parameters
-        ----------
-        key : str
-            a key identifying the object we want the temperature of. Options include
-            cladOD, cladID,
-
-        sigma : int
-            Specification of which sigma-value we want. 0-sigma is nominal, 1-sigma is + 1 std.dev, etc.
-
-        Returns
-        -------
-        tempInC : float
-            temperature in C
-
-        SingleWarnings will be issued if a non-zero sigma value is requested but does not exist.
-        Nominal Thermo values will be returned in that case.
-        """
-
-        if key == "cladOD":
-            options = ["TH{0}SigmaCladODT".format(sigma), "TH0SigmaCladODT"]
-        elif key == "cladID":
-            options = ["TH{0}SigmaCladIDT".format(sigma), "TH0SigmaCladIDT"]
-
-        # return the first non-zero value
-        for okey in options:
-            tempInC = self.p[okey]
-            if not tempInC and "Sigma" in okey and sigma > 0:
-                runLog.warning(
-                    "No {0}-sigma temperature available for {1}. Run subchan. Returning nominal"
-                    "".format(sigma, self),
-                    single=True,
-                    label="no {0}-sigma temperature".format(sigma),
-                )
-            if tempInC:
-                break
-        else:
-            raise ValueError(
-                "{} has no non-zero {}-sigma {} temperature. Check T/H results.".format(
-                    self, sigma, key
-                )
-            )
-
-        return tempInC
-
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s]
@@ -492,37 +430,6 @@ class Block(composites.Composite):
                 self.p.pinMgFluxesAdj = pinFluxes
             else:
                 self.p.pinMgFluxes = pinFluxes
-
-    def getPowerPinName(self):
-        """
-        Determine the component name where the power is being produced.
-
-        Returns
-        -------
-        powerPin : str
-            The name of the pin that is producing power, if any. could be 'fuel' or 'control', or
-            anything else.
-
-        Notes
-        -----
-        If there is fuel and control, this will return fuel based on hard-coded priorities.
-
-        Examples
-        --------
-        >>> b.getPowerPinName()
-        'fuel'
-
-        >>> b.getPowerPinName()
-        'control'
-
-        >>> b.getPowerPinName()
-        None
-
-        """
-
-        for candidate in [Flags.FUEL, Flags.CONTROL]:
-            if self.getComponent(candidate):
-                return candidate
 
     def getMicroSuffix(self):
         """
@@ -1572,18 +1479,6 @@ class Block(composites.Composite):
                 label="{0} areaFrac is zero".format(typeSpec),
             )
             return 0.0
-
-    def getCoolantMaterial(self):
-        c = self.getComponent(Flags.COOLANT, exact=True)
-        return c.getProperties()
-
-    def getCladMaterial(self):
-        c = self.getComponent(Flags.CLAD)
-        return c.getProperties()
-
-    def getFuelMaterial(self):
-        c = self.getComponent(Flags.FUEL)
-        return c.getProperties()
 
     def verifyBlockDims(self):
         """Optional dimension checking."""
