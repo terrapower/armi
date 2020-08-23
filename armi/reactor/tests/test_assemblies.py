@@ -101,19 +101,19 @@ def buildTestAssemblies():
     block2 = blocks.HexBlock("fuel", caseSetting)
     block.setType("fuel")
     block.setHeight(10.0)
-    block.addComponent(fuelUZr)
-    block.addComponent(fuelUTh)
-    block.addComponent(clad)
-    block.addComponent(interSodium)
+    block.add(fuelUZr)
+    block.add(fuelUTh)
+    block.add(clad)
+    block.add(interSodium)
     block.p.axMesh = 1
     block.p.molesHmBOL = 1.0
     block.p.molesHmNow = 1.0
 
     block2.setType("fuel")
     block2.setHeight(10.0)
-    block2.addComponent(fuelUThZr)
-    block2.addComponent(clad)
-    block2.addComponent(interSodium)
+    block2.add(fuelUThZr)
+    block2.add(clad)
+    block2.add(interSodium)
     block2.p.axMesh = 1
     block2.p.molesHmBOL = 2
     block2.p.molesHmNow = 1.0
@@ -256,7 +256,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             # non-flaggy name important for testing
             b.setType("igniter fuel unitst")
-            b.addComponent(h)
+            b.add(h)
             b.parent = self.Assembly
             b.setName(b.makeName(self.Assembly.getNum(), i))
             self.Assembly.add(b)
@@ -508,7 +508,7 @@ class Assembly_TestCase(unittest.TestCase):
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
             b = blocks.HexBlock("fuel", self.cs)
             b.setType("igniter fuel")
-            b.addComponent(h)
+            b.add(h)
             b.setHeight(height2)
             assembly2.add(b)
 
@@ -752,7 +752,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
 
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -801,7 +801,7 @@ class Assembly_TestCase(unittest.TestCase):
             }
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -859,7 +859,7 @@ class Assembly_TestCase(unittest.TestCase):
                 b.setType("fuel")
                 h = components.Hexagon("fuel", "UZr", **self.hexDims)
 
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -932,7 +932,7 @@ class Assembly_TestCase(unittest.TestCase):
             else:
                 b.setType("fuel")
                 h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b.addComponent(h)
+            b.add(h)
             self.Assembly.add(b)
 
         expandFrac = 1.15
@@ -1108,7 +1108,7 @@ class Assembly_TestCase(unittest.TestCase):
         coolantDims = {"Tinput": 273.0, "Thot": 273.0}
         h = components.DerivedShape("coolant", "Sodium", **coolantDims)
         for b in modifiedAssem:
-            b.addComponent(h)
+            b.add(h)
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
 
@@ -1138,7 +1138,7 @@ class HexAssembly_TestCase(unittest.TestCase):
 
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
             b.setType("defaultType")
-            b.addComponent(h)
+            b.add(h)
             self.HexAssembly.add(b)
             self.blockList.append(b)
 
@@ -1191,7 +1191,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
 
             h = components.Square("fuel", "UZr", **self.cartesianDims)
             b.setType("defaultType")
-            b.addComponent(h)
+            b.add(h)
             self.CartesianAssembly.add(b)
             self.blockList.append(b)
 

@@ -89,9 +89,9 @@ class TestFuelHandler(ArmiTestHelper):
         self.block = blocks.HexBlock("TestHexBlock", self.o.cs)
         self.block.setType("fuel")
         self.block.setHeight(10.0)
-        self.block.addComponent(fuel)
-        self.block.addComponent(clad)
-        self.block.addComponent(interSodium)
+        self.block.add(fuel)
+        self.block.add(clad)
+        self.block.add(interSodium)
 
         # generate an assembly
         self.assembly = assemblies.HexAssembly("TestAssemblyType")
