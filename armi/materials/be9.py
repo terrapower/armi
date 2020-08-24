@@ -23,24 +23,22 @@ from armi.materials.material import Material
 
 
 class Be9(Material):
+    """Beryllium."""
+
     name = "Be-9"
 
     def setDefaultMassFracs(self):
         self.setMassFrac("BE9", 1.0)
 
-    def linearExpansion(self, Tk=None, Tc=None):
+        self.p.refDens = 1.85
+
+    def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
         Finds the linear expansion coefficient of Be9. given T in C
         returns m/m-K
-        Based on Austenitic SS http://www-ferp.ucsd.edu/LIB/PROPS/PANOS/ss.html
+        Based on http://www-ferp.ucsd.edu/LIB/PROPS/PANOS/be.html
         which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987)
-        Valid up to 1000K
         """
         Tk = getTk(Tc, Tk)
         self.checkTempRange(50, 1560.0, Tk, "linear expansion")
-
-        return 1e-6 * 11.4
-
-    def density(self, Tk=None, Tc=None):
-        Tk = getTk(Tc, Tk)
-        return 1.85 / (1.0 + self.volumetricExpansion(Tk=Tk) * (Tk - 295.0))  # g/cc
+        return 1e-4 * (8.4305 + 1.1464e-2 * Tk - 2.9752e-6 * Tk ** 2)
