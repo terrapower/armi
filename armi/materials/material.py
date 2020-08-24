@@ -108,15 +108,20 @@ class Material(composites.Leaf):
         r"""
         the instantaneous linear expansion coefficient (dL/L)/dT
 
-        This is used for reactivity coefficients, etc.
+        This is used for reactivity coefficients, etc. but will not affect
+        density or dimensions.
+
+        See Also
+        --------
+        linearExpansionPercent : average linear thermal expansion to affect dimensions and density
         """
         raise NotImplementedError(
             f"{self} does not have a linear expansion property defined"
         )
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
-        average thermal expansion dL/L. Used for computing hot dimensions
+        """
+        Average thermal expansion dL/L. Used for computing hot dimensions and density.
 
         Defaults to 0.0 for materials that don't expand.
 
@@ -129,7 +134,11 @@ class Material(composites.Leaf):
 
         Returns
         -------
-        %dLL(T) in m/m/K
+        dLL(T) in % m/m/K
+
+        See Also
+        --------
+        linearExpansion : handle instantaneous thermal expansion coefficients
 
         """
         return 0.0
@@ -329,7 +338,8 @@ class Material(composites.Leaf):
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
     def density(self, Tk=None, Tc=None):
-        """Return density that preserves mass when thermally expanded in 2D.
+        """
+        Return density that preserves mass when thermally expanded in 2D.
 
         Warning
         -------
