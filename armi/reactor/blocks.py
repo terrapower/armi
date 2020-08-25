@@ -1085,7 +1085,7 @@ class Block(composites.Composite):
         if recomputeAreaFractions:
             self.getVolumeFractions()
 
-    def getDominantMaterial(self, typeSpec, exact=False):
+    def getDominantMaterial(self, typeSpec):
         """
         compute the total volume of each distinct material type in this object.
 

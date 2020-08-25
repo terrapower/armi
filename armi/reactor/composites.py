@@ -2255,7 +2255,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def setMass(self, nucName, mass):
         """
-        Set the mass in a object by adjusting the ndens of the nuclides.
+        Set the mass in an object by adjusting the ndens of the nuclides.
 
         Parameters
         ----------
@@ -2401,7 +2401,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 componentsWithThisMat.append(c)
         return componentsWithThisMat
 
-    def hasComponents(self, typeSpec):
+    def hasComponents(self, typeSpec: TypeSpec, exact=False):
         """
         Return true if all of the named components exist on this block.
 
@@ -2417,7 +2417,7 @@ class ArmiObject(metaclass=CompositeModelType):
             typeSpec = (typeSpec,)
 
         for t in typeSpec:
-            if not self.getComponents(t):
+            if not self.getComponents(t, exact):
                 return False
         return True
 
@@ -2441,7 +2441,9 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return components[0]
 
-    def getComponent(self, typeSpec, exact=False, returnNull=False, quiet=False):
+    def getComponent(
+        self, typeSpec: TypeSpec, exact=False, returnNull=False, quiet=False
+    ):
         """
         Gets a particular component from this block.
 
@@ -2486,7 +2488,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         raise NotImplementedError()
 
-    def getNumComponents(self, typeSpec):
+    def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
         Get the number of components that have these flags, taking into account multiplicity. Useful
         for getting nPins even when there are pin detailed cases.
@@ -2502,7 +2504,7 @@ class ArmiObject(metaclass=CompositeModelType):
             the number of components of this type in this block, including multiplicity.
         """
         total = 0
-        for c in self.iterComponents(typeSpec):
+        for c in self.iterComponents(typeSpec, exact):
             total += int(c.getDimension("mult"))
         return total
 

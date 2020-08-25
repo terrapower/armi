@@ -424,6 +424,54 @@ class TestFlagSerializer(unittest.TestCase):
             )
 
 
+class TestMiscMethods(unittest.TestCase):
+    """
+    Test a variety of methods on the composite.
+
+    these may get moved to composted classes in the future.
+    """
+
+    def setUp(self):
+        self.obj = loadTestBlock()
+
+    def test_setMass(self):
+        masses = {"U235": 5.0, "U238": 3.0}
+        self.obj.setMasses(masses)
+        self.assertAlmostEqual(self.obj.getMass("U235"), 5.0)
+        self.assertAlmostEqual(self.obj.getMass("U238"), 3.0)
+        self.assertAlmostEqual(self.obj.getMass(), 8.0)
+
+        self.obj.addMasses(masses)
+        self.assertAlmostEqual(self.obj.getMass("U238"), 6.0)
+
+    def test_dimensionReport(self):
+        report = self.obj.setComponentDimensionsReport()
+        self.assertEqual(len(report), len(self.obj))
+
+    def test_printDensities(self):
+        lines = self.obj.printDensities()
+        self.assertEqual(len(lines), len(self.obj.getNuclides()))
+
+    def test_getAtomicWeight(self):
+        weight = self.obj.getAtomicWeight()
+        self.assertTrue(50 < weight < 100)
+
+    def test_containsHeavyMetal(self):
+        self.assertTrue(self.obj.containsHeavyMetal())
+
+    def test_copyParamsToChildren(self):
+        self.obj.p.percentBu = 5
+        self.obj.copyParamsToChildren(["percentBu"])
+        for child in self.obj:
+            self.assertEqual(child.p.percentBu, self.obj.p.percentBu)
+
+    def test_copyParamsFrom(self):
+        obj2 = loadTestBlock()
+        obj2.p.percentBu = 15.2
+        self.obj.copyParamsFrom(obj2)
+        self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
+
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'TestCompositeTree.test_ordering']
     unittest.main()
