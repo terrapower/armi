@@ -38,7 +38,7 @@ class CrossSectionTable(collections.OrderedDict):
     the cross sections are returned in barns
     """
 
-    rateTypes = ["nG", "nF", "n2n", "nA", "nP", "n3n"]
+    rateTypes = ("nG", "nF", "n2n", "nA", "nP", "n3n")
 
     def __init__(self, *args, **kwargs):
         collections.OrderedDict.__init__(self, *args, **kwargs)
@@ -154,3 +154,68 @@ class CrossSectionTable(collections.OrderedDict):
                 dataToWrite["mcnpId"] = mcnpNucName
                 output.append(tableFormat.format(**dataToWrite))
         return output
+
+
+def getCrossSectionTable(obj, nuclides=None):
+    """
+    Generate a cross-section table for given nuclides 
+
+    Parameters
+    ----------
+    nuclides : list, optional
+        list of nuclide names for which to generate the cross-section table.
+        If absent, use all nuclides obtained by self.getNuclides().
+
+    Returns
+    -------
+    crossSectionTable : CrossSectionTable
+
+    Notes
+    -----
+    In an earlier implementation, self.getNuclides() was always called if no
+    nuclides argument was passed, even if crossSectionTable had already been
+    generated and, therefore, nuclides was not used. This has been modified so that
+    self.getNuclides() is only called if its result is actually used.
+
+    This also used to do some caching on the block level but that has been removed
+    and the calls to this may therefore need to be re-optimized.
+    """
+    if nuclides is None:
+        nuclides = obj.getNuclides()
+    return makeCrossSectionTable(obj, nuclides=nuclides)
+
+
+def makeCrossSectionTable(obj, nuclides):
+    """
+    See Also
+    --------
+    armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
+    """
+
+    # NOTE: removed default nuclides=None argument since this wouldn't have
+    # worked in that case anyway  (for nucName in nuclides: would've failed)
+
+    # initialize the rxRates dict
+    rxRates = {
+        nucName: {rxName: 0 for rxName in CrossSectionTable.rateTypes}
+        for nucName in nuclides
+    }
+
+    for armiObject in obj.getChildren():
+        for nucName in nuclides:
+            rxnRates = armiObject.getReactionRates(nucName, nDensity=1.0)
+            for rxName, rxRate in rxnRates.items():
+                rxRates[nucName][rxName] += rxRate
+
+    crossSectionTable = CrossSectionTable()
+    crossSectionTable.setName(obj.getName())
+
+    totalFlux = sum(obj.getIntegratedMgFlux())
+    if totalFlux:
+        for nucName, nucRxRates in rxRates.items():
+            xSecs = {
+                rxName: rxRate / totalFlux for rxName, rxRate in nucRxRates.items()
+            }
+            crossSectionTable.add(nucName, **xSecs)
+
+    return crossSectionTable

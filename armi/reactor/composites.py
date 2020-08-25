@@ -52,9 +52,6 @@ from armi.nucDirectory import elements
 from armi.localization import exceptions
 from armi.reactor import grids
 
-from armi.physics.neutronics.isotopicDepletion.crossSectionTable import (
-    CrossSectionTable,
-)
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.nuclearDataIO import xsCollections
 from armi.utils.densityTools import calculateNumberDensity
@@ -265,7 +262,6 @@ class ArmiObject(metaclass=CompositeModelType):
         # way to either represent them in parameters, or otherwise reliably
         # recover them.
         self._lumpedFissionProducts = None
-        self.crossSectionTable = None
 
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
@@ -3076,70 +3072,6 @@ class Composite(ArmiObject):
                 rxnRates[rxName] += val
 
         return rxnRates
-
-    def getCrossSectionTable(self, nuclides=None):
-        """
-        Return `self.crossSectionTable` if it exists. Otherwise, generate
-        the cross-section table for given nuclides (or the result of
-        self.getNuclides() if nuclides is not specified).
-
-        Parameters
-        ----------
-        nuclides : list, optional
-            list of nuclide names for which to generate the cross-section table.
-            If absent, use all nuclides obtained by self.getNuclides().
-
-        Returns
-        -------
-        self.crossSectionTable : armi.physics.neutronics.isotopicDepletion.crossSectionTable.CrossSectionTable
-
-        Notes
-        -----
-        In an earlier implementation, self.getNuclides() was always called if no
-        nuclides argument was passed, even if self.crossSectionTable had already been
-        generated and, therefore, nuclides was not used. This has been modified so that
-        self.getNuclides() is only called if its result is actually used.
-        """
-        if self.crossSectionTable is None:
-            if nuclides is None:
-                nuclides = self.getNuclides()
-            self.makeCrossSectionTable(nuclides=nuclides)
-        return self.crossSectionTable
-
-    def makeCrossSectionTable(self, nuclides):
-        """
-        See Also
-        --------
-        armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
-        """
-
-        # NOTE: removed default nuclides=None argument since this wouldn't have
-        # worked in that case anyway  (for nucName in nuclides: would've failed)
-
-        # initialize the rxRates dict
-        rxRates = {
-            nucName: {rxName: 0 for rxName in ("nG", "nF", "n2n", "nA", "nP", "n3n")}
-            for nucName in nuclides
-        }
-
-        for armiObject in self.getChildren():
-            for nucName in nuclides:
-                rxnRates = armiObject.getReactionRates(nucName, nDensity=1.0)
-                for rxName, rxRate in rxnRates.items():
-                    rxRates[nucName][rxName] += rxRate
-
-        crossSectionTable = CrossSectionTable()
-        crossSectionTable.setName(self.getName())
-
-        totalFlux = sum(self.getIntegratedMgFlux())
-        if totalFlux:
-            for nucName, nucRxRates in rxRates.items():
-                xSecs = {
-                    rxName: rxRate / totalFlux for rxName, rxRate in nucRxRates.items()
-                }
-                crossSectionTable.add(nucName, **xSecs)
-
-        self.crossSectionTable = crossSectionTable
 
     def printContents(self, includeNuclides=True):
         """Display information about all the comprising children in this object."""

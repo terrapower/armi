@@ -36,6 +36,7 @@ from armi.utils.units import C_TO_K
 from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi import materials
+from armi.reactor.flags import Flags
 
 COMPONENT_LINK_REGEX = re.compile(r"^\s*(.+?)\s*\.\s*(.+?)\s*$")
 
@@ -1147,7 +1148,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         try:
             return getReactionRateDict(
                 nucName,
-                self.parent.r.core.lib,
+                self.getAncestorWithFlags(Flags.CORE).lib,
                 self.parent.p.xsType,
                 self.getIntegratedMgFlux(),
                 nDensity,
@@ -1157,35 +1158,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             # send it some zeros
             # KeyError because nucName was not in the library
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
-
-    def makeCrossSectionTable(self, nuclides=None):
-        """
-        See Also
-        --------
-        armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
-        """
-
-        from armi.physics.neutronics.isotopicDepletion.crossSectionTable import (
-            CrossSectionTable,
-        )
-
-        crossSectionTable = CrossSectionTable()
-        crossSectionTable.setName(self.getName())
-
-        totalFlux = sum(self.getIntegratedMgFlux())
-        for nucName in nuclides:
-            rxnRates = self.getReactionRates(nucName, nDensity=1.0)
-            crossSectionTable.add(
-                nucName,
-                nG=rxnRates["nG"] / totalFlux,
-                nF=rxnRates["nF"] / totalFlux,
-                n2n=rxnRates["n2n"] / totalFlux,
-                nA=rxnRates["nA"] / totalFlux,
-                nP=rxnRates["nP"] / totalFlux,
-                n3n=rxnRates["n3n"] / totalFlux,
-            )
-
-        self.crossSectionTable = crossSectionTable
 
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
