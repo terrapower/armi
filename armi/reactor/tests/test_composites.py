@@ -444,6 +444,13 @@ class TestMiscMethods(unittest.TestCase):
         self.obj.addMasses(masses)
         self.assertAlmostEqual(self.obj.getMass("U238"), 6.0)
 
+        # make sure it works with groups of groups
+        group = composites.Composite("group")
+        group.add(self.obj)
+        group.add(loadTestBlock())
+        group.setMass("U235", 5)
+        self.assertAlmostEqual(group.getMass("U235"), 5)
+
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
         self.assertEqual(len(report), len(self.obj))
