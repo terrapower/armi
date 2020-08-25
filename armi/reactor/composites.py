@@ -23,9 +23,6 @@ etc. Each member of the hierarchy knows its children and its parent, so full acc
 the hierarchy is available from everywhere. This design was chosen because of the close
 analogy of the model to the physical nature of nuclear reactors.
 
-These objects are mostly abstract and users should use their subclasses (e.g.
-:py:mod:`armi.reactor.blocks.Block`) in most cases.
-
 .. warning:: Because each member of the hierarchy is linked to the entire tree,
     it is often unsafe to save references to individual members; it can cause
     large and unexpected memory inefficiencies.
@@ -34,7 +31,7 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import timeit
-from typing import Dict, Optional, Type, Tuple, List
+from typing import Dict, Optional, Type, Tuple, List, Union
 
 import numpy
 import tabulate
@@ -563,7 +560,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getParamNames(self):
         """
-        Get a list of block-level parameters keys that are available on this block
+        Get a list of parameters keys that are available on this object.
 
         Will not have any corner, edge, or timenode dependence.
         """
@@ -613,7 +610,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         hasFlags : bool
-            True if this block is in the typeID list.
+            True if this object is in the typeID list.
 
         Notes
         -----
@@ -625,7 +622,7 @@ class ArmiObject(metaclass=CompositeModelType):
         operations.
 
         Always returns true if typeID is none and exact is False, allowing for default
-        parameters to be passed in when the method does not care about the block type.
+        parameters to be passed in when the method does not care about the object type.
         If the typeID is none and exact is True, this will always return False.
 
         Examples
@@ -2405,29 +2402,30 @@ class ArmiObject(metaclass=CompositeModelType):
                 componentsWithThisMat.append(c)
         return componentsWithThisMat
 
-    def hasComponents(self, typeSpec: TypeSpec, exact=False):
+    def hasComponents(self, typeSpec: Union[TypeSpec, List[TypeSpec]], exact=False):
         """
-        Return true if all of the named components exist on this block.
+        Return true if components matching all TypeSpec exist in this object.
 
         Parameters
         ----------
         typeSpec : Flags or iterable of Flags
-            Component types to check for. If None, will check for any components
+            Component flags to check for
         """
         # Wrap the typeSpec in a tuple if we got a scalar
         try:
-            iterator = iter(typeSpec)
+            typeSpec = iter(typeSpec)
         except TypeError:
             typeSpec = (typeSpec,)
 
         for t in typeSpec:
+            # loop b/c getComponents is a OR operation on the flags, but we need AND
             if not self.getComponents(t, exact):
                 return False
         return True
 
     def getComponentByName(self, name):
         """
-        Gets a particular component from this block, based on its name
+        Gets a particular component from this object, based on its name
 
         Parameters
         ----------
@@ -2449,7 +2447,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self, typeSpec: TypeSpec, exact=False, returnNull=False, quiet=False
     ):
         """
-        Gets a particular component from this block.
+        Get a particular component from this object.
 
         Parameters
         ----------
@@ -2462,7 +2460,7 @@ class ArmiObject(metaclass=CompositeModelType):
         quiet : boolean, optional
             Warn if the component is not found. Default: False
 
-        Careful with multiple similar names in one block
+        Careful with multiple similar names in one object
 
         Returns
         -------
@@ -2502,7 +2500,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         total : int
-            the number of components of this type in this block, including multiplicity.
+            the number of components of this type in this object, including multiplicity.
         """
         total = 0
         for c in self.iterComponents(typeSpec, exact):
@@ -2510,9 +2508,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return total
 
     def setComponentDimensionsReport(self):
-        """Makes a summary of the dimensions of the components in this block."""
-        compList = self.getComponentNames()
-
+        """Makes a summary of the dimensions of the components in this object."""
         reportGroups = []
         for c in self.iterComponents():
             reportGroups.append(c.setDimensionReport())
@@ -2520,7 +2516,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return reportGroups
 
     def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a block."""
+        """Get lines that have the number densities of a object."""
         numberDensities = self.getNumberDensities(
             expandFissionProducts=expandFissionProducts
         )
@@ -2574,24 +2570,26 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
         """
-        Return the Material that covers the most volume in this object.
+        Return the first sample of the most dominant material (by volume) in this object.
 
         Parameters
         ----------
-        typeSpec : Flags or iterable of Flags
-            The types of components to consider (e.g. [Flags.FUEL, Flags.CONTROL])
+        typeSpec : Flags or iterable of Flags, optional
+            The types of components to consider (e.g. ``[Flags.FUEL, Flags.CONTROL]``)
+        exact : bool, optional
+            Whether or not the TypeSpec is exact
 
         Returns
         -------
-        mats : dict
-            keys are material names, values are the total volume of this material in cm*2
-        samples : dict
-            keys are material names, values are the first Material of this name in the tree
+        mat : Material
+             the first instance of the most dominant material (by volume) in this object.
 
         See Also
         --------
         getComponentsOfMaterial
             Gets components that are made of a particular material
+        gatherMaterialsByVolume
+            Classifies all materials by volume
 
         """
         return getDominantMaterial([self], typeSpec, exact)

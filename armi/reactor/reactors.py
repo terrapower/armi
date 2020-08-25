@@ -1892,18 +1892,6 @@ class Core(composites.Composite):
         assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
 
-    def _addBlockToXsIndex(self, block):
-        """
-        Build cross section index as required by subdivide.
-        """
-        volumes, _samples = composites.gatherMaterialsByVolume([block])
-        mTuple = ("", 0)
-        blockVol = block.getVolume()
-        for matName, volume in volumes.items():
-            if volume > mTuple[1]:
-                mTuple = (matName, volume / blockVol, False)
-        self.xsIndex[block.p.xsType] = mTuple
-
     def buildZones(self, cs):
         """Update the zones on the reactor."""
         self.zones = zones.buildZones(self, cs)
