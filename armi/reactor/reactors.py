@@ -1896,10 +1896,10 @@ class Core(composites.Composite):
         """
         Build cross section index as required by subdivide.
         """
-        mats, _samples = block.getDominantMaterial(None)
+        volumes, _samples = composites.gatherMaterialsByVolume([block])
         mTuple = ("", 0)
         blockVol = block.getVolume()
-        for matName, volume in mats.items():
+        for matName, volume in volumes.items():
             if volume > mTuple[1]:
                 mTuple = (matName, volume / blockVol, False)
         self.xsIndex[block.p.xsType] = mTuple
@@ -2262,58 +2262,6 @@ class Core(composites.Composite):
             return num / denom
         else:
             raise RuntimeError("no temperature average for {0}".format(typeSpec))
-
-    def getDominantMaterial(self, typeSpec, blockList=None):
-        r"""
-        return the most common material in the compositions of the blocks.
-
-        If you pass ['clad', 'duct'], you might get HT9, for example.
-        This allows generality in reading material properties on groups of blocks.
-        Dominant is defined by most volume.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            The types of components to search through (e.g. Flags.CLAD, Flags.DUCT)
-
-        blockList : iterable, optional
-            A list of blocks that will be considered in the search for a dominant material.
-            If blank, will consider all blocks in the reactor
-
-        Returns
-        -------
-        maxMat : A material object that represents the dominant material
-
-        See Also
-        --------
-        armi.reactor.blocks.Blocks.getDominantMaterial : block level helper for this.
-        """
-        mats = {}
-        samples = {}
-
-        # new style
-        if not blockList:
-            blockList = list(self.getBlocks())
-            ## TODO: no need for list
-        for b in blockList:
-            bMats, bSamples = b.getDominantMaterial(typeSpec)
-            for matName, blockVolume in bMats.items():
-                previousVolume = mats.get(matName, 0.0)
-                mats[matName] = previousVolume + blockVolume
-            samples.update(bSamples)
-
-        # find max volume
-        maxVol = 0.0
-        maxMat = None
-        for mName, vol in mats.items():
-            if vol > maxVol:
-                maxVol = vol
-                maxMat = mName
-        if maxMat:
-            # return a copy of this material. Note that if this material
-            # has properties like Zr-frac, enrichment, etc. then this will
-            # just return one in the batch, not an average.
-            return samples[maxMat]
 
     def getAllNuclidesIn(self, mats):
         """

@@ -1085,38 +1085,6 @@ class Block(composites.Composite):
         if recomputeAreaFractions:
             self.getVolumeFractions()
 
-    def getDominantMaterial(self, typeSpec):
-        """
-        compute the total volume of each distinct material type in this object.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            The types of components to consider (e.g. [Flags.FUEL, Flags.CONTROL])
-
-        Returns
-        -------
-        mats : dict
-            keys are material names, values are the total volume of this material in cm*2
-        samples : dict
-            keys are material names, values are Material objects
-
-        See Also
-        --------
-        getComponentsOfMaterial : gets components made of a particular material
-        getComponent : get component of a particular type (e.g. Flags.COOLANT)
-        getNuclides : list all nuclides in a block or component
-        armi.reactor.reactors.Core.getDominantMaterial : gets dominant material in core
-        """
-        mats = {}
-        samples = {}
-        for c in self.iterComponents(typeSpec):
-            vol = c.getVolume()
-            matName = c.material.getName()
-            mats[matName] = mats.get(matName, 0.0) + vol
-            samples[matName] = c.material
-        return mats, samples
-
     def getComponentsThatAreLinkedTo(self, comp, dim):
         """
         Determine which dimensions of which components are linked to a specific dimension of a particular component.

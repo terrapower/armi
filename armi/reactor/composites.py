@@ -34,7 +34,7 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import timeit
-from typing import Dict, Optional, Type, Tuple
+from typing import Dict, Optional, Type, Tuple, List
 
 import numpy
 import tabulate
@@ -2572,6 +2572,30 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return tempNumerator / totalVol
 
+    def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return the Material that covers the most volume in this object.
+
+        Parameters
+        ----------
+        typeSpec : Flags or iterable of Flags
+            The types of components to consider (e.g. [Flags.FUEL, Flags.CONTROL])
+
+        Returns
+        -------
+        mats : dict
+            keys are material names, values are the total volume of this material in cm*2
+        samples : dict
+            keys are material names, values are the first Material of this name in the tree
+
+        See Also
+        --------
+        getComponentsOfMaterial
+            Gets components that are made of a particular material
+
+        """
+        return getDominantMaterial([self], typeSpec, exact)
+
 
 class Composite(ArmiObject):
     """
@@ -3161,3 +3185,65 @@ class StateRetainer:
             func(child)
         for paramDef in paramDefs:
             func(paramDef)
+
+
+def gatherMaterialsByVolume(
+    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
+):
+    """
+    Compute the total volume of each material in a set of objects and give samples.
+
+    Parameters
+    ----------
+    objects : list of ArmiObject
+        Objects to look within. This argument allows clients to search though some subset
+        of the three (e.g. when you're looking for all CLADDING components within FUEL blocks)
+
+    typeSpec : TypeSpec
+        Flags for the components to look at
+
+    exact : bool
+        Whether or not the TypeSpec is exact
+
+    Notes
+    -----
+    This helper method is outside the main ArmiObject tree for the special clients that need
+    to filter both by container type (e.g. Block type) with one set of flags, and Components
+    with another set of flags. 
+
+    .. warning:: This is a **composition** related helper method that will likely be filed into
+        classes/modules that deal specifically with the composition of things in the data model.
+        Thus clients that use it from here should expect to need updates soon.
+    """
+    volumes = {}
+    samples = {}
+    for obj in objects:
+        for c in obj.iterComponents(typeSpec, exact):
+            vol = c.getVolume()
+            matName = c.material.getName()
+            volumes[matName] = volumes.get(matName, 0.0) + vol
+            if matName not in samples:
+                samples[matName] = c.material
+        return volumes, samples
+
+
+def getDominantMaterial(
+    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
+):
+    """
+    Return the first sample of the most dominant material (by volume) in a set of objects
+
+    .. warning:: This is a **composition** related helper method that will likely be filed into
+        classes/modules that deal specifically with the composition of things in the data model.
+        Thus clients that use it from here should expect to need updates soon.
+
+    """
+    volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
+
+    if volumes:
+        # find matName with max volume
+        maxMatName = list(sorted(volumes.items(), key=lambda item: item[1])).pop()[0]
+        # return this material. Note that if this material
+        # has properties like Zr-frac, enrichment, etc. then this will
+        # just return one in the batch, not an average.
+        return samples[maxMatName]
