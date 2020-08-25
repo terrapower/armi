@@ -249,7 +249,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def __init__(self, name):
         self.name = name
-        self._children = []
         self.parent = None
         self.cached = {}
         self._backupCache = None
@@ -259,10 +258,8 @@ class ArmiObject(metaclass=CompositeModelType):
         # way to either represent them in parameters, or otherwise reliably
         # recover them.
         self._lumpedFissionProducts = None
-
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
-        self.childrenByLocator = {}
 
     def __lt__(self, other):
         """
@@ -2640,6 +2637,11 @@ class Composite(ArmiObject):
     reactors.
 
     """
+
+    def __init__(self, name):
+        ArmiObject.__init__(self, name)
+        self.childrenByLocator = {}
+        self._children = []
 
     def __getitem__(self, index):
         return self._children[index]
