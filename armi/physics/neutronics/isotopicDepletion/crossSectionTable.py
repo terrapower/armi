@@ -23,6 +23,7 @@ means that the composite model doesn't need to import the isotopicDepletionInter
 function.
 """
 import collections
+from typing import List
 
 import numpy
 
@@ -31,7 +32,9 @@ from armi.nucDirectory import nucDir
 
 class CrossSectionTable(collections.OrderedDict):
     """
-    This is a set of one group cross sections for use with isotopicDepletion analysis
+    This is a set of one group cross sections for use with isotopicDepletion analysis.
+
+    Really it's a reaction rate table.
 
     XStable is indexed by nucNames
     (nG), (nF), (n2n), (nA), (nP) and (n3n) are expected
@@ -156,9 +159,11 @@ class CrossSectionTable(collections.OrderedDict):
         return output
 
 
-def getCrossSectionTable(obj, nuclides=None):
+def makeReactionRateTable(obj, nuclides: List = None):
     """
-    Generate a cross-section table for given nuclides 
+    Generate a reaction rate table for given nuclides.
+
+    Often useful in support of depletion.
 
     Parameters
     ----------
@@ -166,36 +171,19 @@ def getCrossSectionTable(obj, nuclides=None):
         list of nuclide names for which to generate the cross-section table.
         If absent, use all nuclides obtained by self.getNuclides().
 
-    Returns
-    -------
-    crossSectionTable : CrossSectionTable
-
     Notes
     -----
-    In an earlier implementation, self.getNuclides() was always called if no
-    nuclides argument was passed, even if crossSectionTable had already been
-    generated and, therefore, nuclides was not used. This has been modified so that
-    self.getNuclides() is only called if its result is actually used.
-
     This also used to do some caching on the block level but that has been removed
     and the calls to this may therefore need to be re-optimized.
-    """
-    if nuclides is None:
-        nuclides = obj.getNuclides()
-    return makeCrossSectionTable(obj, nuclides=nuclides)
 
-
-def makeCrossSectionTable(obj, nuclides):
-    """
     See Also
     --------
     armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
     """
 
-    # NOTE: removed default nuclides=None argument since this wouldn't have
-    # worked in that case anyway  (for nucName in nuclides: would've failed)
+    if nuclides is None:
+        nuclides = obj.getNuclides()
 
-    # initialize the rxRates dict
     rxRates = {
         nucName: {rxName: 0 for rxName in CrossSectionTable.rateTypes}
         for nucName in nuclides

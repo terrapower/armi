@@ -14,7 +14,7 @@ class TestCrossSectionTable(unittest.TestCase):
         obj.p.mgFlux = range(33)
         core = obj.getAncestorWithFlags(Flags.CORE)
         core.lib = isotxs.readBinary(ISOAA_PATH)
-        table = cst.getCrossSectionTable(obj)
+        table = cst.makeReactionRateTable(obj)
         self.assertEqual(len(table), len(obj.getNuclides()))
 
 
