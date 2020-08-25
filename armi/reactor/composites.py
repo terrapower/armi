@@ -205,7 +205,7 @@ class ArmiObject(metaclass=CompositeModelType):
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all
       classes
-    * Declares and interface for accessing and managing
+    * Declares an interface for accessing and managing
       child objects
     * Defines an interface for accessing parents.
 
@@ -455,6 +455,31 @@ class ArmiObject(metaclass=CompositeModelType):
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Get all children that have given flags."""
         return NotImplementedError
+
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return all armi.reactor.component.Component within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the
+            flags specified.
+
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'.  This has no impact if compLabel is None.
+
+        Returns
+        -------
+        list of Component
+            items matching compLabel and exact criteria
+        """
+        raise NotImplementedError()
+
+    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """Yield components one by one in a generator."""
+        raise NotImplementedError()
 
     def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
         """
@@ -2321,27 +2346,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return ((minI, maxI), (minJ, maxJ), (minK, maxK))
 
-    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return all armi.reactor.component.Component within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
-
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if compLabel is None.
-
-        Returns
-        -------
-        list of Component
-            items matching compLabel and exact criteria
-        """
-        raise NotImplementedError()
-
     def getComponentNames(self):
         r"""
         Get all unique component names of this Composite.
@@ -2484,9 +2488,6 @@ class ArmiObject(metaclass=CompositeModelType):
                     self, typeSpec, results
                 )
             )
-
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
-        raise NotImplementedError()
 
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
