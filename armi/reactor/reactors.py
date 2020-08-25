@@ -1257,14 +1257,13 @@ class Core(composites.Composite):
             coolantNuclides = set()
             fuelNuclides = set()
             structureNuclides = set()
-            for b in self.getBlocks():
-                for c in b:
-                    if c.getName() == "coolant":
-                        coolantNuclides.update(c.getNuclides())
-                    elif "fuel" in c.getName():
-                        fuelNuclides.update(c.getNuclides())
-                    else:
-                        structureNuclides.update(c.getNuclides())
+            for c in self.iterComponents():
+                if c.getName() == "coolant":
+                    coolantNuclides.update(c.getNuclides())
+                elif "fuel" in c.getName():
+                    fuelNuclides.update(c.getNuclides())
+                else:
+                    structureNuclides.update(c.getNuclides())
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = (
@@ -2254,7 +2253,7 @@ class Core(composites.Composite):
                 weight = b.p.flux ** 2.0
             else:
                 weight = 1.0
-            for c in b.getComponents(typeSpec):
+            for c in b.iterComponents(typeSpec):
                 vol = c.getVolume()
                 num += c.temperatureInC * vol * weight
                 denom += vol * weight
@@ -2347,10 +2346,9 @@ class Core(composites.Composite):
             mats = [mats]
         names = set(m.name for m in mats)
         allNucNames = set()
-        for b in self.getBlocks():
-            for c in b.getComponents():
-                if c.material.name in names:
-                    allNucNames.update(c.getNuclides())
+        for c in self.iterComponents():
+            if c.material.name in names:
+                allNucNames.update(c.getNuclides())
         return list(allNucNames)
 
     def growToFullCore(self, cs):

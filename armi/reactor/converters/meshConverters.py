@@ -486,10 +486,7 @@ def getAxialExpansionNuclideAdjustList(r, componentFlags: TypeSpec = None):
         componentFlags = [Flags.FUEL]
 
     adjustSet = {
-        nuc
-        for b in r.core.getBlocks()
-        for c in b.getComponents(componentFlags)
-        for nuc in c.getNuclides()
+        nuc for c in r.core.iterComponents(componentFlags) for nuc in c.getNuclides()
     }
 
     return list(adjustSet)

@@ -1137,7 +1137,7 @@ class Block(composites.Composite):
             A list of (components,dimName) that are linked to this component, dim.
         """
         linked = []
-        for c in self.getComponents():
+        for c in self.iterComponents():
             for dimName, val in c.p.items():
                 if c.dimensionIsLinked(dimName):
                     requiredComponent = val[0]
@@ -1338,7 +1338,7 @@ class Block(composites.Composite):
 
     def getPlenumPin(self):
         """Return the plenum pin if it exists."""
-        for c in self.getComponents(Flags.GAP):
+        for c in self.iterComponents(Flags.GAP):
             if self.isPlenumPin(c):
                 return c
         return None
@@ -1436,7 +1436,7 @@ class Block(composites.Composite):
         """
         maxDim = -float("inf")
         largestComponent = None
-        for c in self.getComponents():
+        for c in self.iterComponents():
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:

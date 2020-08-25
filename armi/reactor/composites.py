@@ -874,7 +874,9 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum([c.getMass(nuclideNames=nuclideNames) for c in self.getComponents()])
+        return sum(
+            [c.getMass(nuclideNames=nuclideNames) for c in self.iterComponents()]
+        )
 
     def getMassFrac(self, nucName):
         """
@@ -1222,11 +1224,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
-        comps = self.getComponents()  # storing as local is speedup
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
-                for c in comps
+                for c in self.iterComponents()
             ]
         )  # c x 1
         totalVol = volumes.sum()
@@ -1235,7 +1236,10 @@ class ArmiObject(metaclass=CompositeModelType):
             return [0.0] * len(nucNames)
 
         nucDensForEachComp = numpy.array(
-            [[c.getNumberDensity(nuc) for nuc in nucNames] for c in comps]
+            [
+                [c.getNumberDensity(nuc) for nuc in nucNames]
+                for c in self.iterComponents()
+            ]
         )  # c x n
         return volumes.dot(nucDensForEachComp) / totalVol
 
@@ -2367,7 +2371,7 @@ class ArmiObject(metaclass=CompositeModelType):
         param : list
             List of components in this block that are of the given shape.
         """
-        return [c for c in self.getComponents() if isinstance(c, shapeClass)]
+        return [c for c in self.iterComponents() if isinstance(c, shapeClass)]
 
     def getComponentsOfMaterial(self, material=None, materialName=None):
         """
@@ -2396,7 +2400,7 @@ class ArmiObject(metaclass=CompositeModelType):
             ), "Cannot call with more than one selector. Choose one or the other."
 
         componentsWithThisMat = []
-        for c in self.getComponents():
+        for c in self.iterComponents():
             if c.getProperties().getName() == materialName:
                 componentsWithThisMat.append(c)
         return componentsWithThisMat
@@ -2430,7 +2434,7 @@ class ArmiObject(metaclass=CompositeModelType):
         name : str
             The blueprint name of the component to return
         """
-        components = [c for c in self.getComponents() if c.name == name]
+        components = [c for c in self.iterComponents() if c.name == name]
         nComp = len(components)
         if nComp == 0:
             return None
@@ -2510,7 +2514,7 @@ class ArmiObject(metaclass=CompositeModelType):
         compList = self.getComponentNames()
 
         reportGroups = []
-        for c in self.getComponents():
+        for c in self.iterComponents():
             reportGroups.append(c.setDimensionReport())
 
         return reportGroups
@@ -2543,7 +2547,7 @@ class ArmiObject(metaclass=CompositeModelType):
             natural nuclide to replace.
         """
         natName = elementalNuclide.name
-        for component in self.getComponents():
+        for component in self.iterComponents():
             elementalDensity = component.getNumberDensity(natName)
             if elementalDensity == 0.0:
                 continue

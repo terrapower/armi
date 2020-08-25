@@ -532,7 +532,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         - This component does not serve any purpose for XS generation as it contains void material with zero area.
         - Removing this component does not modify the blocks within the reactor.
         """
-        for c in repBlock.getComponents():
+        for c in repBlock.iterComponents():
             if c.isLatticeComponent():
                 repBlock.remove(c)
         return repBlock
