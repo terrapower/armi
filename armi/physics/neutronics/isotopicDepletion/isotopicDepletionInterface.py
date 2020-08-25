@@ -109,10 +109,16 @@ def makeXsecTable(
         -- i.e. if you use a .format() call with mcnpId, nG, nF, n2n, n3n, nA,
         and nP you'll get the format you want. If you use a .format() call with  the case name you'll return a
         formatted list of string elements
+
     Results
     -------
     output: list
         a list of string elements that together make a xsec card
+        
+    See Also
+    --------
+    crossSectionTable.makeCrossSectionTable
+        Makes a table for arbitrary ArmiObjects
     """
     xsTable = CrossSectionTable()
 

@@ -23,6 +23,7 @@ means that the composite model doesn't need to import the isotopicDepletionInter
 function.
 """
 import collections
+from typing import List
 
 import numpy
 
@@ -31,14 +32,16 @@ from armi.nucDirectory import nucDir
 
 class CrossSectionTable(collections.OrderedDict):
     """
-    This is a set of one group cross sections for use with isotopicDepletion analysis
+    This is a set of one group cross sections for use with isotopicDepletion analysis.
+
+    Really it's a reaction rate table.
 
     XStable is indexed by nucNames
     (nG), (nF), (n2n), (nA), (nP) and (n3n) are expected
     the cross sections are returned in barns
     """
 
-    rateTypes = ["nG", "nF", "n2n", "nA", "nP", "n3n"]
+    rateTypes = ("nG", "nF", "n2n", "nA", "nP", "n3n")
 
     def __init__(self, *args, **kwargs):
         collections.OrderedDict.__init__(self, *args, **kwargs)
@@ -154,3 +157,53 @@ class CrossSectionTable(collections.OrderedDict):
                 dataToWrite["mcnpId"] = mcnpNucName
                 output.append(tableFormat.format(**dataToWrite))
         return output
+
+
+def makeReactionRateTable(obj, nuclides: List = None):
+    """
+    Generate a reaction rate table for given nuclides.
+
+    Often useful in support of depletion.
+
+    Parameters
+    ----------
+    nuclides : list, optional
+        list of nuclide names for which to generate the cross-section table.
+        If absent, use all nuclides obtained by self.getNuclides().
+
+    Notes
+    -----
+    This also used to do some caching on the block level but that has been removed
+    and the calls to this may therefore need to be re-optimized.
+
+    See Also
+    --------
+    armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
+    """
+
+    if nuclides is None:
+        nuclides = obj.getNuclides()
+
+    rxRates = {
+        nucName: {rxName: 0 for rxName in CrossSectionTable.rateTypes}
+        for nucName in nuclides
+    }
+
+    for armiObject in obj.getChildren():
+        for nucName in nuclides:
+            rxnRates = armiObject.getReactionRates(nucName, nDensity=1.0)
+            for rxName, rxRate in rxnRates.items():
+                rxRates[nucName][rxName] += rxRate
+
+    crossSectionTable = CrossSectionTable()
+    crossSectionTable.setName(obj.getName())
+
+    totalFlux = sum(obj.getIntegratedMgFlux())
+    if totalFlux:
+        for nucName, nucRxRates in rxRates.items():
+            xSecs = {
+                rxName: rxRate / totalFlux for rxName, rxRate in nucRxRates.items()
+            }
+            crossSectionTable.add(nucName, **xSecs)
+
+    return crossSectionTable
