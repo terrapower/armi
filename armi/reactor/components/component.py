@@ -1105,55 +1105,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         return density
 
-    def addMass(self, nucName, mass, **kwargs):
-        """
-        Parameters
-        ----------
-        nucName - str
-            nuclide name -- e.g. 'U235'
-
-        mass - float
-            mass in grams
-        """
-        volume = self.getVolume()
-        addedNumberDensity = densityTools.calculateNumberDensity(nucName, mass, volume)
-        self.setNumberDensity(
-            nucName, self.p.numberDensities.get(nucName, 0) + addedNumberDensity
-        )
-
-    def setMass(self, nucName, mass, **kwargs):
-        """
-        Parameters
-        ----------
-        nucName - str
-            nuclide name -- e.g. 'U235'
-
-        mass - float
-            mass in grams
-        """
-        volume = self.getVolume()
-        try:
-            addedNumberDensity = densityTools.calculateNumberDensity(
-                nucName, mass, volume
-            )
-            self.setNumberDensity(
-                nucName, self.p.numberDensities.get(nucName, 0) + addedNumberDensity
-            )
-        except ZeroDivisionError as ee:
-            raise ValueError(str(ee) + "armiObject {}, volume {}".format(self, volume))
-
-    def setMasses(self, masses, **kwargs):
-        """
-        sets a vector of masses
-
-        Parameters
-        ----------
-        masses : Dict
-            a dictionary of masses (g) indexed by nucNames (string)
-        """
-        self.p.numberDensities.clear()
-        composites.Composite.setMasses(self, masses, kwargs)
-
     def getLumpedFissionProductCollection(self):
         """
         Get collection of LFP objects. Will work for global or block-level LFP models.
@@ -1285,9 +1236,6 @@ def getReactionRateDict(nucName, lib, xsType, mgFlux, nDens):
     ----
     assume there is no n3n cross section in ISOTXS
 
-    See Also
-    --------
-    armi.reactor.batch.Batch.makeCrossSectionTable
     """
     key = "{}{}A".format(nucName, xsType)
     libNuc = lib[key]

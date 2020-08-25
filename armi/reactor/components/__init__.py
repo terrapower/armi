@@ -193,10 +193,6 @@ class UnshapedVolumetricComponent(UnshapedComponent):
     A component with undefined dimensions.
 
     Useful for situations where you just want to enter the volume directly.
-
-    See Also
-    --------
-    armi.reactor.batch.Batch
     """
 
     is3D = True

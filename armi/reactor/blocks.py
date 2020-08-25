@@ -32,7 +32,7 @@ import numpy
 from armi.reactor import composites
 from armi import runLog
 from armi import settings
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
 from armi.reactor import locations
 from armi.reactor import geometry
 from armi.reactor.locations import AXIAL_CHARS
@@ -45,7 +45,6 @@ from armi.utils import units
 from armi.bookkeeping import report
 from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.utils.densityTools import calculateNumberDensity
 from armi.utils import hexagon
 from armi.utils import densityTools
 from armi.physics.neutronics import NEUTRON
@@ -460,21 +459,6 @@ class Block(composites.Composite):
         else:
             return xsType + bu
 
-    def setMass(self, nucName, mass, **kwargs):
-        """
-        Sets the mass in a block and adjusts the density of the nuclides in the block.
-
-        Parameters
-        ----------
-        nucName : str
-            Nuclide name to set mass of
-        mass : float
-            Mass in grams to set.
-
-        """
-        d = calculateNumberDensity(nucName, mass, self.getVolume())
-        self.setNumberDensity(nucName, d)
-
     def getHeight(self):
         """Return the block height."""
         return self.p.height
@@ -707,20 +691,6 @@ class Block(composites.Composite):
 
         self._setCache("area", area)
         return area
-
-    def getAverageTempInC(self):
-        """
-        Returns the average temperature of the block in C using the block components
-
-        This supercedes self.getAvgFuelTemp()
-        """
-
-        blockAvgTemp = 0.0
-        for component, volFrac in self.getVolumeFractions():
-            componentTemp = component.temperatureInC
-            blockAvgTemp += componentTemp * volFrac
-
-        return blockAvgTemp
 
     def getVolume(self):
         """
@@ -1115,7 +1085,7 @@ class Block(composites.Composite):
         if recomputeAreaFractions:
             self.getVolumeFractions()
 
-    def getDominantMaterial(self, typeSpec):
+    def getDominantMaterial(self, typeSpec, exact=False):
         """
         compute the total volume of each distinct material type in this object.
 
@@ -1140,7 +1110,7 @@ class Block(composites.Composite):
         """
         mats = {}
         samples = {}
-        for c in self.getComponents(typeSpec):
+        for c in self.iterComponents(typeSpec):
             vol = c.getVolume()
             matName = c.material.getName()
             mats[matName] = mats.get(matName, 0.0) + vol
@@ -1224,136 +1194,6 @@ class Block(composites.Composite):
                 raise RuntimeError("Cannot locate linked component.")
         return orderedComponents
 
-    def hasComponents(self, typeSpec):
-        """
-        Return true if all of the named components exist on this block.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            Component types to check for. If None, will check for any components
-        """
-        # Wrap the typeSpec in a tuple if we got a scalar
-        try:
-            iterator = iter(typeSpec)
-        except TypeError:
-            typeSpec = (typeSpec,)
-
-        for t in typeSpec:
-            if not self.getComponents(t):
-                return False
-        return True
-
-    def getComponentByName(self, name):
-        """
-        Gets a particular component from this block, based on its name
-
-        Parameters
-        ----------
-        name : str
-            The blueprint name of the component to return
-        """
-        components = [c for c in self if c.name == name]
-        nComp = len(components)
-        if nComp == 0:
-            return None
-        elif nComp > 1:
-            raise ValueError(
-                "More than one component named '{}' in {}".format(self, name)
-            )
-        else:
-            return components[0]
-
-    def getComponent(self, typeSpec, exact=False, returnNull=False, quiet=False):
-        """
-        Gets a particular component from this block.
-
-        Parameters
-        ----------
-        typeSpec : flags.Flags or list of Flags
-            The type specification of the component to return
-
-        exact : boolean, optional
-            Demand that the component flags be exactly equal to the typespec. Default: False
-
-        quiet : boolean, optional
-            Warn if the component is not found. Default: False
-
-        Careful with multiple similar names in one block
-
-        Returns
-        -------
-        Component : The component that matches the critera or None
-
-        """
-        results = self.getComponents(typeSpec, exact=exact)
-        if len(results) == 1:
-            return results[0]
-        elif not results:
-            if not quiet:
-                runLog.warning(
-                    "No component matched {0} in {1}. Returning None".format(
-                        typeSpec, self
-                    ),
-                    single=True,
-                    label="None component returned instead of {0}".format(typeSpec),
-                )
-            return None
-        else:
-            raise ValueError(
-                "Multiple components match in {} match typeSpec {}: {}".format(
-                    self, typeSpec, results
-                )
-            )
-
-    def getComponentsOfShape(self, shapeClass):
-        """
-        Return list of components in this block of a particular shape.
-
-        Parameters
-        ----------
-        shapeClass : Component
-            The class of component, e.g. Circle, Helix, Hexagon, etc.
-
-        Returns
-        -------
-        param : list
-            List of components in this block that are of the given shape.
-        """
-        return [c for c in self.getComponents() if isinstance(c, shapeClass)]
-
-    def getComponentsOfMaterial(self, material=None, materialName=None):
-        """
-        Return list of components in this block that are made of a particular material
-
-        Only one of the selectors may be used
-
-        Parameters
-        ----------
-        material : Material object, optional
-            The material to match
-        materialName : str, optional
-            The material name to match.
-
-        Returns
-        -------
-        componentsWithThisMat : list
-
-        """
-
-        if materialName is None:
-            materialName = material.getName()
-        else:
-            assert (
-                material is None
-            ), "Cannot call with more than one selector. Choose one or the other."
-
-        componentsWithThisMat = []
-        for c in self.getComponents():
-            if c.getProperties().getName() == materialName:
-                componentsWithThisMat.append(c)
-        return componentsWithThisMat
-
     def getSortedComponentsInsideOfComponent(self, component):
         """
         Returns a list of components inside of the given component sorted from innermost to outermost.
@@ -1375,26 +1215,6 @@ class Block(composites.Composite):
         componentIndex = sortedComponents.index(component)
         sortedComponents = sortedComponents[:componentIndex]
         return sortedComponents
-
-    def getNumComponents(self, typeSpec):
-        """
-        Get the number of components that have these flags, taking into account multiplicity. Useful
-        for getting nPins even when there are pin detailed cases.
-
-        Parameters
-        ----------
-        typeSpec : Flags
-            Expected flags of the component to get. e.g. Flags.FUEL
-
-        Returns
-        -------
-        total : int
-            the number of components of this type in this block, including multiplicity.
-        """
-        total = 0
-        for c in self.iterComponents(typeSpec):
-            total += int(c.getDimension("mult"))
-        return total
 
     def getNumPins(self):
         """Return the number of pins in this block."""
@@ -1707,62 +1527,6 @@ class Block(composites.Composite):
 
         # return the group the information went to
         return report.ALL[report.BLOCK_AREA_FRACS]
-
-    def setComponentDimensionsReport(self):
-        """Makes a summary of the dimensions of the components in this block."""
-        compList = self.getComponentNames()
-
-        reportGroups = []
-        for c in self.getComponents():
-            reportGroups.append(c.setDimensionReport())
-
-        return reportGroups
-
-    def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a block."""
-        numberDensities = self.getNumberDensities(
-            expandFissionProducts=expandFissionProducts
-        )
-        lines = []
-        for nucName, nucDens in numberDensities.items():
-            lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
-        return lines
-
-    def expandAllElementalsToIsotopics(self):
-        reactorNucs = self.getNuclides()
-        for elemental in nuclideBases.where(
-            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase)
-            and nb.name in reactorNucs
-        ):
-            self.expandElementalToIsotopics(elemental)
-
-    def expandElementalToIsotopics(self, elementalNuclide):
-        """
-        Expands the density of a specific elemental nuclides to its natural isotopics.
-
-        Parameters
-        ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide`
-            natural nuclide to replace.
-        """
-        natName = elementalNuclide.name
-        for component in self.getComponents():
-            elementalDensity = component.getNumberDensity(natName)
-            if elementalDensity == 0.0:
-                continue
-            component.setNumberDensity(natName, 0.0)  # clear the elemental
-            del component.p.numberDensities[natName]
-            # add in isotopics
-            for natNuc in elementalNuclide.getNaturalIsotopics():
-                component.setNumberDensity(
-                    natNuc.name, elementalDensity * natNuc.abundance
-                )
-        try:
-            # not all blocks have the same nuclides, but we don't actually care if it did or not, just delete the
-            # parameter...
-            del self.p[elementalNuclide.getDatabaseName()]
-        except KeyError:
-            pass
 
     def getBurnupPeakingFactor(self):
         """
