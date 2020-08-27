@@ -1166,7 +1166,7 @@ class Block_TestCase(unittest.TestCase):
         cur = self.Block.getVolumeFractions()
         tot = 0.0
         areas = []
-        for c in self.Block.getComponents():
+        for c in self.Block.iterComponents():
             a = c.getArea()
             tot += a
             areas.append((c, a))

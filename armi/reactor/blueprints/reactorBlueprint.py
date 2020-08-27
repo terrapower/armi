@@ -180,13 +180,12 @@ def summarizeMaterialData(container):
     )
     materialNames = set()
     materialData = []
-    for b in container.getBlocks():
-        for c in b:
-            if c.material.name in materialNames:
-                continue
-            sourceLocation, wasModified = _getMaterialSourceData(c.material)
-            materialData.append((c.material.name, sourceLocation, wasModified))
-            materialNames.add(c.material.name)
+    for c in container.iterComponents():
+        if c.material.name in materialNames:
+            continue
+        sourceLocation, wasModified = _getMaterialSourceData(c.material)
+        materialData.append((c.material.name, sourceLocation, wasModified))
+        materialNames.add(c.material.name)
     materialData = sorted(materialData)
     runLog.info(
         tabulate.tabulate(

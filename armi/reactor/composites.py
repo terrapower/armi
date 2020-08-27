@@ -23,9 +23,6 @@ etc. Each member of the hierarchy knows its children and its parent, so full acc
 the hierarchy is available from everywhere. This design was chosen because of the close
 analogy of the model to the physical nature of nuclear reactors.
 
-These objects are mostly abstract and users should use their subclasses (e.g.
-:py:mod:`armi.reactor.blocks.Block`) in most cases.
-
 .. warning:: Because each member of the hierarchy is linked to the entire tree,
     it is often unsafe to save references to individual members; it can cause
     large and unexpected memory inefficiencies.
@@ -34,7 +31,7 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import timeit
-from typing import Dict, Optional, Type, Tuple
+from typing import Dict, Optional, Type, Tuple, List, Union
 
 import numpy
 import tabulate
@@ -252,7 +249,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def __init__(self, name):
         self.name = name
-        self._children = []
         self.parent = None
         self.cached = {}
         self._backupCache = None
@@ -262,10 +258,8 @@ class ArmiObject(metaclass=CompositeModelType):
         # way to either represent them in parameters, or otherwise reliably
         # recover them.
         self._lumpedFissionProducts = None
-
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
-        self.childrenByLocator = {}
 
     def __lt__(self, other):
         """
@@ -563,7 +557,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getParamNames(self):
         """
-        Get a list of block-level parameters keys that are available on this block
+        Get a list of parameters keys that are available on this object.
 
         Will not have any corner, edge, or timenode dependence.
         """
@@ -613,7 +607,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         hasFlags : bool
-            True if this block is in the typeID list.
+            True if this object is in the typeID list.
 
         Notes
         -----
@@ -625,7 +619,7 @@ class ArmiObject(metaclass=CompositeModelType):
         operations.
 
         Always returns true if typeID is none and exact is False, allowing for default
-        parameters to be passed in when the method does not care about the block type.
+        parameters to be passed in when the method does not care about the object type.
         If the typeID is none and exact is True, this will always return False.
 
         Examples
@@ -874,7 +868,9 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum([c.getMass(nuclideNames=nuclideNames) for c in self.getComponents()])
+        return sum(
+            [c.getMass(nuclideNames=nuclideNames) for c in self.iterComponents()]
+        )
 
     def getMassFrac(self, nucName):
         """
@@ -1222,11 +1218,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
-        comps = self.getComponents()  # storing as local is speedup
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
-                for c in comps
+                for c in self.iterComponents()
             ]
         )  # c x 1
         totalVol = volumes.sum()
@@ -1235,7 +1230,10 @@ class ArmiObject(metaclass=CompositeModelType):
             return [0.0] * len(nucNames)
 
         nucDensForEachComp = numpy.array(
-            [[c.getNumberDensity(nuc) for nuc in nucNames] for c in comps]
+            [
+                [c.getNumberDensity(nuc) for nuc in nucNames]
+                for c in self.iterComponents()
+            ]
         )  # c x n
         return volumes.dot(nucDensForEachComp) / totalVol
 
@@ -2367,7 +2365,7 @@ class ArmiObject(metaclass=CompositeModelType):
         param : list
             List of components in this block that are of the given shape.
         """
-        return [c for c in self.getComponents() if isinstance(c, shapeClass)]
+        return [c for c in self.iterComponents() if isinstance(c, shapeClass)]
 
     def getComponentsOfMaterial(self, material=None, materialName=None):
         """
@@ -2396,41 +2394,42 @@ class ArmiObject(metaclass=CompositeModelType):
             ), "Cannot call with more than one selector. Choose one or the other."
 
         componentsWithThisMat = []
-        for c in self.getComponents():
+        for c in self.iterComponents():
             if c.getProperties().getName() == materialName:
                 componentsWithThisMat.append(c)
         return componentsWithThisMat
 
-    def hasComponents(self, typeSpec: TypeSpec, exact=False):
+    def hasComponents(self, typeSpec: Union[TypeSpec, List[TypeSpec]], exact=False):
         """
-        Return true if all of the named components exist on this block.
+        Return true if components matching all TypeSpec exist in this object.
 
         Parameters
         ----------
         typeSpec : Flags or iterable of Flags
-            Component types to check for. If None, will check for any components
+            Component flags to check for
         """
         # Wrap the typeSpec in a tuple if we got a scalar
         try:
-            iterator = iter(typeSpec)
+            typeSpec = iter(typeSpec)
         except TypeError:
             typeSpec = (typeSpec,)
 
         for t in typeSpec:
+            # loop b/c getComponents is a OR operation on the flags, but we need AND
             if not self.getComponents(t, exact):
                 return False
         return True
 
     def getComponentByName(self, name):
         """
-        Gets a particular component from this block, based on its name
+        Gets a particular component from this object, based on its name
 
         Parameters
         ----------
         name : str
             The blueprint name of the component to return
         """
-        components = [c for c in self.getComponents() if c.name == name]
+        components = [c for c in self.iterComponents() if c.name == name]
         nComp = len(components)
         if nComp == 0:
             return None
@@ -2445,7 +2444,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self, typeSpec: TypeSpec, exact=False, returnNull=False, quiet=False
     ):
         """
-        Gets a particular component from this block.
+        Get a particular component from this object.
 
         Parameters
         ----------
@@ -2458,7 +2457,7 @@ class ArmiObject(metaclass=CompositeModelType):
         quiet : boolean, optional
             Warn if the component is not found. Default: False
 
-        Careful with multiple similar names in one block
+        Careful with multiple similar names in one object
 
         Returns
         -------
@@ -2498,7 +2497,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         total : int
-            the number of components of this type in this block, including multiplicity.
+            the number of components of this type in this object, including multiplicity.
         """
         total = 0
         for c in self.iterComponents(typeSpec, exact):
@@ -2506,17 +2505,15 @@ class ArmiObject(metaclass=CompositeModelType):
         return total
 
     def setComponentDimensionsReport(self):
-        """Makes a summary of the dimensions of the components in this block."""
-        compList = self.getComponentNames()
-
+        """Makes a summary of the dimensions of the components in this object."""
         reportGroups = []
-        for c in self.getComponents():
+        for c in self.iterComponents():
             reportGroups.append(c.setDimensionReport())
 
         return reportGroups
 
     def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a block."""
+        """Get lines that have the number densities of a object."""
         numberDensities = self.getNumberDensities(
             expandFissionProducts=expandFissionProducts
         )
@@ -2543,7 +2540,7 @@ class ArmiObject(metaclass=CompositeModelType):
             natural nuclide to replace.
         """
         natName = elementalNuclide.name
-        for component in self.getComponents():
+        for component in self.iterComponents():
             elementalDensity = component.getNumberDensity(natName)
             if elementalDensity == 0.0:
                 continue
@@ -2567,6 +2564,32 @@ class ArmiObject(metaclass=CompositeModelType):
             totalVol += vol
 
         return tempNumerator / totalVol
+
+    def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return the first sample of the most dominant material (by volume) in this object.
+
+        Parameters
+        ----------
+        typeSpec : Flags or iterable of Flags, optional
+            The types of components to consider (e.g. ``[Flags.FUEL, Flags.CONTROL]``)
+        exact : bool, optional
+            Whether or not the TypeSpec is exact
+
+        Returns
+        -------
+        mat : Material
+             the first instance of the most dominant material (by volume) in this object.
+
+        See Also
+        --------
+        getComponentsOfMaterial
+            Gets components that are made of a particular material
+        gatherMaterialsByVolume
+            Classifies all materials by volume
+
+        """
+        return getDominantMaterial([self], typeSpec, exact)
 
 
 class Composite(ArmiObject):
@@ -2614,6 +2637,11 @@ class Composite(ArmiObject):
     reactors.
 
     """
+
+    def __init__(self, name):
+        ArmiObject.__init__(self, name)
+        self.childrenByLocator = {}
+        self._children = []
 
     def __getitem__(self, index):
         return self._children[index]
@@ -3157,3 +3185,65 @@ class StateRetainer:
             func(child)
         for paramDef in paramDefs:
             func(paramDef)
+
+
+def gatherMaterialsByVolume(
+    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
+):
+    """
+    Compute the total volume of each material in a set of objects and give samples.
+
+    Parameters
+    ----------
+    objects : list of ArmiObject
+        Objects to look within. This argument allows clients to search though some subset
+        of the three (e.g. when you're looking for all CLADDING components within FUEL blocks)
+
+    typeSpec : TypeSpec
+        Flags for the components to look at
+
+    exact : bool
+        Whether or not the TypeSpec is exact
+
+    Notes
+    -----
+    This helper method is outside the main ArmiObject tree for the special clients that need
+    to filter both by container type (e.g. Block type) with one set of flags, and Components
+    with another set of flags. 
+
+    .. warning:: This is a **composition** related helper method that will likely be filed into
+        classes/modules that deal specifically with the composition of things in the data model.
+        Thus clients that use it from here should expect to need updates soon.
+    """
+    volumes = {}
+    samples = {}
+    for obj in objects:
+        for c in obj.iterComponents(typeSpec, exact):
+            vol = c.getVolume()
+            matName = c.material.getName()
+            volumes[matName] = volumes.get(matName, 0.0) + vol
+            if matName not in samples:
+                samples[matName] = c.material
+    return volumes, samples
+
+
+def getDominantMaterial(
+    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
+):
+    """
+    Return the first sample of the most dominant material (by volume) in a set of objects
+
+    .. warning:: This is a **composition** related helper method that will likely be filed into
+        classes/modules that deal specifically with the composition of things in the data model.
+        Thus clients that use it from here should expect to need updates soon.
+
+    """
+    volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
+
+    if volumes:
+        # find matName with max volume
+        maxMatName = list(sorted(volumes.items(), key=lambda item: item[1])).pop()[0]
+        # return this material. Note that if this material
+        # has properties like Zr-frac, enrichment, etc. then this will
+        # just return one in the batch, not an average.
+        return samples[maxMatName]
