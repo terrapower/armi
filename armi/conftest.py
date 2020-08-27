@@ -32,8 +32,13 @@ from armi.settings import caseSettings
 def pytest_sessionstart(session):
     import armi
     from armi import apps
+    from armi.nucDirectory import nuclideBases
 
     print("Initializing generic ARMI Framework application")
     armi.configure(apps.App())
     cs = caseSettings.Settings()
     settings.setMasterCs(cs)
+    # Need to init burnChain.
+    # see armi.cases.case.Case._initBurnChain
+    with open(cs["burnChainFileName"]) as burnChainStream:
+        nuclideBases.imposeBurnChain(burnChainStream)

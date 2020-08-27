@@ -188,10 +188,6 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        # Need to init burnChain first.
-        # see armi.cases.case.Case._initBurnChain
-        with open(cs["burnChainFileName"]) as burnChainStream:
-            nuclideBases.imposeBurnChain(burnChainStream)
         cs["xsKernel"] = "MC2v2"
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem("hex", cs, name="fuel a")

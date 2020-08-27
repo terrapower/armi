@@ -29,7 +29,6 @@ from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
 from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
-from armi.physics.neutronics import isotopicDepletion
 
 
 class TestBlueprints(unittest.TestCase):
@@ -54,7 +53,6 @@ class TestBlueprints(unittest.TestCase):
         cls.cs = settings.Settings()
         cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
         cls.directoryChanger.open()
-        isotopicDepletion.applyDefaultBurnChain()
 
         y = textProcessors.resolveMarkupInclusions(
             pathlib.Path(os.getcwd()) / "refSmallReactor.yaml"
@@ -98,6 +96,7 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(fuel.getDimension("mult"), 169)
 
     def test_traceNuclides(self):
+        """Ensure that armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys runs."""
         fuel = (
             self.blueprints.constructAssem("hex", self.cs, "igniter fuel")
             .getFirstBlock(Flags.FUEL)

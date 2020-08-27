@@ -27,10 +27,12 @@ import collections
 
 from numpy import interp
 
-from armi.nucDirectory import nuclideBases
 from armi.utils.units import getTk
 from armi.materials import material
 from armi import runLog
+from armi.nucDirectory import thermalScattering as tsl
+from armi.nucDirectory import nuclideBases as nb
+
 
 HeatCapacityConstants = collections.namedtuple(
     "HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"]
@@ -39,6 +41,10 @@ HeatCapacityConstants = collections.namedtuple(
 
 class UraniumOxide(material.FuelMaterial):
     name = "Uranium Oxide"
+    thermalScatteringLaws = (
+        tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
+        tsl.byNbAndCompound[nb.byName["O"], tsl.UO2],
+    )
     references = {
         "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
         "linear expansion": "Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
@@ -110,9 +116,9 @@ class UraniumOxide(material.FuelMaterial):
         r"""
         UO2 mass fractions. Using Natural Uranium without U234
         """
-        u235 = nuclideBases.byName["U235"]
-        u238 = nuclideBases.byName["U238"]
-        oxygen = nuclideBases.byName["O"]
+        u235 = nb.byName["U235"]
+        u238 = nb.byName["U238"]
+        oxygen = nb.byName["O"]
 
         u238Abundance = (
             1.0 - u235.abundance

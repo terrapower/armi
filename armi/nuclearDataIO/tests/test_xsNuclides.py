@@ -32,11 +32,6 @@ class NuclideTests(unittest.TestCase):
     def setUpClass(cls):
         cls.lib = nuclearDataIO.ISOTXS(ISOAA_PATH)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.lib = None
-        nuclideBases.factory(True)
-
     def test_nuclide_createFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
         nuc.isotxsMetadata["nuclideId"] = "BACN87"
@@ -65,6 +60,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual("whatever", nuc.trans[-1])
         self.assertEqual("whatever", nrAA.trans[-1])
         # I've modified the underlying nuclide... need to reset.
+        nuc.trans.pop()
 
     def test_nuclide_newLabelsDontCauseWarnings(self):
         with mockRunLogs.BufferLog() as logCapture:

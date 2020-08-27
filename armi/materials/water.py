@@ -19,6 +19,8 @@ from armi.utils.units import getTk
 from armi.nucDirectory import elements
 from armi.materials.material import Fluid
 from armi.utils import units
+from armi.nucDirectory import thermalScattering as tsl
+from armi.nucDirectory import nuclideBases as nb
 
 
 class Water(Fluid):
@@ -40,7 +42,7 @@ class Water(Fluid):
     """
 
     name = "Water"
-
+    thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["H"], tsl.H2O],)
     references = {
         "vapor pressure": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
         "enthalpy (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
