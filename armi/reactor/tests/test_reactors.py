@@ -143,7 +143,6 @@ def loadTestReactor(
     # TODO: it would be nice to have this be more stream-oriented. Juggling files is
     # devilishly difficult.
     global TEST_REACTOR
-    isotopicDepletion.applyDefaultBurnChain()
     fName = os.path.join(inputFilePath, inputFileName)
     customSettings = customSettings or {}
     isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}

@@ -22,7 +22,6 @@ import unittest
 from armi import settings
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
-from armi.nucDirectory import nuclideBases
 
 
 class TestComponentBlueprint(unittest.TestCase):
@@ -48,14 +47,6 @@ assemblies:
         axial mesh points: [1]
         xs types: [A]
 """
-
-    @classmethod
-    def setUpClass(cls):
-        cs = settings.Settings()
-        # Need to init burnChain first.
-        # see armi.cases.case.Case._initBurnChain
-        with open(cs["burnChainFileName"]) as burnChainStream:
-            nuclideBases.imposeBurnChain(burnChainStream)
 
     def test_componentInitializationIncompleteBurnChain(self):
         nuclideFlagsFuelWithBurn = (

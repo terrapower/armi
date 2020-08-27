@@ -36,11 +36,6 @@ class TestIsotxs(unittest.TestCase):
         # be a small library with LFPs, Actinides, structure, and coolant
         cls.lib = isotxs.readBinary(ISOAA_PATH)
 
-    @classmethod
-    def tearDownClass(cls):
-        # reset the labels
-        nuclideBases.factory(True)
-
     def test_isotxsGeneralData(self):
         nucs = self.lib.nuclides
         self.assertTrue(nucs)

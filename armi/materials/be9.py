@@ -20,12 +20,15 @@ It has a nice (n,2n) reaction and is an inhalation hazard.
 
 from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.nucDirectory import thermalScattering as tsl
+from armi.nucDirectory import nuclideBases as nb
 
 
 class Be9(Material):
     """Beryllium."""
 
     name = "Be-9"
+    thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["BE"], tsl.BE_METAL],)
 
     def setDefaultMassFracs(self):
         self.setMassFrac("BE9", 1.0)

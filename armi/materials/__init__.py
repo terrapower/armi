@@ -13,7 +13,12 @@
 # limitations under the License.
 
 """
-The material package defines compositions and temperature-dependent thermo-mechanical properties.
+The material package defines compositions and material-specific properties.
+
+Properties in scope include temperature dependent thermo/mechanical properties 
+(like heat capacity, linear expansion coefficients, viscosity, density),
+and material-specific nuclear properties that can't exist at the nuclide level 
+alone (like :py:mod:`thermal scattering laws <armi.nucDirectory.thermalScattering>`).
 
 As the fundamental macroscopic building blocks of any physical object,
 these are highly important to reactor analysis.

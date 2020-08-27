@@ -419,6 +419,7 @@ your new material in a new module called :file:`myapp/materials.py`:
             # not even temperature dependent for now
             return 1.252
 
+
 But wait! Now there are **two** materials with the name *Sodium* in ARMI. Which will be
 chosen? ARMI uses a namespace order controlled by
 :py:func:`armi.materials.setMaterialNamespaceOrder` which can be set either
