@@ -162,39 +162,5 @@ class Utils_TestCase(unittest.TestCase):
         self.assertEqual(str1, str2)
 
 
-class TestUnits(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
-    def test_invalidGroupStructureType(self):
-        """Test that the reverse lookup fails on non-existent energy group bounds."""
-        modifier = 1e-5
-        for groupStructureType in units.GROUP_STRUCTURE.keys():
-            energyBounds = units.getGroupStructure(groupStructureType)
-            energyBounds[0] = energyBounds[0] * modifier
-            with self.assertRaises(ValueError):
-                units.getGroupStructureType(energyBounds)
-
-    def test_consistenciesBetweenGroupStructureAndGroupStructureType(self):
-        """
-        Test that the reverse lookup of the energy group structures work.
-
-        Notes
-        -----
-        Several group structures point to the same energy group structure so the reverse lookup will fail to
-        get the correct group structure type.
-        """
-        for groupStructureType in units.GROUP_STRUCTURE.keys():
-            self.assertEqual(
-                groupStructureType,
-                units.getGroupStructureType(
-                    units.getGroupStructure(groupStructureType)
-                ),
-            )
-
-
 if __name__ == "__main__":
     unittest.main()
