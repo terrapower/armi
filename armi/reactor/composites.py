@@ -3224,7 +3224,7 @@ def gatherMaterialsByVolume(
             volumes[matName] = volumes.get(matName, 0.0) + vol
             if matName not in samples:
                 samples[matName] = c.material
-        return volumes, samples
+    return volumes, samples
 
 
 def getDominantMaterial(
