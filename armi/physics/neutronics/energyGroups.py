@@ -1,4 +1,6 @@
-"""Energy group structures for neutronics calculations."""
+"""
+Energy group structures for multigroup neutronics calculations.
+"""
 
 import itertools
 import copy
@@ -12,7 +14,6 @@ from .const import (
     FAST_FLUX_THRESHOLD_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,
-    LOWEST_ENERGY_EV,
     HIGH_ENERGY_EV,
 )
 
@@ -56,12 +57,12 @@ def _create_anl_energies_with_group_lethargies(*group_lethargies):
 
 def getGroupStructure(name):
     """
-    Return neutron energy group bounds in eV for a given structure type.
+    Return descending neutron energy group upper bounds in eV for a given structure name.
 
     Notes
     -----
-    Copy of the group structure is return so that modifications of the energy bounds does not propagate back to
-    the `GROUP_STRUCTURE` dictionary.
+    Copy of the group structure is return so that modifications of the energy bounds does 
+    not propagate back to the `GROUP_STRUCTURE` dictionary.
     """
     try:
         return copy.copy(GROUP_STRUCTURE[name])
@@ -74,7 +75,9 @@ def getGroupStructure(name):
 
 
 def getGroupStructureType(neutronEnergyBoundsInEv):
-    """Return neutron energy group structure type for a given set of neutron energy group bounds in eV."""
+    """
+    Return neutron energy group structure name for a given set of neutron energy group bounds in eV.
+    """
     neutronEnergyBoundsInEv = numpy.array(neutronEnergyBoundsInEv)
     for groupStructureType in GROUP_STRUCTURE:
         refNeutronEnergyBoundsInEv = numpy.array(getGroupStructure(groupStructureType))
@@ -91,7 +94,7 @@ def getGroupStructureType(neutronEnergyBoundsInEv):
 
 GROUP_STRUCTURE = {}
 """
-Energy groups for use in MC**2 and CINDER.
+Energy groups for use in multigroup neutronics.
 
 Values are the upper bound of each energy in eV from highest energy to lowest
 (because neutrons typically downscatter...)
@@ -191,7 +194,8 @@ GROUP_STRUCTURE["CINDER63"] = [
 ]
 
 # fmt: off
-# Group structures below hear are derived from MC2-3
+# Group structures below here are derived from Appendix E in 
+# https://www.osti.gov/biblio/1483949-mc2-multigroup-cross-section-generation-code-fast-reactor-analysis-nuclear
 GROUP_STRUCTURE["ANL9"] = _create_anl_energies_with_group_lethargies(
     222, 120, itertools.repeat(180, 5), 540, 300
 )
@@ -317,7 +321,7 @@ GROUP_STRUCTURE["ARMI33"] = _create_anl_energies_with_group_energies(
         5.4000e-01,
         4.1400e-01,
     ]
-)  #
+)
 
 GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
     [
