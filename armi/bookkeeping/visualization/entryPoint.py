@@ -13,6 +13,7 @@
 # limitations under the License.
 import re
 import sys
+import pathlib
 
 from armi import runLog
 from armi.cli import entryPoint
@@ -57,8 +58,8 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
             default=None,
         )
 
-    def parseArgs(self, args):
-        entryPoint.EntryPoint.parse_args(self, args)
+    def parse(self, args):
+        entryPoint.EntryPoint.parse(self, args)
 
         if self.args.nodes is not None:
             self.nodes = [
@@ -67,12 +68,17 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
             ]
 
         if self.args.format not in self._SUPPORTED_FORMATS:
-            print(
+            runLog.error(
                 "Requested format `{}` not among the supported options: {}".format(
                     self.args.format, self._SUPPORTED_FORMATS
                 )
             )
             sys.exit(1)
+
+        if self.args.output_name is None:
+            # infer name from input
+            inp = pathlib.Path(self.args.h5db)
+            self.args.output_name = inp.stem
 
     def invoke(self):
         # late imports so that we dont have to import the world to do anything
