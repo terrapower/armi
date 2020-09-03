@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Entry point for producing visualization files.
+"""
+
 import re
 import sys
 import pathlib
@@ -34,13 +38,15 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         entryPoint.EntryPoint.__init__(self)
 
         self.nodes = None
+        """Time nodes from the database to visualize"""
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Input database path", type=str)
         self.parser.add_argument(
             "--output-name",
             "-o",
-            help="Base to use output file name(s)",
+            help="Base name for output file(s). File extensions will be added as "
+            "appropriate",
             type=str,
             default=None,
         )
@@ -82,7 +88,8 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
 
     def invoke(self):
         # late imports so that we dont have to import the world to do anything
-        from . import vtk
+        # pylint: disable=import-outside-toplevel
+        from armi.bookkeeping.visualization import vtk
         from armi.bookkeeping.db import databaseFactory
 
         # a little baroque, but easy to extend with future formats
@@ -105,7 +112,9 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
             with dumper:
                 for cycle, node in dbNodes:
                     runLog.info(
-                        "Dumping cycle {}, time node {}".format(cycle, node)
+                        "Creating visualization file for cycle {}, time node {}...".format(
+                            cycle, node
+                        )
                     )
                     if nodes is not None and (cycle, node) not in nodes:
                         continue

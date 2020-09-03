@@ -18,31 +18,20 @@ from abc import ABC, abstractmethod
 
 from armi.reactor import reactors
 
+
 class VisFileDumper(ABC):
     @abstractmethod
     def dumpState(self, r: reactors.Reactor):
         """Dump a single reactor state to the vis file."""
 
     @abstractmethod
-    def initialize(self):
-        """
-        Prepare to write one or more reactor states. Called from __enter__.
-        """
-
-    @abstractmethod
-    def finalize(self):
-        """
-        Clean up after writing one or more reactor states. Called from __exit__.
-        """
-
     def __enter__(self):
         """
         Invoke initialize when entering a context manager
         """
-        self.initialize()
 
+    @abstractmethod
     def __exit__(self, type, value, traceback):
         """
         Invoke initialize when entering a context manager
         """
-        self.finalize()

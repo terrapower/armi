@@ -21,6 +21,7 @@ This version of the VTK file writer comes with a number of limitations and/or as
 that can be improved upon. For instance
  - Only the Block mesh and related parameters are exported to the VTK file. Adding
    Assembly and Core meshes is totally doable, and will be the product of future work.
+   With more considerable effort, arbitrary component may be visualizable!
  - No efforts are made to de-duplicate the vertices in the mesh, so there are more
    vertices than needed. Some fancy canned algorithms probably exist to do this, and it
    wouldn't be too difficult to do here either. Also future work, but probably not super
@@ -122,6 +123,7 @@ class VtkDumper(dumper.VisFileDumper):
     files. The context manager keeps track of how many files have been written (one per
     time node), and creates a group/collection file when finished.
     """
+
     def __init__(self, baseName: str):
         self._baseName = baseName
         self._statesDumped: List[Tuple[str, float]] = []
@@ -217,10 +219,10 @@ class VtkDumper(dumper.VisFileDumper):
 
         self._statesDumped.append((fullPath, r.p.time))
 
-    def initialize(self):
+    def __enter__(self):
         self._statesDumped = []
 
-    def finalize(self):
+    def __exit__(self, type, value, traceback):
         if len(self._statesDumped) > 1:
             # multiple files need to be wrapped up into a group
             group = VtkGroup(self._baseName)
@@ -359,5 +361,9 @@ def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
         [[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ]
     )
 
-    return VtkMesh(vertsXYZ, numpy.array(list(range(20))), numpy.array([20]),
-            numpy.array([VtkQuadraticHexahedron.tid]))
+    return VtkMesh(
+        vertsXYZ,
+        numpy.array(list(range(20))),
+        numpy.array([20]),
+        numpy.array([VtkQuadraticHexahedron.tid]),
+    )

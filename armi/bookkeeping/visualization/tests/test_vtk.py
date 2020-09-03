@@ -25,6 +25,9 @@ from armi.bookkeeping.visualization import vtk
 
 
 class TestVtkMesh(unittest.TestCase):
+    """
+    Test the VtkMesh utility class
+    """
     def test_testVtkMesh(self):
         mesh = vtk.VtkMesh.empty()
 
@@ -55,6 +58,9 @@ class TestVtkMesh(unittest.TestCase):
 
 
 class TestVtkVis(unittest.TestCase):
+    """
+    Test dumping a whole reactor and some specific block types
+    """
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
