@@ -151,7 +151,13 @@ class VtkDumper(dumper.VisFileDumper):
         cycle = r.p.cycle
         timeNode = r.p.timeNode
 
-        path = "{}_c{}n{}".format(self._baseName, cycle, timeNode)
+        # you never know...
+        assert cycle < 1000
+        assert timeNode < 1000
+
+        # We avoid using cXnY, since VisIt doesn't support .pvd files, but *does* know
+        # to lump data with similar file names and integers at the end.
+        path = "{}_{:0>3}{:0>3}".format(self._baseName, cycle, timeNode)
 
         # include and exclude params are mutually exclusive
         if includeParams is not None and excludeParams is not None:

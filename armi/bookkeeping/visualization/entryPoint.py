@@ -37,9 +37,6 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
     def __init__(self):
         entryPoint.EntryPoint.__init__(self)
 
-        self.nodes = None
-        """Time nodes from the database to visualize"""
-
     def addOptions(self):
         self.parser.add_argument("h5db", help="Input database path", type=str)
         self.parser.add_argument(
@@ -63,15 +60,61 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
             type=str,
             default=None,
         )
+        self.parser.add_argument(
+            "--max-node",
+            help="An optional (cycle,timeNode) tuple to specify the latest time step "
+            "that should be included",
+            type=str,
+            default=None,
+        )
+        self.parser.add_argument(
+            "--min-node",
+            help="An optional (cycle,timeNode) tuple to specify the earliest time step "
+            "that should be included",
+            type=str,
+            default=None,
+        )
 
     def parse(self, args):
+        """
+        Process user input.
+
+        Strings are parsed against some regular expressions and saved back to their
+        original locations in the ``self.args`` namespace for later use.
+        """
         entryPoint.EntryPoint.parse(self, args)
 
+        cycleNodePattern = r"\((\d+),(\d+)\)"
+
         if self.args.nodes is not None:
-            self.nodes = [
+            self.args.nodes = [
                 (int(cycle), int(node))
-                for cycle, node in re.findall(r"\((\d+),(\d+)\)", self.args.nodes)
+                for cycle, node in re.findall(cycleNodePattern, self.args.nodes)
             ]
+
+        if self.args.max_node is not None:
+            nodes = re.findall(cycleNodePattern, self.args.max_node)
+            if len(nodes) != 1:
+                runLog.error(
+                    "Bad --max-node: `{}`. Should look like (c,n).".format(
+                        self.args.max_node
+                    )
+                )
+                sys.exit(1)
+            cycle, node = nodes[0]
+            self.args.max_node = (int(cycle), int(node))
+
+        if self.args.min_node is not None:
+            nodes = re.findall(cycleNodePattern, self.args.min_node)
+            if len(nodes) != 1:
+                runLog.error(
+                    "Bad --min-node: `{}`. Should look like (c,n).".format(
+                        self.args.min_node
+                    )
+                )
+                sys.exit(1)
+            cycle, node = nodes[0]
+            self.args.min_node = (int(cycle), int(node))
 
         if self.args.format not in self._SUPPORTED_FORMATS:
             runLog.error(
@@ -97,7 +140,7 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
 
         dumper = formatMap[self.args.format](self.args.output_name)
 
-        nodes = self.nodes
+        nodes = self.args.nodes
         db = databaseFactory(self.args.h5db, "r")
         with db:
             dbNodes = list(db.genTimeSteps())
@@ -111,12 +154,25 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
 
             with dumper:
                 for cycle, node in dbNodes:
+                    if nodes is not None and (cycle, node) not in nodes:
+                        continue
+
+                    if (
+                        self.args.min_node is not None
+                        and (cycle, node) < self.args.min_node
+                    ):
+                        continue
+
+                    if (
+                        self.args.max_node is not None
+                        and (cycle, node) > self.args.max_node
+                    ):
+                        continue
+
                     runLog.info(
                         "Creating visualization file for cycle {}, time node {}...".format(
                             cycle, node
                         )
                     )
-                    if nodes is not None and (cycle, node) not in nodes:
-                        continue
                     r = db.load(cycle, node)
                     dumper.dumpState(r)
