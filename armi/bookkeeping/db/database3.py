@@ -2631,12 +2631,11 @@ def replaceNonesWithNonsense(
     try:
         data = data.astype(realType)
     except:
-        runLog.error(
+        raise ValueError(
             "Could not coerce data for {} to {}, data:\n{}".format(
                 paramName, realType, data
             )
         )
-        raise
 
     if data.dtype.kind == "O":
         raise TypeError(

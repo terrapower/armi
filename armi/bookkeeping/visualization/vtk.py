@@ -177,9 +177,7 @@ class VtkDumper(dumper.VisFileDumper):
                 data.append(val)
 
             data = numpy.array(data)
-            if len(data.shape) != 1:
-                # We aren't interested vector data on each block
-                continue
+
             if data.dtype.kind == "S" or data.dtype.kind == "U":
                 # no string support!
                 continue
@@ -196,7 +194,13 @@ class VtkDumper(dumper.VisFileDumper):
                     # looks like Nones had nothing to do with it. bail
                     continue
 
-                data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
+                try:
+                    data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
+                except ValueError:
+                    # Looks like we have some weird data. We might be able to handle it
+                    # with more massaging, but probably not visualizable anyhow
+                    continue
+
                 if data.dtype.kind == "O":
                     # Didn't work
                     runLog.warning(
@@ -204,6 +208,9 @@ class VtkDumper(dumper.VisFileDumper):
                         "a native type for output; skipping.".format(pDef.name)
                     )
                     continue
+            if len(data.shape) != 1:
+                # We aren't interested in vector data on each block
+                continue
             allData[pDef.name] = data
 
         fullPath = unstructuredGridToVTK(
