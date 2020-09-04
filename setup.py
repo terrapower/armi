@@ -62,6 +62,7 @@ setup(
         "pillow",
         "pluggy",
         "psutil",
+        "pyevtk",
         "pympler",
         "pyyaml>=5.1",
         "scipy",

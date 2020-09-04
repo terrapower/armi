@@ -83,10 +83,6 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
 
         # testing
         entryPoints.append(cleanTemps.CleanTemps)
-        entryPoints.append(database.ConvertDB)
-        entryPoints.append(database.ExtractInputs)
-        entryPoints.append(database.InjectInputs)
-        entryPoints.append(copyDB.CopyDB)
 
         return entryPoints
 

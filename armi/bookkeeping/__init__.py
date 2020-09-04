@@ -41,6 +41,21 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
+    def defineEntryPoints():
+        from armi.cli import database, copyDB
+        from armi.bookkeeping import visualization
+
+        entryPoints = []
+        entryPoints.append(database.ConvertDB)
+        entryPoints.append(database.ExtractInputs)
+        entryPoints.append(database.InjectInputs)
+        entryPoints.append(copyDB.CopyDB)
+        entryPoints.append(visualization.VisFileEntryPoint)
+
+        return entryPoints
+
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineCaseDependencies(case, suite):
         if case.cs["loadStyle"] == "fromDB":
             # the ([^\/]) capture basically gets the file name portion and excludes any
