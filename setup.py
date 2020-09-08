@@ -62,6 +62,7 @@ setup(
         "pillow",
         "pluggy",
         "psutil",
+        "pyevtk",
         "pympler",
         "pyyaml>=5.1",
         "scipy",
@@ -70,7 +71,7 @@ setup(
         "xlrd",
         "yamlize",
     ],
-    extras_require={"mpi": ["mpi4py"]},
+    extras_require={"mpi": ["mpi4py"], "grids": ["wxpython"]},
     tests_require=["nbconvert", "jupyter_client", "ipykernel"],
     classifiers=[
         "Development Status :: 4 - Beta",

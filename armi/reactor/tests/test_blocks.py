@@ -62,11 +62,11 @@ def buildSimpleFuelBlock():
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
     intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
 
-    b.addComponent(fuel)
-    b.addComponent(clad)
-    b.addComponent(duct)
-    b.addComponent(coolant)
-    b.addComponent(intercoolant)
+    b.add(fuel)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
 
     b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
@@ -216,20 +216,20 @@ def loadTestBlock(cold=True):
     interDims["components"] = {"duct": duct}
     interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
-    block.addComponent(annularVoid)
-    block.addComponent(bond)
-    block.addComponent(fuel)
-    block.addComponent(fuelLinerGap)
-    block.addComponent(innerLiner)
-    block.addComponent(linerLinerGap)
-    block.addComponent(outerLiner)
-    block.addComponent(linerCladGap)
-    block.addComponent(cladding)
+    block.add(annularVoid)
+    block.add(bond)
+    block.add(fuel)
+    block.add(fuelLinerGap)
+    block.add(innerLiner)
+    block.add(linerLinerGap)
+    block.add(outerLiner)
+    block.add(linerCladGap)
+    block.add(cladding)
 
-    block.addComponent(wire)
-    block.addComponent(coolant)
-    block.addComponent(duct)
-    block.addComponent(interSodium)
+    block.add(wire)
+    block.add(coolant)
+    block.add(duct)
+    block.add(interSodium)
 
     block.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
@@ -534,10 +534,6 @@ class Block_TestCase(unittest.TestCase):
             ref = refDict[nuc]
             places = 6
             self.assertAlmostEqual(cur, ref, places=places)
-            nucBase = nuclideBases.byName[nuc]
-            self.assertAlmostEqual(
-                b.p[nucBase.getDatabaseName()], ref
-            )  # required for DB viewing/loading
 
         # make sure U235 stayed fully contained in the fuel component
         fuelC = b.getComponent(Flags.FUEL)
@@ -620,9 +616,9 @@ class Block_TestCase(unittest.TestCase):
         """
         block = self.Block
         ductBlock = block.__class__("duct")
-        ductBlock.addComponent(block.getComponent(Flags.COOLANT, exact=True))
-        ductBlock.addComponent(block.getComponent(Flags.DUCT, exact=True))
-        ductBlock.addComponent(block.getComponent(Flags.INTERCOOLANT, exact=True))
+        ductBlock.add(block.getComponent(Flags.COOLANT, exact=True))
+        ductBlock.add(block.getComponent(Flags.DUCT, exact=True))
+        ductBlock.add(block.getComponent(Flags.INTERCOOLANT, exact=True))
 
         # get reference data
         refLoc = block.spatialLocator
@@ -660,45 +656,6 @@ class Block_TestCase(unittest.TestCase):
         ref = 4.0 * self.Block.getFlowAreaPerPin() / self.Block.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
-    def test_getCladdingOR(self):
-        cur = self.Block.getCladdingOR()
-        ref = self.Block.getDim(Flags.CLAD, "od") / 2.0
-        self.assertAlmostEqual(cur, ref)
-
-    def test_getCladdingIR(self):
-        cur = self.Block.getCladdingIR()
-        ref = self.Block.getDim(Flags.CLAD, "id") / 2.0
-        self.assertAlmostEqual(cur, ref)
-
-    def test_getFuelRadius(self):
-        cur = self.Block.getFuelRadius()
-        ref = self.Block.getDim(Flags.FUEL, "od") / 2.0
-        self.assertAlmostEqual(cur, ref)
-
-    def test_adjustCladThicknessByOD(self):
-        thickness = 0.05
-        clad = self.Block.getComponent(Flags.CLAD)
-        ref = clad.getDimension("id", cold=True) + 2.0 * thickness
-        self.Block.adjustCladThicknessByOD(thickness)
-        cur = clad.getDimension("od", cold=True)
-        curThickness = (
-            clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)
-        ) / 2.0
-        self.assertAlmostEqual(cur, ref)
-        self.assertAlmostEqual(curThickness, thickness)
-
-    def test_adjustCladThicknessByID(self):
-        thickness = 0.05
-        clad = self.Block.getComponent(Flags.CLAD)
-        ref = clad.getDimension("od", cold=True) - 2.0 * thickness
-        self.Block.adjustCladThicknessByID(thickness)
-        cur = clad.getDimension("id", cold=True)
-        curThickness = (
-            clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)
-        ) / 2.0
-        self.assertAlmostEqual(cur, ref)
-        self.assertAlmostEqual(curThickness, thickness)
-
     def test_adjustUEnrich(self):
         self.Block.setHeight(100.0)
 
@@ -712,14 +669,14 @@ class Block_TestCase(unittest.TestCase):
     def test_setLocation(self):
         b = self.Block
         # a bit obvious, but location is a property now...
-        i, j = grids.getIndicesFromRingAndPos(2, 3)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
         self.assertEqual(b.getLocation(), "A2003A")
         self.assertEqual(0, b.spatialLocator.k)
         self.assertEqual(b.getSymmetryFactor(), 1.0)
 
         # now if we don't specify axial, it will move to the new xy, location and have original z index
-        i, j = grids.getIndicesFromRingAndPos(4, 4)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(4, 4)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
         self.assertEqual(0, b.spatialLocator.k)
         self.assertEqual(b.getSymmetryFactor(), 1.0)
@@ -730,7 +687,7 @@ class Block_TestCase(unittest.TestCase):
             (geometry.THIRD_CORE + geometry.PERIODIC, 3),
         ):
             self.r.core.symmetry = symmetry
-            i, j = grids.getIndicesFromRingAndPos(1, 1)
+            i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)
             self.assertEqual(b.getSymmetryFactor(), powerMult)
@@ -805,7 +762,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
-        self.Block.addComponent(self.fuelComponent)
+        self.Block.add(self.fuelComponent)
         self.Block.setHeight(100.0)
 
         self.Block.clearNumberDensities()
@@ -825,7 +782,7 @@ class Block_TestCase(unittest.TestCase):
         ref = self.Block.getFissileMass() / self.Block.getHMMass()
         places = 4
         self.assertAlmostEqual(cur, ref, places=places)
-        self.Block.removeComponent(self.fuelComponent)
+        self.Block.remove(self.fuelComponent)
 
     def test_getUraniumMassEnrich(self):
 
@@ -972,18 +929,18 @@ class Block_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-    def test_addComponent(self):
+    def test_add(self):
 
         numComps = len(self.Block.getComponents())
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
 
         newComp = components.Circle("fuel", "UZr", **fuelDims)
-        self.Block.addComponent(newComp)
+        self.Block.add(newComp)
         self.assertEqual(numComps + 1, len(self.Block.getComponents()))
 
         self.assertIn(newComp, self.Block.getComponents())
-        self.Block.removeComponent(newComp)
+        self.Block.remove(newComp)
 
     def test_hasComponents(self):
         self.assertTrue(self.Block.hasComponents([Flags.FUEL, Flags.CLAD]))
@@ -1209,7 +1166,7 @@ class Block_TestCase(unittest.TestCase):
         cur = self.Block.getVolumeFractions()
         tot = 0.0
         areas = []
-        for c in self.Block.getComponents():
+        for c in self.Block.iterComponents():
             a = c.getArea()
             tot += a
             areas.append((c, a))
@@ -1466,18 +1423,18 @@ class HexBlock_TestCase(unittest.TestCase):
         self.HexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
-        self.HexBlock.addComponent(self.hexComponent)
-        self.HexBlock.addComponent(
+        self.HexBlock.add(self.hexComponent)
+        self.HexBlock.add(
             components.Circle(
                 "clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0
             )
         )
-        self.HexBlock.addComponent(
+        self.HexBlock.add(
             components.Circle(
                 "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0
             )
         )
-        self.HexBlock.addComponent(
+        self.HexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
         r = tests.getEmptyHexReactor()
@@ -1592,7 +1549,7 @@ class HexBlock_TestCase(unittest.TestCase):
         pitchDefiningComponent = components.Hexagon(
             "pitchComp", materials[0], **hexArgs
         )
-        hexBlock.addComponent(pitchDefiningComponent)
+        hexBlock.add(pitchDefiningComponent)
 
         # hex component is added, now add the rest as unshaped.
         for aFrac, material in zip(areaFractions[1:], materials[1:]):
@@ -1600,7 +1557,7 @@ class HexBlock_TestCase(unittest.TestCase):
             unshapedArgs.update(compArgs)
             name = f"unshaped {material}"
             comp = components.UnshapedComponent(name, material, **unshapedArgs)
-            hexBlock.addComponent(comp)
+            hexBlock.add(comp)
 
         self.assertEqual(desiredPitch, hexBlock.getPitch())
         self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
@@ -1616,13 +1573,13 @@ class HexBlock_TestCase(unittest.TestCase):
             unshapedArgs.update(compArgs)
             name = f"unshaped {material}"
             comp = components.UnshapedComponent(name, material, **unshapedArgs)
-            hexBlock.addComponent(comp)
+            hexBlock.add(comp)
 
         # We haven't set a pitch defining component this time so set it now with 0 area.
         pitchDefiningComponent = components.Hexagon(
             "pitchComp", "Void", op=desiredPitch, ip=desiredPitch, mult=1, **compArgs
         )
-        hexBlock.addComponent(pitchDefiningComponent)
+        hexBlock.add(pitchDefiningComponent)
         self.assertEqual(desiredPitch, hexBlock.getPitch())
         self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
@@ -1646,8 +1603,8 @@ class CartesianBlock_TestCase(unittest.TestCase):
             widthOuter=self.PITCH,
             mult=1.0,
         )
-        self.cartesianBlock.addComponent(self.cartesianComponent)
-        self.cartesianBlock.addComponent(
+        self.cartesianBlock.add(self.cartesianComponent)
+        self.cartesianBlock.add(
             components.Circle(
                 "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
             )
@@ -1706,7 +1663,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
         pitchDefiningComponent = components.Rectangle(
             "pitchComp", materials[0], **rectArgs
         )
-        cartBlock.addComponent(pitchDefiningComponent)
+        cartBlock.add(pitchDefiningComponent)
 
         # Rectangle component is added, now add the rest as unshaped.
         for aFrac, material in zip(areaFractions[1:], materials[1:]):
@@ -1714,7 +1671,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
             unshapedArgs.update(compArgs)
             name = f"unshaped {material}"
             comp = components.UnshapedComponent(name, material, **unshapedArgs)
-            cartBlock.addComponent(comp)
+            cartBlock.add(comp)
 
         self.assertEqual(desiredPitch, cartBlock.getPitch())
         self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
@@ -1728,41 +1685,6 @@ class MassConservationTests(unittest.TestCase):
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()
-
-    def test_adjustSmearDensity(self):
-        r"""
-        Tests the getting, setting, and getting of smear density functions
-
-        """
-        bolBlock = copy.deepcopy(self.b)
-
-        s = self.b.getSmearDensity(cold=False)
-
-        fuel = self.b.getComponent(Flags.FUEL)
-        clad = self.b.getComponent(Flags.CLAD)
-
-        self.assertAlmostEqual(
-            s, (fuel.getDimension("od") ** 2) / clad.getDimension("id") ** 2, 8
-        )
-
-        self.b.adjustSmearDensity(self.b.getSmearDensity(), bolBlock=bolBlock)
-
-        s2 = self.b.getSmearDensity(cold=False)
-
-        self.assertAlmostEqual(s, s2, 8)
-
-        self.b.adjustSmearDensity(0.733, bolBlock=bolBlock)
-        self.assertAlmostEqual(0.733, self.b.getSmearDensity(), 8)
-
-        # try annular fuel
-        clad = self.b.getComponent(Flags.CLAD)
-        fuel = self.b.getComponent(Flags.FUEL)
-
-        fuel.setDimension("od", clad.getDimension("id", cold=True))
-        fuel.setDimension("id", 0.0001)
-
-        self.b.adjustSmearDensity(0.733, bolBlock=bolBlock)
-        self.assertAlmostEqual(0.733, self.b.getSmearDensity(), 8)
 
     def test_heightExpansionDifferences(self):
         r"""  The point of this test is to determine if the number densities stay the same

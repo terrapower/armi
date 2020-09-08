@@ -145,7 +145,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
         b.setType(self.name, flags)
         for c in components.values():
-            b.addComponent(c)
+            b.add(c)
         b.p.nPins = b.getNumPins()
         b.p.axMesh = _setBlueprintNumberOfAxialMeshes(
             axialMeshPoints, cs["axialMeshRefinementFactor"]
@@ -154,7 +154,6 @@ class BlockBlueprint(yamlize.KeyedList):
         b.p.heightBOL = height  # for fuel performance
         b.p.xsType = xsType
         b.setBuLimitInfo(cs)
-        b.buildNumberDensityParams(nucNames=blueprint.allNuclidesInProblem)
         b = self._mergeComponents(b)
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid

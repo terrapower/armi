@@ -101,19 +101,19 @@ def buildTestAssemblies():
     block2 = blocks.HexBlock("fuel", caseSetting)
     block.setType("fuel")
     block.setHeight(10.0)
-    block.addComponent(fuelUZr)
-    block.addComponent(fuelUTh)
-    block.addComponent(clad)
-    block.addComponent(interSodium)
+    block.add(fuelUZr)
+    block.add(fuelUTh)
+    block.add(clad)
+    block.add(interSodium)
     block.p.axMesh = 1
     block.p.molesHmBOL = 1.0
     block.p.molesHmNow = 1.0
 
     block2.setType("fuel")
     block2.setHeight(10.0)
-    block2.addComponent(fuelUThZr)
-    block2.addComponent(clad)
-    block2.addComponent(interSodium)
+    block2.add(fuelUThZr)
+    block2.add(clad)
+    block2.add(interSodium)
     block2.p.axMesh = 1
     block2.p.molesHmBOL = 2
     block2.p.molesHmNow = 1.0
@@ -208,22 +208,6 @@ class Assembly_TestCase(unittest.TestCase):
             "buRate": 0.0,
             "eqRegion": -1,
             "id": 212.0,
-            "nC": 0.0002082939655729809,
-            "nCr": 0.002886865228214986,
-            "nFe": 0.018938452726904774,
-            "nMn55": 0.00013661373306056112,
-            "nMo": 0.0001303849595025718,
-            "nNa23": 0.009129000958507699,
-            "nNi": 0.00010656078341023939,
-            "nSi": 0.00017815341899661907,
-            "nU235": 0.0011370748450841566,
-            "nU238": 0.01010441040669961,
-            "nV": 6.138819542030269e-05,
-            "nW182": 9.01562910227868e-06,
-            "nW183": 4.868378420270543e-06,
-            "nW184": 1.042392172896758e-05,
-            "nW186": 9.671859458339502e-06,
-            "nZr": 0.003255278491569621,
             "pdens": 10.0,
             "percentBu": 25.3,
             "power": 100000.0,
@@ -272,7 +256,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             # non-flaggy name important for testing
             b.setType("igniter fuel unitst")
-            b.addComponent(h)
+            b.add(h)
             b.parent = self.Assembly
             b.setName(b.makeName(self.Assembly.getNum(), i))
             self.Assembly.add(b)
@@ -327,7 +311,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_moveTo(self):
         location = locations.HexLocation(i1=3, i2=10)
-        i, j = grids.getIndicesFromRingAndPos(3, 10)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
         locator = self.r.core.spatialGrid[i, j, 0]
         self.Assembly.moveTo(locator)
 
@@ -524,7 +508,7 @@ class Assembly_TestCase(unittest.TestCase):
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
             b = blocks.HexBlock("fuel", self.cs)
             b.setType("igniter fuel")
-            b.addComponent(h)
+            b.add(h)
             b.setHeight(height2)
             assembly2.add(b)
 
@@ -768,7 +752,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
 
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -817,7 +801,7 @@ class Assembly_TestCase(unittest.TestCase):
             }
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -875,7 +859,7 @@ class Assembly_TestCase(unittest.TestCase):
                 b.setType("fuel")
                 h = components.Hexagon("fuel", "UZr", **self.hexDims)
 
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -948,7 +932,7 @@ class Assembly_TestCase(unittest.TestCase):
             else:
                 b.setType("fuel")
                 h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b.addComponent(h)
+            b.add(h)
             self.Assembly.add(b)
 
         expandFrac = 1.15
@@ -1124,7 +1108,7 @@ class Assembly_TestCase(unittest.TestCase):
         coolantDims = {"Tinput": 273.0, "Thot": 273.0}
         h = components.DerivedShape("coolant", "Sodium", **coolantDims)
         for b in modifiedAssem:
-            b.addComponent(h)
+            b.add(h)
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
 
@@ -1154,7 +1138,7 @@ class HexAssembly_TestCase(unittest.TestCase):
 
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
             b.setType("defaultType")
-            b.addComponent(h)
+            b.add(h)
             self.HexAssembly.add(b)
             self.blockList.append(b)
 
@@ -1182,7 +1166,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
             "verbosity"
         ] = "error"  # Print nothing to the screen that would normally go to the log.
         self.cs["stationaryBlocks"] = []
-        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)
+        reactorGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
         a = self.CartesianAssembly = CartesianAssembly(
             "defaultType", assemNum=self.assemNum
         )
@@ -1207,7 +1191,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
 
             h = components.Square("fuel", "UZr", **self.cartesianDims)
             b.setType("defaultType")
-            b.addComponent(h)
+            b.add(h)
             self.CartesianAssembly.add(b)
             self.blockList.append(b)
 

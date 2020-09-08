@@ -277,7 +277,7 @@ class TestDB(unittest.TestCase):
         self.r.p.cycle = 0
         self.r.p.timeNode = 0
         self.db.writeToDB(self.r)
-        data = self.db.readBlockParam("nU235", 0)
+        data = self.db.readBlockParam("enrichmentBOL", 0)
         self.assertTrue(data is not None)
 
         data = self.db.readBlockParam("spaghetti carbonara", 0)

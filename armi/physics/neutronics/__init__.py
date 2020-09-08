@@ -144,17 +144,16 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
         applyEffectiveDelayedNeutronFractionToCore(core, cs)
 
 
-# Particle types constants
-GAMMA = "Gamma"
-NEUTRON = "Neutron"
-NEUTRONGAMMA = "Neutron and Gamma"
+from .const import (
+    GAMMA,
+    NEUTRON,
+    NEUTRONGAMMA,
+    ALL,
+    RESTARTFILES,
+    INPUTOUTPUT,
+    FLUXFILES,
+)
 
-# Constants for neutronics setting controlling saving of files after neutronics calculation
-# See setting 'neutronicsOutputsToSave'
-ALL = "All"
-RESTARTFILES = "Restart files"
-INPUTOUTPUT = "Input/Output"
-FLUXFILES = "Flux files"
 
 # ARC and CCCC cross section file format names
 COMPXS = "COMPXS"

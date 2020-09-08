@@ -32,7 +32,7 @@ import numpy
 from armi.reactor import composites
 from armi import runLog
 from armi import settings
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
 from armi.reactor import locations
 from armi.reactor import geometry
 from armi.reactor.locations import AXIAL_CHARS
@@ -45,7 +45,6 @@ from armi.utils import units
 from armi.bookkeeping import report
 from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.utils.densityTools import calculateNumberDensity
 from armi.utils import hexagon
 from armi.utils import densityTools
 from armi.physics.neutronics import NEUTRON
@@ -71,8 +70,6 @@ class Block(composites.Composite):
     Blocks are stacked together to form assemblies.
     """
 
-    # nuclides that will be put in A.NIP3 but not A.bURN (these will not deplete!)
-    inerts = []
     uniqID = 0
 
     # dimension used to determine which component defines the block's pitch
@@ -109,15 +106,8 @@ class Block(composites.Composite):
             self.spatialLocator = grids.IndexLocation(0, 0, k, None)
         self.p.orientation = numpy.array((0.0, 0.0, 0.0))
 
-        self.nuclides = (
-            []
-        )  # TODO: list of nuclides present in this block (why not just density.keys()?)
         self.points = []
         self.macros = None
-
-        self.numLfpLast = {}  # for FGremoval
-        self.history = []  # memory of shuffle locations
-        self.lastkInf = 0.0  # for tracking k-inf vs. time slope.
 
         # flag to indicated when DerivedShape children must be updated.
         self.derivedMustUpdate = False
@@ -222,18 +212,6 @@ class Block(composites.Composite):
         Just creates a new location object based on current spatialLocator.
         """
         return self.getLocationObject()
-
-    @location.setter
-    def location(self, value):
-        """
-        Set spatialLocator based on a (old-style) location object.
-
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Blocks only have 1-D grid info so we only look at the axial portion.
-        """
-        k = value.axial
-        self.spatialLocator = self.parent.spatialGrid[0, 0, k]
 
     def makeName(self, assemNum, axialIndex):
         """
@@ -356,77 +334,6 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def getTemperature(self, key, sigma=0):
-        """
-        Return the best temperature for key in degrees C.
-
-        Uses thInterface values if they exist
-
-        Parameters
-        ----------
-        key : str
-            a key identifying the object we want the temperature of. Options include
-            cladOD, cladID,
-
-        sigma : int
-            Specification of which sigma-value we want. 0-sigma is nominal, 1-sigma is + 1 std.dev, etc.
-
-        Returns
-        -------
-        tempInC : float
-            temperature in C
-
-        SingleWarnings will be issued if a non-zero sigma value is requested but does not exist.
-        Nominal Thermo values will be returned in that case.
-        """
-
-        if key == "cladOD":
-            options = ["TH{0}SigmaCladODT".format(sigma), "TH0SigmaCladODT"]
-        elif key == "cladID":
-            options = ["TH{0}SigmaCladIDT".format(sigma), "TH0SigmaCladIDT"]
-
-        # return the first non-zero value
-        for okey in options:
-            tempInC = self.p[okey]
-            if not tempInC and "Sigma" in okey and sigma > 0:
-                runLog.warning(
-                    "No {0}-sigma temperature available for {1}. Run subchan. Returning nominal"
-                    "".format(sigma, self),
-                    single=True,
-                    label="no {0}-sigma temperature".format(sigma),
-                )
-            if tempInC:
-                break
-        else:
-            raise ValueError(
-                "{} has no non-zero {}-sigma {} temperature. Check T/H results.".format(
-                    self, sigma, key
-                )
-            )
-
-        return tempInC
-
-    def getEnrichment(self):
-        """
-        Return the mass enrichment of the fuel in the block.
-
-        If multiple fuel components exist, this returns the average enrichment.
-        """
-        enrichment = 0.0
-        if self.hasFlags(Flags.FUEL):
-            fuels = self.getComponents(Flags.FUEL)
-            if len(fuels) == 1:
-                # short circuit to avoid expensive mass read.
-                return fuels[0].getMassEnrichment()
-            hm = 0.0
-            fissile = 0.0
-            for c in fuels:
-                hmMass = c.getHMMass()
-                fissile += c.getMassEnrichment() * hmMass
-                hm += hmMass
-            enrichment = fissile / hm
-        return enrichment
-
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s]
@@ -523,37 +430,6 @@ class Block(composites.Composite):
             else:
                 self.p.pinMgFluxes = pinFluxes
 
-    def getPowerPinName(self):
-        """
-        Determine the component name where the power is being produced.
-
-        Returns
-        -------
-        powerPin : str
-            The name of the pin that is producing power, if any. could be 'fuel' or 'control', or
-            anything else.
-
-        Notes
-        -----
-        If there is fuel and control, this will return fuel based on hard-coded priorities.
-
-        Examples
-        --------
-        >>> b.getPowerPinName()
-        'fuel'
-
-        >>> b.getPowerPinName()
-        'control'
-
-        >>> b.getPowerPinName()
-        None
-
-        """
-
-        for candidate in [Flags.FUEL, Flags.CONTROL]:
-            if self.getComponent(candidate):
-                return candidate
-
     def getMicroSuffix(self):
         """
         Returns the microscopic library suffix (e.g. 'AB') for this block.
@@ -582,86 +458,6 @@ class Block(composites.Composite):
             return xsType
         else:
             return xsType + bu
-
-    def setNumberDensity(self, nucName, newHomogNDens):
-        """
-        Adds an isotope to the material or changes an existing isotope's number density
-
-        Parameters
-        ----------
-        nuc : str
-            a nuclide name like U235, PU240, FE
-        newHomogNDens : float
-            number density to set in units of atoms/barn-cm, which are equal to
-            atoms/cm^3*1e24
-
-        See Also
-        --------
-        getNumberDensity : gets the density of a nuclide
-        """
-        composites.Composite.setNumberDensity(self, nucName, newHomogNDens)
-        self.setNDensParam(nucName, newHomogNDens)
-
-    def setNumberDensities(self, numberDensities):
-        """
-        Update number densities.
-
-        Any nuclide in the block but not in numberDensities will be set to zero.
-
-        Special behavior for blocks: update block-level params for DB viewing/loading.
-        """
-        composites.Composite.setNumberDensities(self, numberDensities)
-        for nucName in self.getNuclides():
-            # make sure to clear out any non-listed number densities
-            self.setNDensParam(nucName, numberDensities.get(nucName, 0.0))
-
-    def updateNumberDensities(self, numberDensities):
-        """Set one or more multiple number densities. Leaves unlisted number densities alone."""
-        composites.Composite.updateNumberDensities(self, numberDensities)
-        for nucName, ndens in numberDensities.items():
-            self.setNDensParam(nucName, ndens)
-
-    def buildNumberDensityParams(self, nucNames=None):
-        """
-        Copy homogenized density onto self.p for storing in the DB.
-
-        Notes
-        -----
-        Recall that actual number densities are not the same as the number
-        density params (they're really stored on the components). These
-        params are still useful for plotting block-level number density
-        information in database viewers, etc.
-        """
-        if nucNames is None:
-            nucNames = self.getNuclides()
-        nucBases = [nuclideBases.byName[nn] for nn in nucNames]
-        nucDensities = self.getNuclideNumberDensities(nucNames)
-        for nb, ndens in zip(nucBases, nucDensities):
-            self.p[nb.getDatabaseName()] = ndens
-
-    def setNDensParam(self, nucName, ndens):
-        """
-        Set a block-level param with the homog. number density of a nuclide.
-
-        This can be read by the database in restart runs.
-        """
-        n = nuclideBases.byName[nucName]
-        self.p[n.getDatabaseName()] = ndens
-
-    def setMass(self, nucName, mass, **kwargs):
-        """
-        Sets the mass in a block and adjusts the density of the nuclides in the block.
-
-        Parameters
-        ----------
-        nucName : str
-            Nuclide name to set mass of
-        mass : float
-            Mass in grams to set.
-
-        """
-        d = calculateNumberDensity(nucName, mass, self.getVolume())
-        self.setNumberDensity(nucName, d)
 
     def getHeight(self):
         """Return the block height."""
@@ -772,18 +568,6 @@ class Block(composites.Composite):
 
         return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
 
-    def getCladdingOR(self):
-        clad = self.getComponent(Flags.CLAD)
-        return clad.getDimension("od") / 2.0
-
-    def getCladdingIR(self):
-        clad = self.getComponent(Flags.CLAD)
-        return clad.getDimension("id") / 2.0
-
-    def getFuelRadius(self):
-        fuel = self.getComponent(Flags.FUEL)
-        return fuel.getDimension("od") / 2.0
-
     def adjustUEnrich(self, newEnrich):
         """
         Adjust U-235/U-238 mass ratio to a mass enrichment
@@ -808,99 +592,7 @@ class Block(composites.Composite):
                 self.setNumberDensity("U235", tU * newEnrich)
                 self.setNumberDensity("U238", tU * (1.0 - newEnrich))
 
-        # fix up the params and burnup tracking.
-        self.buildNumberDensityParams()
         self.completeInitialLoading()
-
-    def adjustSmearDensity(self, value, bolBlock=None):
-        r"""
-        modifies the *cold* smear density of a fuel pin by adding or removing fuel dimension.
-
-        Adjusts fuel dimension while keeping cladding ID constant
-
-        sd = fuel_r**2/clad_ir**2  =(fuel_od/2)**2 / (clad_id/2)**2 = fuel_od**2 / clad_id**2
-        new fuel_od = sqrt(sd*clad_id**2)
-
-        useful for optimization cases
-
-        Parameters
-        ----------
-
-        value : float
-            new smear density as a fraction.  This fraction must
-            evaluate between 0.0 and 1.0
-
-        bolBlock : Block, optional
-            See completeInitialLoading. Required for ECPT cases
-
-        """
-        if 0.0 >= value or value > 1.0:
-            raise ValueError(
-                "Cannot modify smear density of {0} to {1}. Must be a positive fraction"
-                "".format(self, value)
-            )
-        fuel = self.getComponent(Flags.FUEL)
-        if not fuel:
-            runLog.warning(
-                "Cannot modify smear density of {0} because it is not fuel".format(
-                    self
-                ),
-                single=True,
-                label="adjust smear density",
-            )
-            return
-
-        clad = self.getComponent(Flags.CLAD)
-        cladID = clad.getDimension("id", cold=True)
-        fuelID = fuel.getDimension("id", cold=True)
-
-        if fuelID > 0.0:  # Annular fuel (Adjust fuel ID to get new smear density)
-            fuelOD = fuel.getDimension("od", cold=True)
-            newID = fuelOD * math.sqrt(1.0 - value)
-            fuel.setDimension("id", newID)
-        else:  # Slug fuel (Adjust fuel OD to get new smear density)
-            newOD = math.sqrt(value * cladID ** 2)
-            fuel.setDimension("od", newOD)
-
-        # update things like hm at BOC and smear density parameters.
-        self.buildNumberDensityParams()
-        self.completeInitialLoading(bolBlock=bolBlock)
-
-    def adjustCladThicknessByOD(self, value):
-        """Modifies the cladding thickness by adjusting the cladding outer diameter."""
-        clad = self._getCladdingComponentToModify(value)
-        if clad is None:
-            return
-        innerDiam = clad.getDimension("id", cold=True)
-        clad.setDimension("od", innerDiam + 2.0 * value)
-
-    def adjustCladThicknessByID(self, value):
-        """
-        Modifies the cladding thickness by adjusting the cladding inner diameter.
-
-        Notes
-        -----
-        This WILL adjust the fuel smear density
-        """
-        clad = self._getCladdingComponentToModify(value)
-        if clad is None:
-            return
-        od = clad.getDimension("od", cold=True)
-        clad.setDimension("id", od - 2.0 * value)
-
-    def _getCladdingComponentToModify(self, value):
-        clad = self.getComponent(Flags.CLAD)
-        if not clad:
-            runLog.warning(
-                "{} does not have a cladding component to modify.".format(self)
-            )
-        if value < 0.0:
-            raise ValueError(
-                "Cannot modify {} on {} due to a negative modifier {}".format(
-                    clad, self, value
-                )
-            )
-        return clad
 
     def getLocation(self):
         """Return a string representation of the location."""
@@ -999,20 +691,6 @@ class Block(composites.Composite):
 
         self._setCache("area", area)
         return area
-
-    def getAverageTempInC(self):
-        """
-        Returns the average temperature of the block in C using the block components
-
-        This supercedes self.getAvgFuelTemp()
-        """
-
-        blockAvgTemp = 0.0
-        for component, volFrac in self.getVolumeFractions():
-            componentTemp = component.temperatureInC
-            blockAvgTemp += componentTemp * volFrac
-
-        return blockAvgTemp
 
     def getVolume(self):
         """
@@ -1153,7 +831,7 @@ class Block(composites.Composite):
             self.p.smearDensity = self.getSmearDensity()
         except ValueError:
             pass
-        self.p.enrichmentBOL = self.getEnrichment()
+        self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
         for child in self:
@@ -1388,14 +1066,6 @@ class Block(composites.Composite):
             self.p.percentBuByPin = [0.0] * mult
         self._updatePitchComponent(c)
 
-    def addComponent(self, c):
-        """adds a component for component-based blocks."""
-        self.add(c)
-
-    def removeComponent(self, c):
-        """ Removes a component from the component-based blocks."""
-        self.remove(c)
-
     def removeAll(self, recomputeAreaFractions=True):
         for c in self.getChildren():
             self.remove(c, recomputeAreaFractions=False)
@@ -1414,38 +1084,6 @@ class Block(composites.Composite):
 
         if recomputeAreaFractions:
             self.getVolumeFractions()
-
-    def getDominantMaterial(self, typeSpec):
-        """
-        compute the total volume of each distinct material type in this object.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            The types of components to consider (e.g. [Flags.FUEL, Flags.CONTROL])
-
-        Returns
-        -------
-        mats : dict
-            keys are material names, values are the total volume of this material in cm*2
-        samples : dict
-            keys are material names, values are Material objects
-
-        See Also
-        --------
-        getComponentsOfMaterial : gets components made of a particular material
-        getComponent : get component of a particular type (e.g. Flags.COOLANT)
-        getNuclides : list all nuclides in a block or component
-        armi.reactor.reactors.Core.getDominantMaterial : gets dominant material in core
-        """
-        mats = {}
-        samples = {}
-        for c in self.getComponents(typeSpec):
-            vol = c.getVolume()
-            matName = c.material.getName()
-            mats[matName] = mats.get(matName, 0.0) + vol
-            samples[matName] = c.material
-        return mats, samples
 
     def getComponentsThatAreLinkedTo(self, comp, dim):
         """
@@ -1467,7 +1105,7 @@ class Block(composites.Composite):
             A list of (components,dimName) that are linked to this component, dim.
         """
         linked = []
-        for c in self.getComponents():
+        for c in self.iterComponents():
             for dimName, val in c.p.items():
                 if c.dimensionIsLinked(dimName):
                     requiredComponent = val[0]
@@ -1524,136 +1162,6 @@ class Block(composites.Composite):
                 raise RuntimeError("Cannot locate linked component.")
         return orderedComponents
 
-    def hasComponents(self, typeSpec):
-        """
-        Return true if all of the named components exist on this block.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            Component types to check for. If None, will check for any components
-        """
-        # Wrap the typeSpec in a tuple if we got a scalar
-        try:
-            iterator = iter(typeSpec)
-        except TypeError:
-            typeSpec = (typeSpec,)
-
-        for t in typeSpec:
-            if not self.getComponents(t):
-                return False
-        return True
-
-    def getComponentByName(self, name):
-        """
-        Gets a particular component from this block, based on its name
-
-        Parameters
-        ----------
-        name : str
-            The blueprint name of the component to return
-        """
-        components = [c for c in self if c.name == name]
-        nComp = len(components)
-        if nComp == 0:
-            return None
-        elif nComp > 1:
-            raise ValueError(
-                "More than one component named '{}' in {}".format(self, name)
-            )
-        else:
-            return components[0]
-
-    def getComponent(self, typeSpec, exact=False, returnNull=False, quiet=False):
-        """
-        Gets a particular component from this block.
-
-        Parameters
-        ----------
-        typeSpec : flags.Flags or list of Flags
-            The type specification of the component to return
-
-        exact : boolean, optional
-            Demand that the component flags be exactly equal to the typespec. Default: False
-
-        quiet : boolean, optional
-            Warn if the component is not found. Default: False
-
-        Careful with multiple similar names in one block
-
-        Returns
-        -------
-        Component : The component that matches the critera or None
-
-        """
-        results = self.getComponents(typeSpec, exact=exact)
-        if len(results) == 1:
-            return results[0]
-        elif not results:
-            if not quiet:
-                runLog.warning(
-                    "No component matched {0} in {1}. Returning None".format(
-                        typeSpec, self
-                    ),
-                    single=True,
-                    label="None component returned instead of {0}".format(typeSpec),
-                )
-            return None
-        else:
-            raise ValueError(
-                "Multiple components match in {} match typeSpec {}: {}".format(
-                    self, typeSpec, results
-                )
-            )
-
-    def getComponentsOfShape(self, shapeClass):
-        """
-        Return list of components in this block of a particular shape.
-
-        Parameters
-        ----------
-        shapeClass : Component
-            The class of component, e.g. Circle, Helix, Hexagon, etc.
-
-        Returns
-        -------
-        param : list
-            List of components in this block that are of the given shape.
-        """
-        return [c for c in self.getComponents() if isinstance(c, shapeClass)]
-
-    def getComponentsOfMaterial(self, material=None, materialName=None):
-        """
-        Return list of components in this block that are made of a particular material
-
-        Only one of the selectors may be used
-
-        Parameters
-        ----------
-        material : Material object, optional
-            The material to match
-        materialName : str, optional
-            The material name to match.
-
-        Returns
-        -------
-        componentsWithThisMat : list
-
-        """
-
-        if materialName is None:
-            materialName = material.getName()
-        else:
-            assert (
-                material is None
-            ), "Cannot call with more than one selector. Choose one or the other."
-
-        componentsWithThisMat = []
-        for c in self.getComponents():
-            if c.getProperties().getName() == materialName:
-                componentsWithThisMat.append(c)
-        return componentsWithThisMat
-
     def getSortedComponentsInsideOfComponent(self, component):
         """
         Returns a list of components inside of the given component sorted from innermost to outermost.
@@ -1675,26 +1183,6 @@ class Block(composites.Composite):
         componentIndex = sortedComponents.index(component)
         sortedComponents = sortedComponents[:componentIndex]
         return sortedComponents
-
-    def getNumComponents(self, typeSpec):
-        """
-        Get the number of components that have these flags, taking into account multiplicity. Useful
-        for getting nPins even when there are pin detailed cases.
-
-        Parameters
-        ----------
-        typeSpec : Flags
-            Expected flags of the component to get. e.g. Flags.FUEL
-
-        Returns
-        -------
-        total : int
-            the number of components of this type in this block, including multiplicity.
-        """
-        total = 0
-        for c in self.iterComponents(typeSpec):
-            total += int(c.getDimension("mult"))
-        return total
 
     def getNumPins(self):
         """Return the number of pins in this block."""
@@ -1772,18 +1260,6 @@ class Block(composites.Composite):
             )
             return 0.0
 
-    def getCoolantMaterial(self):
-        c = self.getComponent(Flags.COOLANT, exact=True)
-        return c.getProperties()
-
-    def getCladMaterial(self):
-        c = self.getComponent(Flags.CLAD)
-        return c.getProperties()
-
-    def getFuelMaterial(self):
-        c = self.getComponent(Flags.FUEL)
-        return c.getProperties()
-
     def verifyBlockDims(self):
         """Optional dimension checking."""
         return
@@ -1830,7 +1306,7 @@ class Block(composites.Composite):
 
     def getPlenumPin(self):
         """Return the plenum pin if it exists."""
-        for c in self.getComponents(Flags.GAP):
+        for c in self.iterComponents(Flags.GAP):
             if self.isPlenumPin(c):
                 return c
         return None
@@ -1928,7 +1404,7 @@ class Block(composites.Composite):
         """
         maxDim = -float("inf")
         largestComponent = None
-        for c in self.getComponents():
+        for c in self.iterComponents():
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:
@@ -1938,7 +1414,7 @@ class Block(composites.Composite):
                 largestComponent = c
         return largestComponent
 
-    def setPitch(self, val, updateBolParams=False, updateNumberDensityParams=True):
+    def setPitch(self, val, updateBolParams=False):
         """
         Sets outer pitch to some new value.
 
@@ -1964,9 +1440,6 @@ class Block(composites.Composite):
 
         if updateBolParams:
             self.completeInitialLoading()
-        if updateNumberDensityParams:
-            # may not want to do this if you will do it shortly thereafter.
-            self.buildNumberDensityParams()
 
     def getMfp(self, gamma=False):
         r"""calculates the mean free path for neutron or gammas in this block.
@@ -2022,62 +1495,6 @@ class Block(composites.Composite):
 
         # return the group the information went to
         return report.ALL[report.BLOCK_AREA_FRACS]
-
-    def setComponentDimensionsReport(self):
-        """Makes a summary of the dimensions of the components in this block."""
-        compList = self.getComponentNames()
-
-        reportGroups = []
-        for c in self.getComponents():
-            reportGroups.append(c.setDimensionReport())
-
-        return reportGroups
-
-    def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a block."""
-        numberDensities = self.getNumberDensities(
-            expandFissionProducts=expandFissionProducts
-        )
-        lines = []
-        for nucName, nucDens in numberDensities.items():
-            lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
-        return lines
-
-    def expandAllElementalsToIsotopics(self):
-        reactorNucs = self.getNuclides()
-        for elemental in nuclideBases.where(
-            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase)
-            and nb.name in reactorNucs
-        ):
-            self.expandElementalToIsotopics(elemental)
-
-    def expandElementalToIsotopics(self, elementalNuclide):
-        """
-        Expands the density of a specific elemental nuclides to its natural isotopics.
-
-        Parameters
-        ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide`
-            natural nuclide to replace.
-        """
-        natName = elementalNuclide.name
-        for component in self.getComponents():
-            elementalDensity = component.getNumberDensity(natName)
-            if elementalDensity == 0.0:
-                continue
-            component.setNumberDensity(natName, 0.0)  # clear the elemental
-            del component.p.numberDensities[natName]
-            # add in isotopics
-            for natNuc in elementalNuclide.getNaturalIsotopics():
-                component.setNumberDensity(
-                    natNuc.name, elementalDensity * natNuc.abundance
-                )
-        try:
-            # not all blocks have the same nuclides, but we don't actually care if it did or not, just delete the
-            # parameter...
-            del self.p[elementalNuclide.getDatabaseName()]
-        except KeyError:
-            pass
 
     def getBurnupPeakingFactor(self):
         """
@@ -2218,7 +1635,7 @@ class Block(composites.Composite):
             newC = copy.copy(fuel)
             newC.setName("fuel{0:03d}".format(i + 2))  # start with 002.
             newC.p.pinNum = i + 2
-            self.addComponent(newC)
+            self.add(newC)
 
         # update moles at BOL for each pin
         self.p.molesHmBOLByPin = []
@@ -2698,7 +2115,7 @@ class HexBlock(Block):
         grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
         for ring in range(numPinRings):
             for pos in range(hexagon.numPositionsInRing(ring + 1)):
-                i, j = grids.getIndicesFromRingAndPos(ring + 1, pos + 1)
+                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 xyz = grid[i, j, 0].getLocalCoordinates()
                 coordinates.append(xyz)
         return coordinates
@@ -2769,7 +2186,7 @@ class CartesianBlock(Block):
         xw, yw = self.getPitch()
         return xw * yw
 
-    def setPitch(self, val, updateBolParams=False, updateNumberDensityParams=True):
+    def setPitch(self, val, updateBolParams=False):
         raise NotImplementedError(
             "Directly setting the pitch of a cartesian block is currently not supported."
         )

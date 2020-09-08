@@ -136,8 +136,8 @@ def factory(cs, bp, geom: Optional[geometry.SystemLayoutInput] = None):
             raise ValueError(
                 "The input must define a `core` system, but does not. Update inputs"
             )
-        core = bp.systemDesigns["core"]
-        core.construct(cs, bp, r, geom=geom)
+        coreDesign = bp.systemDesigns["core"]
+        coreDesign.construct(cs, bp, r, geom=geom)
         for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
                 structure.construct(cs, bp, r)
@@ -448,8 +448,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        must clear auxiliary bookkeeping lists as well or else a regeneration step will auto-add 
-        assemblies back in.
+        must clear auxiliary bookkeeping lists as well or else a regeneration step will
+        auto-add assemblies back in.
         """
         assems = set(self)
         for a in assems:
@@ -523,7 +523,7 @@ class Core(composites.Composite):
         for b in a:
             self.blocksByName[b.getName()] = b
 
-        if self.geomType == geometry.HEX:
+        if self.geomType == geometry.GeomType.HEX:
             ring, _loc = self.spatialGrid.getRingPos(
                 a.spatialLocator.getCompleteIndices()
             )
@@ -815,7 +815,7 @@ class Core(composites.Composite):
 
         ## filter based on geomType
         if (
-            self.geomType == geometry.CARTESIAN
+            self.geomType == geometry.GeomType.CARTESIAN
         ):  # a ring in cartesian is basically a square.
             assems.select(
                 lambda a: any(xy == ring for xy in abs(a.spatialLocator.indices[:2]))
@@ -858,7 +858,7 @@ class Core(composites.Composite):
 
         """
 
-        if self.geomType == geometry.CARTESIAN:
+        if self.geomType == geometry.GeomType.CARTESIAN:
             # a ring in cartesian is basically a square.
             raise RuntimeError(
                 "A circular ring in cartesian coordinates has not been defined yet."
@@ -1257,14 +1257,13 @@ class Core(composites.Composite):
             coolantNuclides = set()
             fuelNuclides = set()
             structureNuclides = set()
-            for b in self.getBlocks():
-                for c in b:
-                    if c.getName() == "coolant":
-                        coolantNuclides.update(c.getNuclides())
-                    elif "fuel" in c.getName():
-                        fuelNuclides.update(c.getNuclides())
-                    else:
-                        structureNuclides.update(c.getNuclides())
+            for c in self.iterComponents():
+                if c.getName() == "coolant":
+                    coolantNuclides.update(c.getNuclides())
+                elif "fuel" in c.getName():
+                    fuelNuclides.update(c.getNuclides())
+                else:
+                    structureNuclides.update(c.getNuclides())
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = (
@@ -1893,18 +1892,6 @@ class Core(composites.Composite):
         assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
 
-    def _addBlockToXsIndex(self, block):
-        """
-        Build cross section index as required by subdivide.
-        """
-        mats, _samples = block.getDominantMaterial(None)
-        mTuple = ("", 0)
-        blockVol = block.getVolume()
-        for matName, volume in mats.items():
-            if volume > mTuple[1]:
-                mTuple = (matName, volume / blockVol, False)
-        self.xsIndex[block.p.xsType] = mTuple
-
     def buildZones(self, cs):
         """Update the zones on the reactor."""
         self.zones = zones.buildZones(self, cs)
@@ -1930,7 +1917,7 @@ class Core(composites.Composite):
         -------
         meshVals : tuple
             ((i-vals), (j-vals,), (k-vals,))
-            
+
         See Also
         --------
         armi.reactor.assemblies.Assembly.getAxialMesh : get block mesh
@@ -2254,7 +2241,7 @@ class Core(composites.Composite):
                 weight = b.p.flux ** 2.0
             else:
                 weight = 1.0
-            for c in b.getComponents(typeSpec):
+            for c in b.iterComponents(typeSpec):
                 vol = c.getVolume()
                 num += c.temperatureInC * vol * weight
                 denom += vol * weight
@@ -2263,58 +2250,6 @@ class Core(composites.Composite):
             return num / denom
         else:
             raise RuntimeError("no temperature average for {0}".format(typeSpec))
-
-    def getDominantMaterial(self, typeSpec, blockList=None):
-        r"""
-        return the most common material in the compositions of the blocks.
-
-        If you pass ['clad', 'duct'], you might get HT9, for example.
-        This allows generality in reading material properties on groups of blocks.
-        Dominant is defined by most volume.
-
-        Parameters
-        ----------
-        typeSpec : Flags or iterable of Flags
-            The types of components to search through (e.g. Flags.CLAD, Flags.DUCT)
-
-        blockList : iterable, optional
-            A list of blocks that will be considered in the search for a dominant material.
-            If blank, will consider all blocks in the reactor
-
-        Returns
-        -------
-        maxMat : A material object that represents the dominant material
-
-        See Also
-        --------
-        armi.reactor.blocks.Blocks.getDominantMaterial : block level helper for this.
-        """
-        mats = {}
-        samples = {}
-
-        # new style
-        if not blockList:
-            blockList = list(self.getBlocks())
-            ## TODO: no need for list
-        for b in blockList:
-            bMats, bSamples = b.getDominantMaterial(typeSpec)
-            for matName, blockVolume in bMats.items():
-                previousVolume = mats.get(matName, 0.0)
-                mats[matName] = previousVolume + blockVolume
-            samples.update(bSamples)
-
-        # find max volume
-        maxVol = 0.0
-        maxMat = None
-        for mName, vol in mats.items():
-            if vol > maxVol:
-                maxVol = vol
-                maxMat = mName
-        if maxMat:
-            # return a copy of this material. Note that if this material
-            # has properties like Zr-frac, enrichment, etc. then this will
-            # just return one in the batch, not an average.
-            return samples[maxMat]
 
     def getAllNuclidesIn(self, mats):
         """
@@ -2347,10 +2282,9 @@ class Core(composites.Composite):
             mats = [mats]
         names = set(m.name for m in mats)
         allNucNames = set()
-        for b in self.getBlocks():
-            for c in b.getComponents():
-                if c.material.name in names:
-                    allNucNames.update(c.getNuclides())
+        for c in self.iterComponents():
+            if c.material.name in names:
+                allNucNames.update(c.getNuclides())
         return list(allNucNames)
 
     def growToFullCore(self, cs):
@@ -2370,12 +2304,12 @@ class Core(composites.Composite):
 
         return converter
 
-    def setPitchUniform(self, pitchInCm, updateNumberDensityParams=True):
+    def setPitchUniform(self, pitchInCm):
         """
         set the pitch in all blocks
         """
         for b in self.getBlocks():
-            b.setPitch(pitchInCm, updateNumberDensityParams=updateNumberDensityParams)
+            b.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
         self.spatialGrid.changePitch(pitchInCm)

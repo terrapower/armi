@@ -1358,53 +1358,6 @@ class Assembly(composites.Composite):
         # return none if there is nothing to return
         return None
 
-    def getDominantMaterial(self, typeSpec=None, blockList=None):
-        """
-        Returns the most common material in the compositions of the blocks.
-
-        If you pass ['clad','duct'], you might get HT9, for example.  This allows
-        generality in reading material properties on groups of blocks.  Dominant is
-        defined by most volume. This version is assembly-level.
-
-        Parameters
-        ----------
-        typeSpec : Flags or list of Flags, optional
-            Specification of the type of components to pull the dominant materials from.
-
-        blockList : list of block objects
-            A list of blocks to look at in this assembly.
-
-        Returns
-        -------
-        samples[maxMat] : Material object
-            The material that has the most volume within this assembly within the given
-            typeSpec and blockList.
-
-        """
-        mats = {}
-        samples = {}
-
-        if not blockList:
-            blockList = self.getBlocks()
-        for b in blockList:
-            bmats, bsamples = b.getDominantMaterial(typeSpec)
-            for matName, blockVol in bmats.items():
-                mats[matName] = mats.get(matName, 0.0) + blockVol
-            samples.update(bsamples)
-
-        # find max volume
-        maxVol = 0.0
-        maxMat = None
-        for mName, vol in mats.items():
-            if vol > maxVol:
-                maxVol = vol
-                maxMat = mName
-        if maxMat:
-            # return a copy of this material. Note that if this material
-            # has properties like Zr-frac, enrichment, etc. then this will
-            # just return one in the batch, not an average.
-            return samples[maxMat]
-
     def getSymmetryFactor(self):
         """Return the symmetry factor of this assembly."""
         return self[0].getSymmetryFactor()
