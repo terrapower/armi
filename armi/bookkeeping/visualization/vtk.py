@@ -26,8 +26,6 @@ that can be improved upon. For instance
    vertices than needed. Some fancy canned algorithms probably exist to do this, and it
    wouldn't be too difficult to do here either. Also future work, but probably not super
    important unless dealing with really big meshes.
- - Nuclide number densities are not output, because thay are no longer formal
-   parameters. These should be added by calling the code in database3 that writes them.
 """
 
 import pathlib
@@ -196,6 +194,12 @@ class VtkDumper(dumper.VisFileDumper):
         # collect param data
         blockData = _collectObjectData(blks, includeParams, excludeParams)
         assemData = _collectObjectData(assems, includeParams, excludeParams)
+        # block number densities are special, since they arent stored as params
+        blockNdens = database3.collectBlockNumberDensities(blks)
+        # we need to copy the number density vectors to guarantee unit stride, which
+        # pyevtk requires. Kinda seems like something it could do for us, but oh well.
+        blockNdens = {key: numpy.array(value) for key, value in blockNdens.items()}
+        blockData.update(blockNdens)
 
         fullPath = blockMesh.write(blockPath, blockData)
         self._blockFiles.append((fullPath, r.p.time))
