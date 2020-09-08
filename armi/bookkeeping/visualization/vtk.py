@@ -19,19 +19,19 @@ Limitations
 -----------
 This version of the VTK file writer comes with a number of limitations and/or aspects
 that can be improved upon. For instance
- - Only the Block mesh and related parameters are exported to the VTK file. Adding
-   Assembly and Core meshes is totally doable, and will be the product of future work.
-   With more considerable effort, arbitrary component may be visualizable!
+ - Only the Block and Assembly meshes and related parameters are exported to the VTK
+   file. Adding Core data is totally doable, and will be the product of future work.
+   With more considerable effort, arbitrary components may be visualizable!
  - No efforts are made to de-duplicate the vertices in the mesh, so there are more
    vertices than needed. Some fancy canned algorithms probably exist to do this, and it
    wouldn't be too difficult to do here either. Also future work, but probably not super
    important unless dealing with really big meshes.
- - Nuclide number densities are not output, because thay are not longer formal
+ - Nuclide number densities are not output, because thay are no longer formal
    parameters. These should be added by calling the code in database3 that writes them.
 """
 
 import pathlib
-from typing import List, Optional, Set, Tuple
+from typing import Dict, Any, List, Optional, Set, Tuple
 import math
 
 from pyevtk.hl import unstructuredGridToVTK
@@ -39,6 +39,8 @@ from pyevtk.vtk import VtkGroup, VtkHexahedron, VtkQuadraticHexahedron
 import numpy
 
 from armi import runLog
+from armi.reactor import composites
+from armi.reactor import assemblies
 from armi.reactor import reactors
 from armi.reactor import blocks
 from armi.reactor import parameters
@@ -114,6 +116,24 @@ class VtkMesh:
         self.offsets = numpy.append(self.offsets, other.offsets + offsetOffset)
         self.cellTypes = numpy.append(self.cellTypes, other.cellTypes)
 
+    def write(self, path, data) -> str:
+        """
+        Write this mesh and the passed data to a VTK file. Returns the base path, plus
+        relevant extension.
+        """
+
+        fullPath = unstructuredGridToVTK(
+            path,
+            self.x,
+            self.y,
+            self.z,
+            connectivity=self.connectivity,
+            offsets=self.offsets,
+            cell_types=self.cellTypes,
+            cellData=data,
+        )
+        return fullPath
+
 
 class VtkDumper(dumper.VisFileDumper):
     """
@@ -126,7 +146,8 @@ class VtkDumper(dumper.VisFileDumper):
 
     def __init__(self, baseName: str):
         self._baseName = baseName
-        self._statesDumped: List[Tuple[str, float]] = []
+        self._assemFiles: List[Tuple[str, float]]  = []
+        self._blockFiles: List[Tuple[str, float]]  = []
 
     def dumpState(
         self,
@@ -157,7 +178,8 @@ class VtkDumper(dumper.VisFileDumper):
 
         # We avoid using cXnY, since VisIt doesn't support .pvd files, but *does* know
         # to lump data with similar file names and integers at the end.
-        path = "{}_{:0>3}{:0>3}".format(self._baseName, cycle, timeNode)
+        blockPath = "{}_blk_{:0>3}{:0>3}".format(self._baseName, cycle, timeNode)
+        assemPath = "{}_asy_{:0>3}{:0>3}".format(self._baseName, cycle, timeNode)
 
         # include and exclude params are mutually exclusive
         if includeParams is not None and excludeParams is not None:
@@ -165,89 +187,113 @@ class VtkDumper(dumper.VisFileDumper):
                 "includeParams and excludeParams can not both be used at the same time"
             )
 
-        # make the mesh
+        # make the meshes
         blks = r.core.getBlocks()
-        mesh = _createReactorMesh(r)
+        assems = r.core.getAssemblies()
+        blockMesh = _createReactorBlockMesh(r)
+        assemMesh = _createReactorAssemMesh(r)
 
         # collect param data
-        allData = dict()
-        for pDef in blocks.Block.pDefs.toWriteToDB(parameters.SINCE_ANYTHING):
-            if includeParams is not None and pDef.name not in includeParams:
-                continue
-            if excludeParams is not None and pDef.name in excludeParams:
-                continue
+        blockData = _collectObjectData(blks, includeParams, excludeParams)
+        assemData = _collectObjectData(assems, includeParams, excludeParams)
 
-            data = []
-            for b in blks:
-                val = b.p[pDef.name]
-                data.append(val)
+        fullPath = blockMesh.write(blockPath, blockData)
+        self._blockFiles.append((fullPath, r.p.time))
 
-            data = numpy.array(data)
-
-            if data.dtype.kind == "S" or data.dtype.kind == "U":
-                # no string support!
-                continue
-            if data.dtype.kind == "O":
-                # datatype is "object", usually because it's jagged, or has Nones. We are
-                # willing to try handling the Nones, but jagged also isnt visualizable.
-                nones = numpy.where([d is None for d in data])[0]
-
-                if len(nones) == data.shape[0]:
-                    # all Nones, so give up
-                    continue
-
-                if len(nones) == 0:
-                    # looks like Nones had nothing to do with it. bail
-                    continue
-
-                try:
-                    data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
-                except ValueError:
-                    # Looks like we have some weird data. We might be able to handle it
-                    # with more massaging, but probably not visualizable anyhow
-                    continue
-
-                if data.dtype.kind == "O":
-                    # Didn't work
-                    runLog.warning(
-                        "The parameter data for  `{}` could not be coerced into "
-                        "a native type for output; skipping.".format(pDef.name)
-                    )
-                    continue
-            if len(data.shape) != 1:
-                # We aren't interested in vector data on each block
-                continue
-            allData[pDef.name] = data
-
-        fullPath = unstructuredGridToVTK(
-            path,
-            mesh.x,
-            mesh.y,
-            mesh.z,
-            connectivity=mesh.connectivity,
-            offsets=mesh.offsets,
-            cell_types=mesh.cellTypes,
-            cellData=allData,
-        )
-
-        self._statesDumped.append((fullPath, r.p.time))
+        fullPath = assemMesh.write(assemPath, assemData)
+        self._assemFiles.append((fullPath, r.p.time))
 
     def __enter__(self):
-        self._statesDumped = []
+        self._assemFiles = []
+        self._blockFiles = []
 
     def __exit__(self, type, value, traceback):
-        if len(self._statesDumped) > 1:
-            # multiple files need to be wrapped up into a group
-            group = VtkGroup(self._baseName)
-            for path, time in self._statesDumped:
-                group.addFile(filepath=path, sim_time=time)
-            group.save()
+        assert len(self._assemFiles) == len(self._blockFiles)
+        if len(self._assemFiles) > 1:
+            # multiple files need to be wrapped up into groups. VTK doesnt like having
+            # multiple meshes in the same group, so we write out separate Collection
+            # files for them
+            asyGroup = VtkGroup(f"{self._baseName}_asm")
+            for path, time in self._assemFiles:
+                asyGroup.addFile(filepath=path, sim_time=time)
+            asyGroup.save()
+
+            blockGroup = VtkGroup(f"{self._baseName}_blk")
+            for path, time in self._blockFiles:
+                blockGroup.addFile(filepath=path, sim_time=time)
+            blockGroup.save()
 
 
-def _createReactorMesh(r: reactors.Reactor):
+def _collectObjectData(objs: List[composites.ArmiObject],
+        includeParams: Optional[Set[str]] = None,
+        excludeParams: Optional[Set[str]] = None,
+        ) -> Dict[str, Any]:
+
+    allData = dict()
+
+    for pDef in type(objs[0]).pDefs.toWriteToDB(parameters.SINCE_ANYTHING):
+        if includeParams is not None and pDef.name not in includeParams:
+            continue
+        if excludeParams is not None and pDef.name in excludeParams:
+            continue
+
+        data = []
+        for obj in objs:
+            val = obj.p[pDef.name]
+            data.append(val)
+
+        data = numpy.array(data)
+
+        if data.dtype.kind == "S" or data.dtype.kind == "U":
+            # no string support!
+            continue
+        if data.dtype.kind == "O":
+            # datatype is "object", usually because it's jagged, or has Nones. We are
+            # willing to try handling the Nones, but jagged also isnt visualizable.
+            nones = numpy.where([d is None for d in data])[0]
+
+            if len(nones) == data.shape[0]:
+                # all Nones, so give up
+                continue
+
+            if len(nones) == 0:
+                # looks like Nones had nothing to do with it. bail
+                continue
+
+            try:
+                data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
+            except ValueError:
+                # Looks like we have some weird data. We might be able to handle it
+                # with more massaging, but probably not visualizable anyhow
+                continue
+
+            if data.dtype.kind == "O":
+                # Didn't work
+                runLog.warning(
+                    "The parameter data for  `{}` could not be coerced into "
+                    "a native type for output; skipping.".format(pDef.name)
+                )
+                continue
+        if len(data.shape) != 1:
+            # We aren't interested in vector data on each block
+            continue
+        allData[pDef.name] = data
+
+    return allData
+
+
+def _createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
     for b in r.core.getBlocks():
         mesh.append(_createBlockMesh(b))
+
+    return mesh
+
+
+def _createReactorAssemMesh(r: reactors.Reactor) -> VtkMesh:
+    mesh = VtkMesh.empty()
+    for a in r.core.getAssemblies():
+        mesh.append(_createAssemMesh(a))
 
     return mesh
 
@@ -269,6 +315,34 @@ def _createBlockMesh(b: blocks.Block) -> VtkMesh:
                 },
             )
         )
+
+
+def _createAssemMesh(a: assemblies.Assembly) -> VtkMesh:
+    # Kind of hacky, but since all blocks in an assembly are the same type, let's just
+    # use the block mesh functions and change their z coordinates to match the size of
+    # the whole assem 🤯
+    mesh = _createBlockMesh(a[0])
+
+    # we should only have a single VTK mesh primitive per block
+    assert len(mesh.cellTypes) == 1
+
+    zMin = a.spatialGrid._bounds[2][0]
+    zMax = a.spatialGrid._bounds[2][-1]
+
+    if mesh.cellTypes[0] == VtkHexahedron:
+        mesh.vertices[0:4, 2] = zMin
+        mesh.vertices[4:8, 2] = zMax
+    elif mesh.cellTypes[0] == _HEX_PRISM_TID:
+        mesh.vertices[0:6, 2] = zMin
+        mesh.vertices[6:12, 2] = zMax
+    elif mesh.cellTypes[0] == VtkQuadraticHexahedron.tid:
+        # again, quadratic hexahedra are a pain
+        mesh.vertices[0:4, 2] = zMin
+        mesh.vertices[8:12, 2] = zMin
+        mesh.vertices[4:8, 2] = zMax
+        mesh.vertices[12:16, 2] = zMax
+
+    return mesh
 
 
 def _createHexBlockMesh(b: blocks.HexBlock) -> VtkMesh:
