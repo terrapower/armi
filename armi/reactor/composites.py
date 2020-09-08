@@ -2174,9 +2174,12 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numerator = 0.0
         denominator = 0.0
+
+        numDensities = self.getNumberDensities()
+
         for nucName in self.getNuclides():
             atomicWeight = nuclideBases.byName[nucName].weight
-            ni = self.getNumberDensity(nucName)
+            ni = numDensities[nucName]
             numerator += atomicWeight * ni
             denominator += ni
         return numerator / denominator

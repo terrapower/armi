@@ -76,7 +76,7 @@ def _setBOLBond(assemblies):
             coolants = b.getComponents(Flags.COOLANT)
             coolant = coolants[0]
             b.p.bondBOL = sum(
-                [bond.getNumberDensity(nuc) for nuc in bond.getNuclides()]
+                [getNuclideNumberDensities(bond.getNuclides())]
             )
             if not isinstance(bond.material, coolant.material.__class__):
                 assemsWithoutMatchingBond.add(

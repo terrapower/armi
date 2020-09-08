@@ -757,8 +757,11 @@ class Block(composites.Composite):
         if returnMass:
             # do this with a flag to enable faster operation when mass is not needed.
             volume = self.getVolume()
-        for nuclideName in adjustList:
-            dens = self.getNumberDensity(nuclideName)
+
+        numDensities = self.getNuclideNumberDensities(adjustList)
+
+        for nuclideName,dens in zip(adjustList,numDensities):
+
             if not dens:
                 # don't modify zeros.
                 continue
@@ -1212,15 +1215,17 @@ class Block(composites.Composite):
         into a full block.
         """
 
+        numDensities = self.getNumberDensities()
+
         # reduce this block's number densities
         for nuc in self.getNuclides():
-            self.setNumberDensity(nuc, (1.0 - fraction) * self.getNumberDensity(nuc))
+            self.setNumberDensity(nuc, (1.0 - fraction) * numDensities[nuc])
 
         # now add the other blocks densities.
         for nuc in otherBlock.getNuclides():
             self.setNumberDensity(
                 nuc,
-                self.getNumberDensity(nuc)
+                numDensities[nuc]
                 + otherBlock.getNumberDensity(nuc) * fraction,
             )
 
@@ -1462,9 +1467,11 @@ class Block(composites.Composite):
         mfpNumerator = numpy.zeros(len(flux))
         absMfpNumerator = numpy.zeros(len(flux))
         transportNumerator = numpy.zeros(len(flux))
+
+        numDensities = self.getNumberDensities()
         # vol = self.getVolume()
         for nuc in self.getNuclides():
-            dens = self.getNumberDensity(nuc)  # [1/bn-cm]
+            dens = numDensities[nuc]  # [1/bn-cm]
             nucMc = nucDir.getMc2Label(nuc) + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
