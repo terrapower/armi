@@ -1156,31 +1156,14 @@ class Database3(database.Database):
         """
         Create on-the-fly block homog. number density params for XTVIEW viewing.
 
-        Long ago, composition was stored on block params. No longer; they are on the component
-        numberDensity params. These block-level params, are still useful to see compositions
-        in some visualization tools. Rather than keep them on the reactor model, we
-        dynamically compute them here and slap them in the database. These are ignored
-        upon reading and will not affect the results.
-
-        Remove this once a better viz tool can view composition distributions.
-        Also remove the try/except in ``_readParams``
+        See also
+        --------
+        collectBlockNumberDensities
         """
-        nucNames = sorted(
-            list(set(nucName for b in blocks for nucName in b.getNuclides()))
-        )
-        nucBases = [nuclideBases.byName[nn] for nn in nucNames]
-        # it's faster to loop over blocks first and get all number densities from each
-        # than it is to get one nuclide at a time from each block because of area fraction
-        # calculations. So we use some RAM here instead.
-        nucDensityMatrix = []
-        for block in blocks:
-            nucDensityMatrix.append(block.getNuclideNumberDensities(nucNames))
-        nucDensityMatrix = numpy.array(nucDensityMatrix)
-        for ni, nb in enumerate(nucBases):
-            # the nth column is a vector of nuclide densities for this nuclide across all blocks
-            h5group.create_dataset(
-                nb.getDatabaseName(), data=nucDensityMatrix[:, ni], compression="gzip"
-            )
+        nDens = collectBlockNumberDensities(blocks)
+
+        for nucName, numDens in nDens.items():
+            h5group.create_dataset(nucName, data=numDens, compression="gzip")
 
     @staticmethod
     def _readParams(h5group, compTypeName, comps):
@@ -2716,3 +2699,34 @@ def _resolveAttrs(attrs, group):
             runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
             raise
     return resolved
+
+
+def collectBlockNumberDensities(blocks) -> Dict[str, numpy.ndarray]:
+    """
+    Collect block-by-block homogenized number densities for each nuclide.
+
+    Long ago, composition was stored on block params. No longer; they are on the
+    component numberDensity params. These block-level params, are still useful to see
+    compositions in some visualization tools. Rather than keep them on the reactor
+    model, we dynamically compute them here and slap them in the database. These are
+    ignored upon reading and will not affect the results.
+
+    Remove this once a better viz tool can view composition distributions. Also remove
+    the try/except in ``_readParams``
+    """
+    nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
+    nucBases = [nuclideBases.byName[nn] for nn in nucNames]
+    # it's faster to loop over blocks first and get all number densities from each
+    # than it is to get one nuclide at a time from each block because of area fraction
+    # calculations. So we use some RAM here instead.
+    nucDensityMatrix = []
+    for block in blocks:
+        nucDensityMatrix.append(block.getNuclideNumberDensities(nucNames))
+    nucDensityMatrix = numpy.array(nucDensityMatrix)
+
+    dataDict = dict()
+    for ni, nb in enumerate(nucBases):
+        # the nth column is a vector of nuclide densities for this nuclide across all blocks
+        dataDict[nb.getDatabaseName()] = nucDensityMatrix[:, ni]
+
+    return dataDict
