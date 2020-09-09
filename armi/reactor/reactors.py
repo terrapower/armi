@@ -2451,11 +2451,12 @@ class Core(composites.Composite):
             )
 
         self.p.axialMesh = self.findAllAxialMeshPoints()
+        refAssem = self.refAssem
 
         if not cs["detailedAxialExpansion"]:
             for a in self.getAssemblies(includeBolAssems=True):
                 # prepare for mesh snapping during axial expansion
-                a.makeAxialSnapList(self.refAssem)
+                a.makeAxialSnapList(refAssem)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
         self._buildLocationIndexLookup()  # for converting indices to locations.
@@ -2466,7 +2467,7 @@ class Core(composites.Composite):
         stationaryBlocks = []
         # look for blocks that should not be shuffled in an assembly.  It is assumed that the
         # reference assembly has all the fixed block information and it is the same for all assemblies
-        for i, b in enumerate(self.refAssem):
+        for i, b in enumerate(refAssem):
             if b.hasFlags(Flags.GRID_PLATE):
                 stationaryBlocks.append(i)
                 runLog.extra(
