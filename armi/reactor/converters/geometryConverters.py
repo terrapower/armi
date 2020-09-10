@@ -911,24 +911,20 @@ class HexToRZThetaConverter(GeometryConverter):
                 homBlockVolume += blockVolumeHere
                 homBlockTemperature += b.getAverageTempInC() * blockVolumeHere
 
-                numDensities = b.getNuclideNumberDensities(b.getNuclides())
+                nuclideNames = b.getNuclides()
+                numDensities = b.getNuclideNumberDensities(nuclideNames)
 
-                for nucName, numDen in zip(b.getNuclides(), numDensities):
-                    homBlockAtoms[nucName] += (
-                        numDen * blockVolumeHere
-                    )
+                for nucName, nDen in zip(nuclideNames, numDensities):
+                    homBlockAtoms[nucName] += nDen * blockVolumeHere
                 self.blockMap[homBlock].append(b)
                 self.blockVolFracs[homBlock][b] = blockVolumeHere
         # Notify if blocks with different xs types are being homogenized. May be undesired behavior.
         if len(homBlockXsTypes) > 1:
-            msg = (
-                "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} "
-                "cm and {} cm. ".format(
-                    self.blockMap[homBlock],
-                    self.convReactor.core,
-                    lowerAxialZ,
-                    upperAxialZ,
-                )
+            msg = "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} " "cm and {} cm. ".format(
+                self.blockMap[homBlock],
+                self.convReactor.core,
+                lowerAxialZ,
+                upperAxialZ,
             )
             if self._strictHomogenization:
                 raise ValueError(
