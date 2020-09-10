@@ -911,10 +911,9 @@ class HexToRZThetaConverter(GeometryConverter):
                 homBlockVolume += blockVolumeHere
                 homBlockTemperature += b.getAverageTempInC() * blockVolumeHere
 
-                nuclideNames = b.getNuclides()
-                numDensities = b.getNuclideNumberDensities(nuclideNames)
+                numDensities = b.getNumberDensities()
 
-                for nucName, nDen in zip(nuclideNames, numDensities):
+                for nucName, nDen in numDensities.items():
                     homBlockAtoms[nucName] += nDen * blockVolumeHere
                 self.blockMap[homBlock].append(b)
                 self.blockVolFracs[homBlock][b] = blockVolumeHere

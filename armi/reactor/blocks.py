@@ -1215,18 +1215,17 @@ class Block(composites.Composite):
         into a full block.
         """
 
-        nuclideNames = self.getNuclides()
-        numDensities = self.getNuclideNumberDensities(nuclideNames)
+        numDensities = self.getNumberDensities()
 
         # reduce this block's number densities
-        for nucName, nDen in zip(nuclideNames, numDensities):
+        for nucName, nDen in numDensities.items():
             self.setNumberDensity(nucName, (1.0 - fraction) * nDen)
 
         # now add the other blocks densities.
-        for nuc, nDen in zip(otherBlock.getNuclides(), numDensities):
+        for nucName in otherBlock.getNuclides():
             self.setNumberDensity(
-                nuc,
-                nDen + otherBlock.getNumberDensity(nuc) * fraction,
+                nucName,
+                numDensities[nucName] + otherBlock.getNumberDensity(nucName) * fraction,
             )
 
     def getComponentAreaFrac(self, typeSpec, exact=True):
@@ -1468,11 +1467,10 @@ class Block(composites.Composite):
         absMfpNumerator = numpy.zeros(len(flux))
         transportNumerator = numpy.zeros(len(flux))
 
-        nuclideNames = self.getNuclides()
-        numDensities = self.getNuclideNumberDensities(nuclideNames)
+        numDensities = self.getNumberDensities()
 
         # vol = self.getVolume()
-        for nucName, nDen in zip(nuclideNames, numDensities):
+        for nucName, nDen in numDensities.items():
             nucMc = nucDir.getMc2Label(nucName) + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
