@@ -1215,18 +1215,18 @@ class Block(composites.Composite):
         into a full block.
         """
 
-        nuclideNams = self.getNuclides()
-        numDensities = self.getNuclideNumberDensities()
+        nuclideNames = self.getNuclides()
+        numDensities = self.getNuclideNumberDensities(nuclideNames)
 
         # reduce this block's number densities
-        for nucName, numDens in zip(nuclideNams, numDensities):
-            self.setNumberDensity(nucName, (1.0 - fraction) * numDens)
+        for nucName, nDen in zip(nuclideNames, numDensities):
+            self.setNumberDensity(nucName, (1.0 - fraction) * nDen)
 
         # now add the other blocks densities.
-        for nuc in otherBlock.getNuclides():
+        for nuc, nDen in zip(otherBlock.getNuclides(), numDensities):
             self.setNumberDensity(
                 nuc,
-                numDensities[nuc] + otherBlock.getNumberDensity(nuc) * fraction,
+                nDen + otherBlock.getNumberDensity(nuc) * fraction,
             )
 
     def getComponentAreaFrac(self, typeSpec, exact=True):
@@ -1468,8 +1468,8 @@ class Block(composites.Composite):
         absMfpNumerator = numpy.zeros(len(flux))
         transportNumerator = numpy.zeros(len(flux))
 
-        numDensities = self.getNuclideNumberDensities()
         nuclideNames = self.getNuclides()
+        numDensities = self.getNuclideNumberDensities(nuclideNames)
 
         # vol = self.getVolume()
         for nucName, nDen in zip(nuclideNames, numDensities):
