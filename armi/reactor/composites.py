@@ -833,7 +833,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return derivedVolume
 
     def getMaxArea(self):
-        """"
+        """ "
         The maximum area of this object if it were totally full.
 
         See Also
@@ -2174,11 +2174,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numerator = 0.0
         denominator = 0.0
-        for nucName in self.getNuclides():
+
+        numDensities = self.getNumberDensities()
+
+        for nucName, nDen in numDensities.items():
             atomicWeight = nuclideBases.byName[nucName].weight
-            ni = self.getNumberDensity(nucName)
-            numerator += atomicWeight * ni
-            denominator += ni
+            numerator += atomicWeight * nDen
+            denominator += nDen
         return numerator / denominator
 
     def getMasses(self):
@@ -3209,7 +3211,7 @@ def gatherMaterialsByVolume(
     -----
     This helper method is outside the main ArmiObject tree for the special clients that need
     to filter both by container type (e.g. Block type) with one set of flags, and Components
-    with another set of flags. 
+    with another set of flags.
 
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.

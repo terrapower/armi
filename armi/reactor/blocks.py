@@ -757,8 +757,11 @@ class Block(composites.Composite):
         if returnMass:
             # do this with a flag to enable faster operation when mass is not needed.
             volume = self.getVolume()
-        for nuclideName in adjustList:
-            dens = self.getNumberDensity(nuclideName)
+
+        numDensities = self.getNuclideNumberDensities(adjustList)
+
+        for nuclideName, dens in zip(adjustList, numDensities):
+
             if not dens:
                 # don't modify zeros.
                 continue
@@ -1212,16 +1215,17 @@ class Block(composites.Composite):
         into a full block.
         """
 
+        numDensities = self.getNumberDensities()
+
         # reduce this block's number densities
-        for nuc in self.getNuclides():
-            self.setNumberDensity(nuc, (1.0 - fraction) * self.getNumberDensity(nuc))
+        for nucName, nDen in numDensities.items():
+            self.setNumberDensity(nucName, (1.0 - fraction) * nDen)
 
         # now add the other blocks densities.
-        for nuc in otherBlock.getNuclides():
+        for nucName in otherBlock.getNuclides():
             self.setNumberDensity(
-                nuc,
-                self.getNumberDensity(nuc)
-                + otherBlock.getNumberDensity(nuc) * fraction,
+                nucName,
+                numDensities[nucName] + otherBlock.getNumberDensity(nucName) * fraction,
             )
 
     def getComponentAreaFrac(self, typeSpec, exact=True):
@@ -1462,10 +1466,12 @@ class Block(composites.Composite):
         mfpNumerator = numpy.zeros(len(flux))
         absMfpNumerator = numpy.zeros(len(flux))
         transportNumerator = numpy.zeros(len(flux))
+
+        numDensities = self.getNumberDensities()
+
         # vol = self.getVolume()
-        for nuc in self.getNuclides():
-            dens = self.getNumberDensity(nuc)  # [1/bn-cm]
-            nucMc = nucDir.getMc2Label(nuc) + self.getMicroSuffix()
+        for nucName, nDen in numDensities.items():
+            nucMc = nucDir.getMc2Label(nucName) + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
             else:
@@ -1473,9 +1479,9 @@ class Block(composites.Composite):
             total = micros.total[:, 0]  # 0th order
             transport = micros.transport[:, 0]  # 0th order, [bn]
             absorb = sum(micros.getAbsorptionXS())
-            mfpNumerator += dens * total  # [cm]
-            absMfpNumerator += dens * absorb
-            transportNumerator += dens * transport
+            mfpNumerator += nDen * total  # [cm]
+            absMfpNumerator += nDen * absorb
+            transportNumerator += nDen * transport
         denom = sum(flux)
         mfp = 1.0 / (sum(mfpNumerator * flux) / denom)
         sigmaA = sum(absMfpNumerator * flux) / denom
@@ -2075,10 +2081,14 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                if symmetryLine in [
-                    grids.BOUNDARY_0_DEGREES,
-                    grids.BOUNDARY_120_DEGREES,
-                ] and bool(self.r.core.childrenByLocator.get(upperEdgeLoc)):
+                if (
+                    symmetryLine
+                    in [
+                        grids.BOUNDARY_0_DEGREES,
+                        grids.BOUNDARY_120_DEGREES,
+                    ]
+                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                ):
                     return 2.0
         return 1.0
 
