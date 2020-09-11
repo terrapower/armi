@@ -141,7 +141,11 @@ class PyReverse(Directive):
             fig_name = self.options.get("filename", "classes_{}.png".format(args[0]))
             command = [sys.executable, "-m", "pylint.pyreverse.main"]
             print("Running {}".format(command + args))
-            subprocess.check_call(command + args)
+            env = dict(os.environ)
+            # apply any runtime path mods to the pythonpath env variable (e.g. sys.path
+            # mods made during doc confs)
+            env["PYTHONPATH"] = os.pathsep.join(sys.path)
+            subprocess.check_call(command + args, env=env)
 
             try:
                 os.remove(os.path.join(APIDOC_DIR, fig_name))
