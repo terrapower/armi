@@ -546,7 +546,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
             weight = bWeight * c.getArea()
             totalWeight += weight
             densities += weight * numpy.array(
-                [c.getNumberDensity(nucName) for nucName in allNucNames]
+                c.getNuclideNumberDensities(allNucNames) 
             )
         return allNucNames, densities / totalWeight
 
