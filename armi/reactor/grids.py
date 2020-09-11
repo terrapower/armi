@@ -286,8 +286,14 @@ class IndexLocation(LocationBase):
         a reactor, then the ``parentLocation`` is the spatialLocator of the reactor, which
         will often be a ``CoordinateLocation``.
         """
-        if self.grid and self.grid.armiObject and self.grid.armiObject.parent:
-            return self.grid.armiObject.spatialLocator
+        grid = self.grid  # performance matters a lot here so we remove a dot
+        # check for None rather than __nonzero__ for speed (otherwise it checks the length)
+        if (
+            grid is not None
+            and grid.armiObject is not None
+            and grid.armiObject.parent is not None
+        ):
+            return grid.armiObject.spatialLocator
         return None
 
     @property
@@ -328,8 +334,10 @@ class IndexLocation(LocationBase):
         """
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         indices = self.indices
-        if parentLocation:
-            if parentLocation.grid and addingIsValid(self.grid, parentLocation.grid):
+        if parentLocation is not None:
+            if parentLocation.grid is not None and addingIsValid(
+                self.grid, parentLocation.grid
+            ):
                 indices += parentLocation.indices
         return tuple(indices)
 

@@ -217,7 +217,7 @@ wiki = {"phabricator": ("https://ubuntuprod.tp.int" + "%s", None)}
 pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
-# modindex_common_prefix = []
+modindex_common_prefix = ["armi."]
 
 
 # -- Options for HTML output ---------------------------------------------------
