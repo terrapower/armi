@@ -1427,30 +1427,30 @@ class GridBlueprintControl(wx.Panel):
         bp = copy.deepcopy(self.bp)
 
         for gridDesignType, gridDesign in bp.gridDesigns.items():
-
             # The core equilibrium path should be put into the
-            # grid contents rather than a lattice map. Skip
+            # grid contents rather than a lattice map until we write
+            # a string-> tuple parser for reading it back in. Skip
             # this type of grid.
             if gridDesignType == "coreEqPath":
                 continue
-
             _filterOutsideDomain(gridDesign)
             if gridDesign.gridContents:
 
                 try:
                     aMap = asciimaps.asciiMapFromGeomAndSym(
                         self.grid.geomType, self.grid.symmetry
-                    )(lattice=gridDesign.gridContents)
+                    )()
+                    aMap.asciiLabelByIndices = gridDesign.gridContents
+                    aMap.gridContentsToAscii()
                 except:
-                    aMap = None
-
-                if type(aMap) == asciimaps.AsciiMapHexFullTipsUp:
-                    # This appears broken for full-core cases; stick to `grid contents`
+                    runLog.warning(
+                        "Cannot write geometry with asciimap. Defaulting to dict."
+                    )
                     aMap = None
 
                 if aMap is not None:
                     mapString = io.StringIO()
-                    aMap.writeMap(mapString)
+                    aMap.writeAscii(mapString)
                     # deep ruamel.yaml magic
                     formattedStr = scalarstring.LiteralScalarString(
                         mapString.getvalue()

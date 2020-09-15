@@ -983,7 +983,7 @@ class CartesianGrid(Grid):
         ----------
         width : float
             Width of the unit rectangle
-        width : float
+        height : float
             Height of the unit rectangle
         numRings : int
             Number of rings that the grid should span

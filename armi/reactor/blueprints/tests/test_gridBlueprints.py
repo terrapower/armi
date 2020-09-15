@@ -24,7 +24,7 @@ from armi.reactor import geometry
 
 LATTICE_BLUEPRINT = """
 control:
-    geom: hex
+    geom: hex_corners_up
     symmetry: full
     lattice map: |
        - - - - - - - - - 1 1 1 1 1 1 1 1 1 4

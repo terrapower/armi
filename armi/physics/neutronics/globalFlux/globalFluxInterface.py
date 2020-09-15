@@ -339,7 +339,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
 
 class GlobalFluxExecuter(executers.DefaultExecuter):
     """
-    A short-lived object that  coordinates the prep, execution, and processing of a flux solve
+    A short-lived object that coordinates the prep, execution, and processing of a flux solve.
 
     There are many forms of global flux solves:
 
