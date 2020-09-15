@@ -116,6 +116,7 @@ SYSTEMS = "systems"
 VERSION = "version"
 
 HEX = "hex"
+HEX_CORNERS_UP = "hex_corners_up"
 RZT = "thetarz"
 RZ = "rz"
 CARTESIAN = "cartesian"
@@ -126,7 +127,7 @@ HEX_PRISM = "HexPrism"
 CONCENTRIC_CYLINDER = "ConcentricCylinder"
 ANNULUS_SECTOR_PRISM = "AnnulusSectorPrism"
 
-VALID_GEOMETRY_TYPE = {HEX, RZT, RZ, CARTESIAN}
+VALID_GEOMETRY_TYPE = {HEX, HEX_CORNERS_UP, RZT, RZ, CARTESIAN}
 
 FULL_CORE = "full"
 THIRD_CORE = "third "
@@ -450,9 +451,9 @@ class SystemLayoutInput:
         """Read a ascii map string into this object."""
         mapTxt = system[INP_LATTICE]
         if self.geomType == HEX and THIRD_CORE in self.symmetry:
-            geomMap = asciimaps.AsciiMapHexThird()
-            geomMap.readMap(mapTxt)
-            for (i, j), spec in geomMap.lattice.items():
+            asciimap = asciimaps.AsciiMapHexThirdFlatsUp()
+            asciimap.readAscii(mapTxt)
+            for (i, j), spec in asciimap.items():
                 if spec == "-":
                     # skip whitespace placeholders
                     continue
@@ -583,8 +584,10 @@ class SystemLayoutInput:
             i, j = grids.HexGrid.getIndicesFromRingAndPos(ring, pos)
             lattice[i, j] = specifier
 
-        geomMap = asciimaps.AsciiMapHexThird(lattice)
-        geomMap.writeMap(sys.stdout)
+        geomMap = asciimaps.AsciiMapHexThirdFlatsUp()
+        geomMap.asciiLabelByIndices = lattice
+        geomMap.gridContentsToAscii()
+        geomMap.writeAscii(sys.stdout)
 
     def growToFullCore(self):
         """
@@ -614,7 +617,9 @@ class SystemLayoutInput:
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
             indices = grids.HexGrid.getIndicesFromRingAndPos(ring, pos)
             for symmetricI, symmetricJ in grid.getSymmetricEquivalents(indices):
-                symmetricRingPos = grids.HexGrid.indicesToRingPos(symmetricI, symmetricJ)
+                symmetricRingPos = grids.HexGrid.indicesToRingPos(
+                    symmetricI, symmetricJ
+                )
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
         self.symmetry = FULL_CORE
