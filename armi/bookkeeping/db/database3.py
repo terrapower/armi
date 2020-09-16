@@ -510,11 +510,11 @@ class Database3(database.Database):
             self._versionMinor = None
 
     @property
-    def version(self):
+    def version(self) -> str:
         return self._version
 
     @version.setter
-    def version(self, value):
+    def version(self, value: str):
         self._version = value
         self._versionMajor, self._versionMinor = (int(v) for v in value.split("."))
 
@@ -821,6 +821,15 @@ class Database3(database.Database):
         else:
             for step in timeSteps:
                 yield self.h5db[getH5GroupName(*step)]
+
+    def getLayout(self, cycle, node):
+        """
+        Return a Layout object representing the requested cycle and time node.
+        """
+        version = (self._versionMajor, self._versionMinor)
+        timeGroupName = getH5GroupName(cycle, node)
+
+        return Layout(version, self.h5db[timeGroupName])
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
         """
