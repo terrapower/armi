@@ -237,6 +237,13 @@ class XdmfDumper(dumper.VisFileDumper):
 
         timeGroupName = database3.getH5GroupName(cycle, node)
 
+        # careful here! we are trying to use the database datasets as the source of hard
+        # data without copying, so the order that we make the mesh needs to be the same
+        # order as the data in the database. There is no guarantee that the way a loaded
+        # reactor is ordered is the same way that it was ordered in the database (though
+        # perhaps we should do some work to specify that better). We need to look at the
+        # layout in the input database to re-order the objects.
+        layout = database3.Layout...
         blks = r.core.getBlocks()
         assems = r.core.getAssemblies()
 
