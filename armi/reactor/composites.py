@@ -2749,7 +2749,7 @@ class Composite(ArmiObject):
 
         predicate : callable, optional
             An optional unary predicate to use for filtering results. This can be used
-            to requrest children of specific types, or with desired attributes. Not all
+            to request children of specific types, or with desired attributes. Not all
             ArmiObjects have the same methods and members, so care should be taken to
             make sure that the predicate executes gracefully in all cases (e.g., use
             ``getattr(obj, "attribute", None)`` to access instance attributes). Failure
