@@ -55,6 +55,7 @@ tags
 # vis files
 *.vtu
 *.vtd
+*.xdmf
 
 # fixtures
 .ipynb_checkpoints

@@ -22,6 +22,8 @@ from armi.reactor import components
 from armi.reactor import blocks
 from armi import settings
 from armi.bookkeeping.visualization import vtk
+from armi.bookkeeping.visualization import xdmf
+from armi.bookkeeping.visualization import utils
 
 
 class TestVtkMesh(unittest.TestCase):
@@ -29,7 +31,7 @@ class TestVtkMesh(unittest.TestCase):
     Test the VtkMesh utility class
     """
     def test_testVtkMesh(self):
-        mesh = vtk.VtkMesh.empty()
+        mesh = utils.VtkMesh.empty()
 
         self.assertEqual(mesh.vertices.size, 0)
         self.assertEqual(mesh.vertices.shape, (0, 3))
@@ -43,7 +45,7 @@ class TestVtkMesh(unittest.TestCase):
         conn = numpy.array([0, 1, 2, 3])
         offsets = numpy.array([4])
         cellTypes = numpy.array([VtkTetra.tid])
-        newMesh = vtk.VtkMesh(verts, conn, offsets, cellTypes)
+        newMesh = utils.VtkMesh(verts, conn, offsets, cellTypes)
 
         mesh.append(newMesh)
         mesh.append(newMesh)
@@ -57,7 +59,7 @@ class TestVtkMesh(unittest.TestCase):
         self.assertEqual(mesh.connectivity[-1], 7)
 
 
-class TestVtkVis(unittest.TestCase):
+class TestVisDump(unittest.TestCase):
     """
     Test dumping a whole reactor and some specific block types
     """
@@ -85,20 +87,26 @@ class TestVtkVis(unittest.TestCase):
             )
         )
 
-    def test_dumpReactor(self):
+    def test_dumpReactorVtk(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
-        dumper = vtk.VtkDumper("testVtk")
+        dumper = vtk.VtkDumper("testVtk", inputName=None)
+        with dumper:
+            dumper.dumpState(self.r)
+
+    def test_dumpReactorXdmf(self):
+        # This does a lot, and is hard to verify. at least make sure it doesn't crash
+        dumper = xdmf.XdmfDumper("testVtk", inputName=None)
         with dumper:
             dumper.dumpState(self.r)
 
     def test_hexMesh(self):
-        mesh = vtk._createBlockMesh(self.hexBlock)
+        mesh = utils._createBlockMesh(self.hexBlock)
 
         self.assertEqual(mesh.vertices.size, 12*3)
         self.assertEqual(mesh.cellTypes[0], 16)
 
     def test_cartesianMesh(self):
-        mesh = vtk._createBlockMesh(self.cartesianBlock)
+        mesh = utils._createBlockMesh(self.cartesianBlock)
 
         self.assertEqual(mesh.vertices.size, 8*3)
         self.assertEqual(mesh.cellTypes[0], 12)
