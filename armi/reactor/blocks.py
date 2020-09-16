@@ -1216,17 +1216,16 @@ class Block(composites.Composite):
         """
 
         numDensities = self.getNumberDensities()
+        otherBlockDensities = otherBlock.getNumberDensities()
+        newDensities = {}
 
-        # reduce this block's number densities
-        for nucName, nDen in numDensities.items():
-            self.setNumberDensity(nucName, (1.0 - fraction) * nDen)
+        # Make sure to hit all nuclides in union of blocks
+        for nucName in set(numDensities.keys()).union(otherBlockDensities.keys()):
+            newDensities[nucName] = (1.0 - fraction) * numDensities.get(
+                nucName, 0.0
+            ) + fraction * otherBlockDensities.get(nucName, 0.0)
 
-        # now add the other blocks densities.
-        for nucName in otherBlock.getNuclides():
-            self.setNumberDensity(
-                nucName,
-                numDensities[nucName] + otherBlock.getNumberDensity(nucName) * fraction,
-            )
+        self.setNumberDensities(newDensities)
 
     def getComponentAreaFrac(self, typeSpec, exact=True):
         """
