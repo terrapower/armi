@@ -2728,7 +2728,9 @@ class Composite(ArmiObject):
         for c in items:
             self.add(c)
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """
         Return the children objects of this composite.
 
@@ -2745,18 +2747,28 @@ class Composite(ArmiObject):
         includeMaterials : bool, optional
             Include the material properties
 
+        predicate : callable, optional
+            An optional unary predicate to use for filtering results. This can be used
+            to requrest children of specific types, or with desired attributes. Not all
+            ArmiObjects have the same methods and members, so care should be taken to
+            make sure that the predicate executes gracefully in all cases (e.g., use
+            ``getattr(obj, "attribute", None)`` to access instance attributes). Failure
+            to meet the predicate only affects the object in question; children will
+            still be considered.
+
         Examples
         --------
         >>> obj.getChildren()
         [child1, child2, child3]
 
-        >>>obj.getChildren(generationNum=2)
+        >>> obj.getChildren(generationNum=2)
         [grandchild1, grandchild2, grandchild3]
 
         >>> obj.getChildren(deep=True)
         [child1, child2, child3, grandchild1, grandchild2, grandchild3]
 
         """
+        _pred = predicate or (lambda x: True)
         if deep and generationNum > 1:
             raise RuntimeError(
                 "Cannot get children with a generation number set and the deep flag set"
@@ -2765,7 +2777,8 @@ class Composite(ArmiObject):
         children = []
         for child in self._children:
             if generationNum == 1 or deep:
-                children.append(child)
+                if _pred(child):
+                    children.append(child)
 
             if generationNum > 1 or deep:
                 children.extend(
@@ -2773,6 +2786,7 @@ class Composite(ArmiObject):
                         deep=deep,
                         generationNum=generationNum - 1,
                         includeMaterials=includeMaterials,
+                        predicate=predicate,
                     )
                 )
         if includeMaterials:
@@ -3124,7 +3138,9 @@ class Composite(ArmiObject):
 class Leaf(Composite):
     """Defines behavior for primitive objects in the composition."""
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """Return empty list, representing that this object has no children."""
         return []
 
