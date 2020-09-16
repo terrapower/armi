@@ -49,6 +49,7 @@ import numpy
 import h5py
 
 from armi import runLog
+from armi.reactor import assemblies
 from armi.reactor import composites
 from armi.reactor import reactors
 from armi.reactor import blocks
@@ -136,7 +137,7 @@ class XdmfDumper(dumper.VisFileDumper):
             )
         self._inputName = inputName
         self._meshH5 = None
-        self._stateH5 = None
+        self._inputDb = None
         self._times = []
         self._blockGrids = []
         self._assemGrids = []
@@ -151,22 +152,21 @@ class XdmfDumper(dumper.VisFileDumper):
         """
         self._meshH5 = h5py.File(self._baseName + "_mesh.h5", "w")
 
-        if self._inputName is not None:
-            self._stateH5 = h5py.File(self._inputName, "r")
-            if "databaseVersion" not in self._stateH5.attrs.keys():
-                raise ValueError(
-                    "Could not determine the input database version for `{}`!".format(
-                        self._inputName
-                    )
-                )
+        if self._inputName is None:
+            # we could handle the case where the database wasnt passed by pumping state
+            # into a new h5 file, but why?
+            raise ValueError("Input database needed to generate XDMF output!")
 
-            dbVersion = self._stateH5.attrs["databaseVersion"]
-            if math.floor(float(dbVersion)) != 3:
-                raise ValueError(
-                    "XDMF output requires Database version 3. Got version `{}`".format(
-                        dbVersion
-                    )
+        self._inputDb = database3.Database3(self._inputName, "r")
+        with self._inputDb as db:
+            dbVersion = db.version
+
+        if math.floor(float(dbVersion)) != 3:
+            raise ValueError(
+                "XDMF output requires Database version 3. Got version `{}`".format(
+                    dbVersion
                 )
+            )
 
         self._times = []
         self._blockGrids = []
@@ -181,9 +181,9 @@ class XdmfDumper(dumper.VisFileDumper):
         """
         self._meshH5.close()
         self._meshH5 = None
-        if self._stateH5 is not None:
-            self._stateH5.close()
-            self._stateH5 = None
+        if self._inputDb is not None:
+            self._inputDb.close()
+            self._inputDb = None
 
         timeCollectionBlk = ET.Element(
             "Grid", attrib={"GridType": "Collection", "CollectionType": "Temporal"}
@@ -236,6 +236,7 @@ class XdmfDumper(dumper.VisFileDumper):
         node = r.p.timeNode
 
         timeGroupName = database3.getH5GroupName(cycle, node)
+        dbVersion = self._inputDb.version
 
         # careful here! we are trying to use the database datasets as the source of hard
         # data without copying, so the order that we make the mesh needs to be the same
@@ -243,14 +244,21 @@ class XdmfDumper(dumper.VisFileDumper):
         # reactor is ordered is the same way that it was ordered in the database (though
         # perhaps we should do some work to specify that better). We need to look at the
         # layout in the input database to re-order the objects.
-        layout = database3.Layout...
-        blks = r.core.getBlocks()
-        assems = r.core.getAssemblies()
+        with self._inputDb as db:
+            layout = db.getLayout(cycle, node)
 
-        blockGrid = self._makeBlockMesh(r)
+        snToIdx = {sn: i for i, sn in zip(layout.indexInData, layout.serialNum)}
+
+        blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
+        blks = sorted(blks, key=lambda b: snToIdx[b.p.serialNum])
+
+        assems = r.core.getAssemblies()
+        assems = sorted(assems, key=lambda a: snToIdx[a.p.serialNum])
+
+        blockGrid = self._makeBlockMesh(r, snToIdx)
         self._collectObjectData(blks, timeGroupName, blockGrid)
 
-        assemGrid = self._makeAssemblyMesh(r)
+        assemGrid = self._makeAssemblyMesh(r, snToIdx)
         self._collectObjectData(assems, timeGroupName, assemGrid)
 
         self._blockGrids.append(blockGrid)
@@ -269,7 +277,7 @@ class XdmfDumper(dumper.VisFileDumper):
         .. warning::
             This makes some assumptions as to the structure of the database.
         """
-        if self._stateH5 is None:
+        if self._inputDb is None:
             # If we weren't given a database to draw data from, we will just skip this
             # for now. Most of the time, a dumper should have an input database.
             # Otherwise, this **could** extract from the reactor state.
@@ -279,30 +287,39 @@ class XdmfDumper(dumper.VisFileDumper):
         if len(typeNames) != 1:
             raise ValueError("Currently only supporting homogeneous block types")
         typeName = next(iter(typeNames))
-        dataGroup = "/".join((timeGroupName, typeName))
-        for key, val in self._stateH5[dataGroup].items():
-            if val.shape != (len(objs),):
-                continue
-            try:
-                dataItem = ET.Element("DataItem", attrib=_getAttributesFromDataset(val))
-            except KeyError:
-                continue
-            dataItem.text = ":".join((self._stateH5.filename, val.name))
-            attrib = ET.Element(
-                "Attribute",
-                attrib={"Name": key, "Center": "Cell", "AttributeType": "Scalar"},
-            )
-            attrib.append(dataItem)
-            node.append(attrib)
+        dataGroupName = "/".join((timeGroupName, typeName))
+        with self._inputDb as db:
+            for key, val in db.h5db[dataGroupName].items():
+                if val.shape != (len(objs),):
+                    continue
+                try:
+                    dataItem = ET.Element(
+                        "DataItem", attrib=_getAttributesFromDataset(val)
+                    )
+                except KeyError:
+                    continue
+                dataItem.text = ":".join((db.fileName, val.name))
+                attrib = ET.Element(
+                    "Attribute",
+                    attrib={"Name": key, "Center": "Cell", "AttributeType": "Scalar"},
+                )
+                attrib.append(dataItem)
+                node.append(attrib)
 
-    def _makeBlockMesh(self, r: reactors.Reactor) -> ET.Element:
+    def _makeBlockMesh(self, r: reactors.Reactor, indexMap) -> ET.Element:
         cycle = r.p.cycle
         node = r.p.timeNode
-        blks = r.core.getBlocks()
+
+        blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
+        blks = sorted(blks, key=lambda b: indexMap[b.p.serialNum])
 
         groupName = "c{}n{}".format(cycle, node)
+
         # VTK stuff turns out to be pretty flexible
-        blockMesh = utils.createReactorBlockMesh(r)
+        blockMesh = utils.VtkMesh.empty()
+        for b in blks:
+            blockMesh.append(utils.createBlockMesh(b))
+
         verts = blockMesh.vertices
 
         verticesInH5 = groupName + "/blk_vertices"
@@ -322,14 +339,21 @@ class XdmfDumper(dumper.VisFileDumper):
             "Blocks", len(blks), self._meshH5[verticesInH5], self._meshH5[topoInH5]
         )
 
-    def _makeAssemblyMesh(self, r: reactors.Reactor) -> ET.Element:
+    def _makeAssemblyMesh(self, r: reactors.Reactor, indexMap) -> ET.Element:
         cycle = r.p.cycle
         node = r.p.timeNode
-        asys = r.core.getAssemblies()
+        asys = r.getChildren(
+            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
+        )
+        asys = sorted(asys, key=lambda b: indexMap[b.p.serialNum])
 
         groupName = "c{}n{}".format(cycle, node)
+
         # VTK stuff turns out to be pretty flexible
-        assemMesh = utils.createReactorAssemMesh(r)
+        assemMesh = utils.VtkMesh.empty()
+        for assem in asys:
+            assemMesh.append(utils.createAssemMesh(assem))
+
         verts = assemMesh.vertices
 
         verticesInH5 = groupName + "/asy_vertices"

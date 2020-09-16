@@ -125,7 +125,7 @@ class VtkMesh:
 def createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
     for b in r.core.getBlocks():
-        mesh.append(_createBlockMesh(b))
+        mesh.append(createBlockMesh(b))
 
     return mesh
 
@@ -133,12 +133,12 @@ def createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
 def createReactorAssemMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
     for a in r.core.getAssemblies():
-        mesh.append(_createAssemMesh(a))
+        mesh.append(createAssemMesh(a))
 
     return mesh
 
 
-def _createBlockMesh(b: blocks.Block) -> VtkMesh:
+def createBlockMesh(b: blocks.Block) -> VtkMesh:
     if isinstance(b, blocks.HexBlock):
         return _createHexBlockMesh(b)
     if isinstance(b, blocks.CartesianBlock):
@@ -157,11 +157,11 @@ def _createBlockMesh(b: blocks.Block) -> VtkMesh:
         )
 
 
-def _createAssemMesh(a: assemblies.Assembly) -> VtkMesh:
+def createAssemMesh(a: assemblies.Assembly) -> VtkMesh:
     # Kind of hacky, but since all blocks in an assembly are the same type, let's just
     # use the block mesh functions and change their z coordinates to match the size of
     # the whole assem 🤯
-    mesh = _createBlockMesh(a[0])
+    mesh = createBlockMesh(a[0])
 
     # we should only have a single VTK mesh primitive per block
     assert len(mesh.cellTypes) == 1
