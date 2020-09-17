@@ -148,7 +148,7 @@ class LumpedFissionProduct(object):
     def getMassFracs(self):
         """
         Return a dictionary of mass fractions indexed by nuclide names.
-        
+
         Returns
         -------
         massFracs : dict
@@ -181,7 +181,7 @@ class LumpedFissionProduct(object):
     ):
         """
         Return the mass fraction of the given nuclide.
-        
+
         Returns
         -------
         nuclide mass fraction (float)
@@ -464,6 +464,8 @@ class SingleLumpedFissionProductCollection(LumpedFissionProductCollection):
                 "fpMassFrac vector should be populated -- not updating the yield vector"
             )
         # update the weight on the nuclide base object
+        # This is a GLOBAL operation, which is a bit problematic if it
+        # is being changed and should be upgraded accordingly.
         nb = nuclideBases.byName[lfp.name]
         nb.weight = (
             2

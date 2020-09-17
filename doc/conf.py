@@ -29,9 +29,11 @@
 import pathlib
 import re
 import warnings
+import sys
 
 import sphinx_rtd_theme
 
+sys.path.append("..")
 import armi
 from armi.context import RES
 from armi import apps
@@ -231,7 +233,11 @@ html_theme = "sphinx_rtd_theme"
 html_logo = os.path.join(".static", "armiicon_24x24.ico")
 
 # Theme options are theme-specific and customize the look and feel of a theme further.
-# html_theme_options = {}
+html_theme_options = {
+    "style_external_links": True,
+    "style_nav_header_background": "#233C5B",  # TP blue looks better than green
+}
+
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
@@ -308,7 +314,12 @@ html_context = {
         "_static/gallery.css",  # for the sphinx-gallery plugin
         "_static/gallery-binder.css",
         "_static/gallery-dataframe.css",
-    ]
+    ],
+    "display_github": True,  # Integrate GitHub
+    "github_user": "terrapower",  # Username
+    "github_repo": "armi",  # Repo name
+    "github_version": "master",  # Version
+    "conf_py_path": "/doc/",  # Path in the checkout to the docs root
 }
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -362,7 +373,7 @@ from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
 sphinx_gallery_conf = {
     "examples_dirs": ["gallery-src"],
     "filename_pattern": re.escape(os.sep) + "run_",
-    "gallery_dirs": [os.path.join("user", "_gallery")],
+    "gallery_dirs": ["gallery"],
     "line_numbers": True,
     "download_all_examples": False,
     "subsection_order": ExplicitOrder(
