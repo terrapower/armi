@@ -75,7 +75,7 @@ your ARMI plugin is a namespace package, the following extra config is required:
 
 Updating the Gallery
 --------------------
-The :doc:`ARMI example gallery </user/_gallery/index>` is a great way to quickly
+The :doc:`ARMI example gallery </gallery/index>` is a great way to quickly
 highlight neat features and uses of ARMI. To add a new item to the gallery, add
 your example code (including the required docstring) to the ``doc/gallery-src``
 folder in the ARMI source tree. The example will be added to the gallery during

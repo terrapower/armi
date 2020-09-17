@@ -376,10 +376,10 @@ for your own interests!)
 
 Here are the files you can download into the run directory.
 
-* :download:`Blueprints <../../../armi/tests/tutorials/anl-afci-177-blueprints.yaml>`
-* :download:`Settings <../../../armi/tests/tutorials/anl-afci-177.yaml>`
-* :download:`Core map <../../../armi/tests/tutorials/anl-afci-177-coreMap.yaml>`
-* :download:`Fuel management <../../../armi/tests/tutorials/anl-afci-177-fuelManagement.py>`
+* :download:`Blueprints <../../armi/tests/tutorials/anl-afci-177-blueprints.yaml>`
+* :download:`Settings <../../armi/tests/tutorials/anl-afci-177.yaml>`
+* :download:`Core map <../../armi/tests/tutorials/anl-afci-177-coreMap.yaml>`
+* :download:`Fuel management <../../armi/tests/tutorials/anl-afci-177-fuelManagement.py>`
 
 
 Then, run your app!::

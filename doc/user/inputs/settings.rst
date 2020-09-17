@@ -19,7 +19,7 @@ This file is a YAML file that you can edit manually with a text editor or with t
 
 Here is an excerpt from a settings file:
 
-.. literalinclude:: ../../../armi/tests/armiRun.yaml
+.. literalinclude:: ../../armi/tests/armiRun.yaml
     :language: yaml
     :lines: 3-15
 

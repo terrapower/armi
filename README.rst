@@ -1,14 +1,13 @@
 |Build Status| |Code Coverage|
 
-The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) software is a productivity tool
-written by engineers for nuclear reactor design and analysis.  It provides a digital
-model of a nuclear reactor at your fingertips. It allows us to, for example, make 1000
-digital copies of a reactor, change them all slightly differently, simulate 40 years of
-operation, and see which design tweak works best. This system allows more powerful and
-efficient analysis with higher quality. Its overall goal is to support the responsible
-deployment of nuclear energy systems in service to civilization and the environment.
+The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) is an open-source tool that
+streamlines your nuclear reactor design/analysis needs by providing a
+software *reactor at your fingertips* and a rich ecosystem of utilities working in concert.
+It is made for and by professional reactor analysis teams and
+is maintained by `TerraPower LLC <http://terrapower.com/>`_, a nuclear technology 
+development company.
 
-More specifically, ARMI:
+ARMI:
 
 * Provides a hub-and-spoke mechanism to standardize communication and coupling between
   physics kernels and the specialist analysts who use them,
@@ -22,7 +21,7 @@ More specifically, ARMI:
 * Provides useful utilities to assist in reactor development.
 
 A few demos of ARMI can be seen :doc:`in the ARMI example gallery
-</user/_gallery/index>`.
+</gallery/index>`.
 
 Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can
 perform a full analysis of a reactor system and then repeat the same level of analysis
@@ -62,8 +61,8 @@ Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 
 Windows or Linux.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
-commands. You probably want to do this in a virtual environment as described in the `User
-Guide <https://terrapower.github.io/armi/user/user_install.html>`_. Otherwise, the
+commands. You probably want to do this in a virtual environment as described in the `Installation
+documentation <https://terrapower.github.io/armi/installation.html>`_. Otherwise, the
 dependencies could conflict with your system dependencies.
 
 ::
@@ -83,8 +82,9 @@ and then run::
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
 to run on a single process.
 
-From here, the User documentation will guide you through a few tutorials to
-start touring the features and capabilities.
+From here, we recommend going through a few of our :doc:`gallery examples
+</gallery/index>` and :doc:`/tutorials/index` to
+start touring the features and capabilities and then move on to the :doc:`/user/index`.
 
 
 Background
@@ -386,8 +386,14 @@ the GUIs and output is somewhat lacking.
 Most of our code is in the ``camelCase`` style, which is not the normal style for
 Python. This started in 2009 and we have stuck with the convention.
 
+
+
 License
 -------
+TerraPower and ARMI are registered trademarks of TerraPower, LLC.
+Other trademarks and registered trademarks used in this Manual are the property of the 
+respective trademark holders.
+
 The ARMI system is licensed as follows:
 
 .. code-block:: none

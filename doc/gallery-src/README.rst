@@ -1,10 +1,10 @@
+#######
 Gallery
-=======
-Here we offer a collection of examples that you can run with ARMI now that it is
-installed. These showcase some capabilities and offer  quick reference for common use
+#######
+This section demonstrates some capabilities and offer quick reference for common use
 cases.
 
-Tutorials with more explanatory narratives are available in :doc:`/user/tutorials/index`.
+Tutorials with more explanatory narratives are available in :doc:`/tutorials/index`.
 
 .. tip::
     Many of the examples build ARMI objects from test cases to be concise. You are expected

@@ -1,6 +1,6 @@
-################
-Guided Tutorials
-################
+#########
+Tutorials
+#########
 
 You should have ARMI installed and operational by this point. The following tutorials
 demonstrate in more detail how to interact with ARMI.
@@ -9,6 +9,7 @@ demonstrate in more detail how to interact with ARMI.
 
 .. toctree::
     :maxdepth: 2
+    :numbered:
 
     nuclide_demo.ipynb
     materials_demo.ipynb

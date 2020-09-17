@@ -7,6 +7,6 @@ reactor is defined by the Facemap input file (sometimes called the geometry file
 XML format file that is almost always created using the GUI described in :doc:`/user/inputs/settings`, though
 it can be edited manually as well.
 
-Find an example format of the Facemap file in the :doc:`/user/tutorials/walkthrough_inputs`.
+Find an example format of the Facemap file in the :doc:`/tutorials/walkthrough_inputs`.
 
 .. note:: You can point many ARMI runs to the same Facemap input file using full paths.

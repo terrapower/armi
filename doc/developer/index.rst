@@ -1,6 +1,6 @@
-###############
-Developer Guide
-###############
+##############
+Developer Docs
+##############
 
 This guide will get you started as an ARMI developer. It will teach you how to
 develop within the ARMI ecosystem and also guide you through some of the structure

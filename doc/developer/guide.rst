@@ -41,7 +41,7 @@ collection of parameters detailing considerations of how the reactor has progres
 through time to any given point. This information also constitutes the majority of what
 gets written to the database for evaluation and/or follow-on analysis.
 
-Review the :doc:`/user/tutorials/data_model` section for examples
+Review the :doc:`/tutorials/data_model` section for examples
 exploring a populated instance of the **Reactor** model.
 
 Parameters

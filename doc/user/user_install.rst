@@ -13,7 +13,7 @@ You must have the following before proceeding:
 
 * Python 3.6+ (preferably 64-bit)
 * Git
-* MS Windows or Linux operating system
+* MS Windows or Linux-like operating system
 
 Preparing a Virtual Environment
 -------------------------------
