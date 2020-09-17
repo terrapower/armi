@@ -51,9 +51,17 @@ def getDummyParamDefs():
 class DummyComposite(composites.Composite):
     pDefs = getDummyParamDefs()
 
+    def __init__(self, name):
+        composites.Composite.__init__(self, name)
+        self.p.type = name
+
 
 class DummyLeaf(composites.Leaf):
     pDefs = getDummyParamDefs()
+
+    def __init__(self, name):
+        composites.Leaf.__init__(self, name)
+        self.p.type = name
 
 
 class TestCompositePattern(unittest.TestCase):
@@ -96,6 +104,11 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIs(third[0], self.thirdGen)
         allC = self.container.getChildren(deep=True)
         self.assertEqual(len(allC), 8)
+
+        onlyLiner = self.container.getChildren(
+            deep=True, predicate=lambda o: o.p.type == "liner"
+        )
+        self.assertEqual(len(onlyLiner), 1)
 
     def test_areChildernOfType(self):
         expectedResults = [False, False, False, False, False, True]
