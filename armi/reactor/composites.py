@@ -2767,6 +2767,10 @@ class Composite(ArmiObject):
         >>> obj.getChildren(deep=True)
         [child1, child2, child3, grandchild1, grandchild2, grandchild3]
 
+        # Assuming that grandchild1 and grandchild3 are Component objects
+        >>> obj.getChildren(deep=True, predicate=lambda o: isinstance(o, Component))
+        [grandchild1, grandchild3]
+
         """
         _pred = predicate or (lambda x: True)
         if deep and generationNum > 1:
