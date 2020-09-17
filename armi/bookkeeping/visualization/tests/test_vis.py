@@ -21,6 +21,8 @@ from armi.reactor.tests import test_reactors
 from armi.reactor import components
 from armi.reactor import blocks
 from armi import settings
+from armi.utils import directoryChangers
+from armi.bookkeeping.db import Database3
 from armi.bookkeeping.visualization import vtk
 from armi.bookkeeping.visualization import xdmf
 from armi.bookkeeping.visualization import utils
@@ -95,18 +97,22 @@ class TestVisDump(unittest.TestCase):
 
     def test_dumpReactorXdmf(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
-        dumper = xdmf.XdmfDumper("testVtk", inputName=None)
-        with dumper:
-            dumper.dumpState(self.r)
+        with directoryChangers.TemporaryDirectoryChanger(dumpOnException=False):
+            db = Database3("testDatabase.h5", "w")
+            with db:
+                db.writeToDB(self.r)
+            dumper = xdmf.XdmfDumper("testVtk", inputName="testDatabase.h5")
+            with dumper:
+                dumper.dumpState(self.r)
 
     def test_hexMesh(self):
-        mesh = utils._createBlockMesh(self.hexBlock)
+        mesh = utils.createBlockMesh(self.hexBlock)
 
         self.assertEqual(mesh.vertices.size, 12*3)
         self.assertEqual(mesh.cellTypes[0], 16)
 
     def test_cartesianMesh(self):
-        mesh = utils._createBlockMesh(self.cartesianBlock)
+        mesh = utils.createBlockMesh(self.cartesianBlock)
 
         self.assertEqual(mesh.vertices.size, 8*3)
         self.assertEqual(mesh.cellTypes[0], 12)
