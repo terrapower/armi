@@ -26,6 +26,12 @@ your ARMI virtual environment with::
 You also need to have `Graphviz <https://graphviz.org/>`_ and `Pandoc
 <https://pandoc.org/>`_ installed.
 
+The documentation depends on at least one submodule as well, so you must be sure
+it is available in your source tree with::
+
+    git submodule update --init
+
+
 To build the ARMI documentation, go to the ``doc`` folder and run::
 
     make html
