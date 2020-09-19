@@ -775,7 +775,7 @@ class ArmiObject(metaclass=CompositeModelType):
         from armi.reactor import components  # avoid circular import
 
         # Determine the number of `DerivedShape` components and non-derived shape components
-        derivedShapeComps = [c for c in self.getChildren() if isinstance(c.__class__, components.DerivedShape)]
+        derivedShapeComps = [c for c in self.getChildren() if c.__class__ is components.DerivedShape]
         otherComps = [c for c in self.getChildren() if c not in derivedShapeComps]
 
         otherCompAreas = sum([c.getArea() for c in otherComps])

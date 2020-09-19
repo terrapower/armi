@@ -479,6 +479,46 @@ class Block_TestCase(unittest.TestCase):
         ref = chr(typeNumber + 65)
         self.assertEqual(cur, ref)
 
+    def test_setZeroHeight(self):
+        """Test that demonstrates that a block's height can be set to zero."""
+        b = buildSimpleFuelBlock()
+
+        # Check for a DerivedShape component
+        self.assertEqual(len([c for c in b if c.__class__ is components.DerivedShape]), 1)
+        v1 = b.getVolume()
+        a1 = b.getArea()
+        nd1 = copy.deepcopy(b.getNumberDensities())
+        h1 = b.getHeight()
+        self.assertNotEqual(h1, 0.0)
+
+        # Set height to 0.0
+        b.setHeight(0.0)
+        v2 = b.getVolume()
+        a2 = b.getArea()
+        nd2 = copy.deepcopy(b.getNumberDensities())
+        h2 = b.getHeight()
+
+        self.assertEqual(v2, 0.0)
+        self.assertEqual(h2, 0.0)
+        self.assertEqual(a2, a1)
+        for nuc, ndens in nd2.items():
+            self.assertEqual(ndens, 0.0, msg=(f"Number density of {nuc} is "
+                                              "expected to be zero."))
+
+        # Set height back to the original height
+        b.setHeight(h1)
+        v3 = b.getVolume()
+        a3 = b.getArea()
+        nd3 = copy.deepcopy(b.getNumberDensities())
+        h3 = b.getHeight()
+
+        self.assertEqual(v3, v1)
+        self.assertEqual(a3, a1)
+        self.assertEqual(h3, h1)
+        for nuc in nd3.items():
+            self.assertAlmostEqual(nd3[nuc], nd1[nuc])
+
+
     def test_clearDensity(self):
         self.Block.clearNumberDensities()
 
