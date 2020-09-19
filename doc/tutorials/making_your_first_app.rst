@@ -1,3 +1,7 @@
+..
+    Note that this file makes use of Python files in a ``armi-example-app`` folder
+    so that they can be put under testing.
+
 ================================
 Making your first ARMI-based App
 ================================
@@ -44,6 +48,7 @@ files for us to fill in, like this::
             plugin.py
             fluxSolver.py
             thermalSolver.py
+        doc/
         setup.py
         README.md
         LICENSE.md
@@ -57,16 +62,17 @@ These files are:
 * The inner :file:`myapp` directory is the actual Python package for your app. Its name is
   the Python package name you will use to import anything inside (e.g. ``myapp.plugin``).
 
-* :file:`myapp/__init__.py` tells Python that this directory is a Python package and
-  performs any app-specific configurations 
+* :file:`myapp/__init__.py` tells Python that this directory is a Python package. Code
+  in here runs whenever anything in the package is imported.
 
 * :file:`myapp/__main__.py` registers the application with the ARMI framework
   and provides one or more entry points for users of your app (including you!)
-  to start running it.
+  to start running it. Since code here runs when the package is used as a
+  main, it generally performs any app-specific configuration.
 
 * :file:`myapp/app.py` contains the actual app registration code that will be called by
-  :file:`__init__.py`. This can be named anything as long as it is consistent with the
-  registration code in :file:`myapp/__init__.py`. 
+  :file:`__main__.py`. This can be named anything as long as it is consistent with the
+  registration code. 
 
 * :file:`myapp/plugin.py` contains the code that defines the physics plugins we will create
 
@@ -82,18 +88,21 @@ These files are:
   application that would be prominently featured, e.g. in a github repo, if you were to
   put it there.
 
+* :file:`doc/` is an optional folder where your application documentation source may go.
+  If you choose to use Sphinx you can run ``sphinx-quickstart` in that folder to begin
+  documentation.
+
 Registering the app with ARMI
 =============================
 The ARMI Framework contains features to run the "main loop" of typical applications. In
 order to get access to these, we must register our new app with the ARMI framework. To do
 this, we put the following code in the top-level :file:`__main__.py` module:
 
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/__main__.py
+    :language: python
     :caption: ``myapp/__main__.py``
-
-    import armi
-    from myapp import app
-    armi.configure(app.ExampleApp())
+    :start-after: tutorial-configure-start
+    :end-before: tutorial-configure-end
 
 Similar code will be needed in scripts or other code where you would like your app to be used.
 
@@ -115,25 +124,9 @@ the plugin shortly.
     Interfaces with one or more physics kernels. See :doc:`/developer/guide` for more
     info on architecture.
 
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/app.py
+    :language: python
     :caption: ``myapp/app.py``
-
-    import armi
-    from armi.apps import App
-
-    from myapp.plugin import DummyPhysicsPlugin
-
-    class ExampleApp(App):
-        def __init__(self):
-            # activate all built-in plugins
-            App.__init__(self)
-
-            # register our plugin with the plugin manager
-            self._pm.register(DummyPhysicsPlugin) 
-
-        @property
-        def splashText(self):
-            return "** My Example App **"
 
 
 Defining the physics plugin
@@ -164,27 +157,10 @@ hook them in and tell ARMI the ``ORDER`` they should be run in based on the buil
 add a little more to the plugin.
 
 
-
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/plugin.py
     :caption: ``myapp/plugin.py``
+    :language: python
 
-    from armi import plugins
-    from armi import interfaces
-    from armi.interfaces import STACK_ORDER as ORDER
-
-    from myapp import fluxSolver
-    from myapp import thermalSolver
-
-
-    class DummyPhysicsPlugin(plugins.ArmiPlugin):
-        @staticmethod
-        @plugins.HOOKIMPL
-        def exposeInterfaces(cs):
-            kernels = [
-                interfaces.InterfaceInfo(ORDER.FLUX, fluxSolver.FluxInterface, {}),
-                interfaces.InterfaceInfo(ORDER.THERMAL_HYDRAULICS, thermalSolver.ThermalInterface, {}),
-            ]
-            return kernels
 
 Creating the physics kernels
 ============================
@@ -212,40 +188,10 @@ These interaction hooks can call arbitrarily complex code. The code could, for e
 
 Here it just does a tiny bit of math locally.
 
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/fluxSolver.py
     :caption: ``myapp/fluxSolver.py``
+    :language: python
 
-    import os
-
-    import numpy as np
-
-    from armi import runLog
-    from armi import interfaces
-    from armi.physics import neutronics
-
-
-    class FluxInterface(interfaces.Interface):
-        name = "dummyFlux"
-
-        def interactEveryNode(self, cycle=None, timeNode=None):
-            runLog.info("Computing neutron flux and power.")
-            setFakePower(self.r.core)
-
-
-    def setFakePower(core):
-        midplane = core[0].getHeight()/2.0
-        center = np.array([0,0,midplane])
-        peakPower = 1e6
-        mgFluxBase = np.arange(5)
-        for a in core:
-            for b in a:
-                vol = b.getVolume()
-                coords = b.spatialLocator.getGlobalCoordinates()
-                r = np.linalg.norm(abs(coords-center))
-                fuelFlag = 10 if b.isFuel() else 1.0
-                b.p.power = peakPower / r**2 * fuelFlag
-                b.p.pdens = b.p.power/vol
-                b.p.mgFlux = mgFluxBase*b.p.pdens
 
 
 Making the thermal/hydraulics kernel
@@ -265,71 +211,11 @@ block-level temperature (and flow velocity) distribution as we go.
 
     q''' = \dot{m} C_p \Delta T
 
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/thermalSolver.py
     :caption: ``myapp/thermalSolver.py``
+    :language: python
 
-    from armi import interfaces
-    from armi.reactor.flags import Flags
-    from armi import runLog
 
-    # hard coded inlet/outlet temperatures
-    # NOTE: can make these user settings
-    inletInC = 360.0
-    outletInC = 520.0
-
-    class ThermalInterface(interfaces.Interface):
-        name = "dummyTH"
-
-        def interactEveryNode(self, cycle=None, timeNode=None):
-            runLog.info("Computing idealized flow rate")
-            for assembly in self.r.core:
-                runThermalHydraulics(assembly)
-
-    def runThermalHydraulics(assembly):
-        massFlow = computeIdealizedFlow(assembly)
-        computeAxialCoolantTemperature(assembly, massFlow)
-
-    def computeIdealizedFlow(a):
-
-        # compute required mass flow rate in assembly to reach target outlet temperature
-        # mass flow rate will be constant in each axial region, regardless of coolant
-        # area (velocity may change)
-        coolants = a.getComponents(Flags.COOLANT)
-        coolantMass = sum([c.getMass() for c in coolants])
-
-        # use ARMI material library to get heat capacity for whatever the user has
-        # defined the coolant as
-        tempAvg = (outletInC + inletInC)/2.0
-        coolantProps = coolants[0].getProperties()
-        heatCapacity = coolantProps.heatCapacity(Tc=tempAvg)
-
-        deltaT = outletInC - inletInC
-        massFlowRate = a.calcTotalParam('power')/(deltaT * heatCapacity)
-        return massFlowRate
-
-    def computeAxialCoolantTemperature(a, massFlow):
-        """Compute block-level coolant inlet/outlet/avg temp and velocity."""
-        # solve q''' = mdot * Cp * dT for dT this time
-        inlet = inletInC
-        for b in a:
-            b.p.THcoolantInletT = inlet
-            coolant = b.getComponent(Flags.COOLANT)
-            coolantProps = coolant.getProperties()
-            heatCapacity = coolantProps.heatCapacity(Tc = inlet)
-            deltaT = b.p.power/(massFlow * heatCapacity)
-            outlet = inlet + deltaT
-            b.p.THcoolantOutletT = outlet
-            b.p.THcoolantAverageT = (outlet + inlet)/2.0
-            # fun fact: could iterate on this to get
-            # heat capacity properties updated better
-            # get flow velocity too
-            # V [m/s] = mdot [kg/s] / density [kg/m^3] / area [m^2] 
-            b.p.THaveCoolantVel = (
-                massFlow /
-                coolantProps.density(Tc=b.p.THcoolantAverageT) /
-                coolant.getArea() * 100**2
-            )
-            inlet=outlet
 
 Adding entry points
 ===================
@@ -338,21 +224,17 @@ the package. We could add all manner of :py:mod:`entry points <armi.cli.entryPoi
 for different operations we want our application to perform. If you want to add your own
 entry points, you have to register them with the
 :py:meth:`armi.plugins.ArmiPlugin.defineEntryPoints` hook. For now, we can just inherit
-from the default ARMI entry points (including ``run``) by adding the following code:
+from the default ARMI entry points (including ``run``) by adding the following code
+to what we already have in :file:`myapp/__main__.py`:
 
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/__main__.py
+    :language: python
     :caption: ``myapp/__main__.py``
+    :start-after: tutorial-entry-point-start
+    :end-before: tutorial-entry-point-end
 
-    import sys
-    from armi.cli import ArmiCLI
-
-    def main():
-        code = ArmiCLI().run()
-        sys.exit(code)
-
-    if __name__ == "__main__":
-        main()
-
+.. tip:: Entry points are phenomenal places to put useful analysis scripts
+    that are limited in scope to the scope of the application.
 
 Running the app and debugging
 =============================
@@ -369,6 +251,14 @@ the directory that contains our app. For testing, an example value for this migh
 
     If you're using Windows, the slashes will be the other way, you use ``set`` instead of
     ``export``, and you use ``;`` to separate entries (or just use the GUI).
+
+.. admonition:: Submodule tip
+
+    In development, we have found it convenient to use git submodules to contain the armi
+    framework and pointers to other plugins you may need. If you do this, you can set
+    the ``sys.path`` directly in the ``__main__`` file and not have to worry about
+    ``PYTHONPATH`` nearly as much.
+
 
 Make a run directory with some input files in it. You can use the same SFR input files
 we've used in previous tutorials for starters (but quickly transition to your own inputs
@@ -406,34 +296,31 @@ Adding a new material
 Let's just add a subclass of sodium in our plugin that has a heat capacity defined. Make
 your new material in a new module called :file:`myapp/materials.py`:
 
-.. code-block:: python
+.. literalinclude:: armi-example-app/myapp/materials.py
     :caption: ``myapp/materials.py``
-
-    from armi import materials
-    from armi.utils.units import getTc
-
-    class Sodium(materials.Sodium):
-        def heatCapacity(self, Tk=None, Tc=None):
-            """Sodium heat capacity in J/kg-K"""
-            Tc = getTc(Tc,Tk)
-            # not even temperature dependent for now
-            return 1.252
-
+    :language: python
 
 But wait! Now there are **two** materials with the name *Sodium* in ARMI. Which will be
 chosen? ARMI uses a namespace order controlled by
 :py:func:`armi.materials.setMaterialNamespaceOrder` which can be set either
 programmatically (in an app) or at runtime (via the ``materialNamespaceOrder`` user
-setting). In our case, we want to set it at the app level, so we will add the following to
-the :file:`myapp/__init__.py` file:
+setting). In our case, we want to set it at the app level, so we will yet again add
+more to the :file:`myapp/__main__.py` file:
 
-.. code-block:: python
-    :caption: Addition to ``myapp/__init__.py``
+.. literalinclude:: armi-example-app/myapp/__main__.py
+    :language: python
+    :caption: ``myapp/__main__.py``
+    :start-after: tutorial-material-start
+    :end-before: tutorial-material-end
 
-    from armi import materials
-    materials.setMaterialNamespaceOrder(
-        ["myapp.materials", "armi.materials"]
-    )
+
+.. admonition:: Why ``__main__.py``?
+
+    We put this line in ``__main__.py`` rather than ``__init__.py`` so it only activates 
+    when we're explicitly running our app. If we put it in ``__init__`` it would 
+    change the order even in situations where code from anywhere within our app
+    was imported, possibly conflicting with another app's needs.
+
 
 Now ARMI should find our new updated Sodium material and get past that error.  Run it once
 again::
@@ -449,13 +336,34 @@ Several output files should have been created in the run directory from that pas
 Most important is the ``anl-afci-177.h5`` HDF5 binary database file. You can use this file
 to bring the ARMI state back to any state point from the run for analysis. 
 
-.. admonition:: Is there a general DB viewer?
+To vizualize the output in a 3D graphics program like `ParaView <https://www.paraview.org/Wiki/ParaView>`_ 
+or `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_, 
+you can run the ARMI ``viz-file`` entry point, like this::
 
-    TerraPower uses an internal HDF5 viewer called *XTVIEW* to view the state in the HDF5
-    database. At some point this tool will either be made available, or we or someone else
-    will create a plugin for a more generic visualization tools like VisIT or Paraview.
-    For now you are stuck exploring the HDF5 output via the ARMI API. 
+    (armi) $ python -m myapp vis-file -f vtk anl-afci-177.h5
+
+This creates several ``VTK`` files covering different time steps and levels of abstraction
+(assembly vs. block params). If you load up the block file and plot one of the output
+params (such as ``THcoolantAverageT`` you can see the outlet temperature going nicely
+from 360 |deg|\ C  to 510 |deg|\ C (as expected given our simple TH solver).
+
+
+.. figure:: /.static/anl-acfi-177-coolant-temperature.jpg
+    :alt: The coolant temperature as seen in ParaView viewing the VTK file.
+    :align: center
+
+    The coolant temperature as seen in ParaView viewing the VTK file.
+
+
+.. admonition:: Fancy XDMF format
+
+    The ``-f xdmf`` produces `XDMF files <http://xdmf.org/index.php/XDMF_Model_and_Format>`_ 
+    that are lighter-weight than VTK, just pointing the visualization
+    program to the data in the primary ARMI HDF5 file. However it is slightly more
+    finicky and has slightly less support in some tools (looking at VisIT).
 
 A generic description of the outputs is provided in :doc:`/user/outputs/index`. 
 
 You can add your own outputs from your plugins.
+
+.. |deg| unicode:: U+00B0
