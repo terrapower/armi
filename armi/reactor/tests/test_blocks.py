@@ -515,7 +515,8 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(v3, v1)
         self.assertAlmostEqual(a3, a1)
         self.assertEqual(h3, h1)
-        for nuc in nd3.items():
+
+        for nuc in nd3.keys():
             self.assertAlmostEqual(nd3[nuc], nd1[nuc])
 
 
