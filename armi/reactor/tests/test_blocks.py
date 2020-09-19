@@ -500,7 +500,7 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertEqual(v2, 0.0)
         self.assertEqual(h2, 0.0)
-        self.assertEqual(a2, a1)
+        self.assertAlmostEqual(a2, a1)
         for nuc, ndens in nd2.items():
             self.assertEqual(ndens, 0.0, msg=(f"Number density of {nuc} is "
                                               "expected to be zero."))
@@ -512,8 +512,8 @@ class Block_TestCase(unittest.TestCase):
         nd3 = copy.deepcopy(b.getNumberDensities())
         h3 = b.getHeight()
 
-        self.assertEqual(v3, v1)
-        self.assertEqual(a3, a1)
+        self.assertAlmostEqual(v3, v1)
+        self.assertAlmostEqual(a3, a1)
         self.assertEqual(h3, h1)
         for nuc in nd3.items():
             self.assertAlmostEqual(nd3[nuc], nd1[nuc])
