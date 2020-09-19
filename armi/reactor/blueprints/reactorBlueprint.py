@@ -112,7 +112,7 @@ class SystemBlueprint(yamlize.Object):
         )
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
-            newAssembly = bp.constructAssem(gridDesign.geom, cs, specifier=aTypeID)
+            newAssembly = bp.constructAssem(cs, specifier=aTypeID)
 
             i, j = locationInfo
             loc = container.spatialGrid[i, j, 0]

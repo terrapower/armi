@@ -215,20 +215,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self.__class__.__name__, len(self.assemDesigns), len(self.blockDesigns)
         )
 
-    def constructAssem(self, geomType, cs, name=None, specifier=None):
+    def constructAssem(self, cs, name=None, specifier=None):
         """
         Construct a new assembly instance from the assembly designs in this Blueprints object.
 
         Parameters
         ----------
-        geomType : str
-            string indicating the geometry type. This is used to select the correct
-            Assembly and Block subclasses. ``'hex'`` should be used to create hex
-            assemblies. This input is derived based on the Geometry object, though it
-            would be nice to instead infer it from block components, and then possibly
-            fail if there is mismatch. Though, you can fit a round peg in a square hole
-            so long as D <= s.
-
         cs : CaseSettings object
             Used to apply various modeling options when constructing an assembly.
 

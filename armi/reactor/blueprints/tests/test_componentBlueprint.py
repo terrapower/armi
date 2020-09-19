@@ -66,7 +66,7 @@ assemblies:
         )
         cs = settings.Settings()
         with self.assertRaises(ValueError):
-            bp.constructAssem("hex", cs, "assembly")
+            bp.constructAssem(cs, "assembly")
 
     def test_componentInitializationControlCustomIsotopics(self):
         nuclideFlags = (
@@ -97,7 +97,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem("hex", cs, "assembly")
+        a = bp.constructAssem(cs, "assembly")
 
     def test_autoDepletable(self):
         nuclideFlags = (
@@ -128,7 +128,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem("hex", cs, "assembly")
+        a = bp.constructAssem(cs, "assembly")
         expectedNuclides = ["B10", "B11", "C", "DUMP1"]
         unexpectedNuclides = ["U234", "U325", "U238"]
         for nuc in expectedNuclides:
@@ -152,7 +152,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem("hex", cs, "assembly")
+        a = bp.constructAssem(cs, "assembly")
         c = a[0][0]
 
         # Since we supplied flags, we should NOT get the DEPLETABLE flag added
@@ -216,7 +216,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem("hex", cs, "assembly")
+        a = bp.constructAssem(cs, "assembly")
         expectedNuclides = [
             "AM241",
             "U238",
@@ -307,7 +307,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem("hex", cs, "assembly")
+        a = bp.constructAssem(cs, "assembly")
         expectedNuclides = ["TH232", "PA233", "PA231", "DUMP2", "LFP35"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
@@ -333,7 +333,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem("hex", cs, "assembly")
+        a = bp.constructAssem(cs, "assembly")
         expectedNuclides = ["TH232"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())

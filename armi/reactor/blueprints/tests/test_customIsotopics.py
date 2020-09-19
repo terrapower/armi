@@ -190,7 +190,7 @@ assemblies:
         cs = settings.Settings()
         cs["xsKernel"] = "MC2v2"
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
-        cls.a = cls.bp.constructAssem("hex", cs, name="fuel a")
+        cls.a = cls.bp.constructAssem(cs, name="fuel a")
         cls.numUZrNuclides = 29  # Number of nuclides defined `nuclide flags`
         cls.numCustomNuclides = (
             28  # Number of nuclides defined in `nuclide flags` without Zr
@@ -256,7 +256,7 @@ assemblies:
         cs = settings.Settings()
         cs["xsKernel"] = "MC2v3"
         bp = blueprints.Blueprints.load(self.yamlString)
-        a = bp.constructAssem("hex", cs, name="fuel a")
+        a = bp.constructAssem(cs, name="fuel a")
         b = a[-1]
         c = b.getComponent(Flags.CLAD)
         self.assertIn("FE56", c.getNumberDensities())  # natural isotopic
@@ -351,7 +351,7 @@ assemblies:
         cs = settings.Settings()
         cs["xsKernel"] = "MC2v3"
         bp = blueprints.Blueprints.load(self.yamlString)
-        a = bp.constructAssem("hex", cs, name="fuel a")
+        a = bp.constructAssem(cs, name="fuel a")
         b = a[-1]
         c = b.getComponent(Flags.CLAD)
         nd = c.getNumberDensities()
