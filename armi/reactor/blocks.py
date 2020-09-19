@@ -498,7 +498,7 @@ class Block(composites.Composite):
         assemblies.Assembly.calculateZCoords : Recalculates z-coords, automatically called by this.
         """
         originalHeight = self.getHeight()  # get before modifying
-        if modifiedHeight <= 0.0:
+        if modifiedHeight < 0.0:
             raise ValueError(
                 "Cannot set height of block {} to height of {} cm".format(
                     self, modifiedHeight

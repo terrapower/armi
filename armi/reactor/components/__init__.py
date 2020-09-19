@@ -310,7 +310,7 @@ class DerivedShape(UnshapedComponent):
 
     def computeVolume(self):
         """Cannot compute volume until it is derived."""
-        return self.parent._deriveUndefinedVolume()  # pylint: disable=protected-access
+        return self.parent._deriveUndefinedVolumeAndArea()  # pylint: disable=protected-access
 
     def getVolume(self):
         """
