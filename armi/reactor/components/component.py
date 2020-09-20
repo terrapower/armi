@@ -521,13 +521,13 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setVolume(self, volume):
         self.p.volume = volume
         if not self.is3D:
-            try:
-                self.setArea(volume / self.parent.getHeight())
-            except ZeroDivisionError:
+            if not self.parent.getHeight():
                 msg = (f"The parent object {self.parent} of {self} has no defined height and "
                        f"therefore the area cannot be computed during the volume assignment. "
                        f"The assigned volume is {volume} cc.")
-                raise ZeroDivisionError(msg)
+                raise ValueError(msg)
+            self.setArea(volume / self.parent.getHeight())
+
 
     def setArea(self, val):
         raise NotImplementedError

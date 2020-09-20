@@ -485,6 +485,7 @@ class Block_TestCase(unittest.TestCase):
 
         # Check for a DerivedShape component
         self.assertEqual(len([c for c in b if c.__class__ is components.DerivedShape]), 1)
+        m1 = b.getMass()
         v1 = b.getVolume()
         a1 = b.getArea()
         nd1 = copy.deepcopy(b.getNumberDensities())
@@ -493,11 +494,13 @@ class Block_TestCase(unittest.TestCase):
 
         # Set height to 0.0
         b.setHeight(0.0)
+        m2 = b.getMass()
         v2 = b.getVolume()
         a2 = b.getArea()
         nd2 = copy.deepcopy(b.getNumberDensities())
         h2 = b.getHeight()
 
+        self.assertEqual(m2, 0.0)
         self.assertEqual(v2, 0.0)
         self.assertEqual(h2, 0.0)
         self.assertAlmostEqual(a2, a1)
@@ -507,11 +510,13 @@ class Block_TestCase(unittest.TestCase):
 
         # Set height back to the original height
         b.setHeight(h1)
+        m3 = b.getMass()
         v3 = b.getVolume()
         a3 = b.getArea()
         nd3 = copy.deepcopy(b.getNumberDensities())
         h3 = b.getHeight()
 
+        self.assertAlmostEqual(m3, m1)
         self.assertAlmostEqual(v3, v1)
         self.assertAlmostEqual(a3, a1)
         self.assertEqual(h3, h1)
@@ -519,6 +524,38 @@ class Block_TestCase(unittest.TestCase):
         for nuc in nd3.keys():
             self.assertAlmostEqual(nd3[nuc], nd1[nuc])
 
+    def test_getVolumeFractionsWithZeroHeight(self):
+        """Tests that the volume fractions of components in a block are zero."""
+        b = buildSimpleFuelBlock()
+
+        # Check that the component volume fractions are not
+        # zero to begin with.
+        h1 = b.getHeight()
+        originalVolFracs = b.getVolumeFractions()
+        for _c, vf in originalVolFracs:
+            self.assertNotEqual(vf, 0.0)
+
+        # Check that the component volume fractions are
+        # now zero after setting the block height to
+        # zero.
+        b.setHeight(0.0)
+        volFracs = b.getVolumeFractions()
+        for _c, vf in volFracs:
+            self.assertEqual(vf, 0.0)
+
+        # Check that the component volume fractions are
+        # back to the same values once the height is
+        # returned.
+        b.setHeight(h1)
+        volFracs = b.getVolumeFractions()
+        for (_c, vf1), (_c, vf2) in zip(volFracs, originalVolFracs):
+            self.assertAlmostEqual(vf1, vf2)
+
+    def test_getVolumeFractionWithoutParent(self):
+        """Tests that the volume fraction of a block with no parent is zero."""
+        b = buildSimpleFuelBlock()
+        self.assertIsNone(b.parent)
+        self.assertEqual(b.getVolumeFraction(), 0.0)
 
     def test_clearDensity(self):
         self.Block.clearNumberDensities()

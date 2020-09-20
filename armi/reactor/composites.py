@@ -725,7 +725,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolumeFractions(self):
         """
-        Return volume  fractions of each child.
+        Return volume fractions of each child.
 
         Sets volume or area of missing piece (like coolant) if it exists.  Caching would
         be nice here.
@@ -750,10 +750,17 @@ class ArmiObject(metaclass=CompositeModelType):
         children = self.getChildren()
         volumes = [c.getVolume() for c in children]
         vol = sum(volumes)
-        return [(ci, vi / vol) for ci, vi in zip(children, volumes)]
+        if vol > 0.0:
+            volFracs = [(ci, vi / vol) for ci, vi in zip(children, volumes)]
+        else:
+            volFracs = [(ci, 0.0) for ci in children]
+        return volFracs
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
+        if self.parent is None:
+            return 0.0
+
         for child, frac in self.parent.getVolumeFractions():
             if child is self:
                 return frac
@@ -832,7 +839,7 @@ class ArmiObject(metaclass=CompositeModelType):
             # other components from the parent's maximum area.
             try:
                 c.setVolume(remainingVolume)
-            except ZeroDivisionError:
+            except ValueError:
                 c.setArea(remainingArea)
 
         elif derivedShapeComps > 1:
