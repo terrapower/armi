@@ -39,6 +39,7 @@ visualization tool that supports XDMF.
 
 import io
 import math
+import pathlib
 from typing import Optional, Set, List, Tuple, Dict
 import xml.etree.ElementTree as ET
 
@@ -136,6 +137,15 @@ class XdmfDumper(dumper.VisFileDumper):
                 "No input database name was given, so only an XMDF mesh will be created"
             )
         self._inputName = inputName
+
+        # Check that the inputName is a relative path. XDMF doesn't seem to like
+        # absolute paths; at least on windows with ParaView
+        if pathlib.Path(inputName).is_absolute():
+            raise ValueError(
+                "XDMF tools tend not to like absolute paths; provide a "
+                "relative path to the input database."
+            )
+
         self._meshH5 = None
         self._inputDb = None
         self._times = []
@@ -192,7 +202,10 @@ class XdmfDumper(dumper.VisFileDumper):
             "Grid", attrib={"GridType": "Collection", "CollectionType": "Temporal"}
         )
 
-        for aGrid, bGrid, time in zip(self._assemGrids, self._blockGrids, self._times):
+        # make sure all times are unique. Paraview will crash if they are not
+        times = self._dedupTimes(self._times)
+
+        for aGrid, bGrid, time in zip(self._assemGrids, self._blockGrids, times):
             timeElement = ET.Element(
                 "Time", attrib={"TimeType": "Single", "Value": str(time)}
             )
@@ -222,6 +235,44 @@ class XdmfDumper(dumper.VisFileDumper):
             dom = xml.dom.minidom.parse(buf)
             with open(self._baseName + typ + ".xdmf", "w") as f:
                 f.write(dom.toprettyxml())
+
+    @staticmethod
+    def _dedupTimes(times: List[float]) -> List[float]:
+        """
+        Make sure that no two times are the same.
+
+        Duplicates will be resolved by bumping each subsequent duplicate time forward by
+        some epsilon, cascading following duplicates by the same amount until no
+        duplicates remain. This will fail in the case where there are already times that
+        are within Ndup*epsilon of each other. In such cases, this function probably
+        isn't valid anyways.
+        """
+        assert all(
+            a <= b for a, b in zip(times, times[1:])
+        ), "Input list must be sorted"
+
+        # This should be used as a multiplicative epsilon, to avoid precision issues
+        # with large times
+        _EPS = 1.0e-9
+
+        # ...except when close enough to 0. Floating-point is a pain
+        mapZeroToOne = lambda x: x if x > _EPS else 1.0
+
+        dups = [0] * len(times)
+
+        # We iterate in reverse so that each entry in dups will contain the number of
+        # duplicate entries that **precede** it
+        for i in reversed(range(len(times))):
+            ti = times[i]
+            nDup = 0
+            for j in range(i - 1, -1, -1):
+                if times[j] == ti:
+                    nDup += 1
+                else:
+                    break
+            dups[i] = nDup
+
+        return [t + dups * _EPS * mapZeroToOne(t) for dups, t in zip(dups, times)]
 
     def dumpState(
         self,
