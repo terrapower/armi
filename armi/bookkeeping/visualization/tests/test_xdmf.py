@@ -63,4 +63,5 @@ class TestXdmf(unittest.TestCase):
         )
 
         with self.assertRaises(AssertionError):
+            # input should be sorted
             xdmf.XdmfDumper._dedupTimes([float(t) for t in reversed(range(10))])
