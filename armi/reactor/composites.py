@@ -748,110 +748,25 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         children = self.getChildren()
-        volumes = [c.getVolume() for c in children]
-        vol = sum(volumes)
-        if vol > 0.0:
-            volFracs = [(ci, vi / vol) for ci, vi in zip(children, volumes)]
-        else:
-            volFracs = [(ci, 0.0) for ci in children]
-        return volFracs
+        numerator = [c.getVolume() for c in children]
+        denom = sum(numerator)
+        if denom == 0.0:
+            numerator = [c.getArea() for c in children]
+            denom = sum(numerator)
+
+        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
+        return fracs
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
         if self.parent is None:
-            return 0.0
+            raise ValueError(
+                f"No parent is defined for {self}. Cannot compute its volume fraction."
+            )
 
         for child, frac in self.parent.getVolumeFractions():
             if child is self:
                 return frac
-
-    def _deriveUndefinedVolumeAndArea(self):
-        """
-        Determine the volume and area of any DerivedShapes (e.g. coolant components).
-
-        When a coolant component first gets loaded, it has no area. But after that, it
-        does have area so we must detect purely derived components by the fact that they
-        have no dimension keys. Zero area is acceptable (for gaps that will grow, etc.).
-
-        If there are no dimensions but there is still an area, then the user probably
-        specified the area on a generic component. If they did specify it on the input,
-        then the area should not update. HOWEVER, if it was specified by a previous
-        leftover computation, then we should re-compute.  That's why we store the area
-        on the dims.
-        """
-        from armi.reactor import components  # avoid circular import
-
-        # Determine the number of `DerivedShape` components and non-derived shape components
-        derivedShapeComps = [c for c in self.getChildren() if c.__class__ is components.DerivedShape]
-        otherComps = [c for c in self.getChildren() if c not in derivedShapeComps]
-
-        otherCompAreas = sum([c.getArea() for c in otherComps])
-        otherCompVolumes = sum([c.getVolume() for c in otherComps])
-
-        remainingArea = self.getMaxArea() - otherCompAreas
-        remainingVolume = self.getMaxVolume() - otherCompVolumes
-
-        geometryError = False
-        # Check for negative area
-        if remainingArea < 0:
-            geometryError = True
-            componentAreas = "\n".join(
-            [
-                f"{c:40s}, {c.getArea():.5e} cm^2"
-                for c in otherComps
-            ])
-            msg = (f"The component areas in {self} exceed the maximum "
-                   f"allowable area based on the geometry. Check that the "
-                   f"geometry is defined correctly.\n"
-                   f"Maximum allowable area: {self.getMaxArea()} cm^2\n"
-                   f"Area of all defined components: {otherCompAreas} cm^2\n"
-                   f"Breakdown: {componentAreas}")
-            runLog.error(msg)
-
-        # Check for negative volume
-        if remainingVolume < 0:
-            geometryError = True
-            componentVols = "\n".join(
-            [
-                f"{c:40s}, {c.getVolume():.5e} cc"
-                for c in otherComps
-            ])
-            msg = (f"The component volumes in {self} exceed the maximum "
-                   f"allowable volume based on the geometry. Check that the "
-                   f"geometry is defined correctly.\n"
-                   f"Maximum allowable volume: {self.getMaxVolume()} cc\n"
-                   f"Volume of all defined components: {otherCompVolumes} cc\n"
-                   f"Breakdown: {componentVols}")
-            runLog.error(msg)
-
-        if geometryError:
-            raise ValueError(f"Negative area/volume errors occurred for {self}. "
-                             "Check log for errors.")
-
-        if len(derivedShapeComps) == 1:
-            c = derivedShapeComps[0]
-
-            # A ZeroDivisonError can occur when the height of the component's
-            # parent is zero, thus the volume may be set within `setVolume`
-            # (using the derived volume calculated here), but the component's
-            # area cannot be determined by directly using this volume. In this
-            # case, the area can be computed by subtracting the area of all
-            # other components from the parent's maximum area.
-            try:
-                c.setVolume(remainingVolume)
-            except ValueError:
-                c.setArea(remainingArea)
-
-        elif derivedShapeComps > 1:
-            msg = (f"The number of `DerivedShape` children exceeds 1 in {self} "
-                   f"and it is not possible to set the volume/area of these children.\n"
-                   f"Remove the multiple instances of these components to fully define the "
-                   f"geometry.\n"
-                   f"Derived shapes: {derivedShapeComps}")
-            runLog.error(msg)
-            raise ValueError(f"Multiple `DerivedShape` children exceed in {self}. Check log for errors.")
-
-        return remainingVolume
 
     def getMaxArea(self):
         """ "

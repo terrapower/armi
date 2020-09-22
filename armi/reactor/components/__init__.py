@@ -32,6 +32,7 @@ import math
 
 import numpy
 
+from armi import runLog
 from armi.reactor.components.component import *  # pylint: disable=wildcard-import
 from armi.reactor.components.basicShapes import *  # pylint: disable=wildcard-import
 from armi.reactor.components.complexShapes import *  # pylint: disable=wildcard-import
@@ -230,8 +231,8 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         """Get the volume of the component in cm^3."""
         return self.getDimension("userDefinedVolume")
 
-    def setVolume(self, volume):
-        self.setDimension("userDefinedVolume", volume)
+    def setVolume(self, val):
+        self.setDimension("userDefinedVolume", val)
         self.clearCache()
 
 
@@ -307,10 +308,56 @@ class DerivedShape(UnshapedComponent):
         else:
             # area = pi r**2 = pi d**2 / 4  => d = sqrt(4*area/pi)
             return math.sqrt(4.0 * self.getComponentArea() / math.pi)
-
+        
     def computeVolume(self):
         """Cannot compute volume until it is derived."""
-        return self.parent._deriveUndefinedVolumeAndArea()  # pylint: disable=protected-access
+        return self._deriveVolumeAndArea()
+    
+    def _deriveVolumeAndArea(self):
+        """
+        Derive the volume and area of ``DerivedShape``s.
+         
+        Notes
+        -----
+        If a parent exists, this will iterate over it and then determine
+        both the volume and area based on its context within the scope
+        of the parent object by considering the volumes and areas of 
+        the surrounding components.
+        """
+        
+        if self.parent is None:
+            raise ValueError(f"Cannot compute volume/area of {self} without a parent object.")
+         
+        # Determine the volume/areas of the non-derived shape components
+        # within the parent.
+        siblingArea = 0.0
+        siblingVolume = 0.0
+        for sibling in self.parent.getChildren():
+            if sibling is self:
+                continue
+            elif not self and isinstance(sibling, DerivedShape):
+                raise ValueError(
+                    f"More than one ``DerivedShape`` component in {self.parent} is not allowed.")
+             
+            siblingArea += sibling.getArea()
+            siblingVolume += sibling.getVolume()
+             
+        remainingArea = self.parent.getMaxArea() - siblingArea
+        remainingVolume = self.parent.getMaxVolume() - siblingVolume
+ 
+        # Check for negative area
+        if remainingArea < 0:
+            msg = (f"The component areas in {self.parent} exceed the maximum "
+                   f"allowable area based on the geometry. Check that the "
+                   f"geometry is defined correctly.\n"
+                   f"Maximum allowable area: {self.parent.getMaxArea()} cm^2\n"
+                   f"Area of all non-derived shape components: {siblingArea} cm^2\n")
+            runLog.error(msg)
+            raise ValueError(f"Negative area/volume errors occurred for {self.parent}. "
+                             "Check log for errors.")
+ 
+        self.p.area = remainingArea    
+        return remainingVolume
 
     def getVolume(self):
         """

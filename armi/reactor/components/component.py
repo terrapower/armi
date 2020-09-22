@@ -404,12 +404,15 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getVolume(self):
         """
-        Return volume in cm**3.
-
-        Returns
-        -------
-        volume : float
-            volume in cm3
+        Return the volume [cm^3] of the component.
+        
+        Notes
+        -----
+        ``self.p.volume`` is not set until this method is called,
+        so under most circumstances it is probably not safe to
+        access ``self.p.volume`` directly. This is because not
+        all components (e.g., ``DerivedShape``) can compute
+        their volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -518,17 +521,9 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getComponentVolume(self):
         return self.p.volume
 
-    def setVolume(self, volume):
-        self.p.volume = volume
-        if not self.is3D:
-            if not self.parent.getHeight():
-                msg = (f"The parent object {self.parent} of {self} has no defined height and "
-                       f"therefore the area cannot be computed during the volume assignment. "
-                       f"The assigned volume is {volume} cc.")
-                raise ValueError(msg)
-            self.setArea(volume / self.parent.getHeight())
-
-
+    def setVolume(self, val):
+        raise NotImplementedError
+    
     def setArea(self, val):
         raise NotImplementedError
 
