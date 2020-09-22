@@ -33,8 +33,7 @@ class EquilibriumShuffler(FuelHandler):
                 raise RuntimeError("No assembly in {0} {1}".format(ring, pos))
             cascade.append(a)
         self.swapCascade(cascade)
-        fresh = self.r.blueprints.constructAssem(
-            self.r.core.geomType, self.cs, name="igniter fuel"
+        fresh = self.r.blueprints.constructAssem(self.cs, name="igniter fuel"
         )
         self.dischargeSwap(fresh, cascade[0])
         if self.cycle > 0:
