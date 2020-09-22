@@ -479,6 +479,77 @@ class Block_TestCase(unittest.TestCase):
         ref = chr(typeNumber + 65)
         self.assertEqual(cur, ref)
 
+    def test_setZeroHeight(self):
+        """Test that demonstrates that a block's height can be set to zero."""
+        b = buildSimpleFuelBlock()
+
+        # Check for a DerivedShape component
+        self.assertEqual(len([c for c in b if c.__class__ is components.DerivedShape]), 1)
+        m1 = b.getMass()
+        v1 = b.getVolume()
+        a1 = b.getArea()
+        nd1 = copy.deepcopy(b.getNumberDensities())
+        h1 = b.getHeight()
+        self.assertNotEqual(h1, 0.0)
+
+        # Set height to 0.0
+        b.setHeight(0.0)
+        m2 = b.getMass()
+        v2 = b.getVolume()
+        a2 = b.getArea()
+        nd2 = copy.deepcopy(b.getNumberDensities())
+        h2 = b.getHeight()
+
+        self.assertEqual(m2, 0.0)
+        self.assertEqual(v2, 0.0)
+        self.assertEqual(h2, 0.0)
+        self.assertAlmostEqual(a2, a1)
+        for nuc, ndens in nd2.items():
+            self.assertEqual(ndens, 0.0, msg=(f"Number density of {nuc} is "
+                                              "expected to be zero."))
+
+        # Set height back to the original height
+        b.setHeight(h1)
+        m3 = b.getMass()
+        v3 = b.getVolume()
+        a3 = b.getArea()
+        nd3 = copy.deepcopy(b.getNumberDensities())
+        h3 = b.getHeight()
+
+        self.assertAlmostEqual(m3, m1)
+        self.assertAlmostEqual(v3, v1)
+        self.assertAlmostEqual(a3, a1)
+        self.assertEqual(h3, h1)
+
+        for nuc in nd3.keys():
+            self.assertAlmostEqual(nd3[nuc], nd1[nuc])
+
+    def test_getVolumeFractionsWithZeroHeight(self):
+        """Tests that the component fractions are the same with a zero height block."""
+        b = buildSimpleFuelBlock()
+
+        h1 = b.getHeight()
+        originalVolFracs = b.getVolumeFractions()
+        for _c, vf in originalVolFracs:
+            self.assertNotEqual(vf, 0.0)
+
+        b.setHeight(0.0)
+        volFracs = b.getVolumeFractions()
+        for (_c, vf1), (_c, vf2) in zip(volFracs, originalVolFracs):
+            self.assertAlmostEqual(vf1, vf2)
+
+        b.setHeight(h1)
+        volFracs = b.getVolumeFractions()
+        for (_c, vf1), (_c, vf2) in zip(volFracs, originalVolFracs):
+            self.assertAlmostEqual(vf1, vf2)
+
+    def test_getVolumeFractionWithoutParent(self):
+        """Tests that the volume fraction of a block with no parent is zero."""
+        b = buildSimpleFuelBlock()
+        self.assertIsNone(b.parent)
+        with self.assertRaises(ValueError):
+            b.getVolumeFraction()
+
     def test_clearDensity(self):
         self.Block.clearNumberDensities()
 
