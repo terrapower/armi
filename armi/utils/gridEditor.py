@@ -6,6 +6,13 @@ GUI elements for manipulating grid layout and contents.
 This provides a handful of classes which provide wxPython Controls for manipulating
 grids and grid Blueprints.
 
+Use
+===
+The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
+
+    $ python -m armi grids
+
+
 Known Issues
 ============
 
@@ -24,7 +31,7 @@ Known Issues
  colors to flags is not particularly rich, and there isn't anything to disambiguate
  between asemblies of different design, but the same flags.
 
- * No proper zoom support, and object sizes are fixed and dont accomodate long
+ * No proper zoom support, and object sizes are fixed and don't accommodate long
  specifiers. Adding zoom would make for a fun first task to a new developer interested
  in computer graphics.
 """
@@ -1651,7 +1658,9 @@ class NewGridBlueprintDialog(wx.Dialog):
         nameSizer.Add(self.gridName, 1, wx.EXPAND)
 
         self.geomType = wx.Choice(
-            self, id=wx.ID_ANY, choices=[gt.label for gt in self._geomFromIdx.values()],
+            self,
+            id=wx.ID_ANY,
+            choices=[gt.label for gt in self._geomFromIdx.values()],
         )
 
         self.Bind(wx.EVT_CHOICE, self.onSelectGeomType, self.geomType)

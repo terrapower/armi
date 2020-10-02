@@ -6,7 +6,8 @@ The true power of ARMI comes when you have a reactor at your fingertips. To get 
 you must describe the reactor via input files.
 This tutorial will walk you through building input files from scratch for a reactor.
 We will model the CR=1.0 sodium-cooled fast reactor documented in `ANL-AFCI-177
-<https://publications.anl.gov/anlpubs/2008/05/61507.pdf>`_.
+<https://publications.anl.gov/anlpubs/2008/05/61507.pdf>`_. The full :doc:`documentation
+for input files is available here </user/inputs>`.
 
 .. tip:: The full inputs created in this tutorial are available for download at the bottom of 
 	this page.

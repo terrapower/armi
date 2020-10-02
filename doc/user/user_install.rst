@@ -11,9 +11,11 @@ particular, we assume familiarity with `Python <https://www.python.org/>`_,
 
 You must have the following before proceeding:
 
-* Python 3.6+ (preferably 64-bit)
-* Git
-* MS Windows or Linux-like operating system
+* `Python <https://www.python.org/downloads/>`_ version 3.6 or later (preferably 64-bit)
+
+You also likely need the following for interacting with the source code repository:
+
+* `Git <https://git-scm.com/>`_
 
 Preparing a Virtual Environment
 -------------------------------
@@ -49,20 +51,17 @@ library. On Linux, doing so will require some MPI development libraries
 
 Getting the code
 ----------------
-..  If you plan on running ARMI without modifying it, you may simply install it with pip, which will 
-	automatically discover and install its dependencies::
+If you plan on running ARMI without viewing or modifying source code, you 
+may install it with ``pip``, which will automatically discover and install the dependencies::
 
-   	(armi-venv) $ pip3 install armi
+   	(armi-venv) $ pip3 install https://github.com/terrapower/armi/archive/master.zip
 
-    That's it!
-
-	If, on the other hand, you'd like to change the ARMI source code, you will want to 
-	clone the ARMI source first and then install its dependencies.
-
-Clone the ARMI source code from the git repository with::
+On the other hand, if you'd like to view or change the ARMI source code (common!), you need to
+clone the ARMI source and then install its dependencies. Clone the ARMI source code from
+the git repository with::
 
    (armi-venv) $ git clone https://github.com/terrapower/armi
-   
+
 .. tip:: If you plan to contribute to ARMI (please do!), you may want to use
 	SSH keys and use ``git clone git@github.com:terrapower/armi.git``.
 
@@ -82,11 +81,15 @@ Then, install ARMI into your venv with::
 	In Windows, click *Start* and type ``Edit Environmental Variable`` to adjust ``PYTHONPATH``. 
 	In Linux, add ``export PYTHONPATH=/path/to/armi/source`` in a  user profile script (like ``.bashrc``).
 
-To see if it worked, run the ARMI launcher script::
+To see if it worked, run::
+
+    (armi-venv) $ python -m armi
+
+or try the launcher script::
 
     (armi-venv) $ armi
 
-If it worked, you should see the (classic) ARMI splash screen and no errors::
+If it worked, you should see the ARMI splash screen and no errors::
 
                        ---------------------------------------------------
                       |             _      ____     __  __    ___         |
@@ -102,7 +105,26 @@ If it works, congrats! So far so good.
 
 Optional Setup
 --------------
-This subsection provides setup information for optional external data packages.
+This subsection provides setup for optional items.
+
+GUI input
+^^^^^^^^^
+To use the graphical core-map editor you will need to also install 
+`wxPython <https://wxpython.org/pages/downloads/index.html>`_. This is not specified as a 
+default dependency because it can sometimes cause installation troubles. In Windows, a pip 
+install should be sufficient::
+
+    (armi-venv) $ pip3 install wxpython
+
+On Linux, you may want to install it though your distribution's repositories because pip often
+tries to compile it, which can take a long time.
+
+GUI output
+^^^^^^^^^^
+ARMI can write VTK and XDMF output files which can be viewed in tools such as
+`ParaView <https://www.paraview.org/>`_ and 
+`VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_. Download and install those
+tools from their websites.
 
 RIPL-3 Nuclide Decay Database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
