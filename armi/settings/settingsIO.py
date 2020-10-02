@@ -330,8 +330,7 @@ class SettingsReader:
         self._applySettings(settingName, attributes["value"])
 
     def _applySettings(self, name, val):
-        nameToSet, renamed = self._renamer.renameSetting(name)
-
+        nameToSet, _wasRenamed = self._renamer.renameSetting(name)
         settingsToApply = self.applyConversions(nameToSet, val)
         for settingName, value in settingsToApply.items():
             if settingName not in self.cs.settings:
@@ -341,13 +340,10 @@ class SettingsReader:
                 settingObj = self.cs.settings[settingName]
                 if value:
                     value = applyTypeConversions(settingObj, value)
-                try:
-                    value = settingObj.schema(value)
-                except:
-                    runLog.error(
-                        f"Validation error with setting: {settingName} = {repr(value)}"
-                    )
-                    raise
+
+                # The value is automatically coerced into the
+                # expected type when set using either the default or 
+                # user-defined schema
                 self.cs[settingName] = value
 
     def applyConversions(self, name, value):
@@ -419,8 +415,8 @@ class SettingsWriter:
 
         for settingObj, settingDatum in settingData.items():
             settingNode = ET.SubElement(root, settingObj.name)
-            for attribName, attribValue in settingDatum.items():
-                settingNode.set(attribName, str(attribValue))
+            for attribName in settingDatum:
+                settingNode.set(attribName, str(settingObj.dump()))
 
         stream.write('<?xml version="1.0" ?>\n')
         stream.write(self.prettyPrintXmlRecursively(tree.getroot(), spacing=False))
@@ -446,8 +442,7 @@ class SettingsWriter:
         for settingObj, settingDatum in settingData.items():
             if "value" in settingDatum and len(settingDatum) == 1:
                 # ok to flatten
-                val = settingObj.dump()
-                cleanedData[settingObj.name] = val
+                cleanedData[settingObj.name] = settingObj.dump()
             else:
                 cleanedData[settingObj.name] = settingDatum
 
