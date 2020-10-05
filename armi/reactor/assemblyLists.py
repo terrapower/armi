@@ -13,7 +13,16 @@
 # limitations under the License.
 
 r"""
+Module containing :py:class:`AssemblyList` and related classes.
 
+Assembly Lists are core-like objects that store collections of Assemblies. They were
+originally developed to serve as things like spent-fuel pools and the like, where
+spatial location of Assemblies need not be quite as precise.
+
+Presently, the :py:class:`armi.reactor.reactors.Core` constructs a pair of these as
+`self.sfp` and `self.cfp` (charged-fuel pool). We are in the process of removing these
+as instance attributes of the ``Core``, and moving them into sibling systems on the root
+:py:class:`armi.reactor.reactors.Reactor` object.
 """
 import abc
 import itertools
@@ -51,6 +60,14 @@ class AutoFiller(abc.ABC):
 
 
 class RowMajorAutoFiller(AutoFiller):
+    """
+    :py:class:`AutoFiller` implementation for filling a "rectangular" grid of
+    Assemblies.
+
+    This fills the :py:class:`armi.reactor.grids.Grid` of the associated
+    :py:class:`AssemblyList` by filling subsequent rows with ``nMajor`` assemblies
+    before moving to the next row.
+    """
     def __init__(self, aList, nMajor):
         self._nMajor = nMajor
         self._aList = aList
@@ -116,8 +133,8 @@ class AssemblyList(composites.Composite):
         loc : LocationBase, optional
             If provided, the assembly is inserted at that location, similarly to how a
             Core would function. If it is not provided, the locator on the Assembly
-            object will be used. `If the Assembly's locator belongs to
-            ``self.spatialGrid`` `, the Assembly's existing locator will not be used.
+            object will be used. If the Assembly's locator belongs to
+            ``self.spatialGrid``, the Assembly's existing locator will not be used.
             This is unlike the Core, which would try to use the same indices, but move
             the locator to the Core's grid. If no locator is passed, or if the
             Assembly's locator is not in the AssemblyList's grid, then the Assembly will
@@ -127,7 +144,7 @@ class AssemblyList(composites.Composite):
 
         if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
-                "An assembly cannot be added to {} usinga spatial locator "
+                "An assembly cannot be added to {} using a spatial locator "
                 "from another grid".format(self)
             )
 
@@ -143,6 +160,7 @@ class AssemblyList(composites.Composite):
 
         super().add(assem)
         assem.spatialLocator = loc
+        self._filler.assemblyAdded(assem)
 
     def getAssembly(self, name):
         """
