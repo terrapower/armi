@@ -16,7 +16,7 @@
 Handles *flags* that formally bind certain categories to reactor parts.
 
 ``Flags`` are used to formally categorize the various ``ArmiObject`` objects that make
-up a reactor model. These categories allow parts of the ARMI system treat different
+up a reactor model. These categories allow parts of the ARMI system to treat different
 Assemblies, Blocks, Components, etc. differently.
 
 By default, the specific Flags that are bound to each object are derived by that
