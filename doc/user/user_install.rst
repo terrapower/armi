@@ -83,11 +83,7 @@ Then, install ARMI into your venv with::
 
 To see if it worked, run::
 
-    (armi-venv) $ python -m armi
-
-or try the launcher script::
-
-    (armi-venv) $ armi
+    (armi-venv) $ python3 -m armi
 
 If it worked, you should see the ARMI splash screen and no errors::
 
@@ -103,21 +99,28 @@ If it worked, you should see the ARMI splash screen and no errors::
 
 If it works, congrats! So far so good.
 
+.. admonition:: Shortcut
+
+    You can also try the launcher script as a shortcut to ``python3 -m armi``::
+
+        (armi-venv) $ armi
+
+
 Optional Setup
 --------------
 This subsection provides setup for optional items.
 
 GUI input
 ^^^^^^^^^
-To use the graphical core-map editor you will need to also install 
-`wxPython <https://wxpython.org/pages/downloads/index.html>`_. This is not specified as a 
-default dependency because it can sometimes cause installation troubles. In Windows, a pip 
-install should be sufficient::
+To use the :py:mod:`graphical core-map editor <armi.utils.gridEditor>` you will need to also install
+`wxPython <https://wxpython.org/pages/downloads/index.html>`_. This is not installed
+by default during armi installation because it can cause installation complexities on some platforms.
+In many cases, a ``pip install`` should suffice::
 
     (armi-venv) $ pip3 install wxpython
 
-On Linux, you may want to install it though your distribution's repositories because pip often
-tries to compile it, which can take a long time.
+.. warning:: On some platforms, ``pip`` may try to compile wxpython from 
+    source which can take a long time and require additional dependencies.
 
 GUI output
 ^^^^^^^^^^
