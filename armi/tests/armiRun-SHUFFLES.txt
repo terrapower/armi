@@ -13,7 +13,7 @@ A4001 moved to A3002 with assembly type igniter fuel with enrich list: 0.0000000
 A5004 moved to A4001 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 A6004 moved to A5004 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 LoadQueue moved to A6004 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
-SFP moved to A5003 with assembly type feed fuel ANAME=A0085 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
+SFP moved to A5003 with assembly type feed fuel ANAME=A0089 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 A5003 moved to SFP with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 
 Before cycle 3:
@@ -23,6 +23,6 @@ A4003 moved to A3001 with assembly type lta fuel b with enrich list: 0.00000000 
 A5002 moved to A4003 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 A6007 moved to A5002 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 LoadQueue moved to A6007 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
-SFP moved to A5004 with assembly type feed fuel ANAME=A0086 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
+SFP moved to A5004 with assembly type feed fuel ANAME=A0090 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 A5004 moved to SFP with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 

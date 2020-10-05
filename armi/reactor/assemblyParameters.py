@@ -107,7 +107,8 @@ def getAssemblyParameterDefinitions():
             "be 3 to begin with, in which case this parameter could be used as the "
             "primary means of handling symmetry and fractional domains throughout "
             "ARMI. We will probably roll that out once the dust settles on some of "
-            "this SFP work.",
+            "this SFP work. For now, the Core stores multiplicity as 1 always, since "
+            "the powerMultiplier to adjust to full-core quantities.",
             default=1,
         )
 
