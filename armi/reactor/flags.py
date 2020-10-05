@@ -13,57 +13,82 @@
 # limitations under the License.
 
 """
-Handles *flags* that trigger behaviors related to reactor parts.
+Handles *flags* that formally bind certain categories to reactor parts.
 
-*Flags* are used to trigger certain treatments by the various modules. For instance, if
-a module needs to separate **reflector** assemblies from **fuel** assemblies, it can use
-flags.
+``Flags`` are used to formally categorize the various ``ArmiObject`` objects that make
+up a reactor model. These categories allow parts of the ARMI system treat different
+Assemblies, Blocks, Components, etc. differently.
 
-Flags are derived from the user-input name. If a valid flag name is included in a
-assembly/block/component name, then that flag will be applied. Words in names that are
-not valid flags are ignored from a flags perspective.  Each flag in the name must be
-space-delimited to be parsed properly.  If a name includes numbers, they are generally
-ignored to avoid defining hundreds of flags for assemblies with many pins in them (e.g.
-in pin-level depletion cases). Use ``FUEL A`` or ``FUEL B`` to distinguish if necessary.
+By default, the specific Flags that are bound to each object are derived by that
+object's name when constructed; if the name contains any valid flag names, those Flags
+will be assigned to the object. However, specific Flags may be specified within
+blueprints, in which case the name is ignored and only the explicitly-requested Flags
+are applied (see :doc:`/user/inputs/blueprints` for more details).
 
-Code modules that check the names of objects must use valid flags only.
+Individual Flags tend to be various nouns and adjectives that describe common objects
+that go into a reactor (e.g. "fuel", "shield", "control", "duct", "plenum", etc.). In
+addition, there are some generic Flags (e.g., "A", "B", "C", etc.) that aid in
+disambiguating between objects that need to be targeted separately but would otherwise
+have the same Flags. Flags are stored as integer bitfields within the parameter system,
+allowing them to be combined arbitrarily on any ARMI object. Since they are stored in
+bitfields, each new flag definition requires widening this bitfield; therefore, the
+number of defined Flags should be kept relatively small, and each flag should provide
+maximum utility.
 
-Things that flags are used for include:
+Within the code, Flags are usually combined into a "type specification (``TypeSpec``)",
+which is either a single combination of Flags, or a list of Flag combinations. More
+information about how ``TypeSpec`` is interpreted can be found in
+:py:meth:`armi.reactor.composites.ArmiObject.hasFlags`.
+
+Flags are intended to describe `what something is`, rather than `what something should
+do`. Historically, Flags have been used to do both, which has led to confusion. The
+binding of specific behavior to certain Flags should ideally be controlled through
+settings with reasonable defaults, rather than being hard-coded. Currently, much of the
+code still uses hard-coded ``TypeSpecs``, and certain Flags are clearly saying `what
+something should do` (e.g., ``Flags.DEPLETABLE``).
+
+.. note::
+    Flags have a rather storied history. Way back when, code that needed to operate on
+    specific objects would do substring searches against object names to decide if they
+    were relevant. This was very prone to error, and led to all sorts of surprising
+    behavior based on the names used in input files. To improve the situation, Flags
+    were developed to better formalize which strings mattered, and to define canonical
+    names for things. Still almost all flag checks were hard-coded, and
+    aside from up-front error checks, many of the original issues persisted. For
+    instance, developing a comprehensive manual of which Flags lead to which behavior
+    was very difficult.
+
+    Migrating the `meaning` of Flags into settings will allow us to better document how
+    those Flags/settings affect ARMI's behavior.
+
+    As mentioned above, plenty of code still hard-codes Flag ``TypeSpecs``, and certain
+    Flags do not follow the `what something is` convention. Future work should improve
+    upon this as possible.
+
+
+Things that Flags are used for include:
 
 * **Fuel management**: Different kinds of assemblies (LTAs, fuel, reflectors) have
-  different shuffling operations and must be distinguished. Often names are good ways to
-  pick assemblies but details may need a flag (e.g. ``STATIONARY`` for *grid plate*
-  blocks, though keeping grid plates out of the Assemblies may be a better option in
-  this case.)
+  different shuffling operations and must be distinguished. Certain blocks in an
+  assembly are stationary, and shouldn't be moved along with the rest of the assembly
+  when shuffling is performed. Filtering for stationary blocks can also be done using
+  Flags (e.g., ``Flags.GRID_PLATE``).
 
-* **Fuel performance**: Knowing what's fuel and what's plenum is important to figure out
-  what things to grow and where to move fission gas to.
-
-* **Safety**: Test assemblies like LTAs go in their own special channels and must be
-  identified.  Reflectors, control, shields go into bypass channels.  Handling sockets,
-  shield blocks, etc.  go in their own axial nodes.
+* **Fuel performance**: Knowing what's fuel (``Flags.FUEL``) and what isn't (e.g.,
+  ``Flags.PLENUM``) is important to figure out what things to grow and where to move
+  fission gas to.
 
 * **Fluid fuel** reactors need to find all the fuel that ever circulates through the
- reactor so it can be depleted with the average flux.
+  reactor so it can be depleted with the average flux.
 
-* **Mechanical** often needs to know if an object is solid, fluid, or void (material
- subclassing can handle this).
+* **Core Mechanical** analyses often need to know if an object is solid, fluid, or void
+  (material subclassing can handle this).
 
 * **T/H** needs to find the pin bundle in different kinds of assemblies (*radial shield*
   block in *radial shield* assemblies, *fuel* in *fuel*, etc.). Also needs to generate
   3-layer pin models with pin (fuel/control/shield/slug), then gap (liners/gap/bond),
   then clad.
 
-Also:
-
-  * Object names should explicitly tied to their definition in the input
-
-
-Notes
------
-
-The flags used to be based only on the user-input name of the object but there was too
-much flexibility and inconsistencies arose.
 
 Examples
 --------
