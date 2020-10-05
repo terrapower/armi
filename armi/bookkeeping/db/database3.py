@@ -734,7 +734,7 @@ class Database3(database.Database):
                 bpString = ""
 
         self.h5db["inputs/settings"] = csString
-        self.h5db["inputs/geomFile"] = geomString
+        self.h5db["inputs/geomFile"] = geomString or ""
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):

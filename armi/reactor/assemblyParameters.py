@@ -94,6 +94,23 @@ def getAssemblyParameterDefinitions():
             default=parameters.NoDefault,
         )
 
+        pb.defParam(
+            "multiplicity",
+            units=None,
+            description="The number of physical assemblies that the associated object "
+            "represents. This is typically 1, but may need to change when the assembly "
+            "is moved between containers with different types of symmetry. For "
+            "instance, if an assembly moves from a Core with 1/3rd symmetry into a "
+            "spent-fuel pool with full symmetry, rather than splitting the assembly "
+            "into 3, the multiplicity can be set to 3. For now, this is a bit of a "
+            "hack to make fuel handling work; multiplicity in the 1/3 core should "
+            "be 3 to begin with, in which case this parameter could be used as the "
+            "primary means of handling symmetry and fractional domains throughout "
+            "ARMI. We will probably roll that out once the dust settles on some of "
+            "this SFP work.",
+            default=1,
+        )
+
         pb.defParam("daysSinceLastMove", units="", description="daysSinceLastMove")
 
         pb.defParam("kInf", units="", description="kInf")

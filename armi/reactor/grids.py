@@ -380,6 +380,15 @@ class IndexLocation(LocationBase):
         """Return ring and position of this locator."""
         return self.grid.getRingPos(self.getCompleteIndices())
 
+    def getSymmetricEquivalents(self):
+        """
+        Get symmetrically-equivalent locations, based on Grid symmetry.
+
+        See Also
+        --------
+        Grid.getSymmetricEquivalents
+        """
+        return self.grid.getSymmetricEquivalents(self.indices)
 
 class MultiIndexLocation(IndexLocation):
     """
@@ -694,6 +703,7 @@ class Grid:
         """
         state = self.__dict__.copy()
         state["armiObject"] = None
+
         return state
 
     def __setstate__(self, state):
@@ -1376,8 +1386,12 @@ class HexGrid(Grid):
         )[self._stepDims]
 
     def locatorInDomain(self, locator):
+        # This will include the "top" 120-degree symmetry lines. This is to support
+        # adding of edge assemblies.
+        # TODO: We may want to think about formalizing this concept; the symmetry line
+        # itself being special doesnt really need to be a hex-only concept.
         if geometry.THIRD_CORE in self.symmetry:
-            return self.isInFirstThird(locator)
+            return self.isInFirstThird(locator, includeTopEdge=True)
         else:
             return True
 
@@ -1552,6 +1566,13 @@ class ThetaRZGrid(Grid):
         j = int(numpy.abs(self._bounds[1] - rad0).argmin())
 
         return (i, j, 0)
+
+    def locatorInDomain(self, locator):
+        """
+        ThetaRZGrids do not check for bounds, though they could if that becomes a
+        problem.
+        """
+        return True
 
 
 def axialUnitGrid(numCells, armiObject=None):

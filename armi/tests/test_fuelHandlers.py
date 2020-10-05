@@ -434,7 +434,7 @@ class TestFuelHandler(ArmiTestHelper):
         sfpMove = moves[2][-2]
         self.assertEqual(sfpMove[0], "SFP")
         self.assertEqual(sfpMove[1], "A5003")
-        self.assertEqual(sfpMove[4], "A0089")  # name of assem in SFP
+        self.assertEqual(sfpMove[4], "A0085")  # name of assem in SFP
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -447,7 +447,7 @@ class TestFuelHandler(ArmiTestHelper):
             loadNames,
             alreadyDone,
         ) = fh.processMoveList(moves[2])
-        self.assertIn("A0089", loadNames)
+        self.assertIn("A0085", loadNames)
         self.assertIn(None, loadNames)
         self.assertNotIn("SFP", loadChains)
         self.assertNotIn("LoadQueue", loadChains)

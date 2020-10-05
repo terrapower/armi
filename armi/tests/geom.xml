@@ -8,7 +8,6 @@
 	<assembly name="IC" pos="3" ring="3"/>
 	<assembly name="LA" pos="2" ring="3"/>
 	<assembly name="IC" pos="12" ring="3"/>
-	<assembly name="LB" pos="4" ring="3"/>
 	<assembly name="IC" pos="1" ring="3"/>
 	<assembly name="IC" pos="4" ring="4"/>
 	<assembly name="IC" pos="1" ring="4"/>
@@ -23,7 +22,6 @@
 	<assembly name="IC" pos="24" ring="5"/>
 	<assembly name="IC" pos="4" ring="5"/>
 	<assembly name="IC" pos="3" ring="5"/>
-	<assembly name="IC" pos="7" ring="5"/>
 	<assembly name="IC" pos="23" ring="5"/>
 	<assembly name="IC" pos="4" ring="6"/>
 	<assembly name="IC" pos="8" ring="6"/>
@@ -36,7 +34,6 @@
 	<assembly name="IC" pos="2" ring="6"/>
 	<assembly name="IC" pos="3" ring="6"/>
 	<assembly name="PC" pos="4" ring="7"/>
-	<assembly name="PC" pos="10" ring="7"/>
 	<assembly name="PC" pos="34" ring="7"/>
 	<assembly name="IC" pos="9" ring="7"/>
 	<assembly name="IC" pos="36" ring="7"/>
@@ -74,7 +71,6 @@
 	<assembly name="SH" pos="10" ring="9"/>
 	<assembly name="SH" pos="11" ring="9"/>
 	<assembly name="SH" pos="12" ring="9"/>
-	<assembly name="SH" pos="13" ring="9"/>
 	<assembly name="SH" pos="45" ring="9"/>
 	<assembly name="SH" pos="46" ring="9"/>
 	<assembly name="SH" pos="47" ring="9"/>
