@@ -13,9 +13,26 @@
 # limitations under the License.
 
 """
-RTFLUX is a CCCC standard data file for storing multigroup flux on a triangular mesh.
+Read and write the Regular Total flux from a RTFLUX CCCC interface file.
 
-[CCCC-IV]_
+RTFLUX is a CCCC standard data file for storing multigroup total flux on a mesh of any
+geometry type. It is defined in [CCCC-IV]_.
+
+ATFLUX is in the same format but holds adjoint flux rather than regular flux.
+
+Examples
+--------
+>>> flux = rtflux.RtfluxStream.readBinary("RTFLUX")
+>>> rtflux.RtfluxStream.writeBinary(flux, "RTFLUX2")
+>>> adjointFlux = rtflux.AtfluxStream.readBinary("ATFLUX")
+
+See Also
+--------
+NHFLUX
+    Reads/write nodal hex flux moments
+
+RZFLUX
+    Reads/writes total fluxes from zones
 """
 import math
 
@@ -24,180 +41,172 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 
-from armi.nuclearDataIO import cccc
+from armi.nuclearDataIO import cccc, nuclearFileMetadata
 from armi.reactor import locations
 
 
-class RTFLUX(cccc.CCCCReader):
+# See CCCC-IV documentation for definitions
+FILE_SPEC_1D_KEYS = (
+    "NDIM",
+    "NGROUP",
+    "NINTI",
+    "NINTJ",
+    "NINTK",
+    "ITER",
+    "EFFK",
+    "POWER",
+    "NBLOK",
+)
+
+
+class RtfluxData:
     """
-    Read a binary RTFLUX or ATFLUX file from DIF3D output.
-
-    While NHFLUX stores nodal flux output data, RTFLUX stores finite difference flux output data.
-    While NHFLUX stores data by hexagon, RTFLUX stores data by triangle.
-    This can also read ATFLUX, which stores the finite difference adjoint flux output data.
+    Data structure that is read from or written to a RTFLUX file.
     """
 
-    def __init__(self, fName="RTFLUX"):
-        r"""
-        Initialize the RTFLUX or ATFLUX reader object.
+    def __init__(self):
+        # Need Metadata subclass for default keys
+        self.metadata = nuclearFileMetadata._Metadata()
 
-        Parameters
-        ----------
-        fName : str, optional
-            The file name of the RTFLUX/ATFLUX binary file to be read.
+        self.groupFluxes = None
 
+
+class RtfluxStream(cccc.Stream):
+    """
+    Stream for reading/writing a RTFLUX or ATFLUX file.
+
+    Parameters
+    ----------
+    flux : RtfluxData
+        Data structure
+    fileName: str
+        path to RTFLUX file
+    fileMode: str
+        string indicating if ``fileName`` is being read or written, and
+        in ascii or binary format
+
+    """
+
+    def __init__(self, flux: RtfluxData, fileName: str, fileMode: str):
+        cccc.Stream.__init__(self, fileName, fileMode)
+        self._flux = flux
+        self._metadata = self._getFileMetadata()
+
+    def _getFileMetadata(self):
+        return self._flux.metadata
+
+    @classmethod
+    def _read(cls, fileName: str, fileMode: str) -> RtfluxData:
+        flux = RtfluxData()
+        return cls._readWrite(
+            flux,
+            fileName,
+            fileMode,
+        )
+
+    # pylint: disable=arguments-differ
+    @classmethod
+    def _write(cls, flux: RtfluxData, fileName: str, fileMode: str):
+        return cls._readWrite(flux, fileName, fileMode)
+
+    @classmethod
+    def _readWrite(cls, flux: RtfluxData, fileName: str, fileMode: str) -> RtfluxData:
+        with RtfluxStream(flux, fileName, fileMode) as rw:
+            rw.readWrite()
+        return flux
+
+    def readWrite(self):
         """
-        cccc.CCCCReader.__init__(self, fName)
-
-        self.fc = {}  # file control info (sort of global for this library)
-        self.triangleFluxes = []
-
-        self.readFileID()  # Read RTFLUX file ID
-
-    def readAllData(self):
-        r"""
-        Read multigroup fluxes from the original DIF3D FD triangular-z mesh points.
-        RTFLUX contains the real fluxes, while ATFLUX contains the adjoint fluxes.
-
+        Step through the structure of the file and read/write it.
         """
+        self._rwFileID()
+        self._rw1DRecord()
+        if self._metadata["NDIM"] == 1:
+            self._rw2DRecord()
+        elif self._metadata["NDIM"] >= 2:
+            self._rw3DRecord()
+        else:
+            raise ValueError(f"Invalid NDIM value {self._metadata['NDIM']} in {self}.")
 
-        # Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.)
-        self.read1D()
-
-        # Read the hex ordering map between DIF3D "four color" nodal and DIF3D GEODST
-        # Also read index pointers to incoming partial currents on outer reactor surface
-        # (these don't belong to any assembly)
-        # Incoming partial currents are non-zero due to flux extrapolation
-        ng = self.fc["ngroup"]  # number of energy groups
-        imax = self.fc[
-            "ninti"
-        ]  # number of triangular mesh cells in "i" direction (rhombus or rectangle cells)
-        jmax = self.fc[
-            "nintj"
-        ]  # number of triangular mesh cells in "j" direction (rhombus or rectangle cells)
-        zmax = self.fc[
-            "nintk"
-        ]  # number of axial nodes (same for each assembly in DIF3D)
-
-        self.triangleFluxes = numpy.zeros((imax, jmax, zmax, ng))
-
-        for g in range(ng):  # loop through energy groups
-
-            gEff = self.getEnergyGroupIndex(g)
-
-            for z in range(zmax):  # loop through axial nodes
-                self.triangleFluxes[
-                    :, :, z, gEff
-                ] = self.readTriangleFluxes()  # read fluxes on this i-j plane
-
-        self.f.close()
-
-    def read1D(self):
-        r"""
-        Read parameters from the RTFLUX/ATFLUX 1D block (file control).
-
-        This contains a bunch of single-number integer or double values
-        necessary to read all data from the other records of RTFLUX/ATFLUX.
-        See the comments following each quantity in the code.
-
-        See Also
-        --------
-        rtflux.RTFLUX.__init__
-        nuclearDataIO.ISOTXS.read1D
-        nuclearDataIO.SPECTR.read1D
-
+    def _rwFileID(self):
         """
+        Read/write file id record.
 
-        record = self.getRecord()
+        Notes
+        -----
+        The username, version, etc are embedded in this string but it's
+        usually blank.
+        """
+        with self.createRecord() as record:
+            self._metadata["label"] = record.rwString(self._metadata["label"], 28)
 
-        self.fc[
-            "ndim"
-        ] = (
-            record.getInt()
-        )  # number of dimensions of DIF3D mesh nodes (always 3 for a 3D core)
-        self.fc["ngroup"] = record.getInt()  # number of energy groups
-        self.fc[
-            "ninti"
-        ] = record.getInt()  # maximum x coordinate index of assemblies (DIF3D GEODST)
-        self.fc[
-            "nintj"
-        ] = record.getInt()  # maximum y coordinate index of assemblies (DIF3D GEODST)
-        self.fc[
-            "nintk"
-        ] = (
-            record.getInt()
-        )  # number of DIF3D axial mesh nodes (same for all assemblies)
-        self.fc[
-            "iter"
-        ] = record.getInt()  # outer iteration number at which RTFLUX data was written
-        self.fc["effk"] = record.getFloat()  # keff
-        self.fc["power"] = record.getFloat()  # total core power (Watts)
-        self.fc["nblck"] = record.getInt()  # data blocking factor
+    def _rw1DRecord(self):
+        """
+        Read/write File specifications on 1D record.
+        """
+        with self.createRecord() as record:
+            for key in FILE_SPEC_1D_KEYS:
+                # ready for some implicit madness from the FORTRAN 77 days?
+                if key[0] in cccc.IMPLICIT_INT:
+                    self._metadata[key] = record.rwInt(self._metadata[key])
+                else:
+                    self._metadata[key] = record.rwFloat(self._metadata[key])
 
-    def readTriangleFluxes(self):
-        r"""
-        Read finite difference triangle-z fluxes from the RTFLUX/ATFLUX 3D block (file control).
+    def _rw2DRecord(self):
+        """
+        Read/write 1-dimensional regular total flux.
+        """
+        raise NotImplementedError("1-D RTFLUX files are not yet implemented.")
 
-        This reads all volume-averaged triangle fluxes in ONE energy group on ONE x, y plane of the core.
-        The fluxes on different x, y planes (different axial slices) and different groups are in a different 3D record.
+    def _rw3DRecord(self):
+        """
+        Read/write multi-dimensional regular total flux.
 
-        If the reactor has 1/3 core symmetry, these triangles are indexed in "rhomboid" order.
-        If the reactor is full-core, these triangles are indexed in "rectangular" order.
-        However, this distinction should not matter for this function.
-
-        Returns
-        -------
-        triangleFluxes : list of float
-            This contains all the OUTGOING partial currents for each assembly in the given axial plane.
-            The OUTGOING partial current on surface j in assembly i is surfCurrents[i][j].
-            The hex assemblies are ordered according to self.geodstCoordMap.
-
-        See Also
-        --------
-        RTFLUX.read1D
-        perturbationTheory.readTriangleFDFluxes
-
+        The records contain blocks of values in the i-j planes.
         """
 
-        imax = self.fc[
-            "ninti"
-        ]  # maximum x coordinate index of assemblies (DIF3D GEODST)
-        jmax = self.fc[
-            "nintj"
-        ]  # maximum y coordinate index of assemblies (DIF3D GEODST)
-        nblck = self.fc["nblck"]  # data blocking factor
+        ng = self._metadata["NGROUP"]
+        imax = self._metadata["NINTI"]
+        jmax = self._metadata["NINTJ"]
+        kmax = self._metadata["NINTK"]
+        nblck = self._metadata["NBLOK"]  # data blocking factor
 
-        m = 1
-        j1 = (m - 1) * (
-            (jmax - 1) // nblck + 1
-        ) + 1  # minimum y coordinate triangle index
-        jup = m * (
-            (jmax - 1) // nblck + 1
-        )  # what the maximum y coordinate triangle index should be given j1
-        j2 = min(jmax, jup)  # maximum y coordinate triangle index
+        if self._flux.groupFluxes is None:
+            self._flux.groupFluxes = numpy.zeros((imax, jmax, kmax, ng))
 
-        record = self.getRecord()
-
-        # Numpy array to store 5 flux moments per assembly in this x-y plane.
-        triangleFluxes = numpy.zeros((imax, jmax))
-
-        # Loop through all flux moments of all assemblies.
-        for j in range(j1 - 1, j2):
-            for i in range(imax):
-                triangleFluxes[i][j] = record.getDouble()
-
-        return triangleFluxes
+        for gi in range(ng):
+            gEff = self.getEnergyGroupIndex(gi)
+            for k in range(kmax):
+                # data in i-j plane may be blocked
+                for bi in range(nblck):
+                    # compute blocking parameters
+                    m = bi + 1
+                    blockRatio = (jmax - 1) // nblck + 1
+                    jLow = (m - 1) * blockRatio  # subtracted 1
+                    jUp = m * blockRatio
+                    jUp = min(jmax, jUp) - 1  # subtracted 1
+                    numZonesInBlock = jUp - jLow + 1
+                    with self.createRecord() as record:
+                        # pass in shape in fortran (read) order
+                        # pylint: disable=protected-access
+                        self._flux.groupFluxes[
+                            :, jLow : jUp + 1, k, gEff
+                        ] = record._rwMatrix(
+                            self._flux.groupFluxes[:, jLow : jUp + 1, k, gEff],
+                            record.rwDouble,
+                            numZonesInBlock,
+                            imax,
+                        )
 
     def getEnergyGroupIndex(self, g):
         r"""
         Real fluxes stored in RTFLUX have "normal" (or "forward") energy groups.
         Also see the subclass method ATFLUX.getEnergyGroupIndex().
         """
-
         return g
 
 
-class ATFLUX(RTFLUX):
+class AtfluxStream(RtfluxStream):
     r"""
     This is a subclass for the ATFLUX file, which is identical in format to the RTFLUX file except
     that it contains the adjoint flux and has reversed energy group ordering.
@@ -208,7 +217,7 @@ class ATFLUX(RTFLUX):
         Adjoint fluxes stored in ATFLUX have "reversed" (or "backward") energy groups.
         """
 
-        ng = self.fc["ngroup"]
+        ng = self._metadata["NGROUP"]
         return ng - g - 1
 
 
@@ -219,26 +228,28 @@ def getFDFluxReader(adjointFlag):
     """
 
     if adjointFlag:
-        return ATFLUX
+        return AtfluxStream
     else:
-        return RTFLUX
+        return RtfluxStream
 
 
 def plotTriangleFlux(
-    rtfluxFile,
+    rtfluxData: RtfluxData,
     axialZ,
     energyGroup,
     hexPitch=math.sqrt(3.0),
     hexSideSubdivisions=1,
     imgFileExt=".png",
 ):
-    r"""
+    """
     Plot region total flux for one core-wide axial slice on triangular/hexagonal geometry.
+
+    .. warning:: This will run on non-triangular meshes but will look wrong.
 
     Parameters
     ----------
-    rtfluxFile : RTFLUX object
-        The RTFLUX/ATFLUX file object containing all read file data.
+    rtfluxData : RtfluxData object
+        The RTFLUX/ATFLUX data object containing all read file data.
         Alternatively, this could be a FIXSRC file object,
         but only if FIXSRC.fixSrc is first renamed FIXSRC.triangleFluxes.
 
@@ -264,7 +275,7 @@ def plotTriangleFlux(
     sideLengthInCm = triHeightInCm / (math.sqrt(3.0) / 2.0)
     s2InCm = sideLengthInCm / 2.0
 
-    vals = rtfluxFile.triangleFluxes[:, :, axialZ, energyGroup]
+    vals = rtfluxData.groupFluxes[:, :, axialZ, energyGroup]
     patches = []
     colorVals = []
     for i in range(vals.shape[0]):
@@ -341,14 +352,13 @@ def assignARMIBlockFluxFromRTFLUX(r, adjoint=False):
         fName = "RTFLUX"
 
     nodalFluxReader = getFDFluxReader(adjoint)
-    rtfluxFile = nodalFluxReader(fName)
-    rtfluxFile.readAllData()
+    rtflux = nodalFluxReader.readBinary(fName)
 
-    hexFlux = rtfluxFile.triangleFluxes  # multigroup triangle fluxes
+    hexFlux = rtflux.groupFluxes  # multigroup triangle fluxes
 
-    i_geodst_max = rtfluxFile.fc["ninti"]
-    j_geodst_max = rtfluxFile.fc["nintj"]
-    nz = rtfluxFile.fc["nintk"]  # number of axial nodes
+    i_geodst_max = rtflux.metadata["NINTI"]
+    j_geodst_max = rtflux.metadata["NINTJ"]
+    nz = rtflux.metadata["NINTK"]  # number of axial nodes
 
     axMeshArray = numpy.array(r.core.p.axialMesh)  # cm
 
@@ -489,5 +499,5 @@ def getDif3dGeodstIndicesFromArmiIndices(
 
 
 if __name__ == "__main__":
-    RTFLUX_FILE = RTFLUX()
-    plotTriangleFlux(RTFLUX_FILE, axialZ=10, energyGroup=4)
+    rtflux = RtfluxStream.readBinary("RTFLUX")
+    plotTriangleFlux(rtflux, axialZ=10, energyGroup=4)
