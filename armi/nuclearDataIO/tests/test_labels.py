@@ -22,16 +22,12 @@ from armi.nuclearDataIO import labels
 
 THIS_DIR = os.path.dirname(__file__)
 
+LABELS_FILE_BIN = os.path.join(THIS_DIR, "labels.binary")
+LABELS_FILE_ASCII = os.path.join(THIS_DIR, "labels.ascii")
+
 
 class TestLabels(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls._originalDir = os.getcwd()
-        os.chdir(THIS_DIR)
-
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir(cls._originalDir)
+    """Tests for labels."""
 
     def test_readLabelsBinary(self):
         expectedName = "LABELS"
@@ -39,32 +35,27 @@ class TestLabels(unittest.TestCase):
         expectedNumZones = 5800
         expectedNumRegions = 2900
         expectedNumHexagonalRings = 13
-        labelsData = labels.readBinary(os.path.join("labels.binary"))
+        labelsData = labels.readBinary(LABELS_FILE_BIN)
+        self.assertEqual(labelsData.metadata["hname"], expectedName)
         self.assertEqual(
-            labelsData._metadata["hname"], expectedName
-        )  # pylint: disable=protected-access
+            labelsData.metadata["numTrianglesPerHex"], expectedTrianglesPerHex
+        )
+        self.assertEqual(labelsData.metadata["numZones"], expectedNumZones)
+        self.assertEqual(labelsData.metadata["numRegions"], expectedNumRegions)
         self.assertEqual(
-            labelsData._metadata["numTrianglesPerHex"], expectedTrianglesPerHex
-        )  # pylint: disable=protected-access
-        self.assertEqual(
-            labelsData._metadata["numZones"], expectedNumZones
-        )  # pylint: disable=protected-access
-        self.assertEqual(
-            labelsData._metadata["numRegions"], expectedNumRegions
-        )  # pylint: disable=protected-access
-        self.assertEqual(
-            labelsData._metadata["numHexagonalRings"], expectedNumHexagonalRings
-        )  # pylint: disable=protected-access
+            labelsData.metadata["numHexagonalRings"], expectedNumHexagonalRings
+        )
+        self.assertEqual(len(labelsData.regionLabels), expectedNumRegions)
 
     def test_writeLabelsAscii(self):
-        labelsData = labels.readBinary("labels.binary")
+        labelsData = labels.readBinary(LABELS_FILE_BIN)
         labels.writeAscii(labelsData, self._testMethodName + "labels.ascii")
         with open(self._testMethodName + "labels.ascii", "r") as f:
             actualData = f.read().splitlines()
-        with open("labels.ascii", "r") as f:
+        with open(LABELS_FILE_ASCII) as f:
             expectedData = f.read().splitlines()
-        for i in range(len(actualData)):
-            self.assertEqual(expectedData[i], actualData[i])
+        for expected, actual in zip(expectedData, actualData):
+            self.assertEqual(expected, actual)
         os.remove(self._testMethodName + "labels.ascii")
 
 
