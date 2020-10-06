@@ -358,7 +358,7 @@ class IORecord(object):
 
     def _rwMatrix(self, contents, func, *shape):
         fortranShape = list(reversed(shape))
-        if contents is None:
+        if contents is None or contents.size == 0:
             contents = numpy.empty(fortranShape)
         for index in itertools.product(*[range(ii) for ii in shape]):
             fortranIndex = tuple(reversed(index))

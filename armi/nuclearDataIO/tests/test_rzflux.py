@@ -8,7 +8,7 @@ from armi.nuclearDataIO import rzflux
 
 THIS_DIR = os.path.dirname(__file__)
 # This RZFLUX was made by DIF3D 11 in a Cartesian test case.
-SIMPLE_RZFLUX = os.path.join(THIS_DIR, "fixtures", "RZFLUX")
+SIMPLE_RZFLUX = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.rzflux")
 
 
 class TestRzflux(unittest.TestCase):
