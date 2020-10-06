@@ -14,6 +14,7 @@ include armi/nuclearDataIO/tests/fixtures/mc2v3-AB.pmatrx
 include armi/nuclearDataIO/tests/fixtures/mc2v3.dlayxs
 include armi/nuclearDataIO/tests/fixtures/simple_cartesian.rzflux
 include armi/nuclearDataIO/tests/fixtures/simple_cartesian.rtflux
+include armi/nuclearDataIO/tests/fixtures/simple_cartesian.pwdint
 include armi/nuclearDataIO/tests/fixtures/simple_hexz.geodst
 include armi/nuclearDataIO/tests/fixtures/simple_hexz.nhflux
 include armi/bookkeeping/tests/armiRun-A0039-aHist-ref.txt

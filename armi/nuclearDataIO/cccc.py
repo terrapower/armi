@@ -671,3 +671,23 @@ class Stream(object):
     @classmethod
     def _write(cls, lib, fileName, fileMode):
         raise NotImplementedError()
+
+
+def getBlockBandwidth(m, nintj, nblok):
+    """
+    Return block bandwidth JL, JU from CCCC interface files.
+
+    It is common for CCCC files to block data in various record with
+    a description along the lines of::
+
+        WITH M AS THE BLOCK INDEX, JL=(M-1)*((NINTJ-1)/NBLOK +1)+1
+        AND JU=MIN0(NINTJ,JUP) WHERE JUP=M*((NINTJ-1)/NBLOK +1)
+
+    This function computes JL and JU for these purposes. It also converts
+    JL and JU to zero based indices rather than 1 based ones, as is almost
+    always wanted when dealing with python/numpy matrices.
+    """
+    x = (nintj - 1) // nblok + 1
+    jLow = (m - 1) * x + 1
+    jHigh = min(nintj, m * x)
+    return jLow - 1, jHigh - 1
