@@ -230,9 +230,7 @@ class IORecord(object):
                 "Failed to close record, {}.\n{}\n"
                 "It is possible too much data was read from the "
                 "record, and the end of the stream was reached.\n"
-                "Check stdout for the file name; you may need to "
-                "remove any files in the current directory matching "
-                "the pattern ISO*.".format(self, ee)
+                "".format(self, ee)
             )
 
     def open(self):

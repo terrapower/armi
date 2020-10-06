@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-LABELS contains the region and composition label data produced by DIF3D/VARIANT.
+"""
+Reads and writes region and composition label data from a LABELS interface file.
+
+LABELS files are produced by DIF3D/VARIANT. They are very similar in structure
+and format to CCCC files but are not officially in the CCCC documents.
 
 The file structure is listed here::
 
