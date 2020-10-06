@@ -292,7 +292,7 @@ class GeodstStream(cccc.Stream):
                 )
 
 
-readBinary = GeodstStream.readBinary  # pylint: disable=invalid-name
-readAscii = GeodstStream.readAscii  # pylint: disable=invalid-name
-writeBinary = GeodstStream.writeBinary  # pylint: disable=invalid-name
-writeAscii = GeodstStream.writeAscii  # pylint: disable=invalid-name
+readBinary = GeodstStream.readBinary
+readAscii = GeodstStream.readAscii
+writeBinary = GeodstStream.writeBinary
+writeAscii = GeodstStream.writeAscii
