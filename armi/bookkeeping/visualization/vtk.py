@@ -34,6 +34,8 @@ import numpy
 from pyevtk.vtk import VtkGroup
 
 from armi import runLog
+from armi.reactor import assemblies
+from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import reactors
 from armi.reactor import parameters
@@ -94,9 +96,11 @@ class VtkDumper(dumper.VisFileDumper):
                 "includeParams and excludeParams can not both be used at the same time"
             )
 
-        # make the meshes
-        blks = r.core.getBlocks()
-        assems = r.core.getAssemblies()
+        blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
+        assems = r.getChildren(
+            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
+        )
+
         blockMesh = utils.createReactorBlockMesh(r)
         assemMesh = utils.createReactorAssemMesh(r)
 
@@ -175,7 +179,7 @@ def _collectObjectData(objs: List[composites.ArmiObject],
 
             try:
                 data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
-            except ValueError:
+            except (ValueError, TypeError):
                 # Looks like we have some weird data. We might be able to handle it
                 # with more massaging, but probably not visualizable anyhow
                 continue

@@ -124,7 +124,8 @@ class VtkMesh:
 
 def createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
-    for b in r.core.getBlocks():
+    blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
+    for b in blks:
         mesh.append(createBlockMesh(b))
 
     return mesh
@@ -132,7 +133,10 @@ def createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
 
 def createReactorAssemMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
-    for a in r.core.getAssemblies():
+    assems = r.getChildren(
+        deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
+    )
+    for a in assems:
         mesh.append(createAssemMesh(a))
 
     return mesh
