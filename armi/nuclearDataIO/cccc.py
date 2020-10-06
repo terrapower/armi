@@ -47,6 +47,7 @@ from armi.localization import exceptions
 from armi import runLog
 
 IMPLICIT_INT = "IJKLMN"
+"""Letters that trigger implicit integer types in old FORTRAN 77 codes"""
 
 
 class CCCCRecord(object):
