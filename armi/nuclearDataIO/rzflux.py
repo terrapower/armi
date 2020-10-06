@@ -42,8 +42,6 @@ FILE_SPEC_1D_KEYS = (
     "NCY",
 )
 
-IMPLICIT_INT = "IJKLMN"
-
 
 class RzfluxData:
     """
@@ -80,7 +78,6 @@ class RzfluxStream(cccc.Stream):
 
     def __init__(self, flux: RzfluxData, fileName: str, fileMode: str):
         cccc.Stream.__init__(self, fileName, fileMode)
-        self.fc = {}  # file control info (sort of global for this library)
         self._flux = flux
         self._metadata = self._getFileMetadata()
 
@@ -135,7 +132,7 @@ class RzfluxStream(cccc.Stream):
         with self.createRecord() as record:
             for key in FILE_SPEC_1D_KEYS:
                 # ready for some implicit madness from the FORTRAN 77 days?
-                if key[0] in IMPLICIT_INT:
+                if key[0] in cccc.IMPLICIT_INT:
                     self._metadata[key] = record.rwInt(self._metadata[key])
                 else:
                     self._metadata[key] = record.rwFloat(self._metadata[key])

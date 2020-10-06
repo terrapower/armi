@@ -46,12 +46,14 @@ import numpy
 from armi.localization import exceptions
 from armi import runLog
 
+IMPLICIT_INT = "IJKLMN"
+
 
 class CCCCRecord(object):
     """
     A single record from a CCCC file
 
-    Reads binary information sequentially. 
+    Reads binary information sequentially.
     """
 
     def __init__(self, data):
@@ -125,7 +127,7 @@ class CCCCReader(object):
 
     def getRecord(self):
         r"""CCCC records start with an int and end with the same int. This int represents the number of bytes
-        that the record is. That makes it easy to read. """
+        that the record is. That makes it easy to read."""
         numBytes = self.getInt()
         if numBytes % self.intSize:
             raise ValueError(
@@ -174,11 +176,11 @@ class IORecord(object):
         A True value means the fortran file was written using access='sequential' and contains
         a 4 byte int count at the beginning and end of each record. Otherwise, if False the
         fortran file was written using access='direct'.
-        
+
     Notes
     -----
     The methods in this object often have `rw` prefixes, meaning the same method
-    can be used for both reading and writing. We consider this a significant 
+    can be used for both reading and writing. We consider this a significant
     achievement that enforces consistency between the code for reading and writing
     CCCC records. The tradeoff is that it's a bit challenging to comprehend at first.
     """
@@ -439,7 +441,7 @@ class BinaryRecordReader(IORecord):
 class BinaryRecordWriter(IORecord):
     r"""a single record from a CCCC file
 
-    Reads binary information sequentially. """
+    Reads binary information sequentially."""
 
     def __init__(self, stream, hasRecordBoundaries=True):
         IORecord.__init__(self, stream, hasRecordBoundaries)
@@ -627,8 +629,7 @@ class Stream(object):
         return "<{} {}>".format(self.__class__.__name__, self._fileName)
 
     def __enter__(self):
-        """At the inception of a with command, navigate to a new directory if one is supplied
-        """
+        """At the inception of a with command, navigate to a new directory if one is supplied"""
         try:
             self._stream = open(self._fileName, self._fileMode)
         except IOError:
