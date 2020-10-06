@@ -61,14 +61,19 @@ FILE_SPEC_1D_KEYS = (
 
 class RtfluxData:
     """
-    Data structure that is read from or written to a RTFLUX file.
+    Multigroup flux as a function of i,j,k and g indices.
+
+    The metadata also contains the power and k-eff.
+
+    This is the data structure that is read from or written to a RTFLUX file.
     """
 
     def __init__(self):
         # Need Metadata subclass for default keys
         self.metadata = nuclearFileMetadata._Metadata()
 
-        self.groupFluxes = None
+        self.groupFluxes: numpy.ndarray = numpy.array([])
+        """Maps i,j,k,g indices to total real or adjoint flux in n/cm^2-s"""
 
 
 class RtfluxStream(cccc.Stream):
@@ -97,6 +102,7 @@ class RtfluxStream(cccc.Stream):
 
     @classmethod
     def _read(cls, fileName: str, fileMode: str) -> RtfluxData:
+        """Specialize the parent by adding a fresh RtfluxData"""
         flux = RtfluxData()
         return cls._readWrite(
             flux,
@@ -171,7 +177,7 @@ class RtfluxStream(cccc.Stream):
         kmax = self._metadata["NINTK"]
         nblck = self._metadata["NBLOK"]  # data blocking factor
 
-        if self._flux.groupFluxes is None:
+        if self._flux.groupFluxes.size == 0:
             self._flux.groupFluxes = numpy.zeros((imax, jmax, kmax, ng))
 
         for gi in range(ng):
