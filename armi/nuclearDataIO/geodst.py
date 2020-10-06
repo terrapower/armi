@@ -56,6 +56,10 @@ class GeodstData:
     """
     Data representation that can be read from or written to a GEODST file.
 
+    The region numbers in this data structure START AT 1, not zero! Thus
+    you must always remember the off-by-one conversion when comparing
+    with list or matrix indices.
+
     Notes
     -----
     Analogous to a IsotxsLibrary for ISTOXS files.
@@ -256,7 +260,7 @@ class GeodstStream(cccc.Stream):
                     self._metadata["NCINTJ"],
                     self._metadata["NCINTK"],
                 ),
-                dtype=numpy.int8,
+                dtype=numpy.int16,
             )
         for ki in range(self._metadata["NCINTK"]):
             with self.createRecord() as record:
@@ -279,7 +283,7 @@ class GeodstStream(cccc.Stream):
                     self._metadata["NINTJ"],
                     self._metadata["NINTK"],
                 ),
-                dtype=numpy.int8,
+                dtype=numpy.int16,
             )
         for ki in range(self._metadata["NINTK"]):
             with self.createRecord() as record:
