@@ -1,5 +1,5 @@
 """
-Module for reading/writing RZFLUX CCCC interface file.
+Module for reading/writing RZFLUX CCCC interface files.
 
 RZFLUX contains Regular Zone Flux, or multigroup flux by neutron energy group
 in each zone. It also can hold some convergence and neutron balance information.
@@ -9,7 +9,9 @@ The format is defined in [CCCC-IV]_.
 Examples
 --------
 >>> flux = rzflux.readBinary("RZFLUX")
-
+>>> flux.groupFluxes[2, 0] *= 1.1
+>>> rzflux.writeBinary(flux, "RZFLUX2")
+>>> rzflux.writeAscii(flux, "RZFLUX2.ascii")
 """
 
 import numpy
@@ -129,8 +131,6 @@ class RzfluxStream(cccc.Stream):
     def _rw1DRecord(self):
         """
         Read/write File specifications on 1D record.
-
-        This record contains 27 integers.
         """
         with self.createRecord() as record:
             for key in FILE_SPEC_1D_KEYS:
@@ -142,7 +142,7 @@ class RzfluxStream(cccc.Stream):
 
     def _rw2DRecord(self):
         """
-        Read/write the multigroup fluxes (n/cm^2/2) into a NxG matrix.
+        Read/write the multigroup fluxes (n/cm^2-s) into a NxG matrix.
 
         Notes
         -----

@@ -17,17 +17,27 @@ class TestRzflux(unittest.TestCase):
     """
 
     def test_readRzflux(self):
-        """Ensure we can read a file."""
+        """Ensure we can read a RZFLUX file."""
         flux = rzflux.readBinary(SIMPLE_RZFLUX)
         self.assertEqual(
             flux.groupFluxes.shape, (flux.metadata["NGROUP"], flux.metadata["NZONE"])
         )
 
     def test_writeRzflux(self):
-        """Ensure that we can write a modified GEODST."""
+        """Ensure that we can write a modified RZFLUX file."""
         flux = rzflux.readBinary(SIMPLE_RZFLUX)
-        flux.groupFluxes[0, 0] *= 1.1
+        # perturb off-diag item to check row/col ordering
+        flux.groupFluxes[2, 10] *= 1.1
+        flux.groupFluxes[12, 1] *= 1.2
         rzflux.writeBinary(flux, "RZFLUX2")
         flux2 = rzflux.readBinary("RZFLUX2")
-        self.assertAlmostEqual(flux2.groupFluxes[0, 0], flux.groupFluxes[0, 0])
+        self.assertAlmostEqual(flux2.groupFluxes[12, 1], flux.groupFluxes[12, 1])
         os.remove("RZFLUX2")
+
+    def test_rwAscii(self):
+        """Ensure that we can read/write in ascii format."""
+        flux = rzflux.readBinary(SIMPLE_RZFLUX)
+        rzflux.writeAscii(flux, "RZFLUX.ascii")
+        flux2 = rzflux.readAscii("RZFLUX.ascii")
+        self.assertTrue((flux2.groupFluxes == flux.groupFluxes).all())
+        # os.remove("RZFLUX.ascii")
