@@ -27,6 +27,8 @@ LABELS_FILE_ASCII = os.path.join(THIS_DIR, "labels.ascii")
 
 
 class TestLabels(unittest.TestCase):
+    """Tests for labels."""
+
     def test_readLabelsBinary(self):
         expectedName = "LABELS"
         expectedTrianglesPerHex = 6
@@ -34,21 +36,15 @@ class TestLabels(unittest.TestCase):
         expectedNumRegions = 2900
         expectedNumHexagonalRings = 13
         labelsData = labels.readBinary(LABELS_FILE_BIN)
-        self.assertEqual(
-            labelsData.metadata["hname"], expectedName
-        )  # pylint: disable=protected-access
+        self.assertEqual(labelsData.metadata["hname"], expectedName)
         self.assertEqual(
             labelsData.metadata["numTrianglesPerHex"], expectedTrianglesPerHex
-        )  # pylint: disable=protected-access
-        self.assertEqual(
-            labelsData.metadata["numZones"], expectedNumZones
-        )  # pylint: disable=protected-access
-        self.assertEqual(
-            labelsData.metadata["numRegions"], expectedNumRegions
-        )  # pylint: disable=protected-access
+        )
+        self.assertEqual(labelsData.metadata["numZones"], expectedNumZones)
+        self.assertEqual(labelsData.metadata["numRegions"], expectedNumRegions)
         self.assertEqual(
             labelsData.metadata["numHexagonalRings"], expectedNumHexagonalRings
-        )  # pylint: disable=protected-access
+        )
         self.assertEqual(len(labelsData.regionLabels), expectedNumRegions)
 
     def test_writeLabelsAscii(self):
@@ -58,8 +54,8 @@ class TestLabels(unittest.TestCase):
             actualData = f.read().splitlines()
         with open(LABELS_FILE_ASCII) as f:
             expectedData = f.read().splitlines()
-        for i in range(len(actualData)):
-            self.assertEqual(expectedData[i], actualData[i])
+        for expected, actual in zip(expectedData, actualData):
+            self.assertEqual(expected, actual)
         os.remove(self._testMethodName + "labels.ascii")
 
 
