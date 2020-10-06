@@ -303,7 +303,9 @@ class XdmfDumper(dumper.VisFileDumper):
         blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
         blks = sorted(blks, key=lambda b: snToIdx[b.p.serialNum])
 
-        assems = r.core.getAssemblies()
+        assems = r.getChildren(
+            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
+        )
         assems = sorted(assems, key=lambda a: snToIdx[a.p.serialNum])
 
         blockGrid = self._makeBlockMesh(r, snToIdx)
