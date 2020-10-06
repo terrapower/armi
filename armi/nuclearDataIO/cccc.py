@@ -677,7 +677,7 @@ def getBlockBandwidth(m, nintj, nblok):
     """
     Return block bandwidth JL, JU from CCCC interface files.
 
-    It is common for CCCC files to block data in various record with
+    It is common for CCCC files to block data in various records with
     a description along the lines of::
 
         WITH M AS THE BLOCK INDEX, JL=(M-1)*((NINTJ-1)/NBLOK +1)+1
@@ -686,6 +686,10 @@ def getBlockBandwidth(m, nintj, nblok):
     This function computes JL and JU for these purposes. It also converts
     JL and JU to zero based indices rather than 1 based ones, as is almost
     always wanted when dealing with python/numpy matrices.
+
+    The term *bandwidth* refers to a kind of sparse matrix representation.
+    Some rows only have columns JL to JH in them rather than 0 to JMAX.
+    The non-zero band from JL to JH is what we're talking about here.
     """
     x = (nintj - 1) // nblok + 1
     jLow = (m - 1) * x + 1
