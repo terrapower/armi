@@ -5,14 +5,22 @@ GEODST files define fine and coarse meshes and mappings between
 region numbers and mesh indices. They also store some zone
 information.
 
-File format definition is from [CCCC-IV]_
+File format definition is from [CCCC-IV]_.
+
+Examples
+--------
+>>> geo = geodst.readBinary("GEODST")
+>>> print(geo.xmesh)
+>>> geo.zmesh[-1]*=2  # make a modification to data
+>>> geodst.writeBinary(geo, "GEODST2")
+
 """
 
 import numpy
 
 from armi.nuclearDataIO import cccc, nuclearFileMetadata
 
-
+# See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
     "IGOM",
     "NZONE",
@@ -115,8 +123,9 @@ class GeodstStream(cccc.Stream):
             fileMode,
         )
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def _write(cls, geom, fileName, fileMode):  # pylint: disable=arguments-differ
+    def _write(cls, geom: GeodstData, fileName: str, fileMode: str):
         return cls._readWrite(geom, fileName, fileMode)
 
     @classmethod
