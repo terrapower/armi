@@ -146,7 +146,7 @@ class RzfluxStream(cccc.Stream):
         Zones are blocked into multiple records so we have to block or unblock
         them.
 
-        _rwMatrix reverses the indices into FORTRAN data order so be
+        rwMatrix reverses the indices into FORTRAN data order so be
         very careful with the indices.
         """
         nz = self._metadata["NZONE"]
@@ -164,10 +164,8 @@ class RzfluxStream(cccc.Stream):
             numZonesInBlock = jUp - jLow + 1
             with self.createRecord() as record:
                 # pass in shape in fortran (read) order
-                # pylint: disable=protected-access
-                self._flux.groupFluxes[:, jLow : jUp + 1] = record._rwMatrix(
+                self._flux.groupFluxes[:, jLow : jUp + 1] = record.rwMatrix(
                     self._flux.groupFluxes[:, jLow : jUp + 1],
-                    record.rwFloat,
                     numZonesInBlock,
                     ng,
                 )

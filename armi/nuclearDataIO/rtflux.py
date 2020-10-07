@@ -190,12 +190,10 @@ class RtfluxStream(cccc.Stream):
                     numZonesInBlock = jUp - jLow + 1
                     with self.createRecord() as record:
                         # pass in shape in fortran (read) order
-                        # pylint: disable=protected-access
                         self._flux.groupFluxes[
                             :, jLow : jUp + 1, k, gEff
-                        ] = record._rwMatrix(
+                        ] = record.rwDoubleMatrix(
                             self._flux.groupFluxes[:, jLow : jUp + 1, k, gEff],
-                            record.rwDouble,
                             numZonesInBlock,
                             imax,
                         )

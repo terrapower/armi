@@ -133,10 +133,8 @@ class PwdintStream(cccc.Stream):
             for bi in range(nblck):
                 jL, jU = cccc.getBlockBandwidth(bi + 1, jmax, nblck)
                 with self.createRecord() as record:
-                    # pylint: disable=protected-access
-                    self._power.powerDensity[:, jL : jU + 1, ki] = record._rwMatrix(
+                    self._power.powerDensity[:, jL : jU + 1, ki] = record.rwMatrix(
                         self._power.powerDensity[:, jL : jU + 1, ki],
-                        record.rwFloat,
                         jU - jL + 1,
                         imax,
                     )

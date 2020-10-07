@@ -356,6 +356,12 @@ class IORecord(object):
         """
         return self._rwMatrix(contents, self.rwDouble, *shape)
 
+    def rwIntMatrix(self, contents, *shape):
+        """
+        Read or write a matrix of int values.
+        """
+        return self._rwMatrix(contents, self.rwInt, *shape)
+
     def _rwMatrix(self, contents, func, *shape):
         fortranShape = list(reversed(shape))
         if contents is None or contents.size == 0:
