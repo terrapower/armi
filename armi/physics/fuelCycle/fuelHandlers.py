@@ -1369,7 +1369,7 @@ class FuelHandler:
 
     def dischargeSwap(self, incoming, outgoing):
         r"""
-        Removes one assembly from the core and replace it with another assembly
+        Removes one assembly from the core and replace it with another assembly.
 
         See Also
         --------
@@ -1397,10 +1397,19 @@ class FuelHandler:
         # which, coincidentally is the same time we're at right now at BOC.
         self.r.core.removeAssembly(outgoing)
 
+        # adjust the assembly multiplicity so that it doesnt forget how many it really
+        # represents. This allows us to discharge an assembly from any location in
+        # fractional-core models where the central location may only be one assembly,
+        # whereas other locations are more, and keep proper track of things. In the
+        # future, this mechanism may be used to handle symmetry in general.
+        outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
+
         if incoming in self.r.core.sfp.getChildren():
             # pull it out of the sfp if it's in there.
             runLog.extra("removing {0} from the sfp".format(incoming))
             self.r.core.sfp.remove(incoming)
+
+        incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
 
         self._swapFluxParam(incoming, outgoing)

@@ -42,6 +42,10 @@ class RangeError(Exception):
         Exception.__init__(self, message)
 
 
+class SymmetryError(Exception):
+    """Exception to raise when a symmetry condition is violated."""
+
+
 class InvalidSelectionError(Exception):
     """Exception raised when an invalid value was provided when there is a finite set of valid options."""
 

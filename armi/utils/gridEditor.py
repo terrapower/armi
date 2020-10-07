@@ -122,7 +122,7 @@ def _filterOutsideDomain(gridBp):
     contentsToRemove = {
         idx
         for idx, _contents in gridBp.gridContents.items()
-        if not grid.locatorInDomain(grid[idx + (0,)])
+        if not grid.locatorInDomain(grid[idx + (0,)], symmetryOverlap=False)
     }
     for idx in contentsToRemove:
         symmetrics = grid.getSymmetricEquivalents(idx)
@@ -795,7 +795,10 @@ class GridGui(wx.ScrolledWindow):
         self._idxByRing = [list() for _ in range(self.numRings)]
         for idx, loc in self._grid.items():
             ring, _pos = self._grid.getRingPos(idx)
-            if not self._grid.locatorInDomain(loc) or ring > self.numRings:
+            if (
+                not self._grid.locatorInDomain(loc, symmetryOverlap=False)
+                or ring > self.numRings
+            ):
                 continue
             self._idxByRing[ring - 1].append(idx)
 
@@ -1658,9 +1661,7 @@ class NewGridBlueprintDialog(wx.Dialog):
         nameSizer.Add(self.gridName, 1, wx.EXPAND)
 
         self.geomType = wx.Choice(
-            self,
-            id=wx.ID_ANY,
-            choices=[gt.label for gt in self._geomFromIdx.values()],
+            self, id=wx.ID_ANY, choices=[gt.label for gt in self._geomFromIdx.values()],
         )
 
         self.Bind(wx.EVT_CHOICE, self.onSelectGeomType, self.geomType)

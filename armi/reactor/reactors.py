@@ -35,6 +35,7 @@ import armi
 from armi import runLog
 from armi import nuclearDataIO
 from armi import settings
+from armi.localization import exceptions
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
@@ -232,8 +233,8 @@ class Core(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
-        self.cfp.r = self
-        self.sfp.r = self
+        self.cfp.parent = self
+        self.sfp.parent = self
         self.regenAssemblyLists()
 
     def __deepcopy__(self, memo):
@@ -495,7 +496,7 @@ class Core(composites.Composite):
         spatialLocator = spatialLocator or a.spatialLocator
 
         if spatialLocator is not None and spatialLocator in self.childrenByLocator:
-            raise RuntimeError(
+            raise ValueError(
                 "Cannot add {} because location {} is already filled by {}."
                 "".format(
                     aName, a.spatialLocator, self.childrenByLocator[a.spatialLocator]
@@ -505,6 +506,14 @@ class Core(composites.Composite):
         if spatialLocator is not None:
             # transfer spatialLocator to Core one
             spatialLocator = self.spatialGrid[tuple(spatialLocator.indices)]
+            if not self.spatialGrid.locatorInDomain(
+                spatialLocator, symmetryOverlap=True
+            ):
+                raise exceptions.SymmetryError(
+                    "Location `{}` outside of the represented domain: `{}`".format(
+                        spatialLocator, self.spatialGrid.symmetry
+                    )
+                )
             a.moveTo(spatialLocator)
 
         self.childrenByLocator[spatialLocator] = a
@@ -1817,7 +1826,8 @@ class Core(composites.Composite):
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
 
         """
-        a = self.parent.blueprints.constructAssem(cs or settings.getMasterCs(), name=assemType
+        a = self.parent.blueprints.constructAssem(
+            cs or settings.getMasterCs(), name=assemType
         )
 
         # check to see if a default bol assembly is being used or we are adding more information

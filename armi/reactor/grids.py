@@ -380,6 +380,16 @@ class IndexLocation(LocationBase):
         """Return ring and position of this locator."""
         return self.grid.getRingPos(self.getCompleteIndices())
 
+    def getSymmetricEquivalents(self):
+        """
+        Get symmetrically-equivalent locations, based on Grid symmetry.
+
+        See Also
+        --------
+        Grid.getSymmetricEquivalents
+        """
+        return self.grid.getSymmetricEquivalents(self.indices)
+
 
 class MultiIndexLocation(IndexLocation):
     """
@@ -694,6 +704,7 @@ class Grid:
         """
         state = self.__dict__.copy()
         state["armiObject"] = None
+
         return state
 
     def __setstate__(self, state):
@@ -762,12 +773,23 @@ class Grid:
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
-    def locatorInDomain(self, locator: LocationBase) -> bool:
+    def locatorInDomain(
+        self, locator: LocationBase, symmetryOverlap: Optional[bool] = False
+    ) -> bool:
         """
         Return whether the passed locator is in the domain represented by the Grid.
 
         For instance, if we have a 1/3rd core hex grid, this would return False for
         locators that are outside of the first third of the grid.
+
+        Parameters
+        ----------
+        locator : LocationBase
+            The location to test
+        symmetryOverlap : bool, optional
+            Whether grid locations along the symmetry line should be considered "in the
+            represented domain". This can be useful when assemblies are split along the
+            domain boundary, with fractions of the assembly on either side.
         """
         raise NotImplementedError("Not implemented on base Grid type.")
 
@@ -1051,7 +1073,7 @@ class CartesianGrid(Grid):
             pos = 7 * ring + j
         return (int(ring) + 1, int(pos) + 1)
 
-    def locatorInDomain(self, locator):
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
         if geometry.QUARTER_CORE in self.symmetry:
             return locator.i >= 0 and locator.j >= 0
         else:
@@ -1375,9 +1397,11 @@ class HexGrid(Grid):
             ((1.5 * side, 0.0, 0.0), (newPitchCm / 2.0, newPitchCm, 0.0), (0, 0, 0))
         )[self._stepDims]
 
-    def locatorInDomain(self, locator):
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+        # This will include the "top" 120-degree symmetry lines. This is to support
+        # adding of edge assemblies.
         if geometry.THIRD_CORE in self.symmetry:
-            return self.isInFirstThird(locator)
+            return self.isInFirstThird(locator, includeTopEdge=symmetryOverlap)
         else:
             return True
 
@@ -1552,6 +1576,13 @@ class ThetaRZGrid(Grid):
         j = int(numpy.abs(self._bounds[1] - rad0).argmin())
 
         return (i, j, 0)
+
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+        """
+        ThetaRZGrids do not check for bounds, though they could if that becomes a
+        problem.
+        """
+        return True
 
 
 def axialUnitGrid(numCells, armiObject=None):
