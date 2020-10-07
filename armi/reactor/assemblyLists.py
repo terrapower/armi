@@ -38,7 +38,8 @@ from armi.reactor.flags import Flags
 
 class AutoFiller(abc.ABC):
     """
-    Class for governing automatic insertion of Assemblies.
+    Class for governing automatic insertion of Assemblies when a specific Composite
+    location isn't requested.
 
     This is kept separate from the ``AssemblyList`` class itself to promote composition
     over inheritance; reasonable implementations of auto-fill strategies will have their

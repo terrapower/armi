@@ -114,9 +114,9 @@ class SystemBlueprint(yamlize.Object):
 
         system = self._resolveSystemType(self.typ)(self.name)
 
-        # TODO: obviously move someplace better. If system blueprints could be
-        # subclassed or whatever, this could live in the CoreBlueprint, but we aren't
-        # super wild about setOptionsFromCS() to begin with.
+        # TODO: This could be somewhere better. If system blueprints could be
+        # subclassed, this could live in the CoreBlueprint. setOptionsFromCS() also isnt
+        # great to begin with, so ideally it could be removed entirely.
         if isinstance(system, reactors.Core):
             system.setOptionsFromCs(cs)
 
