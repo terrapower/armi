@@ -159,13 +159,8 @@ class RzfluxStream(cccc.Stream):
                 (ng, nz),
                 dtype=numpy.float32,
             )
-        blockRatio = (nz - 1) // nb + 1
         for bi in range(nb):
-            # compute data-blocking bounds, convert to base 0,
-            # M = (bi + 1), and we subtract 1 from jLow and jUp
-            jLow = bi * blockRatio
-            jUp = (bi + 1) * blockRatio  # unmodified
-            jUp = min(nz, jUp) - 1  # subtracted 1 to convert to base 0
+            jLow, jUp = cccc.getBlockBandwidth(bi + 1, nz, nb)
             numZonesInBlock = jUp - jLow + 1
             with self.createRecord() as record:
                 # pass in shape in fortran (read) order

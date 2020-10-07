@@ -175,7 +175,7 @@ class RtfluxStream(cccc.Stream):
         imax = self._metadata["NINTI"]
         jmax = self._metadata["NINTJ"]
         kmax = self._metadata["NINTK"]
-        nblck = self._metadata["NBLOK"]  # data blocking factor
+        nblck = self._metadata["NBLOK"]
 
         if self._flux.groupFluxes.size == 0:
             self._flux.groupFluxes = numpy.zeros((imax, jmax, kmax, ng))
@@ -186,11 +186,7 @@ class RtfluxStream(cccc.Stream):
                 # data in i-j plane may be blocked
                 for bi in range(nblck):
                     # compute blocking parameters
-                    m = bi + 1
-                    blockRatio = (jmax - 1) // nblck + 1
-                    jLow = (m - 1) * blockRatio  # subtracted 1
-                    jUp = m * blockRatio
-                    jUp = min(jmax, jUp) - 1  # subtracted 1
+                    jLow, jUp = cccc.getBlockBandwidth(bi + 1, jmax, nblck)
                     numZonesInBlock = jUp - jLow + 1
                     with self.createRecord() as record:
                         # pass in shape in fortran (read) order
