@@ -506,7 +506,9 @@ class Core(composites.Composite):
         if spatialLocator is not None:
             # transfer spatialLocator to Core one
             spatialLocator = self.spatialGrid[tuple(spatialLocator.indices)]
-            if not self.spatialGrid.locatorInDomain(spatialLocator):
+            if not self.spatialGrid.locatorInDomain(
+                spatialLocator, symmetryOverlap=True
+            ):
                 raise exceptions.SymmetryError(
                     "Location `{}` outside of the represented domain: `{}`".format(
                         spatialLocator, self.spatialGrid.symmetry

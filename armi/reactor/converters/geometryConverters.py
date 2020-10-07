@@ -1296,7 +1296,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 self._newAssembliesAdded.append(newAssem)
 
         # set symmetry after expanding, because it isnt actually full core until it's
-        # full core; setting the symmetry causes the core to rejigger itself.
+        # full core; setting the symmetry causes the core to clear its caches.
         r.core.symmetry = geometry.FULL_CORE
 
     def restorePreviousGeometry(self, cs, reactor):
