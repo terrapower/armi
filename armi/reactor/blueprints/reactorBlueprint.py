@@ -120,7 +120,7 @@ class SystemBlueprint(yamlize.Object):
         if isinstance(system, reactors.Core):
             system.setOptionsFromCs(cs)
 
-        # Some systems may not require a prescribed grid design. Only try to use on if
+        # Some systems may not require a prescribed grid design. Only try to use one if
         # it was provided
         if gridDesign is not None:
             spatialGrid = gridDesign.construct()

@@ -1398,7 +1398,10 @@ class FuelHandler:
         self.r.core.removeAssembly(outgoing)
 
         # adjust the assembly multiplicity so that it doesnt forget how many it really
-        # represents
+        # represents. This allows us to discharge an assembly from any location in
+        # fractional-core models where the central location may only be one assembly,
+        # whereas other locations are more, and keep proper track of things. In the
+        # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
         if incoming in self.r.core.sfp.getChildren():
