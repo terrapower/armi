@@ -134,7 +134,7 @@ class GeodstStream(cccc.Stream):
 
     @classmethod
     def _readWrite(cls, geom: GeodstData, fileName: str, fileMode: str) -> GeodstData:
-        with GeodstStream(geom, fileName, fileMode) as rw:
+        with cls(geom, fileName, fileMode) as rw:
             rw.readWrite()
         return geom
 

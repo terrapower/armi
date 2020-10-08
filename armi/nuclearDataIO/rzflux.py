@@ -100,7 +100,7 @@ class RzfluxStream(cccc.Stream):
 
     @classmethod
     def _readWrite(cls, flux: RzfluxData, fileName: str, fileMode: str) -> RzfluxData:
-        with RzfluxStream(flux, fileName, fileMode) as rw:
+        with cls(flux, fileName, fileMode) as rw:
             rw.readWrite()
         return flux
 
