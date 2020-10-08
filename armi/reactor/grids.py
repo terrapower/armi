@@ -960,7 +960,7 @@ class Grid:
 
         # For compatibility's sake, return __something__. TODO: We may want to just
         # throw here, to be honest.
-        return tuple(indices[:2])
+        return tuple(i+1 for i in indices[:2])
 
     def getAllIndices(self):
         """Get all possible indices in this grid."""
@@ -1532,7 +1532,7 @@ class ThetaRZGrid(Grid):
         )
 
     def getRingPos(self, indices):
-        return (indices[1], indices[0])
+        return (indices[1]+1, indices[0]+1)
 
     @staticmethod
     def getIndicesFromRingAndPos(ring, pos):
