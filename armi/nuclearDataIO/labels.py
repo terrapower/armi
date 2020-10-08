@@ -136,7 +136,7 @@ class LabelsStream(cccc.Stream):
 
     @classmethod
     def _readWrite(cls, labels, fileName: str, fileMode: str) -> LabelsData:
-        with LabelsStream(labels, fileName, fileMode) as rw:
+        with cls(labels, fileName, fileMode) as rw:
             rw.readWrite()
         return labels
 

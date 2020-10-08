@@ -356,7 +356,23 @@ class IORecord(object):
         """
         return self._rwMatrix(contents, self.rwDouble, *shape)
 
-    def _rwMatrix(self, contents, func, *shape):
+    def rwIntMatrix(self, contents, *shape):
+        """
+        Read or write a matrix of int values.
+        """
+        return self._rwMatrix(contents, self.rwInt, *shape)
+
+    @staticmethod
+    def _rwMatrix(contents, func, *shape):
+        """
+        Read/write a matrix.
+
+        Notes
+        -----
+        This can be important for performance when reading large matrices (e.g. scatter
+        matrices). It may be worth investigating ``numpy.frombuffer`` on read and
+        something similar on write.
+        """
         fortranShape = list(reversed(shape))
         if contents is None or contents.size == 0:
             contents = numpy.empty(fortranShape)

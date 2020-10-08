@@ -49,3 +49,16 @@ class Testrtflux(unittest.TestCase):
         flux2 = rtflux.RtfluxStream.readAscii("rtflux.ascii")
         self.assertTrue((flux2.groupFluxes == flux.groupFluxes).all())
         os.remove("rtflux.ascii")
+
+    def test_adjoint(self):
+        """Ensure adjoint reads energy groups differently."""
+        real = rtflux.RtfluxStream.readBinary(SIMPLE_RTFLUX)
+        adjoint = rtflux.AtfluxStream.readBinary(SIMPLE_RTFLUX)
+        self.assertFalse((real.groupFluxes == adjoint.groupFluxes).all())
+        g = 3
+        self.assertTrue(
+            (
+                real.groupFluxes[:, :, :, g]
+                == adjoint.groupFluxes[:, :, :, real.metadata["NGROUP"] - g - 1]
+            ).all()
+        )

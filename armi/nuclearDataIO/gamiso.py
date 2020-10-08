@@ -137,12 +137,6 @@ class _GamisoIO(isotxs._IsotxsIO):  # pylint: disable=protected-access,abstract-
             self._lib.gammaEnergyUpperBounds, self._metadata["numGroups"]
         )
 
-    @classmethod
-    def _readWrite(cls, lib, fileName, fileMode, getNuclideFunc):
-        with _GamisoIO(fileName, lib, fileMode, getNuclideFunc) as rw:
-            rw.readWrite()
-        return lib
-
 
 readBinary = _GamisoIO.readBinary
 readAscii = _GamisoIO.readAscii

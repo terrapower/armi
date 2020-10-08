@@ -134,7 +134,7 @@ class GeodstStream(cccc.Stream):
 
     @classmethod
     def _readWrite(cls, geom: GeodstData, fileName: str, fileMode: str) -> GeodstData:
-        with GeodstStream(geom, fileName, fileMode) as rw:
+        with cls(geom, fileName, fileMode) as rw:
             rw.readWrite()
         return geom
 
@@ -264,12 +264,10 @@ class GeodstStream(cccc.Stream):
             )
         for ki in range(self._metadata["NCINTK"]):
             with self.createRecord() as record:
-                # pylint: disable=protected-access
-                self._geom.coarseMeshRegions[:, :, ki] = record._rwMatrix(
+                self._geom.coarseMeshRegions[:, :, ki] = record.rwIntMatrix(
                     self._geom.coarseMeshRegions[:, :, ki],
-                    record.rwInt,
-                    self._metadata["NCINTI"],
                     self._metadata["NCINTJ"],
+                    self._metadata["NCINTI"],
                 )
 
     def _rw7DRecord(self):
@@ -287,12 +285,10 @@ class GeodstStream(cccc.Stream):
             )
         for ki in range(self._metadata["NINTK"]):
             with self.createRecord() as record:
-                # pylint: disable=protected-access
-                self._geom.fineMeshRegions[:, :, ki] = record._rwMatrix(
+                self._geom.fineMeshRegions[:, :, ki] = record.rwIntMatrix(
                     self._geom.fineMeshRegions[:, :, ki],
-                    record.rwInt,
-                    self._metadata["NINTI"],
                     self._metadata["NINTJ"],
+                    self._metadata["NINTI"],
                 )
 
 
