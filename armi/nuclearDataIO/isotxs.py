@@ -175,7 +175,7 @@ class _IsotxsIO(cccc.Stream):
 
     @classmethod
     def _readWrite(cls, lib, fileName, fileMode, getNuclideFunc):
-        with _IsotxsIO(fileName, lib, fileMode, getNuclideFunc) as rw:
+        with cls(fileName, lib, fileMode, getNuclideFunc) as rw:
             rw.readWrite()
         return lib
 
