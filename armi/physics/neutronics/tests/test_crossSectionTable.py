@@ -3,7 +3,7 @@ import unittest
 
 from armi.physics.neutronics.isotopicDepletion import crossSectionTable as cst
 from armi.reactor.flags import Flags
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.tests import ISOAA_PATH
 

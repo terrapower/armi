@@ -14,26 +14,6 @@
 
 """
 Standard interface files for reactor physics codes.
-
-This module is designed to read/write Fortran record-based binary files that
-comply with the format established by the Committee on Computer Code
-Coordination (CCCC). [CCCC-IV]_
-
-Notes
------
-A CCCC record consists of a leading and ending integer, which indicates the size of the record in
-bytes. As a result, it is possible to perform a check when reading in a record to determine if it
-was read correctly, by making sure the record size at the beginning and ending of a record are
-always equal.
-
-There are similarities between this code and that in the PyNE cccc subpackage.
-This is the original source of the code. TerraPower authorized the publication
-of some of the CCCC code to the PyNE project way back in the 2011 era. 
-This code has since been updated significantly to both read and 
-write the files.
-
-This was originally created following Prof. James Paul Holloway's alpha
-release of ccccutils written in c++ from 2001. 
 """
 import io
 import itertools
@@ -47,7 +27,7 @@ import numpy
 from armi.localization import exceptions
 from armi import runLog
 
-from . import nuclearFileMetadata
+from .. import nuclearFileMetadata
 
 IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
@@ -503,6 +483,19 @@ class AsciiRecordWriter(IORecord):
         return val
 
 
+class DataContainer:
+    """
+    Data representation that can be read/written to/from with a Stream.
+
+    This is an optional convenience class expected to be used in
+    concert with :py:class:`StreamWithDataStructure`.
+    """
+
+    def __init__(self):
+        # Need Metadata subclass for default keys
+        self.metadata = nuclearFileMetadata._Metadata()
+
+
 class Stream(object):
     r"""An abstract CCCC IO stream.
 
@@ -575,11 +568,13 @@ class Stream(object):
         return recordClass(self._stream, hasRecordBoundaries)
 
     @classmethod
-    def readBinary(cls, fileName):
+    def readBinary(cls, fileName: str):
+        """Read data from a binary file into a data structure"""
         return cls._read(fileName, "rb")
 
     @classmethod
-    def readAscii(cls, fileName):
+    def readAscii(cls, fileName: str):
+        """Read data from an ASCII file into a data structure"""
         return cls._read(fileName, "r")
 
     @classmethod
@@ -587,29 +582,18 @@ class Stream(object):
         raise NotImplementedError()
 
     @classmethod
-    def writeBinary(cls, lib, fileName):
-        return cls._write(lib, fileName, "wb")
+    def writeBinary(cls, data: DataContainer, fileName: str):
+        """Write the contents of a data container to a binary file"""
+        return cls._write(data, fileName, "wb")
 
     @classmethod
-    def writeAscii(cls, lib, fileName):
-        return cls._write(lib, fileName, "w")
+    def writeAscii(cls, data: DataContainer, fileName: str):
+        """Write the contents of a data container to an ASCII file"""
+        return cls._write(data, fileName, "w")
 
     @classmethod
     def _write(cls, lib, fileName, fileMode):
         raise NotImplementedError()
-
-
-class DataContainer:
-    """
-    Data representation that can be read/written to/from with a Stream.
-
-    This is an optional convenience class expected to be used in
-    concert with :py:class:`StreamWithDataStructure`.
-    """
-
-    def __init__(self):
-        # Need Metadata subclass for default keys
-        self.metadata = nuclearFileMetadata._Metadata()
 
 
 class StreamWithDataContainer(Stream):

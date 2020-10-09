@@ -4,7 +4,7 @@ Test rzflux reading and writing.
 import unittest
 import os
 
-from armi.nuclearDataIO import rzflux
+from armi.nuclearDataIO.cccc import rzflux
 
 THIS_DIR = os.path.dirname(__file__)
 # This RZFLUX was made by DIF3D 11 in a Cartesian test case.

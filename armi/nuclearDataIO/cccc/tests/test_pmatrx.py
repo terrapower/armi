@@ -22,7 +22,7 @@ import unittest
 import os
 
 from armi import nuclearDataIO
-from armi.nuclearDataIO import pmatrx
+from armi.nuclearDataIO.cccc import pmatrx
 from armi.nuclearDataIO.tests import test_xsLibraries
 from armi.tests import requires_fixture
 from armi.utils import properties

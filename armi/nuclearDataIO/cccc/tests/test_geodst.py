@@ -4,7 +4,7 @@ Test GEODST reading and writing.
 import unittest
 import os
 
-from armi.nuclearDataIO import geodst
+from armi.nuclearDataIO.cccc import geodst
 
 THIS_DIR = os.path.dirname(__file__)
 SIMPLE_GEODST = os.path.join(THIS_DIR, "fixtures", "simple_hexz.geodst")

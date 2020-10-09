@@ -1,4 +1,12 @@
-"""NHFLUX is a CCCC interface file that handles nodal hexagonal flux moments."""
+"""
+NHFLUX is a CCCC interface file that handles nodal hexagonal flux moments.
+
+Examples
+--------
+>>> nhfluxData = NfluxStream.readBinary("NHFLUX")
+>>> NhfluxStream.writeAscii(nhfluxData, "nhflux.ascii")
+
+"""
 import numpy
 
 from armi.nuclearDataIO import cccc
@@ -132,6 +140,10 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Read all surface-averaged partial currents, all planar moments,
         and the DIF3D "four color" nodal coordinate mapping system.
 
+        Notes
+        -----
+        This method should be private but conflicts with ``_readWrite`` so we need a better name.
+
         Parameters
         ----------
         numDataSetsToRead : int, optional
@@ -187,7 +199,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # Loop through all energy groups: high-to-low for real, low-to-high for adjoint
             for g in range(ng):  # loop through energy groups
 
-                gEff = self.getEnergyGroupIndex(g)
+                gEff = self._getEnergyGroupIndex(g)
 
                 for z in range(nz):  # loop through axial nodes
                     self._data.fluxMoments[:, z, :, gEff] = self._rwFluxMoments3D(
@@ -441,7 +453,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         return surfCurrents
 
-    def getEnergyGroupIndex(self, g):
+    def _getEnergyGroupIndex(self, g):
         r"""
         Real fluxes stored in NHFLUX have "normal" (or "forward") energy groups.
         Also see the subclass method NAFLUX.getEnergyGroupIndex().
@@ -457,7 +469,7 @@ class NafluxStream(NhfluxStream):
     It has reversed energy group ordering.
     """
 
-    def getEnergyGroupIndex(self, g):
+    def _getEnergyGroupIndex(self, g):
         r"""
         Adjoint fluxes stored in NAFLUX have "reversed" (or "backward") energy groups.
         """

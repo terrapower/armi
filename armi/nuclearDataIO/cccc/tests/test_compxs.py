@@ -24,7 +24,7 @@ from scipy.sparse import csc_matrix
 
 from armi.tests import COMPXS_PATH, TEST_ROOT
 from armi import nuclearDataIO
-from armi.nuclearDataIO import compxs
+from armi.nuclearDataIO.cccc import compxs
 from armi.nuclearDataIO.xsLibraries import CompxsLibrary
 
 

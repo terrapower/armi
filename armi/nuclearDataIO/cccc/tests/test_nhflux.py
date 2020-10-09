@@ -22,7 +22,7 @@ import unittest
 import numpy
 
 from armi import settings
-from armi.nuclearDataIO import nhflux
+from armi.nuclearDataIO.cccc import nhflux
 
 
 THIS_DIR = os.path.dirname(__file__)

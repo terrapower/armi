@@ -21,7 +21,7 @@ import unittest
 from armi import nuclearDataIO
 from armi.tests import ISOAA_PATH
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO import xsLibraries
 
 

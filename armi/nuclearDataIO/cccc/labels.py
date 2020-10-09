@@ -45,6 +45,10 @@ The file structure is listed here::
 
 
 Reference: [DIF3D]_.
+
+Examples
+--------
+>>> labelData = LabelStream.readBinary("LABELS")
 """
 
 from armi import runLog
@@ -110,7 +114,7 @@ class LabelsStream(cccc.StreamWithDataContainer):
 
     See Also
     --------
-    armi.nuclearDataIO.compxs
+    armi.nuclearDataIO.cccc.compxs
     """
 
     @staticmethod
