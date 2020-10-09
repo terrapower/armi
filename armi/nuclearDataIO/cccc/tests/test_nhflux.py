@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test reading of NHFLUX dataset."""
+"""Test reading/writing of NHFLUX dataset."""
 import os
 import shutil
 import subprocess
@@ -162,6 +162,16 @@ class TestNHFLUX(unittest.TestCase):
         self.assertAlmostEqual(
             self.nhf.partialCurrentsZ[iNode, iz, j, ig] / 1.6928521e06, 1.0
         )
+
+    def test_write(self):
+        """Verify binary equivalence of written binary file."""
+        nhflux.NhfluxStream.writeBinary(self.nhf, "NHFLUX2")
+        with open(SIMPLE_HEXZ_NHFLUX, "rb") as f1, open("NHFLUX2", "rb") as f2:
+            expectedData = f1.read()
+            actualData = f2.read()
+        for expected, actual in zip(expectedData, actualData):
+            self.assertEqual(expected, actual)
+        os.remove("NHFLUX2")
 
 
 if __name__ == "__main__":
