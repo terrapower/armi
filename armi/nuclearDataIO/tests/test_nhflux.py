@@ -22,7 +22,7 @@ import unittest
 import numpy
 
 from armi import settings
-from armi.nuclearDataIO import NHFLUX
+from armi.nuclearDataIO import nhflux
 
 
 THIS_DIR = os.path.dirname(__file__)
@@ -74,51 +74,35 @@ class TestNHFLUX(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Load NHFLUX data from binary file."""
-        cls.nhf = NHFLUX(fName=SIMPLE_HEXZ_NHFLUX, variant=False)
-        cls.nhf.readAllData()
+        cls.nhf = nhflux.NhfluxStream.readBinary(SIMPLE_HEXZ_NHFLUX)
 
     def test_fc(self):
         """Verify the file control info."""
-        self.assertEqual(self.nhf.fc["ndim"], 3)  # NUMBER OF DIMENSIONS
-        self.assertEqual(self.nhf.fc["ngroup"], 4)  # NUMBER OF ENERGY GROUPS
-        self.assertEqual(
-            self.nhf.fc["ninti"], 5
-        )  # NUMBER OF FIRST DIMENSION FINE MESH INTERVALS
-        self.assertEqual(
-            self.nhf.fc["nintj"], 5
-        )  # NUMBER OF SECOND DIMENSION FINE MESH INTERVALS
-        self.assertEqual(
-            self.nhf.fc["nintk"], 6
-        )  # NUMBER OF THIRD DIMENSION FINE MESH INTERVALS
-        self.assertEqual(
-            self.nhf.fc["nSurf"], 6
-        )  # NUMBER OF XY-PLANE SURFACES PER NODE
-        self.assertEqual(
-            self.nhf.fc["nMom"], 5
-        )  # NUMBER OF FLUX MOMENTS IN NODAL APPROXIMATION
-        self.assertEqual(self.nhf.fc["nintxy"], 19)  # NUMBER OF HEX NODES ON XY-PLANE
-        self.assertEqual(
-            self.nhf.fc["npcxy"], 144
-        )  # NUMBER OF XY-DIRECTED PARTIAL CURRENTS ON XY-PLANE
-        self.assertEqual(self.nhf.fc["iaprx"], 4)  # NH4 FLUX APPROXIMATION IN XY PLANE
-        self.assertEqual(
-            self.nhf.fc["iaprxz"], 3
-        )  # NZ3 (CUBIC) FLUX APPROXIMATION IN AXIAL DIRECTION
+        self.assertEqual(self.nhf.metadata["ndim"], 3)
+        self.assertEqual(self.nhf.metadata["ngroup"], 4)
+        self.assertEqual(self.nhf.metadata["ninti"], 5)
+        self.assertEqual(self.nhf.metadata["nintj"], 5)
+        self.assertEqual(self.nhf.metadata["nintk"], 6)
+        self.assertEqual(self.nhf.metadata["nSurf"], 6)
+        self.assertEqual(self.nhf.metadata["nMom"], 5)
+        self.assertEqual(self.nhf.metadata["nintxy"], 19)
+        self.assertEqual(self.nhf.metadata["npcxy"], 144)
+        self.assertEqual(self.nhf.metadata["iaprx"], 4)
+        self.assertEqual(self.nhf.metadata["iaprxz"], 3)
 
     def test_fluxMoments(self):
         """
         Verify that the flux moments are properly read.
 
-        The flux moments values are manually verified for two nodes. The indices
+        The 5 flux moments values are manually verified for two nodes. The indices
         are converted to zero based from the original by subtracting one.
 
         :req:`REQ77f06870-5923-429c-b3c7-d42f5a24f404`
         """
         # node 1 (ring=1, position=1), axial=3, group=2
         i = 0  # first one in node map (ring=1, position=1)
-        self.assertEqual(
-            self.nhf.geodstCoordMap[i], 13
-        )  # 13 = 2*5 + 2 + 1 => (i=2, j=2)
+        # 13 = 2*5 + 2 + 1 => (i=2, j=2)
+        self.assertEqual(self.nhf.geodstCoordMap[i], 13)
         iz, ig = 2, 1  # zero based
         self.assertTrue(
             numpy.allclose(
@@ -159,10 +143,8 @@ class TestNHFLUX(unittest.TestCase):
 
         # node 14 (ring=2, position=1), axial=4, group=2, surface=1, incoming
         iNode, iSurf = 13, 0
-        ipcpnt = self.nhf.incomingPointersToAllAssemblies[
-            self.nhf.fc["nSurf"] * iNode + iSurf
-        ]
-        iNode1, iSurf1 = divmod(ipcpnt - 1, self.nhf.fc["nSurf"])
+        ipcpnt = self.nhf.incomingPointersToAllAssemblies[iSurf, iNode]
+        iNode1, iSurf1 = divmod(ipcpnt - 1, self.nhf.metadata["nSurf"])
         self.assertEqual(iNode1, 1)  # node 2
         self.assertEqual(iSurf1, 3)  # surface 4
 

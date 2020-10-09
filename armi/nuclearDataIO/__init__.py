@@ -47,7 +47,7 @@ from armi.utils import units
 from armi.nuclearDataIO import cccc
 from armi.physics import neutronics
 
-from .nhflux import NHFLUX, NAFLUX
+from .nhflux import NHFLUX
 
 
 def getExpectedISOTXSFileName(cycle=None, suffix=None, xsID=None):

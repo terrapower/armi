@@ -53,123 +53,11 @@ IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
 
 
-class CCCCRecord(object):
-    """
-    A single record from a CCCC file
-
-    Reads binary information sequentially.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.pos = 0
-        self.intSize = struct.calcsize("i")
-        self.floatSize = struct.calcsize("f")
-
-    def getInt(self):
-        (i,) = struct.unpack("i", self.data[self.pos : self.pos + self.intSize])
-        self.pos += self.intSize
-        return i
-
-    def getFloat(self):
-        (f,) = struct.unpack("f", self.data[self.pos : self.pos + self.floatSize])
-        self.pos += self.floatSize
-        return f
-
-    def getDouble(self):
-        (d,) = struct.unpack("d", self.data[self.pos : self.pos + self.floatSize * 2])
-        self.pos += self.floatSize * 2
-        return d
-
-    def getString(self, length):
-        relevantData = self.data[self.pos : self.pos + length]
-        (s,) = struct.unpack("%ds" % length, relevantData)
-        self.pos += length
-        return s
-
-    def getList(self, ltype, length, strLength=0):
-        if ltype == "int":
-            results = [self.getInt() for _i in range(length)]
-        elif ltype == "float":
-            results = [self.getFloat() for _i in range(length)]
-        elif ltype == "double":
-            results = [self.getDouble() for _i in range(length)]
-        elif ltype == "string":
-            results = [self.getString(strLength).strip() for _i in range(length)]
-        else:
-            print("Do not recognize type: {0}".format(type))
-            return None
-        return results
-
-
-class CCCCReader(object):
-    """
-    Reads a binary file according to CCCC standards.
-    """
-
-    def __init__(self, fName="ISOTXS"):
-        self.intSize = struct.calcsize("i")
-        self.floatSize = struct.calcsize("d")
-        self.f = open(fName, "rb")
-
-    def getInt(self):
-        """
-        Get an integer from the file before we have a record.
-
-        Required for reading a record.
-
-        See Also
-        --------
-        armi.nuclearDataIO.CCCCReader.getInt : gets integers once a record is already read
-        """
-        (i,) = struct.unpack("i", self.f.read(self.intSize))
-        return i
-
-    def getFloat(self):
-        (f,) = struct.unpack("d", self.f.read(self.floatSize))
-        return f
-
-    def getRecord(self):
-        r"""CCCC records start with an int and end with the same int. This int represents the number of bytes
-        that the record is. That makes it easy to read."""
-        numBytes = self.getInt()
-        if numBytes % self.intSize:
-            raise ValueError(
-                "numBytes %d is not a multiple of byte size: %d"
-                % (numBytes, self.intSize)
-            )
-
-        rec = self.f.read(numBytes)
-
-        # now read end of record
-        numBytes2 = self.getInt()
-        if numBytes2 != numBytes:
-            raise ValueError(
-                "numBytes2 %d is not a equal to original byte count: %d"
-                % (numBytes2, numBytes)
-            )
-
-        return CCCCRecord(rec)
-
-    def readFileID(self):
-
-        r"""
-        This reads the file ID record in the binary file.
-
-        This information is currently not used - just getting to the next record.
-
-        """
-
-        fileIdRec = self.getRecord()
-        self.label = fileIdRec.getString(24)
-        _fileID = fileIdRec.getInt()
-
-
 class IORecord(object):
     """
     A single CCCC record.
 
-    Reads, or writes, information to, or from, a stream.
+    Reads or writes information to or from a stream.
 
     Parameters
     ----------
@@ -323,7 +211,7 @@ class IORecord(object):
                 'Cannot pack or unpack the type "{}".'.format(containedType)
             )
         # this little trick will make this work for both reading and writing, yay!
-        if not contents:
+        if contents is None or len(contents) == 0:
             contents = [None for _ in range(length)]
         return [action(contents[ii]) for ii in range(length)]
 
@@ -375,6 +263,11 @@ class IORecord(object):
         This can be important for performance when reading large matrices (e.g. scatter
         matrices). It may be worth investigating ``numpy.frombuffer`` on read and
         something similar on write.
+
+        It seems that with shape, the first shape argument should be the outermost loop.
+
+        So if you have ``((MR(I,J),I=1,NCINTI),J=1,NCINTJ)`` you would pass in
+        the shape as (NCINTJ, NCINTI).
         """
         fortranShape = list(reversed(shape))
         if contents is None or contents.size == 0:
@@ -392,7 +285,7 @@ class IORecord(object):
         """
         for key in keys:
             # ready for some implicit madness from the FORTRAN 77 days?
-            if key[0] in IMPLICIT_INT:
+            if key[0].upper() in IMPLICIT_INT:
                 contents[key] = self.rwInt(contents[key])
             else:
                 contents[key] = self.rwFloat(contents[key])
