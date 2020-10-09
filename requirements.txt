@@ -15,3 +15,4 @@ future
 configparser
 voluptuous
 pympler
+coverage

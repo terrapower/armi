@@ -44,6 +44,8 @@ from matplotlib.collections import PatchCollection
 from armi.nuclearDataIO import cccc, nuclearFileMetadata
 from armi.reactor import locations
 
+RTFLUX = "RTFLUX"
+ATFLUX = "ATFLUX"
 
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
@@ -151,12 +153,9 @@ class RtfluxStream(cccc.Stream):
         Read/write File specifications on 1D record.
         """
         with self.createRecord() as record:
-            for key in FILE_SPEC_1D_KEYS:
-                # ready for some implicit madness from the FORTRAN 77 days?
-                if key[0] in cccc.IMPLICIT_INT:
-                    self._metadata[key] = record.rwInt(self._metadata[key])
-                else:
-                    self._metadata[key] = record.rwFloat(self._metadata[key])
+            self._metadata.update(
+                record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
+            )
 
     def _rw2DRecord(self):
         """

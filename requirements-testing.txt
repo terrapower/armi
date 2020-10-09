@@ -3,7 +3,6 @@ pytest
 pytest-xdist
 pytest-cov
 pytest-html
-coverage
 pylint
 docutils
 sphinx>=2.2

@@ -13,11 +13,13 @@ Examples
 >>> rzflux.writeBinary(flux, "RZFLUX2")
 >>> rzflux.writeAscii(flux, "RZFLUX2.ascii")
 """
+from enum import Enum
 
 import numpy
 
 from armi.nuclearDataIO import cccc, nuclearFileMetadata
 
+RZFLUX = "RZFLUX"
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
     "TIME",
@@ -41,6 +43,15 @@ FILE_SPEC_1D_KEYS = (
     "NGROUP",
     "NCY",
 )
+
+
+class Convergence(Enum):
+    """Convergence behavior flags for ITPS from RZFLUX file."""
+
+    NO_ITERATIONS = 0
+    CONVERGED = 1
+    CONVERGING = 2
+    DIVERGING = 3
 
 
 class RzfluxData:
@@ -130,12 +141,8 @@ class RzfluxStream(cccc.Stream):
         Read/write File specifications on 1D record.
         """
         with self.createRecord() as record:
-            for key in FILE_SPEC_1D_KEYS:
-                # ready for some implicit madness from the FORTRAN 77 days?
-                if key[0] in cccc.IMPLICIT_INT:
-                    self._metadata[key] = record.rwInt(self._metadata[key])
-                else:
-                    self._metadata[key] = record.rwFloat(self._metadata[key])
+            vals = record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
+            self._metadata.update(vals)
 
     def _rw2DRecord(self):
         """

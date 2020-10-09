@@ -51,6 +51,7 @@ from armi import runLog
 from armi.nuclearDataIO import cccc
 from armi.nuclearDataIO import nuclearFileMetadata
 
+LABELS = "LABELS"
 
 FILE_SPEC_1D_KEYS = [
     "numZones",

@@ -68,6 +68,9 @@ class _Metadata(object):
         """Returns keys similar to the dict implementation."""
         return self._data.keys()
 
+    def values(self):
+        return self._data.values()
+
     def update(self, other):
         """Updates the underlying dictionary, similar to the dict implementation."""
         self._data.update(other._data)  # pylint: disable=protected-access

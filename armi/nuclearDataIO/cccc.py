@@ -40,6 +40,7 @@ import itertools
 import struct
 import os
 from copy import deepcopy
+from typing import List
 
 import numpy
 
@@ -379,6 +380,20 @@ class IORecord(object):
         for index in itertools.product(*[range(ii) for ii in shape]):
             fortranIndex = tuple(reversed(index))
             contents[fortranIndex] = func(contents[fortranIndex])
+        return contents
+
+    def rwImplicitlyTypedMap(self, keys: List[str], contents) -> dict:
+        """
+        Read a dict of floats and/or ints with FORTRAN77-style implicit typing.
+
+        Length of list is determined by length of list of keys passed in.
+        """
+        for key in keys:
+            # ready for some implicit madness from the FORTRAN 77 days?
+            if key[0] in IMPLICIT_INT:
+                contents[key] = self.rwInt(contents[key])
+            else:
+                contents[key] = self.rwFloat(contents[key])
         return contents
 
 

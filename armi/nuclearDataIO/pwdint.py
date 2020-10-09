@@ -16,6 +16,8 @@ import numpy
 
 from armi.nuclearDataIO import cccc, nuclearFileMetadata
 
+PWDINT = "PWDINT"
+
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
     "TIME",
@@ -110,11 +112,9 @@ class PwdintStream(cccc.Stream):
         Read/write File specifications on 1D record.
         """
         with self.createRecord() as record:
-            for key in FILE_SPEC_1D_KEYS:
-                if key[0] in cccc.IMPLICIT_INT:
-                    self._metadata[key] = record.rwInt(self._metadata[key])
-                else:
-                    self._metadata[key] = record.rwFloat(self._metadata[key])
+            self._metadata.update(
+                record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
+            )
 
     def _rw2DRecord(self):
         """Read/write power density by mesh point."""

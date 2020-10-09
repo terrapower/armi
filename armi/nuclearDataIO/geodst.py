@@ -20,6 +20,8 @@ import numpy
 
 from armi.nuclearDataIO import cccc, nuclearFileMetadata
 
+GEODST = "GEODST"
+
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
     "IGOM",
