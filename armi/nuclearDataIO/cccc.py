@@ -47,6 +47,8 @@ import numpy
 from armi.localization import exceptions
 from armi import runLog
 
+from . import nuclearFileMetadata
+
 IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
 
@@ -702,6 +704,57 @@ class Stream(object):
     @classmethod
     def _write(cls, lib, fileName, fileMode):
         raise NotImplementedError()
+
+
+class DataContainer:
+    """
+    Data representation that can be read/written to/from with a Stream.
+
+    This is an optional convenience class expected to be used in
+    concert with :py:class:`StreamWithDataStructure`.
+    """
+
+    def __init__(self):
+        # Need Metadata subclass for default keys
+        self.metadata = nuclearFileMetadata._Metadata()
+
+
+class StreamWithDataContainer(Stream):
+    """
+    A stream that reads/writes to a specialized data container.
+
+    This is a relatively common pattern so some of the boilerplate
+    is handled here.
+    """
+
+    def __init__(self, data: DataContainer, fileName: str, fileMode: str):
+        Stream.__init__(self, fileName, fileMode)
+        self._data = data
+        self._metadata = self._data.metadata
+
+    @staticmethod
+    def _getDataContainer() -> DataContainer:
+        raise NotImplementedError()
+
+    @classmethod
+    def _read(cls, fileName: str, fileMode: str):
+        data = cls._getDataContainer()
+        return cls._readWrite(
+            data,
+            fileName,
+            fileMode,
+        )
+
+    # pylint: disable=arguments-differ
+    @classmethod
+    def _write(cls, data: DataContainer, fileName: str, fileMode: str):
+        return cls._readWrite(data, fileName, fileMode)
+
+    @classmethod
+    def _readWrite(cls, data: DataContainer, fileName: str, fileMode: str):
+        with cls(data, fileName, fileMode) as rw:
+            rw.readWrite()
+        return data
 
 
 def getBlockBandwidth(m, nintj, nblok):

@@ -49,7 +49,6 @@ Reference: [DIF3D]_.
 
 from armi import runLog
 from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import nuclearFileMetadata
 
 LABELS = "LABELS"
 
@@ -79,7 +78,7 @@ FILE_SPEC_1D_KEYS = [
 ]
 
 
-class LabelsData:
+class LabelsData(cccc.DataContainer):
     """
     Data structure containing various region, zone, area, nuclide labels.
 
@@ -87,9 +86,7 @@ class LabelsData:
     """
 
     def __init__(self):
-        # Need Metadata subclass for default keys
-        self.metadata = nuclearFileMetadata._Metadata()
-
+        cccc.DataContainer.__init__(self)
         self.regionLabels = []
         self.zoneLabels = []
         self.areaLabels = []
@@ -102,7 +99,7 @@ class LabelsData:
         self.aliasZoneLabels = []
 
 
-class LabelsStream(cccc.Stream):
+class LabelsStream(cccc.StreamWithDataContainer):
     """
     Class for reading and writing the LABELS interface file produced by DIF3D/VARIANT.
 
@@ -116,30 +113,9 @@ class LabelsStream(cccc.Stream):
     armi.nuclearDataIO.compxs
     """
 
-    def __init__(self, labels: LabelsData, fileName: str, fileMode: str):
-        cccc.Stream.__init__(self, fileName, fileMode)
-        self._labels = labels
-        self._metadata = self._labels.metadata
-
-    @classmethod
-    def _read(cls, fileName: str, fileMode: str) -> LabelsData:
-        labels = LabelsData()
-        return cls._readWrite(
-            labels,
-            fileName,
-            fileMode,
-        )
-
-    # pylint: disable=arguments-differ
-    @classmethod
-    def _write(cls, labels: LabelsData, fileName: str, fileMode: str):
-        return cls._readWrite(labels, fileName, fileMode)
-
-    @classmethod
-    def _readWrite(cls, labels, fileName: str, fileMode: str) -> LabelsData:
-        with cls(labels, fileName, fileMode) as rw:
-            rw.readWrite()
-        return labels
+    @staticmethod
+    def _getDataContainer() -> LabelsData:
+        return LabelsData()
 
     def readWrite(self):
         runLog.info(
@@ -186,20 +162,20 @@ class LabelsStream(cccc.Stream):
     def _rw2DRecord(self):
         """Read/write the label and area data"""
         with self.createRecord() as record:
-            self._labels.zoneLabels = record.rwList(
-                self._labels.zoneLabels, "string", self._metadata["numZones"], 8
+            self._data.zoneLabels = record.rwList(
+                self._data.zoneLabels, "string", self._metadata["numZones"], 8
             )
-            self._labels.regionLabels = record.rwList(
-                self._labels.regionLabels,
+            self._data.regionLabels = record.rwList(
+                self._data.regionLabels,
                 "string",
                 self._metadata["numRegions"],
                 8,
             )
-            self._labels.areaLabels = record.rwList(
-                self._labels.areaLabels, "string", self._metadata["numAreas"], 8
+            self._data.areaLabels = record.rwList(
+                self._data.areaLabels, "string", self._metadata["numAreas"], 8
             )
-            self._labels.regionAreaAssignments = record.rwList(
-                self._labels.regionAreaAssignments,
+            self._data.regionAreaAssignments = record.rwList(
+                self._data.regionAreaAssignments,
                 "string",
                 self._metadata["numRegionAreaAssignments"],
                 8,
@@ -208,23 +184,23 @@ class LabelsStream(cccc.Stream):
     def _rw3DRecord(self):
         """Read/write the finite-geometry transverse distances."""
         with self.createRecord() as record:
-            self._labels.halfHeightsDirection1 = record.rwList(
-                self._labels.halfHeightsDirection1,
+            self._data.halfHeightsDirection1 = record.rwList(
+                self._data.halfHeightsDirection1,
                 "float",
                 self._metadata["numHalfHeightsDirection1"],
             )
-            self._labels.extrapolationDistance1 = record.rwList(
-                self._labels.extrapolationDistance1,
+            self._data.extrapolationDistance1 = record.rwList(
+                self._data.extrapolationDistance1,
                 "float",
                 self._metadata["numHalfHeightsDirection1"],
             )
-            self._labels.halfHeightsDirection2 = record.rwList(
-                self._labels.halfHeightsDirection2,
+            self._data.halfHeightsDirection2 = record.rwList(
+                self._data.halfHeightsDirection2,
                 "float",
                 self._metadata["numHalfHeightsDirection2"],
             )
-            self._labels.extrapolationDistance2 = record.rwList(
-                self._labels.extrapolationDistance2,
+            self._data.extrapolationDistance2 = record.rwList(
+                self._data.extrapolationDistance2,
                 "float",
                 self._metadata["numHalfHeightsDirection2"],
             )
@@ -232,8 +208,8 @@ class LabelsStream(cccc.Stream):
     def _rw4DRecord(self):
         """Read/write the nuclide labels."""
         with self.createRecord() as record:
-            self._labels.nuclideSetLabels = record.rwList(
-                self._labels.nuclideSetLabels,
+            self._data.nuclideSetLabels = record.rwList(
+                self._data.nuclideSetLabels,
                 "string",
                 self._metadata["numNuclideSets"],
                 8,
@@ -242,8 +218,8 @@ class LabelsStream(cccc.Stream):
     def _rw5DRecord(self):
         """Read/write the zone aliases."""
         with self.createRecord() as record:
-            self._labels.aliasZoneLabels = record.rwList(
-                self._labels.aliasZoneLabels,
+            self._data.aliasZoneLabels = record.rwList(
+                self._data.aliasZoneLabels,
                 "string",
                 self._metadata["numZoneAliases"],
                 8,
