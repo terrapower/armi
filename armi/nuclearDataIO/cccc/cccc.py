@@ -497,7 +497,10 @@ class DataContainer:
 
 
 class Stream(object):
-    r"""An abstract CCCC IO stream.
+    """
+    An abstract CCCC IO stream.
+
+    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
 
     Notes
     -----
@@ -513,7 +516,8 @@ class Stream(object):
     }
 
     def __init__(self, fileName, fileMode):
-        """Create an instance of a :py:class:`~armi.nuclearDataIO.cccc.Stream`.
+        """
+        Create an instance of a :py:class:`~armi.nuclearDataIO.cccc.Stream`.
 
         Parameters
         ----------
@@ -602,6 +606,13 @@ class StreamWithDataContainer(Stream):
 
     This is a relatively common pattern so some of the boilerplate
     is handled here.
+
+    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
+
+    Notes
+    -----
+    It should be possible to fully merge this with ``Stream``, which may make
+    this a little less confusing.
     """
 
     def __init__(self, data: DataContainer, fileName: str, fileMode: str):
