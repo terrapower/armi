@@ -485,7 +485,7 @@ class AsciiRecordWriter(IORecord):
 
 class DataContainer:
     """
-    Data representation that can be read/written to/from with a Stream.
+    Data representation that can be read/written to/from with a cccc.Stream.
 
     This is an optional convenience class expected to be used in
     concert with :py:class:`StreamWithDataStructure`.
@@ -598,7 +598,7 @@ class Stream(object):
 
 class StreamWithDataContainer(Stream):
     """
-    A stream that reads/writes to a specialized data container.
+    A cccc.Stream that reads/writes to a specialized data container.
 
     This is a relatively common pattern so some of the boilerplate
     is handled here.

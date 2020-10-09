@@ -618,7 +618,7 @@ class Core(composites.Composite):
             return nRings * (nRings - 1) + (nRings + 1) // 2
 
     def getNumEnergyGroups(self):
-        """ "
+        """
         Return the number of energy groups used in the problem
 
         See Also
