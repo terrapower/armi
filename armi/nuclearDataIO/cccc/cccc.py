@@ -244,7 +244,10 @@ class IORecord(object):
         matrices). It may be worth investigating ``numpy.frombuffer`` on read and
         something similar on write.
 
-        It seems that with shape, the first shape argument should be the outermost loop.
+        With shape, the first shape argument should be the outermost loop because
+        these are stored in column major order (the FORTRAN way).
+
+        Note that numpy.ndarrays can be built with ``order="F"`` to have column-major ordering.
 
         So if you have ``((MR(I,J),I=1,NCINTI),J=1,NCINTJ)`` you would pass in
         the shape as (NCINTJ, NCINTI).

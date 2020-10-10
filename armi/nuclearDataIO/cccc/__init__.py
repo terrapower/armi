@@ -6,7 +6,7 @@ establish some standard file formats to exchange reactor descriptions and reacto
 quantities. They formed the Committee on Computer Code Coordination (CCCC) and issued
 several versions of their standards. The latest was issued in 1977 as [CCCC-IV]_. Many
 reactor codes to this day use these files. This package provides a Python abstraction to
-read many (though not necessarily all) of these files, manipulate the data writing, and
+read many (though not necessarily all) of these files, manipulate the data, and
 write them back out to disk.
 
 .. [CCCC-IV] R. Douglas O'Dell, "Standard Interface Files and Procedures for Reactor Physics
@@ -55,7 +55,9 @@ data classes.
 Notes
 -----
 A CCCC record consists of a leading and ending integer, which indicates the size of the record in
-bytes. As a result, it is possible to perform a check when reading in a record to determine if it
+bytes. (This is actually just FORTRAN unformatted sequential files are written, see e.g. 
+https://gcc.gnu.org/onlinedocs/gfortran/File-format-of-unformatted-sequential-files.html) 
+As a result, it is possible to perform a check when reading in a record to determine if it
 was read correctly, by making sure the record size at the beginning and ending of a record are
 always equal.
 
