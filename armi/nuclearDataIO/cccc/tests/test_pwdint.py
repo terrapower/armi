@@ -4,7 +4,7 @@ Test PWDINT reading and writing.
 import unittest
 import os
 
-from armi.nuclearDataIO import pwdint
+from armi.nuclearDataIO.cccc import pwdint
 
 THIS_DIR = os.path.dirname(__file__)
 SIMPLE_PWDINT = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.pwdint")

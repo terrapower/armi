@@ -141,7 +141,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         The new assemblies must have appropriately mapped number densities as
         input for a neutronics solve. They must also have other relevant
-        state parameters for follow-on steps. Thus, this maps many parameters 
+        state parameters for follow-on steps. Thus, this maps many parameters
         from the ARMI mesh to the uniform mesh.
 
         See Also
@@ -279,7 +279,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     Notes
     -----
     If a case runs where two mesh conversions happen one after the other
-    (e.g. a fixed source gamma transport step that needs appropriate 
+    (e.g. a fixed source gamma transport step that needs appropriate
     fission rates), it is essential that the neutronics params be
     mapped onto the newly converted reactor as well as off of it
     back to the source reactor.
@@ -372,7 +372,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
         def adjointFluxGetter(block, _paramNames):
             val = block.p.adjMgFlux
-            if not val:
+            if val is None or len(val) == 0:
                 # so the merger can detect and just use incremental value.
                 return None
             else:

@@ -41,9 +41,11 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 
-from armi.nuclearDataIO import cccc, nuclearFileMetadata
+from armi.nuclearDataIO import cccc
 from armi.reactor import locations
 
+RTFLUX = "RTFLUX"
+ATFLUX = "ATFLUX"
 
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
@@ -59,7 +61,7 @@ FILE_SPEC_1D_KEYS = (
 )
 
 
-class RtfluxData:
+class RtfluxData(cccc.DataContainer):
     """
     Multigroup flux as a function of i,j,k and g indices.
 
@@ -69,14 +71,13 @@ class RtfluxData:
     """
 
     def __init__(self):
-        # Need Metadata subclass for default keys
-        self.metadata = nuclearFileMetadata._Metadata()
+        cccc.DataContainer.__init__(self)
 
         self.groupFluxes: numpy.ndarray = numpy.array([])
         """Maps i,j,k,g indices to total real or adjoint flux in n/cm^2-s"""
 
 
-class RtfluxStream(cccc.Stream):
+class RtfluxStream(cccc.StreamWithDataContainer):
     """
     Stream for reading/writing a RTFLUX or ATFLUX file.
 
@@ -92,34 +93,9 @@ class RtfluxStream(cccc.Stream):
 
     """
 
-    def __init__(self, flux: RtfluxData, fileName: str, fileMode: str):
-        cccc.Stream.__init__(self, fileName, fileMode)
-        self._flux = flux
-        self._metadata = self._getFileMetadata()
-
-    def _getFileMetadata(self):
-        return self._flux.metadata
-
-    @classmethod
-    def _read(cls, fileName: str, fileMode: str) -> RtfluxData:
-        """Specialize the parent by adding a fresh RtfluxData"""
-        flux = RtfluxData()
-        return cls._readWrite(
-            flux,
-            fileName,
-            fileMode,
-        )
-
-    # pylint: disable=arguments-differ
-    @classmethod
-    def _write(cls, flux: RtfluxData, fileName: str, fileMode: str):
-        return cls._readWrite(flux, fileName, fileMode)
-
-    @classmethod
-    def _readWrite(cls, flux: RtfluxData, fileName: str, fileMode: str) -> RtfluxData:
-        with cls(flux, fileName, fileMode) as rw:
-            rw.readWrite()
-        return flux
+    @staticmethod
+    def _getDataContainer() -> RtfluxData:
+        return RtfluxData()
 
     def readWrite(self):
         """
@@ -151,12 +127,9 @@ class RtfluxStream(cccc.Stream):
         Read/write File specifications on 1D record.
         """
         with self.createRecord() as record:
-            for key in FILE_SPEC_1D_KEYS:
-                # ready for some implicit madness from the FORTRAN 77 days?
-                if key[0] in cccc.IMPLICIT_INT:
-                    self._metadata[key] = record.rwInt(self._metadata[key])
-                else:
-                    self._metadata[key] = record.rwFloat(self._metadata[key])
+            self._metadata.update(
+                record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
+            )
 
     def _rw2DRecord(self):
         """
@@ -177,8 +150,8 @@ class RtfluxStream(cccc.Stream):
         kmax = self._metadata["NINTK"]
         nblck = self._metadata["NBLOK"]
 
-        if self._flux.groupFluxes.size == 0:
-            self._flux.groupFluxes = numpy.zeros((imax, jmax, kmax, ng))
+        if self._data.groupFluxes.size == 0:
+            self._data.groupFluxes = numpy.zeros((imax, jmax, kmax, ng))
 
         for gi in range(ng):
             gEff = self.getEnergyGroupIndex(gi)
@@ -190,10 +163,10 @@ class RtfluxStream(cccc.Stream):
                     numZonesInBlock = jUp - jLow + 1
                     with self.createRecord() as record:
                         # pass in shape in fortran (read) order
-                        self._flux.groupFluxes[
+                        self._data.groupFluxes[
                             :, jLow : jUp + 1, k, gEff
                         ] = record.rwDoubleMatrix(
-                            self._flux.groupFluxes[:, jLow : jUp + 1, k, gEff],
+                            self._data.groupFluxes[:, jLow : jUp + 1, k, gEff],
                             numZonesInBlock,
                             imax,
                         )

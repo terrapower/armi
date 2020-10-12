@@ -11,7 +11,7 @@ from armi.physics.neutronics.globalFlux import globalFluxInterface
 from armi.reactor.tests import test_reactors
 from armi.reactor.tests import test_blocks
 from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=abstract-method
@@ -172,7 +172,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
         """
         Test that the reaction rate code executes and sets a param > 0.0.
-        
+
         .. warning: This does not validate the reaction rate calculation.
         """
         b = test_blocks.loadTestBlock()

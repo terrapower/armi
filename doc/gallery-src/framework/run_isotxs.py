@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from armi.physics.neutronics import energyGroups
 from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 import armi
 
 armi.configure()

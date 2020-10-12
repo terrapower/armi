@@ -21,7 +21,7 @@ regions in a full core. The file format can be found in [DIF3D]_.
            report, April 1984; Argonne, Illinois. 
            (https://digital.library.unt.edu/ark:/67531/metadc283553/: 
            accessed October 17, 2019), University of North Texas Libraries, 
-           Digital Library, https://digital.library.unt.edu; crediting UNT 
+           Digital Library, https://digital.library.unt.edu; crediting UNT  
            Libraries Government Documents Department. 
 
 The file structure is listed here ::
@@ -43,7 +43,7 @@ The file structure is listed here ::
 
 See Also
 --------
-:py:mod:`armi.nuclearDataIO.isotxs`
+:py:mod:`armi.nuclearDataIO.cccc.isotxs`
 
 Examples
 --------
@@ -165,7 +165,7 @@ class _CompxsIO(cccc.Stream):
 
     See Also
     --------
-    armi.nuclearDataIO.isotxs._IsotxsIO
+    armi.nuclearDataIO.cccc.isotxs._IsotxsIO
     """
 
     _METADATA_TAGS = (
@@ -226,7 +226,7 @@ class _CompxsIO(cccc.Stream):
 
         See Also
         --------
-        armi.nuclearDataIO.isotxs._IsotxsIO.readWrite : reading/writing ISOTXS files
+        armi.nuclearDataIO.cccc.isotxs._IsotxsIO.readWrite : reading/writing ISOTXS files
         """
 
         runLog.info(
@@ -528,7 +528,7 @@ class CompxsRegion(object):
         compFamiliesWithPrecursors = self._getFileMetadata()[
             "compFamiliesWithPrecursors"
         ]
-        if compFamiliesWithPrecursors:
+        if compFamiliesWithPrecursors is not None and compFamiliesWithPrecursors.size:
             specs["numPrecursorFamilies"] = compFamiliesWithPrecursors[
                 self.regionNumber
             ]

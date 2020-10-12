@@ -18,7 +18,9 @@ Examples
 
 import numpy
 
-from armi.nuclearDataIO import cccc, nuclearFileMetadata
+from armi.nuclearDataIO import cccc
+
+GEODST = "GEODST"
 
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
@@ -52,7 +54,7 @@ FILE_SPEC_1D_KEYS = (
 )
 
 
-class GeodstData:
+class GeodstData(cccc.DataContainer):
     """
     Data representation that can be read from or written to a GEODST file.
 
@@ -66,8 +68,7 @@ class GeodstData:
     """
 
     def __init__(self):
-        # Need Metadata subclass for default keys
-        self.metadata = nuclearFileMetadata._Metadata()
+        cccc.DataContainer.__init__(self)
 
         # 4D data
         self.xmesh = None
@@ -93,7 +94,7 @@ class GeodstData:
         self.fineMeshRegions = None
 
 
-class GeodstStream(cccc.Stream):
+class GeodstStream(cccc.StreamWithDataContainer):
     """
     Stream for reading to/writing from with GEODST data.
 
@@ -109,34 +110,9 @@ class GeodstStream(cccc.Stream):
 
     """
 
-    def __init__(self, geom: GeodstData, fileName: str, fileMode: str):
-        cccc.Stream.__init__(self, fileName, fileMode)
-        self.fc = {}  # file control info (sort of global for this library)
-        self._geom = geom
-        self._metadata = self._getFileMetadata()
-
-    def _getFileMetadata(self):
-        return self._geom.metadata
-
-    @classmethod
-    def _read(cls, fileName: str, fileMode: str) -> GeodstData:
-        geom = GeodstData()
-        return cls._readWrite(
-            geom,
-            fileName,
-            fileMode,
-        )
-
-    # pylint: disable=arguments-differ
-    @classmethod
-    def _write(cls, geom: GeodstData, fileName: str, fileMode: str):
-        return cls._readWrite(geom, fileName, fileMode)
-
-    @classmethod
-    def _readWrite(cls, geom: GeodstData, fileName: str, fileMode: str) -> GeodstData:
-        with cls(geom, fileName, fileMode) as rw:
-            rw.readWrite()
-        return geom
+    @staticmethod
+    def _getDataContainer() -> GeodstData:
+        return GeodstData()
 
     def readWrite(self):
         """
@@ -203,58 +179,58 @@ class GeodstStream(cccc.Stream):
         """Read/write 3-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
 
-            self._geom.xmesh = record.rwList(
-                self._geom.xmesh, "double", self._metadata["NCINTI"] + 1
+            self._data.xmesh = record.rwList(
+                self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )
-            self._geom.ymesh = record.rwList(
-                self._geom.ymesh, "double", self._metadata["NCINTJ"] + 1
+            self._data.ymesh = record.rwList(
+                self._data.ymesh, "double", self._metadata["NCINTJ"] + 1
             )
-            self._geom.zmesh = record.rwList(
-                self._geom.zmesh, "double", self._metadata["NCINTK"] + 1
+            self._data.zmesh = record.rwList(
+                self._data.zmesh, "double", self._metadata["NCINTK"] + 1
             )
-            self._geom.iintervals = record.rwList(
-                self._geom.iintervals, "int", self._metadata["NCINTI"]
+            self._data.iintervals = record.rwList(
+                self._data.iintervals, "int", self._metadata["NCINTI"]
             )
-            self._geom.jintervals = record.rwList(
-                self._geom.jintervals, "int", self._metadata["NCINTJ"]
+            self._data.jintervals = record.rwList(
+                self._data.jintervals, "int", self._metadata["NCINTJ"]
             )
-            self._geom.kintervals = record.rwList(
-                self._geom.kintervals, "int", self._metadata["NCINTK"]
+            self._data.kintervals = record.rwList(
+                self._data.kintervals, "int", self._metadata["NCINTK"]
             )
 
     def _rw5DRecord(self):
         """Read/write Geometry data from 5D record."""
         with self.createRecord() as record:
-            self._geom.regionVolumes = record.rwList(
-                self._geom.regionVolumes, "float", self._metadata["NREG"]
+            self._data.regionVolumes = record.rwList(
+                self._data.regionVolumes, "float", self._metadata["NREG"]
             )
-            self._geom.bucklings = record.rwList(
-                self._geom.bucklings, "float", self._metadata["NBS"]
+            self._data.bucklings = record.rwList(
+                self._data.bucklings, "float", self._metadata["NBS"]
             )
-            self._geom.boundaryConstants = record.rwList(
-                self._geom.boundaryConstants, "float", self._metadata["NBCS"]
+            self._data.boundaryConstants = record.rwList(
+                self._data.boundaryConstants, "float", self._metadata["NBCS"]
             )
-            self._geom.internalBlackBoundaryConstants = record.rwList(
-                self._geom.internalBlackBoundaryConstants,
+            self._data.internalBlackBoundaryConstants = record.rwList(
+                self._data.internalBlackBoundaryConstants,
                 "float",
                 self._metadata["NIBCS"],
             )
-            self._geom.zonesWithBlackAbs = record.rwList(
-                self._geom.zonesWithBlackAbs, "int", self._metadata["NZWBB"]
+            self._data.zonesWithBlackAbs = record.rwList(
+                self._data.zonesWithBlackAbs, "int", self._metadata["NZWBB"]
             )
-            self._geom.zoneClassifications = record.rwList(
-                self._geom.zoneClassifications, "int", self._metadata["NZONE"]
+            self._data.zoneClassifications = record.rwList(
+                self._data.zoneClassifications, "int", self._metadata["NZONE"]
             )
-            self._geom.regionZoneNumber = record.rwList(
-                self._geom.regionZoneNumber, "int", self._metadata["NREG"]
+            self._data.regionZoneNumber = record.rwList(
+                self._data.regionZoneNumber, "int", self._metadata["NREG"]
             )
 
     def _rw6DRecord(self):
         """Read/write region assignments to coarse mesh interval."""
-        if self._geom.coarseMeshRegions is None:
+        if self._data.coarseMeshRegions is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._geom.coarseMeshRegions = numpy.zeros(
+            self._data.coarseMeshRegions = numpy.zeros(
                 (
                     self._metadata["NCINTI"],
                     self._metadata["NCINTJ"],
@@ -264,18 +240,18 @@ class GeodstStream(cccc.Stream):
             )
         for ki in range(self._metadata["NCINTK"]):
             with self.createRecord() as record:
-                self._geom.coarseMeshRegions[:, :, ki] = record.rwIntMatrix(
-                    self._geom.coarseMeshRegions[:, :, ki],
+                self._data.coarseMeshRegions[:, :, ki] = record.rwIntMatrix(
+                    self._data.coarseMeshRegions[:, :, ki],
                     self._metadata["NCINTJ"],
                     self._metadata["NCINTI"],
                 )
 
     def _rw7DRecord(self):
         """Read/write region assignments to fine mesh interval."""
-        if self._geom.fineMeshRegions is None:
+        if self._data.fineMeshRegions is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._geom.fineMeshRegions = numpy.zeros(
+            self._data.fineMeshRegions = numpy.zeros(
                 (
                     self._metadata["NINTI"],
                     self._metadata["NINTJ"],
@@ -285,8 +261,8 @@ class GeodstStream(cccc.Stream):
             )
         for ki in range(self._metadata["NINTK"]):
             with self.createRecord() as record:
-                self._geom.fineMeshRegions[:, :, ki] = record.rwIntMatrix(
-                    self._geom.fineMeshRegions[:, :, ki],
+                self._data.fineMeshRegions[:, :, ki] = record.rwIntMatrix(
+                    self._data.fineMeshRegions[:, :, ki],
                     self._metadata["NINTJ"],
                     self._metadata["NINTI"],
                 )

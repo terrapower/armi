@@ -26,7 +26,7 @@ See [GAMSOR]_.
 """
 
 from armi import runLog
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import xsNuclides
 

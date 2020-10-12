@@ -717,5 +717,7 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
                         continue
                     _sourceDir, sourceName = os.path.split(sourceFullPath)
                     pathTools.copyOrWarn(
-                        label, sourceFullPath, os.path.join(destination, sourceName),
+                        label,
+                        sourceFullPath,
+                        os.path.join(destination, sourceName),
                     )

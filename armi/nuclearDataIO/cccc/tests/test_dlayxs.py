@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-
+Tests for DELAYXS
 """
 import unittest
 import copy
@@ -23,7 +23,7 @@ import filecmp
 import numpy
 
 from armi.tests import mockRunLogs
-from armi.nuclearDataIO import dlayxs
+from armi.nuclearDataIO.cccc import dlayxs
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.tests import test_xsLibraries
 from armi.tests import requires_fixture

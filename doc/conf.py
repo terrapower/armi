@@ -35,9 +35,10 @@ import os
 import sphinx_rtd_theme
 
 # handle python import locations for this execution
-sys.path.append("..")
+PYTHONPATH = os.path.abspath("..")
+sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
-os.environ["PYTHONPATH"] = os.path.abspath("..")
+os.environ["PYTHONPATH"] = PYTHONPATH
 import armi
 from armi.context import RES
 from armi import apps

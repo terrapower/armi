@@ -13,18 +13,7 @@
 # limitations under the License.
 
 """
-This package implements classes for reading and writing **standard interface files for reactor
-physics codes** [CCCC-IV]_.
-
-This module is designed to read/write Fortran record-based binary files that
-comply with the format established by the Committee on Computer Code Coordination (CCCC).
-
-.. [CCCC-IV] R. Douglas O'Dell, "Standard Interface Files and Procedures for Reactor Physics
-             Codes, Version IV," LA-6941-MS, Los Alamos National Laboratory (September 1977).
-             Web. doi:10.2172/5369298. (`OSTI <https://www.osti.gov/biblio/5369298>`_)
-
-It may also read other nuclear data I/O formats as appropriate.
-
+Read and/or write data files associated with nuclear data and reactor physics data.
 """
 from __future__ import print_function
 
@@ -47,7 +36,24 @@ from armi.utils import units
 from armi.nuclearDataIO import cccc
 from armi.physics import neutronics
 
-from .nhflux import NHFLUX, NAFLUX
+from armi.nuclearDataIO.cccc.nhflux import NHFLUX
+
+# export the cccc modules here to keep external clients happy,
+# though prefer full imports in new code
+from .cccc import (
+    compxs,
+    dlayxs,
+    fixsrc,
+    gamiso,
+    geodst,
+    isotxs,
+    labels,
+    nhflux,
+    pmatrx,
+    pwdint,
+    rtflux,
+    rzflux,
+)
 
 
 def getExpectedISOTXSFileName(cycle=None, suffix=None, xsID=None):
@@ -187,7 +193,7 @@ def _getGammaKeywords(cycle, suffix, xsID):
 def ISOTXS(fName="ISOTXS"):
     # load a library that is in the ARMI tree. This should
     # be a small library with LFPs, Actinides, structure, and coolant
-    from armi.nuclearDataIO import isotxs
+    from armi.nuclearDataIO.cccc import isotxs
 
     return isotxs.readBinary(fName)
 
@@ -195,7 +201,7 @@ def ISOTXS(fName="ISOTXS"):
 def GAMISO(fName="GAMISO"):
     # load a library that is in the ARMI tree. This should
     # be a small library with LFPs, Actinides, structure, and coolant
-    from armi.nuclearDataIO import gamiso
+    from armi.nuclearDataIO.cccc import gamiso
 
     return gamiso.readBinary(fName)
 
@@ -286,18 +292,6 @@ class VARSRC(NHFLUX):
 
     def _getNumberOfEvenParityTerms(self, pnOrder):
         return pnOrder * (pnOrder + 1) / 2
-
-
-def getNodalFluxReader(adjointFlag):
-    r"""
-    Returns the appropriate DIF3D nodal flux binary file reader class,
-    either NHFLUX (real) or NAFLUX (adjoint).
-    """
-
-    if adjointFlag:
-        return NAFLUX
-    else:
-        return NHFLUX
 
 
 class MacroXS(object):

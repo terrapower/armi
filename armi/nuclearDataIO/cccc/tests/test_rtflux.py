@@ -4,7 +4,7 @@ Test rtflux reading and writing.
 import unittest
 import os
 
-from armi.nuclearDataIO import rtflux
+from armi.nuclearDataIO.cccc import rtflux
 
 THIS_DIR = os.path.dirname(__file__)
 # This rtflux was made by DIF3D 11 in a Cartesian test case.

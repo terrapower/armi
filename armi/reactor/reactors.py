@@ -618,7 +618,7 @@ class Core(composites.Composite):
             return nRings * (nRings - 1) + (nRings + 1) // 2
 
     def getNumEnergyGroups(self):
-        """"
+        """
         Return the number of energy groups used in the problem
 
         See Also
@@ -774,7 +774,7 @@ class Core(composites.Composite):
 
         Notes
         -----
-        Assumes that odd rings do not have an edge assembly in third core geometry. 
+        Assumes that odd rings do not have an edge assembly in third core geometry.
         These should be removed in: self._modifyGeometryAfterLoad during importGeom
 
         """
@@ -966,7 +966,7 @@ class Core(composites.Composite):
 
     def _getAssembliesByName(self):
         """
-        If the assembly name-to-assembly object map is deleted or out of date, then this will 
+        If the assembly name-to-assembly object map is deleted or out of date, then this will
         regenerate it.
         """
         runLog.extra("Generating assemblies-by-name map.")
@@ -1368,7 +1368,7 @@ class Core(composites.Composite):
         Notes
         -----
         Useful in reading the db.
-        
+
         See Also
         --------
         makeLocationLookup : allows caching to speed this up if you call it a lot.
@@ -1983,15 +1983,19 @@ class Core(composites.Composite):
 
     def updateAxialMesh(self):
         """
-        Update axial mesh based on perturbed meshes of all the assemblies.
+        Update axial mesh based on perturbed meshes of the assemblies that are linked to the ref assem.
 
         Notes
         -----
-        While processLoading finds all axial mesh points, this method simply updates the values of the
-        known mesh with the current assembly heights. This does not change the number of mesh points.
+        While processLoading finds *all* axial mesh points, this method only updates the values of the
+        known mesh with the current assembly heights. **This does not change the number of mesh points**.
 
-        If `detailedAxialExpansion` is active, the global axial mesh param still only tracks the refAssem.
+        If ``detailedAxialExpansion`` is active, the global axial mesh param still only tracks the refAssem.
         Otherwise, thousands upon thousands of mesh points would get created.
+
+        See Also
+        --------
+        processLoading : sets up the master mesh that this perturbs.
         """
         # most of the time, we want fuel, but they should mostly have the same number of blocks
         # if this becomes a problem, we might find either the
@@ -1999,7 +2003,7 @@ class Core(composites.Composite):
         #  2. max: max(len(a) for a in self)
         # depending on what makes the most sense
         refAssem = self.refAssem
-
+        refMesh = self.findAllAxialMeshPoints([refAssem])
         avgHeight = utils.average1DWithinTolerance(
             numpy.array(
                 [
@@ -2009,8 +2013,7 @@ class Core(composites.Composite):
                         for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
                     ]
                     for a in self
-                    if self.findAllAxialMeshPoints([a])
-                    == self.findAllAxialMeshPoints([refAssem])
+                    if self.findAllAxialMeshPoints([a]) == refMesh
                 ]
             )
         )
@@ -2191,7 +2194,7 @@ class Core(composites.Composite):
 
     def _buildLocationIndexLookup(self):
         r"""builds lookup to convert ring/pos to index for MCNP or finding neighbors or
-        whatever else you may think of. """
+        whatever else you may think of."""
         self.locationIndexLookup = {}
 
         # make sure to get one extra ring because when neighbors are searched for, it will look
@@ -2440,6 +2443,10 @@ class Core(composites.Composite):
          * sets axial snap lists,
          * checks the geometry,
          * sets up location tables ( tracks where the initial feeds were (for moderation or something)
+
+        See Also
+        --------
+        updateAxialMesh : Perturbs the axial mesh originally set up here.
 
         """
         runLog.header(

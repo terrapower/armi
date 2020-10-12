@@ -14,7 +14,9 @@ Examples
 
 import numpy
 
-from armi.nuclearDataIO import cccc, nuclearFileMetadata
+from armi.nuclearDataIO import cccc
+
+PWDINT = "PWDINT"
 
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
@@ -29,7 +31,7 @@ FILE_SPEC_1D_KEYS = (
 )
 
 
-class PwdintData:
+class PwdintData(cccc.DataContainer):
     """
     Data representation that can be read from or written to a PWDINT file.
 
@@ -38,11 +40,11 @@ class PwdintData:
     """
 
     def __init__(self):
-        self.metadata = nuclearFileMetadata._Metadata()
+        cccc.DataContainer.__init__(self)
         self.powerDensity = numpy.array([])
 
 
-class PwdintStream(cccc.Stream):
+class PwdintStream(cccc.StreamWithDataContainer):
     """
     Stream for reading to/writing from with PWDINT data.
 
@@ -57,34 +59,9 @@ class PwdintStream(cccc.Stream):
         in ascii or binary format
     """
 
-    def __init__(self, power: PwdintData, fileName: str, fileMode: str):
-        cccc.Stream.__init__(self, fileName, fileMode)
-        self.fc = {}  # file control info (sort of global for this library)
-        self._power = power
-        self._metadata = self._getFileMetadata()
-
-    def _getFileMetadata(self):
-        return self._power.metadata
-
-    @classmethod
-    def _read(cls, fileName: str, fileMode: str) -> PwdintData:
-        power = PwdintData()
-        return cls._readWrite(
-            power,
-            fileName,
-            fileMode,
-        )
-
-    # pylint: disable=arguments-differ
-    @classmethod
-    def _write(cls, power: PwdintData, fileName: str, fileMode: str):
-        return cls._readWrite(power, fileName, fileMode)
-
-    @classmethod
-    def _readWrite(cls, power: PwdintData, fileName: str, fileMode: str) -> PwdintData:
-        with PwdintStream(power, fileName, fileMode) as rw:
-            rw.readWrite()
-        return power
+    @staticmethod
+    def _getDataContainer() -> PwdintData:
+        return PwdintData()
 
     def readWrite(self):
         """
@@ -110,11 +87,9 @@ class PwdintStream(cccc.Stream):
         Read/write File specifications on 1D record.
         """
         with self.createRecord() as record:
-            for key in FILE_SPEC_1D_KEYS:
-                if key[0] in cccc.IMPLICIT_INT:
-                    self._metadata[key] = record.rwInt(self._metadata[key])
-                else:
-                    self._metadata[key] = record.rwFloat(self._metadata[key])
+            self._metadata.update(
+                record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
+            )
 
     def _rw2DRecord(self):
         """Read/write power density by mesh point."""
@@ -122,10 +97,10 @@ class PwdintStream(cccc.Stream):
         jmax = self._metadata["NINTJ"]
         kmax = self._metadata["NINTK"]
         nblck = self._metadata["NBLOK"]
-        if self._power.powerDensity.size == 0:
+        if self._data.powerDensity.size == 0:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._power.powerDensity = numpy.zeros(
+            self._data.powerDensity = numpy.zeros(
                 (imax, jmax, kmax),
                 dtype=numpy.float32,
             )
@@ -133,8 +108,8 @@ class PwdintStream(cccc.Stream):
             for bi in range(nblck):
                 jL, jU = cccc.getBlockBandwidth(bi + 1, jmax, nblck)
                 with self.createRecord() as record:
-                    self._power.powerDensity[:, jL : jU + 1, ki] = record.rwMatrix(
-                        self._power.powerDensity[:, jL : jU + 1, ki],
+                    self._data.powerDensity[:, jL : jU + 1, ki] = record.rwMatrix(
+                        self._data.powerDensity[:, jL : jU + 1, ki],
                         jU - jL + 1,
                         imax,
                     )

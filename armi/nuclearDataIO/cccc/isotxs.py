@@ -137,6 +137,9 @@ class _IsotxsIO(cccc.Stream):
 
     Notes
     -----
+    This is a bit of a special case compared to most other CCCC files because of the special
+    nuclide-level container in addition to the XSLibrary container.
+
     The :py:meth:`~armi.nuclearDataIO.isotxs.IsotxsIO.readWrite` defines the ISOTXS file structure as
     specified in http://t2.lanl.gov/codes/transx-hyper/isotxs.html.
     """
@@ -608,8 +611,8 @@ class _IsotxsNuclideIO(object):
             A index of the scatter matrix.
         """
         try:
-            return self._metadata["scatFlag"].index(scatterType)
-        except ValueError:
+            return numpy.where(self._metadata["scatFlag"] == scatterType)[0][0]
+        except IndexError:
             return None
 
     def _getElasticScatterBlockNumIndex(self, legendreOrder=0):

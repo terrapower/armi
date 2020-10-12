@@ -18,12 +18,12 @@ Test the reading and writing of the DIF3D/VARIANT LABELS interface file
 import unittest
 import os
 
-from armi.nuclearDataIO import labels
+from armi.nuclearDataIO.cccc import labels
 
 THIS_DIR = os.path.dirname(__file__)
 
-LABELS_FILE_BIN = os.path.join(THIS_DIR, "labels.binary")
-LABELS_FILE_ASCII = os.path.join(THIS_DIR, "labels.ascii")
+LABELS_FILE_BIN = os.path.join(THIS_DIR, "fixtures", "labels.binary")
+LABELS_FILE_ASCII = os.path.join(THIS_DIR, "fixtures", "labels.ascii")
 
 
 class TestLabels(unittest.TestCase):

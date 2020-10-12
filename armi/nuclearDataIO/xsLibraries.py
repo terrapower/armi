@@ -37,9 +37,10 @@ _ISOTXS_EXT = "ISO"
 
 def compare(lib1, lib2):
     """Compare two XSLibraries, and return True if equal, or False if not."""
-    from armi.nuclearDataIO import isotxs
-    from armi.nuclearDataIO import gamiso
-    from armi.nuclearDataIO import pmatrx
+    # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
+    from armi.nuclearDataIO.cccc import isotxs
+    from armi.nuclearDataIO.cccc import gamiso
+    from armi.nuclearDataIO.cccc import pmatrx
 
     equal = True
     # check the nuclides
@@ -87,13 +88,13 @@ def compareLibraryNeutronEnergies(lib1, lib2, tolerance=0.0):
 
 def getSuffixFromNuclideLabel(nucLabel):
     """
-    Return the xs suffix for the nuclide label. 
-    
+    Return the xs suffix for the nuclide label.
+
     Parameters
     ----------
     nucLabel: str
         A string representing the nuclide and xs suffix, eg, "U235AA"
-        
+
     Returns
     -------
     suffix: str
@@ -164,10 +165,11 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
         If True, the GAMISO and PMATRX files that correspond to the ISOTXS library will be merged. Note: if these
         files do not exist this will fail.
     """
+    # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
+    from armi.nuclearDataIO.cccc import isotxs
+    from armi.nuclearDataIO.cccc import gamiso
+    from armi.nuclearDataIO.cccc import pmatrx
     from armi import nuclearDataIO
-    from armi.nuclearDataIO import isotxs
-    from armi.nuclearDataIO import gamiso
-    from armi.nuclearDataIO import pmatrx
 
     xsLibFiles = getISOTXSLibrariesToMerge(
         xsLibrarySuffix, [iso for iso in glob.glob(_ISOTXS_EXT + "*")]
@@ -201,17 +203,25 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
                 if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
             ]
 
-            gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(suffix=xsLibrarySuffix, xsID=xsID)
-            pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(suffix=xsLibrarySuffix, xsID=xsID)
+            gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(
+                suffix=xsLibrarySuffix, xsID=xsID
+            )
+            pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(
+                suffix=xsLibrarySuffix, xsID=xsID
+            )
 
             # Check if the gamiso and pmatrx data paths exist with the xs library suffix so that
             # these are merged in. If they don't both exist then that is OK and we can just
             # revert back to expecting the files just based on the XS ID.
-            if not (os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)):
-                runLog.warning(f"One of GAMISO or PMATRX data exist for "
-                               f"XS ID {xsID} with suffix {xsLibrarySuffix}. "
-                               f"Attempting to find GAMISO/PMATRX data with "
-                               f"only XS ID {xsID} instead.")
+            if not (
+                os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)
+            ):
+                runLog.warning(
+                    f"One of GAMISO or PMATRX data exist for "
+                    f"XS ID {xsID} with suffix {xsLibrarySuffix}. "
+                    f"Attempting to find GAMISO/PMATRX data with "
+                    f"only XS ID {xsID} instead."
+                )
                 gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID)
                 pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID)
 
@@ -305,9 +315,9 @@ class IsotxsLibrary(_XSLibrary):
 
     See Also
     --------
-    :py:func:`armi.nuclearDataIO.isotxs.readBinary`
-    :py:func:`armi.nuclearDataIO.gamiso.readBinary`
-    :py:func:`armi.nuclearDataIO.pmatrx.readBinary`
+    :py:func:`armi.nuclearDataIO.cccc.isotxs.readBinary`
+    :py:func:`armi.nuclearDataIO.cccc.gamiso.readBinary`
+    :py:func:`armi.nuclearDataIO.cccc.pmatrx.readBinary`
     :py:class:`CompxsLibrary`
 
     Examples
@@ -623,7 +633,7 @@ class CompxsLibrary(_XSLibrary):
     See Also
     --------
     :py:class:`IsotxsLibrary`
-    :py:func:`armi.nuclearDataIO.compxs.readBinary`
+    :py:func:`armi.nuclearDataIO.cccc.compxs.readBinary`
 
     Examples
     --------

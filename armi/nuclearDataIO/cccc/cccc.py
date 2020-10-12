@@ -14,159 +14,30 @@
 
 """
 Standard interface files for reactor physics codes.
-
-This module is designed to read/write Fortran record-based binary files that
-comply with the format established by the Committee on Computer Code
-Coordination (CCCC). [CCCC-IV]_
-
-Notes
------
-A CCCC record consists of a leading and ending integer, which indicates the size of the record in
-bytes. As a result, it is possible to perform a check when reading in a record to determine if it
-was read correctly, by making sure the record size at the beginning and ending of a record are
-always equal.
-
-There are similarities between this code and that in the PyNE cccc subpackage.
-This is the original source of the code. TerraPower authorized the publication
-of some of the CCCC code to the PyNE project way back in the 2011 era. 
-This code has since been updated significantly to both read and 
-write the files.
-
-This was originally created following Prof. James Paul Holloway's alpha
-release of ccccutils written in c++ from 2001. 
 """
 import io
 import itertools
 import struct
 import os
 from copy import deepcopy
+from typing import List
 
 import numpy
 
 from armi.localization import exceptions
 from armi import runLog
 
+from .. import nuclearFileMetadata
+
 IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
-
-
-class CCCCRecord(object):
-    """
-    A single record from a CCCC file
-
-    Reads binary information sequentially.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.pos = 0
-        self.intSize = struct.calcsize("i")
-        self.floatSize = struct.calcsize("f")
-
-    def getInt(self):
-        (i,) = struct.unpack("i", self.data[self.pos : self.pos + self.intSize])
-        self.pos += self.intSize
-        return i
-
-    def getFloat(self):
-        (f,) = struct.unpack("f", self.data[self.pos : self.pos + self.floatSize])
-        self.pos += self.floatSize
-        return f
-
-    def getDouble(self):
-        (d,) = struct.unpack("d", self.data[self.pos : self.pos + self.floatSize * 2])
-        self.pos += self.floatSize * 2
-        return d
-
-    def getString(self, length):
-        relevantData = self.data[self.pos : self.pos + length]
-        (s,) = struct.unpack("%ds" % length, relevantData)
-        self.pos += length
-        return s
-
-    def getList(self, ltype, length, strLength=0):
-        if ltype == "int":
-            results = [self.getInt() for _i in range(length)]
-        elif ltype == "float":
-            results = [self.getFloat() for _i in range(length)]
-        elif ltype == "double":
-            results = [self.getDouble() for _i in range(length)]
-        elif ltype == "string":
-            results = [self.getString(strLength).strip() for _i in range(length)]
-        else:
-            print("Do not recognize type: {0}".format(type))
-            return None
-        return results
-
-
-class CCCCReader(object):
-    """
-    Reads a binary file according to CCCC standards.
-    """
-
-    def __init__(self, fName="ISOTXS"):
-        self.intSize = struct.calcsize("i")
-        self.floatSize = struct.calcsize("d")
-        self.f = open(fName, "rb")
-
-    def getInt(self):
-        """
-        Get an integer from the file before we have a record.
-
-        Required for reading a record.
-
-        See Also
-        --------
-        armi.nuclearDataIO.CCCCReader.getInt : gets integers once a record is already read
-        """
-        (i,) = struct.unpack("i", self.f.read(self.intSize))
-        return i
-
-    def getFloat(self):
-        (f,) = struct.unpack("d", self.f.read(self.floatSize))
-        return f
-
-    def getRecord(self):
-        r"""CCCC records start with an int and end with the same int. This int represents the number of bytes
-        that the record is. That makes it easy to read."""
-        numBytes = self.getInt()
-        if numBytes % self.intSize:
-            raise ValueError(
-                "numBytes %d is not a multiple of byte size: %d"
-                % (numBytes, self.intSize)
-            )
-
-        rec = self.f.read(numBytes)
-
-        # now read end of record
-        numBytes2 = self.getInt()
-        if numBytes2 != numBytes:
-            raise ValueError(
-                "numBytes2 %d is not a equal to original byte count: %d"
-                % (numBytes2, numBytes)
-            )
-
-        return CCCCRecord(rec)
-
-    def readFileID(self):
-
-        r"""
-        This reads the file ID record in the binary file.
-
-        This information is currently not used - just getting to the next record.
-
-        """
-
-        fileIdRec = self.getRecord()
-        self.label = fileIdRec.getString(24)
-        _fileID = fileIdRec.getInt()
 
 
 class IORecord(object):
     """
     A single CCCC record.
 
-    Reads, or writes, information to, or from, a stream.
+    Reads or writes information to or from a stream.
 
     Parameters
     ----------
@@ -295,7 +166,8 @@ class IORecord(object):
         raise NotImplementedError()
 
     def rwList(self, contents, containedType, length, strLength=0):
-        """A method for reading and writing a (array) of items of a specific type.
+        """
+        A method for reading and writing a (array) of items of a specific type.
 
         Notes
         -----
@@ -320,9 +192,9 @@ class IORecord(object):
                 'Cannot pack or unpack the type "{}".'.format(containedType)
             )
         # this little trick will make this work for both reading and writing, yay!
-        if not contents:
+        if contents is None or len(contents) == 0:
             contents = [None for _ in range(length)]
-        return [action(contents[ii]) for ii in range(length)]
+        return numpy.array([action(contents[ii]) for ii in range(length)])
 
     def rwMatrix(self, contents, *shape):
         """A method for reading and writing a matrix of floating point values.
@@ -372,6 +244,14 @@ class IORecord(object):
         This can be important for performance when reading large matrices (e.g. scatter
         matrices). It may be worth investigating ``numpy.frombuffer`` on read and
         something similar on write.
+
+        With shape, the first shape argument should be the outermost loop because
+        these are stored in column major order (the FORTRAN way).
+
+        Note that numpy.ndarrays can be built with ``order="F"`` to have column-major ordering.
+
+        So if you have ``((MR(I,J),I=1,NCINTI),J=1,NCINTJ)`` you would pass in
+        the shape as (NCINTJ, NCINTI).
         """
         fortranShape = list(reversed(shape))
         if contents is None or contents.size == 0:
@@ -379,6 +259,20 @@ class IORecord(object):
         for index in itertools.product(*[range(ii) for ii in shape]):
             fortranIndex = tuple(reversed(index))
             contents[fortranIndex] = func(contents[fortranIndex])
+        return contents
+
+    def rwImplicitlyTypedMap(self, keys: List[str], contents) -> dict:
+        """
+        Read a dict of floats and/or ints with FORTRAN77-style implicit typing.
+
+        Length of list is determined by length of list of keys passed in.
+        """
+        for key in keys:
+            # ready for some implicit madness from the FORTRAN 77 days?
+            if key[0].upper() in IMPLICIT_INT:
+                contents[key] = self.rwInt(contents[key])
+            else:
+                contents[key] = self.rwFloat(contents[key])
         return contents
 
 
@@ -593,8 +487,24 @@ class AsciiRecordWriter(IORecord):
         return val
 
 
+class DataContainer:
+    """
+    Data representation that can be read/written to/from with a cccc.Stream.
+
+    This is an optional convenience class expected to be used in
+    concert with :py:class:`StreamWithDataStructure`.
+    """
+
+    def __init__(self):
+        # Need Metadata subclass for default keys
+        self.metadata = nuclearFileMetadata._Metadata()
+
+
 class Stream(object):
-    r"""An abstract CCCC IO stream.
+    """
+    An abstract CCCC IO stream.
+
+    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
 
     Notes
     -----
@@ -610,7 +520,8 @@ class Stream(object):
     }
 
     def __init__(self, fileName, fileMode):
-        """Create an instance of a :py:class:`~armi.nuclearDataIO.cccc.Stream`.
+        """
+        Create an instance of a :py:class:`~armi.nuclearDataIO.cccc.Stream`.
 
         Parameters
         ----------
@@ -665,11 +576,13 @@ class Stream(object):
         return recordClass(self._stream, hasRecordBoundaries)
 
     @classmethod
-    def readBinary(cls, fileName):
+    def readBinary(cls, fileName: str):
+        """Read data from a binary file into a data structure"""
         return cls._read(fileName, "rb")
 
     @classmethod
-    def readAscii(cls, fileName):
+    def readAscii(cls, fileName: str):
+        """Read data from an ASCII file into a data structure"""
         return cls._read(fileName, "r")
 
     @classmethod
@@ -677,16 +590,63 @@ class Stream(object):
         raise NotImplementedError()
 
     @classmethod
-    def writeBinary(cls, lib, fileName):
-        return cls._write(lib, fileName, "wb")
+    def writeBinary(cls, data: DataContainer, fileName: str):
+        """Write the contents of a data container to a binary file"""
+        return cls._write(data, fileName, "wb")
 
     @classmethod
-    def writeAscii(cls, lib, fileName):
-        return cls._write(lib, fileName, "w")
+    def writeAscii(cls, data: DataContainer, fileName: str):
+        """Write the contents of a data container to an ASCII file"""
+        return cls._write(data, fileName, "w")
 
     @classmethod
     def _write(cls, lib, fileName, fileMode):
         raise NotImplementedError()
+
+
+class StreamWithDataContainer(Stream):
+    """
+    A cccc.Stream that reads/writes to a specialized data container.
+
+    This is a relatively common pattern so some of the boilerplate
+    is handled here.
+
+    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
+
+    Notes
+    -----
+    It should be possible to fully merge this with ``Stream``, which may make
+    this a little less confusing.
+    """
+
+    def __init__(self, data: DataContainer, fileName: str, fileMode: str):
+        Stream.__init__(self, fileName, fileMode)
+        self._data = data
+        self._metadata = self._data.metadata
+
+    @staticmethod
+    def _getDataContainer() -> DataContainer:
+        raise NotImplementedError()
+
+    @classmethod
+    def _read(cls, fileName: str, fileMode: str):
+        data = cls._getDataContainer()
+        return cls._readWrite(
+            data,
+            fileName,
+            fileMode,
+        )
+
+    # pylint: disable=arguments-differ
+    @classmethod
+    def _write(cls, data: DataContainer, fileName: str, fileMode: str):
+        return cls._readWrite(data, fileName, fileMode)
+
+    @classmethod
+    def _readWrite(cls, data: DataContainer, fileName: str, fileMode: str):
+        with cls(data, fileName, fileMode) as rw:
+            rw.readWrite()
+        return data
 
 
 def getBlockBandwidth(m, nintj, nblok):

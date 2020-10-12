@@ -1490,7 +1490,7 @@ class ThRZAssembly(RZAssembly):
     Notes
     -----
     This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object """
+    Object"""
 
     LOCATION_CLASS = locations.ThetaRZLocation
 

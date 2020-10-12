@@ -36,7 +36,7 @@ from armi import tests
 from armi.reactor import grids
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import geometry
 
 
@@ -484,7 +484,9 @@ class Block_TestCase(unittest.TestCase):
         b = buildSimpleFuelBlock()
 
         # Check for a DerivedShape component
-        self.assertEqual(len([c for c in b if c.__class__ is components.DerivedShape]), 1)
+        self.assertEqual(
+            len([c for c in b if c.__class__ is components.DerivedShape]), 1
+        )
         m1 = b.getMass()
         v1 = b.getVolume()
         a1 = b.getArea()
@@ -505,8 +507,9 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(h2, 0.0)
         self.assertAlmostEqual(a2, a1)
         for nuc, ndens in nd2.items():
-            self.assertEqual(ndens, 0.0, msg=(f"Number density of {nuc} is "
-                                              "expected to be zero."))
+            self.assertEqual(
+                ndens, 0.0, msg=(f"Number density of {nuc} is " "expected to be zero.")
+            )
 
         # Set height back to the original height
         b.setHeight(h1)
@@ -1758,7 +1761,7 @@ class MassConservationTests(unittest.TestCase):
         self.b = buildSimpleFuelBlock()
 
     def test_heightExpansionDifferences(self):
-        r"""  The point of this test is to determine if the number densities stay the same
+        r"""The point of this test is to determine if the number densities stay the same
         with two different heights of the same block.  Since we want to expand a block
         from cold temperatures to hot using the fuel expansion coefficient (most important neutronicall),
         other components are not grown correctly.  This means that on the block level, axial expansion will

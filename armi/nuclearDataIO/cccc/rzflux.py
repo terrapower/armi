@@ -13,11 +13,13 @@ Examples
 >>> rzflux.writeBinary(flux, "RZFLUX2")
 >>> rzflux.writeAscii(flux, "RZFLUX2.ascii")
 """
+from enum import Enum
 
 import numpy
 
-from armi.nuclearDataIO import cccc, nuclearFileMetadata
+from armi.nuclearDataIO import cccc
 
+RZFLUX = "RZFLUX"
 # See CCCC-IV documentation for definitions
 FILE_SPEC_1D_KEYS = (
     "TIME",
@@ -43,7 +45,16 @@ FILE_SPEC_1D_KEYS = (
 )
 
 
-class RzfluxData:
+class Convergence(Enum):
+    """Convergence behavior flags for ITPS from RZFLUX file."""
+
+    NO_ITERATIONS = 0
+    CONVERGED = 1
+    CONVERGING = 2
+    DIVERGING = 3
+
+
+class RzfluxData(cccc.DataContainer):
     """
     Data representation that can be read from or written to a RZFLUX file.
 
@@ -53,14 +64,12 @@ class RzfluxData:
     """
 
     def __init__(self):
-        # Need Metadata subclass for default keys
-        self.metadata = nuclearFileMetadata._Metadata()
-
+        cccc.DataContainer.__init__(self)
         # 2D data
         self.groupFluxes = None
 
 
-class RzfluxStream(cccc.Stream):
+class RzfluxStream(cccc.StreamWithDataContainer):
     """
     Stream for reading to/writing from with RZFLUX data.
 
@@ -76,33 +85,9 @@ class RzfluxStream(cccc.Stream):
 
     """
 
-    def __init__(self, flux: RzfluxData, fileName: str, fileMode: str):
-        cccc.Stream.__init__(self, fileName, fileMode)
-        self._flux = flux
-        self._metadata = self._getFileMetadata()
-
-    def _getFileMetadata(self):
-        return self._flux.metadata
-
-    @classmethod
-    def _read(cls, fileName: str, fileMode: str) -> RzfluxData:
-        flux = RzfluxData()
-        return cls._readWrite(
-            flux,
-            fileName,
-            fileMode,
-        )
-
-    # pylint: disable=arguments-differ
-    @classmethod
-    def _write(cls, flux: RzfluxData, fileName: str, fileMode: str):
-        return cls._readWrite(flux, fileName, fileMode)
-
-    @classmethod
-    def _readWrite(cls, flux: RzfluxData, fileName: str, fileMode: str) -> RzfluxData:
-        with cls(flux, fileName, fileMode) as rw:
-            rw.readWrite()
-        return flux
+    @staticmethod
+    def _getDataContainer() -> RzfluxData:
+        return RzfluxData()
 
     def readWrite(self):
         """
@@ -130,12 +115,8 @@ class RzfluxStream(cccc.Stream):
         Read/write File specifications on 1D record.
         """
         with self.createRecord() as record:
-            for key in FILE_SPEC_1D_KEYS:
-                # ready for some implicit madness from the FORTRAN 77 days?
-                if key[0] in cccc.IMPLICIT_INT:
-                    self._metadata[key] = record.rwInt(self._metadata[key])
-                else:
-                    self._metadata[key] = record.rwFloat(self._metadata[key])
+            vals = record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
+            self._metadata.update(vals)
 
     def _rw2DRecord(self):
         """
@@ -152,10 +133,10 @@ class RzfluxStream(cccc.Stream):
         nz = self._metadata["NZONE"]
         ng = self._metadata["NGROUP"]
         nb = self._metadata["NBLOK"]
-        if self._flux.groupFluxes is None:
+        if self._data.groupFluxes is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._flux.groupFluxes = numpy.zeros(
+            self._data.groupFluxes = numpy.zeros(
                 (ng, nz),
                 dtype=numpy.float32,
             )
@@ -164,8 +145,8 @@ class RzfluxStream(cccc.Stream):
             numZonesInBlock = jUp - jLow + 1
             with self.createRecord() as record:
                 # pass in shape in fortran (read) order
-                self._flux.groupFluxes[:, jLow : jUp + 1] = record.rwMatrix(
-                    self._flux.groupFluxes[:, jLow : jUp + 1],
+                self._data.groupFluxes[:, jLow : jUp + 1] = record.rwMatrix(
+                    self._data.groupFluxes[:, jLow : jUp + 1],
                     numZonesInBlock,
                     ng,
                 )
