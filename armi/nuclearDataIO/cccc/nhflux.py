@@ -308,7 +308,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                     (numExternalSurfaces), dtype=int
                 )
                 # Index pointers to DIF3D GEODST ordering of each assembly
-                self._data.geodstCoordMap = numpy.zeros((nAssem), dtype=int)
+                self._data.geodstCoordMap = numpy.zeros(nAssem, dtype=int)
 
             self._data.incomingPointersToAllAssemblies = record.rwIntMatrix(
                 self._data.incomingPointersToAllAssemblies, nAssem, nSurf
@@ -475,3 +475,49 @@ class NafluxStream(NhfluxStream):
         """
         ng = self._metadata["ngroup"]
         return ng - g - 1
+
+
+class NhfluxStreamVariant(NhfluxStream):
+    """
+    Stream for VARIANT version of NHFLUX.
+
+    Notes
+    -----
+    Can be deleted after have the NHFLUX data container be the public interface
+    """
+
+    @staticmethod
+    def _getDataContainer() -> NHFLUX:
+        return NHFLUX(variant=True)
+
+
+class NafluxStreamVariant(NafluxStream):
+    """
+    Stream for VARIANT version of NAFLUX.
+
+    Notes
+    -----
+    Can be deleted after have the NHFLUX data container be the public interface
+    """
+
+    @staticmethod
+    def _getDataContainer() -> NHFLUX:
+        return NHFLUX(variant=True)
+
+
+def getNhfluxReader(adjointFlag, variantFlag):
+    r"""
+    Returns the appropriate DIF3D nodal flux binary file reader class,
+    either NHFLUX (real) or NAFLUX (adjoint).
+    """
+
+    if adjointFlag:
+        if variantFlag:
+            return NafluxStreamVariant
+        else:
+            return NafluxStream
+    else:
+        if variantFlag:
+            return NhfluxStreamVariant
+        else:
+            return NhfluxStream

@@ -528,7 +528,7 @@ class CompxsRegion(object):
         compFamiliesWithPrecursors = self._getFileMetadata()[
             "compFamiliesWithPrecursors"
         ]
-        if compFamiliesWithPrecursors:
+        if compFamiliesWithPrecursors is not None and compFamiliesWithPrecursors.size:
             specs["numPrecursorFamilies"] = compFamiliesWithPrecursors[
                 self.regionNumber
             ]

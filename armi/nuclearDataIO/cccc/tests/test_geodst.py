@@ -4,6 +4,8 @@ Test GEODST reading and writing.
 import unittest
 import os
 
+from numpy.testing import assert_equal
+
 from armi.nuclearDataIO.cccc import geodst
 
 THIS_DIR = os.path.dirname(__file__)
@@ -35,5 +37,5 @@ class TestGeodst(unittest.TestCase):
         geodst.writeBinary(geo, "GEODST2")
         geo2 = geodst.readBinary("GEODST2")
         self.assertAlmostEqual(geo2.zmesh[-1], 448.0 * 2, places=5)
-        self.assertListEqual(geo.kintervals, geo2.kintervals)
+        assert_equal(geo.kintervals, geo2.kintervals)
         os.remove("GEODST2")

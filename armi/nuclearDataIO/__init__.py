@@ -294,18 +294,6 @@ class VARSRC(NHFLUX):
         return pnOrder * (pnOrder + 1) / 2
 
 
-def getNodalFluxReader(adjointFlag):
-    r"""
-    Returns the appropriate DIF3D nodal flux binary file reader class,
-    either NHFLUX (real) or NAFLUX (adjoint).
-    """
-
-    if adjointFlag:
-        return NAFLUX
-    else:
-        return NHFLUX
-
-
 class MacroXS(object):
     """
     Basic macroscopic XS library.

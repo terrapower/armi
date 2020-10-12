@@ -166,7 +166,8 @@ class IORecord(object):
         raise NotImplementedError()
 
     def rwList(self, contents, containedType, length, strLength=0):
-        """A method for reading and writing a (array) of items of a specific type.
+        """
+        A method for reading and writing a (array) of items of a specific type.
 
         Notes
         -----
@@ -193,7 +194,7 @@ class IORecord(object):
         # this little trick will make this work for both reading and writing, yay!
         if contents is None or len(contents) == 0:
             contents = [None for _ in range(length)]
-        return [action(contents[ii]) for ii in range(length)]
+        return numpy.array([action(contents[ii]) for ii in range(length)])
 
     def rwMatrix(self, contents, *shape):
         """A method for reading and writing a matrix of floating point values.

@@ -611,8 +611,8 @@ class _IsotxsNuclideIO(object):
             A index of the scatter matrix.
         """
         try:
-            return self._metadata["scatFlag"].index(scatterType)
-        except ValueError:
+            return numpy.where(self._metadata["scatFlag"] == scatterType)[0][0]
+        except IndexError:
             return None
 
     def _getElasticScatterBlockNumIndex(self, legendreOrder=0):
