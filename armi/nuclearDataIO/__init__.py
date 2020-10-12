@@ -38,6 +38,23 @@ from armi.physics import neutronics
 
 from armi.nuclearDataIO.cccc.nhflux import NHFLUX
 
+# export the cccc modules here to keep external clients happy,
+# though prefer full imports in new code
+from .cccc import (
+    compxs,
+    dlayxs,
+    fixsrc,
+    gamiso,
+    geodst,
+    isotxs,
+    labels,
+    nhflux,
+    pmatrx,
+    pwdint,
+    rtflux,
+    rzflux,
+)
+
 
 def getExpectedISOTXSFileName(cycle=None, suffix=None, xsID=None):
     """

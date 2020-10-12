@@ -55,28 +55,3 @@ ALL = "All"
 RESTARTFILES = "Restart files"
 INPUTOUTPUT = "Input/Output"
 FLUXFILES = "Flux files"
-
-
-class SolutionType(Enum):
-    """Type of flux computed."""
-
-    REAL = 0
-    ADJOINT = 1
-    REAL_AND_ADJOINT = 2
-
-    @staticmethod
-    def fromGlobalFluxOpts(opts):
-        """Infer solution type from GlobalFluxOptions object."""
-        if opts.real and opts.adjoint:
-            return SolutionType.REAL_AND_ADJOINT
-        elif opts.real:
-            return SolutionType.REAL
-        else:
-            return SolutionType.ADJOINT
-
-
-class ProblemType(Enum):
-    """Problem type."""
-
-    KEFF = 0
-    FIXED_SOURCE = 1
