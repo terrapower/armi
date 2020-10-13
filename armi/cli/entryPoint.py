@@ -90,9 +90,19 @@ class EntryPoint:
 
         self.args = argparse.Namespace()
 
-        self.cs = settings.Settings()
+        self.cs = self._initSettings()
         settings.setMasterCs(self.cs)
         self.settingsProvidedOnCommandLine = []
+
+    @staticmethod
+    def _initSettings():
+        """
+        Initialize settings for this entry point.
+
+        Settings given on command line will update this data structure.
+        Override to provide specific settings in the entry point.
+        """
+        return settings.Settings()
 
     def addOptions(self):
         """Hook method for adding additional command line options."""
