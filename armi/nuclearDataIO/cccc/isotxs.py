@@ -26,12 +26,15 @@ ISOTXS file format, consistent with [CCCC-IV]_.
 
 Examples
 --------
->>> myLib = armi.nuclearDataIO.ISOTXS('ISOTXS-ref')
->>> nuc = myLib.nuclides['U235AA']
+>>> from armi.nuclearDataIO.cccc import isotxs
+>>> myLib = isotxs.readBinary('ISOTXS-ref')
+>>> nuc = myLib.getNuclide('U235','AA')
 >>> fis5 = nuc.micros.fission[5]
 >>> scat = nuc.micros.scatter[(0, 5, 6, 1)] # 1st order elastic scatter from group 5->6
 >>> nuc.micros.fission[7] = fis5*1.01       # you can modify the isotxs too.
->>> armi.nuclearDataIO.isotxs.writeBinary(myLib, 'ISOTXS-modified')
+>>> captureEnergy = nuc.isotxsMetadata["ecapt"]
+>>> isotxs.writeBinary(myLib, 'ISOTXS-modified')
+
 """
 
 import traceback

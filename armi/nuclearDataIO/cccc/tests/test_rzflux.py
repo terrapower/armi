@@ -35,6 +35,7 @@ class TestRzflux(unittest.TestCase):
         flux2 = rzflux.readBinary("RZFLUX3")
         self.assertAlmostEqual(flux2.groupFluxes[12, 1], flux.groupFluxes[12, 1])
         os.remove("RZFLUX2")
+        os.remove("RZFLUX3")
 
     def test_rwAscii(self):
         """Ensure that we can read/write in ascii format."""
