@@ -52,7 +52,7 @@ class FullCoreModifier(InputModifier):
 
 class SettingsModifier(InputModifier):
     """
-    Adjust settings to specified values.
+    Adjust setting to specified value.
     """
 
     def __init__(self, settingName, value):
@@ -62,3 +62,23 @@ class SettingsModifier(InputModifier):
 
     def __call__(self, cs, blueprints, geom):
         cs[self.settingName] = self.value
+
+
+class MultiSettingModifier(InputModifier):
+    """
+    Adjust multiple settings to specified values.
+
+    Examples
+    --------
+    inputModifiers.MultiSettingModifier(
+        {CONF_NEUTRONICS_TYPE: "both", CONF_COARSE_MESH_REBALANCE: -1}
+    )
+    """
+
+    def __init__(self, settingVals: dict):
+        InputModifier.__init__(self, independentVariable=settingVals)
+        self.settings = settingVals
+
+    def __call__(self, cs, blueprints, geom):
+        for name, val in self.settings.items():
+            cs[name] = val
