@@ -110,15 +110,31 @@ class EntryPoint:
         return settings.Settings()
 
     def addOptions(self):
-        """Hook method for adding additional command line options."""
-        pass
+        """
+        Add additional command line options.
+
+        Values of options added to ``self.parser`` will be available
+        on ``self.args``. Values added with ``createOptionFromSetting``
+        will override the setting values in the settings input file.
+
+        See Also
+        --------
+        createOptionFromSetting : A method often called from here to creat CLI options from
+            application settings.
+
+        argparse.ArgumentParser.add_argument : Often called from here using
+            ``self.parser.add_argument`` to add custom argparse arguments.
+
+        """
 
     def parse_args(self, args):
         self.parser.parse_args(args, namespace=self.args)
         runLog.setVerbosity(self.cs["verbosity"])
 
     def parse(self, args):
-        """Parses the command line arguments, with the command specific arguments."""
+        """
+        Parse the command line arguments, with the command specific arguments.
+        """
 
         if self.settingsArgument == "optional":
             self.parser.add_argument(
@@ -154,14 +170,16 @@ class EntryPoint:
         self.parse_args(args)
 
     def invoke(self) -> Optional[int]:
-        """Body of the entry point.
+        """
+        Body of the entry point.
 
         This is an abstract method, and must must be overridden in sub-classes.
 
         Returns
         -------
-        Implementations should return an exit code, or None, which is interpreted the
-        same as zero (successful completion).
+        exitcode : int or None
+            Implementations should return an exit code, or ``None``, which is interpreted the
+            same as zero (successful completion).
         """
         raise NotImplementedError(
             "Subclasses of EntryPoint must override the .invoke() method"
