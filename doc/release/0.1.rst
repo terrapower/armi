@@ -65,3 +65,13 @@ Backend changes
 * Add support for custom parameter serializers for database interaction.
 * Formalize Flag reading and writing from/to the database.
 * Improve handling of large HDF5 attributes in Database3.
+
+
+ARMI v0.1.4
+===========
+Release Date: 2020-02-27
+
+Bugfixes
+--------
+* Fix minor output date/time bug.
+* Copy Interface inputs in a manner constistent with standard inputs when cloning Cases.
