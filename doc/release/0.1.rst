@@ -131,7 +131,7 @@ Backend changes
   version.
 * Remove old block-homogenized number density params. These are still whipped up on the
   fly when writing to DB.
-* Add explicitly ``CartesianGrid``.
+* Add explicit ``CartesianGrid`` class.
 * Remove some unused or design- and physics-related functions from ``Block``.
 * Merge ``addComponent()`` with base ``add()``.
 * Fix issues with Be material properties.
