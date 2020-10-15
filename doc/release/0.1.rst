@@ -75,3 +75,66 @@ Bugfixes
 --------
 * Fix minor output date/time bug.
 * Copy Interface inputs in a manner constistent with standard inputs when cloning Cases.
+
+
+ARMI v0.1.4
+===========
+Release Date: 2020-10-15
+
+User-facing enhancements
+------------------------
+* Add location-based history tracking to Database3.
+* Add grid-editor GUI (``grids`` entry point).
+* Add support for converting Database files to general-purpose visualization formats
+  (currently supported are VTK and XDMF).
+* Add generic fuel-performance plugin.
+* Update Hastellow N and Incoloy 800 materials.
+* Add holed rectangle, square component types.
+* Add ``syncDbAfterWrite`` setting.
+* Add support for explicit Flags input in Blueprints.
+* Add glob option to directory changer file retrieval.
+* Add Cartesian plotting capabilities.
+* Add support for importing unstablie nuclides from the RIPL-3 database.
+* Numerous documentation and tutorial enhancements.
+* Add ``run-suite`` entry point.
+* Improve/generalize and make extensible from Plugins the setting rename capability.
+* Improve merging behavior of GAMISO and PMATRX files.
+* Add ``doTH`` setting.
+* Add ``mpiActionRequiresReset`` plugin hook.
+* Remove unused entry points (``back-up-db``, ``copy-db``).
+* Add thermal-scattering metadata to materials.
+* Improve ASCII map capabilities.
+* Add the ability to define ex-core Core-like structures in blueprints. This is good for
+  things like spent-fuel pools.
+* Minor improvements to ``SuiteBuilder``.
+
+Bugfixes
+--------
+* Fix issues in uniform mesh conversion.
+* Fix order-of-operations issues with string-to-Flags conversions.
+* Fix issues with circular ring hex-to-RZ mesh conversion.
+* Fix bug in HT9 material, which was not properly converting between C and K.
+
+Backend changes
+---------------
+* Better-formalize Executer classes.
+* Improve consistency global flux code.
+* Various performance enhancements.
+* Add packing/unpacking of Multi-Index Locations in the database.
+* Remove deprecated old Settings.
+* Remove armiAbsDirFromName.
+* Reduce numerical diffusion in mesh mapping operations.
+* No longer auto-apply DEPLETABLE Flag when flags explicitly specified.
+* Improve behavior of delated neutron fraction settings and parameter values.
+* Change assembly ordering to be based on (i, j) indices rather than (ring, pos).
+* Remove ``Block.getEnrichment()``, since it is redundant with the ``Composite``
+  version.
+* Remove old block-homogenized number density params. These are still whipped up on the
+  fly when writing to DB.
+* Add explicitly ``CartesianGrid``.
+* Remove some unused or design- and physics-related functions from ``Block``.
+* Merge ``addComponent()`` with base ``add()``.
+* Fix issues with Be material properties.
+* Allow setting ``Block`` heights to zero.
+* Add a Setting class for handling lists of Flags.
+* Greatly improve support for CCCC file reading/writing.
