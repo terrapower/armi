@@ -29,6 +29,7 @@ their own ``Modifier``\ s that are design-specific.
 import copy
 import os
 import random
+from typing import List
 
 from armi.cases import suite
 
@@ -91,6 +92,14 @@ class SuiteBuilder(object):
         """
         raise NotImplementedError
 
+    def addModiferSet(self, inputModifierSet: List):
+        """
+        Add a single input modifier set to the suite.
+
+        Used to add modifications that are not necessarily another degree of freedom.
+        """
+        self.modifierSets.append(inputModifierSet)
+
     def buildSuite(self, namingFunc=None):
         """
         Builds a ``CaseSuite`` based on the modifierSets contained in the SuiteBuilder.
@@ -139,7 +148,7 @@ class SuiteBuilder(object):
         for index, modList in enumerate(self.modifierSets):
             case = copy.deepcopy(self.baseCase)
             previousMods = []
-
+            case.bp._prepConstruction(case.cs)
             for mod in modList:
                 # it may seem late to figure this out, but since we are doing it now, someone could
                 # filter these conditions out before the buildSuite. optionally, we could have a
@@ -158,7 +167,6 @@ class SuiteBuilder(object):
                     )
 
                 previousMods.append(type(mod))
-                case.bp._prepConstruction(case.cs)
                 mod(case.cs, case.bp, case.geom)
                 case.independentVariables.update(mod.independentVariable)
 

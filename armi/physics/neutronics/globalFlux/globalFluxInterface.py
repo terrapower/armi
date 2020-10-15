@@ -85,7 +85,7 @@ class GlobalFluxInterface(interfaces.Interface):
         """
         Calculate flux, power, and keff for this cycle and node.
 
-        Flux, power, and keff are generally calculated at every timestep to ensure flux 
+        Flux, power, and keff are generally calculated at every timestep to ensure flux
         is up to date with the reactor state.
         """
         interfaces.Interface.interactEveryNode(self, cycle, node)
@@ -178,10 +178,10 @@ class GlobalFluxInterface(interfaces.Interface):
     def calculateKeff(self, label="keff"):
         """
         Runs neutronics tool and returns keff without applying it to the reactor
-        
+
         Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
         For anything more complicated than getting keff, clients should
-        call ``getExecuter`` to build their case. 
+        call ``getExecuter`` to build their case.
         """
         raise NotImplementedError()
 
@@ -207,7 +207,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         Calculate flux, power, and keff for this cycle and node.
 
-        Flux, power, and keff are generally calculated at every timestep to ensure flux 
+        Flux, power, and keff are generally calculated at every timestep to ensure flux
         is up to date with the reactor state.
         """
         executer = self.getExecuter(label=f"{self.cs.caseTitle}-flux-c{cycle}n{node}")
@@ -226,7 +226,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def getOptionsCls(self):
         """
         Get a blank options object.
-        
+
         Subclass this to allow generic updating of options.
         """
         return GlobalFluxOptions
@@ -237,9 +237,9 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def getExecuterOptions(self, label=None):
         """
         Get an executer options object populated from current user settings and reactor.
-        
+
         If you want to set settings more deliberately (e.g. to specify a cross section
-        library rather than use an auto-derived name), use ``getOptionsCls`` and build 
+        library rather than use an auto-derived name), use ``getOptionsCls`` and build
         your own.
         """
         opts = self.getOptionsCls()(label)
@@ -250,8 +250,8 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def getExecuter(self, options=None, label=None):
         """
         Get executer object for performing custom client calcs
-        
-        This allows plugins to update options in a somewhat generic 
+
+        This allows plugins to update options in a somewhat generic
         way. For example, reactivity coefficients plugin may want to
         request adjoint flux.
         """
@@ -267,7 +267,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def calculateKeff(self, label="keff"):
         """
         Run global flux with current user options and just return keff without applying it.
-        
+
         Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
         """
         executer = self.getExecuter(label=label)
@@ -468,13 +468,13 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 class GlobalFluxResultMapper(interfaces.OutputReader):
     """
     A short-lived class that maps neutronics output data to a reactor mode.
-    
-    Neutronics results can come from a file or a pipe or in memory. 
+
+    Neutronics results can come from a file or a pipe or in memory.
     This is always subclassed for specific neutronics runs but contains
-    some generic methods that are universally useful for 
+    some generic methods that are universally useful for
     any global flux calculation. These are mostly along the lines of
-    information that can be derived from other information, like 
-    dpa rate coming from dpa deltas and cycle length. 
+    information that can be derived from other information, like
+    dpa rate coming from dpa deltas and cycle length.
     """
 
     def getKeff(self):
@@ -499,7 +499,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         renormalizationCorePower: float
             Specified power to renormalize the neutron flux for using the isotopic energy
             generation rates on the cross section libraries (in Watts)
-            
+
         See Also
         --------
         getTotalEnergyGenerationConstants
@@ -920,7 +920,7 @@ def computeDpaRate(mgFlux, dpaXs):
     Raises
     ------
     RuntimeError
-       Negative dpa rate. 
+       Negative dpa rate.
 
     """
     displacements = 0.0
@@ -980,7 +980,7 @@ def calcReactionRates(obj, keff, lib):
     * n2n
     * absorption
 
-    Scatter could be added as well. This function is quite slow so it is 
+    Scatter could be added as well. This function is quite slow so it is
     skipped for now as it is uncommonly needed.
 
     Rxn rates are Sigma*Flux = Sum_Nuclides(Sum_E(Sigma*Flux*dE))
