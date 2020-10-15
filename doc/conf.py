@@ -103,6 +103,7 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.extlinks",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",
@@ -400,3 +401,5 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a non-GUI"
     " backend, so cannot show the figure.",
 )
+
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}

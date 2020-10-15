@@ -1,3 +1,8 @@
+"""
+EntryPoint base classes.
+
+See :doc:`/developer/entrypoints`.
+"""
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -163,27 +168,19 @@ class EntryPoint:
         )
 
     def createOptionFromSetting(
-        self, settingName, additionalAlias=None, suppressHelp=False
+        self, settingName: str, additionalAlias: str = None, suppressHelp: bool = False
     ):
-        """Function used to add a setting command line option. This will override whatever is in
-        the settings file.
+        """
+        Create a CLI option from an ARMI setting. 
 
-        Notes
-        -----
-        The method is private so it is not picked up as an ARMI command!
+        This will override whatever is in the settings file.
 
         Parameters
         ---------
-        parser : argparse.ArgumentParser
-            parser to add the command line option
-
-        cs : armi.settings.Settings
-            settings instance to manipulate
-
         settingName : str
             the setting name
 
-        additionalAlises : str
+        additionalAlises : str 
             additional alias for the command line option, be careful and make sure they are all distinct!
 
         supressHelp : bool

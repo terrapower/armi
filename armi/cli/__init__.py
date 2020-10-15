@@ -20,6 +20,8 @@ and submit them in a parameter sweep, validate inputs, open the GUI, run a test 
 or other similar things. There are built-in entry points, and additional ones may
 be specified by custom plugins.
 
+The full :doc:`docs for entry points are here </developer/entrypoints>`.
+
 See Also
 --------
 armi.cases : Individual collections of tasks that may run one or more entry points.
