@@ -704,10 +704,55 @@ class HexToRZThetaConverter(GeometryConverter):
                 )
             )
 
+    @staticmethod
+    def _getAssembliesInSector(core, theta1, theta2):
+        """
+        Locate assemblies in an angular sector.
+
+        Parameters
+        ----------
+        theta1, theta2 : float
+            The angles (in degrees) in which assemblies shall be drawn.
+
+        Returns
+        -------
+        aList : list
+            List of assemblies in this sector
+        """
+        aList = []
+
+        converter = EdgeAssemblyChanger(quiet=True)
+        converter.addEdgeAssemblies(core)
+        for a in core:
+            x, y, _ = a.spatialLocator.getLocalCoordinates()
+            theta = math.atan2(y, x)
+            if theta < 0.0:
+                theta = math.tau + theta
+
+            theta = math.degrees(theta)
+
+            phi = theta
+            if (
+                theta1 <= phi <= theta2
+                or abs(theta1 - phi) < 0.001
+                or abs(theta2 - phi) < 0.001
+            ):
+                aList.append(a)
+        converter.removeEdgeAssemblies(core.r.core)
+
+        if not aList:
+            raise ValueError(
+                "There are no assemblies in {} between angles of {} and {}".format(
+                    core, theta1, theta2
+                )
+            )
+
+        return aList
+
     def _getAssemsInRadialThetaZone(self, lowerRing, upperRing, lowerTheta, upperTheta):
         """Retrieve list of assemblies in the reactor between (lowerRing, upperRing) and (lowerTheta, upperTheta)."""
-        thetaAssems = self._sourceReactor.core.getAssembliesInSector(
-            math.degrees(lowerTheta), math.degrees(upperTheta)
+        thetaAssems = self._getAssembliesInSector(
+            self._sourceReactor.core, math.degrees(lowerTheta), math.degrees(upperTheta)
         )
         ringAssems = self._getAssembliesInCurrentRadialZone(lowerRing, upperRing)
         if self._radialMeshConversionType == self._MESH_BY_RING_COMP:
@@ -919,11 +964,14 @@ class HexToRZThetaConverter(GeometryConverter):
                 self.blockVolFracs[homBlock][b] = blockVolumeHere
         # Notify if blocks with different xs types are being homogenized. May be undesired behavior.
         if len(homBlockXsTypes) > 1:
-            msg = "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} " "cm and {} cm. ".format(
-                self.blockMap[homBlock],
-                self.convReactor.core,
-                lowerAxialZ,
-                upperAxialZ,
+            msg = (
+                "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} "
+                "cm and {} cm. ".format(
+                    self.blockMap[homBlock],
+                    self.convReactor.core,
+                    lowerAxialZ,
+                    upperAxialZ,
+                )
             )
             if self._strictHomogenization:
                 raise ValueError(
@@ -1286,9 +1334,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
-            otherLocs = grid.getSymmetricEquivalents(
-                a.spatialLocator.indices
-            )
+            otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
             for i, j in otherLocs:
                 newAssem = copy.deepcopy(a)
                 newAssem.makeUnique()
@@ -1351,7 +1397,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             return False
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
-            locations.BOUNDARY_0_DEGREES
+            grids.BOUNDARY_0_DEGREES
         )
         assembliesOnUpperBoundary = []
         for a in assembliesOnLowerBoundary:
@@ -1407,12 +1453,12 @@ class EdgeAssemblyChanger(GeometryChanger):
             return
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
-            locations.BOUNDARY_0_DEGREES
+            grids.BOUNDARY_0_DEGREES
         )
         # don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh
         # case that has edge assems
         edgeAssemblies = core.getAssembliesOnSymmetryLine(
-            locations.BOUNDARY_120_DEGREES
+            grids.BOUNDARY_120_DEGREES
         )
         for a in edgeAssemblies:
             runLog.debug(
@@ -1455,8 +1501,8 @@ class EdgeAssemblyChanger(GeometryChanger):
             reactor, paramsToScaleSubset
         )
         symmetricAssems = (
-            reactor.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_0_DEGREES),
-            reactor.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_120_DEGREES),
+            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
+            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
         )
         if not all(symmetricAssems):
             runLog.extra("No edge-assemblies found to scale parameters for.")

@@ -415,7 +415,7 @@ def _makeAssemPatches(core):
 
     pitch = core.getAssemblyPitch()
     for a in core:
-        x, y = a.getLocationObject().coords(pitch)
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
             assemPatch = matplotlib.patches.RegularPolygon(
                 (x, y), nSides, pitch / math.sqrt(3), orientation=math.pi / 2.0
@@ -435,7 +435,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
     """Write param values down, and return text so it can be edited later."""
     pitch = core.getAssemblyPitch()
     for a, val, label in zip(core, data, labels):
-        x, y = a.getLocationObject().coords(pitch)
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
 
         # Write text on top of patch locations.
         if label is None and labelFmt is not None:

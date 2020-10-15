@@ -28,7 +28,8 @@ class EquilibriumShuffler(FuelHandler):
         ]
         cascade = []
         for ring, pos in cycleMoves[self.cycle]:
-            a = self.r.core.whichAssemblyIsIn(ring, pos)
+            loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(ring, pos)
+            a = self.r.core.childrenByLocator[loc]
             if not a:
                 raise RuntimeError("No assembly in {0} {1}".format(ring, pos))
             cascade.append(a)
@@ -43,8 +44,9 @@ class EquilibriumShuffler(FuelHandler):
                 raise RuntimeError(
                     "No assembly in SFP {0}".format(self.r.core.sfp.getChildren())
                 )
+            outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 2+self.cycle)
             self.dischargeSwap(
-                incoming, self.r.core.whichAssemblyIsIn(5, 2 + self.cycle)
+                incoming, self.r.core.childrenByLocator[outLoc]
             )
 
 

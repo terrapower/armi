@@ -311,6 +311,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
         """
         timeIndices = []
+        coreGrid = self.r.core.spatialGrid
         for globalNode in range(
             utils.getTimeStepNum(self.r.p.cycle, self.r.p.timeNode, self.cs) + 1
         ):
@@ -331,8 +332,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                     )
                 # only add this timestep if it's around for this assembly.
                 if blockLocationLabel is not None:
-                    bLoc = locations.Location(label=blockLocationLabel)
-                    if bLoc.isInCore():
+                    if a.spatialLocator.grid is coreGrid:
                         timeIndices.append(globalNode)
 
         return self.filterTimeIndices(timeIndices, boc, moc, eoc)

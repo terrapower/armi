@@ -260,12 +260,9 @@ Finding assemblies
 ------------------
 There are a few ways to get the assemblies you're interested in.
 
-    * `r.core.whichAssemblyIsIn(ring,position)` returns whichever assembly is in
-      (ring,position)
-
-    * `r.core.getLocationContents(locList)` returns the assemblies or blocks that correspond
-      to the location list. This can be much faster that `whichAssemblyIsIn` if you need
-      many assemblies
+    * The `r.core.childrenByLocator` dictionary maps
+      :py:class:`armi.grids.IndexLocation` objects to whichever assembly is at that
+      location.
 
     * `r.core.getAssemblies()` loops through all assemblies in the core for when you need to
       do something to all assemblies

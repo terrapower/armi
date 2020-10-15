@@ -64,7 +64,6 @@ CONF_DEFAULT_SNAPSHOTS = "defaultSnapshots"
 CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
-CONF_DUMP_LOCATION_SNAPSHOT = "dumpLocationSnapshot"
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
 CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
@@ -388,13 +387,6 @@ def defineSettings() -> List[setting.Setting]:
             "core at BOL. Note: This option is interpreted differently by different "
             "modules.",
             schema=vol.Schema([int]),
-        ),
-        setting.Setting(
-            CONF_DUMP_LOCATION_SNAPSHOT,
-            default=[],
-            label="Detailed Assems - Snapshot Locations",
-            description="Assembly locations and snapshots to dump detailed assembly "
-            "data.",
         ),
         setting.Setting(
             CONF_DUMP_SNAPSHOT,

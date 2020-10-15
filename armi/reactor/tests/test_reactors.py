@@ -204,25 +204,6 @@ class HexReactorTests(ReactorTests):
     def setUp(self):
         self.o, self.r = loadTestReactor(self.directoryChanger.destination)
 
-    def testWhichAssemblyIsIn(self):
-        a = self.r.core.whichAssemblyIsIn(2, 1)
-        loc = a.getLocationObject()  # pylint: disable=maybe-no-member
-        self.assertEqual(loc.i1, 2)
-        self.assertEqual(loc.i2, 1)
-
-        # check ring capabilities
-        allA = self.r.core.whichAssemblyIsIn(4)
-        fuel = self.r.core.whichAssemblyIsIn(4, typeFlags=Flags.FUEL)
-        nonFuel = self.r.core.whichAssemblyIsIn(4, excludeFlags=Flags.FUEL)
-
-        self.assertGreater(len(allA), 0)
-        self.assertGreater(len(fuel), 0)
-        self.assertGreaterEqual(len(allA), len(fuel))
-        self.assertLess(len(nonFuel), len(fuel))
-
-        for a in fuel:
-            self.assertTrue(a.hasFlags(Flags.FUEL))
-
     def testGetTotalParam(self):
         # verify that the block params are being read.
         val = self.r.core.getTotalBlockParam("power")
@@ -285,7 +266,8 @@ class HexReactorTests(ReactorTests):
 
     def test_findNeighbors(self):
 
-        a = self.r.core.whichAssemblyIsIn(1, 1)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
@@ -295,14 +277,16 @@ class HexReactorTests(ReactorTests):
         self.assertIn("A2002", locs)
         self.assertEqual(locs.count("A2001"), 3)
 
-        a = self.r.core.whichAssemblyIsIn(1, 1)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
         locs = [a.getLocation() for a in neighbs]
         self.assertEqual(locs, ["A2001", "A2002"] * 3, 6)
 
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
 
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
@@ -315,7 +299,8 @@ class HexReactorTests(ReactorTests):
         # With edges, the neighbor is the one that's actually next to it.
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
@@ -327,21 +312,24 @@ class HexReactorTests(ReactorTests):
 
         # try with full core
         self.r.core.growToFullCore(self.o.cs)
-        a = self.r.core.whichAssemblyIsIn(3, 4)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 4)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(a)
         self.assertEqual(len(neighbs), 6)
         locs = [a.getLocation() for a in neighbs]
         for loc in ["A2002", "A2003", "A3003", "A3005", "A4005", "A4006"]:
             self.assertIn(loc, locs)
 
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(a)
         locs = [a.getLocation() for a in neighbs]
         for loc in ["A1001", "A2001", "A2003", "A3002", "A3003", "A3004"]:
             self.assertIn(loc, locs)
 
         # Try the duplicate option in full core as well
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
@@ -366,19 +354,6 @@ class HexReactorTests(ReactorTests):
                 len(self.r.core.getAssembliesInSquareOrHexRing(ring))
             )
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
-
-    def test_getAssembliesInSector(self):
-        allAssems = self.r.core.getAssemblies()
-        fullSector = self.r.core.getAssembliesInSector(0, 360)
-        self.assertGreaterEqual(
-            len(fullSector), len(allAssems)
-        )  # could be > due to edge assems
-        third = self.r.core.getAssembliesInSector(0, 30)
-        self.assertAlmostEqual(
-            25, len(third)
-        )  # could solve this analytically based on test core size
-        oneLine = self.r.core.getAssembliesInSector(0, 0.001)
-        self.assertAlmostEqual(5, len(oneLine))  # same here
 
     def test_genAssembliesAddedThisCycle(self):
         allAssems = self.r.core.getAssemblies()
@@ -444,18 +419,18 @@ class HexReactorTests(ReactorTests):
     def test_getSymmetryFactor(self):
         for b in self.r.core.getBlocks():
             sym = b.getSymmetryFactor()
-            loc = b.getLocationObject()
-            if loc.i1 == 1 and loc.i2 == 1:
+            i, j, _ = b.spatialLocator.getCompleteIndices()
+            if i == 0 and j == 0:
                 self.assertEqual(sym, 3.0)
             else:
                 self.assertEqual(sym, 1.0)
 
     def test_getAssembliesOnSymmetryLine(self):
-        center = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_CENTER)
+        center = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_CENTER)
         self.assertEqual(len(center), 1)
-        upper = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_120_DEGREES)
+        upper = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
         self.assertEqual(len(upper), 0)
-        lower = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_0_DEGREES)
+        lower = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)
         self.assertGreater(len(lower), 1)
 
     def test_saveAllFlux(self):
@@ -481,28 +456,18 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(fuelBottomHeightInCm, fuelBottomHeightRef)
 
-    def test_whichBlockIsAtCoords(self):
-
-        b = self.r.core.whichBlockIsAtCoords(0, 0, 0)
-        centralAssem = self.r.core.whichAssemblyIsIn(1, 1)
-        self.assertEqual(b, centralAssem[0])
-        b = self.r.core.whichBlockIsAtCoords(0, 0, 50)
-        self.assertEqual(b.parent, centralAssem)
-        self.assertNotEqual(b, centralAssem[0])
-
     def test_getGridBounds(self):
         (_minI, maxI), (_minJ, maxJ), (minK, maxK) = self.r.core.getBoundingIndices()
         self.assertEqual((maxI, maxJ), (8, 8))
         self.assertEqual((minK, maxK), (0, 0))
 
     def test_locations(self):
-        a = self.r.core.whichAssemblyIsIn(3, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 2)
+        a = self.r.core.childrenByLocator[loc]
         assert_allclose(a.spatialLocator.indices, [1, 1, 0])
         for bi, b in enumerate(a):
             assert_allclose(b.spatialLocator.getCompleteIndices(), [1, 1, bi])
         self.assertEqual(a.getLocation(), "A3002")
-        loc = a.getLocationObject()
-        self.assertEqual(str(loc), "A3002")
         self.assertEqual(a[0].getLocation(), "A3002A")
 
     def test_getMass(self):

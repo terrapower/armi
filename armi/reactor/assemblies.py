@@ -77,9 +77,6 @@ class Assembly(composites.Composite):
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
 
-    # armi.reactor.locations.Location subclass, overridden on Assembly subclasses
-    LOCATION_CLASS = None
-
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
     CHARGED_FUEL_POOL = "CFP"
@@ -234,15 +231,6 @@ class Assembly(composites.Composite):
             self.spatialLocator.getCompleteIndices()[:2]
         )
 
-    def getLocationObject(self):
-        """
-        Return the location of the assembly in the plane using spatial grid indices.
-        """
-        loc = self.LOCATION_CLASS()
-        i, j, k = self.spatialLocator.getCompleteIndices()
-        loc.fromLocator((i, j, None))  # cut off axial index.
-        return loc
-
     def coords(self):
         """
         Return the location of the assembly in the plane using cartesian global coordinates.
@@ -257,7 +245,7 @@ class Assembly(composites.Composite):
 
         Just creates a new location object based on current spatialLocator.
         """
-        return self.getLocationObject()
+        raise NotImplementedError("NO MORE!!")
 
     @location.setter
     def location(self, value):
@@ -269,6 +257,7 @@ class Assembly(composites.Composite):
 
         Reactors only have 2-D grid info so we only look at i and j.
         """
+        raise NotImplementedError("NO MORE (setter)!!")
         i, j = value.indices()
         if i is None or j is None:
             self.spatialLocator = self.parent.spatialGrid[0, 0, 0]
@@ -1365,8 +1354,6 @@ class Assembly(composites.Composite):
 
 class HexAssembly(Assembly):
 
-    LOCATION_CLASS = locations.HexLocation
-
     def getPitch(self):
         """returns hex pitch in cm."""
         pList = []
@@ -1429,8 +1416,6 @@ class RZAssembly(Assembly):
     for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
 
-    LOCATION_CLASS = locations.ThetaRZLocation
-
     def __init__(self, name, assemNum=None):
         Assembly.__init__(self, name, assemNum)
         self.p.RadMesh = 1
@@ -1475,11 +1460,6 @@ class RZAssembly(Assembly):
         """
         return self[0].thetaInner()
 
-    def Rcoords(self):
-        # can likely be upgraded to use
-        # ``self.spatialLocator.getGlobalCoordinates(nativeCoords=True)``
-        return self.location.Rcoords()
-
 
 class ThRZAssembly(RZAssembly):
     """
@@ -1492,16 +1472,12 @@ class ThRZAssembly(RZAssembly):
     This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
     Object"""
 
-    LOCATION_CLASS = locations.ThetaRZLocation
-
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)
         self.p.AziMesh = 1
 
 
 class CartesianAssembly(Assembly):
-
-    LOCATION_CLASS = locations.CartesianLocation
 
     # Don't ignore things.
     ignoredRegions = []
