@@ -77,7 +77,7 @@ Bugfixes
 * Copy Interface inputs in a manner constistent with standard inputs when cloning Cases.
 
 
-ARMI v0.1.4
+ARMI v0.1.5
 ===========
 Release Date: 2020-10-15
 
