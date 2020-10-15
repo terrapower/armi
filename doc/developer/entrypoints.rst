@@ -1,8 +1,8 @@
 Entry Points
 ============
 
-**Entry Points** are extensible routines that you can choose
-when you invoke your application. The :py:mod:`built-in entry points <armi.cli>` 
+**Entry Points** are like the verbs that your App can *do*. 
+The :py:mod:`built-in entry points <armi.cli>` 
 offer basic functionality, like :py:class:`running a case <armi.cli.run.RunEntryPoint>`
 or :py:class:`opening up the GUI <armi.cli.gridGui.GridGuiEntryPoint>`, but
 the real joy of an application comes when you add your own project-specific 
@@ -26,8 +26,8 @@ class attributes as follows:
 
 Next, implement the :py:meth:`~armi.cli.entryPoint.EntryPoint.addOptions` method. Here you can both:
 
-* turn various App Settings into command-line arguments with :py:meth:`~armi.cli.entryPoint.EntryPoint.createOptionFromSetting`
-* add arbitrary other command-line arguments using the standard :py:mod:`python:argparse` library.
+* turn various Settings into command-line arguments with :py:meth:`~armi.cli.entryPoint.EntryPoint.createOptionFromSetting`
+* add arbitrary command-line arguments using the standard :py:mod:`python:argparse` library.
 
 The values of the non-setting arguments will become attributes in ``self.args`` for later use.
 
@@ -52,8 +52,8 @@ with the code you'd like to run upon invocation of this entry point.
         settingsArgument = "required"
 
         def addOptions(self):
-            self.createOptionFromSetting(CONF_DRAGON_PATH)
-            self.createOptionFromSetting(CONF_DRAGON_DATA_PATH)
+            self.createOptionFromSetting(CONF_CYCLE_LENGTH)
+            self.createOptionFromSetting(CONF_BURN_STEPS)
             self.parser.add_argument(
                 "--post-process",
                 "-p",
