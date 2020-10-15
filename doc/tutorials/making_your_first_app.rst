@@ -221,8 +221,8 @@ Adding entry points
 ===================
 In order to call our application directly, we need to add the :file:`__main__.py` file to
 the package. We could add all manner of :py:mod:`entry points <armi.cli.entryPoint>` here
-for different operations we want our application to perform. If you want to add your own
-entry points, you have to register them with the
+for different operations we want our application to perform. If you want to add 
+:doc:`your own entry points </developer/entrypoints>`, you have to register them with the
 :py:meth:`armi.plugins.ArmiPlugin.defineEntryPoints` hook. For now, we can just inherit
 from the default ARMI entry points (including ``run``) by adding the following code
 to what we already have in :file:`myapp/__main__.py`:
