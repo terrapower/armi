@@ -81,7 +81,7 @@ def _processIncludes(
             # this line has an !include on it
             if m.group(1) is not None:
                 out.write(leadingSpace + m.group(1))
-            fName = pathlib.Path(m.group(2))
+            fName = pathlib.Path(os.path.expandvars(m.group(2)))
             path = root / fName
             if not path.exists():
                 raise ValueError(
@@ -109,7 +109,7 @@ def _processIncludes(
 def resolveMarkupInclusions(
     src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
 ) -> io.StringIO:
-    """
+    r"""
     Process a text stream, appropriately handling ``!include`` tags.
 
     This will take the passed IO stream or file path, replacing any instances of
@@ -605,7 +605,7 @@ class TextProcessor:
 
 class SmartList:
     r"""A list that does stuff like files do i.e. remembers where it was, can seek, etc.
-    Actually this is pretty slow. so much for being smart. nice idea though. """
+    Actually this is pretty slow. so much for being smart. nice idea though."""
 
     def __init__(self, f):
         self.lines = f.readlines()

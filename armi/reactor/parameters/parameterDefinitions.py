@@ -418,8 +418,7 @@ class ParameterDefinitionCollection(object):
         return matches[0]
 
     def add(self, paramDef):
-        r"""add a :py:class:`Parameter` to this collection.
-        """
+        r"""add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef
@@ -441,7 +440,10 @@ class ParameterDefinitionCollection(object):
         )
         assert self is not other
         if other is None:
-            raise ValueError(f"Cannot extend {self} with `None`.")
+            raise ValueError(
+                f"Cannot extend {self} with `None`. "
+                "Ensure return value of parameter definitions returns something."
+            )
         for pd in other:
             self.add(pd)
 
@@ -563,9 +565,7 @@ class ParameterBuilder(object):
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`
-
-        """
+        r"""Create a :py:class:`ParameterBuilder`"""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set

@@ -184,7 +184,6 @@ class TestHDF(unittest.TestCase):
             self.assertEqual(
                 fileStream.read(), self.db._hdf_file["inputs/settings"][()]
             )
-            self.assertIn("inputs/geomFile", self.db._hdf_file)
             self.assertIn("inputs/blueprints", self.db._hdf_file)
 
 
@@ -233,7 +232,7 @@ class TestDB(unittest.TestCase):
         "database conversions terrible."
     )
     def test_updateFromDBResetsToDefault(self):
-        """"
+        """
         Test writing and updating db.
 
         Make sure parameters that are at their default get reset if they aren't in the DB.

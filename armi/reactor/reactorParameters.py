@@ -584,11 +584,6 @@ def defineCoreParameters():
 
         pb.defParam("keff", units=None, description="Global multiplication factor")
 
-        pb.defParam(
-            "partisnKeff",
-            units=None,
-            description="Global multiplication factor from PARTISN transport calculation",
-        )
 
         pb.defParam(
             "peakKeff", units=None, description="Maximum keff in the simulation"
