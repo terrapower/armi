@@ -88,7 +88,7 @@ User-facing enhancements
 * Add support for converting Database files to general-purpose visualization formats
   (currently supported are VTK and XDMF).
 * Add generic fuel-performance plugin.
-* Update Hastellow N and Incoloy 800 materials.
+* Update Hastelloy N and Incoloy 800 materials.
 * Add holed rectangle, square component types.
 * Add ``syncDbAfterWrite`` setting.
 * Add support for explicit Flags input in Blueprints.
