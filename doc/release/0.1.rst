@@ -35,25 +35,33 @@ Hotfixes
 --------
 * Fixed dependency issue with pympler
 
-ARMI v0.1.3-dev
-===============
-Release Date: TBD
+ARMI v0.1.3
+===========
+Release Date: 2020-02-25
 
 User-facing enhancements
 ------------------------
 * Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
   users can control precisely which isotopes the elements get expanded into.
-* Improved migration system, accessible with ``python3 -m armi migrate-inputs``
-* Added new material modifications for inputting fuels made of mixtures of two 
-  custom isotopic vectors
+* Improved migration system, accessible with ``python -m armi migrate-inputs``
+* Added new material modifications for inputting fuels made of mixtures of two custom
+  isotopic vectors.
+* Add YAML ``!include`` support to blueprints files.
+* Remove ``latticeFile`` section to grid blueprints.
+* Allow modification of linked dimentions in ``SuiteBuilder``.
 
 Bugfixes
 --------
 * SuiteBuilder handles smear density dimension changes for parameter sweeps again
-* Fixed broken documentation printout of Flags
+* Fixed broken documentation printout of Flags.
+* Ensure that Cases do not think of themselves as their own dependencies.
 
 Backend changes
 ---------------
-* Number fractions are now maintained across elemental expansion subsets. This slightly changes
-  the isotopic composition when, for example, Tungsten is expanded to 4 out of the 
-  5 natural isotopes.
+* Number fractions are now maintained across elemental expansion subsets. This slightly
+  changes the isotopic composition when, for example, Tungsten is expanded to 4 out of
+  the 5 natural isotopes.
+* Add BOL HM mass block parameter.
+* Add support for custom parameter serializers for database interaction.
+* Formalize Flag reading and writing from/to the database.
+* Improve handling of large HDF5 attributes in Database3.
