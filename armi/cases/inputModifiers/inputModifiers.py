@@ -53,10 +53,6 @@ class FullCoreModifier(InputModifier):
         else:
             coreBp = blueprints.gridDesigns["core"]
             coreBp.expandToFull()
-            if "coreEqPath" in blueprints.gridDesigns:
-                # also expand core fuel management paths if they exist
-                eqPath = blueprints.gridDesigns["coreEqPath"]
-                eqPath.expandToFull()
 
 
 class SettingsModifier(InputModifier):
