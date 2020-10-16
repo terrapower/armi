@@ -23,6 +23,7 @@ import os
 import unittest
 
 import armi.physics.fuelCycle.fuelHandlers as fuelHandlers
+from armi.physics.fuelCycle import settings
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
@@ -512,7 +513,7 @@ class TestFuelPlugin(unittest.TestCase):
 
     def test_settingsAreDiscovered(self):
         cs = caseSettings.Settings()
-        nm = fuelCycle.CONF_CIRCULAR_RING_ORDER
+        nm = settings.CONF_CIRCULAR_RING_ORDER
         self.assertEqual(cs[nm], "angle")
 
         setting = cs.settings[nm]

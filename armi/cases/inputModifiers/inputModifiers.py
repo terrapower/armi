@@ -44,10 +44,25 @@ class InputModifier(object):
 class FullCoreModifier(InputModifier):
     """
     Grow the SystemLayoutInput to from a symmetric core to a full core.
+
+    Notes
+    -----
+    Besides the core, other grids may also be of interest for expansion, like
+    a grid that defines fuel management. However, the expansion of a fuel
+    management schedule to full core is less trivial than just expanding
+    the core itself. Thus, this modifier currently does not attempt
+    to update fuel management grids, but an expanded implementation could
+    do so in the future if needed. For now, users must expand fuel management
+    grids to full core themself.
     """
 
     def __call__(self, cs, blueprints, geom):
-        geom.growToFullCore()
+        """Core might be on a geom object or a grid blueprint"""
+        if geom:
+            geom.growToFullCore()
+        else:
+            coreBp = blueprints.gridDesigns["core"]
+            coreBp.expandToFull()
 
 
 class SettingsModifier(InputModifier):
