@@ -64,7 +64,6 @@ from armi.reactor import reactors
 # re-export package components for easier import
 from .permissions import Permissions
 from .database3 import Database3, DatabaseInterface, updateGlobalAssemblyNum
-from .xtviewDB import XTViewDatabase
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
 
@@ -72,7 +71,6 @@ from .factory import databaseFactory
 __all__ = [
     "Database3",
     "DatabaseInterface",
-    "XTViewDatabase",
     "compareDatabases",
     "databaseFactory",
 ]
@@ -282,7 +280,5 @@ def _getH5File(db):
     """
     if isinstance(db, Database3):
         return db.h5db
-    elif isinstance(db, XTViewDatabase):
-        return db._hdf_file
     else:
         raise TypeError("Unsupported Database type ({})!".format(type(db)))
