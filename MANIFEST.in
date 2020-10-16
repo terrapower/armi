@@ -40,8 +40,6 @@ include armi/tests/geom.xml
 include armi/tests/geom1Assem.xml
 include armi/tests/geomSmall.xml
 include armi/tests/ISOAA
-include armi/tests/partisnReactorGeom.xml
-include armi/tests/partisnTestReactor.yaml
 include armi/tests/refOneBlockReactor.yaml
 include armi/tests/refSmallCartesian.yaml
 include armi/tests/refSmallReactor.yaml

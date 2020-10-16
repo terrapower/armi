@@ -152,7 +152,7 @@ class Zones_InRZReactor(unittest.TestCase):
         # Test to make sure that we can split a zone containing control and fuel assemblies.
         # Also test that we can separate out assemblies with differing numbers of blocks.
 
-        o, r = test_reactors.loadTestReactor(inputFileName="partisnTestReactor.yaml")
+        o, r = test_reactors.loadTestReactor()
         cs = o.cs
         cs["splitZones"] = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
@@ -179,16 +179,16 @@ class Zones_InRZReactor(unittest.TestCase):
         cs["splitZones"] = True
         zones.splitZones(r.core, cs, daZones)
         # test to make sure that we split the ring zone correctly
-        self.assertEqual(len(daZones["ring-4-primary-control-5"]), 2)
-        self.assertEqual(len(daZones["ring-4-middle-fuel-5"]), 3)
-        self.assertEqual(len(daZones["ring-4-middle-fuel-6"]), 1)
+        self.assertEqual(len(daZones["ring-4-igniter-fuel-5"]), 4)
+        self.assertEqual(len(daZones["ring-4-igniter-fuel-6"]), 1)
+        self.assertEqual(len(daZones["ring-4-lta-fuel-b-5"]), 1)
 
     def test_createHotZones(self):
         # Test to make sure createHotZones identifies the highest p/f location in a zone
         # Test to make sure createHotZones can remove the peak assembly from that zone and place it in a new zone
         # Test that the power in the old zone and the new zone is conserved.
         # Test that if a hot zone can not be created from a single assembly zone.
-        o, r = test_reactors.loadTestReactor(inputFileName="partisnTestReactor.yaml")
+        o, r = test_reactors.loadTestReactor()
         cs = o.cs
         cs["splitZones"] = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"

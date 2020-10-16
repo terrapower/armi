@@ -200,7 +200,7 @@ class XTViewDatabase:
             with open(cs.path, "r") as fileStream:
                 csString = fileStream.read()
 
-        if geomString is None:
+        if geomString is None and cs["geomFile"]:
             with open(
                 os.path.join(os.path.dirname(cs.path), cs["geomFile"]), "r"
             ) as fileStream:
@@ -213,7 +213,8 @@ class XTViewDatabase:
                 bpString = fileStream.read()
 
         self._hdf_file["inputs/settings"] = csString
-        self._hdf_file["inputs/geomFile"] = geomString
+        if geomString:
+            self._hdf_file["inputs/geomFile"] = geomString
         self._hdf_file["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
