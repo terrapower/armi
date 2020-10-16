@@ -47,7 +47,16 @@ class FullCoreModifier(InputModifier):
     """
 
     def __call__(self, cs, blueprints, geom):
-        geom.growToFullCore()
+        """Core might be on a geom object or a grid blueprint"""
+        if geom:
+            geom.growToFullCore()
+        else:
+            coreBp = blueprints.gridDesigns["core"]
+            coreBp.expandToFull()
+
+
+#             if self.eqFuelPathBp is not None:
+#                 self.eqFuelPathBp.expandToFull()
 
 
 class SettingsModifier(InputModifier):

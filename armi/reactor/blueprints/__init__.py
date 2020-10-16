@@ -55,6 +55,12 @@ The file structure is expectation is:
             #    hotChannelFactors: TWRPclad
 
 
+Examples
+--------
+>>> design = blueprints.Blueprints.load(self.yamlString)
+>>> print(design.gridDesigns)
+
+
 Notes
 -----
 The blueprints system was built to enable round trip translations between
