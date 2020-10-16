@@ -526,10 +526,7 @@ class TextProcessor:
             else:
                 # need this not to fail for detecting when RXSUM doesn't exist, etc.
                 # note: Could make it check before instantiating...
-                runLog.warning(
-                    'Cannot open file "{0}" for text processing.\n'
-                    "CWD is {1}".format(fname, os.getcwd())
-                )
+                raise FileNotFoundError(f"{fname} does not exist.")
         if not highMem:
             # keep the file on disk, read as necessary
             self.f = f
