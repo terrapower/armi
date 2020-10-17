@@ -43,6 +43,9 @@ include armi/tests/ISOAA
 include armi/tests/refOneBlockReactor.yaml
 include armi/tests/refSmallCartesian.yaml
 include armi/tests/refSmallReactor.yaml
+include armi/tests/refSmallReactorBase.yaml
+include armi/tests/refSmallCoreGrid.yaml
+include armi/tests/refSmallSfpGrid.yaml
 include armi/tests/refTestCartesian.yaml
 include armi/tests/sfpGeom.yaml
 include armi/tests/testEq.yaml
