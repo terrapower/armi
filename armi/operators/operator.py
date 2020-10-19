@@ -112,7 +112,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def _initFastPath(self):
         """
-        Create the FAST_PATH directory for fast local operations if it's in APP_DATA
+        Create the FAST_PATH directory for fast local operations
 
         Notes
         -----
@@ -121,6 +121,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         to leave FAST_PATH as the CWD in INTERACTIVE mode, so this should not
         be a problem anymore, and we can safely move FAST_PATH creation
         back into the Operator.
+
+        If the operator is being used interactively (e.g. at a prompt) we will still
+        use a temporary local fast path (in case the user is working on a slow network path).
         """
         context.activateLocalFastPath()
         try:

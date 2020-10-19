@@ -26,7 +26,11 @@ import os
 import time
 import sys
 import enum
+import shutil
+import gc
 
+from armi import runLog
+from armi.bookkeeping.db import Database3
 
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
@@ -127,6 +131,9 @@ MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
 
 FAST_PATH = os.path.join(os.getcwd())
 
+_FAST_PATH_IS_TEMPORARY = False
+"""Flag indicating whether or not the FAST_PATH should be cleaned up on exit"""
+
 
 def activateLocalFastPath():
     """
@@ -135,7 +142,7 @@ def activateLocalFastPath():
     ``FAST_PATH`` is often a local hard drive on a cluster node. It's a high-performance
     scratch space. Different processors on the same node should have different fast paths.
     Some old code may MPI_RANK-dependent folders/filenames as well, but this is no longer
-    necessary. 
+    necessary.
 
     .. warning:: This path will be obliterated when the job ends so be careful.
 
@@ -144,7 +151,7 @@ def activateLocalFastPath():
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global FAST_PATH  # pylint: disable=global-statement
+    global FAST_PATH, _FAST_PATH_IS_TEMPORARY  # pylint: disable=global-statement
     FAST_PATH = os.path.join(
         APP_DATA,
         "{}{}-{}".format(
@@ -153,3 +160,83 @@ def activateLocalFastPath():
             datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
         ),
     )
+    _FAST_PATH_IS_TEMPORARY = True
+
+
+def cleanTempDirs(olderThanDays=None):
+    """
+    Clean up temporary files after a run.
+
+    The Windows HPC system sends a SIGBREAK signal when the user cancels a job, which
+    is NOT handled by ``atexit``. Notably SIGBREAK doesn't exist off Windows.
+    For the SIGBREAK signal to work with a Microsoft HPC, the ``TaskCancelGracePeriod``
+    option must be configured to be non-zero. This sets the period between SIGBREAK
+    and SIGTERM/SIGINT. To do cleanups in this case, we must use the ``signal`` module.
+    Actually, even then it does not work because MS ``mpiexec`` does not pass signals
+    through.
+
+    Parameters
+    ----------
+    olderThanDays: int, optional
+        If provided, deletes other ARMI directories if they are older than the requested
+        time.
+    """
+    disconnectAllHdfDBs()
+
+    if _FAST_PATH_IS_TEMPORARY and os.path.exists(FAST_PATH):
+        if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
+            print(
+                "Cleaning up temporary files in: {}".format(FAST_PATH),
+                file=sys.stdout,
+            )
+        try:
+            shutil.rmtree(FAST_PATH)
+        except Exception as error:  # pylint: disable=broad-except
+            for outputStream in (sys.stderr, sys.stdout):
+                print(
+                    "Failed to delete temporary files in: {}\n"
+                    "    error: {}".format(FAST_PATH, error),
+                    file=outputStream,
+                )
+
+    # Also delete anything still here after `olderThanDays` days (in case this failed on
+    # earlier runs)
+    if olderThanDays is not None:
+        gracePeriod = datetime.timedelta(days=olderThanDays)
+        now = datetime.datetime.now()
+        thisRunFolder = os.path.basename(FAST_PATH)
+
+        for dirname in os.listdir(APP_DATA):
+            dirPath = os.path.join(APP_DATA, dirname)
+            if not os.path.isdir(dirPath):
+                continue
+            try:
+                fromThisRun = dirname == thisRunFolder  # second chance to delete
+                _rank, dateString = dirname.split("-")
+                dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
+                runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
+                if runIsOldAndLikleyComplete or fromThisRun:
+                    # Delete old files
+                    shutil.rmtree(dirPath)
+            except:  # pylint: disable=bare-except
+                pass
+
+
+def disconnectAllHdfDBs():
+    """
+    Forcibly disconnect all instances of HdfDB objects
+
+    Notes
+    -----
+    This is a hack to help ARMI exit gracefully when the garbage collector and h5py have
+    issues destroying objects. After lots of investigation, the root cause for why this
+    was having issues was never identified. It appears that when several HDF5 files are
+    open in the same run (e.g.  when calling armi.init() multiple times from a
+    post-processing script), when these h5py File objects were closed, the garbage
+    collector would raise an exception related to the repr'ing the object. We
+    get around this by using the garbage collector to manually disconnect all open HdfDB
+    objects.
+    """
+    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
+    for db in h5dbs:
+        db.close()
