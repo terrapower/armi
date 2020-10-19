@@ -28,19 +28,32 @@ import os
 
 import matplotlib
 
+import armi
+from armi import apps
 from armi import settings
 from armi.settings import caseSettings
+from armi import context
 
 
 def pytest_sessionstart(session):
-    import armi
-    from armi import apps
-    from armi import context
-    from armi.nucDirectory import nuclideBases
 
     print("Initializing generic ARMI Framework application")
     armi.configure(apps.App())
+    bootstrapArmiTestEnv()
+
+
+def bootstrapArmiTestEnv():
+    """
+    Perform ARMI config appropriate for running unit tests
+
+    .. tip:: This can be imported and run from other ARMI applications
+        for test support.
+    """
+    from armi.nucDirectory import nuclideBases
+
     cs = caseSettings.Settings()
+
+    armi.Mode.setMode(armi.Mode.BATCH)
     settings.setMasterCs(cs)
     # Need to init burnChain.
     # see armi.cases.case.Case._initBurnChain
