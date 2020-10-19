@@ -25,6 +25,7 @@ import getpass
 import os
 import time
 import sys
+import enum
 
 
 BLUEPRINTS_IMPORTED = False
@@ -39,7 +40,7 @@ BLUEPRINTS_IMPORT_CONTEXT = ""
 APP_NAME = "armi"
 
 
-class Mode:
+class Mode(enum.Enum):
     """
     Mode represents different run modes possible in ARMI.
 
@@ -52,17 +53,15 @@ class Mode:
     ``--batch`` command line argument that can force Batch mode.
     """
 
-    Batch = 1
-    Interactive = 2
-    Gui = 4
+    BATCH = 1
+    INTERACTIVE = 2
+    GUI = 4
 
     @classmethod
     def setMode(cls, mode):
         """Set the run mode of the current ARMI case."""
         global CURRENT_MODE  # pylint: disable=global-statement
-        assert mode in (cls.Batch, cls.Interactive, cls.Gui), "Invalid mode {}".format(
-            mode
-        )
+        assert isinstance(mode, cls), "Invalid mode {}".format(mode)
         CURRENT_MODE = mode
 
 
@@ -74,7 +73,7 @@ START_TIME = time.ctime()
 
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file
 # In this mode you cannot respond to prompts or anything
-CURRENT_MODE = Mode.Interactive if sys.stdout.isatty() else Mode.Batch
+CURRENT_MODE = Mode.INTERACTIVE if sys.stdout.isatty() else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
 MPI_COMM = None
@@ -126,18 +125,31 @@ if MPI_COMM is not None:
 
 MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
 
-# FAST_PATH is often a local hard drive on a cluster node. It's a high-performance
-# scratch space. Different processors on the same node should have different fast paths.
-# Some old code may MPI_RANK-dependent folders/filenames as well, but this is no longer
-# necessary. This path will be obliterated when the job ends so be careful. Note also
-# that this path is set at import time, so if a series of unit tests come through that
-# instantiate one operator after the other, the path will already exist the second time.
-# The directory is created in the Operator constructor.
-FAST_PATH = os.path.join(
-    APP_DATA,
-    "{}{}-{}".format(
-        MPI_RANK,
-        os.environ.get("PYTEST_XDIST_WORKER", ""),  # for parallel unit testing,
-        datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
-    ),
-)
+FAST_PATH = os.path.join(os.getcwd())
+
+
+def activateLocalFastPath():
+    """
+    Specify a local temp directory to be the fast path.
+
+    ``FAST_PATH`` is often a local hard drive on a cluster node. It's a high-performance
+    scratch space. Different processors on the same node should have different fast paths.
+    Some old code may MPI_RANK-dependent folders/filenames as well, but this is no longer
+    necessary. 
+
+    .. warning:: This path will be obliterated when the job ends so be careful.
+
+    Note also
+    that this path is set at import time, so if a series of unit tests come through that
+    instantiate one operator after the other, the path will already exist the second time.
+    The directory is created in the Operator constructor.
+    """
+    global FAST_PATH  # pylint: disable=global-statement
+    FAST_PATH = os.path.join(
+        APP_DATA,
+        "{}{}-{}".format(
+            MPI_RANK,
+            os.environ.get("PYTEST_XDIST_WORKER", ""),  # for parallel unit testing,
+            datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
+        ),
+    )

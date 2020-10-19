@@ -24,6 +24,9 @@ Tests must be invoked via pytest for this to have any affect, for example::
     $ pytest -n6 framework/armi
 
 """
+import os
+
+import matplotlib
 
 from armi import settings
 from armi.settings import caseSettings
@@ -32,6 +35,7 @@ from armi.settings import caseSettings
 def pytest_sessionstart(session):
     import armi
     from armi import apps
+    from armi import context
     from armi.nucDirectory import nuclideBases
 
     print("Initializing generic ARMI Framework application")
@@ -42,3 +46,15 @@ def pytest_sessionstart(session):
     # see armi.cases.case.Case._initBurnChain
     with open(cs["burnChainFileName"]) as burnChainStream:
         nuclideBases.imposeBurnChain(burnChainStream)
+
+    # turn on a non-interactive mpl backend to minimize errors related to
+    # initializing Tcl in parallel tests
+    matplotlib.use("agg")
+
+    # set and create a test-specific FAST_PATH for parallel unit testing
+    # Not all unit tests have operators, and operators are usually
+    # responsible for making FAST_PATH, so we make it here.
+    # It will be deleted by the atexit hook.
+    context.activateLocalFastPath()
+    if not os.path.exists(context.FAST_PATH):
+        os.makedirs(context.FAST_PATH)

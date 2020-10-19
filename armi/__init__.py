@@ -59,7 +59,7 @@ import warnings
 # necessarily safe to import the rest of the ARMI system. Things like:
 # - configure the MPI environment
 # - detect the nature of interaction with the user (terminal UI, GUI, unsupervized, etc)
-# - create/define the FAST_PATH, etc
+# - define the FAST_PATH
 # - Initialize the nuclide database
 import armi._bootstrap
 import armi.context
@@ -77,7 +77,6 @@ from armi.context import (
     MPI_DISTRIBUTABLE,
     MPI_SIZE,
     APP_DATA,
-    FAST_PATH,
 )
 from armi.context import Mode
 from armi.meta import __version__
@@ -174,19 +173,32 @@ def cleanTempDirs(olderThanDays=None):
         time.
     """
     disconnectAllHdfDBs()
-
-    if os.path.exists(FAST_PATH):
+    if armi.context.CURRENT_MODE == armi.context.Mode.INTERACTIVE:
+        # assume no temporary directory was needed in interactive mode.
+        # This can help prevent surprises e.g. when a interactive task is running
+        # and is cancelled by the user but they just want to adjust something and
+        # rerun without losing all their working files.
+        return
+    if armi.context.APP_DATA not in armi.context.FAST_PATH:
+        # safety mechanism to ensure people's working dirs never get deleted automatically
+        # Warn here to indicate the near miss, which should really never happen.
+        runLog.warning(
+            f"Skipping deletion of non-appdata FAST_PATH in {armi.context.FAST_PATH}"
+        )
+        return
+    if os.path.exists(armi.context.FAST_PATH):
         if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
             print(
-                "Cleaning up temporary files in: {}".format(FAST_PATH), file=sys.stdout
+                "Cleaning up temporary files in: {}".format(armi.context.FAST_PATH),
+                file=sys.stdout,
             )
         try:
-            shutil.rmtree(FAST_PATH)
+            shutil.rmtree(armi.context.FAST_PATH)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
                 print(
                     "Failed to delete temporary files in: {}\n"
-                    "    error: {}".format(FAST_PATH, error),
+                    "    error: {}".format(armi.context.FAST_PATH, error),
                     file=outputStream,
                 )
 
@@ -195,7 +207,7 @@ def cleanTempDirs(olderThanDays=None):
     if olderThanDays is not None:
         gracePeriod = datetime.timedelta(days=olderThanDays)
         now = datetime.datetime.now()
-        thisRunFolder = os.path.basename(FAST_PATH)
+        thisRunFolder = os.path.basename(armi.context.FAST_PATH)
 
         for dirname in os.listdir(APP_DATA):
             dirPath = os.path.join(APP_DATA, dirname)

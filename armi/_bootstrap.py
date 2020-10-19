@@ -59,20 +59,6 @@ def _addCustomTabulateTables():
 _addCustomTabulateTables()
 
 
-# Creating the FAST_PATH here so that parts of ARMI that dont necessarily create an
-# Operator can use it. Main example is the Database funtionality
-try:
-    os.makedirs(context.FAST_PATH)
-except OSError:
-    # If FAST_PATH exists already that generally should be an error because
-    # different processes will be stepping on each other.
-    # The exception to this rule is in cases that instantiate multiple operators in one
-    # process (e.g. unit tests that loadTestReactor). Since the FAST_PATH is set at
-    # import, these will use the same path multiple times. We pass here for that reason.
-    if not os.path.exists(context.FAST_PATH):
-        # if it actually doesn't exist, that's an actual error. Raise
-        raise
-
 from armi import runLog
 
 from armi.nucDirectory import nuclideBases

@@ -28,6 +28,7 @@ import re
 import os
 
 import armi
+from armi import context
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
 from armi import utils
@@ -106,6 +107,33 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
+
+        self._initFastPath()
+
+    def _initFastPath(self):
+        """
+        Create the FAST_PATH directory for fast local operations if it's in APP_DATA
+
+        Notes
+        -----
+        The FAST_PATH was once created at import-time in order to support modules
+        that use FAST_PATH without operators (e.g. Database). However, we decided
+        to leave FAST_PATH as the CWD in INTERACTIVE mode, so this should not
+        be a problem anymore, and we can safely move FAST_PATH creation
+        back into the Operator.
+        """
+        context.activateLocalFastPath()
+        try:
+            os.makedirs(context.FAST_PATH)
+        except OSError:
+            # If FAST_PATH exists already that generally should be an error because
+            # different processes will be stepping on each other.
+            # The exception to this rule is in cases that instantiate multiple operators in one
+            # process (e.g. unit tests that loadTestReactor). Since the FAST_PATH is set at
+            # import, these will use the same path multiple times. We pass here for that reason.
+            if not os.path.exists(context.FAST_PATH):
+                # if it actually doesn't exist, that's an actual error. Raise
+                raise
 
     def _getCycleLengths(self):
         """Return the cycle length for each cycle of the system as a list."""

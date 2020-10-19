@@ -190,7 +190,7 @@ class ArmiCLI:
         cmd.parse(args)
 
         if cmd.args.batch:
-            armi.Mode.setMode(armi.Mode.Batch)
+            armi.Mode.setMode(armi.Mode.BATCH)
         elif cmd.mode is not None:
             armi.Mode.setMode(cmd.mode)
 
