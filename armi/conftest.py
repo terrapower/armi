@@ -29,6 +29,7 @@ import os
 import matplotlib
 
 import armi
+from armi.tests import TEST_ROOT
 from armi import apps
 from armi import settings
 from armi.settings import caseSettings
@@ -71,3 +72,9 @@ def bootstrapArmiTestEnv():
     context.activateLocalFastPath()
     if not os.path.exists(context.FAST_PATH):
         os.makedirs(context.FAST_PATH)
+
+    # some tests need to find the TEST_ROOT via an env variable when they're
+    # filling in templates with ``$ARMITESTBASE`` in them or opening
+    # input files use the variable in an `!include` tag. Thus
+    # we provide it here.
+    os.environ["ARMITESTBASE"] = TEST_ROOT
