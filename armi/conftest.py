@@ -29,6 +29,7 @@ import os
 import matplotlib
 
 import armi
+from armi.tests import TEST_ROOT
 from armi import apps
 from armi import settings
 from armi.settings import caseSettings
@@ -71,3 +72,6 @@ def bootstrapArmiTestEnv():
     context.activateLocalFastPath()
     if not os.path.exists(context.FAST_PATH):
         os.makedirs(context.FAST_PATH)
+
+    # for any tests that want to find the ARMI test root via env variable.
+    os.environ["ARMITESTBASE"] = TEST_ROOT
