@@ -53,7 +53,7 @@ def bootstrapArmiTestEnv():
 
     cs = caseSettings.Settings()
 
-    armi.Mode.setMode(armi.Mode.BATCH)
+    context.Mode.setMode(context.Mode.BATCH)
     settings.setMasterCs(cs)
     # Need to init burnChain.
     # see armi.cases.case.Case._initBurnChain

@@ -29,9 +29,6 @@ import enum
 import shutil
 import gc
 
-from armi import runLog
-from armi.bookkeeping.db import Database3
-
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
 
@@ -181,6 +178,10 @@ def cleanTempDirs(olderThanDays=None):
         If provided, deletes other ARMI directories if they are older than the requested
         time.
     """
+    from armi import (
+        runLog,
+    )  # pylint: disable=import-outside-toplevel # avoid cyclic import
+
     disconnectAllHdfDBs()
 
     if _FAST_PATH_IS_TEMPORARY and os.path.exists(FAST_PATH):
@@ -237,6 +238,9 @@ def disconnectAllHdfDBs():
     get around this by using the garbage collector to manually disconnect all open HdfDB
     objects.
     """
+
+    from armi.bookkeeping.db import Database3  # pylint: disable=import-outside-toplevel
+
     h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
     for db in h5dbs:
         db.close()

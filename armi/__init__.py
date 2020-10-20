@@ -76,6 +76,8 @@ from armi.context import (
     MPI_SIZE,
     APP_DATA,
 )
+from armi.context import Mode
+
 from armi.meta import __version__
 from armi import apps
 from armi import pluginManager
