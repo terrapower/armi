@@ -431,7 +431,7 @@ class Case:
             operatorClass = operators.getOperatorClassFromSettings(self.cs)
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
-            if armi.CURRENT_MODE == armi.Mode.Interactive:
+            if armi.CURRENT_MODE == armi.Mode.INTERACTIVE:
                 # if interactive, ask user to deal with settings issues
                 inspector.run()
             else:
@@ -717,7 +717,5 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
                         continue
                     _sourceDir, sourceName = os.path.split(sourceFullPath)
                     pathTools.copyOrWarn(
-                        label,
-                        sourceFullPath,
-                        os.path.join(destination, sourceName),
+                        label, sourceFullPath, os.path.join(destination, sourceName)
                     )

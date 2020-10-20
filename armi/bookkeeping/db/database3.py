@@ -82,6 +82,7 @@ import numpy
 import h5py
 
 import armi
+from armi import context
 from armi import interfaces
 from armi import runLog
 from armi import settings
@@ -548,7 +549,7 @@ class Database3(database.Database):
 
         if self._permission == "w":
             # assume fast path!
-            filePath = os.path.join(armi.FAST_PATH, filePath)
+            filePath = os.path.join(context.FAST_PATH, filePath)
             self._fullPath = os.path.abspath(filePath)
 
         else:

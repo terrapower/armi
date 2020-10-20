@@ -78,8 +78,8 @@ class EntryPoint:
     then it is an optional positional argument. Finally, if settingsArgument is
     None, then no settings file argument is added."""
 
-    #: One of {armi.Mode.Batch, armi.Mode.Interactive, armi.Mode.Gui}, optional.
-    #: Specifies the ARMI mode in which the command is run. Default is armi.Mode.Batch.
+    #: One of {armi.Mode.BATCH, armi.Mode.INTERACTIVE, armi.Mode.GUI}, optional.
+    #: Specifies the ARMI mode in which the command is run. Default is armi.Mode.BATCH.
     mode: Optional[int] = None
 
     def __init__(self):

@@ -27,7 +27,7 @@ class ConvertDB(EntryPoint):
     """Convert databases between different versions"""
 
     name = "convert-db"
-    mode = armi.Mode.Batch
+    mode = armi.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Input database path", type=str)
@@ -91,7 +91,7 @@ class ExtractInputs(EntryPoint):
     """
 
     name = "extract-inputs"
-    mode = armi.Mode.Batch
+    mode = armi.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to input database", type=str)
@@ -157,7 +157,7 @@ class InjectInputs(EntryPoint):
     """
 
     name = "inject-inputs"
-    mode = armi.Mode.Batch
+    mode = armi.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to affected database", type=str)

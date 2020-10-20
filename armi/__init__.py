@@ -44,10 +44,8 @@ If using the ``run`` entry point, additional work is done:
 """
 import atexit
 import datetime
-import gc
 import importlib
 import os
-import shutil
 import signal
 import subprocess
 import sys
@@ -59,10 +57,10 @@ import warnings
 # necessarily safe to import the rest of the ARMI system. Things like:
 # - configure the MPI environment
 # - detect the nature of interaction with the user (terminal UI, GUI, unsupervized, etc)
-# - create/define the FAST_PATH, etc
+# - define the FAST_PATH
 # - Initialize the nuclide database
 import armi._bootstrap
-import armi.context
+from armi import context
 from armi.context import (
     ROOT,
     RES,
@@ -77,9 +75,9 @@ from armi.context import (
     MPI_DISTRIBUTABLE,
     MPI_SIZE,
     APP_DATA,
-    FAST_PATH,
 )
 from armi.context import Mode
+
 from armi.meta import __version__
 from armi import apps
 from armi import pluginManager
@@ -89,7 +87,6 @@ from armi import materials
 from armi.localization import exceptions
 from armi.reactor import composites
 from armi.reactor import flags
-from armi.bookkeeping.db import Database3
 from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
 
@@ -133,84 +130,6 @@ def _registerUserPlugin(plugManager, userPluginName):
             "This constant is required in user plugins. Please adjust plugin."
         )
         raise
-
-
-def disconnectAllHdfDBs():
-    """
-    Forcibly disconnect all instances of HdfDB objects
-
-    Notes
-    -----
-    This is a hack to help ARMI exit gracefully when the garbage collector and h5py have
-    issues destroying objects. After lots of investigation, the root cause for why this
-    was having issues was never identified. It appears that when several HDF5 files are
-    open in the same run (e.g.  when calling armi.init() multiple times from a
-    post-processing script), when these h5py File objects were closed, the garbage
-    collector would raise an exception related to the repr'ing the object. We
-    get around this by using the garbage collector to manually disconnect all open HdfDB
-    objects.
-    """
-    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
-    for db in h5dbs:
-        db.close()
-
-
-def cleanTempDirs(olderThanDays=None):
-    """
-    Clean up temporary files after a run.
-
-    The Windows HPC system sends a SIGBREAK signal when the user cancels a job, which
-    is NOT handled by ``atexit``. Notably SIGBREAK doesn't exist off Windows.
-    For the SIGBREAK signal to work with a Microsoft HPC, the ``TaskCancelGracePeriod``
-    option must be configured to be non-zero. This sets the period between SIGBREAK
-    and SIGTERM/SIGINT. To do cleanups in this case, we must use the ``signal`` module.
-    Actually, even then it does not work because MS ``mpiexec`` does not pass signals
-    through.
-
-    Parameters
-    ----------
-    olderThanDays: int, optional
-        If provided, deletes other ARMI directories if they are older than the requested
-        time.
-    """
-    disconnectAllHdfDBs()
-
-    if os.path.exists(FAST_PATH):
-        if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
-            print(
-                "Cleaning up temporary files in: {}".format(FAST_PATH), file=sys.stdout
-            )
-        try:
-            shutil.rmtree(FAST_PATH)
-        except Exception as error:  # pylint: disable=broad-except
-            for outputStream in (sys.stderr, sys.stdout):
-                print(
-                    "Failed to delete temporary files in: {}\n"
-                    "    error: {}".format(FAST_PATH, error),
-                    file=outputStream,
-                )
-
-    # Also delete anything still here after `olderThanDays` days (in case this failed on
-    # earlier runs)
-    if olderThanDays is not None:
-        gracePeriod = datetime.timedelta(days=olderThanDays)
-        now = datetime.datetime.now()
-        thisRunFolder = os.path.basename(FAST_PATH)
-
-        for dirname in os.listdir(APP_DATA):
-            dirPath = os.path.join(APP_DATA, dirname)
-            if not os.path.isdir(dirPath):
-                continue
-            try:
-                fromThisRun = dirname == thisRunFolder  # second chance to delete
-                _rank, dateString = dirname.split("-")
-                dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
-                runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
-                if runIsOldAndLikleyComplete or fromThisRun:
-                    # Delete old files
-                    shutil.rmtree(dirPath)
-            except:  # pylint: disable=bare-except
-                pass
 
 
 def init(choice=None, fName=None, cs=None):
@@ -338,7 +257,7 @@ def _cleanupOnCancel(signum, _frame):
         "".format(signum),
         file=sys.stderr,
     )
-    cleanTempDirs()
+    context.cleanTempDirs()
     sys.stdout.flush()
     sys.stderr.flush()
     sys.exit(1)  # since we're handling the signal we have to cancel
@@ -378,11 +297,9 @@ def configure(app: Optional[apps.App] = None):
         # ARMI cannot be reconfigured!
         raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
 
-    assert not armi.context.BLUEPRINTS_IMPORTED, (
+    assert not context.BLUEPRINTS_IMPORTED, (
         "ARMI can no longer be configured after blueprints have been imported. "
-        "Blueprints were imported from:\n{}".format(
-            armi.context.BLUEPRINTS_IMPORT_CONTEXT
-        )
+        "Blueprints were imported from:\n{}".format(context.BLUEPRINTS_IMPORT_CONTEXT)
     )
 
     _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
@@ -392,7 +309,7 @@ def configure(app: Optional[apps.App] = None):
     _app = app
 
     pm = app.pluginManager
-    armi.context.APP_NAME = app.name
+    context.APP_NAME = app.name
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
     flags.registerPluginFlags(pm)
@@ -421,7 +338,7 @@ def applyAsyncioWindowsWorkaround():
 applyAsyncioWindowsWorkaround()
 
 # The ``atexit`` handler is like putting it in a finally after everything.
-atexit.register(cleanTempDirs, olderThanDays=14)
+atexit.register(context.cleanTempDirs, olderThanDays=14)
 
 # register cleanups upon HPC cancellations. Linux clusters will send a different signal.
 # SIGBREAK doesn't exist on non-windows
