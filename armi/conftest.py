@@ -73,5 +73,8 @@ def bootstrapArmiTestEnv():
     if not os.path.exists(context.FAST_PATH):
         os.makedirs(context.FAST_PATH)
 
-    # for any tests that want to find the ARMI test root via env variable.
+    # some tests need to find the TEST_ROOT via an env variable when they're
+    # filling in templates with ``$ARMITESTBASE`` in them or opening
+    # input files use the variable in an `!include` tag. Thus
+    # we provide it here.
     os.environ["ARMITESTBASE"] = TEST_ROOT
