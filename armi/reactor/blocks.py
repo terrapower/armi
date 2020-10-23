@@ -1564,17 +1564,6 @@ class Block(composites.Composite):
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
 
-    def isAnnular(self):
-        """True if contains annular fuel."""
-        fuelPin = self.getComponent(Flags.FUEL)
-        if not fuelPin:
-            return False
-
-        if abs(fuelPin.getDimension("id") - 0.0) < 1e-6:
-            return False
-
-        return True
-
     def getDpaXs(self):
         """Determine which cross sections should be used to compute dpa for this block."""
         if settings.getMasterCs()["gridPlateDpaXsSet"] and self.hasFlags(
@@ -2080,14 +2069,10 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                if (
-                    symmetryLine
-                    in [
-                        grids.BOUNDARY_0_DEGREES,
-                        grids.BOUNDARY_120_DEGREES,
-                    ]
-                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
-                ):
+                if symmetryLine in [
+                    grids.BOUNDARY_0_DEGREES,
+                    grids.BOUNDARY_120_DEGREES,
+                ] and bool(self.r.core.childrenByLocator.get(upperEdgeLoc)):
                     return 2.0
         return 1.0
 
