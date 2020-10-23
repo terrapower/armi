@@ -70,8 +70,8 @@ def bootstrapArmiTestEnv():
     # responsible for making FAST_PATH, so we make it here.
     # It will be deleted by the atexit hook.
     context.activateLocalFastPath()
-    if not os.path.exists(context.FAST_PATH):
-        os.makedirs(context.FAST_PATH)
+    if not os.path.exists(context.getFastPath()):
+        os.makedirs(context.getFastPath())
 
     # some tests need to find the TEST_ROOT via an env variable when they're
     # filling in templates with ``$ARMITESTBASE`` in them or opening

@@ -9,7 +9,7 @@ import os
 
 from armi.utils import directoryChangers
 from armi import runLog
-from armi.context import FAST_PATH, MPI_RANK
+from armi.context import getFastPath, MPI_RANK
 
 
 class ExecutionOptions:
@@ -79,7 +79,9 @@ class ExecutionOptions:
         use this, you will get a relatively consistent naming convention
         for your fast-past folders.
         """
-        self.runDir = os.path.join(FAST_PATH, f"{caseTitle}-{self.label}-{MPI_RANK}")
+        self.runDir = os.path.join(
+            getFastPath(), f"{caseTitle}-{self.label}-{MPI_RANK}"
+        )
 
     def describe(self):
         """Make a string summary of all options."""
@@ -107,11 +109,11 @@ class Executer:
 
     def run(self):
         """
-        Run the executer steps. 
+        Run the executer steps.
 
         This should use the current state of the reactor as input,
         perform some kind of calculation, and update the reactor
-        with the output. 
+        with the output.
         """
         raise NotImplementedError()
 
@@ -120,7 +122,7 @@ class DefaultExecuter(Executer):
     """
     An Executer that uses a common run sequence.
 
-    This sequence has been found to be relatively common in many 
+    This sequence has been found to be relatively common in many
     externally-executed physics codes. It is here for convenience
     but is not required. The sequence look like:
 
@@ -147,7 +149,7 @@ class DefaultExecuter(Executer):
                 do not update this method with new complexity! Instead, simply make your own
                 run sequence and/or class. This pattern is useful only in that it is fairly simple.
                 By all means, do use ``DirectoryChanger`` and ``ExecuterOptions``
-                and other utilities. 
+                and other utilities.
         """
         self.options.resolveDerivedOptions()
         runLog.debug(self.options.describe())
