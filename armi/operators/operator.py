@@ -127,14 +127,14 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         context.activateLocalFastPath()
         try:
-            os.makedirs(context.FAST_PATH)
+            os.makedirs(context.getFastPath())
         except OSError:
             # If FAST_PATH exists already that generally should be an error because
             # different processes will be stepping on each other.
             # The exception to this rule is in cases that instantiate multiple operators in one
             # process (e.g. unit tests that loadTestReactor). Since the FAST_PATH is set at
             # import, these will use the same path multiple times. We pass here for that reason.
-            if not os.path.exists(context.FAST_PATH):
+            if not os.path.exists(context.getFastPath()):
                 # if it actually doesn't exist, that's an actual error. Raise
                 raise
 

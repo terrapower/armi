@@ -57,7 +57,6 @@ import warnings
 # necessarily safe to import the rest of the ARMI system. Things like:
 # - configure the MPI environment
 # - detect the nature of interaction with the user (terminal UI, GUI, unsupervized, etc)
-# - define the FAST_PATH
 # - Initialize the nuclide database
 import armi._bootstrap
 from armi import context

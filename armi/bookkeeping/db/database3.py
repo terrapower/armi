@@ -549,7 +549,7 @@ class Database3(database.Database):
 
         if self._permission == "w":
             # assume fast path!
-            filePath = os.path.join(context.FAST_PATH, filePath)
+            filePath = os.path.join(context.getFastPath(), filePath)
             self._fullPath = os.path.abspath(filePath)
 
         else:

@@ -126,10 +126,15 @@ if MPI_COMM is not None:
 
 MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
 
-FAST_PATH = os.path.join(os.getcwd())
+_FAST_PATH = os.path.join(os.getcwd())
+"""
+A directory available for high-performance I/O  
+
+.. warning:: This is not a constant and can change at runtime.
+"""
 
 _FAST_PATH_IS_TEMPORARY = False
-"""Flag indicating whether or not the FAST_PATH should be cleaned up on exit"""
+"""Flag indicating whether or not the FAST_PATH should be cleaned up on exit."""
 
 
 def activateLocalFastPath():
@@ -148,8 +153,8 @@ def activateLocalFastPath():
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global FAST_PATH, _FAST_PATH_IS_TEMPORARY  # pylint: disable=global-statement
-    FAST_PATH = os.path.join(
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY  # pylint: disable=global-statement
+    _FAST_PATH = os.path.join(
         APP_DATA,
         "{}{}-{}".format(
             MPI_RANK,
@@ -158,6 +163,19 @@ def activateLocalFastPath():
         ),
     )
     _FAST_PATH_IS_TEMPORARY = True
+
+
+def getFastPath():
+    """
+    Callable to get the current FAST_PATH.
+
+    Notes
+    -----
+    It's too dangerous to use ``FAST_PATH`` directly as it can change between import and
+    runtime. For example, a module that does ``from armi.context import FAST_PATH`` is
+    disconnected from the official ``FAST_PATH`` controlled by this module.
+    """
+    return _FAST_PATH
 
 
 def cleanTempDirs(olderThanDays=None):
@@ -184,19 +202,19 @@ def cleanTempDirs(olderThanDays=None):
 
     disconnectAllHdfDBs()
 
-    if _FAST_PATH_IS_TEMPORARY and os.path.exists(FAST_PATH):
+    if _FAST_PATH_IS_TEMPORARY and os.path.exists(_FAST_PATH):
         if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
             print(
-                "Cleaning up temporary files in: {}".format(FAST_PATH),
+                "Cleaning up temporary files in: {}".format(_FAST_PATH),
                 file=sys.stdout,
             )
         try:
-            shutil.rmtree(FAST_PATH)
+            shutil.rmtree(_FAST_PATH)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
                 print(
                     "Failed to delete temporary files in: {}\n"
-                    "    error: {}".format(FAST_PATH, error),
+                    "    error: {}".format(_FAST_PATH, error),
                     file=outputStream,
                 )
 
@@ -205,7 +223,7 @@ def cleanTempDirs(olderThanDays=None):
     if olderThanDays is not None:
         gracePeriod = datetime.timedelta(days=olderThanDays)
         now = datetime.datetime.now()
-        thisRunFolder = os.path.basename(FAST_PATH)
+        thisRunFolder = os.path.basename(_FAST_PATH)
 
         for dirname in os.listdir(APP_DATA):
             dirPath = os.path.join(APP_DATA, dirname)
