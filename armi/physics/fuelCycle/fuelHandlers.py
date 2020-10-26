@@ -988,7 +988,10 @@ class FuelHandler:
                     elif (
                         abs(a.spatialLocator.getRingPos()[0] - targetRing) < minDiff[0]
                     ):
-                        minDiff = (abs(a.spatialLocator.getRingPos()[0] - targetRing), a)
+                        minDiff = (
+                            abs(a.spatialLocator.getRingPos()[0] - targetRing),
+                            a,
+                        )
 
                 if findMany:
                     # returning many assemblies. If there's a param, we'd like it to be honored by
@@ -1973,7 +1976,7 @@ class FuelHandler:
         def squaredDistanceFromOrigin(a):
             origin = numpy.array([0.0, 0.0, 0.0])
             p = numpy.array(a.spatialLocator.getLocalCoordinates())
-            return math.sqrt(((p - origin) ** 2).sum())
+            return ((p - origin) ** 2).sum()
 
         def assemAngle(a):
             x, y, _ = a.spatialLocator.getLocalCoordinates()
