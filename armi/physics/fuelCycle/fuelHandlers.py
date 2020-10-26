@@ -1970,7 +1970,7 @@ class FuelHandler:
 
         """
 
-        def distanceFromOrigin(a):
+        def squaredDistanceFromOrigin(a):
             origin = numpy.array([0.0, 0.0, 0.0])
             p = numpy.array(a.spatialLocator.getLocalCoordinates())
             return math.sqrt(((p - origin) ** 2).sum())
@@ -1993,13 +1993,13 @@ class FuelHandler:
             elif self.cs["circularRingOrder"] == "distanceSmart":
                 if lastRing == ring + 1:
                     # converging. Put things on the outside first.
-                    sorter = lambda a: -distanceFromOrigin(a)
+                    sorter = lambda a: -squaredDistanceFromOrigin(a)
                 else:
                     # diverging. Put things on the inside first.
-                    sorter = lambda a: distanceFromOrigin(a)
+                    sorter = lambda a: squaredDistanceFromOrigin(a)
             else:
                 # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-                sorter = lambda a: distanceFromOrigin(a)
+                sorter = lambda a: squaredDistanceFromOrigin(a)
             assemsInRing = sorted(assemsInRing, key=sorter)
             for a in assemsInRing:
                 locationSchedule.append(a.getLocation())

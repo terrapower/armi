@@ -305,6 +305,13 @@ class HistoryTrackerInterface(interfaces.Interface):
         >>> getTimeIndices(moc=True):
         [2, 7, 12, ...]
 
+        Warning
+        -------
+        This is no longer functional, as much of the old history tracking was based on
+        implementation details of the Database, version 2. We now directly support
+        history tracking through the Database, version 3. At some point this code should
+        be removed.
+
         See Also
         --------
         getTimeSteps : gets time in years where the assembly is in the core
@@ -332,6 +339,10 @@ class HistoryTrackerInterface(interfaces.Interface):
                     )
                 # only add this timestep if it's around for this assembly.
                 if blockLocationLabel is not None:
+                    # this label doesn't actually properly correspond to the block
+                    # location label determined by _blockLocationAtTimenode.
+                    # blockLocationLabel is supposed to be coming from a previous time
+                    # state in the database.
                     if a.spatialLocator.grid is coreGrid:
                         timeIndices.append(globalNode)
 
@@ -625,7 +636,15 @@ class HistoryTrackerInterface(interfaces.Interface):
         return b
 
     def _blockLocationAtTimenode(self, block, timeNode):
-        """Find block location label at a specific timenode."""
+        """
+        Find block location label at a specific timenode.
+
+        Warning
+        -------
+        This fuction no longer functions, as it relies on implmentation details of
+        Database version 2, which is no longer used. Retaining for historical purposes,
+        but this should be removed soon.
+        """
         dbi = self.getInterface("database")
         ids = dbi.database.readBlockParam("id", timeNode)
         locs = dbi.database.lookupGeometry()

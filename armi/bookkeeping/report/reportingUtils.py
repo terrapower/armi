@@ -264,7 +264,7 @@ def writeAssemblyMassSummary(r):
         thisTypeList = core.getChildrenOfType(a.getType())
         count = 0
         for t in thisTypeList:
-            ring = t.spatialLocator.getRingPos()[0]
+            ring, _pos = t.spatialLocator.getRingPos()
             if ring == 1:
                 # only count center location once.
                 count += 1

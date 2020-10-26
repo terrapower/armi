@@ -21,15 +21,32 @@ satisfied by the :py:mod:`armi.reactor.grids` module and its Grid and Location o
 
 This module still exists to help satisfy some weird cases where using Grids/Locations
 was not easy. This mostly has to do with the concept of ring and position, which are
-difficult to reason about in the absence of a Grid. Further improvements to the Block
-and Assembly classes (or more fundamentally with the ``ArmiObject`` class) will likely
-render this module useless at which point it can and should be removed. Namely, there
-are plans to associate simple shape objects with each ``ArmiObject``, which would allow
-for knowing about the Hex/HexGrid-ness of an object without it needing to live in a
-``.spatialGrid``.
+difficult to reason about in the absence of a Grid instance.
 
-This also retains the ``Line`` and ``Area`` classes, which at the very least should be
-moved somewhere else more relevant.
+This is pretty weird and nuanced. Cartesian grids need state (throughCenter) in order to
+reason about ring/pos. So, for ring/pos to be part of the base Grid abstraction, we need
+to assume that *any* Grid can only cough up ring/pos information through an instance
+method. HexGrid is sort of the special case, in that it *could* do ring/pos stuff as a
+static method (notice that it punts the actual implementation to ``hexagon.py``). There
+is no similar ``rectangle.py`` to hold the concept of ring/pos for the CartesianGrid
+case, and to do such a thing would be extra weird, because a ``throughCenter`` doesn't
+really mean anything to a simple rectangle; the grid carries the meaning of
+``throughCenter``.
+
+So in the rare circumstances where we want to know about ring/pos from a block/assembly
+that may or may not actually live in a Grid, we need to just make assumptions and grab
+something. In the hex case, that something can be ``hexagon.py``, in the Cartesian
+case that something are the private static methods unique to
+:py:class:`armi.reactor.grids.CartesianGrid`.
+
+Further improvements to the Block and Assembly classes (or more fundamentally with the
+``ArmiObject`` class) will likely render this module useless at which point it can and
+should be removed. Namely, there are plans to associate simple shape objects with each
+``ArmiObject``, which would allow for knowing about the Hex/HexGrid-ness of an object
+without it needing to live in a ``.spatialGrid``.
+
+This module also retains the ``Line`` and ``Area`` classes, which at the very least
+should be moved somewhere else more relevant.
 """
 
 from armi.utils import hexagon

@@ -1108,7 +1108,7 @@ class CartesianGrid(Grid):
     @staticmethod
     def _getMinimumRingsStatic(n, throughCenter):
         # Keep private because this is really here to support old locations stuff that
-        # hasn't been removed yet.
+        # hasn't been removed yet. See module docs for locations.py for more details.
         numPositions = 0
         for ring in itertools.count(1):
             ringPositions = self._getPositionsInRing(ring, throughCenter)
@@ -1119,7 +1119,7 @@ class CartesianGrid(Grid):
     @staticmethod
     def _getPositionsInRing(ring, throughCenter):
         # Keep private because this is really here to support old locations stuff that
-        # hasn't been removed yet.
+        # hasn't been removed yet. See module docs for locations.py for more details.
         if ring == 1:
             ringPositions = 1 if throughCenter else 4
         else:
