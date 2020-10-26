@@ -123,7 +123,9 @@ class TestHistoryTracker(ArmiTestHelper):
         first energy group. This test shows that this behavior is preserved.
         """
         o = self.o
-        b = o.r.core.whichAssemblyIsIn(1, 1).getFirstBlock(Flags.FUEL)
+        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
+            Flags.FUEL
+        )
         bVolume = b.getVolume()
         bName = b.name
 

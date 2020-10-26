@@ -53,9 +53,6 @@ The "radial" (ring, position) indexing used in DIF3D can be converted to and fro
 more quasi-Cartesian indexing in a hex mesh easily with the utility methods
 :py:meth:`HexGrid.getRingPos` and :py:func:`indicesToRingPos`.
 
-.. note:: ``IndexLocation`` is intended to replace
-:py:class:`armi.reactor.locations.Location`.
-
 This module is designed to satisfy the spatial arrangement requirements of :py:mod:`the
 Reactor package <armi.reactor>`.
 
@@ -389,6 +386,20 @@ class IndexLocation(LocationBase):
         Grid.getSymmetricEquivalents
         """
         return self.grid.getSymmetricEquivalents(self.indices)
+
+    def distanceTo(self, other) -> float:
+        """
+        Return the distance from this locator to another.
+        """
+        return math.sqrt(
+            (
+                (
+                    numpy.array(self.getGlobalCoordinates())
+                    - numpy.array(other.getGlobalCoordinates())
+                )
+                ** 2
+            ).sum()
+        )
 
 
 class MultiIndexLocation(IndexLocation):
@@ -752,21 +763,21 @@ class Grid:
     def restoreBackup(self):
         self._unitSteps, self._bounds, self._offset = self._backup
 
-    def getCoordinates(self, indices, nativeCoords=False):
+    def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
         """Return the coordinates of the center of the mesh cell at the given given indices in cm."""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._centroidBySteps, self._centroidByBounds
         )
 
-    def getCellBase(self, indices):
+    def getCellBase(self, indices) -> numpy.ndarray:
         """Get the mesh base (lower left) of this mesh cell in cm"""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
-    def getCellTop(self, indices):
+    def getCellTop(self, indices) -> numpy.ndarray:
         """Get the mesh top (upper right) of this mesh cell in cm"""
         indices = numpy.array(indices) + 1
         return self._evaluateMesh(
@@ -793,7 +804,7 @@ class Grid:
         """
         raise NotImplementedError("Not implemented on base Grid type.")
 
-    def _evaluateMesh(self, indices, stepOperator, boundsOperator):
+    def _evaluateMesh(self, indices, stepOperator, boundsOperator) -> numpy.ndarray:
         """
         Evaluate some function of indices on this grid.
 
@@ -905,7 +916,7 @@ class Grid:
         """
         return self._bounds
 
-    def getLocationFromRingAndPos(self, ring, pos, k=0):
+    def getLocatorFromRingAndPos(self, ring, pos, k=0):
         """
         Return the location based on ring and position.
 
@@ -940,6 +951,20 @@ class Grid:
         """
         raise NotImplementedError("Base Grid does not know about ring/pos")
 
+    def getMinimumRings(self, n: int) -> int:
+        """
+        Return the minimum number of rings needed to fit ``n`` objects.
+
+        Warning
+        -------
+        While this is useful and safe for answering the question of "how many rings do I
+        need to hold N things?", is generally not safe to use it to answer "I have N
+        things; within how many rings are they distributed?". This function provides a
+        lower bound, assuming that objects are densely-packed. If they are not actually
+        densely packed, this may be unphysical.
+        """
+        raise NotImplementedError("Base grid does not know about rings")
+
     def getRingPos(self, indices) -> Tuple[int, int]:
         """
         Get ring and position number in this grid.
@@ -960,7 +985,7 @@ class Grid:
 
         # For compatibility's sake, return __something__. TODO: We may want to just
         # throw here, to be honest.
-        return tuple(indices[:2])
+        return tuple(i + 1 for i in indices[:2])
 
     def getAllIndices(self):
         """Get all possible indices in this grid."""
@@ -983,6 +1008,7 @@ class Grid:
 
         Assumes 2-d unit-step defined (works for cartesian)
         """
+        #TODO move this to the CartesianGrid
         pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
         if pitch[0] == 0:
             raise ValueError(f"Grid {self} does not have a defined pitch.")
@@ -1073,6 +1099,35 @@ class CartesianGrid(Grid):
             pos = 7 * ring + j
         return (int(ring) + 1, int(pos) + 1)
 
+    def getMinimumRings(self, n):
+        """
+        Return the minimum number of rings needed to fit ``n`` objects.
+        """
+        return self._getMinimumRingsStatic(n, throughCenter=self._isThroughCenter())
+
+    @staticmethod
+    def _getMinimumRingsStatic(n, throughCenter):
+        # Keep private because this is really here to support old locations stuff that
+        # hasn't been removed yet. See module docs for locations.py for more details.
+        numPositions = 0
+        for ring in itertools.count(1):
+            ringPositions = CartesianGrid._getPositionsInRing(ring, throughCenter)
+            numPositions += ringPositions
+            if numPositions >= n:
+                return ring
+
+    @staticmethod
+    def _getPositionsInRing(ring, throughCenter):
+        # Keep private because this is really here to support old locations stuff that
+        # hasn't been removed yet. See module docs for locations.py for more details.
+        if ring == 1:
+            ringPositions = 1 if throughCenter else 4
+        else:
+            ringPositions = (ring - 1) * 8
+            if not throughCenter:
+                ringPositions += 4
+        return ringPositions
+
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
         if geometry.QUARTER_CORE in self.symmetry:
             return locator.i >= 0 and locator.j >= 0
@@ -1159,7 +1214,7 @@ class HexGrid(Grid):
     """Has 6 neighbors in plane."""
 
     @staticmethod
-    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False):
+    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry=""):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
 
@@ -1202,6 +1257,7 @@ class HexGrid(Grid):
             unitSteps=unitSteps,
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
+            symmetry=symmetry
         )
 
     @property
@@ -1254,6 +1310,17 @@ class HexGrid(Grid):
         positionBase = 1 + edge * (ring - 1)
         return ring, positionBase + offset
 
+    def getMinimumRings(self, n):
+        """
+        Return the minimum number of rings needed to fit ``n`` objects.
+
+        Notes
+        -----
+        ``self`` is not used because hex grids always behave the same w.r.t.
+        rings/positions.
+        """
+        return hexagon.numRingsToHoldNumCells(n)
+
     def getNeighboringCellIndices(self, i, j=0, k=0):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
@@ -1270,7 +1337,7 @@ class HexGrid(Grid):
         ]
 
     def getLabel(self, indices):
-        """Hex labels start at 1."""
+        """Hex labels start at 1, and are ring/position based."""
         ring, pos = self.getRingPos(indices)
         if len(indices) == 2:
             return Grid.getLabel(self, (ring, pos))
@@ -1532,7 +1599,7 @@ class ThetaRZGrid(Grid):
         )
 
     def getRingPos(self, indices):
-        return (indices[1], indices[0])
+        return (indices[1] + 1, indices[0] + 1)
 
     @staticmethod
     def getIndicesFromRingAndPos(ring, pos):

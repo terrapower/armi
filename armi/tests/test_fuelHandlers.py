@@ -18,6 +18,7 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
+import collections
 import copy
 import os
 import unittest
@@ -120,7 +121,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.directoryChanger.close()
 
     def test_FindHighBu(self):
-        a = self.r.core.whichAssemblyIsIn(5, 4)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
+        a = self.r.core.childrenByLocator[loc]
         # set burnup way over 1.0, which is otherwise the highest bu in the core
         a[0].p.percentBu = 50
 
@@ -134,9 +136,13 @@ class TestFuelHandler(ArmiTestHelper):
         """Tests the width capability of findAssembly."""
 
         fh = fuelHandlers.FuelHandler(self.o)
+        assemsByRing = collections.defaultdict(list)
+        for a in self.r.core.getAssemblies():
+            assemsByRing[a.spatialLocator.getRingPos()[0]].append(a)
+
         # instantiate reactor power. more power in more outer rings
         for ring, power in zip(range(1, 8), range(10, 80, 10)):
-            aList = self.r.core.whichAssemblyIsIn(ring)
+            aList = assemsByRing[ring]
             for a in aList:
                 for b in a:
                     b.p.power = power

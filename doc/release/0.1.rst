@@ -138,3 +138,13 @@ Backend changes
 * Allow setting ``Block`` heights to zero.
 * Add a Setting class for handling lists of Flags.
 * Greatly improve support for CCCC file reading/writing.
+
+
+ARMI v0.1.6
+===========
+Release Date: TBD
+
+* Removed ``dumpLocationSnapshot`` setting and related functionality. This is replaced
+  by features of Database, version 3. Database 3 supports history tracking from the
+  database file, and whole reactor models can be loaded for any stored time step,
+  obviating the need for special logic in snapshots.

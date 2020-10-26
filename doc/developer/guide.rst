@@ -44,6 +44,38 @@ gets written to the database for evaluation and/or follow-on analysis.
 Review the :doc:`/tutorials/data_model` section for examples
 exploring a populated instance of the **Reactor** model.
 
+Finding objects in a model
+--------------------------
+Under most circumstances a :py:class:`armi.reactor.reactors.Reactor` instance will have a
+``.core`` attribute, which is an instance of :py:class:`armi.reactor.reactors.Core`. While the
+Composite pattern discussed above can be used very generally, the ``Core`` class
+enforces a couple of constrains that can be very useful:
+    * A ``Core`` is a 2-D arrangement of :py:class:`armi.reactor.assemblies.Assembly`
+      objects.
+    * Each ``Assembly`` is a 1-D arrangement of :py:class:`armi.reactor.blocks.Block`
+      objects.
+    * Blocks are :py:class:`armi.reactor.composites.Composite` objects with some extra
+      parameter bindings, utility functions, and other implementation details that let
+      them play nicely with their containing ``Assembly``.
+
+In many scenarios, one wants to access specific assemblies or blocks from a core. There
+are a few ways to get the objects that you're interested in.
+
+    * The `r.core.childrenByLocator` dictionary maps
+      :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
+      that location. For example ::
+
+          >>> loc = r.core.spatialGrid[i, j, 0]
+          >>> a = r.core.childrenByLocator[loc]
+
+      To access the ``k`` -th block in an assembly, try::
+
+          >>> b = a[k]
+
+    * `r.core.getAssemblies()` loops through all assemblies in the core for when you
+      need to do something to all assemblies.
+
+
 Parameters
 ----------
 
@@ -253,26 +285,5 @@ object.  From those settings, an :py:class:`Operator <armi.operators.operator.Op
 subclass is built by a factory and its ``operate`` method is called. This fires up the
 main ARMI analysis loop and its interface stack is looped over as indicated by user
 input.
-
-
-------------------
-Finding assemblies
-------------------
-There are a few ways to get the assemblies you're interested in.
-
-    * `r.core.whichAssemblyIsIn(ring,position)` returns whichever assembly is in
-      (ring,position)
-
-    * `r.core.getLocationContents(locList)` returns the assemblies or blocks that correspond
-      to the location list. This can be much faster that `whichAssemblyIsIn` if you need
-      many assemblies
-
-    * `r.core.getAssemblies()` loops through all assemblies in the core for when you need to
-      do something to all assemblies
-
-    * `hist.getDetailAssemblies()` use the `HistoryInterface` to find the assemblies
-      that the user has specifically designated "detail assemblies", meaning assemblies
-      that will receive special analysis. This is useful for doing limiting analyses
-      that would be too time consuming or otherwise wasteful to apply to all assemblies.
 
 

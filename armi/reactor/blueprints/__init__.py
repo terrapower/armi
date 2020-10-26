@@ -92,6 +92,7 @@ from armi.nucDirectory import elements
 from armi.scripts import migration
 from armi.utils import textProcessors
 from armi.reactor import geometry
+from armi.reactor import assemblies
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -456,10 +457,10 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 continue
 
             assemblyArea = a.getArea()
-            if abs(references[1] - assemblyArea) > 1e-9 and not hasattr(
-                a.location, "ThRZmesh"
-            ):
-                # if the location has a mesh then the assemblies can have irregular areas
+            if isinstance(a, assemblies.RZAssembly):
+                # R-Z assemblies by definition have different areas, so skip the check
+                continue
+            if abs(references[1] - assemblyArea) > 1e-9:
                 runLog.error("REFERENCE COMPARISON ASSEMBLY:")
                 references[0][0].printContents()
                 runLog.error("CURRENT COMPARISON ASSEMBLY:")

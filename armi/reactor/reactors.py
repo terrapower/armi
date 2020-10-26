@@ -25,6 +25,7 @@ from __future__ import print_function
 import collections
 import copy
 import itertools
+import math
 from typing import Optional
 import tabulate
 import time
@@ -40,6 +41,7 @@ from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
+from armi.reactor import grids
 from armi.reactor import locations
 from armi.reactor import parameters
 from armi.reactor import zones
@@ -187,7 +189,6 @@ class Core(composites.Composite):
         self.assembliesByName = {}
         self.circularRingList = {}
         self.blocksByName = {}  # lookup tables
-        self.locationIndexLookup = {}
         self.numRings = 0
         self.spatialGrid = None
         self.xsIndex = {}
@@ -912,17 +913,17 @@ class Core(composites.Composite):
             "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
         )
         referenceAssembly = self.getAssemblyWithStringLocation("A1001")
-        refLocation = referenceAssembly.getLocationObject()
+        refLocation = referenceAssembly.spatialLocator
+        pitchFactor = ringPitch / self.spatialGrid.pitch
 
         circularRingDict = collections.defaultdict(set)
 
         for a in self:
-            loc = a.getLocationObject()
-            dist = refLocation.getDistanceOfLocationToPoint(loc, pitch=ringPitch)
+            dist = a.spatialLocator.distanceTo(refLocation)
             ## To reduce numerical sensitivity, round distance to 6 decimal places
             ## before truncating.
-            index = int(round(dist, 6)) or 1  # 1 is the smallest ring.
-            circularRingDict[index].add(loc.label)
+            index = int(round(dist*pitchFactor, 6)) or 1  # 1 is the smallest ring.
+            circularRingDict[index].add(a.getLocation())
 
         return circularRingDict
 
@@ -1224,7 +1225,6 @@ class Core(composites.Composite):
         """
         self._getAssembliesByName()
         self._genBlocksByName()
-        self._buildLocationIndexLookup()  # for converting indices to locations.
         runLog.important("Regenerating Core Zones")
         self.buildZones(
             settings.getMasterCs()
@@ -1322,30 +1322,6 @@ class Core(composites.Composite):
             )
         )
 
-    def whichBlockIsAtCoords(self, x, y, z):
-        """
-        Find block closest to a x,y,z tuple.
-
-        Parameters
-        ----------
-        x, y, z : float
-            points in cm
-
-        """
-        closestAssem = (float("inf"), [])
-        for a in self.getChildren():
-            xyDist = a.getLocationObject().getDistanceOfLocationToPoint(
-                (x, y), pitch=a.getPitch()
-            )
-            if xyDist < closestAssem[0]:
-                closestAssem = (xyDist, a)
-
-        for b in closestAssem[1]:
-            if b.p.zbottom <= z <= b.p.ztop:
-                return b
-
-        raise ValueError("No block was found at ({} {} {})".format(x, y, z))
-
     def getLocationContents(self, locs, assemblyLevel=False, locContents=None):
         """
         Given a list of locations, this goes through and finds the blocks or assemblies.
@@ -1372,7 +1348,6 @@ class Core(composites.Composite):
         See Also
         --------
         makeLocationLookup : allows caching to speed this up if you call it a lot.
-        whichAssemblyIsIn : does the same thing with easier interface but no caching (slower)
         """
 
         ## Why isn't locContents an attribute of reactor? It could be another
@@ -1527,55 +1502,10 @@ class Core(composites.Composite):
         """
         Returns an assembly or none if given a location string like 'B0014'.
         """
-        loc = locations.locationFactory(self.geomType)()
-        loc.fromLabel(locationString)
-        i, j = loc.indices()
-        assem = self.childrenByLocator.get(self.spatialGrid[i, j, 0])
+        ring, pos, _ = grids.ringPosFromRingLabel(locationString)
+        loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
+        assem = self.childrenByLocator.get(loc)
         return assem
-
-    def getAssembliesInSector(self, theta1, theta2):
-        """
-        Locate assemblies in an angular sector.
-
-        0 degrees is due north, angles increase clockwise.
-        To comply with design team, north is defined as
-        the 120 degree symmetry line in ARMI models.
-
-        Parameters
-        ----------
-        theta1, theta2 : float
-            The angles (in degrees) in which assemblies shall be drawn.
-
-        Returns
-        -------
-        aList : list
-            List of assemblies in this sector
-        """
-        aList = []
-        from armi.reactor.converters import geometryConverters
-
-        converter = geometryConverters.EdgeAssemblyChanger(quiet=True)
-        converter.addEdgeAssemblies(self.r.core)
-        for a in self:
-            loc = a.getLocationObject()
-            theta = loc.getAngle(degrees=True)
-            phi = theta
-            if (
-                theta1 <= phi <= theta2
-                or abs(theta1 - phi) < 0.001
-                or abs(theta2 - phi) < 0.001
-            ):
-                aList.append(a)
-        converter.removeEdgeAssemblies(self.r.core)
-
-        if not aList:
-            raise ValueError(
-                "There are no assemblies in {} between angles of {} and {}".format(
-                    self, theta1, theta2
-                )
-            )
-
-        return aList
 
     def getAssemblyPitch(self):
         """
@@ -1611,57 +1541,6 @@ class Core(composites.Composite):
             )
         # not keepdims this time so non-tuples are unpacked
         return pitches.mean(axis=0)
-
-    def whichAssemblyIsIn(self, i1=None, i2=None, typeFlags=None, excludeFlags=None):
-        """
-        Find the assembly in a particular location.
-
-        This method is no longer preferred, it's better to use the grid system::
-
-        assemLoc = reactor.core.spatialGrid[1,2,0]
-        assem = reactor.core.childrenByLocator[assemLoc]
-
-        Parameters
-        ----------
-        i1 : int, optional
-            The first index of the location (ring number)
-        i2 : int, optional
-            The second index of the location (postion in ring). If None and i1,
-            all assemblies in ring i1 will be returned
-        typeFlags : Flags or list of Flags, optional
-            Only assemblies of this type will be returned.
-        excludeFlags : Flags or list of Flags, optional
-            Assembly types that will be excluded
-
-        Returns
-        -------
-        a : an assembly in the location
-        -OR-
-        aList: a list of assemblies.
-
-        See Also
-        --------
-        getLocationContents : does the same thing, but can allow caching
-
-        """
-        assems = Sequence(self)
-
-        if i2 is not None:
-            pred = lambda a: a.spatialLocator.getRingPos() == (i1, i2)
-            return next(assems.select(pred), None)
-
-        ## Filter on location
-        assems.select(lambda a: a.spatialLocator.getRingPos()[0] == i1)
-
-        if typeFlags:
-            ## Filter on type
-            assems.select(lambda a: a.hasFlags(typeFlags))
-
-        if excludeFlags:
-            ## Exclude types
-            assems.drop(lambda a: a.hasFlags(excludeFlags))
-
-        return list(assems)
 
     def findNeighbors(
         self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
@@ -1719,7 +1598,6 @@ class Core(composites.Composite):
 
         See Also
         --------
-        reactors.whichAssemblyIsIn
         grids.Grid.getSymmetricEquivalents
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
@@ -2192,34 +2070,6 @@ class Core(composites.Composite):
 
         return targetRing, fluxFraction
 
-    def _buildLocationIndexLookup(self):
-        r"""builds lookup to convert ring/pos to index for MCNP or finding neighbors or
-        whatever else you may think of."""
-        self.locationIndexLookup = {}
-
-        # make sure to get one extra ring because when neighbors are searched for, it will look
-        # for neighbors of the outer ring, which will look in ring+1.
-        # don't worry though, whichASsemblyIsIn will return None for those guys.
-        if self.geomType == geometry.RZT:
-            n1 = len(self.findAllAziMeshPoints())
-            n2 = len(self.findAllRadMeshPoints())
-            for i1 in range(1, n1):
-                for i2 in range(1, n2):
-                    self.locationIndexLookup[i1, i2] = (i1, i2)
-        else:
-            dumLocClass = locations.locationFactory(self.geomType)
-            dumLoc = dumLocClass()
-            for ring in range(self.getNumRings(indexBased=True) + 1):
-                rebusRing = ring + 1
-                for pos in range(dumLoc.getNumPosInRing(rebusRing)):
-                    # convert rebus numbering (starts at 1)
-                    rebPos = pos + 1
-                    dumLoc.i1 = rebusRing
-                    dumLoc.i2 = rebPos
-                    dumLoc.makeLabel()
-                    i, j = dumLoc.indices()
-                    self.locationIndexLookup[i, j] = (rebusRing, rebPos)
-
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
         r"""
         get the volume-average fuel, cladding, coolant temperature in core
@@ -2325,43 +2175,6 @@ class Core(composites.Composite):
 
         # have to update the 2-D reactor mesh too.
         self.spatialGrid.changePitch(pitchInCm)
-
-    def getAverageAssemblyPower(self, ringZoneNum=None):
-        r"""return the average assembly power in Watts in this ring zone or the full core. """
-        if ringZoneNum is not None:
-            # consider only a single ring zone.
-            ringZoneRings = self.zones.getRingZoneRings()
-            if ringZoneNum > len(ringZoneRings):
-                runLog.warning(
-                    "Cannot produce zone summary for zone {0} since there are "
-                    "only {1} zones defined".format(ringZoneNum, len(ringZoneRings))
-                )
-                return []
-
-            ringsInThisZone = ringZoneRings[ringZoneNum]
-        else:
-            # do full core.
-            ringsInThisZone = range(self.getNumRings() + 1)
-
-        assemCount = 0.0
-        totPow = 0.0
-        for ring in ringsInThisZone:
-            assembliesInThisRing = self.whichAssemblyIsIn(ring, typeFlags=Flags.FUEL)
-            # assume all fuel assemblies have the same number of blocks.
-            if not assembliesInThisRing:
-                # skip this non-fueled ring and go to the next.
-                continue
-
-            # Add up slab power and flow rates
-            for a in assembliesInThisRing:
-                totPow += a.calcTotalParam("power")
-                assemCount += 1
-
-        if not assemCount:
-            avgPow = 0.0
-        else:
-            avgPow = totPow / assemCount
-        return avgPow
 
     def calcBlockMaxes(self):
         r"""
@@ -2475,7 +2288,6 @@ class Core(composites.Composite):
                 a.makeAxialSnapList(refAssem)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
-        self._buildLocationIndexLookup()  # for converting indices to locations.
 
         self.getNuclideCategories()
 
