@@ -23,15 +23,15 @@ This module still exists to help satisfy some weird cases where using Grids/Loca
 was not easy. This mostly has to do with the concept of ring and position, which are
 difficult to reason about in the absence of a Grid instance.
 
-This is pretty weird and nuanced. Cartesian grids need state (throughCenter) in order to
-reason about ring/pos. So, for ring/pos to be part of the base Grid abstraction, we need
-to assume that *any* Grid can only cough up ring/pos information through an instance
-method. HexGrid is sort of the special case, in that it *could* do ring/pos stuff as a
-static method (notice that it punts the actual implementation to ``hexagon.py``). There
-is no similar ``rectangle.py`` to hold the concept of ring/pos for the CartesianGrid
-case, and to do such a thing would be extra weird, because a ``throughCenter`` doesn't
-really mean anything to a simple rectangle; the grid carries the meaning of
-``throughCenter``.
+This is pretty weird and nuanced. Cartesian grids need state (``throughCenter``) in
+order to reason about ring/pos. So, for ring/pos to be part of the base Grid
+abstraction, we need to assume that *any* Grid can only cough up ring/pos information
+through an instance method. HexGrid is sort of the special case, in that it *could* do
+ring/pos stuff as a static method (notice that it punts the actual implementation to
+``hexagon.py``). There is no similar ``rectangle.py`` to hold the concept of ring/pos
+for the CartesianGrid case, and to do such a thing would be extra weird, because a
+``throughCenter`` doesn't really mean anything to a simple rectangle; the grid carries
+the meaning of ``throughCenter``.
 
 So in the rare circumstances where we want to know about ring/pos from a block/assembly
 that may or may not actually live in a Grid, we need to just make assumptions and grab

@@ -44,7 +44,6 @@ gets written to the database for evaluation and/or follow-on analysis.
 Review the :doc:`/tutorials/data_model` section for examples
 exploring a populated instance of the **Reactor** model.
 
---------------------------
 Finding objects in a model
 --------------------------
 Under most circumstances a :py:class:`armi.reactor.reactors.Reactor` instance will have a
@@ -63,8 +62,8 @@ In many scenarios, one wants to access specific assemblies or blocks from a core
 are a few ways to get the objects that you're interested in.
 
     * The `r.core.childrenByLocator` dictionary maps
-      :py:class:`armi.grids.IndexLocation` objects to whichever assembly is at that
-      location. For example ::
+      :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
+      that location. For example ::
 
           >>> loc = r.core.spatialGrid[i, j, 0]
           >>> a = r.core.childrenByLocator[loc]

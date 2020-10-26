@@ -1111,7 +1111,7 @@ class CartesianGrid(Grid):
         # hasn't been removed yet. See module docs for locations.py for more details.
         numPositions = 0
         for ring in itertools.count(1):
-            ringPositions = self._getPositionsInRing(ring, throughCenter)
+            ringPositions = CartesianGrid._getPositionsInRing(ring, throughCenter)
             numPositions += ringPositions
             if numPositions >= n:
                 return ring
