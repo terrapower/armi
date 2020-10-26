@@ -238,44 +238,6 @@ class Assembly(composites.Composite):
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
-    @property
-    def location(self):
-        """
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Just creates a new location object based on current spatialLocator.
-        """
-        raise NotImplementedError("NO MORE!!")
-
-    @location.setter
-    def location(self, value):
-        """
-        Set spatialLocator based on a (old-style) location object.
-
-        Patch to keep code working while location system is refactored to use
-        spatialLocators.
-
-        Reactors only have 2-D grid info so we only look at i and j.
-        """
-        raise NotImplementedError("NO MORE (setter)!!")
-        i, j = value.indices()
-        if i is None or j is None:
-            self.spatialLocator = self.parent.spatialGrid[0, 0, 0]
-        elif self.parent:
-            try:
-                self.spatialLocator = self.parent.spatialGrid[i, j, 0]
-            except KeyError:
-                # location outside pre-generated locator objects requested. Make it
-                # on the fly.
-                loc = grids.IndexLocation(i, j, 0, self.parent.spatialGrid)
-                self.parent.spatialGrid[i, j, 0] = loc
-                self.spatialLocator = loc
-        else:
-            # no parent, set a gridless location (will get converted to gridded upon
-            # adding to parent)
-            runLog.warning("{} has no grid because no parent. ".format(self))
-            self.spatialLocator = grids.IndexLocation(i, j, 0, None)
-
     def getArea(self):
         """
         Return the area of the assembly by looking at its first block.

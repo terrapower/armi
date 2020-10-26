@@ -200,15 +200,6 @@ class Block(composites.Composite):
 
         return core.parent
 
-    @property
-    def location(self):
-        """
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Just creates a new location object based on current spatialLocator.
-        """
-        raise NotImplementedError("NO MORE!!")
-
     def makeName(self, assemNum, axialIndex):
         """
         Generate a standard block from assembly number.
