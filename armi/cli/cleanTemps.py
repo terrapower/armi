@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import glob
-
-import armi
+from armi import context
 from armi.cli.entryPoint import EntryPoint
 
 
@@ -28,4 +25,4 @@ class CleanTemps(EntryPoint):
 
     def invoke(self):
         # get the case title.
-        armi.cleanTempDirs(0)
+        context.cleanTempDirs(0)
