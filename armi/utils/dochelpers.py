@@ -64,6 +64,10 @@ class ExecDirective(Directive):
 
     The code is used as the body of a method, and must return a ``str``. The string result is
     interpreted as reStructuredText.
+
+    .. warning:: This only works on a single node in the doctree, so the rendered code
+        may not contain any new section names or labels. They will result in
+        ``WARNING: Unexpected section title`` warnings.
     """
 
     has_content = True
@@ -199,3 +203,70 @@ class PyReverse(Directive):
             ]
         finally:
             sys.stdout, sys.stderr = stdStreams
+
+
+def generateParamTable(klass, fwParams, app=None):
+    """
+    Return a string containing one or more restructured text list tables containing
+    parameter descriptions for the passed ArmiObject class.
+
+    Parameters
+    ----------
+    klass : ArmiObject subclass
+        The Class for which parameter tables should be generated
+
+    fwParams : ParameterDefinitionCollection
+        A parameter definition collection containing the parameters that are always
+        defined for the passed ``klass``. The rest of the parameters come from the
+        plugins registered with the passed ``app``
+
+    app : App, optional
+        The ARMI-based application to draw plugins from.
+
+    Notes
+    -----
+    It would be nice to have better section labels between the different sources
+    but this cannot be done withing an ``exec`` directive in Sphinx so we settle
+    for just putting in anchors for hyperlinking to.
+    """
+    from armi import apps
+
+    if app is None:
+        app = apps.App()
+
+    defs = {None: fwParams}
+
+    app = apps.App()
+    for plugin in app.pluginManager.get_plugins():
+        plugParams = plugin.defineParameters()
+        if plugParams is not None:
+            pDefs = plugParams.get(klass, None)
+            if pDefs is not None:
+                defs[plugin] = pDefs
+
+    headerContent = """
+    .. list-table:: {} Parameters from {{}}
+       :header-rows: 1
+       :widths: 30 40 30
+
+       * - Name
+         - Description
+         - Units
+    """.format(
+        klass.__name__
+    )
+
+    content = []
+
+    for plugin, pdefs in defs.items():
+        srcName = plugin.__name__ if plugin is not None else "Framework"
+        content.append(f".. _{srcName}-{klass.__name__}-param-table:")
+        pluginContent = headerContent.format(srcName)
+        for pd in pdefs:
+            pluginContent += f"""   * - {pd.name}
+         - {pd.description}
+         - {pd.units}
+    """
+        content.append(pluginContent + "\n")
+
+    return "\n".join(content)
