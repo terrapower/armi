@@ -94,7 +94,7 @@ class ExecutionOptions:
 
 class Executer:
     """
-    Short-lived object that coordinates a calculation step and updates a reactor.
+    Short-lived object that crdinaootes a calculation step and updates a reactor.
 
     Notes
     -----

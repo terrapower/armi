@@ -285,6 +285,21 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     back to the source reactor.
     """
 
+    def __init__(self, cs=None, calcReactionRates=True):
+        """
+        Parameters
+        ----------
+        cs : obj, optional
+            Case settings object.
+
+        calcReactionRates : bool, optional
+            Set to True by default, but if set to False the reaction
+            rate calculation after the neutron flux is remapped will
+            not be calculated.
+        """
+        UniformMeshGeometryConverter.__init__(self, cs)
+        self.calcReactionRates = calcReactionRates
+
     def _checkConversion(self):
         """
         Make sure both reactors have the same power and that it's equal to user-input.
@@ -390,9 +405,10 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             _setStateFromOverlaps(
                 aSource, aDest, paramSetter, paramGetter, self.blockParamNames
             )
-            if destReactor.core.lib is not None:
-                # Now recalculate derived params with the mapped flux to minimize
-                # potential numerical diffusion (e.g. control rod tip into large coolant)
+
+            # If requested, the reaction rates will be calculated based on the
+            # mapped neutron flux and the XS library.
+            if self.calcReactionRates:
                 for b in aDest:
                     globalFluxInterface.calcReactionRates(
                         b, destReactor.core.p.keff, destReactor.core.lib

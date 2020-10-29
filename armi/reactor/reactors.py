@@ -52,6 +52,7 @@ from armi.utils.iterables import Sequence
 from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.nuclearDataIO import xsLibraries
 
 
 class Reactor(composites.Composite):
@@ -291,22 +292,21 @@ class Core(composites.Composite):
         return geometry.SYMMETRY_FACTORS[self.symmetry]
 
     @property
-    def lib(self):
+    def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
         """
-        Return the microscopic cross section library.
+        Return the microscopic cross section library if one exists.
 
-        Notes
-        -----
-        This returns the current library object (default as ``ISOTXS``) stored on
-        the core state. If no library has been set on the core yet, this will
-        load in an existing ``ISOTXS`` file from the working directory if one
-        exists. If an ``ISOTXS`` file does not exist in the working directory
-        no library will be loaded.
+        - If there is a library currently associated with the core,
+          it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory,
+          opened as ``ISOTXS`` object and returned.
+        - Finally, if no ``ISOTXS`` file exists in the working directory,
+          a None will be returned.
         """
         isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
         if self._lib is None and os.path.exists(isotxsFileName):
             runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
-            self._lib = nuclearDataIO.ISOTXS()
+            self._lib = nuclearDataIO.ISOTXS(isotxsFileName)
         return self._lib
 
     @lib.setter

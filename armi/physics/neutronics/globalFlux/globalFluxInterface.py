@@ -309,6 +309,14 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.geomType = None
         self.symmetry = None
 
+        # This option is used to recalculate reaction
+        # rates after a mesh conversion and remapping
+        # of neutron flux. This can be disabled
+        # in certain global flux implementations
+        # if reaction rates are not required, but
+        # by default it is enabled.
+        self.calcReactionRatesOnMeshConversion = True
+
     def fromUserSettings(self, cs):
         """
         Map user input settings from cs to a set of specific global flux options.
@@ -399,7 +407,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if self.options.detailedAxialExpansion:
             converter = self.geomConverters.get("axial")
             if not converter:
-                converter = uniformMesh.NeutronicsUniformMeshConverter(None)
+                converter = uniformMesh.NeutronicsUniformMeshConverter(None, calcReactionRates=self.options.calcReactionRatesOnMeshConversion)
                 neutronicsReactor = converter.convert(self.r)
                 if makePlots:
                     converter.plotConvertedReactor()
