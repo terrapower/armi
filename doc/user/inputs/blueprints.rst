@@ -126,7 +126,9 @@ material
     The material links the component to a certain set of thermo-physical properties (e.g. temperature-dependent thermal
     expansion coefficients, density, thermal conductivity, etc., which are used in the various physics kernels.
     Natural isotopic composition is determined from this material specification as well (unless custom isotopics are
-    supplied). Materials are handled through the :py:mod:`material library <armi.materials>`.
+    supplied). The entry here should either be a class name of a valid material (``UZr``) or a ``module:className`` pair
+    for specifying specific material (e.g. ``armi.materials.uZr:UZr``). 
+    Materials are handled through the :py:mod:`material library <armi.materials>`.
 
     .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
 
