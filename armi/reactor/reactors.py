@@ -25,10 +25,10 @@ from __future__ import print_function
 import collections
 import copy
 import itertools
-import math
 from typing import Optional
 import tabulate
 import time
+import os
 
 import numpy
 
@@ -42,7 +42,6 @@ from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor import parameters
 from armi.reactor import zones
 from armi.reactor import reactorParameters
@@ -293,15 +292,26 @@ class Core(composites.Composite):
 
     @property
     def lib(self):
-        """"Get the microscopic cross section library."""
-        if self._lib is None:
-            runLog.info("Loading microscopic cross section library ISOTXS")
+        """
+        Return the microscopic cross section library.
+
+        Notes
+        -----
+        This returns the current library object (default as ``ISOTXS``) stored on
+        the core state. If no library has been set on the core yet, this will
+        load in an existing ``ISOTXS`` file from the working directory if one
+        exists. If an ``ISOTXS`` file does not exist in the working directory
+        no library will be loaded.
+        """
+        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+        if self._lib is None and os.path.exists(isotxsFileName):
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
             self._lib = nuclearDataIO.ISOTXS()
         return self._lib
 
     @lib.setter
     def lib(self, value):
-        """"Set the microscopic cross section library."""
+        """Set the microscopic cross section library."""
         self._lib = value
 
     @property

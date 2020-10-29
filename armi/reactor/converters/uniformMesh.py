@@ -390,12 +390,13 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             _setStateFromOverlaps(
                 aSource, aDest, paramSetter, paramGetter, self.blockParamNames
             )
-            # Now recalculate derived params with the mapped flux to minimize
-            # potential numerical diffusion (e.g. control rod tip into large coolant)
-            for b in aDest:
-                globalFluxInterface.calcReactionRates(
-                    b, destReactor.core.p.keff, destReactor.core.lib
-                )
+            if destReactor.core.lib is not None:
+                # Now recalculate derived params with the mapped flux to minimize
+                # potential numerical diffusion (e.g. control rod tip into large coolant)
+                for b in aDest:
+                    globalFluxInterface.calcReactionRates(
+                        b, destReactor.core.p.keff, destReactor.core.lib
+                    )
 
 
 def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
