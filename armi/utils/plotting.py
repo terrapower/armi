@@ -49,7 +49,6 @@ def colorGenerator(skippedColors=10):
     Will cycle indefinitely to accommodate large cores. Colors will repeat.
     """
 
-
     colors = list(mcolors.CSS4_COLORS)
 
     for start in itertools.cycle(range(20, 20 + skippedColors)):

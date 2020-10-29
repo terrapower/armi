@@ -101,17 +101,14 @@ class PwdintStream(cccc.StreamWithDataContainer):
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
             self._data.powerDensity = numpy.zeros(
-                (imax, jmax, kmax),
-                dtype=numpy.float32,
+                (imax, jmax, kmax), dtype=numpy.float32,
             )
         for ki in range(kmax):
             for bi in range(nblck):
                 jL, jU = cccc.getBlockBandwidth(bi + 1, jmax, nblck)
                 with self.createRecord() as record:
                     self._data.powerDensity[:, jL : jU + 1, ki] = record.rwMatrix(
-                        self._data.powerDensity[:, jL : jU + 1, ki],
-                        jU - jL + 1,
-                        imax,
+                        self._data.powerDensity[:, jL : jU + 1, ki], jU - jL + 1, imax,
                     )
 
 

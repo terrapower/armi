@@ -138,7 +138,10 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         from armi.bookkeeping.db import databaseFactory
 
         # a little baroque, but easy to extend with future formats
-        formatMap = {self._FORMAT_VTK: vtk.VtkDumper, self._FORMAT_XDMF: xdmf.XdmfDumper}
+        formatMap = {
+            self._FORMAT_VTK: vtk.VtkDumper,
+            self._FORMAT_XDMF: xdmf.XdmfDumper,
+        }
 
         dumper = formatMap[self.args.format](self.args.output_name, self.args.h5db)
 

@@ -631,11 +631,7 @@ class StreamWithDataContainer(Stream):
     @classmethod
     def _read(cls, fileName: str, fileMode: str):
         data = cls._getDataContainer()
-        return cls._readWrite(
-            data,
-            fileName,
-            fileMode,
-        )
+        return cls._readWrite(data, fileName, fileMode,)
 
     # pylint: disable=arguments-differ
     @classmethod

@@ -53,6 +53,7 @@ class SettingRenamer:
     warning messages can be generated if one attempts to use one of them. The renaming
     logic follows the rules described in :py:meth:`renameSetting`.
     """
+
     def __init__(self, settings: Dict[str, Setting]):
         self._currentNames: Set[str] = set()
         self._activeRenames: Dict[str, str] = dict()
@@ -342,7 +343,7 @@ class SettingsReader:
                     value = applyTypeConversions(settingObj, value)
 
                 # The value is automatically coerced into the
-                # expected type when set using either the default or 
+                # expected type when set using either the default or
                 # user-defined schema
                 self.cs[settingName] = value
 

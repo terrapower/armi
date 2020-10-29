@@ -55,8 +55,8 @@ class VtkDumper(dumper.VisFileDumper):
 
     def __init__(self, baseName: str, inputName: str):
         self._baseName = baseName
-        self._assemFiles: List[Tuple[str, float]]  = []
-        self._blockFiles: List[Tuple[str, float]]  = []
+        self._assemFiles: List[Tuple[str, float]] = []
+        self._blockFiles: List[Tuple[str, float]] = []
 
     def dumpState(
         self,
@@ -141,10 +141,11 @@ class VtkDumper(dumper.VisFileDumper):
             blockGroup.save()
 
 
-def _collectObjectData(objs: List[composites.ArmiObject],
-        includeParams: Optional[Set[str]] = None,
-        excludeParams: Optional[Set[str]] = None,
-        ) -> Dict[str, Any]:
+def _collectObjectData(
+    objs: List[composites.ArmiObject],
+    includeParams: Optional[Set[str]] = None,
+    excludeParams: Optional[Set[str]] = None,
+) -> Dict[str, Any]:
 
     allData = dict()
 

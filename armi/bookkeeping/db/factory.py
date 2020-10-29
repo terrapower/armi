@@ -56,8 +56,9 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
             raise ValueError("Cannot specify version when reading a database.")
 
         if not dbPath.exists() or not dbPath.is_file():
-            raise ValueError("Database file `{}` does not appear to be a "
-                    "file.".format(dbName))
+            raise ValueError(
+                "Database file `{}` does not appear to be a " "file.".format(dbName)
+            )
 
         # probe for the database version. We started adding these with "database 3", so if
         # databaseVersion is not present, assume it's the "old" version
@@ -69,8 +70,10 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
 
         majorversion = version.split(".")[0] if version else "2"
         if majorversion == "2":
-            raise ValueError("Database version 2 (\"XTView database\") is no longer "
-                    "supported. To migrate to a newer version, use version 0.1.5.")
+            raise ValueError(
+                'Database version 2 ("XTView database") is no longer '
+                "supported. To migrate to a newer version, use version 0.1.5."
+            )
 
         if majorversion == "3":
             return Database3(dbPath, permission)
@@ -80,8 +83,10 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
     elif permission in permissions.Permissions.write:
         majorversion = version.split(".")[0] if version else "3"
         if majorversion == "2":
-            raise ValueError("Database version 2 (\"XTView database\") is no longer "
-                    "supported. To migrate to a newer version, use version 0.1.5 to "
-                    "migrate.")
+            raise ValueError(
+                'Database version 2 ("XTView database") is no longer '
+                "supported. To migrate to a newer version, use version 0.1.5 to "
+                "migrate."
+            )
         if majorversion == "3":
             return Database3(dbPath, permission)

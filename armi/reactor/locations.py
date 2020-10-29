@@ -105,9 +105,7 @@ def minimumRings(obj, positions):
         # allow protected access because these functions exist to be called here, but
         # are protected to prevent them being used elsewhere.
         # pylint: disable=protected-access
-        return grids.CartesianGrid._getMinimumRingsStatic(
-            positions, throughCenter=True
-        )
+        return grids.CartesianGrid._getMinimumRingsStatic(positions, throughCenter=True)
     else:
         raise TypeError(
             "Unexpected object type `{}`. Only supporting Hex|Cartesian "

@@ -1315,7 +1315,6 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-
     def getPitch(self):
         """returns hex pitch in cm."""
         pList = []

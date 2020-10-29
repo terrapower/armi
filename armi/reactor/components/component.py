@@ -523,7 +523,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setVolume(self, val):
         raise NotImplementedError
-    
+
     def setArea(self, val):
         raise NotImplementedError
 

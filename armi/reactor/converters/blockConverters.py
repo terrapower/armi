@@ -409,7 +409,7 @@ class BlockAvgToCylConverter(BlockConverter):
     def plotConvertedBlock(self, fName=None):
         """Render an image of the converted block."""
         runLog.extra(
-            "Plotting equivalent cylindrical block of {}".format( self._sourceBlock )
+            "Plotting equivalent cylindrical block of {}".format(self._sourceBlock)
         )
         fig, ax = plt.subplots()
         fig.patch.set_visible(False)
@@ -497,8 +497,9 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
         )
         self._dissolveComponents()
-        numRings = locations.minimumRings(self._sourceBlock,
-                self._sourceBlock.getNumPins())
+        numRings = locations.minimumRings(
+            self._sourceBlock, self._sourceBlock.getNumPins()
+        )
         pinComponents, nonPins = self._classifyComponents()
         self._buildFirstRing(pinComponents)
         for ring in range(2, numRings + 1):

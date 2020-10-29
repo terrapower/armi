@@ -401,11 +401,11 @@ class TestCartesianGrid(unittest.TestCase):
         ]
 
         expectedPos = [
-            [5 , 4 , 3 , 2 , 1 , 0],
-            [6 , 3 , 2 , 1 , 0 , 19],
-            [7 , 4 , 1 , 0 , 11, 18],
-            [8 , 5 , 2 , 3 , 10, 17],
-            [9 , 6 , 7 , 8 , 9 , 16],
+            [5, 4, 3, 2, 1, 0],
+            [6, 3, 2, 1, 0, 19],
+            [7, 4, 1, 0, 11, 18],
+            [8, 5, 2, 3, 10, 17],
+            [9, 6, 7, 8, 9, 16],
             [10, 11, 12, 13, 14, 15],
         ]
         expectedPos.reverse()
@@ -530,13 +530,14 @@ class TestCartesianGrid(unittest.TestCase):
 
         # Full core
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.FULL_CORE)
-        self.assertEqual(grid.getSymmetricEquivalents((5,6)), [])
+        self.assertEqual(grid.getSymmetricEquivalents((5, 6)), [])
 
         # 1/8 core not supported yet
-        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.EIGHTH_CORE)
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0, 1.0, symmetry=geometry.EIGHTH_CORE
+        )
         with self.assertRaises(NotImplementedError):
-            grid.getSymmetricEquivalents((5,6))
-
+            grid.getSymmetricEquivalents((5, 6))
 
 
 if __name__ == "__main__":

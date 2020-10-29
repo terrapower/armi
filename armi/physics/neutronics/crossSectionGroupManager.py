@@ -545,9 +545,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         for c, bWeight in zip(components, bWeights):
             weight = bWeight * c.getArea()
             totalWeight += weight
-            densities += weight * numpy.array(
-                c.getNuclideNumberDensities(allNucNames) 
-            )
+            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
         return allNucNames, densities / totalWeight
 
     def _orderComponentsInGroup(self, repBlock):

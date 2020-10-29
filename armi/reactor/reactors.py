@@ -932,7 +932,7 @@ class Core(composites.Composite):
             dist = a.spatialLocator.distanceTo(refLocation)
             ## To reduce numerical sensitivity, round distance to 6 decimal places
             ## before truncating.
-            index = int(round(dist*pitchFactor, 6)) or 1  # 1 is the smallest ring.
+            index = int(round(dist * pitchFactor, 6)) or 1  # 1 is the smallest ring.
             circularRingDict[index].add(a.getLocation())
 
         return circularRingDict
