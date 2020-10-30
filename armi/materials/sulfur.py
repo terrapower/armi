@@ -45,7 +45,7 @@ class Sulfur(material.Fluid):
         return (2.18835 - 0.00098187 * Tk) * (self.fullDensFrac)
 
     def volumetricExpansion(self, Tk=None, Tc=None):
-        r""" P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
+        r"""P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
         This is just a two-point interpolation."""
         Tk = getTk(Tc, Tk)
 

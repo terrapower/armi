@@ -4,6 +4,7 @@ Slightly customized version of the stock pluggy ``PluginManager``.
 
 import pluggy
 
+
 class ArmiPluginManager(pluggy.PluginManager):
     """
     PluginManager implementation with ARMI-specific features.
@@ -17,7 +18,7 @@ class ArmiPluginManager(pluggy.PluginManager):
     """
 
     def __init__(self, *args, **kwargs):
-        pluggy.PluginManager.__init__(self, *args,  **kwargs)
+        pluggy.PluginManager.__init__(self, *args, **kwargs)
 
         self._counter = 0
 

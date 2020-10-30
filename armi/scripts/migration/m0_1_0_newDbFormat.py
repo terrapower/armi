@@ -159,7 +159,7 @@ def _updateLayout(newDB, preCollection, name, dataset):
 def _updateParams(newDB, preCollection, name, dataset):
     """
     Visit parameters and apply migration transformations.
-    
+
     Does not affect input or layout.
     """
     renames = preCollection["paramRenames"]

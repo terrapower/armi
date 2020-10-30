@@ -119,7 +119,7 @@ class Zone(object):
 
         for pos in posList:
             newLoc = grid.getLabel(
-                    grid.getLocatorFromRingAndPos(ring, pos).getCompleteIndices()[:2]
+                grid.getLocatorFromRingAndPos(ring, pos).getCompleteIndices()[:2]
             )
             if newLoc not in self.locList:
                 self.append(newLoc)
@@ -585,7 +585,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
     ----------
     core : Core
         The core
-        
+
     typeSpec : Flags or list of Flags, optional
         Assembly types to consider (e.g. Flags.FUEL)
 

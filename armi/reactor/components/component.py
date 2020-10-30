@@ -405,7 +405,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getVolume(self):
         """
         Return the volume [cm^3] of the component.
-        
+
         Notes
         -----
         ``self.p.volume`` is not set until this method is called,
@@ -523,7 +523,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setVolume(self, val):
         raise NotImplementedError
-    
+
     def setArea(self, val):
         raise NotImplementedError
 
@@ -732,10 +732,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             The value to set on the dimension
         retainLink : bool, optional
-            If True, the val will be applied to the dimension of linked 
+            If True, the val will be applied to the dimension of linked
             component which indirectly changes this component's dimensions.
         cold : book, optional
-            If True sets the component to the dimension that would cause 
+            If True sets the component to the dimension that would cause
             the hot dimension to be the specified value.
         """
         if not key:

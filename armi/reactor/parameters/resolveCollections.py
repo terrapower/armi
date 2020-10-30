@@ -136,7 +136,11 @@ class ResolveParametersMeta(type):
             # of the parameter definitions work, while plugins can associate definitions
             # with the ArmiObjects
             paramCollectionType = type(
-                collectionName, (collectionBase,), {"pDefs": pDefs,},
+                collectionName,
+                (collectionBase,),
+                {
+                    "pDefs": pDefs,
+                },
             )
         else:
             # We will not be defining our own parameters, so we will defer to to those

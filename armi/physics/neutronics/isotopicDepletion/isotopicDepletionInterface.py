@@ -114,7 +114,7 @@ def makeXsecTable(
     -------
     output: list
         a list of string elements that together make a xsec card
-        
+
     See Also
     --------
     crossSectionTable.makeCrossSectionTable

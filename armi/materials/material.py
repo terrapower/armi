@@ -689,7 +689,7 @@ class Fluid(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         """for void, lets just not allow temperature changes to change dimensions
-        since it is a liquid it will fill its space. """
+        since it is a liquid it will fill its space."""
         return 0.0
 
     def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):

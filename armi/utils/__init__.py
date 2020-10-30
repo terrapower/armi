@@ -416,7 +416,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
 def getFloat(val):
     r"""returns float version of val, or None if it's impossible. Useful for converting
-    user-input into floats when '' might be possible. """
+    user-input into floats when '' might be possible."""
     try:
         newVal = float(val)
         return newVal

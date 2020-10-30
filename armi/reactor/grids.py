@@ -1008,7 +1008,7 @@ class Grid:
 
         Assumes 2-d unit-step defined (works for cartesian)
         """
-        #TODO move this to the CartesianGrid
+        # TODO move this to the CartesianGrid
         pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
         if pitch[0] == 0:
             raise ValueError(f"Grid {self} does not have a defined pitch.")
@@ -1207,7 +1207,14 @@ class CartesianGrid(Grid):
 
     def _isThroughCenter(self):
         """Return whether the central cells are split through the middle for symmetry."""
-        return all(self._offset == [0, 0, 0,])
+        return all(
+            self._offset
+            == [
+                0,
+                0,
+                0,
+            ]
+        )
 
 
 class HexGrid(Grid):
@@ -1257,7 +1264,7 @@ class HexGrid(Grid):
             unitSteps=unitSteps,
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
-            symmetry=symmetry
+            symmetry=symmetry,
         )
 
     @property

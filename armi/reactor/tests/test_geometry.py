@@ -88,7 +88,7 @@ class TestGeomType(unittest.TestCase):
 
     def testStr(self):
         for geom in {geometry.HEX, geometry.CARTESIAN, geometry.RZ, geometry.RZT}:
-            self.assertEqual(str(geometry.GeomType.fromStr(geom)),  geom)
+            self.assertEqual(str(geometry.GeomType.fromStr(geom)), geom)
 
 
 class TestSystemLayoutInput(unittest.TestCase):

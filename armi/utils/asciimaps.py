@@ -135,7 +135,7 @@ class AsciiMap(object):
         """
         When converting ascii to data we need to infer the ijMax before reading
         the ij indices.
-        
+
         See Also
         --------
         _updateDimensionsFromData : used to infer this information when loading from i,j data
@@ -277,7 +277,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
     In all flats-up hex maps, i increments by 2*col for each col
     and j decrements by col from the base.
-    
+
     These are much more complex maps than the tips up ones because
     there are 2 ascii lines for every j index (jaggedly).
     """
@@ -302,7 +302,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
     def _getIJBaseByAsciiLine(self, asciiLineNum):
         """
         Get i,j base (starting point) for a row from bottom.
- 
+
         For 1/3 symmetric cases, the base is a constant pattern
         vs. row number at least until the top section.
 
@@ -384,11 +384,11 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
     def _getIJBaseByAsciiLine(self, asciiLineNum):
         """
         Get i,j base (starting point) for a row from bottom.
- 
-        Starts out in simple pattern and then shifts. 
-        
+
+        Starts out in simple pattern and then shifts.
+
         Recall that there are 2 ascii lines per j index because jagged.
-        
+
         If hex corners are omitted, we must offset the line num to get
         the base right (complexity!)
         """
@@ -412,8 +412,8 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
     def _makeOffsets(self):
         """
         Handle offsets for full-hex flat grids.
-        
-        Due to the staggered nature, these have 0 or 1 offsets on 
+
+        Due to the staggered nature, these have 0 or 1 offsets on
         top and and then 0 or 1 + an actual offset on the bottom.
         """
         # max lines required if corners were not cut off
@@ -442,7 +442,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
 
 class AsciiMapHexFullTipsUp(AsciiMap):
     """
-    Full hex with tips up of the smaller cells. 
+    Full hex with tips up of the smaller cells.
 
     I axis is pure horizontal here
     J axis is 60 degrees up. (upper right corner)
@@ -469,9 +469,9 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         """
         Get i,j base (starting point) for a row from top.
         Easy and consistent.
-        
+
         Upper left is shifted by (size-1)//2
-        
+
         for a 19-line grid, we have the top left as (-18,9)
         and then: (-17, 8), (-16, 7), ...
         """

@@ -224,6 +224,11 @@ class DecayMode(Transmutable):
             raise errors.DecayMode_InvalidDecayModeUse(self.type, DECAY_MODES)
 
     def __repr__(self):
-        return "<DecayMode by {} from {:7s} to {} with a half-life of {:12.5E} s>".format(
-            self.type, self.parent.name, self.productNuclides, self.halfLifeInSeconds
+        return (
+            "<DecayMode by {} from {:7s} to {} with a half-life of {:12.5E} s>".format(
+                self.type,
+                self.parent.name,
+                self.productNuclides,
+                self.halfLifeInSeconds,
+            )
         )

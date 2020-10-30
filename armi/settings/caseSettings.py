@@ -79,7 +79,7 @@ class Settings:
         self.path = ""
 
         app = armi.getApp()
-        assert(app is not None)
+        assert app is not None
         self.settings = app.getSettings()
         if not Settings.instance:
             Settings.instance = self

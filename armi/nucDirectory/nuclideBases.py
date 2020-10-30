@@ -166,8 +166,7 @@ def getIsotopics(nucName):
 
 
 def fromName(name):
-    r"""Get a nuclide from its name.
-    """
+    r"""Get a nuclide from its name."""
     matches = [nn for nn in instances if nn.name == name]
     if len(matches) != 1:
         raise errors.nuclides_TooManyOrTooFew_number_MatchesForNuclide_name(
@@ -265,9 +264,9 @@ def __readRiplNuclides():
 
     This includes roughly 4000 nuclides and should represent anything we ever
     want to model. This builds the large set of NuclideBases available.
-    
-    RIPL is the Reference Input Parameter Library (RIPL-3), which can be found at 
-    https://www-nds.iaea.org/RIPL-3/. 
+
+    RIPL is the Reference Input Parameter Library (RIPL-3), which can be found at
+    https://www-nds.iaea.org/RIPL-3/.
     """
     from armi.nuclearDataIO import ripl
 
@@ -456,16 +455,16 @@ def factory():
 def __readRiplDecayData():
     """
     Read in the RIPL-3 decay data files and update nuclide bases.
-    
+
     Notes
     -----
-    This makes an assumption that the RIPL-3 data files have a 
-    `z???.dat` naming convention and assumes that there are 118 
+    This makes an assumption that the RIPL-3 data files have a
+    `z???.dat` naming convention and assumes that there are 118
     total data files in the package.
-    
-    The processing is skipped if the ``ARMI_RIPL_PATH`` environment 
+
+    The processing is skipped if the ``ARMI_RIPL_PATH`` environment
     variable has not been set.
-       
+
     Raises
     ------
     ValueError
@@ -545,8 +544,7 @@ def _addNuclideToIndices(nuc):
 
 
 class IMcnpNuclide(object):
-    """Interface which defines the contract for getMcnpId.
-    """
+    """Interface which defines the contract for getMcnpId."""
 
     def getMcnpId(self):
         """

@@ -32,6 +32,7 @@ class TestVtkMesh(unittest.TestCase):
     """
     Test the VtkMesh utility class
     """
+
     def test_testVtkMesh(self):
         mesh = utils.VtkMesh.empty()
 
@@ -52,7 +53,7 @@ class TestVtkMesh(unittest.TestCase):
         mesh.append(newMesh)
         mesh.append(newMesh)
 
-        self.assertEqual(mesh.vertices.size, 3*8)
+        self.assertEqual(mesh.vertices.size, 3 * 8)
         self.assertEqual(mesh.offsets.size, 2)
         self.assertEqual(mesh.connectivity.size, 8)
         self.assertEqual(mesh.cellTypes.size, 2)
@@ -65,6 +66,7 @@ class TestVisDump(unittest.TestCase):
     """
     Test dumping a whole reactor and some specific block types
     """
+
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
@@ -108,11 +110,11 @@ class TestVisDump(unittest.TestCase):
     def test_hexMesh(self):
         mesh = utils.createBlockMesh(self.hexBlock)
 
-        self.assertEqual(mesh.vertices.size, 12*3)
+        self.assertEqual(mesh.vertices.size, 12 * 3)
         self.assertEqual(mesh.cellTypes[0], 16)
 
     def test_cartesianMesh(self):
         mesh = utils.createBlockMesh(self.cartesianBlock)
 
-        self.assertEqual(mesh.vertices.size, 8*3)
+        self.assertEqual(mesh.vertices.size, 8 * 3)
         self.assertEqual(mesh.cellTypes[0], 12)

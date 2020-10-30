@@ -13,7 +13,7 @@ class TestFuelPerformanceUtils(unittest.TestCase):
     def test_enforceBondRemovalFraction(self):
         """
         Tests that the bond sodium is removed from the `bond` component in a block
-        and the mass is then evenly distributed across all other sodium containing components 
+        and the mass is then evenly distributed across all other sodium containing components
         (e.g., coolant, intercoolant).
         """
         b = test_blocks.loadTestBlock()

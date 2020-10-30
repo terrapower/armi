@@ -964,14 +964,11 @@ class HexToRZThetaConverter(GeometryConverter):
                 self.blockVolFracs[homBlock][b] = blockVolumeHere
         # Notify if blocks with different xs types are being homogenized. May be undesired behavior.
         if len(homBlockXsTypes) > 1:
-            msg = (
-                "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} "
-                "cm and {} cm. ".format(
-                    self.blockMap[homBlock],
-                    self.convReactor.core,
-                    lowerAxialZ,
-                    upperAxialZ,
-                )
+            msg = "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} " "cm and {} cm. ".format(
+                self.blockMap[homBlock],
+                self.convReactor.core,
+                lowerAxialZ,
+                upperAxialZ,
             )
             if self._strictHomogenization:
                 raise ValueError(
@@ -1457,9 +1454,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         )
         # don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh
         # case that has edge assems
-        edgeAssemblies = core.getAssembliesOnSymmetryLine(
-            grids.BOUNDARY_120_DEGREES
-        )
+        edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
         for a in edgeAssemblies:
             runLog.debug(
                 "Removing edge assembly {} from {} from the reactor without discharging".format(

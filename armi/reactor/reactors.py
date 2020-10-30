@@ -25,10 +25,10 @@ from __future__ import print_function
 import collections
 import copy
 import itertools
-import math
 from typing import Optional
 import tabulate
 import time
+import os
 
 import numpy
 
@@ -42,7 +42,6 @@ from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor import parameters
 from armi.reactor import zones
 from armi.reactor import reactorParameters
@@ -53,6 +52,7 @@ from armi.utils.iterables import Sequence
 from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.nuclearDataIO import xsLibraries
 
 
 class Reactor(composites.Composite):
@@ -292,16 +292,26 @@ class Core(composites.Composite):
         return geometry.SYMMETRY_FACTORS[self.symmetry]
 
     @property
-    def lib(self):
-        """"Get the microscopic cross section library."""
-        if self._lib is None:
-            runLog.info("Loading microscopic cross section library ISOTXS")
-            self._lib = nuclearDataIO.ISOTXS()
+    def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
+        """
+        Return the microscopic cross section library if one exists.
+
+        - If there is a library currently associated with the core,
+          it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory,
+          opened as ``ISOTXS`` object and returned.
+        - Finally, if no ``ISOTXS`` file exists in the working directory,
+          a None will be returned.
+        """
+        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+        if self._lib is None and os.path.exists(isotxsFileName):
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+            self._lib = nuclearDataIO.ISOTXS(isotxsFileName)
         return self._lib
 
     @lib.setter
     def lib(self, value):
-        """"Set the microscopic cross section library."""
+        """Set the microscopic cross section library."""
         self._lib = value
 
     @property
@@ -922,7 +932,7 @@ class Core(composites.Composite):
             dist = a.spatialLocator.distanceTo(refLocation)
             ## To reduce numerical sensitivity, round distance to 6 decimal places
             ## before truncating.
-            index = int(round(dist*pitchFactor, 6)) or 1  # 1 is the smallest ring.
+            index = int(round(dist * pitchFactor, 6)) or 1  # 1 is the smallest ring.
             circularRingDict[index].add(a.getLocation())
 
         return circularRingDict

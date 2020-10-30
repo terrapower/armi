@@ -211,7 +211,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         )
         objNuclides = subjectObject.getNuclides()
 
-        numDensities = subjectObject.getNuclideNumberDensities(self.r.blueprints.allNuclidesInProblem)
+        numDensities = subjectObject.getNuclideNumberDensities(
+            self.r.blueprints.allNuclidesInProblem
+        )
 
         for nucName, dens in zip(self.r.blueprints.allNuclidesInProblem, numDensities):
             nuc = nuclideBases.byName[nucName]

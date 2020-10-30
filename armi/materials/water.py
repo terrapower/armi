@@ -27,15 +27,15 @@ class Water(Fluid):
 
     """
     Water
-    
+
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
     the Properties of Water and Steam .
-    
+
     This is an abstract class implemented on the Saturated Water Material Class
     and the Saturated Steam Material Class, which should be good enough for
     most uses.
-    
+
     http://www.iapws.org/relguide/supsat.pdf
     IAPWS-IF97 is now the international standard for calculations in the steam
     power industry
@@ -92,7 +92,7 @@ class Water(Fluid):
     def tau(self, Tc=None, Tk=None):
         """
         returns 1 - temperature normalized to the critical temperature
-        
+
         Note
         ----
         thermophysical correlations are give in Tau rather than Tk or Tc
@@ -102,22 +102,22 @@ class Water(Fluid):
     def vaporPressure(self, Tk=None, Tc=None):
         """
         Returns vapor pressure in (Pa)
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-                    
+
         Returns
         -------
         vaporPressure: float
             vapor pressure in Pa
-        
+
         Notes
         -----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the
         steam power industry
@@ -151,14 +151,14 @@ class Water(Fluid):
     def vaporPressurePrime(self, Tk=None, Tc=None, dT=1e-6):
         """
         approximation of derivative of vapor pressure wrt temperature
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Note
         ----
         this uses a numerical approximation
@@ -172,26 +172,26 @@ class Water(Fluid):
     def auxiliaryQuantitySpecificEnthalpy(self, Tk=None, Tc=None):
         """
         Returns the auxiliary quantity for specific enthalpy
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Returns
         -------
         alpha: float
             specific quantity for enthalpy in J/kg
-        
+
         Notes
         -----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the
         steam power industry
-        
+
         alpha is used in the relations for enthalpy
         h = alpha + T/pressure*dp/dT
         """
@@ -212,26 +212,26 @@ class Water(Fluid):
     def auxiliaryQuantitySpecificEntropy(self, Tk=None, Tc=None):
         """
         Returns the auxiliary quantity for specific entropy
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Returns
         -------
         phi: float
             specific quantity for entropy in J/(kgK)
-        
+
         Notes
         -----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the
         steam power industry
-        
+
         alpha is used in the relations for enthalpy
         s = phi + 1/pressure*dp/dT
         """
@@ -252,22 +252,22 @@ class Water(Fluid):
     def enthalpy(self, Tk=None, Tc=None):
         """
         Returns enthalpy of saturated water
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Returns
         -------
         enthalpy: float
             vapor pressure in J/kg
-        
+
         Notes
         -----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the
         steam power industry
@@ -282,22 +282,22 @@ class Water(Fluid):
     def entropy(self, Tk=None, Tc=None):
         """
         Returns entropy of saturated water
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Returns
         -------
         entropy: float
             entropy in J/(kgK)
-        
+
         Notes
         -----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the
         steam power industry
@@ -318,11 +318,11 @@ class SaturatedWater(Water):
 
     """
     Saturated Water
-    
+
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
     the Properties of Water and Steam .
-    
+
     This is the Saturated Liquid Water Material Class. For steam look to the
     Saturated  Steam Material Class.
     """
@@ -332,22 +332,22 @@ class SaturatedWater(Water):
     def density(self, Tk=None, Tc=None):
         """
         returns density in g/cc
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Returns
         -------
         density: float
             density in g/cc
-            
+
         Note
         ----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """
@@ -377,11 +377,11 @@ class SaturatedWater(Water):
 class SaturatedSteam(Water):
     """
     Saturated Steam
-    
+
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
     the Properties of Water and Steam .
-    
+
     This is the Saturated Liquid Water Material Class. For steam look to the
     Saturated  Steam Material Class.
     """
@@ -391,22 +391,22 @@ class SaturatedSteam(Water):
     def density(self, Tk=None, Tc=None):
         """
         returns density in g/cc
-        
+
         Parameters
         ----------
         Tk: float
             temperature in Kelvin
         Tc: float
             temperature in Celcius
-        
+
         Returns
         -------
         density: float
             density in g/cc
-            
+
         Note
         ----
-        IAPWS-IF97 
+        IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
         """

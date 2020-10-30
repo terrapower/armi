@@ -69,6 +69,7 @@ class RowMajorAutoFiller(AutoFiller):
     :py:class:`AssemblyList` by filling subsequent rows with ``nMajor`` assemblies
     before moving to the next row.
     """
+
     def __init__(self, aList, nMajor):
         self._nMajor = nMajor
         self._aList = aList
@@ -217,7 +218,7 @@ class SpentFuelPool(AssemblyList):
                     mult=a.p.multiplicity,
                 )
             )
-            totFis += a.getFissileMass()*a.p.multiplicity / 1000  # convert to kg
+            totFis += a.getFissileMass() * a.p.multiplicity / 1000  # convert to kg
         runLog.important(
             "Total full-core fissile inventory of {0} is {1:.4E} MT".format(
                 self, totFis / 1000.0

@@ -79,7 +79,7 @@ def applyFuelDisplacement(block, displacementInCm):
 
     The bond mass is not conserved; it is assumed to be pushed up into the plenum
     but the modeling of this is not done yet by this method.
-    
+
     .. warning:: A 0.5% buffer is included to avoid overlaps. This should be analyzed
         in detail as a methodology before using in any particular analysis.
 
@@ -101,7 +101,7 @@ def applyFuelDisplacement(block, displacementInCm):
 
 
 def gasConductivityCorrection(tempInC: float, porosity: float, morphology: int = 2):
-    """ 
+    """
     Calculate the correction to conductivity for a porous, gas-filled solid
 
     Parameters
@@ -111,7 +111,7 @@ def gasConductivityCorrection(tempInC: float, porosity: float, morphology: int =
     porosity
         fraction of open/total volume
     morphology, optional
-        correlation to use regarding pore morphology (default 2 is irregular 
+        correlation to use regarding pore morphology (default 2 is irregular
         porosity for conservatism)
 
     Returns

@@ -321,7 +321,10 @@ def defineSettings():
             default=1e-05,
             label="Buckling Convergence Criteria",
             description="The convergence criteria for the buckling iteration if it is available in the lattice physics solver",
-            oldNames=[("mc2BucklingConvergence", None), ("bucklingConvergence", None),],
+            oldNames=[
+                ("mc2BucklingConvergence", None),
+                ("bucklingConvergence", None),
+            ],
         ),
         setting.Setting(
             CONF_XS_EIGENVALUE_CONVERGENCE,

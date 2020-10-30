@@ -313,7 +313,7 @@ def movesVsCycle(reactor, scalars):
     --------
     FuelHandler.outage : sets the number of moves in each cycle
 
-     """
+    """
     cycles = []
     yvals = []
     for moves, cycle in zip(scalars["numMoves"], scalars["cycle"]):

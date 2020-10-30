@@ -71,7 +71,7 @@ class ThermalScattering:
     nuclideBases : INuclide or tuple of INuclide
         One or more nuclide bases whose existence would trigger the inclusion of the TSL.
         Generally items here will be a NaturalNuclideBase like ``nb.byName["C"]`` for Carbon
-        but it is a tuple to capture, e.g. the C and H in *methane*. 
+        but it is a tuple to capture, e.g. the C and H in *methane*.
     compoundName : str, optional
         Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``.
         Can be left off for, e.g. Fe56.
@@ -119,7 +119,7 @@ class ThermalScattering:
         Several ad-hoc assumptions are made in converting this object to a ENDF/B-VIII label
         which may not apply in all cases.
 
-        It is believed that these rules cover most ENDF TSLs listed in 
+        It is believed that these rules cover most ENDF TSLs listed in
         Parsons, LA-UR-18-25096, https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
 
         Unfortunately, the ace labels are not as easily derived.
@@ -128,7 +128,7 @@ class ThermalScattering:
           name will be assumed to be ``Element_in_compoundName``
         * If nuclideBases is length one and is a NuclideBase, it is assumed to be an isotope
           like Fe-56 and  the label will be (for example) 026_Fe_056
-        * If nuclideBases has length greater than one, the compoundName will form the 
+        * If nuclideBases has length greater than one, the compoundName will form the
           entire of the label. So, if Si and O are in the bases, the compoundName must
           be ``SiO2-alpha`` in order to get ``tsl-SiO2-alpha.endf`` as a endf8 label.
         """
@@ -182,7 +182,7 @@ def factory():
     Generate the :class:`ThermalScattering` instances.
 
     The logic for these is a bit complex so we skip reading a text file and code
-    it up here. 
+    it up here.
 
     This is called by the nuclideBases factory since it must ALWAYS be re-run when
     the nuclideBases are rebuilt.

@@ -75,9 +75,7 @@ def _setBOLBond(assemblies):
             # only warn if bond doesn't match first of potentially many coolant components
             coolants = b.getComponents(Flags.COOLANT)
             coolant = coolants[0]
-            b.p.bondBOL = sum(
-                bond.getNuclideNumberDensities(bond.getNuclides())
-            )
+            b.p.bondBOL = sum(bond.getNuclideNumberDensities(bond.getNuclides()))
             if not isinstance(bond.material, coolant.material.__class__):
                 assemsWithoutMatchingBond.add(
                     (
