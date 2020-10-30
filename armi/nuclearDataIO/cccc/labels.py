@@ -170,7 +170,10 @@ class LabelsStream(cccc.StreamWithDataContainer):
                 self._data.zoneLabels, "string", self._metadata["numZones"], 8
             )
             self._data.regionLabels = record.rwList(
-                self._data.regionLabels, "string", self._metadata["numRegions"], 8,
+                self._data.regionLabels,
+                "string",
+                self._metadata["numRegions"],
+                8,
             )
             self._data.areaLabels = record.rwList(
                 self._data.areaLabels, "string", self._metadata["numAreas"], 8

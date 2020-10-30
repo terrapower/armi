@@ -585,7 +585,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
     ----------
     core : Core
         The core
-        
+
     typeSpec : Flags or list of Flags, optional
         Assembly types to consider (e.g. Flags.FUEL)
 

@@ -189,7 +189,7 @@ class EntryPoint:
         self, settingName: str, additionalAlias: str = None, suppressHelp: bool = False
     ):
         """
-        Create a CLI option from an ARMI setting. 
+        Create a CLI option from an ARMI setting.
 
         This will override whatever is in the settings file.
 
@@ -198,7 +198,7 @@ class EntryPoint:
         settingName : str
             the setting name
 
-        additionalAlises : str 
+        additionalAlises : str
             additional alias for the command line option, be careful and make sure they are all distinct!
 
         supressHelp : bool

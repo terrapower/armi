@@ -1207,7 +1207,14 @@ class CartesianGrid(Grid):
 
     def _isThroughCenter(self):
         """Return whether the central cells are split through the middle for symmetry."""
-        return all(self._offset == [0, 0, 0,])
+        return all(
+            self._offset
+            == [
+                0,
+                0,
+                0,
+            ]
+        )
 
 
 class HexGrid(Grid):

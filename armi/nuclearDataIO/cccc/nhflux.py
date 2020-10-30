@@ -336,7 +336,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         with self.createRecord() as record:
             fluxMoments = record.rwDoubleMatrix(
-                contents.T, self._metadata["nintxy"], self._metadata["nMom"],
+                contents.T,
+                self._metadata["nintxy"],
+                self._metadata["nMom"],
             )
 
         return fluxMoments.T

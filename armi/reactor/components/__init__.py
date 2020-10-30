@@ -316,12 +316,12 @@ class DerivedShape(UnshapedComponent):
     def _deriveVolumeAndArea(self):
         """
         Derive the volume and area of ``DerivedShape``s.
-         
+
         Notes
         -----
         If a parent exists, this will iterate over it and then determine
         both the volume and area based on its context within the scope
-        of the parent object by considering the volumes and areas of 
+        of the parent object by considering the volumes and areas of
         the surrounding components.
         """
 

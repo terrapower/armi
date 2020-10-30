@@ -661,8 +661,10 @@ def summarizeZones(core, cs):
             flow = 0.0
         puFrac = a.getPuFrac()
         ring, pos = a.spatialLocator.getRingPos()
-        summary += "  {0:10s} ({ring:02d}, {pos:02d}) {1:15.6E} {2:15.6E} {pu:15.6E}\n".format(
-            lab, a.calcTotalParam("power"), flow, ring=ring, pos=pos, pu=puFrac
+        summary += (
+            "  {0:10s} ({ring:02d}, {pos:02d}) {1:15.6E} {2:15.6E} {pu:15.6E}\n".format(
+                lab, a.calcTotalParam("power"), flow, ring=ring, pos=pos, pu=puFrac
+            )
         )
     runLog.important(summary)
 

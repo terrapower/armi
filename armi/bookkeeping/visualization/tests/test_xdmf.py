@@ -54,12 +54,14 @@ class TestXdmf(unittest.TestCase):
 
         # single value
         self.assertEqual(
-            xdmf.XdmfDumper._dedupTimes([1.0]), [1.0],
+            xdmf.XdmfDumper._dedupTimes([1.0]),
+            [1.0],
         )
 
         # empty list
         self.assertEqual(
-            xdmf.XdmfDumper._dedupTimes([]), [],
+            xdmf.XdmfDumper._dedupTimes([]),
+            [],
         )
 
         with self.assertRaises(AssertionError):

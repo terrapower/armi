@@ -223,7 +223,9 @@ class Setting:
     def addOption(self, option: Option):
         """Extend this Setting's options with an extra option."""
         self.addOptions(
-            [option,]
+            [
+                option,
+            ]
         )
 
     def changeDefault(self, newDefault: Default):
@@ -344,7 +346,7 @@ class FlagListSetting(Setting):
     def schema(val) -> List[Flags]:
         """
         Return a list of :py:class:`Flags <armi.reactor.flags.Flags`.
-        
+
         Raises
         ------
         TypeError

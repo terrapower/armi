@@ -25,9 +25,7 @@ from armi.nucDirectory import nuclideBases as nb
 
 
 class SiC(Material):
-    r"""
-
-    """
+    r""""""
     name = "Silicon Carbide"
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["C"], tsl.SIC],

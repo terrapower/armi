@@ -203,7 +203,7 @@ class OperatorMPI(Operator):
 
         Notes
         -----
-        This was made to help minimize the amount of RAM that is used during some 
+        This was made to help minimize the amount of RAM that is used during some
         gigantic long-running cases. Resetting after building copies of reactors
         or transforming their geometry is one approach. We hope to implement
         more efficient solutions in the future.

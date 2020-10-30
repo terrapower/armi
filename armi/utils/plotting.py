@@ -84,11 +84,11 @@ def plotBlockDepthMap(
     This is useful for visualizing the spatial distribution of a param through the core.
     Blocks could possibly not be in alignment between assemblies, but the depths
     viewable are based on the first fuel assembly.
-    
+
     Parameters
     ----------
     The kwarg definitions are the same as those of ``plotFaceMap``.
-    
+
     depthIndex: int
         The the index of the elevation to show block params.
         The index is determined by the index of the blocks in the first fuel assembly.
@@ -389,10 +389,10 @@ def plotFaceMap(
 
 def close(fig=None):
     """
-    Wrapper for matplotlib close. 
+    Wrapper for matplotlib close.
 
     This is useful to avoid needing to import plotting and matplotlib.
-    The plot functions cannot always close their figure if it is going 
+    The plot functions cannot always close their figure if it is going
     to be used somewhere else after becoming active (e.g. in reports
     or gallery examples).
     """
@@ -601,7 +601,7 @@ class DepthSlider(Slider):
     def set_val(self, val):
         """
         Set the value and update the color.
-        
+
         Notes
         -----
         valmin/valmax are set on the parent to 0 and len(depths).

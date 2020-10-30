@@ -96,7 +96,10 @@ class NeutronicsReactorTests(unittest.TestCase):
         # together given that they are the same length.
         r = tests.getEmptyHexReactor()
         cs = _getModifiedSettings(
-            customSettings={"beta": [0.0] * 6, "decayConstants": [0.0] * 6,}
+            customSettings={
+                "beta": [0.0] * 6,
+                "decayConstants": [0.0] * 6,
+            }
         )
         armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         r.core.setOptionsFromCs(cs)
@@ -106,7 +109,9 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         # Test the assignment of total beta as a float
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(customSettings={"beta": 0.00670},)
+        cs = _getModifiedSettings(
+            customSettings={"beta": 0.00670},
+        )
         armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
@@ -115,7 +120,11 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Test that nothing is assigned if the beta is specified as a list
         # without a corresponding decay constants list.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(customSettings={"beta": [0.0] * 6,},)
+        cs = _getModifiedSettings(
+            customSettings={
+                "beta": [0.0] * 6,
+            },
+        )
         armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
@@ -136,7 +145,9 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Test that decay constants are not assigned without a corresponding
         # group-wise beta input.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(customSettings={"decayConstants": [0.0] * 6},)
+        cs = _getModifiedSettings(
+            customSettings={"decayConstants": [0.0] * 6},
+        )
         armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
@@ -188,22 +199,30 @@ class NeutronicsReactorTests(unittest.TestCase):
         # inputs.
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"decayConstants": [1]},)
+            cs = _getModifiedSettings(
+                customSettings={"decayConstants": [1]},
+            )
             armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"beta": [1]},)
+            cs = _getModifiedSettings(
+                customSettings={"beta": [1]},
+            )
             armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"beta": 1},)
+            cs = _getModifiedSettings(
+                customSettings={"beta": 1},
+            )
             armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"beta": (1, 2, 3)},)
+            cs = _getModifiedSettings(
+                customSettings={"beta": (1, 2, 3)},
+            )
             armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
 

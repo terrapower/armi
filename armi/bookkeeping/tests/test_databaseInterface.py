@@ -334,7 +334,7 @@ class TestStandardFollowOn(unittest.TestCase):
     def _getOperatorThatChangesVariables(self, cs):
         """
         Return an operator that advances time so that restart runs can be tested.
-        
+
         Notes
         -----
         Ensures that parameters are consistant between Standard runs and restart runs.

@@ -483,7 +483,13 @@ def _getTopologyFromShape(b: blocks.Block, offset: int) -> Tuple[int, List[int]]
         return 12, topo
 
     if isinstance(b, blocks.CartesianBlock):
-        return 8, [_HEXAHEDRON,] + list(range(offset, offset + 8))
+        return (
+            8,
+            [
+                _HEXAHEDRON,
+            ]
+            + list(range(offset, offset + 8)),
+        )
     if isinstance(b, blocks.ThRZBlock):
         return 20, [_QUADRATIC_HEXAHEDRON] + list(range(offset, offset + 20))
 

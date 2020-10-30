@@ -622,7 +622,7 @@ class FuelHandler:
         by the framework, so here it remains. New developments should
         avoid using it. Most code using it has been refactored to just use
         a ``_prepSearch`` private method.
-        
+
         It now should not be used and will trigger a DeprecationWarning
         in the constructor. It's still here because old user-input code
         calls the parent's prepSearch, which is this.

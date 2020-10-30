@@ -211,7 +211,9 @@ def _getNeutronicsBlockParams():
             "fluxAdj", units="", description="Adjoint flux"  # adjoint flux is unitless
         )
         pb.defParam(
-            "fluxAdjPeak", units="", description="Adjoint flux",
+            "fluxAdjPeak",
+            units="",
+            description="Adjoint flux",
         )
 
         pb.defParam(
@@ -323,7 +325,10 @@ def _getNeutronicsBlockParams():
     # rx rate params that are derived during mesh conversion.
     # We'd like all things that can be derived from flux and XS to be
     # in this category to minimize numerical diffusion but it is a WIP.
-    with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE,) as pb:
+    with pDefs.createBuilder(
+        default=0.0,
+        location=ParamLocation.AVERAGE,
+    ) as pb:
         pb.defParam(
             "rateAbs",
             units="1/cm^3/s",

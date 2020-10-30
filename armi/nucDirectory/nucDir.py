@@ -217,14 +217,12 @@ def getRebusLabel(name):
 
 
 def getMc2LabelFromRebusLabel(rebusLabel):
-    r"""
-    """
+    r""""""
     return getMc2Label(rebusLabel)
 
 
 def getRebusLabelFromMc2Label(mc2Label):
-    r"""
-    """
+    r""""""
     return getRebusNameFromMC2(mc2Label)
 
 

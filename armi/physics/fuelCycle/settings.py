@@ -156,7 +156,10 @@ def getFuelCycleSettingValidators(inspector):
             r"from armi.reactor import components",
         ),
         (r"\[['\"]caseTitle['\"]\]", r".caseTitle"),
-        (r"self.r.core.bolAssems\['(.*?)'\]", r"self.r.blueprints.assemblies['\1']",),
+        (
+            r"self.r.core.bolAssems\['(.*?)'\]",
+            r"self.r.blueprints.assemblies['\1']",
+        ),
         (r"copyAssembly", r"duplicate"),
     ]
 

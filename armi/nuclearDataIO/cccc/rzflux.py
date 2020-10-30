@@ -136,14 +136,19 @@ class RzfluxStream(cccc.StreamWithDataContainer):
         if self._data.groupFluxes is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._data.groupFluxes = numpy.zeros((ng, nz), dtype=numpy.float32,)
+            self._data.groupFluxes = numpy.zeros(
+                (ng, nz),
+                dtype=numpy.float32,
+            )
         for bi in range(nb):
             jLow, jUp = cccc.getBlockBandwidth(bi + 1, nz, nb)
             numZonesInBlock = jUp - jLow + 1
             with self.createRecord() as record:
                 # pass in shape in fortran (read) order
                 self._data.groupFluxes[:, jLow : jUp + 1] = record.rwMatrix(
-                    self._data.groupFluxes[:, jLow : jUp + 1], numZonesInBlock, ng,
+                    self._data.groupFluxes[:, jLow : jUp + 1],
+                    numZonesInBlock,
+                    ng,
                 )
 
 

@@ -2038,10 +2038,14 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                if symmetryLine in [
-                    grids.BOUNDARY_0_DEGREES,
-                    grids.BOUNDARY_120_DEGREES,
-                ] and bool(self.r.core.childrenByLocator.get(upperEdgeLoc)):
+                if (
+                    symmetryLine
+                    in [
+                        grids.BOUNDARY_0_DEGREES,
+                        grids.BOUNDARY_120_DEGREES,
+                    ]
+                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                ):
                     return 2.0
         return 1.0
 

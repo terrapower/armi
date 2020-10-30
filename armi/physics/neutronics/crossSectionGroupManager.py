@@ -426,7 +426,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
     - Iterates through components of all blocks and calculates component average number densities. This calculation
       takes the first component of each block, averages the number densities, and applies this to the number density
       to the representative block.
-    
+
     """
 
     def _makeRepresentativeBlock(self):

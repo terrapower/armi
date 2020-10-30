@@ -26,8 +26,8 @@ from armi.nucDirectory import nuclideBases as nb
 class Graphite(Material):
     """
     Graphite.
-    
-    .. [INL-EXT-16-38241] McEligot, Donald, Swank, W. David, Cottle, David L., and Valentin, 
+
+    .. [INL-EXT-16-38241] McEligot, Donald, Swank, W. David, Cottle, David L., and Valentin,
         Francisco I. Thermal Properties of G-348 Graphite. United States: N. p., 2016. Web. doi:10.2172/1330693.
         https://www.osti.gov/biblio/1330693
     """
@@ -38,7 +38,7 @@ class Graphite(Material):
     def setDefaultMassFracs(self):
         """
         Set graphite to carbon.
-        
+
         Room temperature density from [INL-EXT-16-38241]_, table 2.
         """
         self.setMassFrac("C", 1.0)

@@ -20,7 +20,7 @@ class ParameterDefinitionError(Exception):
 
     * Attempting to create two parameters with the same name.
     * Attempting to create a parameter outside of a :py:class:`ParameterFactory`
-    ``with`` statement.  """
+    ``with`` statement."""
 
     def __init__(self, message):
         Exception.__init__(
