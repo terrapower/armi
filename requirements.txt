@@ -2,7 +2,7 @@ numpy
 scipy
 yamlize
 matplotlib
-h5py
+h5py<3.0
 tabulate
 ordered-set
 pluggy
