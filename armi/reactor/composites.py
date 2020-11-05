@@ -30,6 +30,7 @@ analogy of the model to the physical nature of nuclear reactors.
 See Also: :doc:`/developer/index`.
 """
 import collections
+import itertools
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
@@ -81,6 +82,17 @@ class FlagSerializer(parameters.Serializer):
 
         return npa, {"flag_order": Flags.sortedFields()}
 
+    @staticmethod
+    def _remapFlags(inp: int, mapping: Dict[int, int]) -> Flags:
+        f = 0
+        for bit in itertools.count():
+            if (1 << bit) > inp:
+                break
+            if (1 << bit) & inp:
+                f = f | (1 << mapping[bit])
+
+        return Flags(f)
+
     @classmethod
     def unpack(cls, data, version, attrs):
         flagOrderPassed = attrs["flag_order"]
@@ -95,32 +107,32 @@ class FlagSerializer(parameters.Serializer):
                 )
             )
 
-        # Ensure that the meanings of the Flags bits are the same. We could also
-        # implement a more expensive operation which attempts to map from one version's
-        # meaning to another's, but possibly YAGNI.
-        if not len(flagOrderPassed) == len(flagOrderNow):
+        flagSetIn = set(flagOrderPassed)
+        flagSetNow = set(flagOrderNow)
+
+        # Make sure that all of the old flags still exist
+        if not flagSetIn.issubset(flagSetNow):
+            missingFlags = flagSetIn - flagSetNow
             raise ValueError(
-                "The database contains a different number of Flags than the current "
-                "ARMI Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
+                "The set of flags in the database includes unknown flags. "
+                "Make sure you are using the correct ARMI app. Missing flags:\n"
+                "{}".format(missingFlags)
             )
 
-        if not all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
-            raise ValueError(
-                "The database has Flags with different meanings than the current ARMI"
-                "Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
-            )
+        if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
+            out = [Flags.from_bytes(row.tobytes()) for row in data]
+        else:
+            newFlags = {
+                i: flagOrderNow.index(oldFlag)
+                for (i, oldFlag) in enumerate(flagOrderPassed)
+            }
+            out = [
+                cls._remapFlags(
+                    int.from_bytes(row.tobytes(), byteorder="little"), newFlags
+                )
+                for row in data
+            ]
 
-        out = [Flags.from_bytes(row.tobytes()) for row in data]
         return out
 
 

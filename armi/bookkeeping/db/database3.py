@@ -673,13 +673,23 @@ class Database3(database.Database):
 
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
-        cs.loadFromString(self.h5db["inputs/settings"][()])
+        try:
+            cs.loadFromString(self.h5db["inputs/settings"][()])
+        except:
+            pass
+
         return cs
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        bpString = self.h5db["inputs/blueprints"][()]
+        bpString = None
+
+        try:
+            bpString = self.h5db["inputs/blueprints"][()]
+        except:
+            pass
+
         if not bpString:
             # looks like no blueprints contents
             return None
