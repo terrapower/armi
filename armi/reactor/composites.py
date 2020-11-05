@@ -43,6 +43,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import resolveCollections
 from armi.reactor.flags import Flags, TypeSpec
 from armi import runLog
+from armi import utils
 from armi.utils import units
 from armi.utils import densityTools
 from armi.nucDirectory import nucDir, nuclideBases
@@ -74,16 +75,30 @@ class FlagSerializer(parameters.Serializer):
         Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
-        reader and the writer agree on the meaning of each bit.
+        reader and the writer can agree on the meaning of each bit.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return FlagSerializer._packImpl(data, Flags)
+
+    @staticmethod
+    def _packImpl(data, flagCls: Type[utils.Flag]):
+        """
+        Implement the pack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
         """
         npa = numpy.array(
             [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
-        ).reshape((len(data), Flags.width()))
+        ).reshape((len(data), flagCls.width()))
 
-        return npa, {"flag_order": Flags.sortedFields()}
+        return npa, {"flag_order": flagCls.sortedFields()}
 
     @staticmethod
-    def _remapFlags(inp: int, mapping: Dict[int, int]) -> Flags:
+    def _remapFlags(inp: int, mapping: Dict[int, int], flagCls: Type[utils.Flag]):
         f = 0
         for bit in itertools.count():
             if (1 << bit) > inp:
@@ -91,12 +106,33 @@ class FlagSerializer(parameters.Serializer):
             if (1 << bit) & inp:
                 f = f | (1 << mapping[bit])
 
-        return Flags(f)
+        return flagCls(f)
 
     @classmethod
     def unpack(cls, data, version, attrs):
+        """
+        Reverse the pack operation
+
+        This will allow for some degree of conversion from old flags to a new set of
+        flags, as long as all of the source flags still exist in the current set of
+        flags.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return cls._unpackImpl(data, version, attrs, Flags)
+
+    @classmethod
+    def _unpackImpl(cls, data, version, attrs, flagCls: Type[utils.Flag]):
+        """
+        Implement the unpack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
+        """
         flagOrderPassed = attrs["flag_order"]
-        flagOrderNow = Flags.sortedFields()
+        flagOrderNow = flagCls.sortedFields()
 
         if version != cls.version:
             raise ValueError(
@@ -120,7 +156,7 @@ class FlagSerializer(parameters.Serializer):
             )
 
         if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
-            out = [Flags.from_bytes(row.tobytes()) for row in data]
+            out = [flagCls.from_bytes(row.tobytes()) for row in data]
         else:
             newFlags = {
                 i: flagOrderNow.index(oldFlag)
@@ -128,7 +164,7 @@ class FlagSerializer(parameters.Serializer):
             }
             out = [
                 cls._remapFlags(
-                    int.from_bytes(row.tobytes(), byteorder="little"), newFlags
+                    int.from_bytes(row.tobytes(), byteorder="little"), newFlags, flagCls
                 )
                 for row in data
             ]
