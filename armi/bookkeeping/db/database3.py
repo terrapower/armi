@@ -675,7 +675,14 @@ class Database3(database.Database):
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
             cs.loadFromString(self.h5db["inputs/settings"][()])
-        except:
+        except KeyError:
+            # not all paths to writing a database require inputs to be written to the
+            # database. Technically, settings do affect some of the behavior of database
+            # reading, so not having the settings that made the reactor that went into
+            # the database is not ideal. However, this isn't the right place to crash
+            # into it. Ideally, there would be not way to not have the settings in the
+            # database (force writing in writeToDB), or to make reading invariant to
+            # settings.
             pass
 
         return cs
@@ -687,7 +694,8 @@ class Database3(database.Database):
 
         try:
             bpString = self.h5db["inputs/blueprints"][()]
-        except:
+        except KeyError:
+            # not all reactors need to be created from blueprints, so they may not exist
             pass
 
         if not bpString:

@@ -98,7 +98,19 @@ class FlagSerializer(parameters.Serializer):
         return npa, {"flag_order": flagCls.sortedFields()}
 
     @staticmethod
-    def _remapFlags(inp: int, mapping: Dict[int, int], flagCls: Type[utils.Flag]):
+    def _remapBits(inp: int, mapping: Dict[int, int]):
+        """
+        Given an input bitfield, map each bit to the appropriate new bit position based
+        on the passed mapping.
+
+        Parameters
+        ==========
+        inp : int
+            input bitfield
+
+        mapping : dict
+            dictionary mapping from old bit position -> new bit position
+        """
         f = 0
         for bit in itertools.count():
             if (1 << bit) > inp:
@@ -106,7 +118,7 @@ class FlagSerializer(parameters.Serializer):
             if (1 << bit) & inp:
                 f = f | (1 << mapping[bit])
 
-        return flagCls(f)
+        return f
 
     @classmethod
     def unpack(cls, data, version, attrs):
@@ -130,6 +142,17 @@ class FlagSerializer(parameters.Serializer):
         This is kept separate from the public interface to permit testing of the
         functionality without having to do unholy things to ARMI's actual set of
         ``reactor.flags.Flags``.
+
+        If the set of flags for the currently-configured App match the input set of
+        flags, they are read in directly, which is good and cheap. However, if the set
+        of flags differ from the input and the current App, we will try to convert them
+        (as long as all of the input flags exist in the current App). Conversion is done
+        by forming a map from all input bit positions to the current-App bit positions
+        of the same meaning. E.g., if FUEL flag used to be the 3rd bit position, but now
+        it is the 6th bit position, the map will contain ``map[3] = 6``. Then for each
+        bitfield that is read in, each bit position is queried and if present, mapped to
+        the proper corresponding new bit position. The result of this mapping is used to
+        construct the Flags object.
         """
         flagOrderPassed = attrs["flag_order"]
         flagOrderNow = flagCls.sortedFields()
@@ -163,8 +186,10 @@ class FlagSerializer(parameters.Serializer):
                 for (i, oldFlag) in enumerate(flagOrderPassed)
             }
             out = [
-                cls._remapFlags(
-                    int.from_bytes(row.tobytes(), byteorder="little"), newFlags, flagCls
+                flagCls(
+                    cls._remapBits(
+                        int.from_bytes(row.tobytes(), byteorder="little"), newFlags
+                    )
                 )
                 for row in data
             ]

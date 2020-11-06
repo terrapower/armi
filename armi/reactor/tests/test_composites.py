@@ -450,22 +450,19 @@ class TestFlagSerializer(unittest.TestCase):
             self.TestFlagsA.A | self.TestFlagsA.C | self.TestFlagsA.D,
         ]
 
-        for f in data:
-            print(int(f))
-
         serialized, attrs = composites.FlagSerializer._packImpl(data, self.TestFlagsA)
 
         data2 = composites.FlagSerializer._unpackImpl(
             serialized, composites.FlagSerializer.version, attrs, self.TestFlagsB
         )
-        for f in data2:
-            print(int(f))
 
         expected = [
             self.TestFlagsB.A,
             self.TestFlagsB.A | self.TestFlagsB.C,
             self.TestFlagsB.A | self.TestFlagsB.C | self.TestFlagsB.D,
         ]
+
+        self.assertEqual(data2, expected)
 
 
 class TestMiscMethods(unittest.TestCase):
