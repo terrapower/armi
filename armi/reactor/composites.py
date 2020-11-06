@@ -30,6 +30,7 @@ analogy of the model to the physical nature of nuclear reactors.
 See Also: :doc:`/developer/index`.
 """
 import collections
+import itertools
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
@@ -42,6 +43,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import resolveCollections
 from armi.reactor.flags import Flags, TypeSpec
 from armi import runLog
+from armi import utils
 from armi.utils import units
 from armi.utils import densityTools
 from armi.nucDirectory import nucDir, nuclideBases
@@ -73,18 +75,87 @@ class FlagSerializer(parameters.Serializer):
         Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
-        reader and the writer agree on the meaning of each bit.
+        reader and the writer can agree on the meaning of each bit.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return FlagSerializer._packImpl(data, Flags)
+
+    @staticmethod
+    def _packImpl(data, flagCls: Type[utils.Flag]):
+        """
+        Implement the pack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
         """
         npa = numpy.array(
             [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
-        ).reshape((len(data), Flags.width()))
+        ).reshape((len(data), flagCls.width()))
 
-        return npa, {"flag_order": Flags.sortedFields()}
+        return npa, {"flag_order": flagCls.sortedFields()}
+
+    @staticmethod
+    def _remapBits(inp: int, mapping: Dict[int, int]):
+        """
+        Given an input bitfield, map each bit to the appropriate new bit position based
+        on the passed mapping.
+
+        Parameters
+        ==========
+        inp : int
+            input bitfield
+
+        mapping : dict
+            dictionary mapping from old bit position -> new bit position
+        """
+        f = 0
+        for bit in itertools.count():
+            if (1 << bit) > inp:
+                break
+            if (1 << bit) & inp:
+                f = f | (1 << mapping[bit])
+
+        return f
 
     @classmethod
     def unpack(cls, data, version, attrs):
+        """
+        Reverse the pack operation
+
+        This will allow for some degree of conversion from old flags to a new set of
+        flags, as long as all of the source flags still exist in the current set of
+        flags.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return cls._unpackImpl(data, version, attrs, Flags)
+
+    @classmethod
+    def _unpackImpl(cls, data, version, attrs, flagCls: Type[utils.Flag]):
+        """
+        Implement the unpack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
+
+        If the set of flags for the currently-configured App match the input set of
+        flags, they are read in directly, which is good and cheap. However, if the set
+        of flags differ from the input and the current App, we will try to convert them
+        (as long as all of the input flags exist in the current App). Conversion is done
+        by forming a map from all input bit positions to the current-App bit positions
+        of the same meaning. E.g., if FUEL flag used to be the 3rd bit position, but now
+        it is the 6th bit position, the map will contain ``map[3] = 6``. Then for each
+        bitfield that is read in, each bit position is queried and if present, mapped to
+        the proper corresponding new bit position. The result of this mapping is used to
+        construct the Flags object.
+        """
         flagOrderPassed = attrs["flag_order"]
-        flagOrderNow = Flags.sortedFields()
+        flagOrderNow = flagCls.sortedFields()
 
         if version != cls.version:
             raise ValueError(
@@ -95,32 +166,34 @@ class FlagSerializer(parameters.Serializer):
                 )
             )
 
-        # Ensure that the meanings of the Flags bits are the same. We could also
-        # implement a more expensive operation which attempts to map from one version's
-        # meaning to another's, but possibly YAGNI.
-        if not len(flagOrderPassed) == len(flagOrderNow):
+        flagSetIn = set(flagOrderPassed)
+        flagSetNow = set(flagOrderNow)
+
+        # Make sure that all of the old flags still exist
+        if not flagSetIn.issubset(flagSetNow):
+            missingFlags = flagSetIn - flagSetNow
             raise ValueError(
-                "The database contains a different number of Flags than the current "
-                "ARMI Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
+                "The set of flags in the database includes unknown flags. "
+                "Make sure you are using the correct ARMI app. Missing flags:\n"
+                "{}".format(missingFlags)
             )
 
-        if not all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
-            raise ValueError(
-                "The database has Flags with different meanings than the current ARMI"
-                "Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
-            )
+        if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
+            out = [flagCls.from_bytes(row.tobytes()) for row in data]
+        else:
+            newFlags = {
+                i: flagOrderNow.index(oldFlag)
+                for (i, oldFlag) in enumerate(flagOrderPassed)
+            }
+            out = [
+                flagCls(
+                    cls._remapBits(
+                        int.from_bytes(row.tobytes(), byteorder="little"), newFlags
+                    )
+                )
+                for row in data
+            ]
 
-        out = [Flags.from_bytes(row.tobytes()) for row in data]
         return out
 
 

@@ -148,3 +148,7 @@ Release Date: TBD
   by features of Database, version 3. Database 3 supports history tracking from the
   database file, and whole reactor models can be loaded for any stored time step,
   obviating the need for special logic in snapshots.
+
+* Added capability to map flags to current meaning when loading from database.
+  Previously, loading would fail if the meanings of written and current flags did not
+  match exactly.
