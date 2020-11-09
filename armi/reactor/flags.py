@@ -319,26 +319,27 @@ def registerPluginFlags(pm):
 
 
 # string conversions for multiple-word flags
+# Beware of how these may interact with the standard flag names! E.g., make sure NOZZLE
+# doesn't eat the NOZZLE in INLET_NOZZLE. Make sure that words that would otherwise be a
+# substring of a valid flag are wrapped in word-boundary `\b`s
 _CONVERSIONS = {
-    re.compile(r"GRID\s+PLATE"): Flags.GRID_PLATE,
-    re.compile(
-        r"\bGRID\b"
-    ): Flags.GRID_PLATE,  # often used as component in "grid plate" block
-    re.compile(r"INLET\s+NOZZLE"): Flags.INLET_NOZZLE,
-    re.compile("NOZZLE"): Flags.INLET_NOZZLE,
-    re.compile(r"HANDLING\s+SOCKET"): Flags.HANDLING_SOCKET,
-    re.compile(r"GUIDE\s+TUBE"): Flags.GUIDE_TUBE,
-    re.compile(r"FISSION\s+CHAMBER"): Flags.FISSION_CHAMBER,
-    re.compile("SOCKET"): Flags.HANDLING_SOCKET,
-    re.compile(r"SHIELD\s+BLOCK"): Flags.SHIELD_BLOCK,
-    re.compile("SHIELDBLOCK"): Flags.SHIELD_BLOCK,
-    re.compile(r"CORE\s+BARREL"): Flags.CORE_BARREL,
-    re.compile("INNERDUCT"): Flags.INNER | Flags.DUCT,
-    re.compile("GAP1"): Flags.GAP | Flags.A,
-    re.compile("GAP2"): Flags.GAP | Flags.B,
-    re.compile("GAP3"): Flags.GAP | Flags.C,
-    re.compile("GAP4"): Flags.GAP | Flags.D,
-    re.compile("GAP5"): Flags.GAP | Flags.E,
-    re.compile("LINER1"): Flags.LINER | Flags.A,
-    re.compile("LINER2"): Flags.LINER | Flags.B,
+    re.compile(r"\bGRID\s+PLATE\b"): Flags.GRID_PLATE,
+    re.compile(r"\bGRID\b"): Flags.GRID_PLATE,
+    re.compile(r"\bINLET\s+NOZZLE\b"): Flags.INLET_NOZZLE,
+    re.compile(r"\bNOZZLE\b"): Flags.INLET_NOZZLE,
+    re.compile(r"\bHANDLING\s+SOCKET\b"): Flags.HANDLING_SOCKET,
+    re.compile(r"\bGUIDE\s+TUBE\b"): Flags.GUIDE_TUBE,
+    re.compile(r"\bFISSION\s+CHAMBER\b"): Flags.FISSION_CHAMBER,
+    re.compile(r"\bSOCKET\b"): Flags.HANDLING_SOCKET,
+    re.compile(r"\bSHIELD\s+BLOCK\b"): Flags.SHIELD_BLOCK,
+    re.compile(r"\bSHIELDBLOCK\b"): Flags.SHIELD_BLOCK,
+    re.compile(r"\bCORE\s+BARREL\b"): Flags.CORE_BARREL,
+    re.compile(r"\bINNERDUCT\b"): Flags.INNER | Flags.DUCT,
+    re.compile(r"\bGAP1\b"): Flags.GAP | Flags.A,
+    re.compile(r"\bGAP2\b"): Flags.GAP | Flags.B,
+    re.compile(r"\bGAP3\b"): Flags.GAP | Flags.C,
+    re.compile(r"\bGAP4\b"): Flags.GAP | Flags.D,
+    re.compile(r"\bGAP5\b"): Flags.GAP | Flags.E,
+    re.compile(r"\bLINER1\b"): Flags.LINER | Flags.A,
+    re.compile(r"\bLINER2\b"): Flags.LINER | Flags.B,
 }
