@@ -923,9 +923,9 @@ class Grid:
         Parameters
         ----------
         ring : int
-            Ring index
+            Ring index (or number starting at 1 for hex)
         pos : int
-            Position index
+            Position index (or number starting at 1 for hex)
         k : int, optional
             Axial index
 
