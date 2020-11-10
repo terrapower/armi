@@ -47,18 +47,23 @@ import logging
 import tabulate
 from typing import Optional
 
-try:
-    import psutil
-
-    _havePsutil = True
-except ImportError:
-    _havePsutil = False
-
 import armi
 from armi import interfaces
 from armi import mpiActions
 from armi import runLog
 from armi.reactor.composites import ArmiObject
+
+try:
+    import psutil
+
+    # psutil is an optional requirement, since it doesnt support MacOS very well
+    _havePsutil = True
+except ImportError:
+    runLog.warning(
+        "Failed to import psutil; MemoryProfiler will not provide meaningful data."
+    )
+    _havePsutil = False
+
 
 # disable the import warnings (Issue #88)
 logging.disable(logging.CRITICAL)
@@ -509,6 +514,9 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 class SystemAndProcessMemoryUsage(object):
     def __init__(self):
         self.nodeName = armi.MPI_NODENAME
+        # no psutil, no memory diagnostics. TODO: Ideally, we could just cut
+        # MemoryProfiler out entirely, but it is referred to directly by the standard
+        # operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
         if _havePsutil:
