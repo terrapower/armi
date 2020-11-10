@@ -41,10 +41,10 @@ armi : Fundamental entry point that calls this package.
 # are decorated with @armi.command to be added to the collection of registered
 # classes
 
-from __future__ import print_function
 import argparse
 import textwrap
 import re
+import sys
 from typing import Optional
 
 import armi
@@ -163,11 +163,13 @@ class ArmiCLI:
 
         if args.list_commands:
             self.listCommands()
-            raise SystemExit(0)
+
+            return 0
 
         if args.command == "help":
             self.parser.print_help()
-            raise SystemExit(0)
+
+            return 0
 
         return self.executeCommand(args.command, args.args)
 
@@ -181,7 +183,8 @@ class ArmiCLI:
                 )
             )
             self.listCommands()
-            raise SystemExit(1)
+
+            return 1
 
         commandClass = self._entryPoints[command]
         cmd = commandClass()
