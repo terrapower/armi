@@ -30,10 +30,10 @@ from armi import context
 def main():
     # Main entry point into ARMI
     try:
-        armi.configure(apps.App())
+        if not armi.isConfigured():
+            armi.configure(apps.App())
         code = ArmiCLI().run()
         # sys exit interprets None as 0
-        print(sys.flags.interactive)
         sys.exit(code)
     except Exception:
         # Make sure not to catch all BaseExceptions, lest we catch the expected

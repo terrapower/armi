@@ -22,6 +22,7 @@ import unittest
 import armi
 from armi import plugins
 from armi.localization import exceptions
+from armi.__main__ import main
 
 
 class TestPlugin1(plugins.ArmiPlugin):
@@ -123,3 +124,8 @@ class TestArmi(unittest.TestCase):
     def test_overConfigured(self):
         with self.assertRaises(exceptions.OverConfiguredError):
             armi.configure()
+
+    def test_main(self):
+        with self.assertRaises(SystemExit):
+            main()
+
