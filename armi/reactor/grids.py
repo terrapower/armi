@@ -1024,9 +1024,9 @@ class CartesianGrid(Grid):
     In Cartesian, (i, j, k) indices map to (x, y, z) coordinates.
     In an axial plane (i, j) are as follows::
 
-        (-1, 1) (0, 1) (1, 1)
-        (-1, 0) (0, 0) (1, 0)
-        (-1,-1) (0,-1) (1,-1)
+        (-1, 1) ( 0, 1) ( 1, 1)
+        (-1, 0) ( 0, 0) ( 1, 0)
+        (-1,-1) ( 0,-1) ( 1,-1)
     """
 
     @classmethod
@@ -1087,8 +1087,8 @@ class CartesianGrid(Grid):
         This is needed to support GUI, but should not often be used.
         i, j (0-based) indices are much more useful. For example:
 
-        >>> indices = core.spatialGrid[i, j, 0] # 3rd index is 0 for assembly
-        >>> a = core.childrenByLocator[indices]
+        >>> locator = core.spatialGrid[i, j, 0] # 3rd index is 0 for assembly
+        >>> a = core.childrenByLocator[locator]
 
         >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]] # one liner
         """
@@ -1247,9 +1247,9 @@ class HexGrid(Grid):
     -----
     In an axial plane (i, j) are as follows::
 
-               ( 0, 1) ( 1, 0)
-            (-1, 1) (0, 0) (1,-1)
-               (-1, 0) ( 0,-1)
+                ( 0, 1) ( 1, 0)
+            (-1, 1) ( 0, 0) ( 1,-1)
+                (-1, 0) ( 0,-1)
     """
 
     @staticmethod
