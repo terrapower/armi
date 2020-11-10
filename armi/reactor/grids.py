@@ -1248,9 +1248,9 @@ class HexGrid(Grid):
     In an axial plane (i, j) are as follows (second one is pointedEndUp)::
 
 
-                    ( 0, 1) 
+                    ( 0, 1)
              (-1, 1)       ( 1, 0)
-                    ( 0, 0) 
+                    ( 0, 0)
              (-1, 0)       ( 1,-1)
                     ( 0,-1)
 
