@@ -923,11 +923,11 @@ class Grid:
         Parameters
         ----------
         ring : int
-            Ring index
+            Ring number (1-based indexing)
         pos : int
-            Position index
+            Position number (1-based indexing)
         k : int, optional
-            Axial index
+            Axial index (0-based indexing)
 
         See Also
         --------
@@ -1018,6 +1018,15 @@ class Grid:
 class CartesianGrid(Grid):
     """
     Grid class representing a conformal Cartesian mesh.
+
+    Notes
+    -----
+    In Cartesian, (i, j, k) indices map to (x, y, z) coordinates.
+    In an axial plane (i, j) are as follows::
+
+        (-1, 1) ( 0, 1) ( 1, 1)
+        (-1, 0) ( 0, 0) ( 1, 0)
+        (-1,-1) ( 0,-1) ( 1,-1)
     """
 
     @classmethod
@@ -1072,6 +1081,16 @@ class CartesianGrid(Grid):
 
         Grids that split the central locations have 1 location in in inner-most ring,
         whereas grids without split central locations will have 4.
+
+        Notes
+        -----
+        This is needed to support GUI, but should not often be used.
+        i, j (0-based) indices are much more useful. For example:
+
+        >>> locator = core.spatialGrid[i, j, 0] # 3rd index is 0 for assembly
+        >>> a = core.childrenByLocator[locator]
+
+        >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]] # one liner
         """
         i, j = indices[0:2]
         split = self._isThroughCenter()
@@ -1098,6 +1117,16 @@ class CartesianGrid(Grid):
             # region 4
             pos = 7 * ring + j
         return (int(ring) + 1, int(pos) + 1)
+
+    @staticmethod
+    def getIndicesFromRingAndPos(ring, pos):
+        """
+        Not implemented for Cartesian-see getRingPos notes.
+        """
+        raise NotImplementedError(
+            "Cartesian should not need need ring/pos, use i, j indices."
+            "See getRingPos doc string notes for more information/example."
+        )
 
     def getMinimumRings(self, n):
         """
@@ -1207,18 +1236,21 @@ class CartesianGrid(Grid):
 
     def _isThroughCenter(self):
         """Return whether the central cells are split through the middle for symmetry."""
-        return all(
-            self._offset
-            == [
-                0,
-                0,
-                0,
-            ]
-        )
+        return all(self._offset == [0, 0, 0])
 
 
 class HexGrid(Grid):
-    """Has 6 neighbors in plane."""
+    """
+    Has 6 neighbors in plane.
+
+    Notes
+    -----
+    In an axial plane (i, j) are as follows::
+
+                ( 0, 1) ( 1, 0)
+            (-1, 1) ( 0, 0) ( 1,-1)
+                (-1, 0) ( 0,-1)
+    """
 
     @staticmethod
     def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry=""):
@@ -1610,7 +1642,7 @@ class ThetaRZGrid(Grid):
 
     @staticmethod
     def getIndicesFromRingAndPos(ring, pos):
-        return (pos, ring)
+        return (pos - 1, ring - 1)
 
     def getCoordinates(self, indices, nativeCoords=False):
         meshCoords = theta, r, z = Grid.getCoordinates(self, indices)
