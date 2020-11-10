@@ -380,7 +380,7 @@ sphinx_gallery_conf = {
     "examples_dirs": ["gallery-src"],
     "filename_pattern": re.escape(os.sep) + "run_",
     "gallery_dirs": ["gallery"],
-    "line_numbers": True,
+    "line_numbers": False,
     "download_all_examples": False,
     "subsection_order": ExplicitOrder(
         [
