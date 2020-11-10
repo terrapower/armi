@@ -1245,10 +1245,20 @@ class HexGrid(Grid):
 
     Notes
     -----
-    In an axial plane (i, j) are as follows::
+    In an axial plane (i, j) are as follows (second one is pointedEndUp)::
+
+
+                    ( 0, 1)
+             (-1, 1)       ( 1, 0)
+                    ( 0, 0)
+             (-1, 0)       ( 1,-1)
+                    ( 0,-1)
+
 
                 ( 0, 1) ( 1, 0)
+
             (-1, 1) ( 0, 0) ( 1,-1)
+
                 (-1, 0) ( 0,-1)
     """
 
@@ -1364,8 +1374,9 @@ class HexGrid(Grid):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
-        Note that these neighbors are ordered counter-clockwise beginning from 2 o'clock.
-        This is very important!"""
+        Note that these neighbors are ordered counter-clockwise beginning from the
+        30 or 60 degree direction. Exact direction is dependent on pointedEndUp arg.
+        """
         return [
             (i + 1, j, k),
             (i, j + 1, k),
