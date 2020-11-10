@@ -42,10 +42,17 @@ http://packages.python.org/Pympler/index.html
 https://pythonhosted.org/psutil/
 https://docs.python.org/2/library/gc.html#gc.garbage
 """
-import logging
-import psutil
-import tabulate
 import gc
+import logging
+import tabulate
+from typing import Optional
+
+try:
+    import psutil
+
+    _havePsutil = True
+except ImportError:
+    _havePsutil = False
 
 import armi
 from armi import interfaces
@@ -502,12 +509,16 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 class SystemAndProcessMemoryUsage(object):
     def __init__(self):
         self.nodeName = armi.MPI_NODENAME
-        self.percentNodeRamUsed = psutil.virtual_memory().percent
-        self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
+        self.percentNodeRamUsed: Optional[float] = None
+        self.processMemoryInMB: Optional[float] = None
+        if _havePsutil:
+            self.percentNodeRamUsed = psutil.virtual_memory().percent
+            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
 
     def __isub__(self, other):
-        self.percentNodeRamUsed -= other.percentNodeRamUsed
-        self.processMemoryInMB -= other.processMemoryInMB
+        if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
+            self.percentNodeRamUsed -= other.percentNodeRamUsed
+            self.processMemoryInMB -= other.processMemoryInMB
         return self
 
 
@@ -515,13 +526,14 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
     def __init__(self):
         mpiActions.MpiAction.__init__(self)
         self.usages = []
-        self.percentNodeRamUsed = 0.0
+        self.percentNodeRamUsed: Optional[float] = None
 
     def __iter__(self):
         return iter(self.usages)
 
     def __isub__(self, other):
-        self.percentNodeRamUsed -= other.percentNodeRamUsed
+        if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
+            self.percentNodeRamUsed -= other.percentNodeRamUsed
         for mine, theirs in zip(self, other):
             mine -= theirs
         return self
@@ -530,13 +542,13 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
     def minProcessMemoryInMB(self):
         if len(self.usages) == 0:
             return 0.0
-        return min(mu.processMemoryInMB for mu in self)
+        return min(mu.processMemoryInMB or 0.0 for mu in self)
 
     @property
     def maxProcessMemoryInMB(self):
         if len(self.usages) == 0:
             return 0.0
-        return max(mu.processMemoryInMB for mu in self)
+        return max(mu.processMemoryInMB or 0.0 for mu in self)
 
     def invokeHook(self):
         spmu = SystemAndProcessMemoryUsage()
@@ -548,10 +560,10 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
 
         The printout looks something like:
 
-            SYS_MEM EDWARD102.hpcc.tp.int     14.4% RAM. Proc mem (MB):   491   472   471   471   471   470
-            SYS_MEM EDWARD103.hpcc.tp.int     13.9% RAM. Proc mem (MB):   474   473   472   471   460   461
-            SYS_MEM EDWARD104.hpcc.tp.int     ...
-            SYS_MEM EDWARD107.hpcc.tp.int     ...
+            SYS_MEM HOSTNAME     14.4% RAM. Proc mem (MB):   491   472   471   471   471   470
+            SYS_MEM HOSTNAME     13.9% RAM. Proc mem (MB):   474   473   472   471   460   461
+            SYS_MEM HOSTNAME     ...
+            SYS_MEM HOSTNAME     ...
 
         """
         printedNodes = set()
@@ -563,7 +575,7 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                 continue
             printedNodes.add(memoryUsage.nodeName)
             nodeUsages = [mu for mu in self if mu.nodeName == memoryUsage.nodeName]
-            sysMemAvg = sum(mu.percentNodeRamUsed for mu in nodeUsages) / len(
+            sysMemAvg = sum(mu.percentNodeRamUsed or 0.0 for mu in nodeUsages) / len(
                 nodeUsages
             )
 
@@ -573,7 +585,8 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                     "{:5.1f}%".format(sysMemAvg),
                     "{}".format(
                         " ".join(
-                            "{:5.0f}".format(mu.processMemoryInMB) for mu in nodeUsages
+                            "{:5.0f}".format(mu.processMemoryInMB or 0.0)
+                            for mu in nodeUsages
                         )
                     ),
                 )

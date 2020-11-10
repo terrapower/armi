@@ -8,7 +8,6 @@ ordered-set
 pluggy
 pyyaml>=5.1
 pyevtk
-psutil
 xlrd
 pillow
 future
@@ -16,3 +15,5 @@ configparser
 voluptuous
 pympler
 coverage
+
+psutil[memprof]
