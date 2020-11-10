@@ -1018,6 +1018,15 @@ class Grid:
 class CartesianGrid(Grid):
     """
     Grid class representing a conformal Cartesian mesh.
+
+    Notes
+    -----
+    In Cartesian, (i, j, k) indices map to (x, y, z) coordinates.
+    In an axial plane (i, j) are as follows::
+
+        (-1, 1) (0, 1) (1, 1)
+        (-1, 0) (0, 0) (1, 0)
+        (-1,-1) (0,-1) (1,-1)
     """
 
     @classmethod
@@ -1076,12 +1085,12 @@ class CartesianGrid(Grid):
         Notes
         -----
         This is needed to support GUI, but should not often be used.
-        x, y (0-based) indices are much more useful. For example:
+        i, j (0-based) indices are much more useful. For example:
 
-        >>> indices = core.spatialGrid[x, y, 0] # 3rd index is 0 for assembly
+        >>> indices = core.spatialGrid[i, j, 0] # 3rd index is 0 for assembly
         >>> a = core.childrenByLocator[indices]
 
-        >>> a = core.childrenByLocator[core.spatialGrid[x, y, 0] # one liner
+        >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]] # one liner
         """
         i, j = indices[0:2]
         split = self._isThroughCenter()
@@ -1115,7 +1124,7 @@ class CartesianGrid(Grid):
         Not implemented for Cartesian-see getRingPos notes.
         """
         raise NotImplementedError(
-            "Cartesian should not need need ring/pos, use x, y coordinates."
+            "Cartesian should not need need ring/pos, use i, j indices."
             "See getRingPos doc string notes for more information/example."
         )
 
@@ -1231,7 +1240,17 @@ class CartesianGrid(Grid):
 
 
 class HexGrid(Grid):
-    """Has 6 neighbors in plane."""
+    """
+    Has 6 neighbors in plane.
+
+    Notes
+    -----
+    In an axial plane (i, j) are as follows::
+
+               ( 0, 1) ( 1, 0)
+            (-1, 1) (0, 0) (1,-1)
+               (-1, 0) ( 0,-1)
+    """
 
     @staticmethod
     def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry=""):
