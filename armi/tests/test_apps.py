@@ -128,4 +128,3 @@ class TestArmi(unittest.TestCase):
     def test_main(self):
         with self.assertRaises(SystemExit):
             main()
-
