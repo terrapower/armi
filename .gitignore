@@ -52,6 +52,7 @@ tags
 *.ppm
 *.mp4
 *.h5
+*.txt
 
 # vis files
 *.vtu
