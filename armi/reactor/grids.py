@@ -923,11 +923,11 @@ class Grid:
         Parameters
         ----------
         ring : int
-            Ring index (or number starting at 1 for hex)
+            Ring number (1-based indexing)
         pos : int
-            Position index (or number starting at 1 for hex)
+            Position number (1-based indexing)
         k : int, optional
-            Axial index
+            Axial index (0-based indexing)
 
         See Also
         --------
@@ -1610,7 +1610,7 @@ class ThetaRZGrid(Grid):
 
     @staticmethod
     def getIndicesFromRingAndPos(ring, pos):
-        return (pos, ring)
+        return (pos - 1, ring - 1)
 
     def getCoordinates(self, indices, nativeCoords=False):
         meshCoords = theta, r, z = Grid.getCoordinates(self, indices)
