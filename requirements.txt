@@ -1,4 +1,5 @@
-numpy
+# see https://github.com/numpy/numpy/issues/17726
+numpy==1.19.3
 scipy
 yamlize
 matplotlib
