@@ -58,7 +58,7 @@ setup(
         "h5py",
         "matplotlib",
         # see https://github.com/numpy/numpy/issues/17726
-        "numpy==1.19.3",
+        "numpy<1.19.4",
         "ordered-set",
         "pillow",
         "pluggy",
