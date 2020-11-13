@@ -20,7 +20,7 @@ from armi.nucDirectory import nuclideBases
 
 MAX_Z = 96  # stop at Curium
 
-armi.configure()
+armi.configure(permissive=True)
 
 materialNames = []
 mats = list(materials.iterAllMaterialClassesInNamespace(materials))

@@ -55,7 +55,9 @@ setup(
         "configparser",
         "coverage",
         "future",
-        "h5py",
+        # Newer h5py versions do strings differently, and we need to do some work to
+        # support it
+        "h5py<3.0",
         "matplotlib",
         # see https://github.com/numpy/numpy/issues/17726
         "numpy<1.19.4",
