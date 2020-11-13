@@ -299,7 +299,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
 
     if _app is not None:
         if permissive and type(_app) is type(app):
-            pass
+            return
         else:
             raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
 
