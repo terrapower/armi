@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from armi.nucDirectory import nuclideBases
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 xyc = []
 for name, base in nuclideBases.byName.items():

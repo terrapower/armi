@@ -23,7 +23,7 @@ from armi.reactor.converters import geometryConverters
 from armi.utils import plotting
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 o, r = test_reactors.loadTestReactor()
 kgFis = [a.getHMMass() for a in r.core]

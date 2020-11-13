@@ -17,7 +17,7 @@ from armi.reactor import grids
 
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 hexes = grids.HexGrid.fromPitch(1.0)
 

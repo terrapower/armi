@@ -36,7 +36,7 @@ from armi.materials import ht9
 from armi.materials import sodium
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 
 def _addFlux(b):

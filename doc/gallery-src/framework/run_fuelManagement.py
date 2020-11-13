@@ -27,7 +27,7 @@ from armi.utils import plotting
 
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 o, reactor = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml")
 

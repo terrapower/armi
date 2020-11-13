@@ -14,7 +14,7 @@ from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 gs = energyGroups.getGroupStructure("ANL33")
 lib = isotxs.readBinary(ISOAA_PATH)

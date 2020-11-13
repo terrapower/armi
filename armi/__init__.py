@@ -260,7 +260,7 @@ def _cleanupOnCancel(signum, _frame):
     sys.exit(1)  # since we're handling the signal we have to cancel
 
 
-def configure(app: Optional[apps.App] = None):
+def configure(app: Optional[apps.App] = None, permissive=False):
     """
     Set the plugin manager for the Framework and configure internals to those plugins.
 
@@ -269,13 +269,18 @@ def configure(app: Optional[apps.App] = None):
     app :
         An :py:class:`armi.apps.App` instance with which the framework is to be
         configured. If it is not provided, then the default ARMI App will be used.
+    permissive :
+        Whether or not an error should be produced if ``configure`` is called more than
+        once. This should only be set to ``True`` under testing or demonstration
+        purposes, where the contents of otherwise independent scripts need to be run
+        under the same python instance.
 
     Important
     ---------
     Since this affects the behavior of several modules at their import time, it is
     generally not safe to re-configure the ARMI framework once it has been configured.
-    Therefore this will raise an ``AssertionError`` if such a re-configuration is
-    attempted.
+    Therefore this will raise an ``OverConfiguredError`` if such a re-configuration is
+    attempted, unless ``permissive`` is set to ``True``.
 
     Notes
     -----
@@ -290,9 +295,13 @@ def configure(app: Optional[apps.App] = None):
     if _ignoreConfigures:
         return
 
+    app = app or apps.App()
+
     if _app is not None:
-        # ARMI cannot be reconfigured!
-        raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
+        if permissive and type(_app) is type(app):
+            pass
+        else:
+            raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
 
     assert not context.BLUEPRINTS_IMPORTED, (
         "ARMI can no longer be configured after blueprints have been imported. "
@@ -300,8 +309,6 @@ def configure(app: Optional[apps.App] = None):
     )
 
     _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
-
-    app = app or apps.App()
 
     _app = app
 

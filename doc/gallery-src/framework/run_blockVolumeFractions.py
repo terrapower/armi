@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildSimpleFuelBlock

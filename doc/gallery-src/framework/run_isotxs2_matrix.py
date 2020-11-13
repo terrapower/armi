@@ -19,7 +19,7 @@ from armi.nuclearDataIO import xsNuclides
 import armi
 
 
-armi.configure()
+armi.configure(permissive=True)
 
 lib = isotxs.readBinary(ISOAA_PATH)
 

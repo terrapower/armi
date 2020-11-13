@@ -15,7 +15,7 @@ from armi.reactor import grids
 
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 fig = plt.figure()
 zCoords = [1, 4, 8]
