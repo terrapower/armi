@@ -20,8 +20,8 @@ ARMI:
 
 * Provides useful utilities to assist in reactor development.
 
-A few demos of ARMI can be seen `in the ARMI example gallery:
-https://terrapower.github.io/armi/gallery/index.html`.
+A few demos of ARMI can be seen in the `ARMI example gallery <
+https://terrapower.github.io/armi/gallery/index.html>_`.
 
 Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can
 perform a full analysis of a reactor system and then repeat the same level of analysis
@@ -82,9 +82,11 @@ and then run::
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
 to run on a single process.
 
-From here, we recommend going through a few of our :doc:`gallery examples
-</gallery/index>` and :doc:`/tutorials/index` to
-start touring the features and capabilities and then move on to the :doc:`/user/index`.
+From here, we recommend going through a few of our `gallery examples
+<https://terrapower.github.io/armi/gallery/index.html>`_ and 
+`tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to
+start touring the features and capabilities and then move on to the 
+`User Manual <https://terrapower.github.io/armi/user/index.html>`_.
 
 
 Background
