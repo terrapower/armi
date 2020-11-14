@@ -20,8 +20,8 @@ ARMI:
 
 * Provides useful utilities to assist in reactor development.
 
-A few demos of ARMI can be seen in the `ARMI example gallery <
-https://terrapower.github.io/armi/gallery/index.html>_`.
+A few demos of ARMI can be seen in the `ARMI example gallery 
+<https://terrapower.github.io/armi/gallery/index.html>`_.
 
 Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can
 perform a full analysis of a reactor system and then repeat the same level of analysis
