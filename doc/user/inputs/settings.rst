@@ -6,7 +6,7 @@ The **settings** input file defines a series of key/value pairs the define vario
 modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
 
 * The case title
-* The reactor power 
+* The reactor power
 * The number of cycles to run
 * Which physics solvers to activate
 * Whether or not to perform a critical control search
@@ -15,7 +15,7 @@ modeling as well as which modules to run and various modeling/approximation sett
 * Environment settings (paths to external codes)
 * How many CPUs to use on a computer cluster
 
-This file is a YAML file that you can edit manually with a text editor or with the ARMI GUI. 
+This file is a YAML file that you can edit manually with a text editor or with the ARMI GUI.
 
 Here is an excerpt from a settings file:
 
@@ -25,14 +25,16 @@ Here is an excerpt from a settings file:
 
 A full listing of settings may be found in the :doc:`Table of all global settings </user/inputs/settings_report>`.
 
-Many settings are provided by the ARMI Framework, and others are defined by various plugins. 
+Many settings are provided by the ARMI Framework, and others are defined by various plugins.
+
+.. _armi-gui:
 
 The ARMI GUI
 ============
 The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
 also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
 cluster.  The GUI is a front-end to
-these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them. 
+these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them.
 
 Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same
 Blueprints, Core Map, and Fuel Management inputs.
@@ -75,9 +77,9 @@ often take longer, ARMI has a feature, called *detail assemblies* to help. Diffe
 may treat detail assemblies differently, so it's important to read the plugin documentation
 as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis
 only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies,
-while subchannel T/H is run on the others. 
+while subchannel T/H is run on the others.
 
-Detail assemblies are specified by the user in a variety of ways, 
+Detail assemblies are specified by the user in a variety of ways,
 through the GUI or the settings system.
 
 .. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush
@@ -86,8 +88,8 @@ through the GUI or the settings system.
     surprising in the future.
 
 Detail Assembly Locations BOL
-    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings 
-    (e.g. ``A4003`` for ring 4, position 3). Assemblies that are in these locations at the 
+    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings
+    (e.g. ``A4003`` for ring 4, position 3). Assemblies that are in these locations at the
     beginning-of-life will be activated as detail assemblies.
 
 Detail assembly numbers
