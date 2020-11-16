@@ -51,7 +51,7 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         self.parser.add_argument(
             "--format",
             "-f",
-            help="Output format. Only supported format is `vtk`",
+            help="Output format. Supported formats: `vtk` and `xdmf`",
             default="vtk",
         )
         self.parser.add_argument(
