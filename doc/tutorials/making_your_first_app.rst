@@ -338,7 +338,7 @@ to bring the ARMI state back to any state point from the run for analysis.
 
 To vizualize the output in a 3D graphics program like `ParaView <https://www.paraview.org/Wiki/ParaView>`_
 or `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_,
-you can run the ARMI ``viz-file`` entry point, like this::
+you can run the ARMI ``vis-file`` entry point, like this::
 
     (armi) $ python -m myapp vis-file -f vtk anl-afci-177.h5
 
