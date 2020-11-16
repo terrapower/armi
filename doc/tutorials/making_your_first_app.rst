@@ -19,7 +19,7 @@ You should see an ARMI splash-screen and an ARMI version print out. If you do, y
 to proceed.
 
 .. tip:: If you are having trouble getting it installed, see :ref:`getting-help`. You may
-    need to ensure your ``PYTHON_PATH`` variable includes the armi installation directory.
+    need to ensure your ``PYTHONPATH`` variable includes the armi installation directory.
 
 .. note:: This tutorial is a companion for the :doc:`/developer/making_armi_based_apps`
     developer documentation.
@@ -72,7 +72,7 @@ These files are:
 
 * :file:`myapp/app.py` contains the actual app registration code that will be called by
   :file:`__main__.py`. This can be named anything as long as it is consistent with the
-  registration code. 
+  registration code.
 
 * :file:`myapp/plugin.py` contains the code that defines the physics plugins we will create
 
@@ -107,7 +107,7 @@ this, we put the following code in the top-level :file:`__main__.py` module:
 Similar code will be needed in scripts or other code where you would like your app to be used.
 
 .. tip:: You may find it appropriate to use the plugin registration mechanism in some cases
-    rather than the app registration. More info on plugins vs. apps coming soon. 
+    rather than the app registration. More info on plugins vs. apps coming soon.
 
 Defining the app class
 ======================
@@ -131,9 +131,9 @@ the plugin shortly.
 
 Defining the physics plugin
 ===========================
-Now we will create the plugin that will coordinate our dummy physics modules. 
+Now we will create the plugin that will coordinate our dummy physics modules.
 
-.. admonition:: What are plugins again? 
+.. admonition:: What are plugins again?
 
     Plugins are the basic modular building block of ARMI-based apps. In some cases, one
     plugin will be associated with one physics kernel (like COBRA or MCNP). This is a
@@ -221,7 +221,7 @@ Adding entry points
 ===================
 In order to call our application directly, we need to add the :file:`__main__.py` file to
 the package. We could add all manner of :py:mod:`entry points <armi.cli.entryPoint>` here
-for different operations we want our application to perform. If you want to add 
+for different operations we want our application to perform. If you want to add
 :doc:`your own entry points </developer/entrypoints>`, you have to register them with the
 :py:meth:`armi.plugins.ArmiPlugin.defineEntryPoints` hook. For now, we can just inherit
 from the default ARMI entry points (including ``run``) by adding the following code
@@ -316,8 +316,8 @@ more to the :file:`myapp/__main__.py` file:
 
 .. admonition:: Why ``__main__.py``?
 
-    We put this line in ``__main__.py`` rather than ``__init__.py`` so it only activates 
-    when we're explicitly running our app. If we put it in ``__init__`` it would 
+    We put this line in ``__main__.py`` rather than ``__init__.py`` so it only activates
+    when we're explicitly running our app. If we put it in ``__init__`` it would
     change the order even in situations where code from anywhere within our app
     was imported, possibly conflicting with another app's needs.
 
@@ -334,11 +334,11 @@ Checking the output
 ===================
 Several output files should have been created in the run directory from that past command.
 Most important is the ``anl-afci-177.h5`` HDF5 binary database file. You can use this file
-to bring the ARMI state back to any state point from the run for analysis. 
+to bring the ARMI state back to any state point from the run for analysis.
 
-To vizualize the output in a 3D graphics program like `ParaView <https://www.paraview.org/Wiki/ParaView>`_ 
-or `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_, 
-you can run the ARMI ``viz-file`` entry point, like this::
+To vizualize the output in a 3D graphics program like `ParaView <https://www.paraview.org/Wiki/ParaView>`_
+or `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_,
+you can run the ARMI ``vis-file`` entry point, like this::
 
     (armi) $ python -m myapp vis-file -f vtk anl-afci-177.h5
 
@@ -357,12 +357,12 @@ from 360 |deg|\ C  to 510 |deg|\ C (as expected given our simple TH solver).
 
 .. admonition:: Fancy XDMF format
 
-    The ``-f xdmf`` produces `XDMF files <http://xdmf.org/index.php/XDMF_Model_and_Format>`_ 
+    The ``-f xdmf`` produces `XDMF files <http://xdmf.org/index.php/XDMF_Model_and_Format>`_
     that are lighter-weight than VTK, just pointing the visualization
     program to the data in the primary ARMI HDF5 file. However it is slightly more
     finicky and has slightly less support in some tools (looking at VisIT).
 
-A generic description of the outputs is provided in :doc:`/user/outputs/index`. 
+A generic description of the outputs is provided in :doc:`/user/outputs/index`.
 
 You can add your own outputs from your plugins.
 
