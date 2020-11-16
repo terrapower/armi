@@ -15,7 +15,7 @@ for input files is available here </user/inputs/index>`.
 Setting up the blueprints
 =========================
 First we'll set up the fuel assembly design in the blueprints input. Make a new
-file called ``anl-acfi-177-blueprints.yaml``. We'll be entering information
+file called ``anl-afci-177-blueprints.yaml``. We'll be entering information
 based on Table 4.4 of the reference. To define the pin cell we need dimensions
 of the fuel pin, cladding, ducts, wire wrap, and so on.
 
@@ -351,7 +351,7 @@ Specifying settings
 ===================
 Now we need to specify some **settings** that define fundamental reactor
 parameters, as well as modeling approximation options. For this, we make a
-**settings file**, called ``anl-acfi-177.yaml``.
+**settings file**, called ``anl-afci-177.yaml``.
 
 The thermal power in this reference is 1000 MWt. The thermal efficiency isn't
 specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.
