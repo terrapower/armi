@@ -58,7 +58,13 @@ class App:
     of the code.
     """
 
-    name = "ARMI"
+    name = "armi"
+    """
+    The program name of the app. This should be the actual name of the python entry
+    point that loads the app, or the name of the module that contains the appropriate
+    __main__ function. For example, if the app is expected to be invoked with ``python
+    -m superduperapp``, ``name`` should be ``"superduperapp"``
+    """
 
     def __init__(self):
         """
