@@ -1,1 +1,8 @@
+# See the discussion in docs\developer\tooling
+
+# see https://github.com/numpy/numpy/issues/17726
+# This is included in requirements.txt because it is not a semantic version
+# bound, but rather intended to avoid a bug in windows
+numpy<1.19.4
+
 -e .[memprof]
