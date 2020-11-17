@@ -112,7 +112,7 @@ class ArmiCLI:
                 self._entryPoints[entryPoint.name] = entryPoint
 
         parser = argparse.ArgumentParser(
-            prog="armi",
+            prog=armi.context.APP_NAME,
             description=self.__doc__,
             usage="%(prog)s [-h] [-l | command [args]]",
         )

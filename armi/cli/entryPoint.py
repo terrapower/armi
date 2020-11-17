@@ -89,7 +89,7 @@ class EntryPoint:
             )
 
         self.parser = argparse.ArgumentParser(
-            prog="armi {}".format(self.name),
+            prog="{} {}".format(armi.context.APP_NAME, self.name),
             description=self.description or self.__doc__,
         )
 
