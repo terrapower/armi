@@ -29,4 +29,6 @@ therefore follow the recommendation in the above article of including in
 ``requirements.txt`` a simple ``-e .``. This tells pip to install ``armi`` itself,
 deferring to ``setup.py`` for a list of requiremed dependencies. Non-semantic version
 bounds, such as those used to avoid bugs in the dependency, should be specified in
-``requirements.txt``, rather than ``setup.py``.
+``requirements.txt``, rather than ``setup.py``. ARMI itself has several requirements
+files, located at the root of the project, which can be used as jumping-off points for
+more complex scenarios.
