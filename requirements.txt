@@ -1,20 +1,8 @@
-# see https://github.com/numpy/numpy/issues/17726
-numpy<1.19.4
-scipy
-yamlize
-matplotlib
-h5py<3.0
-tabulate
-ordered-set
-pluggy
-pyyaml>=5.1
-pyevtk
-xlrd
-pillow
-future
-configparser
-voluptuous
-pympler
-coverage
+# See the discussion in docs\developer\tooling
 
-psutil[memprof]
+# see https://github.com/numpy/numpy/issues/17726
+# This is included in requirements.txt because it is not a semantic version
+# bound, but rather intended to avoid a bug in windows
+numpy<1.19.4
+
+-e .[memprof]

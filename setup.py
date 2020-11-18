@@ -55,12 +55,11 @@ setup(
         "configparser",
         "coverage",
         "future",
-        # Newer h5py versions do strings differently, and we need to do some work to
-        # support it
+        # This is a semantic version bound, because newer h5py versions handle strings
+        # differently, and we would need to do some work to support it
         "h5py<3.0",
         "matplotlib",
-        # see https://github.com/numpy/numpy/issues/17726
-        "numpy<1.19.4",
+        "numpy",
         "ordered-set",
         "pillow",
         "pluggy",
@@ -73,7 +72,33 @@ setup(
         "xlrd",
         "yamlize",
     ],
-    extras_require={"mpi": ["mpi4py"], "grids": ["wxpython"], "memprof": ["psutil"]},
+    extras_require={
+        "mpi": ["mpi4py"],
+        "grids": ["wxpython"],
+        "memprof": ["psutil"],
+        "dev": [
+            "mako",
+            "pytest",
+            "pytest-xdist",
+            "pytest-cov",
+            "pytest-html",
+            "pylint",
+            "docutils",
+            "sphinx>=2.2",
+            "sphinx-rtd-theme",
+            "black",
+            # for running jupyter dynamically in docs
+            "sphinxcontrib-apidoc",
+            "jupyter_client",
+            "jupyter-contrib-nbextensions",
+            "ipykernel",
+            "nbsphinx",
+            "nbsphinx-link",
+            "pandoc",
+            "sphinxext-opengraph",
+            "sphinx-gallery",
+        ],
+    },
     tests_require=["nbconvert", "jupyter_client", "ipykernel"],
     classifiers=[
         "Development Status :: 4 - Beta",
