@@ -936,15 +936,13 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
         report.data.Report.groupsOrderFirst.insert(-1, assemPlotImage)
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
-        assemPlotName = os.path.abspath(
-            plotting.plotAssemblyTypes(
-                core.parent.blueprints,
-                core.name,
-                assemBatch,
-                plotNum,
-                maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
-                showBlockAxMesh=showBlockAxMesh,
-            )
+        assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
+        plotting.plotAssemblyTypes(
+            core.parent.blueprints,
+            assemPlotName,
+            assemBatch,
+            maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
+            showBlockAxMesh=showBlockAxMesh,
         )
         report.setData(
             "Assem Types {}".format(plotNum),

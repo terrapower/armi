@@ -632,12 +632,11 @@ class DepthSlider(Slider):
 
 def plotAssemblyTypes(
     blueprints,
-    baseFileName=None,
+    fileName=None,
     assems=None,
-    plotNumber=1,
     maxAssems=None,
     showBlockAxMesh=True,
-):
+) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
 
@@ -646,28 +645,28 @@ def plotAssemblyTypes(
     blueprints: Blueprints
         The blueprints to plot assembly types of.
 
-    baseFileName : str or None
+    fileName : str or None
         Base for filename to write, or None for just returning the fig
 
     assems: list
         list of assembly objects to be plotted.
-
-    plotNumber: integer
-        number of uniquely identify the assembly plot from others and to prevent plots from being overwritten.
 
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
 
     showBlockAxMesh: bool
         if true, the axial mesh information will be displayed on the right side of the assembly plot.
+
+    Returns
+    -------
+    fig : plt.Figure
+        The figure object created
     """
 
     if assems is None:
         assems = list(blueprints.assemblies.values())
     if not isinstance(assems, (list, set, tuple)):
         assems = [assems]
-    if not isinstance(plotNumber, int):
-        raise TypeError("Plot number should be an integer")
     if maxAssems is not None and not isinstance(maxAssems, int):
         raise TypeError("Maximum assemblies should be an integer")
 
@@ -721,16 +720,15 @@ def plotAssemblyTypes(
     ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
-    ax.set_title("Assembly Designs for {}".format(baseFileName), y=1.03)
+    ax.set_title("Assembly Designs", y=1.03)
     ax.set_ylabel("Thermally Expanded Axial Heights (cm)".upper(), labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
 
     # Plot and save figure
     ax.plot()
-    if baseFileName:
-        figName = baseFileName + "AssemblyTypes{}.png".format(plotNumber)
-        fig.savefig(figName)
-        runLog.debug("Writing assem layout {} in {}".format(figName, os.getcwd()))
+    if fileName:
+        fig.savefig(fileName)
+        runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
         plt.close(fig)
 
     return fig
