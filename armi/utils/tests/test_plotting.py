@@ -50,7 +50,9 @@ class TestPlotting(unittest.TestCase):
         self._checkExists(fName)
 
     def test_plotAssemblyTypes(self):
-        plotting.plotAssemblyTypes(self.r.core.parent.blueprints, self.r.core.name)
+        plotting.plotAssemblyTypes(
+            self.r.core.parent.blueprints, "coreAssemblyTypes1.png"
+        )
         self._checkExists("coreAssemblyTypes1.png")
 
     def _checkExists(self, fName):

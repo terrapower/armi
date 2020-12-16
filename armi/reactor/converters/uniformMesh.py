@@ -223,11 +223,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def plotConvertedReactor(self):
         assemsToPlot = self.convReactor.core[:12]
         for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=1):
+            assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}.png"
             plotting.plotAssemblyTypes(
                 self.convReactor.core.parent.blueprints,
-                self.convReactor.core.name,
+                assemPlotName,
                 assemBatch,
-                plotNum,
                 maxAssems=6,
                 showBlockAxMesh=True,
             )
