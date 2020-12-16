@@ -35,7 +35,7 @@ from armi.physics.neutronics.crossSectionGroupManager import (
 )
 
 # define conf and schema here since this is closest to where the objects live
-XS_GEOM_TYPES = {"0D", "2D hex", "1D slab", "1D cylinder", None}
+XS_GEOM_TYPES = {"0D", "2D hex", "1D slab", "1D cylinder"}
 
 CONF_GEOM = "geometry"
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
