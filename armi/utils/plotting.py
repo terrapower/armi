@@ -632,7 +632,7 @@ class DepthSlider(Slider):
 
 def plotAssemblyTypes(
     blueprints,
-    coreName,
+    baseFileName=None,
     assems=None,
     plotNumber=1,
     maxAssems=None,
@@ -643,8 +643,11 @@ def plotAssemblyTypes(
 
     Parameters
     ----------
-    bluepprints: Blueprints
+    blueprints: Blueprints
         The blueprints to plot assembly types of.
+
+    baseFileName : str or None
+        Base for filename to write, or None for just returning the fig
 
     assems: list
         list of assembly objects to be plotted.
@@ -718,17 +721,19 @@ def plotAssemblyTypes(
     ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
-    ax.set_title("Assembly Designs for {}".format(coreName), y=1.03)
+    ax.set_title("Assembly Designs for {}".format(baseFileName), y=1.03)
     ax.set_ylabel("Thermally Expanded Axial Heights (cm)".upper(), labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
 
     # Plot and save figure
     ax.plot()
-    figName = coreName + "AssemblyTypes{}.png".format(plotNumber)
-    runLog.debug("Writing assem layout {} in {}".format(figName, os.getcwd()))
-    fig.savefig(figName)
-    plt.close(fig)
-    return figName
+    if baseFileName:
+        figName = baseFileName + "AssemblyTypes{}.png".format(plotNumber)
+        fig.savefig(figName)
+        runLog.debug("Writing assem layout {} in {}".format(figName, os.getcwd()))
+        plt.close(fig)
+
+    return fig
 
 
 def _plotBlocksInAssembly(
