@@ -30,6 +30,7 @@ import armi
 from armi import runLog
 from armi import utils
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 
 from armi.scripts.migration.base import DatabaseMigration
 
@@ -175,7 +176,7 @@ def _collectSymmetry(oldDB):
     """Read symmetry and geomType off old-style geometry input str in DB."""
     geomPath = "/inputs/geomFile"
     if geomPath in oldDB:
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(oldDB["inputs/geomFile"][()]))
     return {"symmetry": geom.symmetry, "geomType": geom.geomType}
 

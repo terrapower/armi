@@ -51,7 +51,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
     def _getBlockClass(self, outerComponent):
         """
-        Get the ARMI ``Block`` class for the specified geomType.
+        Get the ARMI ``Block`` class for the specified outerComponent.
 
         Parameters
         ----------

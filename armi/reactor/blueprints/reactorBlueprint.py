@@ -31,7 +31,7 @@ varied scenarios.
 See Also
 --------
 armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layouts.
-armi.reactor.geometry.SystemLayoutInput : Deprecated method for reading the individual
+armi.reactor.systemLayoutInput.SystemLayoutInput : Deprecated method for reading the individual
 face-map xml files.
 """
 import tabulate
@@ -198,9 +198,9 @@ class SystemBlueprint(yamlize.Object):
                     container.geomType
                 )
             )
-            if container.geomType == geometry.HEX:
+            if container.geomType == geometry.GeomType.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
-            elif container.geomType == geometry.CARTESIAN:
+            elif container.geomType == geometry.GeomType.CARTESIAN:
                 xw, yw = container[0][0].getPitch()
                 container.spatialGrid.changePitch(xw, yw)
 

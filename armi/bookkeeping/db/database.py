@@ -14,7 +14,7 @@
 
 from typing import Generator, Tuple
 from armi.settings import caseSettings
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 
 
 class Database:
@@ -35,7 +35,7 @@ class Database:
     def loadBlueprints(self):
         raise NotImplementedError()
 
-    def loadGeometry(self) -> geometry.SystemLayoutInput:
+    def loadGeometry(self) -> systemLayoutInput.SystemLayoutInput:
         raise NotImplementedError()
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:

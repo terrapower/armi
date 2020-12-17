@@ -17,6 +17,7 @@ The Global flux interface provide a base class for all neutronics tools that com
 """
 import math
 import os
+from typing import Dict, Optional
 
 
 import numpy
@@ -28,6 +29,7 @@ from armi import interfaces
 from armi.utils import units
 from armi.utils import codeTiming
 from armi.reactor import geometry
+from armi.reactor import reactors
 from armi.reactor.converters import uniformMesh
 from armi.reactor.converters import geometryConverters
 from armi.reactor import assemblies
@@ -279,7 +281,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers"""
 
-    def __init__(self, label=None):
+    def __init__(self, label: Optional[str]=None):
         executers.ExecutionOptions.__init__(self, label)
         self.real = True
         self.adjoint = False
@@ -293,7 +295,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         # can happen in eig if Fredholm Alternative satisfied
         self.includeFixedSource = False
         self.eigenvalueProblem = True
-        self.kernelName = None
+        self.kernelName: str
         self.isRestart = None
         self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
         self.detailedAxialExpansion = None
@@ -306,8 +308,8 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadElevation = None
         self.loadPadLength = None
 
-        self.geomType = None
-        self.symmetry = None
+        self._geomType: geometry.GeomType
+        self.symmetry: str
 
         # This option is used to recalculate reaction
         # rates after a mesh conversion and remapping
@@ -340,7 +342,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
 
-    def fromReactor(self, reactor):
+    def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
 
@@ -373,9 +375,10 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     global flux, this class provides a unified interface to everything.
     """
 
-    def __init__(self, options, reactor):
+    def __init__(self, options: GlobalFluxOptions, reactor):
         executers.DefaultExecuter.__init__(self, options, reactor)
-        self.geomConverters = {}
+        self.options: GlobalFluxOptions
+        self.geomConverters: Dict[str, geometryConverters.GeometryConverter] = {}
 
     @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
@@ -463,7 +466,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
 
-    def edgeAssembliesAreNeeded(self):
+    def edgeAssembliesAreNeeded(self) -> bool:
         """
         True if edge assemblies are needed in this calculation
 
@@ -472,7 +475,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         return (
             "FD" in self.options.kernelName
             and self.options.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
-            and self.options.geomType == geometry.HEX
+            and self.options.geomType == geometry.GeomType.HEX
         )
 
 

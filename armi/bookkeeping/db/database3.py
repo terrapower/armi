@@ -98,7 +98,7 @@ from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories, LocationHistories
 from armi.bookkeeping.db import database
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 
@@ -709,7 +709,7 @@ class Database3(database.Database):
         return bp
 
     def loadGeometry(self):
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"][()]))
         return geom
 

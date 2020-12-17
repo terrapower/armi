@@ -92,6 +92,7 @@ from armi.nucDirectory import elements
 from armi.scripts import migration
 from armi.utils import textProcessors
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.reactor import assemblies
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
@@ -539,7 +540,7 @@ def migrate(bp: Blueprints, cs):
     if "core" in [rd.name for rd in bp.gridDesigns]:
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
-    geom = geometry.SystemLayoutInput()
+    geom = systemLayoutInput.SystemLayoutInput()
     geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs["geomFile"]))
     gridDesigns = geom.toGridBlueprints("core")
     for design in gridDesigns:

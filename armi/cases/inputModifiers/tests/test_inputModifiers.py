@@ -7,7 +7,7 @@ from armi.utils import directoryChangers
 from armi import cases
 from armi.cases import suiteBuilder
 from armi.reactor import blueprints
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi import settings
 from armi.cases.inputModifiers import (
     neutronicsModifiers,
@@ -102,7 +102,7 @@ GEOM_INPUT = io.StringIO(
 class TestsuiteBuilderIntegrations(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(GEOM_INPUT)
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS)
         cs = settings.Settings()

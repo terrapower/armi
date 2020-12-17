@@ -94,7 +94,7 @@ User-facing enhancements
 * Add support for explicit Flags input in Blueprints.
 * Add glob option to directory changer file retrieval.
 * Add Cartesian plotting capabilities.
-* Add support for importing unstablie nuclides from the RIPL-3 database.
+* Add support for importing unstable nuclides from the RIPL-3 database.
 * Numerous documentation and tutorial enhancements.
 * Add ``run-suite`` entry point.
 * Improve/generalize and make extensible from Plugins the setting rename capability.
@@ -160,6 +160,22 @@ Release Date: 2020-12-17
 
 Deprecations
 ------------
+
+API changes (These should probably live in 0.1.7)
+-----------
+
+* ``geomType`` in most places has been changed to accept a ``GeomType`` enumeration,
+  instead of a string. Some places will still attempt to implicitly convert strings into
+  enum values, but this will eventually be deprecated.
+
+* The ``SystemLayoutInput`` class has been moved into its own module. Instances of the
+  ``SystemLayoutInput`` (usually named ``geom``) often participate in various function
+  signatures. These will be removed soon, as grids now serve this purpose, and ``geom``
+  objects are largely vestigial. ``SystemLayoutInput`` will be retained to facilitate
+  input migrations.
+
+Backend changes
+---------------
 
 * Removed ``dumpLocationSnapshot`` setting and related functionality. This is replaced
   by features of Database, version 3. Database 3 supports history tracking from the

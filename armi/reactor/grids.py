@@ -63,7 +63,7 @@ current grid.
 import itertools
 import math
 import re
-from typing import Tuple, List, Optional, Sequence
+from typing import Tuple, List, Optional, Sequence, Union
 import collections
 
 import numpy.linalg
@@ -642,8 +642,11 @@ class Grid:
 
         # geometric metadata encapsulated here because it's related to the grid.
         # They do not impact the grid object itself.
-        self.geomType = geomType
-        self.symmetry = symmetry
+        # Notice that these are stored using their string representations, rather than
+        # the GridType enum. This avoids the danger of deserializing an enum value from
+        # an old version of the code that may have had different numeric values.
+        self._geomType: str = geomType
+        self.symmetry: str = symmetry
 
     def reduce(self):
         """
@@ -684,9 +687,17 @@ class Grid:
             bounds,
             self._unitStepLimits,
             offset,
-            self.geomType,
+            self._geomType,
             self.symmetry,
         )
+
+    @property
+    def geomType(self) -> str:
+        return geometry.GeomType.fromStr(self._geomType)
+
+    @geomType.setter
+    def geomType(self, geomType: Union[str, geometry.GeomType]):
+        self._geomType = str(geometry.GeomType.fromAny(geomType))
 
     def __repr__(self):
         msg = (
@@ -1623,7 +1634,7 @@ class ThetaRZGrid(Grid):
 
         See Also
         --------
-        armi.reactor.geometry.SystemLayoutInput.readGeomXML : produces the geomInfo
+        armi.reactor.systemLayoutInput.SystemLayoutInput.readGeomXML : produces the geomInfo
         structure
 
         Examples

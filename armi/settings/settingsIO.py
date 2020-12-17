@@ -35,6 +35,7 @@ from armi.localization import exceptions
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 
 
 class Roots:
@@ -227,7 +228,7 @@ class SettingsReader:
         if settingRoot.tag != self.rootTag:
             # checks to make sure the right kind of settings XML file
             # is being applied to the right class
-            if settingRoot.tag == geometry.SystemLayoutInput.ROOT_TAG:
+            if settingRoot.tag == systemLayoutInput.SystemLayoutInput.ROOT_TAG:
                 customMsg = (
                     "\nSettings file appears to be a reactor geometry file. "
                     "Please provide a valid settings file."
