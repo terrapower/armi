@@ -142,13 +142,44 @@ Backend changes
 
 ARMI v0.1.6
 ===========
-Release Date: TBD
+Release Date: 2020-12-17
+
+* Add capability to map flags to current meaning when loading from database.
+  Previously, loading would fail if the meanings of written and current flags did not
+  match exactly.
+* Numerous documentation improvements.
+* Add support for XDMF visualization file output.
+* Add optional flag to ``armi.configure()`` to permit repeated configuration. This aids
+  in certain testing and demonstration contexts.
+* Allow for fully-qualified material names in blueprints. Materials take the form of
+  ``module.import.path:MaterialClassName``.
+* Disable the use of the fast path in interactive sessions.
+* Define ``ARMITESTBASE`` environment variable when configuring ``pytest``. This allows
+  tests to spawn new processes and still find the ARMI test suite.
+* Enable full-core expansion of core grid blueprints.
+
+Deprecations
+------------
 
 * Removed ``dumpLocationSnapshot`` setting and related functionality. This is replaced
   by features of Database, version 3. Database 3 supports history tracking from the
   database file, and whole reactor models can be loaded for any stored time step,
   obviating the need for special logic in snapshots.
+* Removed ``None`` option to XS ``"geometry"`` setting.
+* Removed ``Location`` classes. These were made redundant with grids/spatial locators.
+* Removed ``Block.isAnnular()``.
+* Remove old "XTView" database format support. Migrating older databases will require
+  checking out an older version of the code.
 
-* Added capability to map flags to current meaning when loading from database.
-  Previously, loading would fail if the meanings of written and current flags did not
-  match exactly.
+Bugfixes
+--------
+
+* Apply YAML ``!input`` resolution before writing blueprints to database.
+* Change default App ``name`` to "armi" instead of "ARMI". This allows ARMI to re-invoke
+  itself, and produce accurate help messages.
+* Conform R-Z-Theta grid ring/position indices to be 1-based like other grid types.
+* Add a check that an ISOTXS library exists before attempting to calculate flux-based
+  reaction rates on mesh conversions. Prior to this, performing mesh conversions without
+  an ISOTXS would lead to a crash.
+* Hide ``FAST_PATH`` behind ``context.getFastPath()`` function, allowing it to change.
+  The avoids bugs where code is sensitive to changes to the fast path at runtime.
