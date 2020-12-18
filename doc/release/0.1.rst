@@ -192,9 +192,9 @@ Release Date: TBD
 API changes
 -----------
 
-* ``geomType`` in most places has been changed to accept a ``GeomType`` enumeration,
-  instead of a string. Some places will still attempt to implicitly convert strings into
-  enum values, but this will eventually be deprecated.
+* ``geomType`` arguments in most places has been changed to accept a ``GeomType``
+  enumeration, instead of a string. Some places will still attempt to implicitly convert
+  strings into enum values, but this will eventually be deprecated.
 
 * The ``SystemLayoutInput`` class has been moved into its own module. Instances of the
   ``SystemLayoutInput`` (usually named ``geom``) often participate in various function
