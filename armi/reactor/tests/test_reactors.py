@@ -33,6 +33,7 @@ from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import grids
 from armi.reactor import locations
+from armi.reactor import geometry
 from armi.reactor import reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
@@ -209,6 +210,9 @@ class HexReactorTests(ReactorTests):
         val = self.r.core.getTotalBlockParam("power")
         val2 = self.r.core.getTotalBlockParam("power", addSymmetricPositions=True)
         self.assertEqual(val2 / self.r.core.powerMultiplier, val)
+
+    def test_geomType(self):
+        self.assertTrue(self.r.core.geomType == geometry.GeomType.HEX)
 
     def test_growToFullCore(self):
         nAssemThird = len(self.r.core)

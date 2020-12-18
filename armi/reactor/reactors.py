@@ -275,7 +275,7 @@ class Core(composites.Composite):
         self.clearCache()
 
     @property
-    def geomType(self):
+    def geomType(self) -> geometry.GeomType:
         if not self.spatialGrid:
             raise ValueError("Cannot access geomType before a spatialGrid is attached.")
         return self.spatialGrid.geomType
