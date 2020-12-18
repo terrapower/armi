@@ -90,7 +90,8 @@ INPUT_SCHEMA = vol.Schema(
                             geometry.VALID_GEOMETRY_TYPE
                         ),
                         vol.Optional(
-                            INP_SYMMETRY, default=geometry.THIRD_CORE + geometry.PERIODIC
+                            INP_SYMMETRY,
+                            default=geometry.THIRD_CORE + geometry.PERIODIC,
                         ): vol.In(geometry.VALID_SYMMETRY),
                         vol.Optional(INP_DISCRETES): DISCRETE_SCHEMA,
                         vol.Optional(INP_LATTICE): str,

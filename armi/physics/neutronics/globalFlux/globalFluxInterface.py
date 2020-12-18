@@ -281,7 +281,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers"""
 
-    def __init__(self, label: Optional[str]=None):
+    def __init__(self, label: Optional[str] = None):
         executers.ExecutionOptions.__init__(self, label)
         self.real = True
         self.adjoint = False
