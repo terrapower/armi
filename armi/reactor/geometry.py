@@ -176,5 +176,3 @@ for symmetry in VALID_SYMMETRY:
                 symmetry
             )
         )
-
-
