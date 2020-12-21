@@ -18,8 +18,8 @@ This module defines the blueprints input object for assemblies.
 In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible
 for constructing ``Assembly`` objects. An attempt has been made to decouple ``Assembly``
 construction from the rest of ARMI as much as possible. For example, an assembly does
-not require a reactor to be constructed, or a geometry file (but uses ``geomType``
-string as a surrogate).
+not require a reactor to be constructed, or a geometry file (but uses contained Block
+geometry type as a surrogate).
 
 """
 import yamlize
@@ -79,12 +79,12 @@ class AssemblyBlueprint(yamlize.Object):
     @classmethod
     def getAssemClass(cls, blocks):
         """
-        Get the ARMI ``Assembly`` class for the specified geomType
+        Get the ARMI ``Assembly`` class for the specified blocks
 
         Parameters
         ----------
-        geomType : str
-            Geometry type string.
+        blocks : list of Blocks
+            Blocks for which to determine appropriate containing Assembly type
         """
         blockClasses = {b.__class__ for b in blocks}
         for bType, aType in cls._assemTypes.items():

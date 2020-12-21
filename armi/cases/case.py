@@ -48,6 +48,7 @@ from armi import runLog
 from armi import interfaces
 from armi.reactor import blueprints
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.reactor import reactors
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportInterface
@@ -159,7 +160,7 @@ class Case:
         This property allows lazy loading.
         """
         if self._geom is None:
-            self._geom = geometry.loadFromCs(self.cs)
+            self._geom = systemLayoutInput.SystemLayoutInput.loadFromCs(self.cs)
         return self._geom
 
     @geom.setter

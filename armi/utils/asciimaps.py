@@ -157,6 +157,7 @@ class AsciiMap(object):
         """
         Populate mapping from a reactor in preparation of writing out to ascii.
         """
+        raise NotImplementedError
 
     def gridContentsToAscii(self):
         """

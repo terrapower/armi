@@ -41,6 +41,7 @@ from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import zones
@@ -117,7 +118,7 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[geometry.SystemLayoutInput] = None):
+def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
     """
     Build a reactor from input settings, blueprints and geometry.
     """
@@ -274,7 +275,7 @@ class Core(composites.Composite):
         self.clearCache()
 
     @property
-    def geomType(self):
+    def geomType(self) -> geometry.GeomType:
         if not self.spatialGrid:
             raise ValueError("Cannot access geomType before a spatialGrid is attached.")
         return self.spatialGrid.geomType

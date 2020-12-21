@@ -20,7 +20,7 @@ import armi
 if not armi.isConfigured():
     armi.configure()
 from armi.reactor.blueprints import gridBlueprint
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 
 LATTICE_BLUEPRINT = """
 control:
@@ -264,7 +264,7 @@ class TestRZTGridBlueprint(unittest.TestCase):
         )
 
     def test_geomFile(self):
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(RTH_GEOM))
         gridDesign = geom.toGridBlueprints("test_grid")[0]
 

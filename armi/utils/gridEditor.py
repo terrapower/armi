@@ -791,7 +791,7 @@ class GridGui(wx.ScrolledWindow):
     @grid.setter
     def grid(self, newGrid):
         self._grid = newGrid
-        self._geomType = geometry.GeomType.fromStr(self._grid.geomType)
+        self._geomType = self._grid.geomType
         self._idxByRing = [list() for _ in range(self.numRings)]
         for idx, loc in self._grid.items():
             ring, _pos = self._grid.getRingPos(idx)

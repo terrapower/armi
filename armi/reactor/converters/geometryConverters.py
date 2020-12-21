@@ -454,7 +454,7 @@ class HexToRZThetaConverter(GeometryConverter):
         RZT block.
     """
 
-    _GEOMETRY_TYPE = geometry.RZT
+    _GEOMETRY_TYPE = geometry.GeomType.RZT
     _BLOCK_MIXTURE_TYPE_MAP = {
         "mixture control": ["control"],
         "mixture fuel": ["fuel"],
@@ -548,10 +548,10 @@ class HexToRZThetaConverter(GeometryConverter):
         --------
         armi.reactor.converters.meshConverters
         """
-        if r.core.geomType != geometry.HEX:
+        if r.core.geomType != geometry.GeomType.HEX:
             raise ValueError(
                 "Cannot use {} to convert {} reactor".format(
-                    self, r.core.geomType.upper()
+                    self, str(r.core.geomType).upper()
                 )
             )
 
@@ -1135,7 +1135,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
         runLog.info(
             "Generating plot(s) of the converted {} reactor".format(
-                self.convReactor.core.geomType.upper()
+                str(self.convReactor.core.geomType).upper()
             )
         )
         figs = []
@@ -1177,7 +1177,7 @@ class HexToRZThetaConverter(GeometryConverter):
                 innerRadius = outerRadius
             ax.set_title(
                 "{} Core Map from {} to {:.4f} revolutions".format(
-                    self.convReactor.core.geomType.upper(),
+                    str(self.convReactor.core.geomType).upper(),
                     innerTheta * units.RAD_TO_REV,
                     outerTheta * units.RAD_TO_REV,
                 ),
@@ -1275,7 +1275,7 @@ class HexToRZConverter(HexToRZThetaConverter):
     the converterSettings.
     """
 
-    _GEOMETRY_TYPE = geometry.RZ
+    _GEOMETRY_TYPE = geometry.GeomType.RZ
 
 
 class ThirdCoreHexToFullCoreChanger(GeometryChanger):
@@ -1311,7 +1311,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             return r
         elif not (
             r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
-            and r.core.geomType == geometry.HEX
+            and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
                 "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
