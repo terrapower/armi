@@ -47,6 +47,13 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(
             flags.Flags.fromStringIgnoreErrors("grid_plate"), flags.Flags.GRID_PLATE
         )
+        # test that "nozzle" is not consumed in the conversion, leaving behind "inlet_"
+        # and leading to an error. Interesting thing here is that if the IgnoreErrors
+        # variant is used, this works out fine since the "inlet_" is ignored and
+        # "nozzle" -> INLET_NOZZLE.
+        self.assertEqual(
+            flags.Flags.fromString("inlet_nozzle"), flags.Flags.INLET_NOZZLE
+        )
 
     def test_lookup(self):
         """Make sure lookup table is working."""
