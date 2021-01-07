@@ -37,7 +37,9 @@ Please write a clear log messages for your commits. One-liners are OK for small 
     > 
     > A paragraph describing what changed and its impact."
     
-Note that a bot will require that you sign our Contributor License Agreement before we can accept a pull request from you.
+Note that a bot will require that you sign [our Contributor License
+Agreement](https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a)
+before we can accept a pull request from you.
 
 ## Coding conventions
 
