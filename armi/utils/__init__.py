@@ -1272,4 +1272,4 @@ def safeCopy(src, dst):
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 
-shutil.copy = safeCopy  # type: ignore
+shutil.copy = safeCopy
