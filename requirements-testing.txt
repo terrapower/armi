@@ -1,3 +1,2 @@
 numpy<1.19.4
-wxPython>=4.1.1
 -e .[memprof,dev]
