@@ -23,6 +23,11 @@ matrix:
 cache:
   directories:
     - $HOME/.cache/pip
-install: python3.6 -m pip install -U tox
+install: pip install -U tox
 language: python
-script: travis_wait 30 tox
+script:
+  # Output something every 10 minutes or Travis kills the job
+  - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+  - tox
+  # Killing background sleep loop
+  - kill %1
