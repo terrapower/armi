@@ -4,7 +4,7 @@ branches:
 before_install:
   - sudo apt-get -y install libopenmpi-dev
   - sudo apt-get -y install libsdl2-2.0-0
-  - sudo apt-get -y install xvfb xinit openbox
+  - sudo apt-get -y install xvfb  # xinit openbox
 sudo: required
 matrix:
   fast_finish: true
@@ -26,6 +26,6 @@ install:
 #  - sleep 3
 language: python
 before_script:
-  - xinit openbox
-  - sleep 10
+  - sudo xinit openbox
+  - sleep 1
 script: tox -vvvv
