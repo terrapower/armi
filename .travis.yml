@@ -25,4 +25,4 @@ cache:
     - $HOME/.cache/pip
 install: python3.6 -m pip install -U tox
 language: python
-script: tox
+script: travis_wait 30 tox
