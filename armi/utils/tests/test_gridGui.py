@@ -59,6 +59,9 @@ if armi._app is None:
     armi.configure()
 from armi.utils import gridEditor
 
+from screeninfo import get_monitors
+for m in get_monitors():
+    print(str(m))
 _SECONDS_PER_TICK = 0.05
 
 
