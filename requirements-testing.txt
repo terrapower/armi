@@ -1,3 +1,3 @@
 numpy<1.19.4
-wxpython
+-f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04 wxPython
 -e .[memprof,dev]
