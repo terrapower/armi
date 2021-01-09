@@ -4,7 +4,7 @@ branches:
 before_install:
   - sudo apt-get -y install libopenmpi-dev
   - sudo apt-get -y install libsdl2-2.0-0
-  - sudo apt-get -y install xvfb herbstluftwm
+  - sudo apt-get -y install xvfb xinit openbox
 sudo: required
 matrix:
   fast_finish: true
@@ -21,11 +21,11 @@ cache:
     - $HOME/.cache/pip
 install:
   - pip install -U tox
-  - "export DISPLAY=:99.0"
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac+extension GLX +render -noreset"
-  - sleep 3
+#  - "export DISPLAY=:99.0"
+#  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac+extension GLX +render -noreset"
+#  - sleep 3
 language: python
 before_script:
-  - "herbstluftwm &"
-  - sleep 1
+  - xinit openbox
+  - sleep 10
 script: tox -vvvv
