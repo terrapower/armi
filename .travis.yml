@@ -28,6 +28,6 @@ language: python
 script:
   # Output something every 10 minutes or Travis kills the job
   - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
-  - tox -vv
+  - tox -vvvv
   # Killing background sleep loop
   - kill %1
