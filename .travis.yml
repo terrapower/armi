@@ -4,6 +4,7 @@ branches:
 before_install:
   - sudo apt-get -y install libopenmpi-dev
   - sudo apt-get -y install libsdl2-2.0-0
+  - sudo apt-get -y install at-spi2-core
   - sudo apt-get -y install xvfb  # xinit openbox
 sudo: false
 matrix:
