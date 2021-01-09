@@ -10,6 +10,9 @@ before_install:
 #  - sudo apt-get -y install libgstreamer1.0-0
 #  - sudo apt-get -y install gstreamer1.0-plugins-base
 sudo: false
+dist: xenial
+services:
+  - xvfb  # Provides DISPLAY required for GUI testing
 matrix:
   fast_finish: true
   include:
