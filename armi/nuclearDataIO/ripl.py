@@ -30,7 +30,7 @@ from armi.utils import units
 from armi.settings.caseSettings import Settings
 
 DECAY_CONSTANTS = {}
-MINIMUM_HALFLIFE = 2.8e-10
+MINIMUM_HALFLIFE = 1.0e-7
 STABLE_FLAG = -1
 UNKNOWN_HALFLIFE = -2
 EXIT_DATA_FILE = -3
@@ -85,7 +85,7 @@ def getNuclideDecayConstants(fileName):
                         level += numLevels + 1
 
                 elif (
-                    halflife > MINIMUM_HALFLIFE and numDecays > 0
+                    MINIMUM_HALFLIFE < halflife and numDecays > 0
                 ):  # radioactive isotope
                     aaazzzs = "{}{}{}".format(a, z.zfill(3), m)
                     if m <= 1:
