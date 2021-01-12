@@ -54,6 +54,10 @@ import test.support
 wx = test.support.import_module("wx")
 
 import armi
+# import numpy as np
+# from PIL import ImageGrab
+# import cv2
+
 
 if armi._app is None:
     armi.configure()
@@ -62,6 +66,8 @@ from armi.utils import gridEditor
 from screeninfo import get_monitors
 for m in get_monitors():
     print(str(m))
+print(f"DISPLAY: {os.environ['DISPLAY']}")
+
 _SECONDS_PER_TICK = 0.05
 
 
@@ -85,6 +91,58 @@ def _findPointInWindow(
         y = rect.y + rect.height - 1
     return wx.Point(x, y)
 
+
+# Credit to:
+# https://www.blog.pythonlibrary.org/2010/04/16/how-to-take-a-screenshot-of-your-wxpython-app-and-print-it/
+def takeScreenshot(videoWriter):
+    #Create a Bitmap that will hold the screenshot image later on
+    #Note that the Bitmap must have a size big enough to hold the screenshot
+    #-1 means using the current default colour depth
+    bmp = wx.EmptyBitmap(1200, 1050)
+    #Create a memory DC that will be used for actually taking the screenshot
+    memDC = wx.MemoryDC()
+    #Tell the memory DC to use our Bitmap
+    #all drawing action on the memory DC will go to the Bitmap now
+    memDC.SelectObject(bmp)
+    #Blit (in this case copy) the actual screen on the memory DC
+    #and thus the Bitmap
+    memDC.Blit( 0, #Copy to this X coordinate
+                0, #Copy to this Y coordinate
+                1200, #Copy this width
+                1050, #Copy this height
+                wx.ScreenDC(), #From where do we copy?
+                0, #What's the X offset in the original DC?
+                0  #What's the Y offset in the original DC?
+                )
+    #Select the Bitmap out of the memory DC by selecting a new
+    #uninitialized Bitmap
+    memDC.SelectObject(wx.NullBitmap)
+    img = bmp.ConvertToImage()
+    videoWriter.write(img)
+
+# def _screen_record():
+    # video part
+    # Should probably use MSS for the screenshots.
+
+#
+#     # per frame
+#     img = ImageGrab.grab(bbox=(0,0,1000,1000)) #bbox specifies specific region (bbox= x,y,width,height)
+#     img_np = np.array(img)
+#     frame = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
+#     cv2.imshow("test", frame)
+#     cv2.waitKey(1)
+
+
+# def setUp(self):
+    # # Prepare to store the video
+    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    # # The width and height here should match xvfb_width and xvfb_height in pytest.ini.
+    # self.vid = cv2.VideoWriter('output.avi', fourcc, 20, (1200, 1050))
+
+    # Or maybe wx.GIFHandler.SaveAnimation would do? That would be best.
+
+# def tearDown(self):
+    # self.vid.release()
 
 class GuiTestCase(unittest.TestCase):
     """Provides scaffolding for a GUI test.
@@ -137,7 +195,6 @@ class GuiTestCase(unittest.TestCase):
         loop.run_until_complete(self._testCompleted)
         return result
 
-
 @pytest.mark.skipif(
     not bool(os.environ.get("ARMI_GUI_TESTS", False)),
     reason="GUI tests require a rather specific environment (see above), so these tests are opt-in",
@@ -188,6 +245,6 @@ class Test(GuiTestCase):
         labels = [self.gui.clicker._getLabel(idx)[0] for idx in gridCellIndices]
         self.assertEqual("0, 0", labels[0])
 
-
 if __name__ == "__main__":
     unittest.main()
+
