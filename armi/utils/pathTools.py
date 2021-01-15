@@ -25,18 +25,6 @@ import pathlib
 from armi import runLog
 
 
-def getFullFileNames(directory=os.curdir, recursive=False):
-    r"""Returns the fully qualified file names from the specified directory."""
-    directory = os.path.abspath(directory)
-    paths = []
-    if recursive:
-        for root, _, filenames in os.walk(directory):
-            paths.extend([os.path.join(root, f) for f in filenames])
-    else:
-        paths.extend(os.path.join(directory, ff) for ff in os.listdir(directory))
-    return paths
-
-
 def armiAbsPath(*pathParts):
     """
     Convert a list of path components to an absolute path, without drive letters if possible.
@@ -53,26 +41,6 @@ def armiAbsPath(*pathParts):
         return common_operations.convert_to_unc_path(result)
     except:  # pylint: disable=broad-except;reason=avoid pywin32 p.load parallel issues
         return result
-
-
-def fitPathToFormat(input_path, fmt):
-    """Clean string paths to end with the designated extension"""
-    base, xtn = os.path.splitext(input_path)
-    if xtn != format:
-        input_path = base + fmt
-    return input_path
-
-
-def viewLocalFiles(fmt):
-    """Show available fmt files in the current directory"""
-    found = []
-    for item in os.listdir("."):
-        if item.endswith(fmt):
-            found.append(item)
-    if not found:
-        return "No {} files found in the current directory".format(fmt)
-    else:
-        return found
 
 
 def copyOrWarn(fileDescription, sourcePath, destinationPath):
