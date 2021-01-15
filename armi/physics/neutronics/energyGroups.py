@@ -287,10 +287,12 @@ def _create_multigroup_structures_on_finegroup_energies(
         multigroup_energy_bounds,
         finegroup_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
-    modifiedEnergyBounds = []
-    for energyBound in multigroup_energy_bounds:
-        modifiedEnergyBounds.append(utils.findNearestValue(finegroup_energy_bounds, energyBound))
-    return modifiedEnergyBounds
+    modifiedEnergyBounds = set()
+    modifiedEnergyBounds.add(max(finegroup_energy_bounds))
+    for energyBound in multigroup_energy_bounds[1:]:
+        modifiedEnergyBounds.add(utils.findNearestValue(finegroup_energy_bounds, energyBound))
+        
+    return sorted(modifiedEnergyBounds, reverse=True)
 
 def _create_anl_energies_with_group_energies(group_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
@@ -300,7 +302,7 @@ def _create_anl_energies_with_group_energies(group_energy_bounds):
         ufgEnergies
         )
 
-_SHEM361 = [
+GROUP_STRUCTURE["SHEM361"] = [
      19640300,
      14918200,
      13840300,
@@ -664,8 +666,6 @@ _SHEM361 = [
      0.0024999,
     ]
 
-GROUP_STRUCTURE["SHEM361"] = _SHEM361
-
 # Energy bounds of ARMI33 and ARMI45 are modified to the nearest ultra-fine group boundaries
 GROUP_STRUCTURE["ARMI33"] = _create_anl_energies_with_group_energies(
     [
@@ -708,7 +708,7 @@ GROUP_STRUCTURE["ARMI33"] = _create_anl_energies_with_group_energies(
 # Energy bounds of SHEM33_361 is ANL33 modified to the nearest SHEM361 fine group boundaries
 GROUP_STRUCTURE["SHEM33_361"] = _create_multigroup_structures_on_finegroup_energies(
         GROUP_STRUCTURE["ANL33"],
-        _SHEM361
+        GROUP_STRUCTURE["SHEM361"]
         )
 
 GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
