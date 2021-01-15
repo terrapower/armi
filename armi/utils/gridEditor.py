@@ -1051,9 +1051,9 @@ class GridGui(wx.ScrolledWindow):
         Change the number of rings that should be drawn
         """
         self.numRings = n
-        if self.grid.geomType == geometry.HEX:
+        if self.grid.geomType == geometry.GeomType.HEX:
             grid = grids.HexGrid.fromPitch(1, numRings=self.numRings)
-        elif self.grid.geomType == geometry.CARTESIAN:
+        elif self.grid.geomType == geometry.GeomType.CARTESIAN:
             rectangle = [1.0, 1.0]
             if self.coreBp.latticeDimensions is not None:
                 rectangle = [
