@@ -1,3 +1,8 @@
+"""
+EntryPoint base classes.
+
+See :doc:`/developer/entrypoints`.
+"""
 # Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,8 +78,8 @@ class EntryPoint:
     then it is an optional positional argument. Finally, if settingsArgument is
     None, then no settings file argument is added."""
 
-    #: One of {armi.Mode.Batch, armi.Mode.Interactive, armi.Mode.Gui}, optional.
-    #: Specifies the ARMI mode in which the command is run. Default is armi.Mode.Batch.
+    #: One of {armi.Mode.BATCH, armi.Mode.INTERACTIVE, armi.Mode.GUI}, optional.
+    #: Specifies the ARMI mode in which the command is run. Default is armi.Mode.BATCH.
     mode: Optional[int] = None
 
     def __init__(self):
@@ -84,26 +89,52 @@ class EntryPoint:
             )
 
         self.parser = argparse.ArgumentParser(
-            prog="armi {}".format(self.name),
+            prog="{} {}".format(armi.context.APP_NAME, self.name),
             description=self.description or self.__doc__,
         )
 
         self.args = argparse.Namespace()
 
-        self.cs = settings.Settings()
+        self.cs = self._initSettings()
         settings.setMasterCs(self.cs)
         self.settingsProvidedOnCommandLine = []
 
+    @staticmethod
+    def _initSettings():
+        """
+        Initialize settings for this entry point.
+
+        Settings given on command line will update this data structure.
+        Override to provide specific settings in the entry point.
+        """
+        return settings.Settings()
+
     def addOptions(self):
-        """Hook method for adding additional command line options."""
-        pass
+        """
+        Add additional command line options.
+
+        Values of options added to ``self.parser`` will be available
+        on ``self.args``. Values added with ``createOptionFromSetting``
+        will override the setting values in the settings input file.
+
+        See Also
+        --------
+        createOptionFromSetting : A method often called from here to creat CLI options from
+            application settings.
+
+        argparse.ArgumentParser.add_argument : Often called from here using
+            ``self.parser.add_argument`` to add custom argparse arguments.
+
+        """
 
     def parse_args(self, args):
         self.parser.parse_args(args, namespace=self.args)
         runLog.setVerbosity(self.cs["verbosity"])
 
     def parse(self, args):
-        """Parses the command line arguments, with the command specific arguments."""
+        """
+        Parse the command line arguments, with the command specific arguments.
+        """
 
         if self.settingsArgument == "optional":
             self.parser.add_argument(
@@ -139,37 +170,31 @@ class EntryPoint:
         self.parse_args(args)
 
     def invoke(self) -> Optional[int]:
-        """Body of the entry point.
+        """
+        Body of the entry point.
 
         This is an abstract method, and must must be overridden in sub-classes.
 
         Returns
         -------
-        Implementations should return an exit code, or None, which is interpreted the
-        same as zero (successful completion).
+        exitcode : int or None
+            Implementations should return an exit code, or ``None``, which is interpreted the
+            same as zero (successful completion).
         """
         raise NotImplementedError(
             "Subclasses of EntryPoint must override the .invoke() method"
         )
 
     def createOptionFromSetting(
-        self, settingName, additionalAlias=None, suppressHelp=False
+        self, settingName: str, additionalAlias: str = None, suppressHelp: bool = False
     ):
-        """Function used to add a setting command line option. This will override whatever is in
-        the settings file.
+        """
+        Create a CLI option from an ARMI setting.
 
-        Notes
-        -----
-        The method is private so it is not picked up as an ARMI command!
+        This will override whatever is in the settings file.
 
         Parameters
         ---------
-        parser : argparse.ArgumentParser
-            parser to add the command line option
-
-        cs : armi.settings.Settings
-            settings instance to manipulate
-
         settingName : str
             the setting name
 

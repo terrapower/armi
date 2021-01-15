@@ -13,7 +13,12 @@
 # limitations under the License.
 
 """
-The material package defines compositions and temperature-dependent thermo-mechanical properties.
+The material package defines compositions and material-specific properties.
+
+Properties in scope include temperature dependent thermo/mechanical properties 
+(like heat capacity, linear expansion coefficients, viscosity, density),
+and material-specific nuclear properties that can't exist at the nuclide level 
+alone (like :py:mod:`thermal scattering laws <armi.nucDirectory.thermalScattering>`).
 
 As the fundamental macroscopic building blocks of any physical object,
 these are highly important to reactor analysis.
@@ -121,8 +126,10 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     """
     Find the first material class that matches a name in an ordered namespace.
 
-    This works with the ``CONF_MATERIAL_NAMESPACE_ORDER`` setting to allows users to
-    choose which particular material of a common name (like UO2 or HT9) gets used.
+    Names can either be fully resolved class paths (e.g. ``armi.materials.uZr:UZr``)
+    or simple class names (e.g. ``UZr``). In the latter case, the ``CONF_MATERIAL_NAMESPACE_ORDER``
+    setting to allows users to choose which particular material of a common name (like UO2 or HT9)
+    gets used.
 
     Input files usually specify a material like UO2. Which particular implementation
     gets used (Framework's UO2 vs. a user plugins UO2 vs. the Kentucky Transportation
@@ -131,12 +138,15 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     Parameters
     ----------
     name : str
-        The material name to find, e.g. ``"UO2"``.
+        The material class name to find, e.g. ``"UO2"``. Optionally, a module path
+        and class name can be provided with a colon separator as ``module:className``, e.g.
+        ``armi.materials.uraniumOxide:UO2`` for direct specification.
     namespaceOrder : list of str, optional
         A list of namespaces in order of preference in which to search for the material.
         If not passed, the value in the global ``MATERIAL_NAMESPACE_ORDER`` will be used,
         which is often set by the ``CONF_MATERIAL_NAMESPACE_ORDER`` setting (e.g.
-        during reactor construction).
+        during reactor construction). Any value passed into this argument will be ignored
+        if the ``name`` is provided with a ``modulePath``.
 
     Returns
     -------
@@ -159,6 +169,11 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         Applies user settings to default namespace order.
 
     """
+    if ":" in name:
+        # assume direct package path like `armi.materials.uZr:UZr`
+        modPath, clsName = name.split(":")
+        mod = importlib.import_module(modPath)
+        return getattr(mod, clsName)
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
     for namespace in namespaceOrder:
         mod = importlib.import_module(namespace)

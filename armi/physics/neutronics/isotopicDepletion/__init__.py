@@ -22,9 +22,3 @@ from armi.nucDirectory import nuclideBases
 from armi import interfaces
 
 ORDER = interfaces.STACK_ORDER.DEPLETION
-
-
-def applyDefaultBurnChain():
-    """The framework has a default transmutation chain that many users will want to override."""
-    with open(os.path.join(RES, "burn-chain.yaml")) as stream:
-        nuclideBases.imposeBurnChain(stream)

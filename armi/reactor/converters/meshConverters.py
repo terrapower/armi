@@ -27,7 +27,7 @@ from armi.reactor.flags import Flags, TypeSpec
 class MeshConverter(object):
     """
     Base class for the reactor mesh conversions.
-    
+
     Parameters
     ----------
     converterSettings : dict

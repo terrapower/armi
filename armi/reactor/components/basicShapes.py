@@ -361,7 +361,7 @@ class Square(Rectangle):
 class Triangle(ShapedComponent):
     """
     Triangle with defined base and height.
-    
+
     Notes
     -----
     The exact angles of the triangle are undefined. The exact side lenths and angles

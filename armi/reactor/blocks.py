@@ -35,7 +35,6 @@ from armi import settings
 from armi.nucDirectory import nucDir
 from armi.reactor import locations
 from armi.reactor import geometry
-from armi.reactor.locations import AXIAL_CHARS
 from armi.reactor import parameters
 from armi.reactor import blockParameters
 from armi.reactor import grids
@@ -77,9 +76,6 @@ class Block(composites.Composite):
 
     # component type that can be considered a candidate for providing pitch
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = None
-
-    # armi.reactor.locations.Location subclass, overridden on Block subclasses
-    LOCATION_CLASS: Optional[Type[locations.Location]] = None
 
     pDefs = blockParameters.getBlockParameterDefinitions()
 
@@ -204,15 +200,6 @@ class Block(composites.Composite):
 
         return core.parent
 
-    @property
-    def location(self):
-        """
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Just creates a new location object based on current spatialLocator.
-        """
-        return self.getLocationObject()
-
     def makeName(self, assemNum, axialIndex):
         """
         Generate a standard block from assembly number.
@@ -225,7 +212,7 @@ class Block(composites.Composite):
         'B0120E'
         """
         self.p.assemNum = assemNum
-        return "B{0:04d}{1}".format(assemNum, AXIAL_CHARS[axialIndex])
+        return "B{0:04d}{1}".format(assemNum, grids.AXIAL_CHARS[axialIndex])
 
     def makeUnique(self):
         """
@@ -498,7 +485,7 @@ class Block(composites.Composite):
         assemblies.Assembly.calculateZCoords : Recalculates z-coords, automatically called by this.
         """
         originalHeight = self.getHeight()  # get before modifying
-        if modifiedHeight <= 0.0:
+        if modifiedHeight < 0.0:
             raise ValueError(
                 "Cannot set height of block {} to height of {} cm".format(
                     self, modifiedHeight
@@ -602,18 +589,6 @@ class Block(composites.Composite):
             )
         else:
             return "ExCore"
-
-    def getLocationObject(self):
-        """
-        Return a new location object based on current position.
-
-        Notes
-        -----
-        This is slated for deletion, to be replaced by spatialGrid operations.
-        """
-        loc = self.LOCATION_CLASS()
-        loc.fromLocator(self.spatialLocator.getCompleteIndices())
-        return loc
 
     def coords(self, rotationDegreesCCW=0.0):
         if rotationDegreesCCW:
@@ -757,8 +732,11 @@ class Block(composites.Composite):
         if returnMass:
             # do this with a flag to enable faster operation when mass is not needed.
             volume = self.getVolume()
-        for nuclideName in adjustList:
-            dens = self.getNumberDensity(nuclideName)
+
+        numDensities = self.getNuclideNumberDensities(adjustList)
+
+        for nuclideName, dens in zip(adjustList, numDensities):
+
             if not dens:
                 # don't modify zeros.
                 continue
@@ -1212,17 +1190,17 @@ class Block(composites.Composite):
         into a full block.
         """
 
-        # reduce this block's number densities
-        for nuc in self.getNuclides():
-            self.setNumberDensity(nuc, (1.0 - fraction) * self.getNumberDensity(nuc))
+        numDensities = self.getNumberDensities()
+        otherBlockDensities = otherBlock.getNumberDensities()
+        newDensities = {}
 
-        # now add the other blocks densities.
-        for nuc in otherBlock.getNuclides():
-            self.setNumberDensity(
-                nuc,
-                self.getNumberDensity(nuc)
-                + otherBlock.getNumberDensity(nuc) * fraction,
-            )
+        # Make sure to hit all nuclides in union of blocks
+        for nucName in set(numDensities.keys()).union(otherBlockDensities.keys()):
+            newDensities[nucName] = (1.0 - fraction) * numDensities.get(
+                nucName, 0.0
+            ) + fraction * otherBlockDensities.get(nucName, 0.0)
+
+        self.setNumberDensities(newDensities)
 
     def getComponentAreaFrac(self, typeSpec, exact=True):
         """
@@ -1462,10 +1440,12 @@ class Block(composites.Composite):
         mfpNumerator = numpy.zeros(len(flux))
         absMfpNumerator = numpy.zeros(len(flux))
         transportNumerator = numpy.zeros(len(flux))
+
+        numDensities = self.getNumberDensities()
+
         # vol = self.getVolume()
-        for nuc in self.getNuclides():
-            dens = self.getNumberDensity(nuc)  # [1/bn-cm]
-            nucMc = nucDir.getMc2Label(nuc) + self.getMicroSuffix()
+        for nucName, nDen in numDensities.items():
+            nucMc = nucDir.getMc2Label(nucName) + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
             else:
@@ -1473,9 +1453,9 @@ class Block(composites.Composite):
             total = micros.total[:, 0]  # 0th order
             transport = micros.transport[:, 0]  # 0th order, [bn]
             absorb = sum(micros.getAbsorptionXS())
-            mfpNumerator += dens * total  # [cm]
-            absMfpNumerator += dens * absorb
-            transportNumerator += dens * transport
+            mfpNumerator += nDen * total  # [cm]
+            absMfpNumerator += nDen * absorb
+            transportNumerator += nDen * transport
         denom = sum(flux)
         mfp = 1.0 / (sum(mfpNumerator * flux) / denom)
         sigmaA = sum(absMfpNumerator * flux) / denom
@@ -1558,17 +1538,6 @@ class Block(composites.Composite):
                 c.updateDims()
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
-
-    def isAnnular(self):
-        """True if contains annular fuel."""
-        fuelPin = self.getComponent(Flags.FUEL)
-        if not fuelPin:
-            return False
-
-        if abs(fuelPin.getDimension("id") - 0.0) < 1e-6:
-            return False
-
-        return True
 
     def getDpaXs(self):
         """Determine which cross sections should be used to compute dpa for this block."""
@@ -1727,8 +1696,6 @@ class Block(composites.Composite):
 
 
 class HexBlock(Block):
-
-    LOCATION_CLASS = locations.HexLocation
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
@@ -1996,10 +1963,6 @@ class HexBlock(Block):
             Returns the diameteral gap between the outer most pins in a hex pack to the duct inner
             face to face in cm.
         """
-        if self.LOCATION_CLASS is None:
-            # can't assume anything about dimensions if there is no location type
-            return None
-
         wire = self.getComponent(Flags.WIRE)
         ducts = sorted(self.getChildrenWithFlags(Flags.DUCT))
         duct = None
@@ -2075,10 +2038,14 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                if symmetryLine in [
-                    grids.BOUNDARY_0_DEGREES,
-                    grids.BOUNDARY_120_DEGREES,
-                ] and bool(self.r.core.childrenByLocator.get(upperEdgeLoc)):
+                if (
+                    symmetryLine
+                    in [
+                        grids.BOUNDARY_0_DEGREES,
+                        grids.BOUNDARY_120_DEGREES,
+                    ]
+                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                ):
                     return 2.0
         return 1.0
 
@@ -2123,8 +2090,7 @@ class HexBlock(Block):
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
         clad = self.getComponent(Flags.CLAD)
-        loc = self.LOCATION_CLASS()
-        nRings = loc.getNumRings(clad.getDimension("mult"), silent=True)
+        nRings = hexagon.numRingsToHoldNumCells(clad.getDimension("mult"))
         pinPitch = self.getPinPitch(cold=cold)
         pinCenterCornerToCorner = 2 * (nRings - 1) * pinPitch
         pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
@@ -2176,8 +2142,6 @@ class HexBlock(Block):
 
 class CartesianBlock(Block):
 
-    LOCATION_CLASS = locations.CartesianLocation
-
     PITCH_DIMENSION = "widthOuter"
     PITCH_COMPONENT_TYPE = components.Rectangle
 
@@ -2212,15 +2176,12 @@ class CartesianBlock(Block):
         Return the flat-to-flat distance between the centers of opposing pins in the outermost ring.
         """
         clad = self.getComponent(Flags.CLAD)
-        loc = self.LOCATION_CLASS()
-        nRings = loc.getNumRings(clad.getDimension("mult"), silent=True)
+        nRings = hexagon.numRingsToHoldNumCells(clad.getDimension("mult"))
         pinPitch = self.getPinPitch(cold=cold)
         return 2 * (nRings - 1) * pinPitch
 
 
 class ThRZBlock(Block):
-
-    LOCATION_CLASS = locations.ThetaRZLocation
     # be sure to fill ThRZ blocks with only 3D components - components with explicit getVolume methods
 
     def getMaxArea(self):
@@ -2273,8 +2234,6 @@ class Point(Block):
     The Point object masquerades as a Block so that any Block parameter
     (such as DPA) can be assigned to it with the same functionality.
     """
-
-    LOCATION_CLASS = locations.HexLocation
 
     def __init__(self, name=None):
 

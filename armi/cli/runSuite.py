@@ -76,8 +76,4 @@ class RunSuiteCommand(RunEntryPoint):
             if self.args.list:
                 suite.echoConfiguration()
             else:
-                for ci, case in enumerate(suite):
-                    runLog.important(f"Running case {ci+1}/{len(suite)}: {case}")
-                    with directoryChangers.DirectoryChanger(case.directory):
-                        settings.setMasterCs(case.cs)
-                        case.run()
+                suite.run()

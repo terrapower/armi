@@ -17,7 +17,7 @@ Base Material classes.
 
 All temperatures are in K, but Tc can be specified and the functions will convert for you.
 
-.. Caution:: ARMI uses these objects for all material properties. Under the hood,
+.. warning:: ARMI uses these objects for all material properties. Under the hood,
      A system called MAT_PROPS is in charge of several material properties. It
      is a more industrial-strength material property system that is currently
      a TerraPower proprietary system. You will see references to it in this module.
@@ -41,37 +41,30 @@ FAIL_ON_RANGE = False
 
 
 class Material(composites.Leaf):
-    r"""
-    A material is made up of elements or isotopes. It has bulk properties like mass density.
-
-    Attributes
-    ----------
-    params : dict
-        scalar parameters.
-
-    massFrac : dict
-        The mass fractions of each nuclide in this material. These will not always sum to 1.0 after
-        situations like axial expansion.
-
-    massFracNorm : float
-        The sum of massFrac, tracked by the setters so it doesn't have to be added up a lot.
-
-    cache : dict
-        Fast storage for commonly computed values.
-
-    reference : str
-        The literature reference.
-
     """
+    A material is made up of elements or isotopes. It has bulk properties like mass density.
+    """
+
     pDefs = materialParameters.getMaterialParameterDefinitions()
+    """State parameter definitions"""
 
     DATA_SOURCE = "ARMI"
+    """Indication of where the material is loaded from (may be plugin name)"""
 
     name = "Material"
     references = {}  # property : citation
+    """The literature references."""
+
     enrichedNuclide = None
+    """Name of enriched nuclide to be interpreted by enrichment modification methods"""
     correctDensityAfterApplyInputParams = True
+
     modelConst = {}
+    """Constants that may be used in intepolation functions for property lookups"""
+
+    thermalScatteringLaws = ()
+    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances 
+    with information about thermal scattering."""
 
     def __init__(self):
         composites.Leaf.__init__(self, self.__class__.name)
@@ -82,7 +75,7 @@ class Material(composites.Leaf):
 
         # so it doesn't have to be summed each time ( O(1) vs. O(N))
         self.p.atomFracDenom = 0.0
-        self.references = {}  # reference dictionary for each method
+
         self.p.refDens = 0.0
 
         # call subclass implementations
@@ -696,7 +689,7 @@ class Fluid(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         """for void, lets just not allow temperature changes to change dimensions
-        since it is a liquid it will fill its space. """
+        since it is a liquid it will fill its space."""
         return 0.0
 
     def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):

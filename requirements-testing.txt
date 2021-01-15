@@ -1,21 +1,2 @@
-mako
-pytest
-pytest-xdist
-pytest-cov
-pytest-html
-coverage
-pylint
-docutils
-sphinx>=2.2
-sphinx-rtd-theme
-black ; python_version > '3.0'
-# for running jupyter dynamically in docs
-sphinxcontrib-apidoc
-jupyter_client
-jupyter-contrib-nbextensions
-ipykernel
-nbsphinx
-nbsphinx-link
-pandoc # the executable also needs to be installed in your PATH
-sphinxext-opengraph
-sphinx-gallery
+numpy<1.19.4
+-e .[memprof,dev]

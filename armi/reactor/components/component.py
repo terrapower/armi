@@ -404,12 +404,15 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getVolume(self):
         """
-        Return volume in cm**3.
+        Return the volume [cm^3] of the component.
 
-        Returns
-        -------
-        volume : float
-            volume in cm3
+        Notes
+        -----
+        ``self.p.volume`` is not set until this method is called,
+        so under most circumstances it is probably not safe to
+        access ``self.p.volume`` directly. This is because not
+        all components (e.g., ``DerivedShape``) can compute
+        their volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -518,17 +521,8 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getComponentVolume(self):
         return self.p.volume
 
-    def setVolume(self, volume):
-        if not self.is3D:
-            try:
-                self.setArea(volume / self.parent.getHeight())
-            except ZeroDivisionError:
-                runLog.error(
-                    "The parent object {0} of {1} has no height. Cannot compute volume."
-                    "Check input.".format(self.parent, self)
-                )
-                raise
-        self.p.volume = volume
+    def setVolume(self, val):
+        raise NotImplementedError
 
     def setArea(self, val):
         raise NotImplementedError
@@ -738,10 +732,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             The value to set on the dimension
         retainLink : bool, optional
-            If True, the val will be applied to the dimension of linked 
+            If True, the val will be applied to the dimension of linked
             component which indirectly changes this component's dimensions.
         cold : book, optional
-            If True sets the component to the dimension that would cause 
+            If True sets the component to the dimension that would cause
             the hot dimension to be the specified value.
         """
         if not key:

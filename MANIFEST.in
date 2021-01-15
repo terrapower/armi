@@ -12,6 +12,10 @@ include armi/nuclearDataIO/tests/fixtures/mc2v3-AB.gamiso
 include armi/nuclearDataIO/tests/fixtures/mc2v3-AB.isotxs
 include armi/nuclearDataIO/tests/fixtures/mc2v3-AB.pmatrx
 include armi/nuclearDataIO/tests/fixtures/mc2v3.dlayxs
+include armi/nuclearDataIO/tests/fixtures/simple_cartesian.rzflux
+include armi/nuclearDataIO/tests/fixtures/simple_cartesian.rtflux
+include armi/nuclearDataIO/tests/fixtures/simple_cartesian.pwdint
+include armi/nuclearDataIO/tests/fixtures/simple_hexz.geodst
 include armi/nuclearDataIO/tests/fixtures/simple_hexz.nhflux
 include armi/bookkeeping/tests/armiRun-A0039-aHist-ref.txt
 include armi/nuclearDataIO/tests/labels.ascii
@@ -36,11 +40,12 @@ include armi/tests/geom.xml
 include armi/tests/geom1Assem.xml
 include armi/tests/geomSmall.xml
 include armi/tests/ISOAA
-include armi/tests/partisnReactorGeom.xml
-include armi/tests/partisnTestReactor.yaml
 include armi/tests/refOneBlockReactor.yaml
 include armi/tests/refSmallCartesian.yaml
 include armi/tests/refSmallReactor.yaml
+include armi/tests/refSmallReactorBase.yaml
+include armi/tests/refSmallCoreGrid.yaml
+include armi/tests/refSmallSfpGrid.yaml
 include armi/tests/refTestCartesian.yaml
 include armi/tests/sfpGeom.yaml
 include armi/tests/testEq.yaml

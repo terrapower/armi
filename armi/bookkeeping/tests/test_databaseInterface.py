@@ -316,18 +316,6 @@ class TestDatabaseReading(unittest.TestCase):
 
         assert_allclose(numDensVec1, numDensVec2)
 
-    def test_convertDatabase(self):
-        convertDatabase(self.dbName, outputVersion="2")
-        with h5py.File("-converted".join(os.path.splitext(self.dbName)), "r") as newDB:
-            self.assertIn("Materials", newDB)
-            self.assertIn("Geometry", newDB)
-            for i in range((self.cs["burnSteps"] + 1) * self.cs["nCycles"]):
-                self.assertIn(
-                    str(i),
-                    newDB,
-                    msg=f"{str(i)} not found in {newDB}, which has {newDB.keys()}",
-                )
-
 
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
@@ -346,7 +334,7 @@ class TestStandardFollowOn(unittest.TestCase):
     def _getOperatorThatChangesVariables(self, cs):
         """
         Return an operator that advances time so that restart runs can be tested.
-        
+
         Notes
         -----
         Ensures that parameters are consistant between Standard runs and restart runs.

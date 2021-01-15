@@ -68,8 +68,8 @@ class _FlagMeta(type):
     rest of the functionality lives in the base ``Flag`` class as plain-old code.
 
     .. tip:: Because individual flags are defined as *class* attributes (as opposed to
-    instance attributes), we have to customize the way a Flag subclass itself is built,
-    which requires a metaclass.
+        instance attributes), we have to customize the way a Flag subclass itself is built,
+        which requires a metaclass.
     """
 
     def __new__(cls, name, bases, attrs):

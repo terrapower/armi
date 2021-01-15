@@ -178,7 +178,7 @@ class GridBlueprint(yamlize.Object):
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
     @gridContents.validator
-    def gridContents(self, value): # pylint: disable=method-hidden
+    def gridContents(self, value):  # pylint: disable=method-hidden
         if value is None:
             return True
         if not all(isinstance(key, tuple) for key in value.keys()):
@@ -258,10 +258,14 @@ class GridBlueprint(yamlize.Object):
                         "duplicates. Check blueprints.".format(self.name, name)
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
-        if geom == geometry.HEX:
+        if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
             pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
             # add 2 for potential dummy assems
-            spatialGrid = grids.HexGrid.fromPitch(pitch, numRings=maxIndex + 2)
+            spatialGrid = grids.HexGrid.fromPitch(
+                pitch,
+                numRings=maxIndex + 2,
+                pointedEndUp=geom == geometry.HEX_CORNERS_UP,
+            )
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of
             # the mesh into the positive values.
@@ -353,11 +357,11 @@ class GridBlueprint(yamlize.Object):
         indices to textual specifiers (e.g. ``IC``))
         """
         latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
-        lattice = latticeCls()
-        latticeMap = lattice.readMap(self.latticeMap)
+        asciimap = latticeCls()
+        asciimap.readAscii(self.latticeMap)
         self.gridContents = dict()
 
-        for (i, j), spec in latticeMap.items():
+        for (i, j), spec in asciimap.items():
             if spec == "-":
                 # skip placeholders
                 continue

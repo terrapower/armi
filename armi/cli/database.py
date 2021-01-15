@@ -16,18 +16,20 @@
 Entry point into ARMI for manipulating output databases.
 """
 import os
+import pathlib
 import re
 
 import armi
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
+from armi.utils.textProcessors import resolveMarkupInclusions
 
 
 class ConvertDB(EntryPoint):
     """Convert databases between different versions"""
 
     name = "convert-db"
-    mode = armi.Mode.Batch
+    mode = armi.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Input database path", type=str)
@@ -91,7 +93,7 @@ class ExtractInputs(EntryPoint):
     """
 
     name = "extract-inputs"
-    mode = armi.Mode.Batch
+    mode = armi.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to input database", type=str)
@@ -157,7 +159,7 @@ class InjectInputs(EntryPoint):
     """
 
     name = "inject-inputs"
-    mode = armi.Mode.Batch
+    mode = armi.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to affected database", type=str)
@@ -189,16 +191,14 @@ class InjectInputs(EntryPoint):
         geom = None
 
         if self.args.blueprints is not None:
-            with open(self.args.blueprints, "r") as f:
-                bp = f.read()
+            bp = resolveMarkupInclusions(pathlib.Path(self.args.blueprints)).read()
 
         if self.args.geom is not None:
             with open(self.args.geom, "r") as f:
                 geom = f.read()
 
         if self.args.settings is not None:
-            with open(self.args.settings, "r") as f:
-                settings = f.read()
+            settings = resolveMarkupInclusions(pathlib.Path(self.args.settings)).read()
 
         db = Database3(self.args.h5db, "a")
 
@@ -212,5 +212,7 @@ class InjectInputs(EntryPoint):
                 (settings, "settings"),
             ]:
                 if data is not None:
-                    del db.h5db["inputs/" + key]
-                    db.h5db["inputs/" + key] = data
+                    dSetName = "inputs/" + key
+                    if dSetName in db.h5db:
+                        del db.h5db[dSetName]
+                    db.h5db[dSetName] = data

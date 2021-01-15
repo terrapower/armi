@@ -7,13 +7,14 @@ from armi.utils import directoryChangers
 from armi import cases
 from armi.cases import suiteBuilder
 from armi.reactor import blueprints
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi import settings
 from armi.cases.inputModifiers import (
     neutronicsModifiers,
     inputModifiers,
     pinTypeInputModifiers,
 )
+from armi.reactor.tests import test_reactors
 
 
 class MockGeom(object):
@@ -101,7 +102,7 @@ GEOM_INPUT = io.StringIO(
 class TestsuiteBuilderIntegrations(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(GEOM_INPUT)
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS)
         cs = settings.Settings()
@@ -172,6 +173,18 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
 
     def __call__(self, cs, bp, geom):
         cs.update(self.neutronicsKernelOpts)
+
+
+class TestFullCoreModifier(unittest.TestCase):
+    """Ensure full core conversion works"""
+
+    def test_fullCoreConversion(self):
+        cs = settings.Settings(os.path.join(test_reactors.TEST_ROOT, "armiRun.yaml"))
+        case = cases.Case(cs=cs)
+        mod = inputModifiers.FullCoreModifier()
+        self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
+        mod(case, case.bp, None)
+        self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
 
 
 if __name__ == "__main__":

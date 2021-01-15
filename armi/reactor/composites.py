@@ -30,6 +30,7 @@ analogy of the model to the physical nature of nuclear reactors.
 See Also: :doc:`/developer/index`.
 """
 import collections
+import itertools
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
@@ -42,6 +43,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import resolveCollections
 from armi.reactor.flags import Flags, TypeSpec
 from armi import runLog
+from armi import utils
 from armi.utils import units
 from armi.utils import densityTools
 from armi.nucDirectory import nucDir, nuclideBases
@@ -73,18 +75,87 @@ class FlagSerializer(parameters.Serializer):
         Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
-        reader and the writer agree on the meaning of each bit.
+        reader and the writer can agree on the meaning of each bit.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return FlagSerializer._packImpl(data, Flags)
+
+    @staticmethod
+    def _packImpl(data, flagCls: Type[utils.Flag]):
+        """
+        Implement the pack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
         """
         npa = numpy.array(
             [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
-        ).reshape((len(data), Flags.width()))
+        ).reshape((len(data), flagCls.width()))
 
-        return npa, {"flag_order": Flags.sortedFields()}
+        return npa, {"flag_order": flagCls.sortedFields()}
+
+    @staticmethod
+    def _remapBits(inp: int, mapping: Dict[int, int]):
+        """
+        Given an input bitfield, map each bit to the appropriate new bit position based
+        on the passed mapping.
+
+        Parameters
+        ==========
+        inp : int
+            input bitfield
+
+        mapping : dict
+            dictionary mapping from old bit position -> new bit position
+        """
+        f = 0
+        for bit in itertools.count():
+            if (1 << bit) > inp:
+                break
+            if (1 << bit) & inp:
+                f = f | (1 << mapping[bit])
+
+        return f
 
     @classmethod
     def unpack(cls, data, version, attrs):
+        """
+        Reverse the pack operation
+
+        This will allow for some degree of conversion from old flags to a new set of
+        flags, as long as all of the source flags still exist in the current set of
+        flags.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return cls._unpackImpl(data, version, attrs, Flags)
+
+    @classmethod
+    def _unpackImpl(cls, data, version, attrs, flagCls: Type[utils.Flag]):
+        """
+        Implement the unpack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
+
+        If the set of flags for the currently-configured App match the input set of
+        flags, they are read in directly, which is good and cheap. However, if the set
+        of flags differ from the input and the current App, we will try to convert them
+        (as long as all of the input flags exist in the current App). Conversion is done
+        by forming a map from all input bit positions to the current-App bit positions
+        of the same meaning. E.g., if FUEL flag used to be the 3rd bit position, but now
+        it is the 6th bit position, the map will contain ``map[3] = 6``. Then for each
+        bitfield that is read in, each bit position is queried and if present, mapped to
+        the proper corresponding new bit position. The result of this mapping is used to
+        construct the Flags object.
+        """
         flagOrderPassed = attrs["flag_order"]
-        flagOrderNow = Flags.sortedFields()
+        flagOrderNow = flagCls.sortedFields()
 
         if version != cls.version:
             raise ValueError(
@@ -95,32 +166,34 @@ class FlagSerializer(parameters.Serializer):
                 )
             )
 
-        # Ensure that the meanings of the Flags bits are the same. We could also
-        # implement a more expensive operation which attempts to map from one version's
-        # meaning to another's, but possibly YAGNI.
-        if not len(flagOrderPassed) == len(flagOrderNow):
+        flagSetIn = set(flagOrderPassed)
+        flagSetNow = set(flagOrderNow)
+
+        # Make sure that all of the old flags still exist
+        if not flagSetIn.issubset(flagSetNow):
+            missingFlags = flagSetIn - flagSetNow
             raise ValueError(
-                "The database contains a different number of Flags than the current "
-                "ARMI Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
+                "The set of flags in the database includes unknown flags. "
+                "Make sure you are using the correct ARMI app. Missing flags:\n"
+                "{}".format(missingFlags)
             )
 
-        if not all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
-            raise ValueError(
-                "The database has Flags with different meanings than the current ARMI"
-                "Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
-            )
+        if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
+            out = [flagCls.from_bytes(row.tobytes()) for row in data]
+        else:
+            newFlags = {
+                i: flagOrderNow.index(oldFlag)
+                for (i, oldFlag) in enumerate(flagOrderPassed)
+            }
+            out = [
+                flagCls(
+                    cls._remapBits(
+                        int.from_bytes(row.tobytes(), byteorder="little"), newFlags
+                    )
+                )
+                for row in data
+            ]
 
-        out = [Flags.from_bytes(row.tobytes()) for row in data]
         return out
 
 
@@ -725,7 +798,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolumeFractions(self):
         """
-        Return volume  fractions of each child.
+        Return volume fractions of each child.
 
         Sets volume or area of missing piece (like coolant) if it exists.  Caching would
         be nice here.
@@ -748,92 +821,28 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         children = self.getChildren()
-        volumes = [c.getVolume() for c in children]
-        vol = sum(volumes)
-        return [(ci, vi / vol) for ci, vi in zip(children, volumes)]
+        numerator = [c.getVolume() for c in children]
+        denom = sum(numerator)
+        if denom == 0.0:
+            numerator = [c.getArea() for c in children]
+            denom = sum(numerator)
+
+        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
+        return fracs
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
+        if self.parent is None:
+            raise ValueError(
+                f"No parent is defined for {self}. Cannot compute its volume fraction."
+            )
+
         for child, frac in self.parent.getVolumeFractions():
             if child is self:
                 return frac
 
-    def _deriveUndefinedVolume(self):
-        """
-        Determine the volume of any DerivedShapes (e.g. coolant components).
-
-        When a coolant component first gets loaded, it has no area. But after that, it
-        does have area so we must detect purely derived components by the fact that they
-        have no dimension keys. Zero area is acceptable (for gaps that will grow, etc.).
-
-        If there are no dimensions but there is still an area, then the user probably
-        specified the area on a generic component. If they did specify it on the input,
-        then the area should not update. HOWEVER, if it was specified by a previous
-        leftover computation, then we should re-compute.  That's why we store the area
-        on the dims.
-
-        """
-        from armi.reactor import components  # avoid circular import
-
-        leftover = []
-        processed = []  # for input debugging
-        totalVolume = 0.0
-        for child in self.getChildren():
-            # so far, only coolants do this. ThRZBlock's with these must have
-            # area set specifically by input.
-            if child.__class__ is components.DerivedShape:
-                leftover.append(child)
-            else:
-                totalVolume += child.getVolume()
-                processed.append(child)
-        derivedVolume = 0.0
-        if len(leftover) == 1:
-            left = leftover[0]
-            derivedVolume = self.getMaxVolume() - totalVolume
-            if derivedVolume < 0:
-                runLog.error(
-                    "Negative remaining volume of {0} cm^3 for {1} in {2}. "
-                    "Check geometry (is pitch correct?). \nMax volume in this object is {3}\n"
-                    "Total of others is {4}\n"
-                    "Processed children include:\n{5}"
-                    "".format(
-                        derivedVolume,
-                        left,
-                        self,
-                        self.getMaxVolume(),
-                        totalVolume,
-                        "\n".join(
-                            [
-                                f"{child:40s}, {child.getArea():.5e}"
-                                for child in processed
-                            ]
-                        ),
-                    )
-                )
-                raise RuntimeError(
-                    "Negative remaining volume ({}) in {}".format(derivedVolume, self)
-                )
-            left.setVolume(derivedVolume)
-            totalVolume += derivedVolume
-        elif leftover:
-            runLog.warning(
-                "Gluttony Error incoming, total components {}"
-                "".format(self.getChildren())
-            )
-            for c in self.getChildren():
-                runLog.warning(
-                    "volume {} params {} for component {}"
-                    "".format(c.getVolume(), c.p, c.getName())
-                )
-            runLog.error(
-                "These are leftovers: {0}\n"
-                " Cannot deduce area of more than one component".format(leftover)
-            )
-            raise RuntimeError("Gluttony Error too many leftovers.")
-        return derivedVolume
-
     def getMaxArea(self):
-        """"
+        """ "
         The maximum area of this object if it were totally full.
 
         See Also
@@ -2174,11 +2183,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numerator = 0.0
         denominator = 0.0
-        for nucName in self.getNuclides():
+
+        numDensities = self.getNumberDensities()
+
+        for nucName, nDen in numDensities.items():
             atomicWeight = nuclideBases.byName[nucName].weight
-            ni = self.getNumberDensity(nucName)
-            numerator += atomicWeight * ni
-            denominator += ni
+            numerator += atomicWeight * nDen
+            denominator += nDen
         return numerator / denominator
 
     def getMasses(self):
@@ -2726,7 +2737,9 @@ class Composite(ArmiObject):
         for c in items:
             self.add(c)
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """
         Return the children objects of this composite.
 
@@ -2743,18 +2756,32 @@ class Composite(ArmiObject):
         includeMaterials : bool, optional
             Include the material properties
 
+        predicate : callable, optional
+            An optional unary predicate to use for filtering results. This can be used
+            to request children of specific types, or with desired attributes. Not all
+            ArmiObjects have the same methods and members, so care should be taken to
+            make sure that the predicate executes gracefully in all cases (e.g., use
+            ``getattr(obj, "attribute", None)`` to access instance attributes). Failure
+            to meet the predicate only affects the object in question; children will
+            still be considered.
+
         Examples
         --------
         >>> obj.getChildren()
         [child1, child2, child3]
 
-        >>>obj.getChildren(generationNum=2)
+        >>> obj.getChildren(generationNum=2)
         [grandchild1, grandchild2, grandchild3]
 
         >>> obj.getChildren(deep=True)
         [child1, child2, child3, grandchild1, grandchild2, grandchild3]
 
+        # Assuming that grandchild1 and grandchild3 are Component objects
+        >>> obj.getChildren(deep=True, predicate=lambda o: isinstance(o, Component))
+        [grandchild1, grandchild3]
+
         """
+        _pred = predicate or (lambda x: True)
         if deep and generationNum > 1:
             raise RuntimeError(
                 "Cannot get children with a generation number set and the deep flag set"
@@ -2763,7 +2790,8 @@ class Composite(ArmiObject):
         children = []
         for child in self._children:
             if generationNum == 1 or deep:
-                children.append(child)
+                if _pred(child):
+                    children.append(child)
 
             if generationNum > 1 or deep:
                 children.extend(
@@ -2771,6 +2799,7 @@ class Composite(ArmiObject):
                         deep=deep,
                         generationNum=generationNum - 1,
                         includeMaterials=includeMaterials,
+                        predicate=predicate,
                     )
                 )
         if includeMaterials:
@@ -3122,7 +3151,9 @@ class Composite(ArmiObject):
 class Leaf(Composite):
     """Defines behavior for primitive objects in the composition."""
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """Return empty list, representing that this object has no children."""
         return []
 
@@ -3209,7 +3240,7 @@ def gatherMaterialsByVolume(
     -----
     This helper method is outside the main ArmiObject tree for the special clients that need
     to filter both by container type (e.g. Block type) with one set of flags, and Components
-    with another set of flags. 
+    with another set of flags.
 
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.

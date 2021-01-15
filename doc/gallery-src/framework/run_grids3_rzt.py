@@ -16,7 +16,7 @@ from armi.reactor import grids
 
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 fig = plt.figure()
 theta = np.linspace(0, 2 * np.pi, 10)

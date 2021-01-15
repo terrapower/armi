@@ -141,7 +141,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         The new assemblies must have appropriately mapped number densities as
         input for a neutronics solve. They must also have other relevant
-        state parameters for follow-on steps. Thus, this maps many parameters 
+        state parameters for follow-on steps. Thus, this maps many parameters
         from the ARMI mesh to the uniform mesh.
 
         See Also
@@ -223,11 +223,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def plotConvertedReactor(self):
         assemsToPlot = self.convReactor.core[:12]
         for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=1):
+            assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}.png"
             plotting.plotAssemblyTypes(
                 self.convReactor.core.parent.blueprints,
-                self.convReactor.core.name,
+                assemPlotName,
                 assemBatch,
-                plotNum,
                 maxAssems=6,
                 showBlockAxMesh=True,
             )
@@ -279,11 +279,26 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     Notes
     -----
     If a case runs where two mesh conversions happen one after the other
-    (e.g. a fixed source gamma transport step that needs appropriate 
+    (e.g. a fixed source gamma transport step that needs appropriate
     fission rates), it is essential that the neutronics params be
     mapped onto the newly converted reactor as well as off of it
     back to the source reactor.
     """
+
+    def __init__(self, cs=None, calcReactionRates=True):
+        """
+        Parameters
+        ----------
+        cs : obj, optional
+            Case settings object.
+
+        calcReactionRates : bool, optional
+            Set to True by default, but if set to False the reaction
+            rate calculation after the neutron flux is remapped will
+            not be calculated.
+        """
+        UniformMeshGeometryConverter.__init__(self, cs)
+        self.calcReactionRates = calcReactionRates
 
     def _checkConversion(self):
         """
@@ -372,7 +387,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
         def adjointFluxGetter(block, _paramNames):
             val = block.p.adjMgFlux
-            if not val:
+            if val is None or len(val) == 0:
                 # so the merger can detect and just use incremental value.
                 return None
             else:
@@ -390,12 +405,14 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             _setStateFromOverlaps(
                 aSource, aDest, paramSetter, paramGetter, self.blockParamNames
             )
-            # Now recalculate derived params with the mapped flux to minimize
-            # potential numerical diffusion (e.g. control rod tip into large coolant)
-            for b in aDest:
-                globalFluxInterface.calcReactionRates(
-                    b, destReactor.core.p.keff, destReactor.core.lib
-                )
+
+            # If requested, the reaction rates will be calculated based on the
+            # mapped neutron flux and the XS library.
+            if self.calcReactionRates:
+                for b in aDest:
+                    globalFluxInterface.calcReactionRates(
+                        b, destReactor.core.p.keff, destReactor.core.lib
+                    )
 
 
 def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):

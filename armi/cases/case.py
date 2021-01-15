@@ -48,6 +48,7 @@ from armi import runLog
 from armi import interfaces
 from armi.reactor import blueprints
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.reactor import reactors
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportInterface
@@ -159,7 +160,7 @@ class Case:
         This property allows lazy loading.
         """
         if self._geom is None:
-            self._geom = geometry.loadFromCs(self.cs)
+            self._geom = systemLayoutInput.SystemLayoutInput.loadFromCs(self.cs)
         return self._geom
 
     @geom.setter
@@ -431,7 +432,7 @@ class Case:
             operatorClass = operators.getOperatorClassFromSettings(self.cs)
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
-            if armi.CURRENT_MODE == armi.Mode.Interactive:
+            if armi.CURRENT_MODE == armi.Mode.INTERACTIVE:
                 # if interactive, ask user to deal with settings issues
                 inspector.run()
             else:
@@ -717,5 +718,5 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
                         continue
                     _sourceDir, sourceName = os.path.split(sourceFullPath)
                     pathTools.copyOrWarn(
-                        label, sourceFullPath, os.path.join(destination, sourceName),
+                        label, sourceFullPath, os.path.join(destination, sourceName)
                     )

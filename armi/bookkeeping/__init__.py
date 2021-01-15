@@ -46,7 +46,9 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         from armi.bookkeeping import visualization
 
         entryPoints = []
-        entryPoints.append(database.ConvertDB)
+        # Disabling ConvertDB because there is no other format to convert between. The
+        # entry point is rather general so leaving this here so we don't forget about it
+        # entryPoints.append(database.ConvertDB)
         entryPoints.append(database.ExtractInputs)
         entryPoints.append(database.InjectInputs)
         entryPoints.append(copyDB.CopyDB)

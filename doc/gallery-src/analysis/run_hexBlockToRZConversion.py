@@ -34,7 +34,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.converters import blockConverters
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 _o, r = test_reactors.loadTestReactor()
 

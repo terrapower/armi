@@ -29,6 +29,7 @@ from armi.localization import exceptions
 from armi import utils
 from armi.utils import pathTools
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
 from armi import settings
 from armi.utils import directoryChangers
@@ -292,7 +293,7 @@ class Inspector:
             with directoryChangers.DirectoryChanger(
                 self.cs.inputDirectory, dumpOnException=False
             ):
-                geom = geometry.SystemLayoutInput()
+                geom = systemLayoutInput.SystemLayoutInput()
                 geom.readGeomFromFile(self.cs["geomFile"])
 
             self.geomType, self.coreSymmetry = geom.geomType, geom.symmetry

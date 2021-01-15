@@ -21,6 +21,7 @@ from armi import runLog
 from armi import settings
 from armi.reactor import blocks
 from armi.reactor import geometry
+from armi.reactor import grids
 from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.tests.test_reactors import loadTestReactor
@@ -101,6 +102,25 @@ class TestGeometryConverters(unittest.TestCase):
             if assem.hasFlags(Flags.FUEL):
                 numFuelAssems += 1
         self.assertEqual(numFuelAssems, 20)
+
+    def test_getAssembliesInSector(self):
+        allAssems = self.r.core.getAssemblies()
+        fullSector = geometryConverters.HexToRZConverter._getAssembliesInSector(
+            self.r.core, 0, 360
+        )
+        self.assertGreaterEqual(
+            len(fullSector), len(allAssems)
+        )  # could be > due to edge assems
+        third = geometryConverters.HexToRZConverter._getAssembliesInSector(
+            self.r.core, 0, 30
+        )
+        self.assertAlmostEqual(
+            25, len(third)
+        )  # could solve this analytically based on test core size
+        oneLine = geometryConverters.HexToRZConverter._getAssembliesInSector(
+            self.r.core, 0, 0.001
+        )
+        self.assertAlmostEqual(5, len(oneLine))  # same here
 
 
 class TestHexToRZConverter(unittest.TestCase):
@@ -233,7 +253,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         numAssems = len(self.r.core.getAssemblies())
         converter.scaleParamsRelatedToSymmetry(self.r)
 
-        a = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_0_DEGREES)[0]
+        a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]
         self.assertTrue(all(b.p.power == 2.0 for b in a), "Powers were not scaled")
 
         converter.removeEdgeAssemblies(self.r.core)

@@ -10,8 +10,9 @@ from armi import settings
 from armi.physics.neutronics.globalFlux import globalFluxInterface
 from armi.reactor.tests import test_reactors
 from armi.reactor.tests import test_blocks
+from armi.reactor import geometry
 from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=abstract-method
@@ -22,7 +23,8 @@ class MockParams:
 
 class MockCore:
     def __init__(self):
-        self.geomType = "spiral"  # dummy, not actually supported.
+        # just pick a random geomType
+        self.geomType = geometry.GeomType.CARTESIAN
         self.symmetry = "full"
         self.p = MockParams()
 
@@ -81,7 +83,7 @@ class TestGlobalFluxOptions(unittest.TestCase):
         reactor = MockReactor()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromReactor(reactor)
-        self.assertEqual(opts.geomType, "spiral")
+        self.assertEqual(opts.geomType, geometry.GeomType.CARTESIAN)
 
 
 class TestGlobalFluxInterface(unittest.TestCase):
@@ -172,7 +174,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
         """
         Test that the reaction rate code executes and sets a param > 0.0.
-        
+
         .. warning: This does not validate the reaction rate calculation.
         """
         b = test_blocks.loadTestBlock()

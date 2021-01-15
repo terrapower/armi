@@ -215,6 +215,8 @@ class ArmiTestHelper(unittest.TestCase):
         """
         Compare the contents of two files line by line.
 
+        .. warning:: The file located at actualFilePath will be deleted if they do match.
+
         Some tests write text files that should be compared line-by-line with reference files.
         This method performs the comparison.
 

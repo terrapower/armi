@@ -20,6 +20,8 @@ and submit them in a parameter sweep, validate inputs, open the GUI, run a test 
 or other similar things. There are built-in entry points, and additional ones may
 be specified by custom plugins.
 
+The full :doc:`docs for entry points are here </developer/entrypoints>`.
+
 See Also
 --------
 armi.cases : Individual collections of tasks that may run one or more entry points.
@@ -39,10 +41,10 @@ armi : Fundamental entry point that calls this package.
 # are decorated with @armi.command to be added to the collection of registered
 # classes
 
-from __future__ import print_function
 import argparse
 import textwrap
 import re
+import sys
 from typing import Optional
 
 import armi
@@ -110,7 +112,7 @@ class ArmiCLI:
                 self._entryPoints[entryPoint.name] = entryPoint
 
         parser = argparse.ArgumentParser(
-            prog="armi",
+            prog=armi.context.APP_NAME,
             description=self.__doc__,
             usage="%(prog)s [-h] [-l | command [args]]",
         )
@@ -161,11 +163,13 @@ class ArmiCLI:
 
         if args.list_commands:
             self.listCommands()
-            raise SystemExit(0)
+
+            return 0
 
         if args.command == "help":
             self.parser.print_help()
-            raise SystemExit(0)
+
+            return 0
 
         return self.executeCommand(args.command, args.args)
 
@@ -179,7 +183,8 @@ class ArmiCLI:
                 )
             )
             self.listCommands()
-            raise SystemExit(1)
+
+            return 1
 
         commandClass = self._entryPoints[command]
         cmd = commandClass()
@@ -188,7 +193,7 @@ class ArmiCLI:
         cmd.parse(args)
 
         if cmd.args.batch:
-            armi.Mode.setMode(armi.Mode.Batch)
+            armi.Mode.setMode(armi.Mode.BATCH)
         elif cmd.mode is not None:
             armi.Mode.setMode(cmd.mode)
 

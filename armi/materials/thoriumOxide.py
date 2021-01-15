@@ -39,7 +39,7 @@ class ThoriumOxide(Material):
         grams of Th-232 = 232.030806 g/mol* 1 mol  =  232.030806 g
         grams of Oxygen = 15.9994 g/mol* 2 mol = 31.9988 g
         total=264.029606 g.
-        Mass fractions are computed from this. """
+        Mass fractions are computed from this."""
         self.setMassFrac("TH232", 0.8788)
         self.setMassFrac("O16", 0.1212)
 

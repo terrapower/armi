@@ -7,7 +7,7 @@ coloring the squares with the natural abundance.
 
 .. admonition:: More details
 
-    Our :ref:`extended tutorial for nuclides </user/tutorials/nuclide_demo.ipynb>` and
+    Our :ref:`extended tutorial for nuclides </tutorials/nuclide_demo.ipynb>` and
     detailed :py:mod:`nucDirectory docs <armi.nucDirectory>` may also be of interest.
 """
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from armi.nucDirectory import nuclideBases
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 xyc = []
 for name, base in nuclideBases.byName.items():

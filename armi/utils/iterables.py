@@ -216,8 +216,7 @@ class Sequence(object):
         self._iter = iter(seq)
 
     def copy(self):
-        """Return a new iterator that is a copy of self without consuming self.
-        """
+        """Return a new iterator that is a copy of self without consuming self."""
         self._iter, copy = tee(self._iter, 2)
         return Sequence(copy)
 

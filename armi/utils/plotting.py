@@ -49,7 +49,6 @@ def colorGenerator(skippedColors=10):
     Will cycle indefinitely to accommodate large cores. Colors will repeat.
     """
 
-
     colors = list(mcolors.CSS4_COLORS)
 
     for start in itertools.cycle(range(20, 20 + skippedColors)):
@@ -85,11 +84,11 @@ def plotBlockDepthMap(
     This is useful for visualizing the spatial distribution of a param through the core.
     Blocks could possibly not be in alignment between assemblies, but the depths
     viewable are based on the first fuel assembly.
-    
+
     Parameters
     ----------
     The kwarg definitions are the same as those of ``plotFaceMap``.
-    
+
     depthIndex: int
         The the index of the elevation to show block params.
         The index is determined by the index of the blocks in the first fuel assembly.
@@ -390,10 +389,10 @@ def plotFaceMap(
 
 def close(fig=None):
     """
-    Wrapper for matplotlib close. 
+    Wrapper for matplotlib close.
 
     This is useful to avoid needing to import plotting and matplotlib.
-    The plot functions cannot always close their figure if it is going 
+    The plot functions cannot always close their figure if it is going
     to be used somewhere else after becoming active (e.g. in reports
     or gallery examples).
     """
@@ -415,7 +414,7 @@ def _makeAssemPatches(core):
 
     pitch = core.getAssemblyPitch()
     for a in core:
-        x, y = a.getLocationObject().coords(pitch)
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
             assemPatch = matplotlib.patches.RegularPolygon(
                 (x, y), nSides, pitch / math.sqrt(3), orientation=math.pi / 2.0
@@ -435,7 +434,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
     """Write param values down, and return text so it can be edited later."""
     pitch = core.getAssemblyPitch()
     for a, val, label in zip(core, data, labels):
-        x, y = a.getLocationObject().coords(pitch)
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
 
         # Write text on top of patch locations.
         if label is None and labelFmt is not None:
@@ -602,7 +601,7 @@ class DepthSlider(Slider):
     def set_val(self, val):
         """
         Set the value and update the color.
-        
+
         Notes
         -----
         valmin/valmax are set on the parent to 0 and len(depths).
@@ -633,39 +632,41 @@ class DepthSlider(Slider):
 
 def plotAssemblyTypes(
     blueprints,
-    coreName,
+    fileName=None,
     assems=None,
-    plotNumber=1,
     maxAssems=None,
     showBlockAxMesh=True,
-):
+) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
 
     Parameters
     ----------
-    bluepprints: Blueprints
+    blueprints: Blueprints
         The blueprints to plot assembly types of.
+
+    fileName : str or None
+        Base for filename to write, or None for just returning the fig
 
     assems: list
         list of assembly objects to be plotted.
-
-    plotNumber: integer
-        number of uniquely identify the assembly plot from others and to prevent plots from being overwritten.
 
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
 
     showBlockAxMesh: bool
         if true, the axial mesh information will be displayed on the right side of the assembly plot.
+
+    Returns
+    -------
+    fig : plt.Figure
+        The figure object created
     """
 
     if assems is None:
         assems = list(blueprints.assemblies.values())
     if not isinstance(assems, (list, set, tuple)):
         assems = [assems]
-    if not isinstance(plotNumber, int):
-        raise TypeError("Plot number should be an integer")
     if maxAssems is not None and not isinstance(maxAssems, int):
         raise TypeError("Maximum assemblies should be an integer")
 
@@ -719,17 +720,18 @@ def plotAssemblyTypes(
     ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
-    ax.set_title("Assembly Designs for {}".format(coreName), y=1.03)
+    ax.set_title("Assembly Designs", y=1.03)
     ax.set_ylabel("Thermally Expanded Axial Heights (cm)".upper(), labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
 
     # Plot and save figure
     ax.plot()
-    figName = coreName + "AssemblyTypes{}.png".format(plotNumber)
-    runLog.debug("Writing assem layout {} in {}".format(figName, os.getcwd()))
-    fig.savefig(figName)
-    plt.close(fig)
-    return figName
+    if fileName:
+        fig.savefig(fileName)
+        runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
+        plt.close(fig)
+
+    return fig
 
 
 def _plotBlocksInAssembly(

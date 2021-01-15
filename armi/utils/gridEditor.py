@@ -6,6 +6,13 @@ GUI elements for manipulating grid layout and contents.
 This provides a handful of classes which provide wxPython Controls for manipulating
 grids and grid Blueprints.
 
+Use
+===
+The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
+
+    $ python -m armi grids
+
+
 Known Issues
 ============
 
@@ -24,7 +31,7 @@ Known Issues
  colors to flags is not particularly rich, and there isn't anything to disambiguate
  between asemblies of different design, but the same flags.
 
- * No proper zoom support, and object sizes are fixed and dont accomodate long
+ * No proper zoom support, and object sizes are fixed and don't accommodate long
  specifiers. Adding zoom would make for a fun first task to a new developer interested
  in computer graphics.
 """
@@ -115,7 +122,7 @@ def _filterOutsideDomain(gridBp):
     contentsToRemove = {
         idx
         for idx, _contents in gridBp.gridContents.items()
-        if not grid.locatorInDomain(grid[idx + (0,)])
+        if not grid.locatorInDomain(grid[idx + (0,)], symmetryOverlap=False)
     }
     for idx in contentsToRemove:
         symmetrics = grid.getSymmetricEquivalents(idx)
@@ -784,11 +791,14 @@ class GridGui(wx.ScrolledWindow):
     @grid.setter
     def grid(self, newGrid):
         self._grid = newGrid
-        self._geomType = geometry.GeomType.fromStr(self._grid.geomType)
+        self._geomType = self._grid.geomType
         self._idxByRing = [list() for _ in range(self.numRings)]
         for idx, loc in self._grid.items():
             ring, _pos = self._grid.getRingPos(idx)
-            if not self._grid.locatorInDomain(loc) or ring > self.numRings:
+            if (
+                not self._grid.locatorInDomain(loc, symmetryOverlap=False)
+                or ring > self.numRings
+            ):
                 continue
             self._idxByRing[ring - 1].append(idx)
 
@@ -1427,30 +1437,30 @@ class GridBlueprintControl(wx.Panel):
         bp = copy.deepcopy(self.bp)
 
         for gridDesignType, gridDesign in bp.gridDesigns.items():
-
             # The core equilibrium path should be put into the
-            # grid contents rather than a lattice map. Skip
+            # grid contents rather than a lattice map until we write
+            # a string-> tuple parser for reading it back in. Skip
             # this type of grid.
             if gridDesignType == "coreEqPath":
                 continue
-
             _filterOutsideDomain(gridDesign)
             if gridDesign.gridContents:
 
                 try:
                     aMap = asciimaps.asciiMapFromGeomAndSym(
                         self.grid.geomType, self.grid.symmetry
-                    )(lattice=gridDesign.gridContents)
+                    )()
+                    aMap.asciiLabelByIndices = gridDesign.gridContents
+                    aMap.gridContentsToAscii()
                 except:
-                    aMap = None
-
-                if type(aMap) == asciimaps.AsciiMapHexFullTipsUp:
-                    # This appears broken for full-core cases; stick to `grid contents`
+                    runLog.warning(
+                        "Cannot write geometry with asciimap. Defaulting to dict."
+                    )
                     aMap = None
 
                 if aMap is not None:
                     mapString = io.StringIO()
-                    aMap.writeMap(mapString)
+                    aMap.writeAscii(mapString)
                     # deep ruamel.yaml magic
                     formattedStr = scalarstring.LiteralScalarString(
                         mapString.getvalue()
@@ -1651,7 +1661,9 @@ class NewGridBlueprintDialog(wx.Dialog):
         nameSizer.Add(self.gridName, 1, wx.EXPAND)
 
         self.geomType = wx.Choice(
-            self, id=wx.ID_ANY, choices=[gt.label for gt in self._geomFromIdx.values()],
+            self,
+            id=wx.ID_ANY,
+            choices=[gt.label for gt in self._geomFromIdx.values()],
         )
 
         self.Bind(wx.EVT_CHOICE, self.onSelectGeomType, self.geomType)

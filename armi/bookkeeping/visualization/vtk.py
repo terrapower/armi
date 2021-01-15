@@ -28,109 +28,20 @@ that can be improved upon. For instance
    important unless dealing with really big meshes.
 """
 
-import pathlib
 from typing import Dict, Any, List, Optional, Set, Tuple
-import math
 
-from pyevtk.hl import unstructuredGridToVTK
-from pyevtk.vtk import VtkGroup, VtkHexahedron, VtkQuadraticHexahedron
 import numpy
+from pyevtk.vtk import VtkGroup
 
 from armi import runLog
-from armi.reactor import composites
 from armi.reactor import assemblies
-from armi.reactor import reactors
 from armi.reactor import blocks
+from armi.reactor import composites
+from armi.reactor import reactors
 from armi.reactor import parameters
-from armi.utils import hexagon
 from armi.bookkeeping.db import database3
 from armi.bookkeeping.visualization import dumper
-
-
-# The hex prism cell type is not very well-documented, and so is not described in
-# pyevtk. Digging into the header reveals that `16` does the trick.
-_HEX_PRISM_TID = 16
-
-
-class VtkMesh:
-    """
-    Container for VTK unstructured mesh data.
-
-    This provides a container for the necessary data to describe a mesh to VTK (vertex
-    locations, connectivity, offsets, cell types). It supports appending one set of mesh
-    data onto another, handling the necessary index offsets.
-    """
-
-    def __init__(self, vertices, connectivity, offsets, cellTypes):
-        """
-        Parameters
-        ----------
-        vertices : numpy array
-            An Nx3 numpy array with one row per (x,y,z) vertex
-        connectivity : numpy array
-            A 1-D array containing the vertex indices belonging to each cell
-        offsets : numpy array
-            A 1-D array containing the index of the first vertex for the next cell
-        cellTypes : numpy array
-            A 1-D array contining the cell type ID for each cell
-        """
-        self.vertices = vertices
-        self.connectivity = connectivity
-        self.offsets = offsets
-        self.cellTypes = cellTypes
-
-    @staticmethod
-    def empty():
-        return VtkMesh(
-            numpy.empty((0, 3), dtype=numpy.float64),
-            numpy.array([], dtype=numpy.int32),
-            numpy.array([], dtype=numpy.int32),
-            numpy.array([], dtype=numpy.int32),
-        )
-
-    @property
-    def x(self):
-        return numpy.array(self.vertices[:, 0])
-
-    @property
-    def y(self):
-        return numpy.array(self.vertices[:, 1])
-
-    @property
-    def z(self):
-        return numpy.array(self.vertices[:, 2])
-
-    def append(self, other):
-        """
-        Add more cells to the mesh.
-        """
-        connectOffset = self.vertices.shape[0]
-        offsetOffset = self.offsets[-1] if self.offsets.size > 0 else 0
-
-        self.vertices = numpy.vstack((self.vertices, other.vertices))
-        self.connectivity = numpy.append(
-            self.connectivity, other.connectivity + connectOffset
-        )
-        self.offsets = numpy.append(self.offsets, other.offsets + offsetOffset)
-        self.cellTypes = numpy.append(self.cellTypes, other.cellTypes)
-
-    def write(self, path, data) -> str:
-        """
-        Write this mesh and the passed data to a VTK file. Returns the base path, plus
-        relevant extension.
-        """
-
-        fullPath = unstructuredGridToVTK(
-            path,
-            self.x,
-            self.y,
-            self.z,
-            connectivity=self.connectivity,
-            offsets=self.offsets,
-            cell_types=self.cellTypes,
-            cellData=data,
-        )
-        return fullPath
+from . import utils
 
 
 class VtkDumper(dumper.VisFileDumper):
@@ -142,10 +53,10 @@ class VtkDumper(dumper.VisFileDumper):
     time node), and creates a group/collection file when finished.
     """
 
-    def __init__(self, baseName: str):
+    def __init__(self, baseName: str, inputName: str):
         self._baseName = baseName
-        self._assemFiles: List[Tuple[str, float]]  = []
-        self._blockFiles: List[Tuple[str, float]]  = []
+        self._assemFiles: List[Tuple[str, float]] = []
+        self._blockFiles: List[Tuple[str, float]] = []
 
     def dumpState(
         self,
@@ -185,11 +96,13 @@ class VtkDumper(dumper.VisFileDumper):
                 "includeParams and excludeParams can not both be used at the same time"
             )
 
-        # make the meshes
-        blks = r.core.getBlocks()
-        assems = r.core.getAssemblies()
-        blockMesh = _createReactorBlockMesh(r)
-        assemMesh = _createReactorAssemMesh(r)
+        blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
+        assems = r.getChildren(
+            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
+        )
+
+        blockMesh = utils.createReactorBlockMesh(r)
+        assemMesh = utils.createReactorAssemMesh(r)
 
         # collect param data
         blockData = _collectObjectData(blks, includeParams, excludeParams)
@@ -228,10 +141,11 @@ class VtkDumper(dumper.VisFileDumper):
             blockGroup.save()
 
 
-def _collectObjectData(objs: List[composites.ArmiObject],
-        includeParams: Optional[Set[str]] = None,
-        excludeParams: Optional[Set[str]] = None,
-        ) -> Dict[str, Any]:
+def _collectObjectData(
+    objs: List[composites.ArmiObject],
+    includeParams: Optional[Set[str]] = None,
+    excludeParams: Optional[Set[str]] = None,
+) -> Dict[str, Any]:
 
     allData = dict()
 
@@ -266,7 +180,7 @@ def _collectObjectData(objs: List[composites.ArmiObject],
 
             try:
                 data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
-            except ValueError:
+            except (ValueError, TypeError):
                 # Looks like we have some weird data. We might be able to handle it
                 # with more massaging, but probably not visualizable anyhow
                 continue
@@ -284,177 +198,3 @@ def _collectObjectData(objs: List[composites.ArmiObject],
         allData[pDef.name] = data
 
     return allData
-
-
-def _createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
-    mesh = VtkMesh.empty()
-    for b in r.core.getBlocks():
-        mesh.append(_createBlockMesh(b))
-
-    return mesh
-
-
-def _createReactorAssemMesh(r: reactors.Reactor) -> VtkMesh:
-    mesh = VtkMesh.empty()
-    for a in r.core.getAssemblies():
-        mesh.append(_createAssemMesh(a))
-
-    return mesh
-
-
-def _createBlockMesh(b: blocks.Block) -> VtkMesh:
-    if isinstance(b, blocks.HexBlock):
-        return _createHexBlockMesh(b)
-    if isinstance(b, blocks.CartesianBlock):
-        return _createCartesianBlockMesh(b)
-    if isinstance(b, blocks.ThRZBlock):
-        return _createTRZBlockMesh(b)
-    else:
-        raise TypeError(
-            "Unsupported block type `{}`. Supported types are: {}".format(
-                type(b).__name__,
-                {
-                    t.__name__
-                    for t in {blocks.CartesianBlock, blocks.HexBlock, blocks.ThRZBlock}
-                },
-            )
-        )
-
-
-def _createAssemMesh(a: assemblies.Assembly) -> VtkMesh:
-    # Kind of hacky, but since all blocks in an assembly are the same type, let's just
-    # use the block mesh functions and change their z coordinates to match the size of
-    # the whole assem 🤯
-    mesh = _createBlockMesh(a[0])
-
-    # we should only have a single VTK mesh primitive per block
-    assert len(mesh.cellTypes) == 1
-
-    zMin = a.spatialGrid._bounds[2][0]
-    zMax = a.spatialGrid._bounds[2][-1]
-
-    if mesh.cellTypes[0] == VtkHexahedron:
-        mesh.vertices[0:4, 2] = zMin
-        mesh.vertices[4:8, 2] = zMax
-    elif mesh.cellTypes[0] == _HEX_PRISM_TID:
-        mesh.vertices[0:6, 2] = zMin
-        mesh.vertices[6:12, 2] = zMax
-    elif mesh.cellTypes[0] == VtkQuadraticHexahedron.tid:
-        # again, quadratic hexahedra are a pain
-        mesh.vertices[0:4, 2] = zMin
-        mesh.vertices[8:12, 2] = zMin
-        mesh.vertices[4:8, 2] = zMax
-        mesh.vertices[12:16, 2] = zMax
-
-    return mesh
-
-
-def _createHexBlockMesh(b: blocks.HexBlock) -> VtkMesh:
-    assert b.spatialLocator is not None
-
-    zMin = b.p.zbottom
-    zMax = b.p.ztop
-
-    gridOffset = b.spatialLocator.getGlobalCoordinates()[:2]
-    gridOffset = numpy.tile(gridOffset, (6, 1))
-
-    pitch = b.getPitch()
-    hexVerts2d = numpy.array(hexagon.corners(rotation=0)) * pitch
-    hexVerts2d += gridOffset
-
-    # we need a top and bottom hex
-    hexVerts2d = numpy.vstack((hexVerts2d, hexVerts2d))
-
-    # fold in z locations to get 3d coordinates
-    hexVerts = numpy.hstack(
-        (hexVerts2d, numpy.array([[zMin] * 6 + [zMax] * 6]).transpose())
-    )
-
-    return VtkMesh(
-        hexVerts,
-        numpy.array(list(range(12))),
-        numpy.array([12]),
-        numpy.array([_HEX_PRISM_TID]),
-    )
-
-
-def _createCartesianBlockMesh(b: blocks.CartesianBlock) -> VtkMesh:
-    assert b.spatialLocator is not None
-
-    zMin = b.p.zbottom
-    zMax = b.p.ztop
-
-    gridOffset = b.spatialLocator.getGlobalCoordinates()[:2]
-    gridOffset = numpy.tile(gridOffset, (4, 1))
-
-    pitch = b.getPitch()
-    halfPitchX = pitch[0] * 0.5
-    halfPitchY = pitch[0] * 0.5
-
-    rectVerts = numpy.array(
-        [
-            [halfPitchX, halfPitchY],
-            [-halfPitchX, halfPitchY],
-            [-halfPitchX, -halfPitchY],
-            [halfPitchX, -halfPitchY],
-        ]
-    )
-    rectVerts += gridOffset
-
-    # make top/bottom rectangles
-    boxVerts = numpy.vstack((rectVerts, rectVerts))
-
-    # fold in z coordinates
-    boxVerts = numpy.hstack(
-        (boxVerts, numpy.array([[zMin] * 4 + [zMax] * 4]).transpose())
-    )
-
-    return VtkMesh(
-        boxVerts,
-        numpy.array(list(range(8))),
-        numpy.array([8]),
-        numpy.array([VtkHexahedron.tid]),
-    )
-
-
-def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
-    # There's no sugar-coating this one. It sucks.
-    rIn = b.radialInner()
-    rOut = b.radialOuter()
-    thIn = b.thetaInner()
-    thOut = b.thetaOuter()
-    zIn = b.p.zbottom
-    zOut = b.p.ztop
-
-    vertsRTZ = [
-        (rIn, thOut, zIn),
-        (rIn, thIn, zIn),
-        (rOut, thIn, zIn),
-        (rOut, thOut, zIn),
-        (rIn, thOut, zOut),
-        (rIn, thIn, zOut),
-        (rOut, thIn, zOut),
-        (rOut, thOut, zOut),
-        (rIn, (thIn + thOut) * 0.5, zIn),
-        ((rIn + rOut) * 0.5, thIn, zIn),
-        (rOut, (thIn + thOut) * 0.5, zIn),
-        ((rIn + rOut) * 0.5, thOut, zIn),
-        (rIn, (thIn + thOut) * 0.5, zOut),
-        ((rIn + rOut) * 0.5, thIn, zOut),
-        (rOut, (thIn + thOut) * 0.5, zOut),
-        ((rIn + rOut) * 0.5, thOut, zOut),
-        (rIn, thOut, (zIn + zOut) * 0.5),
-        (rIn, thIn, (zIn + zOut) * 0.5),
-        (rOut, thIn, (zIn + zOut) * 0.5),
-        (rOut, thOut, (zIn + zOut) * 0.5),
-    ]
-    vertsXYZ = numpy.array(
-        [[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ]
-    )
-
-    return VtkMesh(
-        vertsXYZ,
-        numpy.array(list(range(20))),
-        numpy.array([20]),
-        numpy.array([VtkQuadraticHexahedron.tid]),
-    )

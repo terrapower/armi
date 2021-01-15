@@ -310,16 +310,13 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(b.parent, a)
 
     def test_moveTo(self):
-        location = locations.HexLocation(i1=3, i2=10)
+        ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
         i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
         locator = self.r.core.spatialGrid[i, j, 0]
         self.Assembly.moveTo(locator)
 
-        cur = self.Assembly.getLocation()
-        ref = str(location)
+        cur = self.Assembly.spatialLocator
         self.assertEqual(cur, ref)
-
-        self.assertEqual(self.Assembly.getLocationObject().label, "A3010")
 
     def test_getName(self):
         cur = self.Assembly.getName()
@@ -335,10 +332,6 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.Assembly.getLocation()
         ref = str("A5003")
         self.assertEqual(cur, ref)
-
-    def test_getLocationObject(self):
-        cur = self.Assembly.getLocationObject()
-        self.assertEqual(str(cur), "A5003")
 
     def test_getArea(self):
         cur = self.Assembly.getArea()
@@ -823,8 +816,8 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_axiallyExpandBlockHeights(self):
-        r""" heightList = list of floats.  Entry 0 represents the bottom fuel block closes to the grid plate.  Enrty n represents the top fuel block closes to the plenum
-        adjust list = list of nuclides to modify """
+        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closes to the grid plate.  Enrty n represents the top fuel block closes to the plenum
+        adjust list = list of nuclides to modify"""
 
         self.assemNum = 5
 

@@ -17,7 +17,6 @@ import io
 
 from armi.reactor import blueprints
 from armi import settings
-from armi.physics.neutronics import isotopicDepletion
 from armi.reactor.flags import Flags
 
 FULL_BP = """
@@ -123,7 +122,7 @@ assemblies:
         xs types: [A, A]
 grids:
     fuelgrid:
-       geom: hex
+       geom: hex_corners_up
        symmetry: full
        lattice map: |
          - - -  1 1 1 1
@@ -142,7 +141,6 @@ class TestGriddedBlock(unittest.TestCase):
 
     def setUp(self):
         self.cs = settings.Settings()
-        isotopicDepletion.applyDefaultBurnChain()
 
         with io.StringIO(FULL_BP) as stream:
             self.blueprints = blueprints.Blueprints.load(stream)

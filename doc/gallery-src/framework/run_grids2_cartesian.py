@@ -15,12 +15,14 @@ from armi.reactor import grids
 
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 fig = plt.figure()
 zCoords = [1, 4, 8]
 cartesian_grid = grids.Grid(
-    unitSteps=((1, 0), (0, 1)), bounds=(None, None, zCoords), offset=(10, 5, 5),
+    unitSteps=((1, 0), (0, 1)),
+    bounds=(None, None, zCoords),
+    offset=(10, 5, 5),
 )
 xyz = []
 

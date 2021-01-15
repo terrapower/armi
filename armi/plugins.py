@@ -198,8 +198,14 @@ class ArmiPlugin:
 
         This allows a plugin to provide novel values for the Flags system.
         Implementations should return a dictionary mapping flag names to their desired
-        values. In most cases, no specific value is needed, in which case
+        numerical values. In most cases, no specific value is needed, in which case
         :py:class:`armi.utils.flags.auto` should be used.
+
+        Flags should be added to the ARMI system with great care; flag values for each
+        object are stored in a bitfield, so each additional flag increases the width of
+        the data needed to store them. Also, due to the `what things are` interpretation
+        of flags (see :py:mod:`armi.reactor.flags`), new flags should probably refer to
+        novel design elements, rather than novel behaviors.
 
         See Also
         --------

@@ -9,7 +9,7 @@ from armi.reactor.tests import test_reactors
 from armi.utils import plotting
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 operator, reactor = test_reactors.loadTestReactor()
 reactor.core.growToFullCore(None)

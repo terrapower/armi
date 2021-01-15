@@ -32,7 +32,8 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
     description = "Convert ARMI databases in to visualization files"
 
     _FORMAT_VTK = "vtk"
-    _SUPPORTED_FORMATS = {_FORMAT_VTK}
+    _FORMAT_XDMF = "xdmf"
+    _SUPPORTED_FORMATS = {_FORMAT_VTK, _FORMAT_XDMF}
 
     def __init__(self):
         entryPoint.EntryPoint.__init__(self)
@@ -50,7 +51,7 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         self.parser.add_argument(
             "--format",
             "-f",
-            help="Output format. Only supported format is `vtk`",
+            help="Output format. Supported formats: `vtk` and `xdmf`",
             default="vtk",
         )
         self.parser.add_argument(
@@ -133,12 +134,16 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         # late imports so that we dont have to import the world to do anything
         # pylint: disable=import-outside-toplevel
         from armi.bookkeeping.visualization import vtk
+        from armi.bookkeeping.visualization import xdmf
         from armi.bookkeeping.db import databaseFactory
 
         # a little baroque, but easy to extend with future formats
-        formatMap = {self._FORMAT_VTK: vtk.VtkDumper}
+        formatMap = {
+            self._FORMAT_VTK: vtk.VtkDumper,
+            self._FORMAT_XDMF: xdmf.XdmfDumper,
+        }
 
-        dumper = formatMap[self.args.format](self.args.output_name)
+        dumper = formatMap[self.args.format](self.args.output_name, self.args.h5db)
 
         nodes = self.args.nodes
         db = databaseFactory(self.args.h5db, "r")

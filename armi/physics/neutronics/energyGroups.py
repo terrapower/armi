@@ -61,7 +61,7 @@ def getGroupStructure(name):
 
     Notes
     -----
-    Copy of the group structure is return so that modifications of the energy bounds does 
+    Copy of the group structure is return so that modifications of the energy bounds does
     not propagate back to the `GROUP_STRUCTURE` dictionary.
     """
     try:

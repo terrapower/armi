@@ -29,7 +29,6 @@ from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
 from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
-from armi.physics.neutronics import isotopicDepletion
 
 
 class TestBlueprints(unittest.TestCase):
@@ -54,7 +53,6 @@ class TestBlueprints(unittest.TestCase):
         cls.cs = settings.Settings()
         cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
         cls.directoryChanger.open()
-        isotopicDepletion.applyDefaultBurnChain()
 
         y = textProcessors.resolveMarkupInclusions(
             pathlib.Path(os.getcwd()) / "refSmallReactor.yaml"
@@ -89,7 +87,7 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(mox["PU239"], 0.00286038)
 
     def test_componentDimensions(self):
-        fuelAssem = self.blueprints.constructAssem("hex", self.cs, name="igniter fuel")
+        fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
         self.assertAlmostEqual(fuel.getDimension("od", cold=True), 0.86602)
         self.assertAlmostEqual(fuel.getDimension("id", cold=True), 0.0)
@@ -98,8 +96,9 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(fuel.getDimension("mult"), 169)
 
     def test_traceNuclides(self):
+        """Ensure that armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys runs."""
         fuel = (
-            self.blueprints.constructAssem("hex", self.cs, "igniter fuel")
+            self.blueprints.constructAssem(self.cs, "igniter fuel")
             .getFirstBlock(Flags.FUEL)
             .getComponent(Flags.FUEL)
         )
@@ -145,8 +144,8 @@ grids:
     def test_assemblyParameters(self):
         cs = settings.Settings()
         design = blueprints.Blueprints.load(self.yamlString)
-        fa = design.constructAssem("hex", cs, name="fuel a")
-        fb = design.constructAssem("hex", cs, name="fuel b")
+        fa = design.constructAssem(cs, name="fuel a")
+        fb = design.constructAssem(cs, name="fuel b")
         for paramDef in fa.p.paramDefs.inCategory(
             parameters.Category.assignInBlueprints
         ):
@@ -173,7 +172,7 @@ grids:
             set({"U238", "U235", "ZR"}).issubset(set(design.allNuclidesInProblem))
         )
 
-        assem = design.constructAssem("hex", cs, name="fuel a")
+        assem = design.constructAssem(cs, name="fuel a")
         self.assertTrue(
             set(assem.getNuclides()).issubset(set(design.allNuclidesInProblem))
         )
@@ -192,7 +191,7 @@ grids:
         )
         self.assertTrue(zrNucs.issubset(set(design.inertNuclides)))
 
-        assem = design.constructAssem("hex", cs, name="fuel a")
+        assem = design.constructAssem(cs, name="fuel a")
         # the assembly won't get non-naturally occurring nuclides
         unnaturalZr = (
             n.name for n in bySymbol["ZR"].nuclideBases if n.abundance == 0.0
@@ -301,7 +300,7 @@ assemblies:
         xs types: [A, A]
 """
         bp = blueprints.Blueprints.load(yamlString)
-        a = bp.constructAssem("hex", settings.Settings(), name="a")
+        a = bp.constructAssem(settings.Settings(), name="a")
         mergedBlock, unmergedBlock = a
         self.assertNotIn("A", mergedBlock.getComponentNames())
         self.assertNotIn("B", mergedBlock.getComponentNames())
@@ -459,9 +458,9 @@ assemblies:
         """
         cs = settings.Settings()
         design = blueprints.Blueprints.load(yamlWithoutBlocks)
-        design.constructAssem("hex", cs, name="fuel a")
-        fa = design.constructAssem("hex", cs, name="fuel a")
-        fb = design.constructAssem("hex", cs, name="fuel b")
+        design.constructAssem(cs, name="fuel a")
+        fa = design.constructAssem(cs, name="fuel a")
+        fb = design.constructAssem(cs, name="fuel b")
         for a in (fa, fb):
             self.assertEqual(1, len(a))
             self.assertEqual(1, len(a[0]))

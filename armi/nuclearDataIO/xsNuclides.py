@@ -63,7 +63,8 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         XSNuclide._ensuredBurnInfo = False
 
     def updateBaseNuclide(self):
-        """Update the nuclide base for this :py:class:`~armi.nucDirectory.nuclide.XSNuclide`.
+        """
+        Update which nuclide base this :py:class:`XSNuclide` points to.
 
         Notes
         -----

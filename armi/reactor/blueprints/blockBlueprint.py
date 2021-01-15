@@ -26,7 +26,6 @@ from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.converters import blockConverters
-from armi.reactor.locations import AXIAL_CHARS
 from armi.reactor import grids
 
 
@@ -52,7 +51,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
     def _getBlockClass(self, outerComponent):
         """
-        Get the ARMI ``Block`` class for the specified geomType.
+        Get the ARMI ``Block`` class for the specified outerComponent.
 
         Parameters
         ----------
@@ -130,7 +129,9 @@ class BlockBlueprint(yamlize.KeyedList):
             c._resolveLinkedDims(components)
 
         boundingComp = sorted(components.values())[-1]
-        b = self._getBlockClass(boundingComp)("Bxxx{0}".format(AXIAL_CHARS[axialIndex]))
+        b = self._getBlockClass(boundingComp)(
+            "Bxxx{0}".format(grids.AXIAL_CHARS[axialIndex])
+        )
 
         for paramDef in b.p.paramDefs.inCategory(
             parameters.Category.assignInBlueprints

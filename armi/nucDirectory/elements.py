@@ -193,7 +193,7 @@ def getSymbol(z=None, name=None):
         element = byZ[z]
     else:
         element = byName[name.lower()]
-    return element.name
+    return element.symbol
 
 
 def getElementZ(symbol=None, name=None):

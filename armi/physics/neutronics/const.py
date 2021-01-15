@@ -13,10 +13,13 @@
 # limitations under the License.
 
 """
-Constants.
+Constants and Enums
 
 In independent file to minimize circular imports.
 """
+
+from enum import Enum
+
 CONF_CROSS_SECTION = "crossSectionControl"
 #
 # FAST_FLUX_THRESHOLD_EV is the energy threshold above which neutrons are considered "fast" [eV]

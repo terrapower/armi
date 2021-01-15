@@ -82,6 +82,7 @@ import numpy
 import h5py
 
 import armi
+from armi import context
 from armi import interfaces
 from armi import runLog
 from armi import settings
@@ -97,7 +98,7 @@ from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories, LocationHistories
 from armi.bookkeeping.db import database
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 
@@ -510,11 +511,11 @@ class Database3(database.Database):
             self._versionMinor = None
 
     @property
-    def version(self):
+    def version(self) -> str:
         return self._version
 
     @version.setter
-    def version(self, value):
+    def version(self, value: str):
         self._version = value
         self._versionMajor, self._versionMinor = (int(v) for v in value.split("."))
 
@@ -548,7 +549,7 @@ class Database3(database.Database):
 
         if self._permission == "w":
             # assume fast path!
-            filePath = os.path.join(armi.FAST_PATH, filePath)
+            filePath = os.path.join(context.getFastPath(), filePath)
             self._fullPath = os.path.abspath(filePath)
 
         else:
@@ -672,13 +673,31 @@ class Database3(database.Database):
 
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
-        cs.loadFromString(self.h5db["inputs/settings"][()])
+        try:
+            cs.loadFromString(self.h5db["inputs/settings"][()])
+        except KeyError:
+            # not all paths to writing a database require inputs to be written to the
+            # database. Technically, settings do affect some of the behavior of database
+            # reading, so not having the settings that made the reactor that went into
+            # the database is not ideal. However, this isn't the right place to crash
+            # into it. Ideally, there would be not way to not have the settings in the
+            # database (force writing in writeToDB), or to make reading invariant to
+            # settings.
+            pass
+
         return cs
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        bpString = self.h5db["inputs/blueprints"][()]
+        bpString = None
+
+        try:
+            bpString = self.h5db["inputs/blueprints"][()]
+        except KeyError:
+            # not all reactors need to be created from blueprints, so they may not exist
+            pass
+
         if not bpString:
             # looks like no blueprints contents
             return None
@@ -690,7 +709,7 @@ class Database3(database.Database):
         return bp
 
     def loadGeometry(self):
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"][()]))
         return geom
 
@@ -734,7 +753,7 @@ class Database3(database.Database):
                 bpString = ""
 
         self.h5db["inputs/settings"] = csString
-        self.h5db["inputs/geomFile"] = geomString
+        self.h5db["inputs/geomFile"] = geomString or ""
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
@@ -821,6 +840,15 @@ class Database3(database.Database):
         else:
             for step in timeSteps:
                 yield self.h5db[getH5GroupName(*step)]
+
+    def getLayout(self, cycle, node):
+        """
+        Return a Layout object representing the requested cycle and time node.
+        """
+        version = (self._versionMajor, self._versionMinor)
+        timeGroupName = getH5GroupName(cycle, node)
+
+        return Layout(version, self.h5db[timeGroupName])
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
         """

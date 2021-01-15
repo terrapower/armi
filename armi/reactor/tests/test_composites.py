@@ -19,6 +19,7 @@ import unittest
 from armi import runLog
 from armi import settings
 from armi.nucDirectory import nucDir, nuclideBases
+from armi import utils
 
 from armi.reactor import components
 from armi.reactor import composites
@@ -51,9 +52,17 @@ def getDummyParamDefs():
 class DummyComposite(composites.Composite):
     pDefs = getDummyParamDefs()
 
+    def __init__(self, name):
+        composites.Composite.__init__(self, name)
+        self.p.type = name
+
 
 class DummyLeaf(composites.Leaf):
     pDefs = getDummyParamDefs()
+
+    def __init__(self, name):
+        composites.Leaf.__init__(self, name)
+        self.p.type = name
 
 
 class TestCompositePattern(unittest.TestCase):
@@ -96,6 +105,11 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIs(third[0], self.thirdGen)
         allC = self.container.getChildren(deep=True)
         self.assertEqual(len(allC), 8)
+
+        onlyLiner = self.container.getChildren(
+            deep=True, predicate=lambda o: o.p.type == "liner"
+        )
+        self.assertEqual(len(onlyLiner), 1)
 
     def test_areChildernOfType(self):
         expectedResults = [False, False, False, False, False, True]
@@ -391,10 +405,23 @@ class TestCompositeTree(unittest.TestCase):
 
 
 class TestFlagSerializer(unittest.TestCase):
+    class TestFlagsA(utils.Flag):
+        A = utils.flags.auto()
+        B = utils.flags.auto()
+        C = utils.flags.auto()
+        D = utils.flags.auto()
+
+    class TestFlagsB(utils.Flag):
+        A = utils.flags.auto()
+        B = utils.flags.auto()
+        BPRIME = utils.flags.auto()
+        C = utils.flags.auto()
+        D = utils.flags.auto()
+
     def test_flagSerialization(self):
         data = [
             Flags.FUEL,
-            Flags.FUEL | Flags.DEPLETABLE,
+            Flags.FUEL | Flags.INNER,
             Flags.A | Flags.B | Flags.CONTROL,
         ]
 
@@ -409,19 +436,33 @@ class TestFlagSerializer(unittest.TestCase):
         with self.assertRaises(ValueError):
             data2 = composites.FlagSerializer.unpack(flagsArray, "0", attrs)
 
-        # wrong number of Flags
-        removedFlag = attrs["flag_order"].pop()
+        # missing flags in current version Flags
+        attrs["flag_order"].append("NONEXISTANTFLAG")
         with self.assertRaises(ValueError):
             data2 = composites.FlagSerializer.unpack(
                 flagsArray, composites.FlagSerializer.version, attrs
             )
 
-        # Flags order doesn't match anymore
-        attrs["flag_order"].insert(0, removedFlag)
-        with self.assertRaises(ValueError):
-            data2 = composites.FlagSerializer.unpack(
-                flagsArray, composites.FlagSerializer.version, attrs
-            )
+    def test_flagConversion(self):
+        data = [
+            self.TestFlagsA.A,
+            self.TestFlagsA.A | self.TestFlagsA.C,
+            self.TestFlagsA.A | self.TestFlagsA.C | self.TestFlagsA.D,
+        ]
+
+        serialized, attrs = composites.FlagSerializer._packImpl(data, self.TestFlagsA)
+
+        data2 = composites.FlagSerializer._unpackImpl(
+            serialized, composites.FlagSerializer.version, attrs, self.TestFlagsB
+        )
+
+        expected = [
+            self.TestFlagsB.A,
+            self.TestFlagsB.A | self.TestFlagsB.C,
+            self.TestFlagsB.A | self.TestFlagsB.C | self.TestFlagsB.D,
+        ]
+
+        self.assertEqual(data2, expected)
 
 
 class TestMiscMethods(unittest.TestCase):

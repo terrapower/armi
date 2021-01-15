@@ -32,7 +32,7 @@ def defineSettings():
             label="Enable Reports",
             description="Employ the use of the reporting utility for ARMI, generating "
             "HTML and ASCII summaries of the run",
-            oldNames=[("summarizer", None)]
+            oldNames=[("summarizer", None)],
         ),
         setting.Setting(
             CONF_ASSEM_POW_SUMMARY,

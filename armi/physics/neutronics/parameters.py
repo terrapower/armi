@@ -113,6 +113,300 @@ def _getNeutronicsBlockParams():
             default=None,
         )
 
+        pb.defParam(
+            "extSrc",
+            units="g/cm^3/s",
+            description="multigroup external source",
+            location=ParamLocation.AVERAGE,
+            saveToDB=False,
+            categories=[parameters.Category.multiGroupQuantities],
+            default=None,
+        )
+
+        pb.defParam(
+            "mgGammaSrc",
+            units="g/cm^3/s",
+            description="multigroup gamma source",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            categories=[parameters.Category.multiGroupQuantities],
+            default=None,
+        )
+
+        pb.defParam(
+            "gammaSrc",
+            units="g/cm^3/s",
+            description="gamma source",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "mgFluxSK",
+            units="",
+            description="multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)",
+            location=ParamLocation.VOLUME_INTEGRATED,
+            saveToDB=False,
+            categories=[
+                parameters.Category.fluxQuantities,
+                parameters.Category.multiGroupQuantities,
+            ],
+            default=None,
+        )
+
+        # Not anointing the pin fluxes as a MG quantity, since it has an extra dimension, which
+        # could lead to issues, depending on how the multiGroupQuantities category gets used
+        pb.defParam(
+            "pinMgFluxes",
+            units="n/s/cm$^2$",
+            description="""
+                The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
+                units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
+                o'clock.  See TP1-1.9.31-RPT-0010 for more details.
+            """,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinMgFluxesAdj",
+            units="",
+            description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinMgFluxesGamma",
+            units="g/s/cm$^2$",
+            description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinPowers",
+            units="W/cm",
+            description="""
+                The block-level pin linear power densities. pinPowers[i] represents the average linear power density of
+                pin i.  Power units are Watts/cm (Watts produced per cm of pin length).  The "ARMI pin ordering" is
+                used, which is counter-clockwise from 3 o'clock.  See TP1-1.9.31-RPT-0010 for more details.
+            """,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinPowersNeutron",
+            units="W/cm",
+            description="should be a blank 2-D array, but re-defined later (nPins x nAxialSegments)",
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinPowersGamma",
+            units="W/cm",
+            description="should be a blank 2-D array, but re-defined later (nPins x nAxialSegments)",
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialPowerProfile",
+            units="",
+            description="""
+                For each reconstructed axial location, a tuple (z,power density) where with axial origin at the bottom
+                of assembly in which the blocks are located.
+            """,
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialPowerProfileNeutron",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialPowerProfileGamma",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialMgFluxReconCoeff",
+            units="",
+            description="""
+                The coefficients in the axial multigroup flux profile polynomial for this block.  The flux profile is
+                usually A*z^4 + B*z^3 + C*z^2 + D*z + E, and so this variable will be the 5 x ng list, so
+                axialMgFluxReconCoeff[g][i] is the ith coefficient for flux group g.  Also, this flux profile is
+                normalized (for each group) so that its average is always 1.0 in each block.  One must multiply the
+                coefficients of each group by the block-average group flux to obtain the axial group flux profile.
+            """,
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialMgFluxProfileAdj",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialMgFluxProfileNeutron",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialMgFluxProfileNeutronAdj",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "axialMgFluxProfileGamma",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "radialMgFluxProfile",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "radialMgFluxProfileAdj",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "radialMgFluxProfileNeutron",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "radialMgFluxProfileNeutronAdj",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "radialMgFluxProfileGamma",
+            units="",
+            description="",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "betad",
+            units="",
+            description="Delayed neutron beta",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "chi",
+            units="",
+            description="Energy distribution of fission neutrons",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "chid",
+            units="",
+            description="Energy distribution of delayed fission neutrons",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "linPow",
+            units="W/m",
+            description="Pin-averaged linear heat generation rate",
+            location=ParamLocation.AVERAGE,
+            default=0.0,
+            categories=[parameters.Category.detailedAxialExpansion],
+        )
+
+        pb.defParam(
+            "linPowByPin",
+            units="W/cm",
+            description="Pin linear power",
+            location=ParamLocation.CHILDREN,
+            default=None,
+        )
+
+        pb.defParam(
+            "linPowByPinNeutron",
+            units="W/cm",
+            description="Pin linear neutron power",
+            location=ParamLocation.CHILDREN,
+            default=None,
+        )
+
+        pb.defParam(
+            "linPowByPinGamma",
+            units="W/cm",
+            description="Pin linear gamma power",
+            location=ParamLocation.CHILDREN,
+            default=None,
+        )
+
+        pb.defParam(
+            "reactionRates",
+            units="Reactions/sec",
+            description='List of reaction rates in specified by setting "reactionsToDB"',
+            location=ParamLocation.VOLUME_INTEGRATED,
+            default=None,
+        )
+
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
@@ -209,6 +503,11 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fluxAdj", units="", description="Adjoint flux"  # adjoint flux is unitless
+        )
+        pb.defParam(
+            "fluxAdjPeak",
+            units="",
+            description="Adjoint flux",
         )
 
         pb.defParam(
@@ -320,7 +619,10 @@ def _getNeutronicsBlockParams():
     # rx rate params that are derived during mesh conversion.
     # We'd like all things that can be derived from flux and XS to be
     # in this category to minimize numerical diffusion but it is a WIP.
-    with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE,) as pb:
+    with pDefs.createBuilder(
+        default=0.0,
+        location=ParamLocation.AVERAGE,
+    ) as pb:
         pb.defParam(
             "rateAbs",
             units="1/cm^3/s",
@@ -368,6 +670,113 @@ def _getNeutronicsBlockParams():
         pb.defParam("powerGamma", units="W", description="Total gamma power")
 
         pb.defParam("powerNeutron", units="W", description="Total neutron power")
+
+    with pDefs.createBuilder(default=0.0) as pb:
+        pb.defParam(
+            "detailedDpaNewCycle",
+            units="dpa",
+            description="The total DPA accumulated in all burn steps of one cycle",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "detailedDpaPeakNewCycle",
+            units="dpa",
+            description="The total peak DPA accumulated in all burn steps of one cycle",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "detailedDpaThisCycle",
+            units="dpa",
+            location=ParamLocation.AVERAGE,
+            description="Displacement per atom accumulated during this cycle. This accumulates over a cycle and resets to zero at BOC.",
+            categories=["cumulative over cycle", "detailedAxialExpansion"],
+        )
+
+        pb.defParam(
+            "detailedDpaPeakRate",
+            units="DPA/s",
+            description="Peak DPA rate based on detailedDpaPeak",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "dpaPeakFromFluence",
+            units="dpa",
+            description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "enrichmentBOL",
+            units="mass fraction",
+            description="Enrichment during fabrication",
+        )
+
+        pb.defParam(
+            "fastFlux",
+            units="1/cm^2/s",
+            description="Neutron flux above 100keV",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "fastFluxFr",
+            units="",
+            description="Fraction of flux above 100keV",
+            location=ParamLocation.AVERAGE,
+            categories=["detailedAxialExpansion"],
+        )
+
+        # This quantity should eventually be part of category 'detailedAxialExpansion'
+        # to be "remapped" (converter currently do not support arrays)
+        pb.defParam(
+            "cornerFastFlux",
+            units="n/cm^2/s",
+            description="Neutron flux above 100keV at hexagon block corners",
+            location=ParamLocation.CORNERS,
+            saveToDB=False,
+        )
+
+        # This quantity should eventually be part of category 'detailedAxialExpansion'
+        # to be "remapped" (converter currently do not support arrays)
+        pb.defParam(
+            "pointsFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at points within the block",
+            location=ParamLocation.CHILDREN,
+            saveToDB=False,
+        )
+
+        # This quantity should eventually be part of category 'detailedAxialExpansion'
+        # to be "remapped" (converter currently do not support arrays)
+        pb.defParam(
+            "pointsDpa",
+            units="dpa",
+            description="displacements per atom at points within the block",
+            location=ParamLocation.CHILDREN,
+            categories=["cumulative"],
+            saveToDB=False,
+            default=0.0,
+        )
+
+        # This quantity should eventually be part of category 'detailedAxialExpansion'
+        # to be "remapped" (converter currently do not support arrays)
+        pb.defParam(
+            "pointsDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at points within the block",
+            location=ParamLocation.CHILDREN,
+            saveToDB=False,
+        )
+
+        pb.defParam(
+            "pdensGenerated",
+            units="W/cm^3",
+            description="Volume-averaged generated power density. Different than b.p.pdens only when gamma transport is activated.",
+            location=ParamLocation.AVERAGE,
+        )
 
     return pDefs
 

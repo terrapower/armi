@@ -28,6 +28,7 @@ import itertools
 from typing import Optional
 import tabulate
 import time
+import os
 
 import numpy
 
@@ -35,11 +36,13 @@ import armi
 from armi import runLog
 from armi import nuclearDataIO
 from armi import settings
+from armi.localization import exceptions
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
-from armi.reactor import locations
+from armi.reactor import systemLayoutInput
+from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import zones
 from armi.reactor import reactorParameters
@@ -50,6 +53,7 @@ from armi.utils.iterables import Sequence
 from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.nuclearDataIO import xsLibraries
 
 
 class Reactor(composites.Composite):
@@ -114,7 +118,7 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[geometry.SystemLayoutInput] = None):
+def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
     """
     Build a reactor from input settings, blueprints and geometry.
     """
@@ -186,7 +190,6 @@ class Core(composites.Composite):
         self.assembliesByName = {}
         self.circularRingList = {}
         self.blocksByName = {}  # lookup tables
-        self.locationIndexLookup = {}
         self.numRings = 0
         self.spatialGrid = None
         self.xsIndex = {}
@@ -232,8 +235,8 @@ class Core(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
-        self.cfp.r = self
-        self.sfp.r = self
+        self.cfp.parent = self
+        self.sfp.parent = self
         self.regenAssemblyLists()
 
     def __deepcopy__(self, memo):
@@ -272,7 +275,7 @@ class Core(composites.Composite):
         self.clearCache()
 
     @property
-    def geomType(self):
+    def geomType(self) -> geometry.GeomType:
         if not self.spatialGrid:
             raise ValueError("Cannot access geomType before a spatialGrid is attached.")
         return self.spatialGrid.geomType
@@ -290,16 +293,26 @@ class Core(composites.Composite):
         return geometry.SYMMETRY_FACTORS[self.symmetry]
 
     @property
-    def lib(self):
-        """"Get the microscopic cross section library."""
-        if self._lib is None:
-            runLog.info("Loading microscopic cross section library ISOTXS")
-            self._lib = nuclearDataIO.ISOTXS()
+    def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
+        """
+        Return the microscopic cross section library if one exists.
+
+        - If there is a library currently associated with the core,
+          it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory,
+          opened as ``ISOTXS`` object and returned.
+        - Finally, if no ``ISOTXS`` file exists in the working directory,
+          a None will be returned.
+        """
+        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+        if self._lib is None and os.path.exists(isotxsFileName):
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+            self._lib = nuclearDataIO.ISOTXS(isotxsFileName)
         return self._lib
 
     @lib.setter
     def lib(self, value):
-        """"Set the microscopic cross section library."""
+        """Set the microscopic cross section library."""
         self._lib = value
 
     @property
@@ -495,7 +508,7 @@ class Core(composites.Composite):
         spatialLocator = spatialLocator or a.spatialLocator
 
         if spatialLocator is not None and spatialLocator in self.childrenByLocator:
-            raise RuntimeError(
+            raise ValueError(
                 "Cannot add {} because location {} is already filled by {}."
                 "".format(
                     aName, a.spatialLocator, self.childrenByLocator[a.spatialLocator]
@@ -505,6 +518,14 @@ class Core(composites.Composite):
         if spatialLocator is not None:
             # transfer spatialLocator to Core one
             spatialLocator = self.spatialGrid[tuple(spatialLocator.indices)]
+            if not self.spatialGrid.locatorInDomain(
+                spatialLocator, symmetryOverlap=True
+            ):
+                raise exceptions.SymmetryError(
+                    "Location `{}` outside of the represented domain: `{}`".format(
+                        spatialLocator, self.spatialGrid.symmetry
+                    )
+                )
             a.moveTo(spatialLocator)
 
         self.childrenByLocator[spatialLocator] = a
@@ -609,7 +630,7 @@ class Core(composites.Composite):
             return nRings * (nRings - 1) + (nRings + 1) // 2
 
     def getNumEnergyGroups(self):
-        """"
+        """
         Return the number of energy groups used in the problem
 
         See Also
@@ -765,7 +786,7 @@ class Core(composites.Composite):
 
         Notes
         -----
-        Assumes that odd rings do not have an edge assembly in third core geometry. 
+        Assumes that odd rings do not have an edge assembly in third core geometry.
         These should be removed in: self._modifyGeometryAfterLoad during importGeom
 
         """
@@ -903,17 +924,17 @@ class Core(composites.Composite):
             "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
         )
         referenceAssembly = self.getAssemblyWithStringLocation("A1001")
-        refLocation = referenceAssembly.getLocationObject()
+        refLocation = referenceAssembly.spatialLocator
+        pitchFactor = ringPitch / self.spatialGrid.pitch
 
         circularRingDict = collections.defaultdict(set)
 
         for a in self:
-            loc = a.getLocationObject()
-            dist = refLocation.getDistanceOfLocationToPoint(loc, pitch=ringPitch)
+            dist = a.spatialLocator.distanceTo(refLocation)
             ## To reduce numerical sensitivity, round distance to 6 decimal places
             ## before truncating.
-            index = int(round(dist, 6)) or 1  # 1 is the smallest ring.
-            circularRingDict[index].add(loc.label)
+            index = int(round(dist * pitchFactor, 6)) or 1  # 1 is the smallest ring.
+            circularRingDict[index].add(a.getLocation())
 
         return circularRingDict
 
@@ -957,7 +978,7 @@ class Core(composites.Composite):
 
     def _getAssembliesByName(self):
         """
-        If the assembly name-to-assembly object map is deleted or out of date, then this will 
+        If the assembly name-to-assembly object map is deleted or out of date, then this will
         regenerate it.
         """
         runLog.extra("Generating assemblies-by-name map.")
@@ -1215,7 +1236,6 @@ class Core(composites.Composite):
         """
         self._getAssembliesByName()
         self._genBlocksByName()
-        self._buildLocationIndexLookup()  # for converting indices to locations.
         runLog.important("Regenerating Core Zones")
         self.buildZones(
             settings.getMasterCs()
@@ -1313,30 +1333,6 @@ class Core(composites.Composite):
             )
         )
 
-    def whichBlockIsAtCoords(self, x, y, z):
-        """
-        Find block closest to a x,y,z tuple.
-
-        Parameters
-        ----------
-        x, y, z : float
-            points in cm
-
-        """
-        closestAssem = (float("inf"), [])
-        for a in self.getChildren():
-            xyDist = a.getLocationObject().getDistanceOfLocationToPoint(
-                (x, y), pitch=a.getPitch()
-            )
-            if xyDist < closestAssem[0]:
-                closestAssem = (xyDist, a)
-
-        for b in closestAssem[1]:
-            if b.p.zbottom <= z <= b.p.ztop:
-                return b
-
-        raise ValueError("No block was found at ({} {} {})".format(x, y, z))
-
     def getLocationContents(self, locs, assemblyLevel=False, locContents=None):
         """
         Given a list of locations, this goes through and finds the blocks or assemblies.
@@ -1359,11 +1355,10 @@ class Core(composites.Composite):
         Notes
         -----
         Useful in reading the db.
-        
+
         See Also
         --------
         makeLocationLookup : allows caching to speed this up if you call it a lot.
-        whichAssemblyIsIn : does the same thing with easier interface but no caching (slower)
         """
 
         ## Why isn't locContents an attribute of reactor? It could be another
@@ -1518,55 +1513,10 @@ class Core(composites.Composite):
         """
         Returns an assembly or none if given a location string like 'B0014'.
         """
-        loc = locations.locationFactory(self.geomType)()
-        loc.fromLabel(locationString)
-        i, j = loc.indices()
-        assem = self.childrenByLocator.get(self.spatialGrid[i, j, 0])
+        ring, pos, _ = grids.ringPosFromRingLabel(locationString)
+        loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
+        assem = self.childrenByLocator.get(loc)
         return assem
-
-    def getAssembliesInSector(self, theta1, theta2):
-        """
-        Locate assemblies in an angular sector.
-
-        0 degrees is due north, angles increase clockwise.
-        To comply with design team, north is defined as
-        the 120 degree symmetry line in ARMI models.
-
-        Parameters
-        ----------
-        theta1, theta2 : float
-            The angles (in degrees) in which assemblies shall be drawn.
-
-        Returns
-        -------
-        aList : list
-            List of assemblies in this sector
-        """
-        aList = []
-        from armi.reactor.converters import geometryConverters
-
-        converter = geometryConverters.EdgeAssemblyChanger(quiet=True)
-        converter.addEdgeAssemblies(self.r.core)
-        for a in self:
-            loc = a.getLocationObject()
-            theta = loc.getAngle(degrees=True)
-            phi = theta
-            if (
-                theta1 <= phi <= theta2
-                or abs(theta1 - phi) < 0.001
-                or abs(theta2 - phi) < 0.001
-            ):
-                aList.append(a)
-        converter.removeEdgeAssemblies(self.r.core)
-
-        if not aList:
-            raise ValueError(
-                "There are no assemblies in {} between angles of {} and {}".format(
-                    self, theta1, theta2
-                )
-            )
-
-        return aList
 
     def getAssemblyPitch(self):
         """
@@ -1602,57 +1552,6 @@ class Core(composites.Composite):
             )
         # not keepdims this time so non-tuples are unpacked
         return pitches.mean(axis=0)
-
-    def whichAssemblyIsIn(self, i1=None, i2=None, typeFlags=None, excludeFlags=None):
-        """
-        Find the assembly in a particular location.
-
-        This method is no longer preferred, it's better to use the grid system::
-
-        assemLoc = reactor.core.spatialGrid[1,2,0]
-        assem = reactor.core.childrenByLocator[assemLoc]
-
-        Parameters
-        ----------
-        i1 : int, optional
-            The first index of the location (ring number)
-        i2 : int, optional
-            The second index of the location (postion in ring). If None and i1,
-            all assemblies in ring i1 will be returned
-        typeFlags : Flags or list of Flags, optional
-            Only assemblies of this type will be returned.
-        excludeFlags : Flags or list of Flags, optional
-            Assembly types that will be excluded
-
-        Returns
-        -------
-        a : an assembly in the location
-        -OR-
-        aList: a list of assemblies.
-
-        See Also
-        --------
-        getLocationContents : does the same thing, but can allow caching
-
-        """
-        assems = Sequence(self)
-
-        if i2 is not None:
-            pred = lambda a: a.spatialLocator.getRingPos() == (i1, i2)
-            return next(assems.select(pred), None)
-
-        ## Filter on location
-        assems.select(lambda a: a.spatialLocator.getRingPos()[0] == i1)
-
-        if typeFlags:
-            ## Filter on type
-            assems.select(lambda a: a.hasFlags(typeFlags))
-
-        if excludeFlags:
-            ## Exclude types
-            assems.drop(lambda a: a.hasFlags(excludeFlags))
-
-        return list(assems)
 
     def findNeighbors(
         self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
@@ -1710,7 +1609,6 @@ class Core(composites.Composite):
 
         See Also
         --------
-        reactors.whichAssemblyIsIn
         grids.Grid.getSymmetricEquivalents
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
@@ -1818,7 +1716,7 @@ class Core(composites.Composite):
 
         """
         a = self.parent.blueprints.constructAssem(
-            self.geomType, cs or settings.getMasterCs(), name=assemType
+            cs or settings.getMasterCs(), name=assemType
         )
 
         # check to see if a default bol assembly is being used or we are adding more information
@@ -1974,15 +1872,19 @@ class Core(composites.Composite):
 
     def updateAxialMesh(self):
         """
-        Update axial mesh based on perturbed meshes of all the assemblies.
+        Update axial mesh based on perturbed meshes of the assemblies that are linked to the ref assem.
 
         Notes
         -----
-        While processLoading finds all axial mesh points, this method simply updates the values of the
-        known mesh with the current assembly heights. This does not change the number of mesh points.
+        While processLoading finds *all* axial mesh points, this method only updates the values of the
+        known mesh with the current assembly heights. **This does not change the number of mesh points**.
 
-        If `detailedAxialExpansion` is active, the global axial mesh param still only tracks the refAssem.
+        If ``detailedAxialExpansion`` is active, the global axial mesh param still only tracks the refAssem.
         Otherwise, thousands upon thousands of mesh points would get created.
+
+        See Also
+        --------
+        processLoading : sets up the master mesh that this perturbs.
         """
         # most of the time, we want fuel, but they should mostly have the same number of blocks
         # if this becomes a problem, we might find either the
@@ -1990,7 +1892,7 @@ class Core(composites.Composite):
         #  2. max: max(len(a) for a in self)
         # depending on what makes the most sense
         refAssem = self.refAssem
-
+        refMesh = self.findAllAxialMeshPoints([refAssem])
         avgHeight = utils.average1DWithinTolerance(
             numpy.array(
                 [
@@ -2000,8 +1902,7 @@ class Core(composites.Composite):
                         for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
                     ]
                     for a in self
-                    if self.findAllAxialMeshPoints([a])
-                    == self.findAllAxialMeshPoints([refAssem])
+                    if self.findAllAxialMeshPoints([a]) == refMesh
                 ]
             )
         )
@@ -2180,34 +2081,6 @@ class Core(composites.Composite):
 
         return targetRing, fluxFraction
 
-    def _buildLocationIndexLookup(self):
-        r"""builds lookup to convert ring/pos to index for MCNP or finding neighbors or
-        whatever else you may think of. """
-        self.locationIndexLookup = {}
-
-        # make sure to get one extra ring because when neighbors are searched for, it will look
-        # for neighbors of the outer ring, which will look in ring+1.
-        # don't worry though, whichASsemblyIsIn will return None for those guys.
-        if self.geomType == geometry.RZT:
-            n1 = len(self.findAllAziMeshPoints())
-            n2 = len(self.findAllRadMeshPoints())
-            for i1 in range(1, n1):
-                for i2 in range(1, n2):
-                    self.locationIndexLookup[i1, i2] = (i1, i2)
-        else:
-            dumLocClass = locations.locationFactory(self.geomType)
-            dumLoc = dumLocClass()
-            for ring in range(self.getNumRings(indexBased=True) + 1):
-                rebusRing = ring + 1
-                for pos in range(dumLoc.getNumPosInRing(rebusRing)):
-                    # convert rebus numbering (starts at 1)
-                    rebPos = pos + 1
-                    dumLoc.i1 = rebusRing
-                    dumLoc.i2 = rebPos
-                    dumLoc.makeLabel()
-                    i, j = dumLoc.indices()
-                    self.locationIndexLookup[i, j] = (rebusRing, rebPos)
-
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
         r"""
         get the volume-average fuel, cladding, coolant temperature in core
@@ -2314,43 +2187,6 @@ class Core(composites.Composite):
         # have to update the 2-D reactor mesh too.
         self.spatialGrid.changePitch(pitchInCm)
 
-    def getAverageAssemblyPower(self, ringZoneNum=None):
-        r"""return the average assembly power in Watts in this ring zone or the full core. """
-        if ringZoneNum is not None:
-            # consider only a single ring zone.
-            ringZoneRings = self.zones.getRingZoneRings()
-            if ringZoneNum > len(ringZoneRings):
-                runLog.warning(
-                    "Cannot produce zone summary for zone {0} since there are "
-                    "only {1} zones defined".format(ringZoneNum, len(ringZoneRings))
-                )
-                return []
-
-            ringsInThisZone = ringZoneRings[ringZoneNum]
-        else:
-            # do full core.
-            ringsInThisZone = range(self.getNumRings() + 1)
-
-        assemCount = 0.0
-        totPow = 0.0
-        for ring in ringsInThisZone:
-            assembliesInThisRing = self.whichAssemblyIsIn(ring, typeFlags=Flags.FUEL)
-            # assume all fuel assemblies have the same number of blocks.
-            if not assembliesInThisRing:
-                # skip this non-fueled ring and go to the next.
-                continue
-
-            # Add up slab power and flow rates
-            for a in assembliesInThisRing:
-                totPow += a.calcTotalParam("power")
-                assemCount += 1
-
-        if not assemCount:
-            avgPow = 0.0
-        else:
-            avgPow = totPow / assemCount
-        return avgPow
-
     def calcBlockMaxes(self):
         r"""
         searches all blocks for maximum values of key params
@@ -2432,6 +2268,10 @@ class Core(composites.Composite):
          * checks the geometry,
          * sets up location tables ( tracks where the initial feeds were (for moderation or something)
 
+        See Also
+        --------
+        updateAxialMesh : Perturbs the axial mesh originally set up here.
+
         """
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
@@ -2451,14 +2291,14 @@ class Core(composites.Composite):
             )
 
         self.p.axialMesh = self.findAllAxialMeshPoints()
+        refAssem = self.refAssem
 
         if not cs["detailedAxialExpansion"]:
             for a in self.getAssemblies(includeBolAssems=True):
                 # prepare for mesh snapping during axial expansion
-                a.makeAxialSnapList(self.refAssem)
+                a.makeAxialSnapList(refAssem)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
-        self._buildLocationIndexLookup()  # for converting indices to locations.
 
         self.getNuclideCategories()
 
@@ -2466,7 +2306,7 @@ class Core(composites.Composite):
         stationaryBlocks = []
         # look for blocks that should not be shuffled in an assembly.  It is assumed that the
         # reference assembly has all the fixed block information and it is the same for all assemblies
-        for i, b in enumerate(self.refAssem):
+        for i, b in enumerate(refAssem):
             if b.hasFlags(Flags.GRID_PLATE):
                 stationaryBlocks.append(i)
                 runLog.extra(

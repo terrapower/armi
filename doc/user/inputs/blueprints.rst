@@ -126,7 +126,9 @@ material
     The material links the component to a certain set of thermo-physical properties (e.g. temperature-dependent thermal
     expansion coefficients, density, thermal conductivity, etc., which are used in the various physics kernels.
     Natural isotopic composition is determined from this material specification as well (unless custom isotopics are
-    supplied). Materials are handled through the :py:mod:`material library <armi.materials>`.
+    supplied). The entry here should either be a class name of a valid material (``UZr``) or a ``module:className`` pair
+    for specifying specific material (e.g. ``armi.materials.uZr:UZr``). 
+    Materials are handled through the :py:mod:`material library <armi.materials>`.
 
     .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
 
@@ -258,11 +260,21 @@ Flags and naming
 ================
 
 All objects in the ARMI Reactor Model possess a set of
-:py:class:`armi.reactor.flags.Flags`, which affect the way that the various physics
-kernels treat each object. For instance, an object with the ``DEPLETABLE`` flag set will
-participate in isotopic depletion analysis, whereas objects without the ``DEPLETION``
-flag set will not. Some parts of the ARMI ecosystem use the flags like ``FUEL``,
-``CLAD``, or ``WIRE`` to guess at an object's function.
+:py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the
+various physics kernels treat each object. Most flags are named after common reactor
+components, like ``FUEL``, or ``CLAD``, and are used to declare `what something is` in the
+reactor model. Various physics or other framework operations can then be
+parameterized to target specific types of things. For instance, the fuel handling code
+can infer that blocks with the ``GRID_PLATE`` flag should be considered stationary and
+not move them with the rest of the block stack in an assembly.
+
+Historically, flags have also been used to describe directly `what should be done` with
+an object in the reactor model. For instance, an object with the ``DEPLETABLE`` flag set
+will participate in isotopic depletion analysis, whereas objects without the
+``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of
+various flags is burried deep within the code, and can conflict from place to place. We
+are trying to align around a `what something is` interpretation, and bind those to
+specific behaviors with settings. For more details, see :py:mod:`armi.reactor.flags`.
 
 The set of specific flags that should be set on an object can be specified in one of two
 ways for each object defined in the blueprints. The most precise way is to use include a
@@ -275,19 +287,10 @@ If ``flags:`` is empty, or not specified, then the name of the object blueprint 
 used to infer as many flags as possible. In the above example, the ``clad`` component
 will get the ``CLAD`` flag from its name.
 
-The following special names should be used in the **blueprints** input to achieve
-specific behavior.
-
-.. exec::
-    from armi.reactor.flags import Flags
-    from tabulate import tabulate
-
-    return tabulate(headers=('Keyword', 'Special use'),
-                    tabular_data=[(name, 'TBD') for name in Flags._nameToValue.keys()],
-                    tablefmt='rst')
-
-
-.. note:: Additional flags may be provided via plugins.
+.. note::
+    Additional flags may be specified from plugins, but this should be done with care;
+    see the :py:mod:`armi.reactor.flags` module and
+    :py:meth:`armi.plugins.ArmiPlugin.defineFlags` plugin hook for more details.
 
 .. _assemblies:
 

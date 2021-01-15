@@ -25,8 +25,9 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
-import re
+import math
 import os
+import re
 import warnings
 
 import numpy
@@ -621,7 +622,7 @@ class FuelHandler:
         by the framework, so here it remains. New developments should
         avoid using it. Most code using it has been refactored to just use
         a ``_prepSearch`` private method.
-        
+
         It now should not be used and will trigger a DeprecationWarning
         in the constructor. It's still here because old user-input code
         calls the parent's prepSearch, which is this.
@@ -857,7 +858,7 @@ class FuelHandler:
             minD = 1e10
             xt, yt = coords  # assume (x,y) tuple.
             for a in self.r.core.getAssemblies():
-                x, y = a.getLocationObject().coords(a.getPitch())
+                x, y, _ = a.spatialLocator.getLocalCoordinates()
                 d = (y - yt) ** 2 + (x - xt) ** 2
                 if d < minD:
                     minD = d
@@ -984,8 +985,13 @@ class FuelHandler:
                             continue
                         else:
                             return a
-                    elif abs(a.getLocationObject().i1 - targetRing) < minDiff[0]:
-                        minDiff = (abs(a.getLocationObject().i1 - targetRing), a)
+                    elif (
+                        abs(a.spatialLocator.getRingPos()[0] - targetRing) < minDiff[0]
+                    ):
+                        minDiff = (
+                            abs(a.spatialLocator.getRingPos()[0] - targetRing),
+                            a,
+                        )
 
                 if findMany:
                     # returning many assemblies. If there's a param, we'd like it to be honored by
@@ -1091,7 +1097,7 @@ class FuelHandler:
                 if a.getLocation() == "SFP":
                     ring = "SFP"
                 else:
-                    ring = a.getLocationObject().i1
+                    ring = a.spatialLocator.getRingPos()[0]
                 if ring in ringList:
                     # keep it in the right order
                     assemblyList[ringList.index(ring)].append(a)
@@ -1369,7 +1375,7 @@ class FuelHandler:
 
     def dischargeSwap(self, incoming, outgoing):
         r"""
-        Removes one assembly from the core and replace it with another assembly
+        Removes one assembly from the core and replace it with another assembly.
 
         See Also
         --------
@@ -1397,10 +1403,19 @@ class FuelHandler:
         # which, coincidentally is the same time we're at right now at BOC.
         self.r.core.removeAssembly(outgoing)
 
+        # adjust the assembly multiplicity so that it doesnt forget how many it really
+        # represents. This allows us to discharge an assembly from any location in
+        # fractional-core models where the central location may only be one assembly,
+        # whereas other locations are more, and keep proper track of things. In the
+        # future, this mechanism may be used to handle symmetry in general.
+        outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
+
         if incoming in self.r.core.sfp.getChildren():
             # pull it out of the sfp if it's in there.
             runLog.extra("removing {0} from the sfp".format(incoming))
             self.r.core.sfp.remove(incoming)
+
+        incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
 
         self._swapFluxParam(incoming, outgoing)
@@ -1957,6 +1972,16 @@ class FuelHandler:
         locationSchedule : list
 
         """
+
+        def squaredDistanceFromOrigin(a):
+            origin = numpy.array([0.0, 0.0, 0.0])
+            p = numpy.array(a.spatialLocator.getLocalCoordinates())
+            return ((p - origin) ** 2).sum()
+
+        def assemAngle(a):
+            x, y, _ = a.spatialLocator.getLocalCoordinates()
+            return math.atan2(y, x)
+
         locationSchedule = []
         # start by expanding the user-input eqRingSchedule list into a list containing
         # all the rings as it goes.
@@ -1967,23 +1992,17 @@ class FuelHandler:
         for ring in ringList:
             assemsInRing = self.r.core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
             if self.cs["circularRingOrder"] == "angle":
-                sorter = lambda a: a.getLocationObject().getAngle()
+                sorter = lambda a: assemAngle(a)
             elif self.cs["circularRingOrder"] == "distanceSmart":
                 if lastRing == ring + 1:
                     # converging. Put things on the outside first.
-                    sorter = lambda a: -a.getLocationObject().getDistanceOfLocationToPoint(
-                        (0, 0)
-                    )
+                    sorter = lambda a: -squaredDistanceFromOrigin(a)
                 else:
                     # diverging. Put things on the inside first.
-                    sorter = lambda a: a.getLocationObject().getDistanceOfLocationToPoint(
-                        (0, 0)
-                    )
+                    sorter = lambda a: squaredDistanceFromOrigin(a)
             else:
                 # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-                sorter = lambda a: a.getLocationObject().getDistanceOfLocationToPoint(
-                    (0, 0)
-                )
+                sorter = lambda a: squaredDistanceFromOrigin(a)
             assemsInRing = sorted(assemsInRing, key=sorter)
             for a in assemsInRing:
                 locationSchedule.append(a.getLocation())

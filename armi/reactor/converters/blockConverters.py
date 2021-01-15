@@ -25,6 +25,7 @@ from matplotlib.collections import PatchCollection
 from armi.reactor import blocks
 from armi.reactor import components
 from armi.reactor.flags import Flags
+from armi.reactor import locations
 from armi import runLog
 
 SIN60 = math.sin(math.radians(60.0))
@@ -354,7 +355,8 @@ class BlockAvgToCylConverter(BlockConverter):
             tempInput = tempHot = blockToAdd.getAverageTempInC()
 
         for ringNum in range(firstRing, firstRing + numRingsToAdd):
-            numFuelBlocksInRing = blockToAdd.location.getNumPosInRing(ringNum)
+            numFuelBlocksInRing = locations.numPositionsInRing(blockToAdd, ringNum)
+            assert numFuelBlocksInRing is not None
             fuelBlockTotalArea = numFuelBlocksInRing * self._driverFuelBlock.getArea()
             driverOuterDiam = getOuterDiamFromIDAndArea(innerDiam, fuelBlockTotalArea)
             driverRing = components.Circle(
@@ -407,7 +409,7 @@ class BlockAvgToCylConverter(BlockConverter):
     def plotConvertedBlock(self, fName=None):
         """Render an image of the converted block."""
         runLog.extra(
-            "Plotting equivalent cylindrical block of {}".format( self._sourceBlock )
+            "Plotting equivalent cylindrical block of {}".format(self._sourceBlock)
         )
         fig, ax = plt.subplots()
         fig.patch.set_visible(False)
@@ -495,8 +497,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
         )
         self._dissolveComponents()
-        numRings = self._sourceBlock.location.getNumRings(
-            self._sourceBlock.getNumPins()
+        numRings = locations.minimumRings(
+            self._sourceBlock, self._sourceBlock.getNumPins()
         )
         pinComponents, nonPins = self._classifyComponents()
         self._buildFirstRing(pinComponents)
@@ -558,7 +560,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
         This will be a fuel (or control) meat surrounded on both sides by clad, bond, liner, etc. layers.
         """
-        numPinsInRing = self._sourceBlock.location.getNumPosInRing(ringNum)
+        numPinsInRing = locations.numPositionsInRing(self._sourceBlock, ringNum)
         pinRadii = [c.getDimension("od") / 2.0 for c in pinComponents]
         bigRingRadii = radiiFromRingOfRods(
             self.pinPitch * (ringNum - 1), numPinsInRing, pinRadii

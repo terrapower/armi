@@ -35,7 +35,7 @@ from armi.physics.neutronics.crossSectionGroupManager import (
 )
 
 # define conf and schema here since this is closest to where the objects live
-XS_GEOM_TYPES = {"0D", "2D hex", "1D slab", "1D cylinder", None}
+XS_GEOM_TYPES = {"0D", "2D hex", "1D slab", "1D cylinder"}
 
 CONF_GEOM = "geometry"
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
@@ -217,10 +217,10 @@ class XSSettingDef(Setting):
     def setValue(self, val):
         """
         Set value of setting to val.
-        
+
         Since this is a custom serializable setting, we allow users
         to pass in either a ``XSModelingOptions`` object itself
-        or a dictionary representation of one. 
+        or a dictionary representation of one.
         """
         try:
             if isinstance(list(val.values())[0], XSModelingOptions):

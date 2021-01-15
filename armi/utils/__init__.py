@@ -43,6 +43,7 @@ from armi.utils import iterables
 from armi.localization import strings
 from armi.localization import warnings
 from armi.localization import exceptions
+from armi.utils.flags import Flag
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
 _HASH_BUFFER_SIZE = 1024 * 1024
@@ -416,7 +417,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
 def getFloat(val):
     r"""returns float version of val, or None if it's impossible. Useful for converting
-    user-input into floats when '' might be possible. """
+    user-input into floats when '' might be possible."""
     try:
         newVal = float(val)
         return newVal

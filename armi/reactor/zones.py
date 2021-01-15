@@ -103,9 +103,9 @@ class Zone(object):
             Ending position within ring.
 
         """
+        grid = grids.HexGrid.fromPitch(1.0)
         if p0 is None or p1 is None:
             if self.symmetry == 3:
-                grid = grids.HexGrid.fromPitch(1.0)
                 posList = grid.allPositionsInThird(ring)
             elif self.symmetry == 1:
                 posList = range(1, hexagon.numPositionsInRing(ring) + 1)
@@ -118,7 +118,9 @@ class Zone(object):
             posList = range(p0, p1 + 1)
 
         for pos in posList:
-            newLoc = str(locations.HexLocation(ring, pos))
+            newLoc = grid.getLabel(
+                grid.getLocatorFromRingAndPos(ring, pos).getCompleteIndices()[:2]
+            )
             if newLoc not in self.locList:
                 self.append(newLoc)
 
@@ -583,7 +585,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
     ----------
     core : Core
         The core
-        
+
     typeSpec : Flags or list of Flags, optional
         Assembly types to consider (e.g. Flags.FUEL)
 

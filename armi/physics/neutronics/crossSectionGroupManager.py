@@ -426,7 +426,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
     - Iterates through components of all blocks and calculates component average number densities. This calculation
       takes the first component of each block, averages the number densities, and applies this to the number density
       to the representative block.
-    
+
     """
 
     def _makeRepresentativeBlock(self):
@@ -545,9 +545,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         for c, bWeight in zip(components, bWeights):
             weight = bWeight * c.getArea()
             totalWeight += weight
-            densities += weight * numpy.array(
-                [c.getNumberDensity(nucName) for nucName in allNucNames]
-            )
+            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
         return allNucNames, densities / totalWeight
 
     def _orderComponentsInGroup(self, repBlock):

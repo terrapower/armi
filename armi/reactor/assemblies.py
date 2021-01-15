@@ -77,9 +77,6 @@ class Assembly(composites.Composite):
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
 
-    # armi.reactor.locations.Location subclass, overridden on Assembly subclasses
-    LOCATION_CLASS = None
-
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
     CHARGED_FUEL_POOL = "CFP"
@@ -234,58 +231,12 @@ class Assembly(composites.Composite):
             self.spatialLocator.getCompleteIndices()[:2]
         )
 
-    def getLocationObject(self):
-        """
-        Return the location of the assembly in the plane using spatial grid indices.
-        """
-        loc = self.LOCATION_CLASS()
-        i, j, k = self.spatialLocator.getCompleteIndices()
-        loc.fromLocator((i, j, None))  # cut off axial index.
-        return loc
-
     def coords(self):
         """
         Return the location of the assembly in the plane using cartesian global coordinates.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
-
-    @property
-    def location(self):
-        """
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Just creates a new location object based on current spatialLocator.
-        """
-        return self.getLocationObject()
-
-    @location.setter
-    def location(self, value):
-        """
-        Set spatialLocator based on a (old-style) location object.
-
-        Patch to keep code working while location system is refactored to use
-        spatialLocators.
-
-        Reactors only have 2-D grid info so we only look at i and j.
-        """
-        i, j = value.indices()
-        if i is None or j is None:
-            self.spatialLocator = self.parent.spatialGrid[0, 0, 0]
-        elif self.parent:
-            try:
-                self.spatialLocator = self.parent.spatialGrid[i, j, 0]
-            except KeyError:
-                # location outside pre-generated locator objects requested. Make it
-                # on the fly.
-                loc = grids.IndexLocation(i, j, 0, self.parent.spatialGrid)
-                self.parent.spatialGrid[i, j, 0] = loc
-                self.spatialLocator = loc
-        else:
-            # no parent, set a gridless location (will get converted to gridded upon
-            # adding to parent)
-            runLog.warning("{} has no grid because no parent. ".format(self))
-            self.spatialLocator = grids.IndexLocation(i, j, 0, None)
 
     def getArea(self):
         """
@@ -1364,9 +1315,6 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-
-    LOCATION_CLASS = locations.HexLocation
-
     def getPitch(self):
         """returns hex pitch in cm."""
         pList = []
@@ -1429,8 +1377,6 @@ class RZAssembly(Assembly):
     for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
 
-    LOCATION_CLASS = locations.ThetaRZLocation
-
     def __init__(self, name, assemNum=None):
         Assembly.__init__(self, name, assemNum)
         self.p.RadMesh = 1
@@ -1475,11 +1421,6 @@ class RZAssembly(Assembly):
         """
         return self[0].thetaInner()
 
-    def Rcoords(self):
-        # can likely be upgraded to use
-        # ``self.spatialLocator.getGlobalCoordinates(nativeCoords=True)``
-        return self.location.Rcoords()
-
 
 class ThRZAssembly(RZAssembly):
     """
@@ -1490,9 +1431,7 @@ class ThRZAssembly(RZAssembly):
     Notes
     -----
     This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object """
-
-    LOCATION_CLASS = locations.ThetaRZLocation
+    Object"""
 
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)
@@ -1500,8 +1439,6 @@ class ThRZAssembly(RZAssembly):
 
 
 class CartesianAssembly(Assembly):
-
-    LOCATION_CLASS = locations.CartesianLocation
 
     # Don't ignore things.
     ignoredRegions = []

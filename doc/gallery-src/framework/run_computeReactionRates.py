@@ -24,7 +24,7 @@ from armi.reactor import geometry
 from armi.reactor import assemblies
 from armi.reactor import blocks
 
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.tests import ISOAA_PATH
 
 from armi.reactor.components import Hexagon
@@ -36,7 +36,7 @@ from armi.materials import ht9
 from armi.materials import sodium
 import armi
 
-armi.configure()
+armi.configure(permissive=True)
 
 
 def _addFlux(b):

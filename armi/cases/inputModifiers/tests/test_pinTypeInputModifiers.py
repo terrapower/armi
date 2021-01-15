@@ -25,9 +25,9 @@ class TestBlueprintModifiers(unittest.TestCase):
         .. math::
 
             areaFuel = smearDensity * innerCladArea
-            fuelOD^2 / 4 = 0.5 * cladID^2 / 4  
+            fuelOD^2 / 4 = 0.5 * cladID^2 / 4
             fuelOD = \sqrt{0.5}
-            
+
 
         .. note:: the area of fuel is 0.5 * inner area of clad
 

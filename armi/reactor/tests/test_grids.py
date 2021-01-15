@@ -385,67 +385,71 @@ class TestThetaRZGrid(unittest.TestCase):
             grid.getCoordinates((1, 0, 1)), (math.sqrt(2) / 2, math.sqrt(2) / 2, 15.0)
         )
 
+        # test round trip ring position
+        ringPos = (1, 1)
+        indices = grid.getIndicesFromRingAndPos(*ringPos)
+        ringPosFromIndices = grid.getRingPos(indices)
+        self.assertEqual(ringPos, ringPosFromIndices)
+
 
 class TestCartesianGrid(unittest.TestCase):
     def testRingPosNoSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, isOffset=True)
 
-        # ring/pos are acutally 1-based indexing; notice the sneaky +1 below
         expectedRing = [
-            [2, 2, 2, 2, 2, 2],
-            [2, 1, 1, 1, 1, 2],
-            [2, 1, 0, 0, 1, 2],
-            [2, 1, 0, 0, 1, 2],
-            [2, 1, 1, 1, 1, 2],
-            [2, 2, 2, 2, 2, 2],
+            [3, 3, 3, 3, 3, 3],
+            [3, 2, 2, 2, 2, 3],
+            [3, 2, 1, 1, 2, 3],
+            [3, 2, 1, 1, 2, 3],
+            [3, 2, 2, 2, 2, 3],
+            [3, 3, 3, 3, 3, 3],
         ]
 
         expectedPos = [
-            [5 , 4 , 3 , 2 , 1 , 0],
-            [6 , 3 , 2 , 1 , 0 , 19],
-            [7 , 4 , 1 , 0 , 11, 18],
-            [8 , 5 , 2 , 3 , 10, 17],
-            [9 , 6 , 7 , 8 , 9 , 16],
-            [10, 11, 12, 13, 14, 15],
+            [6, 5, 4, 3, 2, 1],
+            [7, 4, 3, 2, 1, 20],
+            [8, 5, 2, 1, 12, 19],
+            [9, 6, 3, 4, 11, 18],
+            [10, 7, 8, 9, 10, 17],
+            [11, 12, 13, 14, 15, 16],
         ]
         expectedPos.reverse()
 
         for j in range(-3, 3):
             for i in range(-3, 3):
                 ring, pos = grid.getRingPos((i, j))
-                self.assertEqual(ring, expectedRing[j + 3][i + 3] + 1)
-                self.assertEqual(pos, expectedPos[j + 3][i + 3] + 1)
+                self.assertEqual(ring, expectedRing[j + 3][i + 3])
+                self.assertEqual(pos, expectedPos[j + 3][i + 3])
 
     def testRingPosSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
 
-        # ring/pos are actually 1-based indexing; notice the sneaky +1 below
         expectedRing = [
-            [3, 3, 3, 3, 3, 3, 3],
-            [3, 2, 2, 2, 2, 2, 3],
-            [3, 2, 1, 1, 1, 2, 3],
-            [3, 2, 1, 0, 1, 2, 3],
-            [3, 2, 1, 1, 1, 2, 3],
-            [3, 2, 2, 2, 2, 2, 3],
-            [3, 3, 3, 3, 3, 3, 3],
+            [4, 4, 4, 4, 4, 4, 4],
+            [4, 3, 3, 3, 3, 3, 4],
+            [4, 3, 2, 2, 2, 3, 4],
+            [4, 3, 2, 1, 2, 3, 4],
+            [4, 3, 2, 2, 2, 3, 4],
+            [4, 3, 3, 3, 3, 3, 4],
+            [4, 4, 4, 4, 4, 4, 4],
         ]
 
         expectedPos = [
-            [6, 5, 4, 3, 2, 1, 0],
-            [7, 4, 3, 2, 1, 0, 23],
-            [8, 5, 2, 1, 0, 15, 22],
-            [9, 6, 3, 0, 7, 14, 21],
-            [10, 7, 4, 5, 6, 13, 20],
-            [11, 8, 9, 10, 11, 12, 19],
-            [12, 13, 14, 15, 16, 17, 18],
+            [7, 6, 5, 4, 3, 2, 1],
+            [8, 5, 4, 3, 2, 1, 24],
+            [9, 6, 3, 2, 1, 16, 23],
+            [10, 7, 4, 1, 8, 15, 22],
+            [11, 8, 5, 6, 7, 14, 21],
+            [12, 9, 10, 11, 12, 13, 20],
+            [13, 14, 15, 16, 17, 18, 19],
         ]
         expectedPos.reverse()
 
         for j in range(-3, 4):
             for i in range(-3, 4):
                 ring, pos = grid.getRingPos((i, j))
-                self.assertEqual(ring, expectedRing[j + 3][i + 3] + 1)
-                self.assertEqual(pos, expectedPos[j + 3][i + 3] + 1)
+                self.assertEqual(ring, expectedRing[j + 3][i + 3])
+                self.assertEqual(pos, expectedPos[j + 3][i + 3])
 
     def testSymmetry(self):
         # PERIODIC, no split
@@ -530,13 +534,14 @@ class TestCartesianGrid(unittest.TestCase):
 
         # Full core
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.FULL_CORE)
-        self.assertEqual(grid.getSymmetricEquivalents((5,6)), [])
+        self.assertEqual(grid.getSymmetricEquivalents((5, 6)), [])
 
         # 1/8 core not supported yet
-        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.EIGHTH_CORE)
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0, 1.0, symmetry=geometry.EIGHTH_CORE
+        )
         with self.assertRaises(NotImplementedError):
-            grid.getSymmetricEquivalents((5,6))
-
+            grid.getSymmetricEquivalents((5, 6))
 
 
 if __name__ == "__main__":

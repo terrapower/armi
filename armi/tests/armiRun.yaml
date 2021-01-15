@@ -39,12 +39,12 @@ settings:
     - 1
   freshFeedType: igniter fuel
   fuelHandlerName: EquilibriumShuffler
-  geomFile: geom.xml
   jumpRingNum: 9
   loadingFile: refSmallReactor.yaml
   startNode: 1
   loadPadElevation: 200.0
   max2SigmaCladIDT: 630.0
+  genReports: false
   maxFlowZones: 12
   maxRegionDensityIterations: 5
   nCycles: 6

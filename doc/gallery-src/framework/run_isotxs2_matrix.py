@@ -14,12 +14,12 @@ import matplotlib.pyplot as plt
 
 from armi.utils import units
 from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO import xsNuclides
 import armi
 
 
-armi.configure()
+armi.configure(permissive=True)
 
 lib = isotxs.readBinary(ISOAA_PATH)
 

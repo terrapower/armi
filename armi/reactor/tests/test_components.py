@@ -621,6 +621,7 @@ class TestCube(TestShapedComponent):
         self.assertAlmostEqual(negativeCube.getVolume(), refVolume)
         with self.assertRaises(exceptions.NegativeComponentVolume):
             negativeCube = Cube("test", "UZr", **dims)
+            negativeCube.getVolume()
 
     def test_getVolume(self):
         lengthO = self.component.getDimension("lengthOuter")

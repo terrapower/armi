@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import os
+import pathlib
 from typing import Optional
 
 from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db import permissions
-from armi.bookkeeping.db.xtviewDB import XTViewDatabase
 
 
 def databaseFactory(dbName: str, permission: str, version: Optional[str] = None):
@@ -31,9 +31,9 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
     permission: str
         String defining permission, `r` for read only. See armi.bookeeping.db.permissions
     version: str, optional
-        Version of database you want to read or write. In many cases ARMI will 
+        Version of database you want to read or write. In many cases ARMI will
         auto-detect. For advanced users.
-    
+
     Notes
     -----
     This is not a proper factory, as the different database versions do not present a
@@ -45,34 +45,48 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
 
     import h5py
 
+    dbPath = pathlib.Path(dbName)
+
     # if it's not an hdf5 file, we dont even know where to start...
-    if os.path.splitext(dbName)[1] != ".h5":
+    if dbPath.suffix != ".h5":
         raise RuntimeError("Unknown database format for {}".format(dbName))
 
     if permission in permissions.Permissions.read:
         if version is not None:
             raise ValueError("Cannot specify version when reading a database.")
 
+        if not dbPath.exists() or not dbPath.is_file():
+            raise ValueError(
+                "Database file `{}` does not appear to be a " "file.".format(dbName)
+            )
+
         # probe for the database version. We started adding these with "database 3", so if
         # databaseVersion is not present, assume it's the "old" version
         version = "2"
-        tempDb = h5py.File(dbName, "r")
+        tempDb = h5py.File(dbPath, "r")
         if "databaseVersion" in tempDb.attrs:
             version = tempDb.attrs["databaseVersion"]
         del tempDb
 
         majorversion = version.split(".")[0] if version else "2"
         if majorversion == "2":
-            return XTViewDatabase(dbName, permission)
+            raise ValueError(
+                'Database version 2 ("XTView database") is no longer '
+                "supported. To migrate to a newer version, use version 0.1.5."
+            )
 
         if majorversion == "3":
-            return Database3(dbName, permission)
+            return Database3(dbPath, permission)
 
         raise ValueError("Unable to determine Database version for {}".format(dbName))
 
     elif permission in permissions.Permissions.write:
         majorversion = version.split(".")[0] if version else "3"
         if majorversion == "2":
-            return XTViewDatabase(dbName, permission)
+            raise ValueError(
+                'Database version 2 ("XTView database") is no longer '
+                "supported. To migrate to a newer version, use version 0.1.5 to "
+                "migrate."
+            )
         if majorversion == "3":
-            return Database3(dbName, permission)
+            return Database3(dbPath, permission)
