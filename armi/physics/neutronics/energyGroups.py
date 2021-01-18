@@ -297,6 +297,11 @@ def _create_anl_energies_with_group_energies(group_energy_bounds):
     )
 
 
+"""
+Taken from Section A3.1 SHEM-361 in 
+Ngeleka, Tholakele Prisca. "Examination and improvement of the SHEM energy
+group structure for HTR and deep burn HTR design and analysis." (2012).
+"""
 GROUP_STRUCTURE["SHEM361"] = [
     19640300,
     14918200,
