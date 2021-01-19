@@ -422,7 +422,7 @@ class Interface(object):
         raise NotImplementedError()
 
     @staticmethod
-    def specifyInputs(cs) -> Dict[str, List[str]]:  # pylint: disable=unused-argument
+    def specifyInputs(cs) -> Dict[Union[str, settings.Setting], List[str]]:
         """
         Return a collection of file names that are considered input files.
 
@@ -430,20 +430,30 @@ class Interface(object):
         class), since it should not require an Interface to actually be constructed.
         This would require constructing a reactor object, which is expensive.
 
-        The files returned by an implementation of this method are those that one would
-        want copied to a remote location when cloning a Case or CaseSuite to a remote
-        location.
+        The files returned by an implementation should be those that one would want
+        copied to a target location when cloning a Case or CaseSuite. These can be
+        absolute paths, relative paths, or glob patterns that will be interpolated
+        relative to the input directory. Aboslute paths will not be copied anywhere.
+
+        The returned dictionary should be keyed off of a descriptive string, or an
+        actual Setting object. If a Setting is used, then the source CaseSettings object
+        will be updated to the new file location.
 
         Note
         ----
         This existed before the advent of ARMI plugins. Perhaps it can be better served
         as a plugin hook. Potential future work.
 
+        See also
+        --------
+        armi.cases.Case.clone() : Main user of this interface.
+
         Parameters
         ----------
         cs : CaseSettings
             The case settings for a particular Case
         """
+        # pylint: disable=unused-argument
         return {}
 
     def updatePhysicsCouplingControl(self):
