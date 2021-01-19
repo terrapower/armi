@@ -129,9 +129,7 @@ class BlockBlueprint(yamlize.KeyedList):
             c._resolveLinkedDims(components)
 
         boundingComp = sorted(components.values())[-1]
-        b = self._getBlockClass(boundingComp)(
-            "Bxxx{0}".format(grids.AXIAL_CHARS[axialIndex])
-        )
+        b = self._getBlockClass(boundingComp)("Bxxx-{0:03d}".format(axialIndex))
 
         for paramDef in b.p.paramDefs.inCategory(
             parameters.Category.assignInBlueprints

@@ -206,13 +206,18 @@ class Block(composites.Composite):
 
         This also sets the block-level assembly-num param.
 
+        Once, we used a axial-character suffix to represent the axial
+        index, but this is inherently limited so we switched to a numerical
+        name. The axial suffix needs can be brought in in plugins that require
+        them.
+
         Examples
         --------
         >>> makeName(120, 5)
-        'B0120E'
+        'B0120-005'
         """
         self.p.assemNum = assemNum
-        return "B{0:04d}{1}".format(assemNum, grids.AXIAL_CHARS[axialIndex])
+        return "B{0:04d}-{1:03d}".format(assemNum, axialIndex)
 
     def makeUnique(self):
         """

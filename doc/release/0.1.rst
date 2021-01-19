@@ -201,3 +201,6 @@ API changes
   signatures. These will be removed soon, as grids now serve this purpose, and ``geom``
   objects are largely vestigial. ``SystemLayoutInput`` will be retained to facilitate
   input migrations.
+
+* Changed block default names so that they are no longer constrained by axial characters. 
+  They now are named ``B{assemNum}-{axialIndex}`` to allow arbitrary numbers of blocks.
