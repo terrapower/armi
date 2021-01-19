@@ -46,7 +46,12 @@ import os
 import pytest
 import time
 import unittest
-import wx
+import test.support
+
+# wxpython is an optional dependency, and without it we cant do much of anything. This
+# should raise a unittest.SkipTest if it can't find wx, signalling to pytest to skip the
+# rest of the module. Neat!
+wx = test.support.import_module("wx")
 
 import armi
 
