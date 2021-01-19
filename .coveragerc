@@ -1,5 +1,12 @@
-[report]
 # Don't worry about coverage for the grid GUI (for now)
+[run]
 omit =
-    armi/utils/gridEditor.py
     armi/cli/gridGui.py
+    armi/utils/gridEditor.py
+    armi/utils/tests/test_gridGui.py
+
+[report]
+omit =
+    armi/cli/gridGui.py
+    armi/utils/gridEditor.py
+    armi/utils/tests/test_gridGui.py
