@@ -68,7 +68,7 @@ import collections
 
 import numpy.linalg
 
-from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
+
 from armi.utils import hexagon
 from armi.reactor import geometry
 
@@ -82,16 +82,7 @@ BOUNDARY_0_DEGREES = 1
 BOUNDARY_60_DEGREES = 2
 BOUNDARY_120_DEGREES = 3
 BOUNDARY_CENTER = 4
-# list of valid ASCII representations of axial levels.
-# A-Z, 0-9, and then some special characters, then a-z
-AXIAL_CHARS = [
-    chr(asciiCode)
-    for asciiCode in (
-        list(range(ASCII_LETTER_A, ASCII_LETTER_A + 26))
-        + list(range(ASCII_ZERO, ASCII_ZERO + 10))
-        + list(range(ASCII_LETTER_A + 26, ASCII_LETTER_A + 32 + 26))
-    )
-]
+
 COS30 = math.sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
 # going CCW from "position 1" (top right)
@@ -891,12 +882,15 @@ class Grid:
         return None
 
     def getLabel(self, indices):
-        """Get a string label from a 0-based spatial locator."""
+        """
+        Get a string label from a 0-based spatial locator.
+
+        Returns a string representing i, j, and k indices of the locator
+        """
         i, j = indices[:2]
-        chrNum = int(i // 10)
-        label = "{}{:03d}".format(chr(ASCII_LETTER_A + chrNum) + str(i % 10), j)
+        label = f"{i:03d}-{j:03d}"
         if len(indices) == 3:
-            label += AXIAL_CHARS[indices[2]]
+            label += f"-{indices[2]:03d}"
         return label
 
     def getIndexBounds(self):
@@ -1727,28 +1721,16 @@ def axialUnitGrid(numCells, armiObject=None):
     )
 
 
-def ringPosFromRingLabel(ringLabel):
-    """Convert a ring-based label like A2003B into 1-based ring, location indices."""
-    locMatch = re.search(r"([A-Z]\d)(\d\d\d)([A-Z]?)", ringLabel)
-    if locMatch:
-        # we have a valid location label. Process it and set parameters
-        # convert A4 to 04, B2 to 12, etc.
-        ring = locMatch.group(1)
-        posLabel = locMatch.group(2)
-        axLabel = locMatch.group(3)
-        firstDigit = ord(ring[0]) - ASCII_LETTER_A
-        if firstDigit < 10:
-            i = int("{0}{1}".format(firstDigit, ring[1]))
-        else:
-            raise RuntimeError(
-                "invalid label {0}. 1st character too large.".format(ringLabel)
-            )
-        j = int(posLabel)
-        if axLabel:
-            k = AXIAL_CHARS.index(axLabel)
-        else:
-            k = None
-        return i, j, k
+def locatorLabelToIndices(label: str) -> Tuple[int]:
+    """
+    Convert a locator label to numerical i,j,k indices.
+
+    If there are only i,j  indices, make the last item None
+    """
+    intVals = [int(idx) for idx in label.split("-")]
+    if len(intVals) == 2:
+        intVals.append(None)
+    return tuple(intVals)
 
 
 def addingIsValid(myGrid, parentGrid):

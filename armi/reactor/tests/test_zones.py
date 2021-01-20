@@ -69,14 +69,14 @@ class Zone_TestCase(unittest.TestCase):
     def test_addRing(self):
         zone = zones.Zone("TestZone")
         zone.addRing(5)
-        self.assertIn("A5003", zone)
-        self.assertNotIn("A6002", zone)
+        self.assertIn("005-003", zone)
+        self.assertNotIn("006-002", zone)
 
         zone.addRing(6, 3, 9)
-        self.assertIn("A6003", zone)
-        self.assertIn("A6009", zone)
-        self.assertNotIn("A6002", zone)
-        self.assertNotIn("A6010", zone)
+        self.assertIn("006-003", zone)
+        self.assertIn("006-009", zone)
+        self.assertNotIn("006-002", zone)
+        self.assertNotIn("006-010", zone)
 
 
 class Zones_InReactor(unittest.TestCase):

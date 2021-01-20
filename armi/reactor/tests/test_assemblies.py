@@ -330,7 +330,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getLocation(self):
         cur = self.Assembly.getLocation()
-        ref = str("A5003")
+        ref = str("005-003")
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
@@ -800,7 +800,8 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_reestablishBlockOrder(self):
         self.assertEqual(self.Assembly.spatialLocator.indices[0], 2)
-        self.assertEqual(self.Assembly[0].getLocation(), "A5003A")
+        self.assertEqual(self.Assembly[0].spatialLocator.getRingPos(), (5, 3))
+        self.assertEqual(self.Assembly[0].spatialLocator.indices[2], 0)
         axialIndices = [2, 1, 0]
         for ai, b in zip(axialIndices, self.Assembly):
             b.spatialLocator = self.Assembly.spatialGrid[0, 0, ai]
@@ -808,7 +809,7 @@ class Assembly_TestCase(unittest.TestCase):
         cur = []
         for b in self.Assembly:
             cur.append(b.getLocation())
-        ref = ["A5003A", "A5003B", "A5003C"]
+        ref = ["005-003-000", "005-003-001", "005-003-002"]
         self.assertEqual(cur, ref)
 
     def test_countBlocksOfType(self):
@@ -1215,14 +1216,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
-        igniterFuel = "A1001"
+        grid = self.r.core.spatialGrid
 
         ################################
         # examine mass change in igniterFuel
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
+        igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
@@ -1230,13 +1231,13 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterMassGrid = b.getMass() - coolMass
         igniterMassGridTotal = b.getMass()
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1 = b.getHMMass()
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMass = b.getMass() - coolMass
@@ -1248,21 +1249,20 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         #############################
         # check igniter mass after expansion
         #############################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterMassGridAfterExpand = b.getMass() - coolMass
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMassAfterExpand = b.getMass() - coolMass
@@ -1282,9 +1282,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         #############################
         # check igniter mass after shrink to original
         #############################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
@@ -1292,13 +1291,13 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterMassGridAfterShrink = b.getMass() - coolMass
         igniterMassGridTotalAfterShrink = b.getMass()
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1AfterShrink = b.getHMMass()
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMassAfterShrink = b.getMass() - coolMass
@@ -1314,12 +1313,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
-        shield = "A9002"
+        # access the shield in ring 9, pos 2
+        grid = self.r.core.spatialGrid
+        i, j = grid.getIndicesFromRingAndPos(9, 2)
 
         ################################
         # examine mass change in radial shield
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
+        a = self.r.core.childrenByLocator[grid[i, j, 0]]
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1349,7 +1350,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         ################################
         # examine mass change in radial shield after expansion
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1390,7 +1390,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         ################################
         # examine mass change in radial shield after shrink to original
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()

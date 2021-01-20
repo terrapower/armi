@@ -76,7 +76,7 @@ class TestHistoryTracker(ArmiTestHelper):
         reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         reloadCs["runType"] = "Snapshots"
         reloadCs["loadStyle"] = "fromDB"
-        reloadCs["detailAssemLocationsBOL"] = ["A1001"]
+        reloadCs["detailAssemLocationsBOL"] = ["001-001"]
         o = armi.init(cs=reloadCs)
         cls.o = o
 
@@ -89,7 +89,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cs["db"] = True
         cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         cs["loadStyle"] = "fromDB"
-        cs["detailAssemLocationsBOL"] = ["A1001"]
+        cs["detailAssemLocationsBOL"] = ["001-001"]
         cs["startNode"] = 1
 
         self.td = directoryChangers.TemporaryDirectoryChanger()

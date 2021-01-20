@@ -923,7 +923,7 @@ class Core(composites.Composite):
         runLog.extra(
             "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
         )
-        referenceAssembly = self.getAssemblyWithStringLocation("A1001")
+        referenceAssembly = self.getAssemblyWithStringLocation("001-001")
         refLocation = referenceAssembly.spatialLocator
         pitchFactor = ringPitch / self.spatialGrid.pitch
 
@@ -1513,7 +1513,7 @@ class Core(composites.Composite):
         """
         Returns an assembly or none if given a location string like 'B0014'.
         """
-        ring, pos, _ = grids.ringPosFromRingLabel(locationString)
+        ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
         assem = self.childrenByLocator.get(loc)
         return assem

@@ -50,7 +50,8 @@ class TestGeometryConverters(unittest.TestCase):
         self.assertEqual(
             numAssems, 13
         )  # should wind up with 6 reflector assemblies per 1/3rd core
-        shieldtype = self.r.core.getAssemblyWithStringLocation("A4001").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(4, 1)
+        shieldtype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(
             shieldtype, "radial shield"
         )  # check that the right thing was added
@@ -79,20 +80,24 @@ class TestGeometryConverters(unittest.TestCase):
         self.assertEqual(numFuelAssems, 60)
 
         # checks that existing fuel assemblies are preserved
-        fueltype = self.r.core.getAssemblyWithStringLocation("A1001").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
+        fueltype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(fueltype, "igniter fuel")
 
         # checks that existing control rods are preserved
-        controltype = self.r.core.getAssemblyWithStringLocation("A5001").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 1)
+        controltype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(controltype, "primary control")
 
         # checks that existing reflectors are overwritten with feed fuel
-        oldshieldtype = self.r.core.getAssemblyWithStringLocation("A9005").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(9, 5)
+        oldshieldtype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(oldshieldtype, "feed fuel")
 
         # checks that outer assemblies are removed
-        outerassem = self.r.core.getAssemblyWithStringLocation("A9001")
-        self.assertEqual(outerassem, None)
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(9, 1)
+        with self.assertRaises(KeyError):
+            loc = self.r.core.childrenByLocator[locator]
 
         # tests ability to remove fuel assemblies
         converter.numFuelAssems = 20

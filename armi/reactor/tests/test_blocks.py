@@ -745,7 +745,7 @@ class Block_TestCase(unittest.TestCase):
         # a bit obvious, but location is a property now...
         i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
-        self.assertEqual(b.getLocation(), "A2003A")
+        self.assertEqual(b.getLocation(), "002-003-000")
         self.assertEqual(0, b.spatialLocator.k)
         self.assertEqual(b.getSymmetryFactor(), 1.0)
 
