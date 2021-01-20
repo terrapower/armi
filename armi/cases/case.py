@@ -736,7 +736,7 @@ def copyInterfaceInputs(
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
-    sourceDir = pathlib.Path(sourceDir)
+    sourceDirPath = pathlib.Path(sourceDir)
     destPath = pathlib.Path(destination)
 
     newSettings = {}
@@ -744,9 +744,6 @@ def copyInterfaceInputs(
     assert destPath.is_dir()
 
     for klass, kwargs in activeInterfaces:
-        if not kwargs.get("enabled", True):
-            # Don't consider disabled interfaces
-            continue
         interfaceFileNames = klass.specifyInputs(cs)
         # returned files can be absolute paths, relative paths, or even glob patterns.
         # Since we don't have an explicit way to signal about these, we sort of have to
@@ -765,7 +762,7 @@ def copyInterfaceInputs(
                     pass
                 else:
                     # relative path/glob. Should be safe to just use glob resolution
-                    srcFiles = list(sourceDir.glob(f))
+                    srcFiles = list(sourceDirPath.glob(f))
                     for sourceFullPath in srcFiles:
                         if not sourceFullPath:
                             continue
