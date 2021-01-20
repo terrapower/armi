@@ -771,14 +771,16 @@ def copyInterfaceInputs(
                             continue
                         _sourceDir, sourceName = os.path.split(sourceFullPath)
                         sourceName = sourceFullPath.name
-                        destFile = (destPath/sourceName).relative_to(destPath)
+                        destFile = (destPath / sourceName).relative_to(destPath)
                         pathTools.copyOrWarn(
-                            label, sourceFullPath, destPath/sourceName
+                            label, sourceFullPath, destPath / sourceName
                         )
 
                     if len(srcFiles) > 1:
-                        runLog.warning(f"Input files for `{label}` resolved to more "
-                                "than one file; cannot update settings safely.")
+                        runLog.warning(
+                            f"Input files for `{label}` resolved to more "
+                            "than one file; cannot update settings safely."
+                        )
                     elif isinstance(key, settings.Setting):
                         newSettings[key.name] = str(destFile)
 
