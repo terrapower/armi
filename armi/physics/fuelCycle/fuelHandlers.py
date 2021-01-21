@@ -66,12 +66,14 @@ class FuelHandlerInterface(interfaces.Interface):
 
     @staticmethod
     def specifyInputs(cs):
-        files = [
-            cs[label]
+        files = {
+            cs.settings[label]: [
+                cs[label],
+            ]
             for label in ["shuffleLogic", "explicitRepeatShuffles"]
             if cs[label]
-        ]
-        return {"fuel management": files}
+        }
+        return files
 
     def interactBOC(self, cycle=None):
         """
