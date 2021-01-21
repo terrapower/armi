@@ -33,7 +33,7 @@ import trace
 import time
 import textwrap
 import ast
-from typing import Optional, Sequence
+from typing import Dict, Optional, Sequence
 import glob
 
 import tabulate
@@ -546,6 +546,10 @@ class Case:
                 )
             )
 
+        newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
+        for settingName, value in newSettings.items():
+            clone.cs[settingName] = value
+
         runLog.important("writing settings file {}".format(clone.cs.path))
         clone.cs.writeToYamlFile(clone.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
@@ -564,8 +568,6 @@ class Case:
                 runLog.warning(
                     "skipping {}, there is no file specified".format(inputFileSetting)
                 )
-
-        copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
         with open(self.cs["loadingFile"], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the
@@ -688,35 +690,95 @@ class Case:
             with open(self.cs["loadingFile"], "w") as loadingFile:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
-            # copy input files from other modules (e.g. fuel management, control logic, etc.)
-            copyInterfaceInputs(self.cs, ".", sourceDir)
+            # copy input files from other modules/plugins
+            newSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
+
+            for settingName, value in newSettings.items():
+                self.cs[settingName] = value
 
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
-def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
+def copyInterfaceInputs(
+    cs, destination: str, sourceDir: Optional[str] = None
+) -> Dict[str, str]:
     """
     Copy sets of files that are considered "input" from each active interface.
 
-    This enables developers to add new inputs in a plugin-dependent/
-    modular way.
+    This enables developers to add new inputs in a plugin-dependent/ modular way.
 
     In parameter sweeps, these often have a sourceDir associated with them that is
     different from the cs.inputDirectory.
+
+    Parameters
+    ----------
+    cs : CaseSettings
+        The source case settings to find input files
+
+    destination: str
+        The target directory to copy input files to
+
+    sourceDir: str, optional
+        The directory from which to copy files. Defaults to cs.inputDirectory
+
+    Notes
+    -----
+
+    This may seem a bit overly complex, but a lot of the behavior is important. Relative
+    paths are copied into the target directory, which in some cases requires updating
+    the setting that pointed to the file in the first place. This is necessary to avoid
+    case dependencies in relavive locations above the input directory, which can lead to
+    issues when cloneing case suites. In the future this could be simplified by adding a
+    concept for a suite root directory, below which it is safe to copy files without
+    needing to update settings that point with a relative path to files that are below
+    it.
+
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
+    sourceDirPath = pathlib.Path(sourceDir)
+    destPath = pathlib.Path(destination)
+
+    newSettings = {}
+
+    assert destPath.is_dir()
+
     for klass, kwargs in activeInterfaces:
-        if not kwargs.get("enabled", True):
-            # Don't consider disabled interfaces
-            continue
         interfaceFileNames = klass.specifyInputs(cs)
-        for label, relativeGlobs in interfaceFileNames.items():
-            for relativeGlob in relativeGlobs:
-                for sourceFullPath in glob.glob(os.path.join(sourceDir, relativeGlob)):
-                    if not sourceFullPath:
-                        continue
-                    _sourceDir, sourceName = os.path.split(sourceFullPath)
-                    pathTools.copyOrWarn(
-                        label, sourceFullPath, os.path.join(destination, sourceName)
-                    )
+        # returned files can be absolute paths, relative paths, or even glob patterns.
+        # Since we don't have an explicit way to signal about these, we sort of have to
+        # guess. In future, it might be nice to have interfaces specify which
+        # explicitly.
+        for key, files in interfaceFileNames.items():
+            if isinstance(key, settings.Setting):
+                label = key.name
+            else:
+                label = key
+
+            for f in files:
+                path = pathlib.Path(f)
+                if path.is_absolute() and path.exists() and path.is_file():
+                    # looks like an extant, absolute path; no need to do anything
+                    pass
+                else:
+                    # relative path/glob. Should be safe to just use glob resolution
+                    srcFiles = list(sourceDirPath.glob(f))
+                    for sourceFullPath in srcFiles:
+                        if not sourceFullPath:
+                            continue
+                        _sourceDir, sourceName = os.path.split(sourceFullPath)
+                        sourceName = sourceFullPath.name
+                        destFile = (destPath / sourceName).relative_to(destPath)
+                        pathTools.copyOrWarn(
+                            label, sourceFullPath, destPath / sourceName
+                        )
+
+                    if len(srcFiles) > 1:
+                        runLog.warning(
+                            f"Input files for `{label}` resolved to more "
+                            "than one file; cannot update settings safely."
+                        )
+                    elif isinstance(key, settings.Setting):
+                        newSettings[key.name] = str(destFile)
+
+    return newSettings
