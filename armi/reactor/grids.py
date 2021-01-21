@@ -1392,7 +1392,13 @@ class HexGrid(Grid):
         ]
 
     def getLabel(self, indices):
-        """Hex labels start at 1, and are ring/position based."""
+        """
+        Hex labels start at 1, and are ring/position based rather than i,j.
+
+        This difference is partially because ring/pos is easier to understand in hex
+        geometry, and partially because it is used in some codes ARMI originally was focused
+        on.
+        """
         ring, pos = self.getRingPos(indices)
         if len(indices) == 2:
             return Grid.getLabel(self, (ring, pos))

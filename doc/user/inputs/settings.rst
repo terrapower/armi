@@ -89,7 +89,7 @@ through the GUI or the settings system.
 
 Detail Assembly Locations BOL
     The ``detailAssemLocationsBOL`` setting is a list of assembly location strings
-    (e.g. ``A4003`` for ring 4, position 3). Assemblies that are in these locations at the
+    (e.g. ``004-003`` for ring 4, position 3). Assemblies that are in these locations at the
     beginning-of-life will be activated as detail assemblies.
 
 Detail assembly numbers

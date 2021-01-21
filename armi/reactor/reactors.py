@@ -923,7 +923,7 @@ class Core(composites.Composite):
         runLog.extra(
             "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
         )
-        referenceAssembly = self.getAssemblyWithStringLocation("001-001")
+        referenceAssembly = self.childrenByLocator[self.spatialGrid[0, 0, 0]]
         refLocation = referenceAssembly.spatialLocator
         pitchFactor = ringPitch / self.spatialGrid.pitch
 
