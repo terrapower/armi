@@ -25,3 +25,4 @@ Before cycle 3:
 LoadQueue moved to 006-007 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 SFP moved to 005-004 with assembly type feed fuel ANAME=A0086 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 005-004 moved to SFP with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
+
