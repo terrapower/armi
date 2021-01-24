@@ -5,13 +5,13 @@ before_install:
   - sudo apt-get -y install libopenmpi-dev
   - sudo apt-get -y install libsdl2-2.0-0
   - sudo apt-get -y install at-spi2-core
-  - sudo apt-get -y install xvfb  # xinit openbox
+  - sudo apt-get -y install xvfb
 sudo: false
 matrix:
   fast_finish: true
   include:
     - python: "3.6"
-      env: TOXENV=py36
+      env: TOXENV=py36 ARMI_GUI_TESTS=true
 #    - python: "3.7"
 #      env: TOXENV=lint
 #    - python: "3.7"
@@ -22,11 +22,5 @@ cache:
     - $HOME/.cache/pip
 install:
   - pip install -U tox
-#  - "export DISPLAY=:99.0"
-#  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac+extension GLX +render -noreset"
-#  - sleep 3
 language: python
-#before_script:
-#  - sudo xinit openbox
-#  - sleep 1
 script: tox -vvvv

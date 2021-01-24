@@ -54,8 +54,8 @@ import test.support
 wx = test.support.import_module("wx")
 
 import armi
-# import numpy as np
-# from PIL import ImageGrab
+import numpy as np
+from PIL import Image
 # import cv2
 
 
@@ -68,7 +68,7 @@ for m in get_monitors():
     print(str(m))
 print(f"DISPLAY: {os.environ['DISPLAY']}")
 
-_SECONDS_PER_TICK = 0.05
+_SECONDS_PER_TICK = 0.02
 
 
 def _wait(num_ticks: int) -> None:
@@ -92,57 +92,16 @@ def _findPointInWindow(
     return wx.Point(x, y)
 
 
-# Credit to:
-# https://www.blog.pythonlibrary.org/2010/04/16/how-to-take-a-screenshot-of-your-wxpython-app-and-print-it/
-def takeScreenshot(videoWriter):
-    #Create a Bitmap that will hold the screenshot image later on
-    #Note that the Bitmap must have a size big enough to hold the screenshot
-    #-1 means using the current default colour depth
-    bmp = wx.EmptyBitmap(1200, 1050)
-    #Create a memory DC that will be used for actually taking the screenshot
-    memDC = wx.MemoryDC()
-    #Tell the memory DC to use our Bitmap
-    #all drawing action on the memory DC will go to the Bitmap now
-    memDC.SelectObject(bmp)
-    #Blit (in this case copy) the actual screen on the memory DC
-    #and thus the Bitmap
-    memDC.Blit( 0, #Copy to this X coordinate
-                0, #Copy to this Y coordinate
-                1200, #Copy this width
-                1050, #Copy this height
-                wx.ScreenDC(), #From where do we copy?
-                0, #What's the X offset in the original DC?
-                0  #What's the Y offset in the original DC?
-                )
-    #Select the Bitmap out of the memory DC by selecting a new
-    #uninitialized Bitmap
-    memDC.SelectObject(wx.NullBitmap)
-    img = bmp.ConvertToImage()
-    videoWriter.write(img)
+def wx2PIL (img: wx.Image) -> Image.Image:
+    w = img.GetWidth()
+    h = img.GetHeight()
+    data = img.GetData()
 
-# def _screen_record():
-    # video part
-    # Should probably use MSS for the screenshots.
+    red_image = Image.frombuffer('L', (w, h), data[0::3])
+    green_image = Image.frombuffer('L', (w, h), data[1::3])
+    blue_image = Image.frombuffer('L', (w, h), data[2::3])
+    return Image.merge('RGB', (red_image, green_image, blue_image))
 
-#
-#     # per frame
-#     img = ImageGrab.grab(bbox=(0,0,1000,1000)) #bbox specifies specific region (bbox= x,y,width,height)
-#     img_np = np.array(img)
-#     frame = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
-#     cv2.imshow("test", frame)
-#     cv2.waitKey(1)
-
-
-# def setUp(self):
-    # # Prepare to store the video
-    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    # # The width and height here should match xvfb_width and xvfb_height in pytest.ini.
-    # self.vid = cv2.VideoWriter('output.avi', fourcc, 20, (1200, 1050))
-
-    # Or maybe wx.GIFHandler.SaveAnimation would do? That would be best.
-
-# def tearDown(self):
-    # self.vid.release()
 
 class GuiTestCase(unittest.TestCase):
     """Provides scaffolding for a GUI test.
@@ -168,7 +127,26 @@ class GuiTestCase(unittest.TestCase):
         )
         self.gui = gridEditor.GridBlueprintControl(self.frame)
         self.frame.Show()
+        self.imageList = []  # wx.ImageList(width=1200, height=1050)
         self.inputSimulator = wx.UIActionSimulator()
+
+    def takeScreenshot(self):
+        # https://wiki.wxpython.org/WorkingWithImages
+        self.frame.Show()
+        bmp = wx.Bitmap(width=1200, height=1050)
+        memDC = wx.MemoryDC()
+        memDC.SelectObject(bmp)
+        memDC.Blit(0, 0, 1200, 1050, wx.ScreenDC(), 0, 0)
+        memDC.SelectObject(wx.NullBitmap)
+        img = bmp.ConvertToImage()
+        self.imageList.append(img)
+
+    def tearDown(self):
+
+        pilImageList = [wx2PIL(wxImage) for wxImage in self.imageList]
+        gif = pilImageList[0]
+        with open('/tmp/armi/test.gif', mode='wb') as f:
+            gif.save(fp=f, format='GIF', append_images=pilImageList[1:], save_all=True, duration=100)
 
     def _cleanUpApp(self):
         for window in wx.GetTopLevelWindows():
@@ -202,6 +180,7 @@ class GuiTestCase(unittest.TestCase):
 class Test(GuiTestCase):
     def test_setNumRings(self):
         # Set the number of rings to 1
+        self.takeScreenshot()
         self.inputSimulator.MouseMove(
             _findPointInWindow(self.gui.controls.ringControl, offsetFromLeft=0.15)
         )
@@ -214,6 +193,7 @@ class Test(GuiTestCase):
         _wait(num_ticks=5)
 
         # Select (i, j) specifier
+        self.takeScreenshot()
         self.inputSimulator.MouseMove(_findPointInWindow(self.gui.controls.labelMode))
         _wait(num_ticks=5)
         self.inputSimulator.MouseDown()
@@ -230,6 +210,7 @@ class Test(GuiTestCase):
         _wait(num_ticks=5)
 
         # Click the Apply button
+        self.takeScreenshot()
         self.inputSimulator.MouseMove(_findPointInWindow(self.gui.controls.ringApply))
         _wait(num_ticks=5)
         self.inputSimulator.MouseDown()
@@ -237,6 +218,7 @@ class Test(GuiTestCase):
         self.inputSimulator.MouseUp()
         _wait(num_ticks=5)
 
+        self.takeScreenshot()
         # Assert that there is only one grid cell
         gridCellIndices = self.gui.clicker.indicesToPdcId
         self.assertEqual(1, len(gridCellIndices))
