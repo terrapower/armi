@@ -269,6 +269,12 @@ class ArmiTestHelper(unittest.TestCase):
                         expectedFilePath, os.path.abspath(actualFilePath)
                     )
                     raise AssertionError(msg) from er
+            # ensure we're also at the end of the actual file
+            # readline is unambiuous about reaching the end of a file.
+            self.assertFalse(
+                actual.readline(),
+                msg="The test-generated file is longer than the reference file.",
+            )
         os.remove(actualFilePath)
 
 

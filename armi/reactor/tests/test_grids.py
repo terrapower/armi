@@ -158,7 +158,7 @@ class TestGrid(unittest.TestCase):
 
     def testLabel(self):
         grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
-        self.assertEqual(grid.getLabel((1, 1, 2)), "A1001C")
+        self.assertEqual(grid.getLabel((1, 1, 2)), "001-001-002")
 
     def test_isAxialOnly(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
@@ -232,8 +232,13 @@ class TestHexGrid(unittest.TestCase):
     def testLabel(self):
         grid = grids.HexGrid.fromPitch(1.0)
         indices = grid.getIndicesFromRingAndPos(12, 5)
-        self.assertEqual(grid.getLabel(indices), "B2005")
-        self.assertEqual(grid.getLabel(indices + (5,)), "B2005F")
+        label1 = grid.getLabel(indices)
+        self.assertEqual(label1, "012-005")
+        self.assertEqual(grids.locatorLabelToIndices(label1), (12, 5, None))
+
+        label2 = grid.getLabel(indices + (5,))
+        self.assertEqual(label2, "012-005-005")
+        self.assertEqual(grids.locatorLabelToIndices(label2), (12, 5, 5))
 
     def test_overlapsWhichSymmetryLine(self):
         grid = grids.HexGrid.fromPitch(1.0)

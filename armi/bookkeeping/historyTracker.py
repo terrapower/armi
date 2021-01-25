@@ -151,7 +151,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         """
         if self.cs["detailAssemLocationsBOL"]:
             for locLabel in self.cs["detailAssemLocationsBOL"]:
-                ring, pos, _axial = grids.ringPosFromRingLabel(locLabel)
+                ring, pos, _axial = grids.locatorLabelToIndices(locLabel)
                 i, j = self.r.core.spatialGrid.getIndicesFromRingAndPos(ring, pos)
                 aLoc = self.r.core.spatialGrid[i, j, 0]
                 try:
