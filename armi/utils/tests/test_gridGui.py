@@ -71,10 +71,13 @@ print(f"DISPLAY: {os.environ['DISPLAY']}")
 loginctl = subprocess.Popen(
     ["loginctl", "list-sessions", "--no-legend"], stdout=subprocess.PIPE
 )
-cut_output = subprocess.check_output(
-    ["cut", "--delimiter= ", "--field=1"],
-    stdin=loginctl.stdout
-).decode("utf-8").strip("\n")
+cut_output = (
+    subprocess.check_output(
+        ["cut", "--delimiter= ", "--field=1"], stdin=loginctl.stdout
+    )
+    .decode("utf-8")
+    .strip("\n")
+)
 if cut_output:
     print(f"cut_output: {cut_output}")
     display_server_type = (
@@ -89,10 +92,8 @@ else:
     print("!!!!No loginctl sessions!!!!")
 
 _SECONDS_PER_TICK = 0.05
-_TMP_DIR = '/tmp/armi'
-_TMP_DIR = '/home/travis/build/terrapower/armi'
-
-
+_TMP_DIR = "/tmp/armi"
+_TMP_DIR = "/home/travis/build/terrapower/armi"
 
 
 def _findPointInWindow(
