@@ -92,7 +92,7 @@ else:
     print("!!!!No loginctl sessions!!!!")
 
 _SECONDS_PER_TICK = 0.05
-_TMP_DIR = "/tmp/armi"
+# _TMP_DIR = "/tmp/armi"
 _TMP_DIR = "/home/travis/build/terrapower/armi"
 
 
