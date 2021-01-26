@@ -42,8 +42,10 @@ loginctl list-sessions --no-legend | \
 If it outputs "x11", it should work (and if it outputs "wayland", it probably won't, for now).
 """
 import asyncio
+import base64
 import os
 import pytest
+import subprocess
 import time
 import unittest
 import test.support
@@ -54,9 +56,7 @@ import test.support
 wx = test.support.import_module("wx")
 
 import armi
-import numpy as np
 from PIL import Image
-# import cv2
 
 
 if armi._app is None:
@@ -64,9 +64,27 @@ if armi._app is None:
 from armi.utils import gridEditor
 
 from screeninfo import get_monitors
+
 for m in get_monitors():
     print(str(m))
 print(f"DISPLAY: {os.environ['DISPLAY']}")
+loginctl = subprocess.Popen(
+    ["loginctl", "list-sessions", "--no-legend"], stdout=subprocess.PIPE
+)
+cut = subprocess.Popen(
+    ["cut", "--delimiter= ", "--field=1"],
+    stdin=loginctl.stdout,
+    stdout=subprocess.PIPE,
+)
+display_server_type = (
+    subprocess.check_output(
+        ["xargs", "loginctl", "show-session", "--property=Type", "--value"],
+        stdin=cut.stdout,
+    )
+    .decode("utf-8")
+    .strip("\n")
+)
+print(f"display_server_type: {display_server_type}")  # is it "x11"?
 
 _SECONDS_PER_TICK = 0.02
 
@@ -92,15 +110,16 @@ def _findPointInWindow(
     return wx.Point(x, y)
 
 
-def wx2PIL (img: wx.Image) -> Image.Image:
+def wx2PIL(img: wx.Image) -> Image.Image:
     w = img.GetWidth()
     h = img.GetHeight()
     data = img.GetData()
 
-    red_image = Image.frombuffer('L', (w, h), data[0::3])
-    green_image = Image.frombuffer('L', (w, h), data[1::3])
-    blue_image = Image.frombuffer('L', (w, h), data[2::3])
-    return Image.merge('RGB', (red_image, green_image, blue_image))
+    red_image = Image.frombuffer("L", (w, h), data[0::3])
+    green_image = Image.frombuffer("L", (w, h), data[1::3])
+    blue_image = Image.frombuffer("L", (w, h), data[2::3])
+    raw_image = Image.merge("RGB", (red_image, green_image, blue_image))
+    return raw_image.quantize(colors=16)
 
 
 class GuiTestCase(unittest.TestCase):
@@ -127,26 +146,44 @@ class GuiTestCase(unittest.TestCase):
         )
         self.gui = gridEditor.GridBlueprintControl(self.frame)
         self.frame.Show()
-        self.imageList = []  # wx.ImageList(width=1200, height=1050)
+        self.imageList = []
         self.inputSimulator = wx.UIActionSimulator()
 
     def takeScreenshot(self):
-        # https://wiki.wxpython.org/WorkingWithImages
-        self.frame.Show()
         bmp = wx.Bitmap(width=1200, height=1050)
         memDC = wx.MemoryDC()
         memDC.SelectObject(bmp)
-        memDC.Blit(0, 0, 1200, 1050, wx.ScreenDC(), 0, 0)
+        mousePos = wx.GetMouseState().GetPosition()
+        memDC.Blit(0, 0, 1200, 1050, wx.ClientDC(self.frame), 0, 0)
+        memDC.SetPen(wx.Pen(colour=wx.Colour(red=150, green=50, blue=50), width=5))
+        memDC.DrawCircle(x=mousePos.x, y=mousePos.y, radius=7)
         memDC.SelectObject(wx.NullBitmap)
         img = bmp.ConvertToImage()
         self.imageList.append(img)
 
-    def tearDown(self):
+    def _addBlackScreen(self, num_frames=1):
+        bmp = wx.Bitmap.FromRGBA(width=1200, height=1050)
+        img = bmp.ConvertToImage()
+        for _ in range(num_frames):
+            self.imageList.append(img)
 
+    def _saveAnimation(self, testcaseName):
         pilImageList = [wx2PIL(wxImage) for wxImage in self.imageList]
         gif = pilImageList[0]
-        with open('/tmp/armi/test.gif', mode='wb') as f:
-            gif.save(fp=f, format='GIF', append_images=pilImageList[1:], save_all=True, duration=100)
+        filename = f"/tmp/armi/{testcaseName}.webp"
+        with open(filename, mode="wb") as f:
+            gif.save(
+                fp=f,
+                append_images=pilImageList[1:],
+                save_all=True,
+                duration=1000,
+                loop=0,
+                minimize_size=True,
+            )
+        print("==========BASE64 BEGINS==========")
+        with open(filename, mode="rb") as f:
+            print(base64.standard_b64encode(f.read()).decode("ascii"))
+        print("===========BASE64 ENDS===========")
 
     def _cleanUpApp(self):
         for window in wx.GetTopLevelWindows():
@@ -160,6 +197,8 @@ class GuiTestCase(unittest.TestCase):
 
     def _runAsync(self, result):
         super().run(result)
+        self._addBlackScreen()
+        self._saveAnimation(result.originalname)
         self._cleanUpApp()
         self._testCompleted.set_result(None)
 
@@ -173,6 +212,7 @@ class GuiTestCase(unittest.TestCase):
         loop.run_until_complete(self._testCompleted)
         return result
 
+
 @pytest.mark.skipif(
     not bool(os.environ.get("ARMI_GUI_TESTS", False)),
     reason="GUI tests require a rather specific environment (see above), so these tests are opt-in",
@@ -185,6 +225,7 @@ class Test(GuiTestCase):
             _findPointInWindow(self.gui.controls.ringControl, offsetFromLeft=0.15)
         )
         _wait(num_ticks=5)
+        self.takeScreenshot()
         self.inputSimulator.MouseDblClick()
         _wait(num_ticks=5)
         self.inputSimulator.KeyDown(49)  # 49 is the keycode for the "1" key
@@ -200,10 +241,12 @@ class Test(GuiTestCase):
         _wait(num_ticks=1)
         self.inputSimulator.MouseUp()
         _wait(num_ticks=5)
+        self.takeScreenshot()
         self.inputSimulator.MouseMove(
             _findPointInWindow(self.gui.controls.labelMode, offsetFromTop=1.5)
         )
         _wait(num_ticks=5)
+        self.takeScreenshot()
         self.inputSimulator.MouseDown()
         _wait(num_ticks=1)
         self.inputSimulator.MouseUp()
@@ -227,6 +270,6 @@ class Test(GuiTestCase):
         labels = [self.gui.clicker._getLabel(idx)[0] for idx in gridCellIndices]
         self.assertEqual("0, 0", labels[0])
 
+
 if __name__ == "__main__":
     unittest.main()
-

@@ -99,7 +99,14 @@ setup(
             "sphinx-gallery",
         ],
     },
-    tests_require=["nbconvert", "jupyter_client", "ipykernel", "wxpython", "pytest-xvfb", "screeninfo"],
+    tests_require=[
+        "nbconvert",
+        "jupyter_client",
+        "ipykernel",
+        "wxpython",
+        "pytest-xvfb",
+        "screeninfo",
+    ],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
