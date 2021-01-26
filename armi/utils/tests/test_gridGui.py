@@ -71,26 +71,28 @@ print(f"DISPLAY: {os.environ['DISPLAY']}")
 loginctl = subprocess.Popen(
     ["loginctl", "list-sessions", "--no-legend"], stdout=subprocess.PIPE
 )
-cut = subprocess.Popen(
+cut_output = subprocess.check_output(
     ["cut", "--delimiter= ", "--field=1"],
-    stdin=loginctl.stdout,
-    stdout=subprocess.PIPE,
-)
-display_server_type = (
-    subprocess.check_output(
-        ["xargs", "loginctl", "show-session", "--property=Type", "--value"],
-        stdin=cut.stdout,
+    stdin=loginctl.stdout
+).decode("utf-8").strip("\n")
+if cut_output:
+    print(f"cut_output: {cut_output}")
+    display_server_type = (
+        subprocess.check_output(
+            ["loginctl", "show-session", "--property=Type"] + cut_output.split()
+        )
+        .decode("utf-8")
+        .strip("\n")
     )
-    .decode("utf-8")
-    .strip("\n")
-)
-print(f"display_server_type: {display_server_type}")  # is it "x11"?
+    print(f"display_server_type: {display_server_type}")  # is it "x11"?
+else:
+    print("!!!!No loginctl sessions!!!!")
 
-_SECONDS_PER_TICK = 0.02
+_SECONDS_PER_TICK = 0.05
+_TMP_DIR = '/tmp/armi'
+_TMP_DIR = '/home/travis/build/terrapower/armi'
 
 
-def _wait(num_ticks: int) -> None:
-    time.sleep(num_ticks * _SECONDS_PER_TICK)
 
 
 def _findPointInWindow(
@@ -149,7 +151,12 @@ class GuiTestCase(unittest.TestCase):
         self.imageList = []
         self.inputSimulator = wx.UIActionSimulator()
 
-    def takeScreenshot(self):
+    def wait(self, num_ticks: int) -> None:
+        for _ in range(num_ticks):
+            time.sleep(_SECONDS_PER_TICK)
+            self._takeScreenshot()
+
+    def _takeScreenshot(self):
         bmp = wx.Bitmap(width=1200, height=1050)
         memDC = wx.MemoryDC()
         memDC.SelectObject(bmp)
@@ -170,13 +177,13 @@ class GuiTestCase(unittest.TestCase):
     def _saveAnimation(self, testcaseName):
         pilImageList = [wx2PIL(wxImage) for wxImage in self.imageList]
         gif = pilImageList[0]
-        filename = f"/tmp/armi/{testcaseName}.webp"
+        filename = os.path.join(_TMP_DIR, f"{testcaseName}.webp")
         with open(filename, mode="wb") as f:
             gif.save(
                 fp=f,
                 append_images=pilImageList[1:],
                 save_all=True,
-                duration=1000,
+                duration=75,
                 loop=0,
                 minimize_size=True,
             )
@@ -197,7 +204,8 @@ class GuiTestCase(unittest.TestCase):
 
     def _runAsync(self, result):
         super().run(result)
-        self._addBlackScreen()
+        self.wait(num_ticks=5)
+        self._addBlackScreen(num_frames=5)
         self._saveAnimation(result.originalname)
         self._cleanUpApp()
         self._testCompleted.set_result(None)
@@ -220,48 +228,49 @@ class GuiTestCase(unittest.TestCase):
 class Test(GuiTestCase):
     def test_setNumRings(self):
         # Set the number of rings to 1
-        self.takeScreenshot()
+        # self.takeScreenshot()
+        self.wait(num_ticks=1)
         self.inputSimulator.MouseMove(
             _findPointInWindow(self.gui.controls.ringControl, offsetFromLeft=0.15)
         )
-        _wait(num_ticks=5)
-        self.takeScreenshot()
+        self.wait(num_ticks=5)
+        # self.takeScreenshot()
         self.inputSimulator.MouseDblClick()
-        _wait(num_ticks=5)
+        self.wait(num_ticks=5)
         self.inputSimulator.KeyDown(49)  # 49 is the keycode for the "1" key
-        _wait(num_ticks=1)
+        self.wait(num_ticks=1)
         self.inputSimulator.KeyUp(49)
-        _wait(num_ticks=5)
+        self.wait(num_ticks=5)
 
         # Select (i, j) specifier
-        self.takeScreenshot()
+        # self.takeScreenshot()
         self.inputSimulator.MouseMove(_findPointInWindow(self.gui.controls.labelMode))
-        _wait(num_ticks=5)
+        self.wait(num_ticks=5)
         self.inputSimulator.MouseDown()
-        _wait(num_ticks=1)
+        self.wait(num_ticks=1)
+        # self.takeScreenshot()
         self.inputSimulator.MouseUp()
-        _wait(num_ticks=5)
-        self.takeScreenshot()
+        self.wait(num_ticks=5)
         self.inputSimulator.MouseMove(
             _findPointInWindow(self.gui.controls.labelMode, offsetFromTop=1.5)
         )
-        _wait(num_ticks=5)
-        self.takeScreenshot()
+        self.wait(num_ticks=5)
+        # self.takeScreenshot()
         self.inputSimulator.MouseDown()
-        _wait(num_ticks=1)
+        self.wait(num_ticks=1)
         self.inputSimulator.MouseUp()
-        _wait(num_ticks=5)
+        self.wait(num_ticks=5)
 
         # Click the Apply button
-        self.takeScreenshot()
+        # self.takeScreenshot()
         self.inputSimulator.MouseMove(_findPointInWindow(self.gui.controls.ringApply))
-        _wait(num_ticks=5)
+        self.wait(num_ticks=5)
         self.inputSimulator.MouseDown()
-        _wait(num_ticks=1)
+        self.wait(num_ticks=1)
         self.inputSimulator.MouseUp()
-        _wait(num_ticks=5)
+        self.wait(num_ticks=5)
 
-        self.takeScreenshot()
+        # self.takeScreenshot()
         # Assert that there is only one grid cell
         gridCellIndices = self.gui.clicker.indicesToPdcId
         self.assertEqual(1, len(gridCellIndices))
