@@ -68,28 +68,34 @@ from screeninfo import get_monitors
 for m in get_monitors():
     print(str(m))
 print(f"DISPLAY: {os.environ['DISPLAY']}")
-loginctl = subprocess.Popen(
-    ["loginctl", "list-sessions", "--no-legend"], stdout=subprocess.PIPE
+loginctl = subprocess.check_output(
+    ["loginctl", "list-sessions"]
 )
-cut_output = (
-    subprocess.check_output(
-        ["cut", "--delimiter= ", "--field=1"], stdin=loginctl.stdout
-    )
-    .decode("utf-8")
-    .strip("\n")
-)
-if cut_output:
-    print(f"cut_output: {cut_output}")
-    display_server_type = (
-        subprocess.check_output(
-            ["loginctl", "show-session", "--property=Type"] + cut_output.split()
-        )
-        .decode("utf-8")
-        .strip("\n")
-    )
-    print(f"display_server_type: {display_server_type}")  # is it "x11"?
-else:
-    print("!!!!No loginctl sessions!!!!")
+print("loginctl list-sessions:")
+for line in loginctl.decode("utf-8").split("\n"):
+    print("  " + line)
+# loginctl = subprocess.Popen(
+#     ["loginctl", "list-sessions", "--no-legend"], stdout=subprocess.PIPE
+# )
+# # cut_output = (
+#     subprocess.check_output(
+#         ["cut", "--delimiter= ", "--field=1"], stdin=loginctl.stdout
+#     )
+#     .decode("utf-8")
+#     .strip("\n")
+# )
+# if cut_output:
+#     print(f"cut_output: {cut_output}")
+#     display_server_type = (
+#         subprocess.check_output(
+#             ["loginctl", "show-session", "--property=Type"] + cut_output.split()
+#         )
+#         .decode("utf-8")
+#         .strip("\n")
+#     )
+#     print(f"display_server_type: {display_server_type}")  # is it "x11"?
+# else:
+#     print("!!!!No loginctl sessions!!!!")
 
 _SECONDS_PER_TICK = 0.05
 # _TMP_DIR = "/tmp/armi"
