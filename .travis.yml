@@ -25,3 +25,6 @@ install:
   - pip install -U tox
 language: python
 script: tox -vvvv
+dist: xenial
+services:
+  - xvfb
