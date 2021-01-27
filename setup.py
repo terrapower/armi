@@ -104,7 +104,7 @@ setup(
         "jupyter_client",
         "ipykernel",
         "wxpython",
-        "pytest-xvfb",
+        # "pytest-xvfb",
         "screeninfo",
     ],
     classifiers=[

@@ -1,3 +1,4 @@
+dist: xenial
 branches:
   only:
   - master
@@ -7,6 +8,7 @@ before_install:
   - sudo apt-get -y install at-spi2-core
   - sudo apt-get -y install libpam-systemd
   - sudo apt-get -y install xvfb
+  - sudo /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1200x1050x16
 sudo: false
 matrix:
   fast_finish: true
@@ -24,7 +26,6 @@ cache:
 install:
   - pip install -U tox
 language: python
+before_script:
+  - "export DISPLAY=:99.0"
 script: tox -vvvv
-dist: xenial
-services:
-  - xvfb
