@@ -22,7 +22,7 @@ from armi.utils import directoryChangers
 from armi.utils import directoryChangersMpi
 
 
-class TestException(Exception):
+class ExpectedException(Exception):
     pass
 
 
@@ -64,8 +64,8 @@ class TestDirectoryChangers(unittest.TestCase):
             with directoryChangers.ForcedCreationDirectoryChanger(self.temp_directory):
                 Path("file1.txt").touch()
                 Path("file2.txt").touch()
-                raise TestException("Ooops")
-        except TestException:
+                raise ExpectedException("Ooops")
+        except ExpectedException:
             pass
 
         retrievedFolder = f"dump-{self.temp_directory}"
@@ -81,8 +81,8 @@ class TestDirectoryChangers(unittest.TestCase):
             ):
                 Path("file1.txt").touch()
                 Path("file2.txt").touch()
-                raise TestException("Ooops")
-        except TestException:
+                raise ExpectedException("Ooops")
+        except ExpectedException:
             pass
 
         self.assertFalse(

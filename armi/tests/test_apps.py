@@ -101,7 +101,7 @@ class TestApps(unittest.TestCase):
         app.pluginManager.unregister(TestPlugin2)
 
         app.pluginManager.register(TestPlugin3)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             plugins.PluginError, ".*currently-defined parameters.*"
         ):
             app.getParamRenames()

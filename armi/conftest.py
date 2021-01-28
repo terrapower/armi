@@ -35,6 +35,11 @@ from armi import settings
 from armi.settings import caseSettings
 from armi import context
 
+# For some reason, it is important that h5py be imported here. If it is not, something
+# happens in pytest where regardless of the outcome of the tests themselves, it exits
+# with an access violation error code (on Windows, anyways). More investigation is
+# needed into why this is occuring.
+import h5py
 
 def pytest_sessionstart(session):
 

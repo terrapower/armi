@@ -55,9 +55,7 @@ setup(
         "configparser",
         "coverage",
         "future",
-        # This is a semantic version bound, because newer h5py versions handle strings
-        # differently, and we would need to do some work to support it
-        "h5py<3.0",
+        "h5py>=3.0",
         "matplotlib",
         "numpy",
         "ordered-set",

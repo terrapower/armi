@@ -483,7 +483,7 @@ class SequentialStringIOReader(SequentialReader):
     ...     data = []
     ...     while sr.searchForText('start of data chunk'):
     ...         # this needs to repeat for as many chunks as there are.
-    ...         if sr.searchForPatternOnNextLine('some-(?P<data>\w+)-pattern'):
+    ...         if sr.searchForPatternOnNextLine('some-(?P<data>\\w+)-pattern'):
     ...             data.append(sr.match['data'])
     """
 

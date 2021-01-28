@@ -674,7 +674,7 @@ class Database3(database.Database):
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
-            cs.loadFromString(self.h5db["inputs/settings"][()])
+            cs.loadFromString(self.h5db["inputs/settings"].asstr()[()])
         except KeyError:
             # not all paths to writing a database require inputs to be written to the
             # database. Technically, settings do affect some of the behavior of database
@@ -693,7 +693,7 @@ class Database3(database.Database):
         bpString = None
 
         try:
-            bpString = self.h5db["inputs/blueprints"][()]
+            bpString = self.h5db["inputs/blueprints"].asstr()[()]
         except KeyError:
             # not all reactors need to be created from blueprints, so they may not exist
             pass
@@ -710,7 +710,7 @@ class Database3(database.Database):
 
     def loadGeometry(self):
         geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"][()]))
+        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"].asstr()[()]))
         return geom
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
@@ -758,9 +758,9 @@ class Database3(database.Database):
 
     def readInputsFromDB(self):
         return (
-            self.h5db["inputs/settings"][()],
-            self.h5db["inputs/geomFile"][()],
-            self.h5db["inputs/blueprints"][()],
+            self.h5db["inputs/settings"].asstr()[()],
+            self.h5db["inputs/geomFile"].asstr()[()],
+            self.h5db["inputs/blueprints"].asstr()[()],
         )
 
     def mergeHistory(self, inputDB, startCycle, startNode):
@@ -1976,10 +1976,10 @@ class Layout:
                 unitStepLimits = thisGroup["unitStepLimits"][:]
                 offset = thisGroup["offset"][:] if thisGroup.attrs["offset"] else None
                 geomType = (
-                    thisGroup["geomType"][()] if "geomType" in thisGroup else None
+                    thisGroup["geomType"].asstr()[()] if "geomType" in thisGroup else None
                 )
                 symmetry = (
-                    thisGroup["symmetry"][()] if "symmetry" in thisGroup else None
+                    thisGroup["symmetry"].asstr()[()] if "symmetry" in thisGroup else None
                 )
 
                 self.gridParams.append(
@@ -2468,7 +2468,7 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
         for i in attrs["noneLocations"]:
             unpackedJaggedData[i] = None
 
-        return numpy.array(unpackedJaggedData)
+        return numpy.array(unpackedJaggedData, dtype=object)
     if attrs.get("dict", False):
         keys = numpy.char.decode(attrs["keys"])
         unpackedData = []

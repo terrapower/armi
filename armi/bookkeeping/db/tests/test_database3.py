@@ -228,10 +228,15 @@ class TestDatabase3(unittest.TestCase):
         data1 = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
         data1iNones = numpy.array([1, 2, None, 5, 6])
         data1fNones = numpy.array([None, 2.0, None, 5.0, 6.0])
-        data2fNones = numpy.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]])
-        dataJag = numpy.array([[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
+        data2fNones = numpy.array(
+            [None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object
+        )
+        dataJag = numpy.array(
+            [[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]], dtype=object
+        )
         dataJagNones = numpy.array(
-            [[[1, 2], [3, 4]], [[1], [1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
+            [[[1, 2], [3, 4]], [[1], [1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+            dtype=object,
         )
         dataDict = numpy.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]

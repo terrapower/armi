@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
+r"""
 This contains structured meshes in multiple geometries and spatial locators (i.e. locations).
 
 :py:class:`Grids <Grid>` are objects that map indices (i, j, k) to spatial locations

@@ -95,6 +95,7 @@ class TestUniformMesh(unittest.TestCase):
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        self.r.core.p.keff = 1.0
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
     def test_convertNumberDensities(self):
