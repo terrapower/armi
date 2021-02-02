@@ -306,7 +306,7 @@ blocks:
             id: 0.600
             mult: 169.0
             od: 0.878
-            flags: annular fuel
+            flags: annular fuel depletable
         gap2:
             shape: Circle
             material: Void
