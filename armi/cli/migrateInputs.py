@@ -48,7 +48,7 @@ class MigrateInputs(EntryPoint):
         """
         if self.args.settings_path:
             path, _fname = os.path.split(self.args.settings_path)
-            with directoryChangers.DirectoryChanger(path):
+            with directoryChangers.DirectoryChanger(path, dumpOnException=False):
                 self._migrate(self.args.settings_path, self.args.database_path)
         else:
             self._migrate(self.args.settings_path, self.args.database_path)
