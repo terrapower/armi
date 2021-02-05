@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+r"""
 Plugins allow various built-in or external functionality to be brought into the ARMI ecosystem.
 
 This module defines the hooks that may be defined within plugins. Plugins are ultimately
@@ -401,7 +401,7 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def defineCaseDependencies(case, suite):
-        """
+        r"""
         Function for defining case dependencies.
 
         Some Cases depend on the results of other ``Case``\ s in the same ``CaseSuite``.

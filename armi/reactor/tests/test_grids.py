@@ -22,7 +22,7 @@ from six.moves import cPickle
 
 from armi.reactor import grids
 from armi.reactor import geometry
-from numpy.testing.utils import assert_allclose
+from numpy.testing import assert_allclose
 
 
 class MockLocator(grids.IndexLocation):

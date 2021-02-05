@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+r"""
 Contains classes that build case suites from perturbing inputs.
 
 The general use case is to create a :py:class:`~SuiteBuilder` with a base

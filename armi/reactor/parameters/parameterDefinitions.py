@@ -108,7 +108,7 @@ class _Undefined:
 
 
 class Serializer:
-    """
+    r"""
     Abstract class describing serialize/deserialize operations for Parameter data.
 
     Parameters need to be stored to and read from database files. This currently
@@ -122,7 +122,7 @@ class Serializer:
     The ``Database3`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
-      - There are ``None`` s.
+      - There are ``None``\ s.
 
       - The dimensions of the values stored on each object are inconsistent (e.g.,
         "jagged" arrays)
