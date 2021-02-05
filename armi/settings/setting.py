@@ -209,7 +209,7 @@ class Setting:
         """
         try:
             val = self.schema(val)
-        except vol.error.MultipleInvalid:
+        except vol.error.Invalid:
             runLog.error(f"Error in setting {self.name}, val: {val}.")
             raise
 
