@@ -2005,18 +2005,6 @@ class ArmiObject(metaclass=CompositeModelType):
             nucs.update(child.getNuclides())
         return nucs
 
-    def isDepletable(self):
-        """
-        Return True if itself or any child is depletable.
-
-        See Also
-        --------
-        armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys: sets this flag
-        """
-        return self.hasFlags(Flags.DEPLETABLE) or self.containsAtLeastOneChildWithFlags(
-            Flags.DEPLETABLE
-        )
-
     def getFissileMass(self):
         """Returns fissile mass in grams."""
         return self.getMass(nuclideBases.NuclideBase.fissile)
