@@ -37,4 +37,3 @@ class Test_CompareFiles(unittest.TestCase):
 
         actual = "oh look, a number! notANumber and some text and another number 1.5"
         self.assertFalse(tests.ArmiTestHelper.compareLines(expected, actual, eps=0.04))
-

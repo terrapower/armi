@@ -1976,10 +1976,14 @@ class Layout:
                 unitStepLimits = thisGroup["unitStepLimits"][:]
                 offset = thisGroup["offset"][:] if thisGroup.attrs["offset"] else None
                 geomType = (
-                    thisGroup["geomType"].asstr()[()] if "geomType" in thisGroup else None
+                    thisGroup["geomType"].asstr()[()]
+                    if "geomType" in thisGroup
+                    else None
                 )
                 symmetry = (
-                    thisGroup["symmetry"].asstr()[()] if "symmetry" in thisGroup else None
+                    thisGroup["symmetry"].asstr()[()]
+                    if "symmetry" in thisGroup
+                    else None
                 )
 
                 self.gridParams.append(

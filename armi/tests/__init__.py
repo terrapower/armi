@@ -283,7 +283,7 @@ class ArmiTestHelper(unittest.TestCase):
         os.remove(actualFilePath)
 
     @staticmethod
-    def compareLines(actual: str, expected: str, eps: Optional[float]=None):
+    def compareLines(actual: str, expected: str, eps: Optional[float] = None):
         """
         Impl of line comparison for compareFilesLineByLine.
 
@@ -320,7 +320,7 @@ class ArmiTestHelper(unittest.TestCase):
 
             if actualVal is not None:
                 # we have two floats and can compare them
-                if abs(actualVal - expectedVal)/expectedVal > eps:
+                if abs(actualVal - expectedVal) / expectedVal > eps:
                     return False
             else:
                 # strings, compare directly

@@ -41,6 +41,7 @@ from armi import context
 # needed into why this is occuring.
 import h5py
 
+
 def pytest_sessionstart(session):
 
     print("Initializing generic ARMI Framework application")

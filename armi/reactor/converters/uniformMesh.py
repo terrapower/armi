@@ -311,7 +311,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         convPow = self.convReactor.core.getTotalBlockParam("power")
         if sourcePow > 0.0 and convPow > 0.0:
             expectedPow = (
-                self._sourceReactor.core.p.power / self._sourceReactor.core.powerMultiplier
+                self._sourceReactor.core.p.power
+                / self._sourceReactor.core.powerMultiplier
             )
             if abs(sourcePow - convPow) / sourcePow > 1e-5:
                 runLog.info(
