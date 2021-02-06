@@ -187,15 +187,13 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     temporary directory will be deleted.
     """
 
-    _home = armi.context.getFastPath()
-
     def __init__(
         self, root=None, filesToMove=None, filesToRetrieve=None, dumpOnException=True
     ):
         DirectoryChanger.__init__(
             self, root, filesToMove, filesToRetrieve, dumpOnException
         )
-        root = root or TemporaryDirectoryChanger._home
+        root = root or armi.context.getFastPath()
         if not os.path.exists(root):
             os.makedirs(root)
         self.initial = os.path.abspath(os.getcwd())
