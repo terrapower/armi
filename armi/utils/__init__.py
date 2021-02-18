@@ -612,7 +612,7 @@ def classesInHierarchy(obj, classCounts, visited=None):
 def slantSplit(val, ratio, nodes, order="low first"):
 
     r"""
-    Returns a list of values who's sum is equal to the value specified.
+    Returns a list of values whose sum is equal to the value specified.
     The ratio between the highest and lowest value is equal to the specified ratio,
     and the middle values trend linearly between them.
 
