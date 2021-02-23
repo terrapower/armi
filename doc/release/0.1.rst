@@ -202,11 +202,16 @@ API changes
   objects are largely vestigial. ``SystemLayoutInput`` will be retained to facilitate
   input migrations.
 
-* Changed block default names so that they are no longer constrained by axial characters. 
+* Changed block default names so that they are no longer constrained by axial characters.
   They now are named ``B{assemNum}-{axialIndex}`` to allow arbitrary numbers of blocks. This
   will invalidate any user setting that includes a block name (e.g. detail assemblies)
 
 * Changed location string labels to be numerical (``001-002-005``) rather than alphanumeric
   to eliminate a limitation on how many i-indices and k-indices were allowed. This will
-  invalidate any user setting value that includes a location label (e.g. in 
+  invalidate any user setting value that includes a location label (e.g. in
   ``detailAssemsByBOLLocation``). A migration script may be used to assist in migration.
+
+Bug fixes
+---------
+
+ * Fix bug in loading from databases when multi-index locations are used.
