@@ -184,12 +184,12 @@ class TestGrid(unittest.TestCase):
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
         self.assertNotIn((0, 0, 0), grid._locations)
-        loc = grid[0,0,0]
+        loc = grid[0, 0, 0]
         self.assertIn((0, 0, 0), grid._locations)
 
-        multiLoc = grid[[(0,0,0), (1,0,0), (0,1,0)]]
+        multiLoc = grid[[(0, 0, 0), (1, 0, 0), (0, 1, 0)]]
         self.assertIsInstance(multiLoc, grids.MultiIndexLocation)
-        self.assertIn((1,0,0), grid._locations)
+        self.assertIn((1, 0, 0), grid._locations)
 
 
 class TestHexGrid(unittest.TestCase):
