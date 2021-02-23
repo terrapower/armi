@@ -745,11 +745,18 @@ class Grid:
         """
         try:
             return self._locations[ijk]
-        except KeyError:
+        except (KeyError, TypeError):
+            pass
+
+        if isinstance(ijk, tuple):
             i, j, k = ijk
             val = IndexLocation(i, j, k, self)
             self._locations[ijk] = val
-            return val
+        elif isinstance(ijk, list):
+            val = MultiIndexLocation(self)
+            locators = [self[idx] for idx in ijk]
+            val.extend(locators)
+        return val
 
     def __len__(self):
         return len(self._locations)

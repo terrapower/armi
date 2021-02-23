@@ -1788,10 +1788,12 @@ def _unpackLocationsV2(locationTypes, locData):
         elif lt.startswith(LOC_MULTI):
             # extract number of sublocations from e.g. "M:345" string.
             numSubLocs = int(lt.split(":")[1])
+            multiLocs = []
             for _ in range(numSubLocs):
                 subLoc = next(locsIter)
                 # All multiindexes sublocs are index locs
-                unpackedLocs.append(tuple(int(i) for i in subLoc))
+                multiLocs.append(tuple(int(i) for i in subLoc))
+            unpackedLocs.append(multiLocs)
         else:
             raise ValueError(f"Read unknown location type {lt}. Invalid DB.")
 
@@ -1842,6 +1844,14 @@ class Layout:
         self.indexInData: List[int] = []
         self.numChildren: List[int] = []
         self.locationType: List[str] = []
+        # There is a minor asymmetry here in that before writing to the DB, this is
+        # truly a flat list of tuples. However when reading, this may contain lists of
+        # tuples, which represent MI locations. This comes from the fact that we map the
+        # tuples to Location objects in Database3._compose, but map from Locations to
+        # tuples in Layout._createLayout. Ideally we would handle both directions in the
+        # same place so this can be less surprising. Resolving this would require
+        # changing the interface of the various pack/unpack functions, which have
+        # multiple versions, so the update would need to be done with care.
         self.location: List[Tuple[int, int, int]] = []
         self.gridIndex: List[int] = []
         self.temperatures: List[float] = []

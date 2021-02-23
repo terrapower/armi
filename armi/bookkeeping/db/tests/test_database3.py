@@ -321,7 +321,7 @@ class Test_LocationPacking(unittest.TestCase):
 
         self.assertEqual(unpackedData[0], (1, 2, 3))
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-        self.assertEqual(unpackedData[2], (7, 8, 9))
+        self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
 
 
 if __name__ == "__main__":
