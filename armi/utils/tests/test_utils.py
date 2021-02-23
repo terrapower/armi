@@ -258,13 +258,11 @@ class Utils_TestCase(unittest.TestCase):
         matrix[1, 1] = 4
         xtick = ([0, 1], ["1", "2"])
         ytick = ([0, 1], ["1", "2"])
-        dc = directoryChangers.TemporaryDirectoryChanger()
-        dc.__enter__()
         fname = "test_plotMatrix_testfile"
-        utils.plotMatrix(matrix, fname, show=True, title="plot")
-        utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
-        utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
-        dc.__exit__(None, None, None)
+        with directoryChangers.TemporaryDirectoryChanger():
+            utils.plotMatrix(matrix, fname, show=True, title="plot")
+            utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
+            utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
 
     def test_getStepsFromValues(self):
         steps = utils.getStepsFromValues([1.0, 3.0, 6.0, 10.0], prevValue=0.0)
