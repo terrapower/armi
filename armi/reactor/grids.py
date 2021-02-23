@@ -731,9 +731,19 @@ class Grid:
         for _indices, locator in self.items():
             locator._grid = self
 
-    def __getitem__(self, ijk):
+    def __getitem__(self, ijk: Union[Tuple[int, int, int], List[Tuple[int, int, int]]]):
         """
         Get a location by (i, j, k) indices. If it does not exist, create a new one and return it.
+
+        Parameters
+        ----------
+
+        ijk : tuple of indices or list of the same
+            If provided a tuple, an IndexLocation will be created (if necessary) and
+            returned. If provided a list, each element will create a new IndexLocation
+            (if necessary), and a MultiIndexLocation containing all of the passed
+            indices will be returned.
+
 
         Notes
         -----
@@ -745,11 +755,18 @@ class Grid:
         """
         try:
             return self._locations[ijk]
-        except KeyError:
+        except (KeyError, TypeError):
+            pass
+
+        if isinstance(ijk, tuple):
             i, j, k = ijk
             val = IndexLocation(i, j, k, self)
             self._locations[ijk] = val
-            return val
+        elif isinstance(ijk, list):
+            val = MultiIndexLocation(self)
+            locators = [self[idx] for idx in ijk]
+            val.extend(locators)
+        return val
 
     def __len__(self):
         return len(self._locations)
