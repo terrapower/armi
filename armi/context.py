@@ -29,6 +29,27 @@ import enum
 import shutil
 import gc
 
+# h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
+# to atexit below doesn't lead to a segfault on python exit. The Database3 module is
+# imported at call time, since it itself needs stuff that is initialized in this module
+# to import properly.  However, if that import leads to the first time that h5py is
+# imported in this process, doing so will cause a segfault. The theory here is that this
+# happens because the h5py extension module is not safe to import (for whatever reason)
+# when the python interpreter is in whatever state it's in when the atexit callbacks are
+# being invoked.  Importing early avoids this.
+#
+# Minimal code to reproduce the issue:
+#
+# >>> import atexit
+#
+# >>> def willSegFault():
+# >>>     import h5py
+#
+# >>> atexit.register(willSegFault)
+
+import h5py
+
+
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
 

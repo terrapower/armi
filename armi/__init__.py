@@ -87,7 +87,6 @@ from armi.reactor import flags
 from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
 
-
 # ARMI does not configure its own application by default. This is mostly to catch issues
 # involving calling code that requires the framework to be configured before that has
 # explicitly taken place. An application should call `configure()` with its App class in
