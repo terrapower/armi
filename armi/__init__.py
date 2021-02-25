@@ -87,26 +87,6 @@ from armi.reactor import flags
 from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
 
-# h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
-# to atexit below doesn't lead to a segfault on python exit. The Database3 module is
-# imported at call time, since it itself needs stuff that is initialized in this module
-# to import properly.  However, if that import leads to the first time that h5py is
-# imported in this process, doing so will cause a segfault. The theory here is that this
-# happens because the h5py extension module is not safe to import (for whatever reason)
-# when the python interpreter is in whatever state it's in when the atexit callbacks are
-# being invoked.  Importing early avoids this.
-#
-# Minimal code to reproduce the issue:
-#
-# >>> import atexit
-#
-# >>> def boom():
-# >>>     import h5py
-#
-# >>> atexit.register(boom)
-
-import h5py
-
 # ARMI does not configure its own application by default. This is mostly to catch issues
 # involving calling code that requires the framework to be configured before that has
 # explicitly taken place. An application should call `configure()` with its App class in
