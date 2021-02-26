@@ -831,3 +831,27 @@ def _plotBlocksInAssembly(
             )
 
     return xBlockLoc, yBlockHeights, yBlockAxMesh
+
+
+def makeHistogram(x, y):
+    """
+    Take a list of x and y values, and return a histogram-ified version
+    Good for plotting multigroup flux spectrum or cross sections
+    """
+    if not len(x) == len(y):
+        raise ValueError(
+            "Cannot make a histogram unless the x and y lists are the same size."
+            + "len(x) == {} and len(y) == {}".format(len(x), len(y))
+        )
+    n = len(x)
+    xHistogram = numpy.zeros(2 * n)
+    yHistogram = numpy.zeros(2 * n)
+    for i in range(n):
+        lower = 2 * i
+        upper = 2 * i + 1
+        xHistogram[lower] = x[i - 1]
+        xHistogram[upper] = x[i]
+        yHistogram[lower] = y[i]
+        yHistogram[upper] = y[i]
+    xHistogram[0] = x[0] / 2.0
+    return xHistogram, yHistogram
