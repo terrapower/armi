@@ -159,7 +159,7 @@ class BlockNumberModifier(GeometryChanger):
                     self.setNumberOfBlocks(a)
                 else:
                     # non-fuel. Control?
-                    self.setNumberOfBlocks(a, blockType=a[fuelI].getType())
+                    self.setNumberOfBlocks(a, blockFlags=a[fuelI].p.flags)
             else:
                 # radial shields, etc. go here.
                 pass
@@ -173,7 +173,7 @@ class BlockNumberModifier(GeometryChanger):
         # update bookkeeping.
         r.core.regenAssemblyLists()
 
-    def setNumberOfBlocks(self, assem, blockType=Flags.FUEL):
+    def setNumberOfBlocks(self, assem, blockFlags=Flags.FUEL):
         r"""
         Change the region to have a certain number of blocks with uniform height
 
@@ -184,9 +184,9 @@ class BlockNumberModifier(GeometryChanger):
         assem : Assembly
             The assembly to modify
 
-        blockType : str, optional
-            Type of block to change. Default: Fuel. Allows control
-            assemblies, etc. to modified just like fuel assemblies.
+        blockFlags : Flags, optional
+            Type of block to change. Default: Flags.FUEL. Allows control
+            assemblies, etc. to be modified just like fuel assemblies.
 
         Notes
         -----
@@ -198,9 +198,9 @@ class BlockNumberModifier(GeometryChanger):
         if you're tracking history.
 
         """
-        fuelHeight = assem.getTotalHeight(blockType)
+        fuelHeight = assem.getTotalHeight(blockFlags)
         blockHeight = fuelHeight / self.numToAdd
-        fuelBlocks = set(assem.getBlocks(blockType))
+        fuelBlocks = set(assem.getBlocks(blockFlags))
         newBlockStack = []
         numFuelBlocksAdded = 0
         # make a tracker flag that tells us if we're below or above fuel.

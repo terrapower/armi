@@ -1566,6 +1566,9 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(v0 / 3.0, self.HexBlock.getVolume())
         self.assertAlmostEqual(m0 / 3.0, self.HexBlock.getMass())
 
+        symmetryLine = self.HexBlock.isOnWhichSymmetryLine()
+        self.assertEqual(grids.BOUNDARY_CENTER, symmetryLine)
+
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""
         self.HexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
@@ -1657,6 +1660,128 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(desiredPitch, hexBlock.getPitch())
         self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
+
+    def test_getDuctPitch(self):
+        ductIP = self.HexBlock.getDuctIP()
+        self.assertAlmostEqual(70.0, ductIP)
+        ductOP = self.HexBlock.getDuctOP()
+        self.assertAlmostEqual(70.6, ductOP)
+
+    def test_getPinCenterFlatToFlat(self):
+        nRings = hexagon.numRingsToHoldNumCells(self.HexBlock.getNumPins())
+        pinPitch = self.HexBlock.getPinPitch()
+        pinCenterCornerToCorner = 2 * (nRings - 1) * pinPitch
+        pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
+        f2f = self.HexBlock.getPinCenterFlatToFlat()
+        self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
+
+
+class ThRZBlock_TestCase(unittest.TestCase):
+    def setUp(self):
+        caseSetting = settings.Settings()
+        self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "fuel",
+                "UZr",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=0.0,
+                radius_differential=40.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "coolant",
+                "Sodium",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=40.0,
+                radius_differential=10.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "clad",
+                "HT9",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=50.0,
+                radius_differential=7.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "wire",
+                "HT9",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=57.0,
+                radius_differential=3.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        # random 1/4 chunk taken out to exercise Theta-RZ block capabilities
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "chunk",
+                "Sodium",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=0.0,
+                radius_differential=60.0,
+                inner_theta=1.5 * math.pi,
+                azimuthal_differential=0.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+
+    def test_radii(self):
+        radialInner = self.ThRZBlock.radialInner()
+        self.assertEqual(0.0, radialInner)
+        radialOuter = self.ThRZBlock.radialOuter()
+        self.assertEqual(60.0, radialOuter)
+
+    def test_theta(self):
+        thetaInner = self.ThRZBlock.thetaInner()
+        self.assertEqual(0.0, thetaInner)
+        thetaOuter = self.ThRZBlock.thetaOuter()
+        self.assertEqual(2.0 * math.pi, thetaOuter)
+
+    def test_axial(self):
+        axialInner = self.ThRZBlock.axialInner()
+        self.assertEqual({5.0}, axialInner)
+        axialOuter = self.ThRZBlock.axialOuter()
+        self.assertEqual({15.0}, axialOuter)
+
+    def test_verifyBlockDims(self):
+        """
+        This function is currently null. It consists of a single line that
+        returns nothing. This test covers that line. If the function is ever
+        implemented, it can be tested here.
+        """
+        self.ThRZBlock.verifyBlockDims()
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
@@ -1750,6 +1875,15 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.assertEqual(desiredPitch, cartBlock.getPitch())
         self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
+
+
+class PointTests(unittest.TestCase):
+    def setUp(self):
+        self.Point = blocks.Point()
+
+    def test_getters(self):
+        self.assertEqual(1.0, self.Point.getVolume())
+        self.assertEqual(1.0, self.Point.getBurnupPeakingFactor())
 
 
 class MassConservationTests(unittest.TestCase):

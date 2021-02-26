@@ -142,6 +142,9 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNode(ts, self.o.cs)
+            # get coverage for getTimeStepNum by checking against getcycleNode
+            testTS = utils.getTimeStepNum(cycle, node, self.o.cs)
+            self.assertEqual(ts, testTS)
             mgFlux = (
                 hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             )  #  b.p.mgFlux is vol integrated

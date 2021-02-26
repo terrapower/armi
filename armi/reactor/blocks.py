@@ -2216,7 +2216,7 @@ class ThRZBlock(Block):
     def thetaOuter(self):
         """Return a largest theta of all the components."""
         outerTheta = self.getDimensions("outer_theta")
-        largestOuter = min(outerTheta) if outerTheta else None
+        largestOuter = max(outerTheta) if outerTheta else None
         return largestOuter
 
     def axialInner(self):

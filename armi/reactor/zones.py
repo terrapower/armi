@@ -599,7 +599,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
         try:
             zone = zones[zoneName]
         except KeyError:
-            zone = Zone(a.name)
+            zone = Zone(zoneName)
             zones.add(zone)
         zone.append(a.getLocation())
     return zones
