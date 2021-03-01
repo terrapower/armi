@@ -41,7 +41,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor import components
 from armi.utils import units
-from armi.utils.plotting import makeHistogram
+from armi.utils.plotting import plotBlockFlux
 from armi.bookkeeping import report
 from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -852,165 +852,13 @@ class Block(composites.Composite):
 
     @staticmethod
     def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
-        """
-        Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
-
-        Parameters
-        ----------
-        core : Core
-            Core object
-        fName : str, optional
-            the name of the plot file to produce. If none, plot will be shown. A text file with
-            the flux values will also be generated if this is non-empty.
-        bList : iterable, optional
-            is a single block or a list of blocks to average over. If no bList, full core is assumed.
-        peak : bool, optional
-            a flag that will produce the peak as well as the average on the plot.
-        adjoint : bool, optional
-            plot the adjoint as well.
-        bList2 :
-            a separate list of blocks that will also be plotted on a separate axis on the same plot.
-            This is useful for comparing flux in some blocks with flux in some other blocks.
-
-        Notes
-        -----
-        This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
-        """
-
-        class BlockListFlux(object):
-            def __init__(
-                self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
-            ):
-                if blockList:
-                    self.blockList = blockList
-                    self.nGroup = nGroup
-                    self.avgFlux = numpy.zeros(self.nGroup)
-                    self.peakFlux = numpy.zeros(self.nGroup)
-                    self.peak = peak
-                    self.adjoint = adjoint
-                    if self.adjoint:
-                        self.labelAvg = "Average Adjoint Flux"
-                        self.labelPeak = "Peak Adjoint Flux"
-                    else:
-                        self.labelAvg = "Average Flux"
-                        self.labelPeak = "Peak Flux"
-                    if primary:
-                        self.lineAvg = "-"
-                        self.linePeak = "-"
-                    else:
-                        self.lineAvg = "r--"
-                        self.linePeak = "k--"
-
-            def calcAverage(self):
-                for b in self.blockList:
-                    thisFlux = numpy.array(
-                        b.getMgFlux(adjoint=self.adjoint)
-                    )  # this block's flux.
-                    self.avgFlux += numpy.array(thisFlux)
-                    if sum(thisFlux) > sum(self.peakFlux):
-                        self.peakFlux = thisFlux
-                self.avgFlux = self.avgFlux / len(bList)
-
-            def setEnergyStructure(self, upperEnergyBounds):
-                self.E = [eMax / 1e6 for eMax in upperEnergyBounds]
-
-            def makePlotHistograms(self):
-                self.eHistogram, self.avgHistogram = makeHistogram(self.E, self.avgFlux)
-                if self.peak:
-                    _, self.peakHistogram = makeHistogram(self.E, self.peakFlux)
-
-            def checkSize(self):
-                if not len(self.E) == len(self.avgFlux):
-                    runLog.error(self.avgFlux)
-                    raise
-
-            def getTable(self):
-                return enumerate(zip(self.E, self.avgFlux, self.peakFlux))
-
-        # process arguments
-        if bList is None:
-            bList = core.getBlocks()
-        bList = list(bList)
-        if adjoint and bList2:
-            runLog.warning("Cannot plot adjoint flux with bList2 argument")
-            return
-        elif adjoint:
-            # reuse bList2 for adjoint flux.
-            bList2 = bList
-        try:
-            G = len(core.lib.neutronEnergyUpperBounds)
-        except:
-            runLog.warning("No ISOTXS library attached so no flux plots.")
-            return
-
-        BlockListFluxes = set()
-        bf1 = BlockListFlux(G, blockList=bList, peak=peak, primary=True)
-        BlockListFluxes.add(bf1)
-        if bList2:
-            bf2 = BlockListFlux(G, blockList=bList2, adjoint=adjoint, peak=peak)
-            BlockListFluxes.add(bf2)
-
-        for bf in BlockListFluxes:
-            bf.calcAverage()
-            bf.setEnergyStructure(core.lib.neutronEnergyUpperBounds)
-            bf.checkSize()
-            bf.makePlotHistograms()
-
-        if fName:
-            # write a little flux text file.
-            txtFileName = os.path.splitext(fName)[0] + ".txt"
-            with open(txtFileName, "w") as f:
-                f.write(
-                    "{0:16s} {1:16s} {2:16s}\n".format(
-                        "Energy_Group", "Average_Flux", "Peak_Flux"
-                    )
-                )
-                for g, (eMax, avgFlux, peakFlux) in bf1.getTable():
-                    f.write("{0:12E} {1:12E} {2:12E}\n".format(eMax, avgFlux, peakFlux))
-
-        if max(bf1.avgFlux) <= 0.0:
-            runLog.warning(
-                "Cannot plot flux with maxval=={0} in {1}".format(maxVal, bList[0])
-            )
-            return
-
-        plt.figure()
-        plt.plot(bf1.eHistogram, bf1.avgHistogram, bf1.lineAvg, label=bf1.labelAvg)
-        if peak:
-            plt.plot(
-                bf1.eHistogram, bf1.peakHistogram, bf1.linePeak, label=bf1.labelPeak
-            )
-        ax = plt.gca()
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        plt.xlabel("Energy (MeV)")
-        plt.ylabel("Flux (n/cm$^2$/s)")
-        if peak or bList2:
-            plt.legend(loc="lower right")
-        plt.grid(color="0.70")
-        if bList2:
-            if adjoint:
-                plt.twinx()
-                plt.ylabel("Adjoint Flux (n/cm$^2$/s)", rotation=270)
-                ax2 = plt.gca()
-                ax2.set_yscale("log")
-            plt.plot(bf2.eHistogram, bf2.avgHistogram, bf2.lineAvg, label=bf2.labelAvg)
-            if peak and not adjoint:
-                plt.plot(
-                    bf2.eHistogram, bf2.peakHistogram, bf2.linePeak, label=bf2.labelPeak
-                )
-            plt.legend(loc="lower left")
-        plt.title("Group flux")
-
-        if fName:
-            plt.savefig(fName)
-            report.setData(
-                "Flux Plot {}".format(os.path.split(fName)[1]),
-                os.path.abspath(fName),
-                report.FLUX_PLOT,
-            )
-        else:
-            plt.show()
+        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a
+        # better fit.
+        # We don't want to remove the plotFlux function in the Block namespace yet
+        # in case client code is depending on this function existing here. This is just
+        # a simple pass-through function that passes the arguments along to the actual
+        # implementation in its new location.
+        plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):
         """
