@@ -1441,33 +1441,6 @@ class Block_TestCase(unittest.TestCase):
         self.Block.breakFuelComponentsIntoIndividuals()
         self.assertEqual(fuel.getDimension("mult"), 1.0)
 
-    def test_plotFlux(self):
-        try:
-            xslib = isotxs.readBinary(ISOAA_PATH)
-            self.Block.r.core.lib = xslib
-            self.Block.p.mgFlux = range(33)
-            self.Block.plotFlux(self.Block.r.core, fName="flux.png", bList=[self.Block])
-            self.assertTrue(os.path.exists("flux.png"))
-            self.Block.plotFlux(
-                self.Block.r.core, fName="peak.png", bList=[self.Block], peak=True
-            )
-            self.assertTrue(os.path.exists("peak.png"))
-            self.Block.plotFlux(
-                self.Block.r.core,
-                fName="bList2.png",
-                bList=[self.Block],
-                bList2=[self.Block],
-            )
-            self.assertTrue(os.path.exists("bList2.png"))
-            # can't test adjoint at the moment, testBlock doesn't like to .getMgFlux(adjoint=True)
-        finally:
-            os.remove("flux.txt")  # secondarily created during the call.
-            os.remove("flux.png")  # created during the call.
-            os.remove("peak.txt")  # csecondarily reated during the call.
-            os.remove("peak.png")  # created during the call.
-            os.remove("bList2.txt")  # secondarily created during the call.
-            os.remove("bList2.png")  # created during the call.
-
     def test_pinMgFluxes(self):
         """
         Test setting/getting of pin-wise fluxes.
