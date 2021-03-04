@@ -43,7 +43,7 @@ class _Material_Test(object):
         )
 
 
-class MaterialConstructionTestss(unittest.TestCase):
+class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
         """Make sure all materials can be instantiated without error."""
         for matClass in materials.iterAllMaterialClassesInNamespace(materials):
@@ -211,6 +211,52 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(self.mat.heatCapacity(300), 230.0, delta=20)
         self.assertAlmostEqual(self.mat.heatCapacity(1000), 320.0, delta=20)
         self.assertAlmostEqual(self.mat.heatCapacity(2000), 380.0, delta=20)
+
+    def test_getTemperatureAtDensity(self):
+        expectedTemperature = 100.0
+        tAtTargetDensity = self.mat.getTemperatureAtDensity(
+            self.mat.density(Tc=expectedTemperature), 30.0
+        )
+        self.assertAlmostEqual(expectedTemperature, tAtTargetDensity)
+
+    def test_getDensityExpansion3D(self):
+        expectedTemperature = 100.0
+        self.mat.p.refDens = 10.9
+        density3D = self.mat.density3KgM3(Tc=expectedTemperature)
+        self.assertAlmostEqual(10.86792660463439e3, density3D)
+
+    def test_removeNucMassFrac(self):
+        self.mat.removeNucMassFrac("O")
+        massFracs = [str(k) for k in self.mat.p.massFrac.keys()]
+        self.assertListEqual(["U235", "U238"], massFracs)
+
+    def test_isBeyondIncubationDose(self):
+        self.mat.modelConst["Rincu"] = 5.0
+        self.assertTrue(self.mat.isBeyondIncubationDose(10.0))
+        self.assertFalse(self.mat.isBeyondIncubationDose(1.0))
+        self.assertAlmostEqual(1.0, self.mat.updateDeltaDPApastIncubation(6.0, 2.0))
+        self.assertAlmostEqual(2.0, self.mat.updateDeltaDPApastIncubation(8.0, 2.0))
+
+    def test_densityTimesHeatCapactiy(self):
+        rhoCp = 3278155.7491839416
+        self.assertAlmostEqual(rhoCp, self.mat.densityTimesHeatCapacity(Tc=500))
+
+    def test_getTempChangeForDensityChange(self):
+        expectedDeltaT = -33.77346947512134
+        actualDeltaT = self.mat.getTempChangeForDensityChange(500.0, 1.001, quiet=False)
+        self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
+
+    def test_duplicate(self):
+        duplicateU = self.mat.duplicate()
+        for key in self.mat.p:
+            self.assertEqual(duplicateU.p[key], self.mat.p[key])
+
+        for key in self.mat.p.massFrac:
+            self.assertEqual(duplicateU.p.massFrac[key], self.mat.p.massFrac[key])
+
+        duplicateMassFrac = self.mat.getMassFracCopy()
+        for key in self.mat.p.massFrac.keys():
+            self.assertEqual(duplicateMassFrac[key], self.mat.p.massFrac[key])
 
 
 class Thorium_TestCase(_Material_Test, unittest.TestCase):
@@ -381,6 +427,11 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
         ref = 141.7968
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_getTempChangeForDensityChange(self):
+        expectedDeltaT = -7.310047340585811
+        actualDeltaT = self.mat.getTempChangeForDensityChange(800.0, 1.001, quiet=False)
+        self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
 
 class Sulfur_TestCase(_Material_Test, unittest.TestCase):
