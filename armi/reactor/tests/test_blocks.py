@@ -38,6 +38,8 @@ from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import geometry
+from armi.physics.neutronics import NEUTRON
+from armi.physics.neutronics import GAMMA
 
 
 def buildSimpleFuelBlock():
@@ -1173,6 +1175,36 @@ class Block_TestCase(unittest.TestCase):
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
+
+    def test_setPinPowers(self):
+
+        numPins = self.Block.getNumPins()
+        neutronPower = [10.0 * i for i in range(numPins)]
+        gammaPower = [1.0 * i for i in range(numPins)]
+        totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
+        imax = 9  # hexagonal rings of pins
+        jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
+        self.Block.setPinPowers(
+            neutronPower,
+            numPins,
+            imax,
+            jmax,
+            gamma=False,
+            removeSixCornerPins=False,
+            powerKeySuffix=NEUTRON,
+        )
+        self.Block.setPinPowers(
+            gammaPower,
+            numPins,
+            imax,
+            jmax,
+            gamma=True,
+            removeSixCornerPins=False,
+            powerKeySuffix=GAMMA,
+        )
+        assert_allclose(self.Block.p.pinPowersNeutron, numpy.array(neutronPower))
+        assert_allclose(self.Block.p.pinPowersGamma, numpy.array(gammaPower))
+        assert_allclose(self.Block.p.pinPowers, numpy.array(totalPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):

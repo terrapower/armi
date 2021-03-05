@@ -1806,7 +1806,9 @@ class HexBlock(Block):
             self.p.pinPowersNeutron = self.p.pinPowers
 
         if gamma:
-            self.p.pinPowers = self.p.pinPowersNeutron + self.p.pinPowersGamma
+            self.p.pinPowers = [
+                n + g for n, g in zip(self.p.pinPowersNeutron, self.p.pinPowersGamma)
+            ]
         else:
             self.p.pinPowers = self.p.pinPowersNeutron
 
