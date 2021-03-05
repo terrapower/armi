@@ -41,6 +41,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor import components
 from armi.utils import units
+from armi.utils.plotting import plotBlockFlux
 from armi.bookkeeping import report
 from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -850,164 +851,14 @@ class Block(composites.Composite):
         self.clearCache()
 
     @staticmethod
-    def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=None):
-        """
-        Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
-
-        Parameters
-        ----------
-        core : Core
-            Core object
-        fName : str, optional
-            the name of the plot file to produce. If none, plot will be shown. A text file with
-            the flux values will also be generated if this is non-empty.
-        bList : iterable, optional
-            is a single block or a list of blocks to average over. If no bList, full core is assumed.
-        peak : bool, optional
-            a flag that will produce the peak as well as the average on the plot.
-        adjoint : bool, optional
-            plot the adjoint as well.
-        bList2 :
-            a separate list of blocks that will also be plotted on a separate axis on the same plot.
-            This is useful for comparing flux in some blocks with flux in some other blocks.
-
-        Notes
-        -----
-        This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
-        """
-        # process arguments
-        if bList is None:
-            bList = core.getBlocks()
-        elif not isinstance(bList, list):
-            # convert single block to single entry list
-            bList = [bList]
-
-        if bList2 is None:
-            bList2 = []
-
-        if adjoint and bList2:
-            runLog.warning("Cannot plot adjoint flux with bList2 argument")
-            return
-        elif adjoint:
-            # reuse bList2 for adjoint flux.
-            bList2 = bList
-        G = len(bList[0].getMgFlux())
-        avg = numpy.zeros(G)
-        if bList2 or adjoint:
-            avg2 = numpy.zeros(G)
-            peakFlux2 = numpy.zeros(G)
-        peakFlux = numpy.zeros(G)
-        for b in bList:
-            thisFlux = numpy.array(b.getMgFlux())  # this block's flux.
-            avg += thisFlux
-            if sum(thisFlux) > sum(peakFlux):
-                # save the peak block flux as the peakFlux
-                peakFlux = thisFlux
-
-        for b in bList2:
-            thisFlux = numpy.array(b.getMgFlux(adjoint=adjoint))
-            avg2 += abs(thisFlux)
-            if sum(abs(thisFlux)) > sum(abs(peakFlux2)):
-                peakFlux2 = abs(thisFlux)
-
-        avg = avg / len(bList)
-        if bList2:
-            avg2 = avg2 / len(bList2)
-
-        # lib required to get the energy structure of the groups for plotting.
-        lib = core.lib
-        if not lib:
-            runLog.warning("No ISOTXS library attached so no flux plots.")
-            return
-
-        if fName:
-            # write a little flux text file.
-            txtFileName = os.path.splitext(fName)[0] + ".txt"
-            with open(txtFileName, "w") as f:
-                f.write("Energy_Group Average_Flux Peak_Flux\n")
-                for g, eMax in enumerate(lib.neutronEnergyUpperBounds):
-                    f.write("{0} {1} {2}\n".format(eMax / 1e6, avg[g], peakFlux[g]))
-
-        x = []
-        yAvg = []
-        yPeak = []
-        if bList2:
-            yAvg2 = []
-            yPeak2 = []
-
-        fluxList = avg
-        for g, eMax in enumerate(lib.neutronEnergyUpperBounds):
-            x.append(eMax / 1e6)
-            try:
-                yAvg.append(fluxList[g])
-            except:
-                runLog.error(fluxList)
-                raise
-            yPeak.append(peakFlux[g])
-            if bList2:
-                yAvg2.append(avg2[g])
-                yPeak2.append(peakFlux2[g])
-            # make a "histogram" by adding the same val at the next x-point
-            if g < lib.numGroups - 1:
-                x.append(lib.neutronEnergyUpperBounds[g + 1] / 1e6)
-                yAvg.append(fluxList[g])
-                yPeak.append(peakFlux[g])
-                if bList2:
-                    yAvg2.append(avg2[g])
-                    yPeak2.append(peakFlux2[g])
-
-        # visual hack for the lowest energy (last group). Make it flat, but can't go to 0.
-        x.append(lib.neutronEnergyUpperBounds[g] / 2e6)
-        yAvg.append(yAvg[-1])  # re-add the last point to get the histogram effect.
-        yPeak.append(yPeak[-1])
-        if bList2:
-            yPeak2.append(yPeak2[-1])
-            yAvg2.append(yAvg2[-1])
-
-        maxVal = max(yAvg)
-        if maxVal <= 0.0:
-            runLog.warning(
-                "Cannot plot flux with maxval=={0} in {1}".format(maxVal, bList[0])
-            )
-            return
-        plt.figure()
-        plt.plot(x, yAvg, "-", label="Average Flux")
-        if peak:
-            plt.plot(x, yPeak, "-", label="Peak Flux")
-        ax = plt.gca()
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        plt.xlabel("Energy (MeV)")
-        plt.ylabel("Flux (n/cm$^2$/s)")
-        if peak or bList2:
-            plt.legend(loc="lower right")
-        plt.grid(color="0.70")
-        if bList2:
-            if adjoint:
-                label1 = "Average Adjoint Flux"
-                label2 = "Peak Adjoint Flux"
-                plt.twinx()
-                plt.ylabel("Adjoint Flux [n/cm$^2$/s]", rotation=270)
-                ax2 = plt.gca()
-                ax2.set_yscale("log")
-            else:
-                label1 = "Average Flux 2"
-                label2 = "Peak Flux 2"
-            plt.plot(x, yAvg2, "r--", label=label1)
-            if peak and not adjoint:
-                plt.plot(x, yPeak2, "k--", label=label2)
-            plt.legend(loc="lower left")
-        plt.title("Group flux")
-
-        if fName:
-            plt.savefig(fName)
-            report.setData(
-                "Flux Plot {}".format(os.path.split(fName)[1]),
-                os.path.abspath(fName),
-                report.FLUX_PLOT,
-            )
-        else:
-            plt.show()
+    def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
+        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a
+        # better fit.
+        # We don't want to remove the plotFlux function in the Block namespace yet
+        # in case client code is depending on this function existing here. This is just
+        # a simple pass-through function that passes the arguments along to the actual
+        # implementation in its new location.
+        plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):
         """

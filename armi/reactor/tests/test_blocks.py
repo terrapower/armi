@@ -1473,17 +1473,6 @@ class Block_TestCase(unittest.TestCase):
         self.Block.breakFuelComponentsIntoIndividuals()
         self.assertEqual(fuel.getDimension("mult"), 1.0)
 
-    def test_plotFlux(self):
-        try:
-            xslib = isotxs.readBinary(ISOAA_PATH)
-            self.Block.r.core.lib = xslib
-            self.Block.p.mgFlux = range(33)
-            self.Block.plotFlux(self.Block.r.core, fName="flux.png", bList=[self.Block])
-            self.assertTrue(os.path.exists("flux.png"))
-        finally:
-            os.remove("flux.txt")  # secondarily created during the call.
-            os.remove("flux.png")  # created during the call.
-
     def test_pinMgFluxes(self):
         """
         Test setting/getting of pin-wise fluxes.
