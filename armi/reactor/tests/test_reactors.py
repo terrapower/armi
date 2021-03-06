@@ -32,7 +32,6 @@ from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor import geometry
 from armi.reactor import reactors
 from armi.reactor.components import Hexagon, Rectangle

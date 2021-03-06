@@ -29,7 +29,6 @@ Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defau
 """
 from armi import interfaces
 from armi import runLog
-from armi.reactor import locations
 from armi import operators
 
 

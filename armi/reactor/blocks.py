@@ -33,7 +33,6 @@ from armi.reactor import composites
 from armi import runLog
 from armi import settings
 from armi.nucDirectory import nucDir
-from armi.reactor import locations
 from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import blockParameters

@@ -25,7 +25,7 @@ from matplotlib.collections import PatchCollection
 from armi.reactor import blocks
 from armi.reactor import components
 from armi.reactor.flags import Flags
-from armi.reactor import locations
+from armi.utils import hexagon
 from armi import runLog
 
 SIN60 = math.sin(math.radians(60.0))
@@ -310,6 +310,15 @@ class BlockAvgToCylConverter(BlockConverter):
         numExternalRings=None,
         quiet=False,
     ):
+        if sourceBlock.spatialGrid is None:
+            raise ValueError(f"{sourceBlock} has no spatial grid attribute, therefore "
+                             f"the block conversion with {self.__class__.__name__} cannot proceed.")
+            
+        if driverFuelBlock is not None:
+            if driverFuelBlock.spatialGrid is None:
+                raise ValueError(f"{driverFuelBlock} has no spatial grid attribute, therefore "
+                                 f"the block conversion with {self.__class__.__name__} cannot proceed.")
+        
         BlockConverter.__init__(self, sourceBlock, quiet=quiet)
         self._driverFuelBlock = driverFuelBlock
         self._numExternalRings = numExternalRings
@@ -355,7 +364,7 @@ class BlockAvgToCylConverter(BlockConverter):
             tempInput = tempHot = blockToAdd.getAverageTempInC()
 
         for ringNum in range(firstRing, firstRing + numRingsToAdd):
-            numFuelBlocksInRing = locations.numPositionsInRing(blockToAdd, ringNum)
+            numFuelBlocksInRing = blockToAdd.spatialGrid.getPositionsInRing(ringNum)
             assert numFuelBlocksInRing is not None
             fuelBlockTotalArea = numFuelBlocksInRing * self._driverFuelBlock.getArea()
             driverOuterDiam = getOuterDiamFromIDAndArea(innerDiam, fuelBlockTotalArea)
@@ -497,9 +506,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
         )
         self._dissolveComponents()
-        numRings = locations.minimumRings(
-            self._sourceBlock, self._sourceBlock.getNumPins()
-        )
+        numRings = self._sourceBlock.spatialGrid.getMinimumRings(self._sourceBlock.getNumPins())
         pinComponents, nonPins = self._classifyComponents()
         self._buildFirstRing(pinComponents)
         for ring in range(2, numRings + 1):
@@ -560,7 +567,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
         This will be a fuel (or control) meat surrounded on both sides by clad, bond, liner, etc. layers.
         """
-        numPinsInRing = locations.numPositionsInRing(self._sourceBlock, ringNum)
+        numPinsInRing = self._sourceBlock.spatialGrid.getPositionsInRing(ringNum)
         pinRadii = [c.getDimension("od") / 2.0 for c in pinComponents]
         bigRingRadii = radiiFromRingOfRods(
             self.pinPitch * (ringNum - 1), numPinsInRing, pinRadii
@@ -571,7 +578,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         self._addCoolantRing(coolantOD, nameSuffix)
         innerDiameter = coolantOD
 
-        centerPin = pinComponents[0]
         compsToTransformIntoRings = pinComponents[::-1] + pinComponents[1:]
         for i, (bcs, bigRingRadius) in enumerate(
             zip(compsToTransformIntoRings, bigRingRadii[1:])

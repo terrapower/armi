@@ -30,7 +30,6 @@ from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 
