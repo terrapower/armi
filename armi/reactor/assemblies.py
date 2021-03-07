@@ -86,13 +86,6 @@ class Assembly(composites.Composite):
     DATABASE = "database"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, CHARGED_FUEL_POOL]
 
-    # assemblies that overhang on top edge of 1/3 case.
-    ignoredRegions = [
-        (ringDum, int(1 + 3 * (ringDum - 1) / 2.0))
-        for ringDum in range(3, 50)
-        if ringDum % 2
-    ]
-
     def __init__(self, typ, assemNum=None):
         """
         Parameters
@@ -1314,55 +1307,10 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-    def getPitch(self):
-        """returns hex pitch in cm."""
-        pList = []
-        for b in self:
-            pList.append(b.getPitch())
+    pass
 
-        if numpy.std(pList) > 0.01:
-            runLog.warning(
-                "There are multiple pitches in {0}. They are: {1}."
-                " Returning average".format(self, pList)
-            )
-            # print out the bottom two blocks for debugging
-            for b in self[:2]:
-                b.printContents()
-        return numpy.average(pList)
-
-    def convert2DPinValsTo1D(self, vals, imax, jmax):
-        """
-        This converts a 2-D list of vals as a function of (i,j) = (ring-1,pos-1)
-        to a 1-D list of the same vals indexed by n = sum(jmax[0:i]) + j
-
-        No hex surface index (k = 0 to 5) is used here.
-
-        Parameters
-        ----------
-        vals : 2-D list of floats
-            The arbitrary quantity that is to be re-indexed from 2-D to 1-D.
-
-        imax : int
-            The maximum number of hex assembly rings in the reactor (including
-            partially-filled rings).
-
-        jmax : list of ints
-            A list containing the total number of hex assembly "positions" in each hex
-            assembly "ring".  This includes "ghost" assemblies that do not exist in a
-            1/3 or 1/6 core.
-
-        Returns
-        -------
-        vals1D : list of floats
-            The arbitrary quantity that has been re-indexed from 2-D to 1-D.
-        """
-
-        vals1D = [0.0] * sum(jmax[0:imax])  # initialize 1-D list
-        for i in range(imax):  # loop through rings
-            for j in range(jmax[i]):  # loop through positions in ring i
-                vals1D[sum(jmax[0:i]) + j] = vals[i][j]  # convert 2-D (i,j) to 1-D!
-
-        return vals1D
+class CartesianAssembly(Assembly):
+    pass
 
 
 class RZAssembly(Assembly):
@@ -1437,7 +1385,4 @@ class ThRZAssembly(RZAssembly):
         self.p.AziMesh = 1
 
 
-class CartesianAssembly(Assembly):
 
-    # Don't ignore things.
-    ignoredRegions = []
