@@ -1309,6 +1309,7 @@ class Assembly(composites.Composite):
 class HexAssembly(Assembly):
     pass
 
+
 class CartesianAssembly(Assembly):
     pass
 
@@ -1383,6 +1384,3 @@ class ThRZAssembly(RZAssembly):
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)
         self.p.AziMesh = 1
-
-
-

@@ -985,7 +985,7 @@ class Grid:
         densely packed, this may be unphysical.
         """
         raise NotImplementedError("Base grid does not know about rings")
-    
+
     def getPositionsInRing(self, ring: int) -> int:
         """
         Return the number of positions within a ring.
@@ -1169,7 +1169,7 @@ class CartesianGrid(Grid):
     def getPositionsInRing(self, ring):
         """
         Return the number of positions within a ring.
-        
+
         Notes
         -----
         The number of positions within a ring will change
@@ -1398,7 +1398,7 @@ class HexGrid(Grid):
         rings/positions.
         """
         return hexagon.numRingsToHoldNumCells(n)
-    
+
     def getPositionsInRing(self, ring):
         """
         Return the number of positions within a ring.

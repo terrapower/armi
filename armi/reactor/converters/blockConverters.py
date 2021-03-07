@@ -311,14 +311,18 @@ class BlockAvgToCylConverter(BlockConverter):
         quiet=False,
     ):
         if sourceBlock.spatialGrid is None:
-            raise ValueError(f"{sourceBlock} has no spatial grid attribute, therefore "
-                             f"the block conversion with {self.__class__.__name__} cannot proceed.")
-            
+            raise ValueError(
+                f"{sourceBlock} has no spatial grid attribute, therefore "
+                f"the block conversion with {self.__class__.__name__} cannot proceed."
+            )
+
         if driverFuelBlock is not None:
             if driverFuelBlock.spatialGrid is None:
-                raise ValueError(f"{driverFuelBlock} has no spatial grid attribute, therefore "
-                                 f"the block conversion with {self.__class__.__name__} cannot proceed.")
-        
+                raise ValueError(
+                    f"{driverFuelBlock} has no spatial grid attribute, therefore "
+                    f"the block conversion with {self.__class__.__name__} cannot proceed."
+                )
+
         BlockConverter.__init__(self, sourceBlock, quiet=quiet)
         self._driverFuelBlock = driverFuelBlock
         self._numExternalRings = numExternalRings
@@ -506,7 +510,9 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
         )
         self._dissolveComponents()
-        numRings = self._sourceBlock.spatialGrid.getMinimumRings(self._sourceBlock.getNumPins())
+        numRings = self._sourceBlock.spatialGrid.getMinimumRings(
+            self._sourceBlock.getNumPins()
+        )
         pinComponents, nonPins = self._classifyComponents()
         self._buildFirstRing(pinComponents)
         for ring in range(2, numRings + 1):
