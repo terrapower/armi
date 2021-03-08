@@ -1115,7 +1115,7 @@ class Assembly_TestCase(unittest.TestCase):
             assemNum=1,
             spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
         )
-        self.assertEqual(a.coords(), [2, 2])
+        self.assertEqual(a.coords(), (2.0, 2.0))
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
