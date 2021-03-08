@@ -238,12 +238,19 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(2.0, self.mat.updateDeltaDPApastIncubation(8.0, 2.0))
 
     def test_densityTimesHeatCapactiy(self):
-        rhoCp = 3278155.7491839416
-        self.assertAlmostEqual(rhoCp, self.mat.densityTimesHeatCapacity(Tc=500))
+        Tc = 500.0
+        expectedRhoCp = self.mat.density(Tc=Tc) * 1000.0 * self.mat.heatCapacity(Tc=Tc)
+        self.assertAlmostEqual(expectedRhoCp, self.mat.densityTimesHeatCapacity(Tc=Tc))
 
     def test_getTempChangeForDensityChange(self):
-        expectedDeltaT = -33.77346947512134
-        actualDeltaT = self.mat.getTempChangeForDensityChange(500.0, 1.001, quiet=False)
+        Tc = 500.0
+        linearExpansion = self.mat.linearExpansion(Tc=Tc)
+        densityFrac = 1.001
+        linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
+        expectedDeltaT = linearChange / linearExpansion
+        actualDeltaT = self.mat.getTempChangeForDensityChange(
+            Tc, densityFrac, quiet=False
+        )
         self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
     def test_duplicate(self):
@@ -429,8 +436,15 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_getTempChangeForDensityChange(self):
-        expectedDeltaT = -7.310047340585811
-        actualDeltaT = self.mat.getTempChangeForDensityChange(800.0, 1.001, quiet=False)
+        Tc = 800.0
+        densityFrac = 1.001
+        currentDensity = self.mat.density(Tc=Tc)
+        perturbedDensity = currentDensity * densityFrac
+        tAtPerturbedDensity = self.mat.getTemperatureAtDensity(perturbedDensity, Tc)
+        expectedDeltaT = tAtPerturbedDensity - Tc
+        actualDeltaT = self.mat.getTempChangeForDensityChange(
+            Tc, densityFrac, quiet=False
+        )
         self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
 
