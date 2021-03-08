@@ -197,18 +197,42 @@ def _getNeutronicsBlockParams():
             default=None,
         )
 
+        def pinPowersNeutron(self, value):
+            self._p_pinPowersNeutron = (
+                value
+                if value is None or isinstance(value, numpy.ndarray)
+                else numpy.array(value)
+            )
+
         pb.defParam(
             "pinPowersNeutron",
+            setter=pinPowersNeutron,
             units="W/cm",
-            description="should be a blank 2-D array, but re-defined later (nPins x nAxialSegments)",
+            description="""
+                The block-level pin linear power densities from neutron-induced
+                interactions. pinPowersNeutron[i] represents the average linear power density of pin i
+                (from neutron heating). Power units are Watts/cm (Watts produced per cm of pin length).
+            """,
             saveToDB=True,
             default=None,
         )
 
+        def pinPowersGamma(self, value):
+            self._p_pinPowersGamma = (
+                value
+                if value is None or isinstance(value, numpy.ndarray)
+                else numpy.array(value)
+            )
+
         pb.defParam(
             "pinPowersGamma",
+            setter=pinPowersGamma,
             units="W/cm",
-            description="should be a blank 2-D array, but re-defined later (nPins x nAxialSegments)",
+            description="""
+                The block-level pin linear power densities from gamma heating.
+                pinPowersGamma[i] represents the average linear power density of pin i (from gamma
+                heating). Power units are Watts/cm (Watts produced per cm of pin length).",
+            """,
             saveToDB=True,
             default=None,
         )
@@ -375,24 +399,45 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.detailedAxialExpansion],
         )
 
+        def linPowByPin(self, value):
+            if value is None or isinstance(value, numpy.ndarray):
+                self._p_linPowByPin = value
+            else:
+                self._p_linPowByPin = numpy.array(value)
+
         pb.defParam(
             "linPowByPin",
+            setter=linPowByPin,
             units="W/cm",
             description="Pin linear power",
             location=ParamLocation.CHILDREN,
             default=None,
         )
 
+        def linPowByPinNeutron(self, value):
+            if value is None or isinstance(value, numpy.ndarray):
+                self._p_linPowByPinNeutron = value
+            else:
+                self._p_linPowByPinNeutron = numpy.array(value)
+
         pb.defParam(
             "linPowByPinNeutron",
+            setter=linPowByPinNeutron,
             units="W/cm",
             description="Pin linear neutron power",
             location=ParamLocation.CHILDREN,
             default=None,
         )
 
+        def linPowByPinGamma(self, value):
+            if value is None or isinstance(value, numpy.ndarray):
+                self._p_linPowByPinGamma = value
+            else:
+                self._p_linPowByPinGamma = numpy.array(value)
+
         pb.defParam(
             "linPowByPinGamma",
+            setter=linPowByPinGamma,
             units="W/cm",
             description="Pin linear gamma power",
             location=ParamLocation.CHILDREN,
