@@ -24,7 +24,6 @@ from armi import tests
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import components
-from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
 from armi.reactor.assemblies import *
@@ -123,7 +122,7 @@ def buildTestAssemblies():
         assembly = assemblies.HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numBlocks)
         assembly.spatialGrid.armiObject = assembly
-        for i in range(numBlocks):
+        for _i in range(numBlocks):
             newBlock = copy.deepcopy(blockTemplate)
             assembly.add(newBlock)
         assembly.calculateZCoords()
@@ -171,8 +170,10 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(uThZrFuel.getMassFrac("TH232"), 0.3)
 
 
-def makeTestAssembly(numBlocks, assemNum, pitch=1.0, r=None):
-    coreGrid = r.core.spatialGrid if r is not None else grids.HexGrid.fromPitch(pitch)
+def makeTestAssembly(
+    numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None
+):
+    coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
     a.spatialGrid = grids.axialUnitGrid(numBlocks)
     a.spatialGrid.armiObject = a
@@ -488,7 +489,7 @@ class Assembly_TestCase(unittest.TestCase):
         assembly2 = makeTestAssembly(assemNum2, assemNum2)
 
         # add some blocks with a component
-        for i in range(assemNum2):
+        for _i in range(assemNum2):
 
             self.hexDims = {
                 "Tinput": 273.0,
@@ -1105,103 +1106,16 @@ class Assembly_TestCase(unittest.TestCase):
             b.add(h)
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
-
-class HexAssembly_TestCase(unittest.TestCase):
-    def setUp(self):
-        self.name = "A0015"
-        self.assemNum = 3
-        self.height = 10
-        self.cs = settings.Settings()
-        self.cs[
-            "verbosity"
-        ] = "error"  # Print nothing to the screen that would normally go to the log.
-        self.cs["stationaryBlocks"] = []
-        self.HexAssembly = makeTestAssembly(self.assemNum, self.assemNum, 0.76)
-        # add some blocks with a component
-        self.blockList = []
-        for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
-            b.setHeight(self.height)
-            self.hexDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "op": 0.76,
-                "ip": 0.0,
-                "mult": 1.0,
-            }
-
-            h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b.setType("defaultType")
-            b.add(h)
-            self.HexAssembly.add(b)
-            self.blockList.append(b)
-
-    def tearDown(self):
-        self.HexAssembly = None
-
-    def test_getPitch(self):
-        pList = []
-        for b in self.HexAssembly:
-            pList.append(b.getPitch())
-
-        cur = self.HexAssembly.getPitch()
-        ref = numpy.average(pList)
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-
-class CartesianAssembly_TestCase(unittest.TestCase):
-    def setUp(self):
-        self.name = "A0015"
-        self.assemNum = 3
-        self.height = 10
-        self.cs = settings.Settings()
-        self.cs[
-            "verbosity"
-        ] = "error"  # Print nothing to the screen that would normally go to the log.
-        self.cs["stationaryBlocks"] = []
-        reactorGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
-        a = self.CartesianAssembly = CartesianAssembly(
-            "defaultType", assemNum=self.assemNum
+    def test_carestianCoordinates(self):
+        """
+        Check the coordinates of the assembly within the core with a CarestianGrid.
+        """
+        a = makeTestAssembly(
+            numBlocks=1,
+            assemNum=1,
+            spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
         )
-        a.spatialGrid = grids.axialUnitGrid(self.assemNum)
-        a.spatialLocator = grids.IndexLocation(5, 3, 0, reactorGrid)
-        a.spatialGrid.armiObject = a
-
-        # add some blocks with a component
-        self.blockList = []
-
-        for _i in range(self.assemNum):
-            b = blocks.CartesianBlock("TestCartesianBlock", self.cs)
-            b.setHeight(self.height)
-
-            self.cartesianDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "widthOuter": 1.0,
-                "widthInner": 0.0,
-                "mult": 1.0,
-            }
-
-            h = components.Square("fuel", "UZr", **self.cartesianDims)
-            b.setType("defaultType")
-            b.add(h)
-            self.CartesianAssembly.add(b)
-            self.blockList.append(b)
-
-    def tearDown(self):
-        self.CartesianAssembly = None
-
-    def test_coords(self):
-        """
-        Check coordinates of a Cartesian grid.
-
-        A default Cartesian grid has the center square centered at 0,0.
-        So a square at index 5, 3  with indexing starting at 0
-        would be centered at 5.0. 3.0.
-        """
-        cur = self.CartesianAssembly.coords()
-        self.assertEqual(cur, (5.0, 3.0))
+        self.assertEqual(a.coords(), [2, 2])
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
