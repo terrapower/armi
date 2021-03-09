@@ -136,7 +136,7 @@ class BlockNumberModifier(GeometryChanger):
 
     def __init__(self, cs):
         GeometryChanger.__init__(self, cs)
-        self.numToAdd = None
+        self.refinement = None
 
     def convert(self, r=None):
         """
@@ -146,33 +146,28 @@ class BlockNumberModifier(GeometryChanger):
         are laid out.
         """
         refAssem = r.core.refAssem
-        fuelI = refAssem.getBlocks().index(refAssem.getFirstBlock(Flags.FUEL))
         # store this b/c the ref assem length will change.
         origRefBlocks = len(refAssem)
+        refineIndex = [
+            i for i, b in enumerate(refAssem.getBlocks()) if b.hasFlags(Flags.FUEL)
+        ]
 
         for a in r.core.getAssemblies(includeBolAssems=True):
             if len(a) == origRefBlocks:
-                # modify the number of blocks. Otherwise, it might be a shield
-                # and snapping should accomplish its goal
-                if a.hasFlags(Flags.FUEL):
-                    self.setNumberOfBlocks(a)
-                else:
-                    # non-fuel. Control?
-                    self.setNumberOfBlocks(a, blockFlags=a[fuelI].p.flags)
-            else:
-                # radial shields, etc. go here.
-                pass
+                # this assumes any assembly with the same number of origRefBlocks has
+                # blocks of the same size
+                self.setNumberOfBlocks(a, refineIndex)
 
         # update inert assemblies to snap to the proper block sizes.
         axMesh = refAssem.getAxialMesh()
         for a in r.core.getAssemblies(includeBolAssems=True):
-            a.makeAxialSnapList(refAssem)
+            a.makeAxialSnapList(refAssem, force=True)
             a.setBlockMesh(axMesh)
         r.core.updateAxialMesh()
         # update bookkeeping.
         r.core.regenAssemblyLists()
 
-    def setNumberOfBlocks(self, assem, blockFlags=Flags.FUEL):
+    def setNumberOfBlocks(self, assem, refineIndex=[]):
         r"""
         Change the region to have a certain number of blocks with uniform height
 
@@ -183,9 +178,9 @@ class BlockNumberModifier(GeometryChanger):
         assem : Assembly
             The assembly to modify
 
-        blockFlags : Flags, optional
-            Type of block to change. Default: Flags.FUEL. Allows control
-            assemblies, etc. to be modified just like fuel assemblies.
+        refineIndex : list
+            The axial indices of blocks to be refined. This should typically be the
+            axial indicies corresponding to blocks containing fuel in a fuel assembly.
 
         Notes
         -----
@@ -197,48 +192,42 @@ class BlockNumberModifier(GeometryChanger):
         if you're tracking history.
 
         """
-        fuelHeight = assem.getTotalHeight(blockFlags)
-        blockHeight = fuelHeight / self.numToAdd
-        fuelBlocks = set(assem.getBlocks(blockFlags))
         newBlockStack = []
-        numFuelBlocksAdded = 0
-        # make a tracker flag that tells us if we're below or above fuel.
-        # This model requires that there are no inert blocks interspersed in the fuel.
-        fuelEncountered = False
-        # add lower blocks, and as much fuel as possible.
-        for bi, b in enumerate(assem.getBlocks()):
-            if b not in fuelBlocks:
-                if fuelEncountered:
-                    # we're above fuel and assem[bi] is the first above-fuel block.
-                    break
-                else:
-                    # add lower inert blocks as they are
-                    newBlockStack.append(b)
-            else:
-                # fuel block.
-                fuelEncountered = True
-                if numFuelBlocksAdded < self.numToAdd:
-                    numFuelBlocksAdded += 1
-                    newBlockStack.append(b)
-                    b.setHeight(blockHeight)
-                    b.completeInitialLoading()
+        blockList = assem.getBlocks()
+        inertLower = blockList[: refineIndex[0]]
+        inertUpper = blockList[refineIndex[-1] + 1 :]
 
-        # potentially add extra fuel blocks to fill up the assembly.
-        # this will happen if we increased the number of fuel blocks
-        # by a lot.
-        for _extraBlock in range(self.numToAdd - numFuelBlocksAdded):
-            newB = newBlockStack[-1].duplicate()  # copy the last fuel block.
-            newBlockStack.append(newB)
-
-        # add in the upper inert blocks, starting with the bi-th
-        for b in assem.getBlocks()[bi:]:
+        newBlockStack.extend(inertLower)
+        for b in [blockList[i] for i in refineIndex]:
+            blockHeight = b.getHeight() / self.refinement
             newBlockStack.append(b)
+            b.setHeight(blockHeight)
+            b.completeInitialLoading()
+            for _extraBlock in range(self.refinement - 1):
+                newB = copy.deepcopy(b)
+                newB.setHeight(blockHeight)
+                newB.completeInitialLoading()
+                newBlockStack.append(newB)
+        newBlockStack.extend(inertUpper)
 
         # apply the new blocks to this assembly.
         assem.removeAll()
         for b in newBlockStack:
             assem.add(b)
         assem.reestablishBlockOrder()
+        assem.calculateZCoords()
+
+
+def findActiveIndex(assem):
+    for typeFlag in [
+        Flags.FUEL,
+        Flags.CONTROL,
+        Flags.SHIELD,
+        Flags.REFLECTOR,
+        Flags.TEST,
+    ]:
+        if assem.hasFlags(typeFlag):
+            return assem.getBlocks().index(assem.getFirstBlock(typeFlag))
 
 
 class FuelAssemNumModifier(GeometryChanger):
