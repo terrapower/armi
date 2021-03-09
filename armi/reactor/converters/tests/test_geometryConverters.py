@@ -18,6 +18,8 @@ import math
 import os
 import unittest
 
+from numpy.testing import assert_allclose
+
 from armi import runLog
 from armi import settings
 from armi.reactor import blocks
@@ -181,9 +183,39 @@ class TestHexToRZConverter(unittest.TestCase):
         self._checkBlockComponents(newR)
         self._checkNuclidesMatch(expectedNuclideList, newR)
         self._checkNuclideMasses(expectedMassDict, newR)
+        self._checkBlockAtMeshPoint(geomConv)
+        self._checkReactorMeshCoordinates(geomConv)
         figs = geomConv.plotConvertedReactor()
         with directoryChangers.TemporaryDirectoryChanger():
             geomConv.plotConvertedReactor("fname")
+
+    def _checkBlockAtMeshPoint(self, geomConv):
+        b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
+        self.assertTrue(b.hasFlags(Flags.FUEL))
+
+    def _checkReactorMeshCoordinates(self, geomConv):
+        thetaMesh, radialMesh, axialMesh = geomConv._getReactorMeshCoordinates()
+        expectedThetaMesh = [math.pi * 2.0]
+        expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 150.0, 175.0]
+        expectedRadialMesh = [
+            8.794379,
+            23.26774,
+            35.177517,
+            38.33381,
+            51.279602,
+            53.494121,
+            63.417171,
+            66.975997,
+            68.686298,
+            83.893031,
+            96.738172,
+            99.107621,
+            114.32693,
+            129.549296,
+        ]
+        assert_allclose(expectedThetaMesh, thetaMesh)
+        assert_allclose(expectedRadialMesh, radialMesh)
+        assert_allclose(expectedAxialMesh, axialMesh)
 
     def _getExpectedData(self):
         """Retrieve the mass of all nuclides in the reactor prior to converting."""
