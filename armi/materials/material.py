@@ -585,6 +585,7 @@ class Material(composites.Leaf):
         if not "Rincu" in self.modelConst:
             msg = "Material missing incubation dose"
             runLog.warning(msg, single=True, label="Missing incubation dose")
+            return False
         else:
             if totalDPA > self.modelConst["Rincu"]:
                 return True
