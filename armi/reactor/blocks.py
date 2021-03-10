@@ -1613,43 +1613,30 @@ class HexBlock(Block):
 
         Outputs
         -------
-        self.p.pinPowers : list of floats
+        self.p.pinPowers : 1-D numpy array
             The block-level pin linear power densities. pinPowers[i] represents the average linear
             power density of pin i.
             Power units are Watts/cm (Watts produced per cm of pin length).
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
-        # numPins = self.getNumPins()
-        self.p.pinPowers = [
-            0 for _n in range(numPins)
-        ]  # leave as a list. maybe go to dictionary later.
+        self.p.pinPowers = numpy.zeros(numPins)
+        self.p["linPowByPin" + powerKeySuffix] = numpy.zeros(numPins)
         j0 = jmax[imax - 1] / 6
         pinNum = 0
-        cornerPinCount = 0
-
-        self.p["linPowByPin" + powerKeySuffix] = []
         for i in range(imax):  # loop through rings
             for j in range(jmax[i]):  # loop through positions in ring i
-                pinNum += 1
-
-                if (
-                    removeSixCornerPins
-                    and (i == imax - 1)
-                    and (math.fmod(j, j0) == 0.0)
-                ):
+                if removeSixCornerPins and i == imax - 1 and math.fmod(j, j0) == 0.0:
                     linPow = 0.0
                 else:
                     if self.hasFlags(Flags.FUEL):
-                        pinLoc = self.p.pinLocation[pinNum - 1]
+                        # -1 to map from pinLocations to list index
+                        pinLoc = self.p.pinLocation[pinNum] - 1
                     else:
                         pinLoc = pinNum
-
-                    linPow = powers[
-                        pinLoc - 1
-                    ]  # -1 to map from pinLocations to list index
-
-                self.p.pinPowers[pinNum - 1 - cornerPinCount] = linPow
-                self.p["linPowByPin" + powerKeySuffix].append(linPow)
+                    linPow = powers[pinLoc]
+                self.p.pinPowers[pinNum] = linPow
+                self.p["linPowByPin" + powerKeySuffix][pinNum] = linPow
+                pinNum += 1
 
         if powerKeySuffix == GAMMA:
             self.p.pinPowersGamma = self.p.pinPowers
@@ -1657,9 +1644,7 @@ class HexBlock(Block):
             self.p.pinPowersNeutron = self.p.pinPowers
 
         if gamma:
-            self.p.pinPowers = [
-                n + g for n, g in zip(self.p.pinPowersNeutron, self.p.pinPowersGamma)
-            ]
+            self.p.pinPowers = self.p.pinPowersNeutron + self.p.pinPowersGamma
         else:
             self.p.pinPowers = self.p.pinPowersNeutron
 
