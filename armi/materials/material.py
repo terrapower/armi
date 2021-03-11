@@ -587,10 +587,7 @@ class Material(composites.Leaf):
             runLog.warning(msg, single=True, label="Missing incubation dose")
             return False
         else:
-            if totalDPA > self.modelConst["Rincu"]:
-                return True
-            else:
-                return False
+            return totalDPA > self.modelConst["Rincu"]
 
     def updateDeltaDPApastIncubation(self, totalDPA, deltaDPA):
         r"""
