@@ -615,12 +615,7 @@ class Material(composites.Leaf):
             runLog.warning(msg, single=True, label="Missing incubation dose")
             return deltaDPA
         else:
-            if (totalDPA > self.modelConst["Rincu"]) and (
-                (totalDPA - self.modelConst["Rincu"]) < deltaDPA
-            ):
-                return totalDPA - self.modelConst["Rincu"]
-            else:
-                return deltaDPA
+            return min(totalDPA - self.modelConst["Rincu"], deltaDPA)
 
     def densityTimesHeatCapacity(self, Tk=None, Tc=None):
         r"""
