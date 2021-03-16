@@ -582,13 +582,12 @@ class Material(composites.Leaf):
 
         """
 
-        if not self.modelConst["Rincu"]:
+        if not "Rincu" in self.modelConst:
             msg = "Material missing incubation dose"
             runLog.warning(msg, single=True, label="Missing incubation dose")
-        elif totalDPA > self.modelConst["Rincu"]:
-            return True
-        else:
             return False
+        else:
+            return totalDPA > self.modelConst["Rincu"]
 
     def updateDeltaDPApastIncubation(self, totalDPA, deltaDPA):
         r"""
@@ -610,15 +609,13 @@ class Material(composites.Leaf):
         deltaDPA past the incubation dose of the material.
 
         """
-        if not self.modelConst["Rincu"]:
+
+        if not "Rincu" in self.modelConst:
             msg = "Material missing incubation dose"
             runLog.warning(msg, single=True, label="Missing incubation dose")
-        elif (totalDPA > self.modelConst["Rincu"]) and (
-            (totalDPA - self.modelConst["Rincu"]) < deltaDPA
-        ):
-            return totalDPA - self.modelConst["Rincu"]
-        else:
             return deltaDPA
+        else:
+            return min(totalDPA - self.modelConst["Rincu"], deltaDPA)
 
     def densityTimesHeatCapacity(self, Tk=None, Tc=None):
         r"""
@@ -650,8 +647,8 @@ class Material(composites.Leaf):
     def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):
         """Return a temperature difference for a given density perturbation."""
         linearExpansion = self.linearExpansion(Tc=Tc)
-        volFrac = densityFrac ** (-1.0 / 3.0) - 1.0
-        deltaT = volFrac / linearExpansion
+        linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
+        deltaT = linearChange / linearExpansion
         if not quiet:
             runLog.info(
                 "The linear expansion for {} at initial temperature of {} C is {}.\nA change in density of {} "
