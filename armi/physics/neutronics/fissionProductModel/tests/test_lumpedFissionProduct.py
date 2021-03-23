@@ -80,6 +80,12 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertEqual(val3, 3)
         self.assertIsNone(lfp[5])
 
+    def test_getNumberFracs(self):
+        xe135 = nuclideBases.fromName("XE135")
+        lfp = self.fpd.createSingleLFPFromFile("LFP38")
+        numberFracs = lfp.getNumberFracs()
+        self.assertEqual(numberFracs.get(xe135), 1.0)
+
     def test_getGasFraction(self):
         """ Test of the get gas removal fraction """
         lfp = self.fpd.createSingleLFPFromFile("LFP35")
