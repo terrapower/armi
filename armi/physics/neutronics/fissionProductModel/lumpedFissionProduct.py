@@ -147,7 +147,7 @@ class LumpedFissionProduct(object):
 
     def getMassFracs(self):
         """
-        Return a dictionary of mass fractions indexed by nuclide names.
+        Return a dictionary of mass fractions indexed by nuclide.
 
         Returns
         -------
@@ -162,18 +162,18 @@ class LumpedFissionProduct(object):
 
     def getNumberFracs(self):
         """
-        Return a dictionary of number fractions indexed by nuclide names.
+        Return a dictionary of number fractions indexed by nuclide.
 
         Returns
         -------
         numberFracs : dict
-            number fractions (floats) of fission products indexed by nuclide names (e.g. 'XE135')
+            number fractions (floats) of fission products indexed by nuclide.
         """
 
         numberFracs = {}
         totalNumber = sum(self.yld.values())
-        for nucName, yld in self.yld.items():
-            numberFracs[nucName] = yld / totalNumber
+        for nuc, yld in self.yld.items():
+            numberFracs[nuc] = yld / totalNumber
         return numberFracs
 
     def getMassFrac(
