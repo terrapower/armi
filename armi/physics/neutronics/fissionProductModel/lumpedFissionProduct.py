@@ -259,10 +259,10 @@ class LumpedFissionProduct(object):
 
     def printDensities(self, lfpDens):
         """Print densities of nuclides given a LFP density. """
-        nucs = self.keys()
+        nucs = list(self.keys())
         nucs.sort()
         for n in nucs:
-            runLog.info("{0:6s} {1:.7E}".format(n, lfpDens * self[n]))
+            runLog.info("{0:6s} {1:.7E}".format(n.name, lfpDens * self[n]))
 
 
 class LumpedFissionProductCollection(dict):
