@@ -86,12 +86,23 @@ class TestLumpedFissionProduct(unittest.TestCase):
         numberFracs = lfp.getNumberFracs()
         self.assertEqual(numberFracs.get(xe135), 1.0)
 
+    def test_getExpandedMass(self):
+        xe135 = nuclideBases.fromName("XE135")
+        lfp = self.fpd.createSingleLFPFromFile("LFP38")
+        massVector = lfp.getExpandedMass(mass=0.99)
+        self.assertEqual(massVector.get(xe135), 0.99)
+
     def test_getGasFraction(self):
         """ Test of the get gas removal fraction """
         lfp = self.fpd.createSingleLFPFromFile("LFP35")
         frac = lfp.getGasFraction()
         self.assertGreater(frac, 0.0)
         self.assertLess(frac, 1.0)
+
+    def test_printDensities(self):
+        xe135 = nuclideBases.fromName("XE135")
+        lfp = self.fpd.createSingleLFPFromFile("LFP38")
+        lfp.printDensities(10.0)
 
     def test_getLanthanideFraction(self):
         """ Test of the lanthanide fraction function """
