@@ -349,7 +349,7 @@ class LumpedFissionProductCollection(dict):
 
         for lfpName, lfp in self.items():
             lfpMFrac = oldMassFrac[lfpName]
-            for nuc, mFrac in lfp.getMassFracs():
+            for nuc, mFrac in lfp.getMassFracs().items():
                 try:
                     massFrac[nuc] += lfpMFrac * mFrac
                 except KeyError:
