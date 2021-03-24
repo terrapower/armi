@@ -565,58 +565,6 @@ class Material(composites.Leaf):
                     label="T out of bounds for {} {}".format(self.name, label),
                 )
 
-    def isBeyondIncubationDose(self, totalDPA):
-        r"""
-        Checks if the materials is beyond is incubation dose. Passes if the material
-        does not have an incubation dose assigned (self.modelConst['Rincu']
-
-        Parameters
-        ----------
-
-        totalDPA : float
-            Total DPA accumulated in the material
-
-        Returns
-        -------
-        Bool indicating whether the material is beyond its incubation dose or not.
-
-        """
-
-        if not "Rincu" in self.modelConst:
-            msg = "Material missing incubation dose"
-            runLog.warning(msg, single=True, label="Missing incubation dose")
-            return False
-        else:
-            return totalDPA > self.modelConst["Rincu"]
-
-    def updateDeltaDPApastIncubation(self, totalDPA, deltaDPA):
-        r"""
-        If a material has passed its incubation dose, this method updates deltaDPA. The concern
-        here is when a step in DPA crosses the incubation threshold, the amount of DPA input into a
-        calculation is more than is actually contributing to deformation.
-
-        Parameters
-        ----------
-
-        totalDPA : float
-            Total DPA accumulated in the material.
-
-        deltaDPA : float
-            Change in DPA over a time step.
-
-        Returns
-        -------
-        deltaDPA past the incubation dose of the material.
-
-        """
-
-        if not "Rincu" in self.modelConst:
-            msg = "Material missing incubation dose"
-            runLog.warning(msg, single=True, label="Missing incubation dose")
-            return deltaDPA
-        else:
-            return min(totalDPA - self.modelConst["Rincu"], deltaDPA)
-
     def densityTimesHeatCapacity(self, Tk=None, Tc=None):
         r"""
         Return heat capacity * density at a temperature

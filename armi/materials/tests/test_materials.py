@@ -230,13 +230,6 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         massFracs = [str(k) for k in self.mat.p.massFrac.keys()]
         self.assertListEqual(["U235", "U238"], massFracs)
 
-    def test_isBeyondIncubationDose(self):
-        self.mat.modelConst["Rincu"] = 5.0
-        self.assertTrue(self.mat.isBeyondIncubationDose(10.0))
-        self.assertFalse(self.mat.isBeyondIncubationDose(1.0))
-        self.assertAlmostEqual(1.0, self.mat.updateDeltaDPApastIncubation(6.0, 2.0))
-        self.assertAlmostEqual(2.0, self.mat.updateDeltaDPApastIncubation(8.0, 2.0))
-
     def test_densityTimesHeatCapactiy(self):
         Tc = 500.0
         expectedRhoCp = self.mat.density(Tc=Tc) * 1000.0 * self.mat.heatCapacity(Tc=Tc)
