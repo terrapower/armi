@@ -125,6 +125,18 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         self.assertIn("XE135", names)
         self.assertIn("KR85", names)
 
+    def test_getAllFissionProductNuclideBases(self):
+        """ Test to ensure the fission product nuclide bases are present """
+        clideBases = self.lfps.getAllFissionProductNuclideBases()
+        xe135 = nuclideBases.fromName("XE135")
+        kr85 = nuclideBases.fromName("KR85")
+        self.assertIn(xe135, clideBases)
+        self.assertIn(kr85, clideBases)
+
+    def test_getGasRemovedFrac(self):
+        val = self.lfps.getGasRemovedFrac()
+        self.assertEqual(val, 0.0)
+
     def test_duplicate(self):
         """ Test to ensure that when we duplicate, we don't adjust the original file """
         newLfps = self.lfps.duplicate()
