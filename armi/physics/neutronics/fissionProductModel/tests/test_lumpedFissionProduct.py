@@ -19,6 +19,8 @@ import unittest
 import io
 
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
+from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
 
 LFP_TEXT = """        13          LFP35 GE73 5  5.9000E-06
@@ -148,6 +150,38 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         v2 = lfp2[ba]
         self.assertEqual(v1, v2)
 
+    def test_getNumberDensities(self):
+        o = buildOperatorOfEmptyHexBlocks()
+        assems = o.r.core.getAssemblies(Flags.FUEL)
+        blocks = assems[0].getBlocks(Flags.FUEL)
+        b = blocks[0]
+        fpDensities = self.lfps.getNumberDensities(objectWithParentDensities=b)
+        for fp in ["GE73", "GE74", "GE76", "AS75", "KR85", "MO99", "SM150", "XE135"]:
+            self.assertEqual(fpDensities[fp], 0.0)
+            # basic test reactor has no fission products in it
+
+    def test_getMassFrac(self):
+        with self.assertRaises(ValueError):
+            self.lfps.getMassFrac(oldMassFrac=None)
+        oldMassFrac = {
+            "LFP35": 0.5,
+            "LFP38": 0.2,
+            "LFP39": 0.3,
+        }
+        newMassFracs = self.lfps.getMassFrac(oldMassFrac)
+        refMassFrac = {
+            "GE73": 0.0034703064077030933,
+            "GE74": 0.00834728937688672,
+            "GE76": 0.09797894499881823,
+            "AS75": 0.053783069618403435,
+            "KR85": 0.0609551394006646,
+            "MO99": 0.07100169460812283,
+            "SM150": 0.1076193196365748,
+            "XE135": 0.5968442359528263,
+        }
+        for fp, newMassFrac in newMassFracs.items():
+            self.assertAlmostEqual(newMassFrac, refMassFrac[fp.name])
+
 
 class TestMo99LFP(unittest.TestCase):
     """ Test of the fission product model from Mo99 """
@@ -214,6 +248,9 @@ class TestExpandCollapse(unittest.TestCase):
         newMassFracs = lumpedFissionProduct.collapseFissionProducts(refMassFracs, lfps)
 
         self.assertAlmostEqual(newMassFracs["LFP35"], burnup, 6)
+
+        lfps.updateYieldVector(massFrac=newMassFracs)
+        self.assertAlmostEqual(lfps["LFP35"].getTotalYield(), 2.0)
 
 
 if __name__ == "__main__":
