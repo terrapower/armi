@@ -85,7 +85,7 @@ These files are:
   application.
 
 * :file:`README.md` and :file:`LICENSE.md` are an optional description and license of your
-  application that would be prominently featured, e.g. in a github repo, if you were to
+  application that would be prominently featured, e.g. in a GitHub repo, if you were to
   put it there.
 
 * :file:`doc/` is an optional folder where your application documentation source may go.
