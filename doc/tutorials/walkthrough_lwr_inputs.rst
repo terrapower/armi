@@ -20,7 +20,7 @@ in `NEA/NSC/DOC(2003)16 <https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-
     new developments. We are excited to expand ARMI scope fully
     into LWR relevant analysis.
 
-    In particular the handling of detailed locations within a block is
+    In particular, the handling of detailed locations within a block is
     relatively experimental (fast reactors usually just smear it out).
 
 Setting up the blueprints
