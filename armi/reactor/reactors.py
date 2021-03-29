@@ -118,11 +118,14 @@ def loadFromCs(cs):
     bp = blueprints.loadFromCs(cs)
     return factory(cs, bp)
 
-
     """
     Build a reactor from input settings, blueprints and geometry.
     """
-def defaultReactorMethod(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
+
+
+def defaultReactorMethod(
+    cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None
+):
     from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
