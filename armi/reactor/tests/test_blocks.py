@@ -762,7 +762,7 @@ class Block_TestCase(unittest.TestCase):
             (geometry.FULL_CORE, 1),
             (geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC]), 3),
         ):
-            self.r.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(symmetry)
+            self.r.core.symmetry = geometry.SymmetryType.fromStr(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)

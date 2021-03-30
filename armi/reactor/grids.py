@@ -75,14 +75,7 @@ from armi.reactor import geometry
 # data structure for database-serialization of grids
 GridParameters = collections.namedtuple(
     "GridParameters",
-    (
-        "unitSteps",
-        "bounds",
-        "unitStepLimits",
-        "offset",
-        "geomType",
-        "symmetry",
-    ),
+    ("unitSteps", "bounds", "unitStepLimits", "offset", "geomType", "symmetry"),
 )
 TAU = math.pi * 2.0
 BOUNDARY_0_DEGREES = 1
@@ -1068,13 +1061,7 @@ class CartesianGrid(Grid):
 
     @classmethod
     def fromRectangle(
-        cls,
-        width,
-        height,
-        numRings=5,
-        symmetry="",
-        isOffset=False,
-        armiObject=None,
+        cls, width, height, numRings=5, symmetry="", isOffset=False, armiObject=None
     ):
         """
         Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
@@ -1306,13 +1293,7 @@ class HexGrid(Grid):
     """
 
     @staticmethod
-    def fromPitch(
-        pitch,
-        numRings=25,
-        armiObject=None,
-        pointedEndUp=False,
-        symmetry="",
-    ):
+    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry=""):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
 
@@ -1330,6 +1311,8 @@ class HexGrid(Grid):
         pointedEndUp : bool, optional
             Rotate the hexagons 30 degrees so that the pointed end faces up instead of
             the flat.
+        symmetry : string, optional
+            A string representation of the symmetry options for the grid.
 
         Returns
         -------
@@ -1544,8 +1527,8 @@ class HexGrid(Grid):
             return []
         else:
             raise NotImplementedError(
-                "Unhandled symmetry condition for HexGrid: {} {}".format(
-                    self.symmetry.shape, self.symmetry.boundary
+                "Unhandled symmetry condition for HexGrid: {}".format(
+                    str(self.symmetry)
                 )
             )
 

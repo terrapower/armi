@@ -1334,8 +1334,8 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         # for adding stuff outside of the first 1/3
         grid = copy.deepcopy(r.core.spatialGrid)
 
-        # Set the core grid's shape early, since the core uses it for error checks
-        r.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
+        # Set the core grid's symmetry early, since the core uses it for error checks
+        r.core.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
@@ -1348,7 +1348,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
         # set shape after expanding, because it isnt actually full core until it's
         # full core; setting the shape causes the core to clear its caches.
-        r.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
+        r.core.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
 
     def restorePreviousGeometry(self, cs, reactor):
         """
@@ -1363,7 +1363,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # restore the settings of the core
             cs.unsetTemporarySettings()
 
-            reactor.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(
+            reactor.core.symmetry = geometry.SymmetryType.fromStr(
                 self.EXPECTED_INPUT_SYMMETRY
             )
 

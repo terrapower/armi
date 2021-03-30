@@ -192,9 +192,7 @@ class Assembly_TestCase(unittest.TestCase):
         )  # Print nothing to the screen that would normally go to the log.
 
         self.r = tests.getEmptyHexReactor()
-        self.r.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(
-            "third periodic"
-        )
+        self.r.core.symmetry = geometry.SymmetryType.fromStr("third periodic")
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
         self.r.core.add(self.Assembly)

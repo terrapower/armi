@@ -271,6 +271,11 @@ class Core(composites.Composite):
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
         return self.spatialGrid.symmetry
 
+    @symmetry.setter
+    def symmetry(self, val: str):
+        self.spatialGrid.symmetry = str(val)
+        self.clearCache()
+
     @property
     def geomType(self) -> geometry.GeomType:
         if not self.spatialGrid:

@@ -104,7 +104,7 @@ class TestSystemLayoutInput(unittest.TestCase):
 
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
-        reactor.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(
+        reactor.core.symmetry = geometry.SymmetryType.fromStr(
             geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC])
         )
         geom = SystemLayoutInput.fromReactor(reactor)
