@@ -493,7 +493,7 @@ def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
     symmetry = symmetry.replace(geometry.REFLECTIVE, "")
     symmetry = symmetry.replace(geometry.THROUGH_CENTER_ASSEMBLY, "")
 
-    if geomType == geometry.HEX_CORNERS_UP and symmetry == geometry.FULL_CORE:
+    if str(geomType) == geometry.HEX_CORNERS_UP and symmetry == geometry.FULL_CORE:
         return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
