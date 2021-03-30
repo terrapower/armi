@@ -289,8 +289,7 @@ systems:
 grids:
     core:
         geom: cartesian
-        shape: full
-        symmetry: no symmetry
+        symmetry: full
         lattice pitch:
             x: 10.0
             y: 10.0

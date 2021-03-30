@@ -96,7 +96,7 @@ class TestSystemLayoutInput(unittest.TestCase):
     def testReadHexGeomXML(self):
         geom = SystemLayoutInput()
         geom.readGeomFromFile(os.path.join(TEST_ROOT, "geom.xml"))
-        self.assertEqual(geom.geomType, "hex")
+        self.assertEqual(str(geom.geomType), geometry.HEX)
         self.assertEqual(geom.assemTypeByIndices[(1, 1)], "IC")
         out = os.path.join(TEST_ROOT, "geom-output.xml")
         geom.writeGeom(out)
@@ -104,11 +104,12 @@ class TestSystemLayoutInput(unittest.TestCase):
 
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
-        reactor.core.shape = geometry.THIRD_CORE
-        reactor.core.symmetry = geometry.PERIODIC
+        reactor.core.spatialGrid.symmetry = geometry.SymmetryType.fromStr(
+            geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC])
+        )
         geom = SystemLayoutInput.fromReactor(reactor)
         self.assertEqual(geom.assemTypeByIndices[(2, 1)], "fuel")
-        self.assertEqual(geom.geomType, "hex")
+        self.assertEqual(str(geom.geomType), geometry.HEX)
 
     def test_growToFullCore(self):
         geom = SystemLayoutInput()
@@ -116,7 +117,7 @@ class TestSystemLayoutInput(unittest.TestCase):
         self.assertNotIn((2, 3), geom.assemTypeByIndices)
         self.assertEqual(8, len(geom.assemTypeByIndices))
         geom.growToFullCore()
-        self.assertEqual(geometry.FULL_CORE, geom.shape)
+        self.assertEqual(geometry.FULL_CORE, str(geom.symmetry.shape))
         self.assertIn((2, 3), geom.assemTypeByIndices)
         self.assertIn(
             geom.assemTypeByIndices[2, 3],  # perodic repeat
@@ -164,7 +165,7 @@ class TestSystemLayoutInputTRZ(unittest.TestCase):
     def testReadTRZGeomXML(self):
         geom = SystemLayoutInput()
         geom.readGeomFromFile(os.path.join(TEST_ROOT, "trz_geom.xml"))
-        self.assertEqual(geom.geomType, "thetarz")
+        self.assertEqual(str(geom.geomType), geometry.RZT)
         self.assertEqual(geom.assemTypeByIndices[(0.0, 2.0, 0.0, 360.0, 1, 1)], "IC")
 
     def test_TRZyamlIO(self):

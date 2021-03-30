@@ -17,7 +17,8 @@ This module contains constants and enumerations that are useful for describing s
 geometry.
 """
 import enum
-from typing import Union
+from typing import Union, List, Optional
+
 from armi.utils import parsing
 
 
@@ -116,35 +117,99 @@ class GeomType(enum.Enum):
             return RZ
 
 
+class SymmetryType(object):
+    """
+    A thin wrapper for ShapeType and BoundaryType enumerations.
+
+    (see GeomType class for explanation of why we want enumerations for ShapeType and
+    BoundaryType).
+
+    The goal of this class is to provide simple functions for storing these options
+    in enumerations and using them to check symmetry conditions, while also providing
+    a standard string representation of the options that facilitates interfacing with
+    yaml and/or the database nicely.
+    """
+
+    def __init__(self):
+        # default constructor uses default values
+        self.shape = ShapeType.THIRD_CORE
+        self.boundary = BoundaryType.PERIODIC
+        self.isThroughCenter = False
+
+    @classmethod
+    def fromStr(cls, symmetryString: str) -> "SymmetryType":
+        symmetry = cls()
+        symmetry.shape = ShapeType.fromStr(symmetryString)
+        symmetry.boundary = BoundaryType.fromStr(symmetryString)
+        symmetry._checkIfThroughCenter(symmetryString)
+        return symmetry
+
+    @classmethod
+    def fromAny(cls, symmetry: Union[str, "SymmetryType"]) -> "SymmetryType":
+        """
+        Safely convert from string representation, no-op if already an enum instance.
+
+        This is useful as we transition to using enumerations more throughout the code.
+        There will remain situations where a geomType may be provided in string or enum
+        form, in which the consuming code would have to check the type before
+        proceeding. This function serves two useful purposes:
+         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
+         - Provide a location to instrument these conversions for when we actually try
+           to deprecate the strings. E.g., produce a warning when this is called, or
+           eventually forbidding the conversion entirely.
+        """
+        if isinstance(symmetry, SymmetryType):
+            return symmetry
+        elif isinstance(symmetry, str):
+            return cls.fromStr(symmetry)
+        else:
+            raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
+
+    @classmethod
+    def fromSubTypes(
+        cls,
+        shapeType: Union[str, "ShapeType"],
+        boundaryType: Union[str, "BoundaryType"],
+        throughCenterAssembly: Optional[bool] = False,
+    ) -> "SymmetryType":
+
+        symmetry = cls()
+        symmetry.shape = ShapeType.fromAny(shapeType)
+        symmetry.boundary = BoundaryType.fromAny(boundaryType)
+        symmetry.isThroughCenter = throughCenterAssembly
+        return symmetry
+
+    def __str__(self):
+        """Combined string of shape and boundary symmetry type"""
+        strList = [str(self.shape)]
+        if self.boundary.hasSymmetry():
+            strList.append(str(self.boundary))
+        if self.isThroughCenter:
+            strList.append(THROUGH_CENTER_ASSEMBLY)
+        return _joinSpace(strList)
+
+    def _checkIfThroughCenter(self, symmetryString: str):
+        if THROUGH_CENTER_ASSEMBLY in symmetryString:
+            self.isThroughCenter = True
+
+    def symmetryFactor(self):
+        return self.shape.symmetryFactor()
+
+    def checkValidSymmetry(self):
+        return str(self) in VALID_SYMMETRY
+
+
 class ShapeType(enum.Enum):
     """
     Enumeration of shape types.
-
-    Historically, ARMI has used strings to specify and express things like geometry type
-    and symmetry conditions. This makes interpretation of user input straightforward,
-    but is less ergonomic, less efficient, and more error-prone within the code. For
-    instance:
-     - is "quarter reflective" the same as "reflective quarter"? Should it be?
-     - code that needs to interpret these need to use string operations, which are
-       non-trivial compared to enum comparisons.
-     - rules about mutual exclusion (hex and Cartesian can't both be used in the same
-       context) and composability (geometry type + domain + symmetry type) are harder to
-       enforce.
-
-    Instead, we hope to parse user input into a collection of enumerations and use those
-    internally throughout the code. Future work should expand this to satisfy all needs
-    of the geometry system and refactor to replace use of the string constants.
     """
 
+    NULL = 0
     FULL_CORE = 1
     THIRD_CORE = 3
     QUARTER_CORE = 4
     EIGHTH_CORE = 8
     SIXTEENTH_CORE = 16
-
-    FULL_CORE_THROUGH = 11
-    QUARTER_CORE_THROUGH = 14
-    EIGHTH_CORE_THROUGH = 18
 
     @classmethod
     def fromAny(cls, source: Union[str, "ShapeType"]) -> "ShapeType":
@@ -171,28 +236,21 @@ class ShapeType(enum.Enum):
     def fromStr(cls, shapeStr: str) -> "ShapeType":
         # case-insensitive
         x = shapeStr.lower().strip()
-        throughCenter = parsing.findString({"through center assembly"}, x)
-        for canonical in (x, parsing.findString(shapeTypes, x) + throughCenter):
+        for canonical in (x, parsing.findString(shapeTypes, x)):
             if canonical == FULL_CORE:
                 return cls.FULL_CORE
-            elif canonical + " " == THIRD_CORE:
+            elif canonical == THIRD_CORE:
                 return cls.THIRD_CORE
-            elif canonical + " " == QUARTER_CORE:
+            elif canonical == QUARTER_CORE:
                 return cls.QUARTER_CORE
-            elif canonical + " " == EIGHTH_CORE:
+            elif canonical == EIGHTH_CORE:
                 return cls.EIGHTH_CORE
-            elif canonical + " " == SIXTEENTH_CORE:
+            elif canonical == SIXTEENTH_CORE:
                 return cls.SIXTEENTH_CORE
-            elif canonical == FULL_CORE + THROUGH_CENTER_ASSEMBLY:
-                return cls.FULL_CORE_THROUGH
-            elif canonical == QUARTER_CORE + THROUGH_CENTER_ASSEMBLY:
-                return cls.QUARTER_CORE_THROUGH
-            elif canonical == EIGHTH_CORE + THROUGH_CENTER_ASSEMBLY:
-                return cls.EIGHTH_CORE_THROUGH
-
+        return cls.NULL
         # use the original shapeStr with preserved capitalization for better
         # error-finding.
-        raise ValueError("Unrecognized shape type: `{}`".format(shapeStr))
+        # raise ValueError("Unrecognized shape type: `{}`".format(shapeStr))
 
     @property
     def label(self):
@@ -207,12 +265,8 @@ class ShapeType(enum.Enum):
             return "Eighth"
         elif self == self.SIXTEENTH_CORE:
             return "Sixteenth"
-        elif self == self.FULL_CORE_THROUGH:
-            return "Full through center assembly"
-        elif self == self.QUARTER_CORE_THROUGH:
-            return "Quarter through center assembly"
-        elif self == self.EIGHTH_CORE_THROUGH:
-            return "Eighth through center assembly"
+        elif self == self.NULL:
+            return ""
 
     def __str__(self):
         """Inverse of fromStr()"""
@@ -226,32 +280,31 @@ class ShapeType(enum.Enum):
             return EIGHTH_CORE
         elif self == self.SIXTEENTH_CORE:
             return SIXTEENTH_CORE
-        elif self == self.FULL_CORE_THROUGH:
-            return FULL_CORE + THROUGH_CENTER_ASSEMBLY
-        elif self == self.QUARTER_CORE_THROUGH:
-            return QUARTER_CORE + THROUGH_CENTER_ASSEMBLY
-        elif self == self.EIGHTH_CORE_THROUGH:
-            return EIGHTH_CORE + THROUGH_CENTER_ASSEMBLY
+        elif self == self.NULL:
+            return ""
+
+    def symmetryFactor(self):
+        if self == self.FULL_CORE or self == self.NULL:
+            return 1.0
+        elif self == self.THIRD_CORE:
+            return 3.0
+        elif self == self.QUARTER_CORE:
+            return 4.0
+        elif self == self.EIGHTH_CORE:
+            return 8.0
+        elif self == self.SIXTEENTH_CORE:
+            return 16.0
+        else:
+            raise ValueError(
+                "Could not calculate symmetry factor for shape {}. update logic.".format(
+                    self.label
+                )
+            )
 
 
-class SymmetryType(enum.Enum):
+class BoundaryType(enum.Enum):
     """
-    Enumeration of symmetry types.
-
-    Historically, ARMI has used strings to specify and express things like geometry type
-    and symmetry conditions. This makes interpretation of user input straightforward,
-    but is less ergonomic, less efficient, and more error-prone within the code. For
-    instance:
-     - is "quarter reflective" the same as "reflective quarter"? Should it be?
-     - code that needs to interpret these need to use string operations, which are
-       non-trivial compared to enum comparisons.
-     - rules about mutual exclusion (hex and Cartesian can't both be used in the same
-       context) and composability (geometry type + domain + symmetry type) are harder to
-       enforce.
-
-    Instead, we hope to parse user input into a collection of enumerations and use those
-    internally throughout the code. Future work should expand this to satisfy all needs
-    of the geometry system and refactor to replace use of the string constants.
+    Enumeration of boundary types.
     """
 
     NO_SYMMETRY = 0
@@ -259,7 +312,7 @@ class SymmetryType(enum.Enum):
     REFLECTIVE = 2
 
     @classmethod
-    def fromAny(cls, source: Union[str, "SymmetryType"]) -> "SymmetryType":
+    def fromAny(cls, source: Union[str, "BoundaryType"]) -> "BoundaryType":
         """
         Safely convert from string representation, no-op if already an enum instance.
 
@@ -272,7 +325,7 @@ class SymmetryType(enum.Enum):
            to deprecate the strings. E.g., produce a warning when this is called, or
            eventually forbidding the conversion entirely.
         """
-        if isinstance(source, SymmetryType):
+        if isinstance(source, BoundaryType):
             return source
         elif isinstance(source, str):
             return cls.fromStr(source)
@@ -280,20 +333,17 @@ class SymmetryType(enum.Enum):
             raise TypeError("Expected str or GeomType; got {}".format(type(source)))
 
     @classmethod
-    def fromStr(cls, symmetryStr: str) -> "SymmetryType":
+    def fromStr(cls, symmetryStr: str) -> "BoundaryType":
         # case-insensitive
         x = symmetryStr.lower().strip()
-        for canonical in (x, parsing.findString(symmetryTypes, x)):
+        for canonical in (x, parsing.findString(boundaryTypes, x)):
             if canonical == NO_SYMMETRY:
                 return cls.NO_SYMMETRY
             elif canonical == PERIODIC:
                 return cls.PERIODIC
             elif canonical == REFLECTIVE:
                 return cls.REFLECTIVE
-
-        # use the original symmetryStr with preserved capitalization for better
-        # error-finding.
-        raise ValueError("Unrecognized symmetry type: `{}`".format(symmetryStr))
+        return cls.NO_SYMMETRY
 
     @property
     def label(self):
@@ -309,11 +359,18 @@ class SymmetryType(enum.Enum):
     def __str__(self):
         """Inverse of fromStr()"""
         if self == self.NO_SYMMETRY:
-            return NO_SYMMETRY
+            return NO_SYMMETRY  # should we return an empty string here instead?
         elif self == self.PERIODIC:
             return PERIODIC
         elif self == self.REFLECTIVE:
             return REFLECTIVE
+
+    def hasSymmetry(self):
+        return not self == self.NO_SYMMETRY
+
+
+def _joinSpace(strList: List[str]):
+    return " ".join(strList)
 
 
 SYSTEMS = "systems"
@@ -334,10 +391,10 @@ ANNULUS_SECTOR_PRISM = "AnnulusSectorPrism"
 VALID_GEOMETRY_TYPE = {HEX, HEX_CORNERS_UP, RZT, RZ, CARTESIAN}
 
 FULL_CORE = "full"
-THIRD_CORE = "third "
-QUARTER_CORE = "quarter "
-EIGHTH_CORE = "eighth "
-SIXTEENTH_CORE = "sixteenth "
+THIRD_CORE = "third"
+QUARTER_CORE = "quarter"
+EIGHTH_CORE = "eighth"
+SIXTEENTH_CORE = "sixteenth"
 REFLECTIVE = "reflective"
 PERIODIC = "periodic"
 NO_SYMMETRY = "no symmetry"
@@ -345,43 +402,25 @@ THROUGH_CENTER_ASSEMBLY = (
     " through center assembly"  # through center assembly applies only to cartesian
 )
 
-geomTypes = {HEX, CARTESIAN, RZT, RZ}
-shapeTypes = {FULL_CORE, THIRD_CORE, EIGHTH_CORE, SIXTEENTH_CORE}
-symmetryTypes = {NO_SYMMETRY, PERIODIC, REFLECTIVE}
-
-
 VALID_SYMMETRY = {
     FULL_CORE,
-    FULL_CORE + THROUGH_CENTER_ASSEMBLY,
-    THIRD_CORE + PERIODIC,  # third core reflective is not geometrically consistent.
-    QUARTER_CORE + PERIODIC,
-    QUARTER_CORE + REFLECTIVE,
-    QUARTER_CORE + PERIODIC + THROUGH_CENTER_ASSEMBLY,
-    QUARTER_CORE + REFLECTIVE + THROUGH_CENTER_ASSEMBLY,
-    EIGHTH_CORE + PERIODIC,
-    EIGHTH_CORE + REFLECTIVE,
-    EIGHTH_CORE + PERIODIC + THROUGH_CENTER_ASSEMBLY,
-    EIGHTH_CORE + REFLECTIVE + THROUGH_CENTER_ASSEMBLY,
-    SIXTEENTH_CORE + PERIODIC,
-    SIXTEENTH_CORE + REFLECTIVE,
+    _joinSpace([FULL_CORE, THROUGH_CENTER_ASSEMBLY]),
+    _joinSpace(
+        [THIRD_CORE, PERIODIC]
+    ),  # third core reflective is not geometrically consistent.
+    _joinSpace([QUARTER_CORE, PERIODIC]),
+    _joinSpace([QUARTER_CORE, REFLECTIVE]),
+    _joinSpace([QUARTER_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
+    _joinSpace([QUARTER_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
+    _joinSpace([EIGHTH_CORE, PERIODIC]),
+    _joinSpace([EIGHTH_CORE, REFLECTIVE]),
+    _joinSpace([EIGHTH_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
+    _joinSpace([EIGHTH_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
+    _joinSpace([SIXTEENTH_CORE, PERIODIC]),
+    _joinSpace([SIXTEENTH_CORE, REFLECTIVE]),
 }
 
 
-SYMMETRY_FACTORS = {}
-for symmetry in VALID_SYMMETRY:
-    if FULL_CORE in symmetry:
-        SYMMETRY_FACTORS[symmetry] = 1.0
-    elif THIRD_CORE in symmetry:
-        SYMMETRY_FACTORS[symmetry] = 3.0
-    elif QUARTER_CORE in symmetry:
-        SYMMETRY_FACTORS[symmetry] = 4.0
-    elif EIGHTH_CORE in symmetry:
-        SYMMETRY_FACTORS[symmetry] = 8.0
-    elif SIXTEENTH_CORE in symmetry:
-        SYMMETRY_FACTORS[symmetry] = 16.0
-    else:
-        raise ValueError(
-            "Could not calculate symmetry factor for symmetry {}. update logic.".format(
-                symmetry
-            )
-        )
+geomTypes = {HEX, CARTESIAN, RZT, RZ}
+shapeTypes = {FULL_CORE, THIRD_CORE, QUARTER_CORE, EIGHTH_CORE, SIXTEENTH_CORE}
+boundaryTypes = {NO_SYMMETRY, PERIODIC, REFLECTIVE}

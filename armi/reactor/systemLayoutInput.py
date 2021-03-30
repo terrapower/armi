@@ -120,7 +120,6 @@ class SystemLayoutInput:
         self.modifiedFileName = None
         self.geomType: str
         self.symmetry = None
-        self.shape = None
         self.assemTypeByIndices = OrderedDict()
         self.eqPathInput = {}
         self.eqPathsHaveBeenModified = False
@@ -172,7 +171,6 @@ class SystemLayoutInput:
 
         geom = self.geomType
         symmetry = self.symmetry
-        shape = self.shape
 
         bounds = None
 
@@ -198,7 +196,6 @@ class SystemLayoutInput:
             gridContents=gridContents,
             geom=geom,
             symmetry=symmetry,
-            shape=shape,
             gridBounds=bounds,
         )
 
@@ -224,7 +221,6 @@ class SystemLayoutInput:
                 gridContents=eqPathContents,
                 geom=geom,
                 symmetry=symmetry,
-                shape=shape,
                 gridBounds=bounds,
             )
 
@@ -283,7 +279,6 @@ class SystemLayoutInput:
             # no need to check for valid since the schema handled that.
             self.geomType = geometry.GeomType.fromStr(system[INP_GEOM])
             self.symmetry = geometry.SymmetryType.fromStr(system[INP_SYMMETRY])
-            self.shape = geometry.ShapeType.fromStr(system[INP_SYMMETRY])
             if INP_DISCRETES in system:
                 self._read_yaml_discretes(system)
             elif INP_LATTICE in system:
@@ -292,7 +287,7 @@ class SystemLayoutInput:
     def _read_yaml_discretes(self, system):
         for discrete in system[INP_DISCRETES]:
             location = discrete[INP_LOCATION]
-            indices = tuple(location[k] for k in LOC_KEYS[self.geomType : str])
+            indices = tuple(location[k] for k in LOC_KEYS[str(self.geomType)])
             if self.geomType == geometry.GeomType.CARTESIAN:
                 x, y = indices
                 self.maxRings = max(x + 1, y + 1, self.maxRings)
@@ -314,7 +309,7 @@ class SystemLayoutInput:
         mapTxt = system[INP_LATTICE]
         if (
             self.geomType == geometry.GeomType.HEX
-            and self.shape == geometry.ShapeType.THIRD_CORE
+            and self.symmetry.shape == geometry.ShapeType.THIRD_CORE
         ):
             asciimap = asciimaps.AsciiMapHexThirdFlatsUp()
             asciimap.readAscii(mapTxt)
@@ -328,15 +323,8 @@ class SystemLayoutInput:
         else:
             raise ValueError(
                 f"ASCII map reading from geom/shape: {self.geomType}/"
-                f"{self.shape} not supported."
+                f"{self.symmetry.shape} not supported."
             )
-
-    # def _getShapeAndSymmetry(self, inputString: str):
-    #    """
-    #    Get the shape (e.g., third core) and symmetry (reflective, periodic).
-    #    """
-    #    self.symmetry = geometry.SymmetryType.fromStr(inputString)
-    #    self.shape = geometry.ShapeType.fromStr(inputString)
 
     def modifyEqPaths(self, modifiedPaths):
         """
@@ -383,7 +371,7 @@ class SystemLayoutInput:
             INP_SYSTEMS,
             attrib={
                 INP_GEOM: str(self.geomType),
-                INP_SYMMETRY: str(self.shape) + str(self.symmetry),
+                INP_SYMMETRY: str(self.symmetry),
             },
         )
         tree = ET.ElementTree(root)
@@ -421,7 +409,7 @@ class SystemLayoutInput:
         for indices in sorted(list(self.assemTypeByIndices)):
             specifier = self.assemTypeByIndices[indices]
             fuelPath, fuelCycle = self.eqPathInput.get(indices, (None, None))
-            keys = LOC_KEYS[self.geomType]
+            keys = LOC_KEYS[str(self.geomType)]
             dataPoint = {INP_LOCATION: dict(zip(keys, indices)), INP_SPEC: specifier}
             if fuelPath is not None:
                 dataPoint.update({INP_FUEL_PATH: fuelPath, INP_FUEL_CYCLE: fuelCycle})
@@ -434,7 +422,7 @@ class SystemLayoutInput:
             INP_SYSTEMS: {
                 sysName: {
                     INP_GEOM: str(self.geomType),
-                    INP_SYMMETRY: str(self.shape) + str(self.symmetry),
+                    INP_SYMMETRY: str(self.symmetry),
                     INP_DISCRETES: geomData,
                 }
             }
@@ -468,26 +456,27 @@ class SystemLayoutInput:
         -----
         This only works for Hex 1/3rd core geometry inputs.
         """
-        if self.shape == geometry.ShapeType.FULL_CORE:
+        if self.symmetry.shape == geometry.ShapeType.FULL_CORE:
             # already full core from geometry file. No need to copy symmetry over.
             runLog.important(
                 "Detected that full core geometry already exists. Cannot expand."
             )
             return
         elif (
-            self.shape != geometry.ShapeType.THIRD_CORE
-            or self.symmetry != geometry.SymmetryType.PERIODIC
+            self.symmetry.shape != geometry.ShapeType.THIRD_CORE
+            or self.symmetry.boundary != geometry.BoundaryType.PERIODIC
         ):
             raise ValueError(
                 "Cannot convert shape `{}` to full core, must be {}".format(
-                    self.shape,
-                    geometry.ShapeType.THIRD_CORE + geometry.SymmetryType.PERIODIC,
+                    self.symmetry.shape,
+                    geometry._joinSpace(
+                        [geometry.ShapeType.THIRD_CORE, geometry.BoundaryType.PERIODIC]
+                    ),
                 )
             )
 
         grid = grids.HexGrid.fromPitch(1.0)
-        grid._symmetry: str = self.symmetry
-        grid._shape: str = self.shape
+        grid._symmetry: str = str(self.symmetry)
 
         # need to cast to a list because we will modify during iteration
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
@@ -498,7 +487,10 @@ class SystemLayoutInput:
                 )
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
-        self.shape = geometry.ShapeType.FULL_CORE
+        self.symmetry = geometry.SymmetryType.fromSubTypes(
+            shapeType=geometry.ShapeType.FULL_CORE,
+            boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+        )
 
     def _getGeomTypeAndSymmetryFromXml(self, root):
         """Read the geometry type and symmetry."""
@@ -512,12 +504,13 @@ class SystemLayoutInput:
                 "Could not find geometry type. Assuming hex geometry with third core periodic symmetry."
             )
             self.geomType = geometry.GeomType.HEX
-            self.shape = geometry.ShapeType.THIRD_CORE
-            self.symmetry = geometry.SymmetryType.PERIODIC
+            self.symmetry = geometry.SymmetryType.fromSubTypes(
+                shapeType=geometry.ShapeType.THIRD_CORE,
+                boundaryType=geometry.BoundaryType.PERIODIC,
+            )
         else:
             inputString = str(root.attrib[INP_SYMMETRY]).lower()
             self.symmetry = geometry.SymmetryType.fromStr(inputString)
-            self.shape = geometry.ShapeType.fromStr(inputString)
 
     @classmethod
     def fromReactor(cls, reactor):
@@ -532,7 +525,6 @@ class SystemLayoutInput:
         runLog.info("Reading core map from {}".format(reactor))
         geom.geomType = str(reactor.core.geomType)
         geom.symmetry = reactor.core.symmetry
-        geom.shape = reactor.core.shape
 
         bp = reactor.blueprints
         assemDesigns = bp.assemDesigns if bp else ()

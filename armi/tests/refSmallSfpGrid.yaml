@@ -1,5 +1,5 @@
 sfp:
-    shape: full
+    symmetry: full
     geom: cartesian
     lattice pitch:
         x: 50.0

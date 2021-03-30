@@ -82,7 +82,6 @@ GridParameters = collections.namedtuple(
         "offset",
         "geomType",
         "symmetry",
-        "shape",
     ),
 )
 TAU = math.pi * 2.0
@@ -604,7 +603,6 @@ class Grid:
         offset=None,
         geomType="",
         symmetry="",
-        shape="",
         armiObject=None,
     ):
         # these lists contain the indices representing which dimensions for which steps
@@ -645,9 +643,8 @@ class Grid:
         # Notice that these are stored using their string representations, rather than
         # the GridType enum. This avoids the danger of deserializing an enum value from
         # an old version of the code that may have had different numeric values.
-        self._geomType: str = geomType
-        self._symmetry: str = symmetry
-        self._shape: str = shape
+        self._geomType: str = str(geomType)
+        self._symmetry: str = str(symmetry)
 
     def reduce(self):
         """
@@ -690,7 +687,6 @@ class Grid:
             offset,
             self._geomType,
             self._symmetry,
-            self._shape,
         )
 
     @property
@@ -706,16 +702,8 @@ class Grid:
         return geometry.SymmetryType.fromStr(self._symmetry)
 
     @symmetry.setter
-    def symmetry(self, symmetryType: Union[str, geometry.SymmetryType]):
-        self._symmetry = str(geometry.SymmetryType.fromAny(symmetryType))
-
-    @property
-    def shape(self) -> str:
-        return geometry.ShapeType.fromStr(self._shape)
-
-    @shape.setter
-    def shape(self, shapeType: Union[str, geometry.ShapeType]):
-        self._shape = str(geometry.ShapeType.fromAny(shapeType))
+    def symmetry(self, symmetry: Union[str, geometry.SymmetryType]):
+        self._symmetry = str(geometry.SymmetryType.fromAny(symmetry))
 
     def __repr__(self):
         msg = (
@@ -1085,7 +1073,6 @@ class CartesianGrid(Grid):
         height,
         numRings=5,
         symmetry="",
-        shape="",
         isOffset=False,
         armiObject=None,
     ):
@@ -1117,7 +1104,6 @@ class CartesianGrid(Grid):
             offset=offset,
             armiObject=armiObject,
             symmetry=symmetry,
-            shape=shape,
         )
 
     def getRingPos(self, indices):
@@ -1215,7 +1201,7 @@ class CartesianGrid(Grid):
         return ringPositions
 
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
-        if geometry.QUARTER_CORE in self._shape:
+        if self.symmetry.shape == geometry.ShapeType.QUARTER_CORE:
             return locator.i >= 0 and locator.j >= 0
         else:
             return True
@@ -1236,14 +1222,14 @@ class CartesianGrid(Grid):
         self._offset = numpy.array((newOffsetX, newOffsetY, 0.0))
 
     def getSymmetricEquivalents(self, indices):
-        isSplit = geometry.THROUGH_CENTER_ASSEMBLY in self._shape
-        isRotational = geometry.PERIODIC in self._symmetry
+        symmetry = self.symmetry  # construct the symmetry object once up top
+        isRotational = symmetry.boundary == geometry.BoundaryType.PERIODIC
 
         i, j = indices[0:2]
-        if geometry.FULL_CORE in self._shape:
+        if symmetry.shape == geometry.ShapeType.FULL_CORE:
             return []
-        elif geometry.QUARTER_CORE in self._shape:
-            if isSplit:
+        elif symmetry.shape == geometry.ShapeType.QUARTER_CORE:
+            if symmetry.isThroughCenter:
                 # some locations lie on the symmetric boundary
                 if i == 0 and j == 0:
                     # on the split corner, so the location is its own symmetric
@@ -1280,14 +1266,14 @@ class CartesianGrid(Grid):
                     #        QII           QIII          QIV
                     return [(-i - 1, j), (-i - 1, -j - 1), (i, -j - 1)]
 
-        elif geometry.EIGHTH_CORE in self._shape:
+        elif symmetry.shape == geometry.ShapeType.EIGHTH_CORE:
             raise NotImplementedError(
                 "Eighth-core symmetry isn't fully implemented for grids yet!"
             )
         else:
             raise NotImplementedError(
                 "Unhandled symmetry condition for {}: {}".format(
-                    type(self).__name__, self._shape
+                    type(self).__name__, symmetry.shape
                 )
             )
 
@@ -1321,7 +1307,11 @@ class HexGrid(Grid):
 
     @staticmethod
     def fromPitch(
-        pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry="", shape=""
+        pitch,
+        numRings=25,
+        armiObject=None,
+        pointedEndUp=False,
+        symmetry="",
     ):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
@@ -1366,7 +1356,6 @@ class HexGrid(Grid):
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
             symmetry=symmetry,
-            shape=shape,
         )
 
     @property
@@ -1546,14 +1535,17 @@ class HexGrid(Grid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices):
-        if geometry.THIRD_CORE in self._shape and geometry.PERIODIC in self._symmetry:
+        if (
+            self.symmetry.shape == geometry.ShapeType.THIRD_CORE
+            and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
+        ):
             return self._getSymmetricIdenticalsThird(indices)
-        elif geometry.FULL_CORE in self._shape:
+        elif self.symmetry.shape == geometry.ShapeType.FULL_CORE:
             return []
         else:
             raise NotImplementedError(
                 "Unhandled symmetry condition for HexGrid: {} {}".format(
-                    self._shape, self._symmetry
+                    self.symmetry.shape, self.symmetry.boundary
                 )
             )
 
@@ -1585,7 +1577,7 @@ class HexGrid(Grid):
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
         # This will include the "top" 120-degree symmetry lines. This is to support
         # adding of edge assemblies.
-        if geometry.THIRD_CORE in self._shape:
+        if self.symmetry.shape == geometry.ShapeType.THIRD_CORE:
             return self.isInFirstThird(locator, includeTopEdge=symmetryOverlap)
         else:
             return True

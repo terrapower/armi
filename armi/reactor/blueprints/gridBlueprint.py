@@ -169,8 +169,11 @@ class GridBlueprint(yamlize.Object):
         key="lattice pitch", type=Triplet, default=None
     )
     gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
-    symmetry = yamlize.Attribute(key="symmetry", type=str, default=geometry.PERIODIC)
-    shape = yamlize.Attribute(key="shape", type=str, default=geometry.THIRD_CORE)
+    symmetry = yamlize.Attribute(
+        key="symmetry",
+        type=str,
+        default=geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC]),
+    )
     # gridContents is the final form of grid contents information;
     # it is set regardless of how the input is read. This is how all
     # grid contents information is written out.
@@ -190,8 +193,7 @@ class GridBlueprint(yamlize.Object):
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        symmetry=geometry.PERIODIC,
-        shape=geometry.THIRD_CORE,
+        symmetry=geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC]),
         gridContents=None,
         gridBounds=None,
     ):
@@ -209,10 +211,9 @@ class GridBlueprint(yamlize.Object):
 
         """
         self.name = name
-        self.geom = geom
+        self.geom = str(geom)
         self.latticeMap = latticeMap
-        self.symmetry = symmetry
-        self.shape = shape
+        self.symmetry = str(symmetry)
         self.gridContents = gridContents
         self.gridBounds = gridBounds
 
@@ -275,7 +276,7 @@ class GridBlueprint(yamlize.Object):
                 if self.latticeDimensions
                 else (1.0, 1.0)
             )
-            isOffset = self.shape and geometry.THROUGH_CENTER_ASSEMBLY not in self.shape
+            isOffset = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
             spatialGrid = grids.CartesianGrid.fromRectangle(
                 xw, yw, numRings=maxIndex + 1, isOffset=isOffset
             )
@@ -283,9 +284,8 @@ class GridBlueprint(yamlize.Object):
         # set geometric metadata on spatialGrid. This information is needed in various
         # parts of the code and is best encapsulated on the grid itself rather than on
         # the container state.
-        spatialGrid._geomType: str = self.geom
-        spatialGrid._symmetry: str = self.symmetry
-        spatialGrid._shape: str = self.shape
+        spatialGrid._geomType: str = str(self.geom)
+        spatialGrid._symmetry: str = str(self.symmetry)
         return spatialGrid
 
     def _getMaxIndex(self):
@@ -310,7 +310,7 @@ class GridBlueprint(yamlize.Object):
             such as when expanding fuel shuffling paths or the like. Future work may
             make this more sophisticated.
         """
-        if geometry.FULL_CORE in self.shape:
+        if geometry.ShapeType.fromStr(self.symmetry) == geometry.ShapeType.FULL_CORE:
             # No need!
             return
 
@@ -324,10 +324,16 @@ class GridBlueprint(yamlize.Object):
         self.gridContents = newContents
         split = (
             geometry.THROUGH_CENTER_ASSEMBLY
-            if geometry.THROUGH_CENTER_ASSEMBLY in self.shape
+            if geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
             else ""
         )
-        self.shape = geometry.FULL_CORE + split
+        self.symmetry = str(
+            geometry.SymmetryType.fromSubTypes(
+                shapeType=geometry.ShapeType.FULL_CORE,
+                boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+                throughCenterAssembly=split,
+            )
+        )
 
     def _readGridContents(self):
         """
@@ -356,7 +362,7 @@ class GridBlueprint(yamlize.Object):
         This update the gridContents attribute, which is a dict mapping grid i,j,k
         indices to textual specifiers (e.g. ``IC``))
         """
-        latticeCls = asciimaps.asciiMapFromGeomAndShape(self.geom, self.shape)
+        latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
         asciimap = latticeCls()
         asciimap.readAscii(self.latticeMap)
         self.gridContents = dict()

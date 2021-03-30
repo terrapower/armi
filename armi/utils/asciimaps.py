@@ -51,7 +51,10 @@ armi.reactor.geometry : a specific usage of lattices, for core maps
 """
 import re
 
+from typing import Union
+
 from armi import runLog
+from armi.reactor import geometry
 
 PLACEHOLDER = "-"
 
@@ -485,13 +488,14 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         self._ijMax = (self._asciiMaxCol - 1) // 2
 
 
-def asciiMapFromGeomAndShape(geomType: str, symmetryType: str):
-    """Get a ascii map class from a geometry type."""
+def asciiMapFromGeomAndSym(
+    geomType: Union[str, geometry.GeomType],
+    symmetry: Union[str, geometry.SymmetryType],
+) -> "AsciiMap":
+    """Get a ascii map class from a geometry and symmetry type."""
     from armi.reactor import geometry
 
-    symmetry = geometry.SymmetryType.fromStr(str(symmetryType))
-
-    if str(geomType) == geometry.HEX_CORNERS_UP and symmetry.shape == geometry.ShapeType.FULL_CORE:
+    if str(geomType) == geometry.HEX_CORNERS_UP and geometry.FULL_CORE in str(symmetry):
         return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
@@ -506,5 +510,8 @@ def asciiMapFromGeomAndShape(geomType: str, symmetryType: str):
     }
 
     return MAP_FROM_GEOM[
-        (geometry.GeomType.fromStr(geomType), symmetry.ShapeType)
+        (
+            geometry.GeomType.fromAny(geomType),
+            geometry.SymmetryType.fromAny(symmetry).shape,
+        )
     ]
