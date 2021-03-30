@@ -134,7 +134,7 @@ class SymmetryType(object):
         # default constructor uses default values
         self.shape = ShapeType.THIRD_CORE
         self.boundary = BoundaryType.PERIODIC
-        self.isThroughCenter = False
+        self.isThroughCenterAssembly = False
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
@@ -142,7 +142,7 @@ class SymmetryType(object):
         symmetry.shape = ShapeType.fromStr(symmetryString)
         symmetry.boundary = BoundaryType.fromStr(symmetryString)
         symmetry._checkIfThroughCenter(symmetryString)
-        return symmetry
+        return symmetry._returnIfValid()
 
     @classmethod
     def fromAny(cls, symmetry: Union[str, "SymmetryType"]) -> "SymmetryType":
@@ -159,7 +159,7 @@ class SymmetryType(object):
            eventually forbidding the conversion entirely.
         """
         if isinstance(symmetry, SymmetryType):
-            return symmetry
+            return symmetry._returnIfValid()
         elif isinstance(symmetry, str):
             return cls.fromStr(symmetry)
         else:
@@ -176,21 +176,29 @@ class SymmetryType(object):
         symmetry = cls()
         symmetry.shape = ShapeType.fromAny(shapeType)
         symmetry.boundary = BoundaryType.fromAny(boundaryType)
-        symmetry.isThroughCenter = throughCenterAssembly
-        return symmetry
+        symmetry.isThroughCenterAssembly = throughCenterAssembly
+        return symmetry._returnIfValid()
 
     def __str__(self):
         """Combined string of shape and boundary symmetry type"""
         strList = [str(self.shape)]
         if self.boundary.hasSymmetry():
             strList.append(str(self.boundary))
-        if self.isThroughCenter:
+        if self.isThroughCenterAssembly:
             strList.append(THROUGH_CENTER_ASSEMBLY)
         return _joinSpace(strList)
 
     def _checkIfThroughCenter(self, symmetryString: str):
         if THROUGH_CENTER_ASSEMBLY in symmetryString:
-            self.isThroughCenter = True
+            self.isThroughCenterAssembly = True
+
+    def _returnIfValid(self):
+        if self.checkValidSymmetry():
+            return self
+        else:
+            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
+            errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
+            raise ValueError(errorMsg)
 
     def symmetryFactor(self):
         return self.shape.symmetryFactor()

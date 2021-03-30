@@ -1229,7 +1229,7 @@ class CartesianGrid(Grid):
         if symmetry.shape == geometry.ShapeType.FULL_CORE:
             return []
         elif symmetry.shape == geometry.ShapeType.QUARTER_CORE:
-            if symmetry.isThroughCenter:
+            if symmetry.isThroughCenterAssembly:
                 # some locations lie on the symmetric boundary
                 if i == 0 and j == 0:
                     # on the split corner, so the location is its own symmetric
