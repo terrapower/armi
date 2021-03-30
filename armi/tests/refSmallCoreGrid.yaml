@@ -18,4 +18,5 @@ core:
             IC  IC  IC  IC  SH
               IC  IC  IC  OC
             IC  IC  IC  PC  SH
-  symmetry: third periodic
+  symmetry: periodic
+  shape: third

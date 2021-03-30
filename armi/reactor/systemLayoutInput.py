@@ -120,6 +120,7 @@ class SystemLayoutInput:
         self.modifiedFileName = None
         self.geomType: str
         self.symmetry = None
+        self.shape = None
         self.assemTypeByIndices = OrderedDict()
         self.eqPathInput = {}
         self.eqPathsHaveBeenModified = False
@@ -156,7 +157,6 @@ class SystemLayoutInput:
         except ET.ParseError:
             stream.seek(0)
             self._readYaml(stream)
-        self._applyMigrations()
 
     def toGridBlueprints(self, name: str = "core"):
         """
@@ -172,10 +172,11 @@ class SystemLayoutInput:
 
         geom = self.geomType
         symmetry = self.symmetry
+        shape = self.shape
 
         bounds = None
 
-        if self.geomType == geometry.RZT:
+        if self.geomType == geometry.GeomType.RZT:
             # We need a grid in order to go from whats in the input to indices, and to
             # be able to provide grid bounds to the blueprint.
             rztGrid = grids.ThetaRZGrid.fromGeom(self)
@@ -184,9 +185,9 @@ class SystemLayoutInput:
 
         gridContents = dict()
         for indices, spec in self.assemTypeByIndices.items():
-            if geometry.HEX in self.geomType:
+            if self.geomType == geometry.GeomType.HEX:
                 i, j = grids.HexGrid.getIndicesFromRingAndPos(*indices)
-            elif geometry.RZT in self.geomType:
+            elif self.geomType == geometry.GeomType.RZT:
                 i, j, _ = rztGrid.indicesOfBounds(*indices[0:4])
             else:
                 i, j = indices
@@ -197,6 +198,7 @@ class SystemLayoutInput:
             gridContents=gridContents,
             geom=geom,
             symmetry=symmetry,
+            shape=shape,
             gridBounds=bounds,
         )
 
@@ -209,9 +211,9 @@ class SystemLayoutInput:
             for idx, eqPath in self.eqPathInput.items():
                 if eqPath == (None, None):
                     continue
-                if geometry.HEX in self.geomType:
+                if self.geomType == geometry.GeomType.HEX:
                     i, j = grids.HexGrid.getIndicesFromRingAndPos(*idx)
-                elif geometry.RZT in self.geomType:
+                elif self.geomType == geometry.GeomType.RZT:
                     i, j, _ = rztGrid.indicesOfBounds(*idx[0:4])
                 else:
                     i, j = idx
@@ -222,6 +224,7 @@ class SystemLayoutInput:
                 gridContents=eqPathContents,
                 geom=geom,
                 symmetry=symmetry,
+                shape=shape,
                 gridBounds=bounds,
             )
 
@@ -239,12 +242,12 @@ class SystemLayoutInput:
             aType = str(assemblyNode.attrib["name"])
             eqPathIndex, eqPathCycle = None, None
 
-            if self.geomType == geometry.CARTESIAN:
+            if self.geomType == geometry.GeomType.CARTESIAN:
                 indices = x, y = tuple(
                     int(assemblyNode.attrib[key]) for key in LOC_CARTESIAN
                 )
                 self.maxRings = max(x + 1, y + 1, self.maxRings)
-            elif self.geomType == geometry.RZT:
+            elif self.geomType == geometry.GeomType.RZT:
                 indices = tuple(
                     float(assemblyNode.attrib[key]) for key in LOC_RZ
                 ) + tuple(int(assemblyNode.attrib[key]) for key in MESH_RZ)
@@ -278,8 +281,9 @@ class SystemLayoutInput:
         self.assemTypeByIndices.clear()
         for _systemName, system in tree[INP_SYSTEMS].items():
             # no need to check for valid since the schema handled that.
-            self.geomType = system[INP_GEOM]
-            self.symmetry = system[INP_SYMMETRY]
+            self.geomType = geometry.GeomType.fromStr(system[INP_GEOM])
+            self.symmetry = geometry.SymmetryType.fromStr(system[INP_SYMMETRY])
+            self.shape = geometry.ShapeType.fromStr(system[INP_SYMMETRY])
             if INP_DISCRETES in system:
                 self._read_yaml_discretes(system)
             elif INP_LATTICE in system:
@@ -288,11 +292,11 @@ class SystemLayoutInput:
     def _read_yaml_discretes(self, system):
         for discrete in system[INP_DISCRETES]:
             location = discrete[INP_LOCATION]
-            indices = tuple(location[k] for k in LOC_KEYS[self.geomType])
-            if self.geomType == geometry.CARTESIAN:
+            indices = tuple(location[k] for k in LOC_KEYS[self.geomType : str])
+            if self.geomType == geometry.GeomType.CARTESIAN:
                 x, y = indices
                 self.maxRings = max(x + 1, y + 1, self.maxRings)
-            elif self.geomType == geometry.RZT:
+            elif self.geomType == geometry.GeomType.RZT:
                 pass
             else:
                 # assume hex geom.
@@ -308,7 +312,10 @@ class SystemLayoutInput:
     def _read_yaml_lattice(self, system):
         """Read a ascii map string into this object."""
         mapTxt = system[INP_LATTICE]
-        if self.geomType == geometry.HEX and geometry.THIRD_CORE in self.symmetry:
+        if (
+            self.geomType == geometry.GeomType.HEX
+            and self.shape == geometry.ShapeType.THIRD_CORE
+        ):
             asciimap = asciimaps.AsciiMapHexThirdFlatsUp()
             asciimap.readAscii(mapTxt)
             for (i, j), spec in asciimap.items():
@@ -320,14 +327,16 @@ class SystemLayoutInput:
                 self.maxRings = max(ring, self.maxRings)
         else:
             raise ValueError(
-                f"ASCII map reading from geom/symmetry: {self.geomType}/"
-                f"{self.symmetry} not supported."
+                f"ASCII map reading from geom/shape: {self.geomType}/"
+                f"{self.shape} not supported."
             )
 
-    def _applyMigrations(self):
-        # remove "core" so we can use symmetry for in-block things as well
-        # as core maps
-        self.symmetry = self.symmetry.replace(" core", "")
+    # def _getShapeAndSymmetry(self, inputString: str):
+    #    """
+    #    Get the shape (e.g., third core) and symmetry (reflective, periodic).
+    #    """
+    #    self.symmetry = geometry.SymmetryType.fromStr(inputString)
+    #    self.shape = geometry.ShapeType.fromStr(inputString)
 
     def modifyEqPaths(self, modifiedPaths):
         """
@@ -371,7 +380,11 @@ class SystemLayoutInput:
 
         runLog.important("Writing reactor geometry file as {}".format(outputFileName))
         root = ET.Element(
-            INP_SYSTEMS, attrib={INP_GEOM: self.geomType, INP_SYMMETRY: self.symmetry}
+            INP_SYSTEMS,
+            attrib={
+                INP_GEOM: str(self.geomType),
+                INP_SYMMETRY: str(self.shape) + str(self.symmetry),
+            },
         )
         tree = ET.ElementTree(root)
         # start at ring 1 pos 1 and go out
@@ -420,8 +433,8 @@ class SystemLayoutInput:
         fullData = {
             INP_SYSTEMS: {
                 sysName: {
-                    INP_GEOM: self.geomType,
-                    INP_SYMMETRY: self.symmetry,
+                    INP_GEOM: str(self.geomType),
+                    INP_SYMMETRY: str(self.shape) + str(self.symmetry),
                     INP_DISCRETES: geomData,
                 }
             }
@@ -455,21 +468,26 @@ class SystemLayoutInput:
         -----
         This only works for Hex 1/3rd core geometry inputs.
         """
-        if self.symmetry == geometry.FULL_CORE:
+        if self.shape == geometry.ShapeType.FULL_CORE:
             # already full core from geometry file. No need to copy symmetry over.
             runLog.important(
                 "Detected that full core geometry already exists. Cannot expand."
             )
             return
-        elif self.symmetry != geometry.THIRD_CORE + geometry.PERIODIC:
+        elif (
+            self.shape != geometry.ShapeType.THIRD_CORE
+            or self.symmetry != geometry.SymmetryType.PERIODIC
+        ):
             raise ValueError(
-                "Cannot convert symmetry `{}` to full core, must be {}".format(
-                    self.symmetry, geometry.THIRD_CORE + geometry.PERIODIC
+                "Cannot convert shape `{}` to full core, must be {}".format(
+                    self.shape,
+                    geometry.ShapeType.THIRD_CORE + geometry.SymmetryType.PERIODIC,
                 )
             )
 
         grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = self.symmetry
+        grid._symmetry: str = self.symmetry
+        grid._shape: str = self.shape
 
         # need to cast to a list because we will modify during iteration
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
@@ -480,21 +498,26 @@ class SystemLayoutInput:
                 )
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
-        self.symmetry = geometry.FULL_CORE
+        self.shape = geometry.ShapeType.FULL_CORE
 
     def _getGeomTypeAndSymmetryFromXml(self, root):
         """Read the geometry type and symmetry."""
         try:
-            self.geomType = str(root.attrib[INP_GEOM]).lower()
+            self.geomType = geometry.GeomType.fromStr(
+                str(root.attrib[INP_GEOM]).lower()
+            )
         except ValueError:
             # will not execute if the geom was specified as thetarz, cartesian or anything else specific
             runLog.warning(
                 "Could not find geometry type. Assuming hex geometry with third core periodic symmetry."
             )
-            self.geomType = geometry.HEX
-            self.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+            self.geomType = geometry.GeomType.HEX
+            self.shape = geometry.ShapeType.THIRD_CORE
+            self.symmetry = geometry.SymmetryType.PERIODIC
         else:
-            self.symmetry = str(root.attrib[INP_SYMMETRY]).lower()
+            inputString = str(root.attrib[INP_SYMMETRY]).lower()
+            self.symmetry = geometry.SymmetryType.fromStr(inputString)
+            self.shape = geometry.ShapeType.fromStr(inputString)
 
     @classmethod
     def fromReactor(cls, reactor):
@@ -509,6 +532,7 @@ class SystemLayoutInput:
         runLog.info("Reading core map from {}".format(reactor))
         geom.geomType = str(reactor.core.geomType)
         geom.symmetry = reactor.core.symmetry
+        geom.shape = reactor.core.shape
 
         bp = reactor.blueprints
         assemDesigns = bp.assemDesigns if bp else ()

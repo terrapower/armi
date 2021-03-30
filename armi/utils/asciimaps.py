@@ -485,23 +485,26 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         self._ijMax = (self._asciiMaxCol - 1) // 2
 
 
-def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
+def asciiMapFromGeomAndShape(geomType: str, symmetryType: str):
     """Get a ascii map class from a geometry type."""
     from armi.reactor import geometry
 
-    symmetry = symmetry.replace(geometry.PERIODIC, "")
-    symmetry = symmetry.replace(geometry.REFLECTIVE, "")
-    symmetry = symmetry.replace(geometry.THROUGH_CENTER_ASSEMBLY, "")
+    symmetry = geometry.SymmetryType.fromStr(str(symmetryType))
 
-    if str(geomType) == geometry.HEX_CORNERS_UP and symmetry == geometry.FULL_CORE:
+    if str(geomType) == geometry.HEX_CORNERS_UP and symmetry.shape == geometry.ShapeType.FULL_CORE:
         return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
-        (geometry.GeomType.HEX, geometry.THIRD_CORE): AsciiMapHexThirdFlatsUp,
-        (geometry.GeomType.HEX, geometry.FULL_CORE): AsciiMapHexFullFlatsUp,
+        (geometry.GeomType.HEX, geometry.ShapeType.THIRD_CORE): AsciiMapHexThirdFlatsUp,
+        (geometry.GeomType.HEX, geometry.ShapeType.FULL_CORE): AsciiMapHexFullFlatsUp,
         (geometry.GeomType.CARTESIAN, None): AsciiMapCartesian,
-        (geometry.GeomType.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
-        (geometry.GeomType.CARTESIAN, geometry.QUARTER_CORE): AsciiMapCartesian,
+        (geometry.GeomType.CARTESIAN, geometry.ShapeType.FULL_CORE): AsciiMapCartesian,
+        (
+            geometry.GeomType.CARTESIAN,
+            geometry.ShapeType.QUARTER_CORE,
+        ): AsciiMapCartesian,
     }
 
-    return MAP_FROM_GEOM[(geometry.GeomType.fromAny(geomType), symmetry)]
+    return MAP_FROM_GEOM[
+        (geometry.GeomType.fromStr(geomType), symmetry.ShapeType)
+    ]

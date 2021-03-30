@@ -104,7 +104,8 @@ class TestSystemLayoutInput(unittest.TestCase):
 
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
-        reactor.core.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        reactor.core.shape = geometry.THIRD_CORE
+        reactor.core.symmetry = geometry.PERIODIC
         geom = SystemLayoutInput.fromReactor(reactor)
         self.assertEqual(geom.assemTypeByIndices[(2, 1)], "fuel")
         self.assertEqual(geom.geomType, "hex")
@@ -115,7 +116,7 @@ class TestSystemLayoutInput(unittest.TestCase):
         self.assertNotIn((2, 3), geom.assemTypeByIndices)
         self.assertEqual(8, len(geom.assemTypeByIndices))
         geom.growToFullCore()
-        self.assertEqual(geometry.FULL_CORE, geom.symmetry)
+        self.assertEqual(geometry.FULL_CORE, geom.shape)
         self.assertIn((2, 3), geom.assemTypeByIndices)
         self.assertIn(
             geom.assemTypeByIndices[2, 3],  # perodic repeat

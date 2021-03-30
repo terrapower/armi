@@ -669,7 +669,8 @@ class HexToRZThetaConverter(GeometryConverter):
             core.setOptionsFromCs(self._cs)
         self.convReactor.add(core)
         self.convReactor.core.spatialGrid = grid
-        grid.symmetry = geometry.FULL_CORE
+        grid.shape = geometry.ShapeType.FULL_CORE
+        grid.symmetry = geometry.SymmetryType.NO_SYMMETRY
         grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
@@ -1310,12 +1311,14 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             )
             return r
         elif not (
-            r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
+            r.core.shape + r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
             and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
                 "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
-                "Geometry received was {} {}".format(r.core.symmetry, r.core.geomType)
+                "Geometry received was {} {} {}".format(
+                    r.core.shape, r.core.symmetry, r.core.geomType
+                )
             )
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(r.core)
@@ -1326,8 +1329,8 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         # for adding stuff outside of the first 1/3
         grid = copy.deepcopy(r.core.spatialGrid)
 
-        # Set the core grid's symmetry early, since the core uses it for error checks
-        r.core.spatialGrid.symmetry = geometry.FULL_CORE
+        # Set the core grid's shape early, since the core uses it for error checks
+        r.core.spatialGrid.shape = geometry.ShapeType.FULL_CORE
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
@@ -1338,9 +1341,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 
-        # set symmetry after expanding, because it isnt actually full core until it's
-        # full core; setting the symmetry causes the core to clear its caches.
-        r.core.symmetry = geometry.FULL_CORE
+        # set shape after expanding, because it isnt actually full core until it's
+        # full core; setting the shape causes the core to clear its caches.
+        r.core.shape = geometry.ShapeType.FULL_CORE
 
     def restorePreviousGeometry(self, cs, reactor):
         """
@@ -1355,7 +1358,12 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # restore the settings of the core
             cs.unsetTemporarySettings()
 
-            reactor.core.symmetry = self.EXPECTED_INPUT_SYMMETRY
+            reactor.core.symmetry = geometry.ShapeType.fromStr(
+                self.EXPECTED_INPUT_SYMMETRY
+            )
+            reactor.core.shape = geometry.ShapeType.fromStr(
+                self.EXPECTED_INPUT_SYMMETRY
+            )
 
 
 class EdgeAssemblyChanger(GeometryChanger):

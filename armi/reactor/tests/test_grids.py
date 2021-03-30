@@ -271,7 +271,8 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getSymmetricIdenticalsThird(self):
         grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        grid.shape = geometry.THIRD_CORE
+        grid.symmetry = geometry.PERIODIC
         self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
         self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
@@ -473,7 +474,7 @@ class TestCartesianGrid(unittest.TestCase):
     def testSymmetry(self):
         # PERIODIC, no split
         grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.QUARTER_CORE + geometry.PERIODIC
+            1.0, 1.0, shape=geometry.QUARTER_CORE, symmetry=geometry.PERIODIC
         )
 
         expected = {
@@ -494,9 +495,8 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry.QUARTER_CORE
-            + geometry.PERIODIC
-            + geometry.THROUGH_CENTER_ASSEMBLY,
+            shape=geometry.QUARTER_CORE + geometry.THROUGH_CENTER_ASSEMBLY,
+            symmetry=geometry.PERIODIC,
         )
 
         expected = {
@@ -515,7 +515,7 @@ class TestCartesianGrid(unittest.TestCase):
 
         # REFLECTIVE, no split
         grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.QUARTER_CORE + geometry.REFLECTIVE
+            1.0, 1.0, shape=geometry.QUARTER_CORE, symmetry=geometry.REFLECTIVE
         )
 
         expected = {
@@ -533,9 +533,8 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry.QUARTER_CORE
-            + geometry.REFLECTIVE
-            + geometry.THROUGH_CENTER_ASSEMBLY,
+            shape=geometry.QUARTER_CORE + geometry.THROUGH_CENTER_ASSEMBLY,
+            symmetry=geometry.REFLECTIVE,
         )
 
         expected = {
@@ -552,13 +551,13 @@ class TestCartesianGrid(unittest.TestCase):
             self.assertEqual(expectedEq, equivalents)
 
         # Full core
-        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.FULL_CORE)
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0, 1.0, shape=geometry.FULL_CORE, symmetry=geometry.NO_SYMMETRY
+        )
         self.assertEqual(grid.getSymmetricEquivalents((5, 6)), [])
 
         # 1/8 core not supported yet
-        grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.EIGHTH_CORE
-        )
+        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, shape=geometry.EIGHTH_CORE)
         with self.assertRaises(NotImplementedError):
             grid.getSymmetricEquivalents((5, 6))
 

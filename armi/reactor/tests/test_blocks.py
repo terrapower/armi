@@ -758,10 +758,11 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(b.getSymmetryFactor(), 1.0)
 
         # center blocks have a different symmetry factor for 1/3rd core
-        for symmetry, powerMult in (
-            (geometry.FULL_CORE, 1),
-            (geometry.THIRD_CORE + geometry.PERIODIC, 3),
+        for shape, symmetry, powerMult in (
+            (geometry.FULL_CORE, geometry.NO_SYMMETRY, 1),
+            (geometry.THIRD_CORE, geometry.PERIODIC, 3),
         ):
+            self.r.core.shape = shape
             self.r.core.symmetry = symmetry
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]

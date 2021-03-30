@@ -266,12 +266,25 @@ class Core(composites.Composite):
         return None
 
     @property
-    def symmetry(self):
+    def symmetry(self) -> geometry.SymmetryType:
+        if not self.spatialGrid:
+            raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
         return self.spatialGrid.symmetry
 
     @symmetry.setter
     def symmetry(self, val):
         self.spatialGrid.symmetry = val
+        self.clearCache()
+
+    @property
+    def shape(self) -> geometry.ShapeType:
+        if not self.spatialGrid:
+            raise ValueError("Cannot access shape before a spatialGrid is attached.")
+        return self.spatialGrid.shape
+
+    @symmetry.setter
+    def shape(self, val):
+        self.spatialGrid.shape = val
         self.clearCache()
 
     @property
@@ -290,7 +303,7 @@ class Core(composites.Composite):
         This should not be a state variable because it just reflects the current geometry.
         It changes automatically if the symmetry changes (e.g. from a geometry conversion).
         """
-        return geometry.SYMMETRY_FACTORS[self.symmetry]
+        return geometry.SYMMETRY_FACTORS[str(self.shape) + str(self.symmetry)]
 
     @property
     def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
@@ -319,8 +332,13 @@ class Core(composites.Composite):
     def isFullCore(self):
         """Return True if reactor is full core, otherwise False."""
         # Avoid using `not core.isFullCore` to check if third core geometry
-        # use `core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC`
-        return self.symmetry == geometry.FULL_CORE
+        # use `core.shape == geometry.THIRD_CORE
+        return self.shape == geometry.ShapeType.FULL_CORE
+
+    @property
+    def isThirdCore(self):
+        """Return True if reactor is third core, otherwise False."""
+        return self.shape == geometry.ShapeType.THIRD_CORE
 
     @property
     def refAssem(self):
@@ -523,7 +541,7 @@ class Core(composites.Composite):
             ):
                 raise exceptions.SymmetryError(
                     "Location `{}` outside of the represented domain: `{}`".format(
-                        spatialLocator, self.spatialGrid.symmetry
+                        spatialLocator, self.spatialGrid.shape
                     )
                 )
             a.moveTo(spatialLocator)
@@ -1624,7 +1642,8 @@ class Core(composites.Composite):
                 neighbors.append(neighbor)
             elif showBlanks:
                 if (
-                    self.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+                    shape == geometry.ShapeType.THIRD_CORE
+                    and self.symmetry == geometry.SymmetryType.PERIODIC
                     and duplicateAssembliesOnReflectiveBoundary
                 ):
                     symmetricAssem = self._getReflectiveDuplicateAssembly(neighborLoc)
