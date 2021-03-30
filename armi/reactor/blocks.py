@@ -2010,7 +2010,7 @@ class CartesianBlock(Block):
         """
         if self.r is not None:
             indices = self.spatialLocator.getCompleteIndices()
-            if self.r.core.symmetry.isThroughCenter:
+            if self.r.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
                     # central location
                     return 4.0

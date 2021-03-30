@@ -407,7 +407,7 @@ REFLECTIVE = "reflective"
 PERIODIC = "periodic"
 NO_SYMMETRY = "no symmetry"
 THROUGH_CENTER_ASSEMBLY = (
-    " through center assembly"  # through center assembly applies only to cartesian
+    "through center assembly"  # through center assembly applies only to cartesian
 )
 
 VALID_SYMMETRY = {

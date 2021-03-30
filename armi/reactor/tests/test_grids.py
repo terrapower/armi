@@ -573,7 +573,11 @@ class TestCartesianGrid(unittest.TestCase):
 
         # 1/8 core not supported yet
         grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.SymmetryType.fromStr(geometry.EIGHTH_CORE)
+            1.0,
+            1.0,
+            symmetry=geometry.SymmetryType.fromStr(
+                geometry._joinSpace([geometry.EIGHTH_CORE, geometry.REFLECTIVE])
+            ),
         )
         with self.assertRaises(NotImplementedError):
             grid.getSymmetricEquivalents((5, 6))
