@@ -1863,38 +1863,36 @@ class HexBlock(Block):
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
 
-        if (
-            self.parent is not None
-            and self.parent.spatialLocator.grid is not None
-            and self.parent.spatialLocator.grid.symmetry is not None
-        ):
+        try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-            if (
-                symmetry.shape == geometry.ShapeType.THIRD_CORE
-                and symmetry.boundary == geometry.BoundaryType.PERIODIC
-            ):
-                indices = self.spatialLocator.getCompleteIndices()
-                if indices[0] == 0 and indices[1] == 0:
-                    # central location
-                    return 3.0
-                else:
-                    symmetryLine = self.r.core.spatialGrid.overlapsWhichSymmetryLine(
-                        indices
-                    )
-                    # detect if upper edge assemblies are included. Doing this is the only way to know
-                    # definitively whether or not the edge assemblies are half-assems or full.
-                    # seeing the first one is the easiest way to detect them.
-                    # Check it last in the and statement so we don't waste time doing it.
-                    upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                    if (
-                        symmetryLine
-                        in [
-                            grids.BOUNDARY_0_DEGREES,
-                            grids.BOUNDARY_120_DEGREES,
-                        ]
-                        and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
-                    ):
-                        return 2.0
+        except:
+            return 1.0
+        if (
+            symmetry.shape == geometry.ShapeType.THIRD_CORE
+            and symmetry.boundary == geometry.BoundaryType.PERIODIC
+        ):
+            indices = self.spatialLocator.getCompleteIndices()
+            if indices[0] == 0 and indices[1] == 0:
+                # central location
+                return 3.0
+            else:
+                symmetryLine = self.r.core.spatialGrid.overlapsWhichSymmetryLine(
+                    indices
+                )
+                # detect if upper edge assemblies are included. Doing this is the only way to know
+                # definitively whether or not the edge assemblies are half-assems or full.
+                # seeing the first one is the easiest way to detect them.
+                # Check it last in the and statement so we don't waste time doing it.
+                upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
+                if (
+                    symmetryLine
+                    in [
+                        grids.BOUNDARY_0_DEGREES,
+                        grids.BOUNDARY_120_DEGREES,
+                    ]
+                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                ):
+                    return 2.0
         return 1.0
 
     def getPinCoordinates(self):
