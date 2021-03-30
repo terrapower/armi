@@ -493,13 +493,15 @@ def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
     symmetry = symmetry.replace(geometry.REFLECTIVE, "")
     symmetry = symmetry.replace(geometry.THROUGH_CENTER_ASSEMBLY, "")
 
+    if geomType == geometry.HEX_CORNERS_UP and symmetry == geometry.FULL_CORE:
+        return AsciiMapHexFullTipsUp
+
     MAP_FROM_GEOM = {
-        (geometry.HEX, geometry.THIRD_CORE): AsciiMapHexThirdFlatsUp,
-        (geometry.HEX, geometry.FULL_CORE): AsciiMapHexFullFlatsUp,
-        (geometry.HEX_CORNERS_UP, geometry.FULL_CORE): AsciiMapHexFullTipsUp,
-        (geometry.CARTESIAN, None): AsciiMapCartesian,
-        (geometry.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
-        (geometry.CARTESIAN, geometry.QUARTER_CORE): AsciiMapCartesian,
+        (geometry.GeomType.HEX, geometry.THIRD_CORE): AsciiMapHexThirdFlatsUp,
+        (geometry.GeomType.HEX, geometry.FULL_CORE): AsciiMapHexFullFlatsUp,
+        (geometry.GeomType.CARTESIAN, None): AsciiMapCartesian,
+        (geometry.GeomType.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
+        (geometry.GeomType.CARTESIAN, geometry.QUARTER_CORE): AsciiMapCartesian,
     }
 
-    return MAP_FROM_GEOM[(geomType, symmetry)]
+    return MAP_FROM_GEOM[(geometry.GeomType.fromAny(geomType), symmetry)]
