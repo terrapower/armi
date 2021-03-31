@@ -189,8 +189,7 @@ class SymmetryType(object):
         return _joinSpace(strList)
 
     def _checkIfThroughCenter(self, symmetryString: str):
-        if THROUGH_CENTER_ASSEMBLY in symmetryString:
-            self.isThroughCenterAssembly = True
+        self.isThroughCenterAssembly = THROUGH_CENTER_ASSEMBLY in symmetryString
 
     def _returnIfValid(self):
         if self.checkValidSymmetry():
