@@ -595,7 +595,7 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and self.geomType not in geometry.VALID_GEOMETRY_TYPE,
+            and str(self.geomType) not in geometry.VALID_GEOMETRY_TYPE,
             "{} is not a valid geometry Please update geom type on the geom file. "
             "Valid (case insensitive) geom types are: {}".format(
                 self.geomType, geometry.VALID_GEOMETRY_TYPE
@@ -606,7 +606,7 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and self.coreSymmetry not in geometry.VALID_SYMMETRY,
+            and str(self.coreSymmetry) not in geometry.VALID_SYMMETRY,
             "{} is not a valid symmetry Please update symmetry on the geom file. "
             "Valid (case insensitive) symmetries are: {}".format(
                 self.coreSymmetry, geometry.VALID_SYMMETRY
