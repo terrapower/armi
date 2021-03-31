@@ -276,7 +276,9 @@ class GridBlueprint(yamlize.Object):
                 if self.latticeDimensions
                 else (1.0, 1.0)
             )
-            isOffset = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
+            isOffset = (
+                self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
+            )
             spatialGrid = grids.CartesianGrid.fromRectangle(
                 xw, yw, numRings=maxIndex + 1, isOffset=isOffset
             )
