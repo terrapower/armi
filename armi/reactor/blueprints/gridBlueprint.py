@@ -172,7 +172,7 @@ class GridBlueprint(yamlize.Object):
     symmetry = yamlize.Attribute(
         key="symmetry",
         type=str,
-        default=geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC]),
+        default=" ".join([geometry.THIRD_CORE, geometry.PERIODIC]),
     )
     # gridContents is the final form of grid contents information;
     # it is set regardless of how the input is read. This is how all
@@ -193,7 +193,7 @@ class GridBlueprint(yamlize.Object):
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        symmetry=geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC]),
+        symmetry=" ".join([geometry.THIRD_CORE, geometry.PERIODIC]),
         gridContents=None,
         gridBounds=None,
     ):
@@ -330,7 +330,7 @@ class GridBlueprint(yamlize.Object):
             else ""
         )
         self.symmetry = str(
-            geometry.SymmetryType.fromSubTypes(
+            geometry.SymmetryType(
                 shapeType=geometry.ShapeType.FULL_CORE,
                 boundaryType=geometry.BoundaryType.NO_SYMMETRY,
                 throughCenterAssembly=split,

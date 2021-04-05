@@ -455,7 +455,7 @@ class HexToRZThetaConverter(GeometryConverter):
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZT
-    _SYMMETRY_TYPE = geometry.SymmetryType.fromSubTypes(
+    _SYMMETRY_TYPE = geometry.SymmetryType(
         shapeType=geometry.ShapeType.FULL_CORE,
         boundaryType=geometry.BoundaryType.NO_SYMMETRY,
     )
@@ -1295,9 +1295,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = geometry._joinSpace(
-        [geometry.THIRD_CORE, geometry.PERIODIC]
-    )
+    EXPECTED_INPUT_SYMMETRY = " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
 
     def convert(self, r=None):
         """

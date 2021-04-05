@@ -117,7 +117,7 @@ class GeomType(enum.Enum):
             return RZ
 
 
-class SymmetryType(object):
+class SymmetryType:
     """
     A thin wrapper for ShapeType and BoundaryType enumerations.
 
@@ -130,11 +130,16 @@ class SymmetryType(object):
     yaml and/or the database nicely.
     """
 
-    def __init__(self):
-        # default constructor uses default values
-        self.shape = ShapeType.THIRD_CORE
-        self.boundary = BoundaryType.PERIODIC
-        self.isThroughCenterAssembly = False
+    def __init__(
+        self,
+        shapeType: Union[str, "ShapeType"] = ShapeType.THIRD_CORE,
+        boundaryType: Union[str, "BoundaryType"] = BoundaryType.PERIODIC,
+        throughCenterAssembly: Optional[bool] = False,
+    ) -> "SymmetryType":
+        self.shape = ShapeType.fromAny(shapeType)
+        self.boundary = BoundaryType.fromAny(boundaryType)
+        self.isThroughCenterAssembly = throughCenterAssembly
+        return symmetry._returnIfValid()
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
@@ -165,20 +170,6 @@ class SymmetryType(object):
         else:
             raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
 
-    @classmethod
-    def fromSubTypes(
-        cls,
-        shapeType: Union[str, "ShapeType"],
-        boundaryType: Union[str, "BoundaryType"],
-        throughCenterAssembly: Optional[bool] = False,
-    ) -> "SymmetryType":
-
-        symmetry = cls()
-        symmetry.shape = ShapeType.fromAny(shapeType)
-        symmetry.boundary = BoundaryType.fromAny(boundaryType)
-        symmetry.isThroughCenterAssembly = throughCenterAssembly
-        return symmetry._returnIfValid()
-
     def __str__(self):
         """Combined string of shape and boundary symmetry type"""
         strList = [str(self.shape)]
@@ -186,7 +177,7 @@ class SymmetryType(object):
             strList.append(str(self.boundary))
         if self.isThroughCenterAssembly:
             strList.append(THROUGH_CENTER_ASSEMBLY)
-        return _joinSpace(strList)
+        return " ".join(strList)
 
     def _checkIfThroughCenter(self, symmetryString: str):
         self.isThroughCenterAssembly = THROUGH_CENTER_ASSEMBLY in symmetryString
@@ -376,10 +367,6 @@ class BoundaryType(enum.Enum):
         return not self == self.NO_SYMMETRY
 
 
-def _joinSpace(strList: List[str]):
-    return " ".join(strList)
-
-
 SYSTEMS = "systems"
 VERSION = "version"
 
@@ -411,20 +398,20 @@ THROUGH_CENTER_ASSEMBLY = (
 
 VALID_SYMMETRY = {
     FULL_CORE,
-    _joinSpace([FULL_CORE, THROUGH_CENTER_ASSEMBLY]),
-    _joinSpace(
+    " ".join([FULL_CORE, THROUGH_CENTER_ASSEMBLY]),
+    " ".join(
         [THIRD_CORE, PERIODIC]
     ),  # third core reflective is not geometrically consistent.
-    _joinSpace([QUARTER_CORE, PERIODIC]),
-    _joinSpace([QUARTER_CORE, REFLECTIVE]),
-    _joinSpace([QUARTER_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
-    _joinSpace([QUARTER_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
-    _joinSpace([EIGHTH_CORE, PERIODIC]),
-    _joinSpace([EIGHTH_CORE, REFLECTIVE]),
-    _joinSpace([EIGHTH_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
-    _joinSpace([EIGHTH_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
-    _joinSpace([SIXTEENTH_CORE, PERIODIC]),
-    _joinSpace([SIXTEENTH_CORE, REFLECTIVE]),
+    " ".join([QUARTER_CORE, PERIODIC]),
+    " ".join([QUARTER_CORE, REFLECTIVE]),
+    " ".join([QUARTER_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
+    " ".join([QUARTER_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
+    " ".join([EIGHTH_CORE, PERIODIC]),
+    " ".join([EIGHTH_CORE, REFLECTIVE]),
+    " ".join([EIGHTH_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
+    " ".join([EIGHTH_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
+    " ".join([SIXTEENTH_CORE, PERIODIC]),
+    " ".join([SIXTEENTH_CORE, REFLECTIVE]),
 }
 
 

@@ -469,7 +469,7 @@ class SystemLayoutInput:
             raise ValueError(
                 "Cannot convert shape `{}` to full core, must be {}".format(
                     self.symmetry.shape,
-                    geometry._joinSpace(
+                    " ".join(
                         [geometry.ShapeType.THIRD_CORE, geometry.BoundaryType.PERIODIC]
                     ),
                 )
@@ -487,7 +487,7 @@ class SystemLayoutInput:
                 )
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
-        self.symmetry = geometry.SymmetryType.fromSubTypes(
+        self.symmetry = geometry.SymmetryType(
             shapeType=geometry.ShapeType.FULL_CORE,
             boundaryType=geometry.BoundaryType.NO_SYMMETRY,
         )
@@ -504,7 +504,7 @@ class SystemLayoutInput:
                 "Could not find geometry type. Assuming hex geometry with third core periodic symmetry."
             )
             self.geomType = geometry.GeomType.HEX
-            self.symmetry = geometry.SymmetryType.fromSubTypes(
+            self.symmetry = geometry.SymmetryType(
                 shapeType=geometry.ShapeType.THIRD_CORE,
                 boundaryType=geometry.BoundaryType.PERIODIC,
             )

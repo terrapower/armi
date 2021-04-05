@@ -112,16 +112,16 @@ class TestSymmetryType(unittest.TestCase):
         self.assertEqual(st.shape, geometry.ShapeType.EIGHTH_CORE)
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
 
-    def testFromSubTypes(self):
+    def testBaseConstructor(self):
         self.assertEqual(
-            geometry.SymmetryType.fromSubTypes(
+            geometry.SymmetryType(
                 geometry.ShapeType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
             ).shape,
             geometry.ShapeType.SIXTEENTH_CORE,
         )
         self.assertEqual(
             str(
-                geometry.SymmetryType.fromSubTypes(
+                geometry.SymmetryType(
                     geometry.ShapeType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
                 ).boundary
             ),
@@ -169,7 +169,7 @@ class TestSystemLayoutInput(unittest.TestCase):
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
         reactor.core.symmetry = geometry.SymmetryType.fromStr(
-            geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC])
+            " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
         )
         geom = SystemLayoutInput.fromReactor(reactor)
         self.assertEqual(geom.assemTypeByIndices[(2, 1)], "fuel")

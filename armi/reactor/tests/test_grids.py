@@ -271,7 +271,7 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getSymmetricIdenticalsThird(self):
         grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = geometry._joinSpace([geometry.THIRD_CORE, geometry.PERIODIC])
+        grid.symmetry = " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
         self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
         self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
@@ -475,7 +475,7 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry._joinSpace([geometry.QUARTER_CORE, geometry.PERIODIC]),
+            symmetry=" ".join([geometry.QUARTER_CORE, geometry.PERIODIC]),
         )
 
         expected = {
@@ -496,7 +496,7 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry._joinSpace(
+            symmetry=" ".join(
                 [
                     geometry.QUARTER_CORE,
                     geometry.PERIODIC,
@@ -523,7 +523,7 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry._joinSpace([geometry.QUARTER_CORE, geometry.REFLECTIVE]),
+            symmetry=" ".join([geometry.QUARTER_CORE, geometry.REFLECTIVE]),
         )
 
         expected = {
@@ -541,7 +541,7 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry._joinSpace(
+            symmetry=" ".join(
                 [
                     geometry.QUARTER_CORE,
                     geometry.REFLECTIVE,
@@ -576,7 +576,7 @@ class TestCartesianGrid(unittest.TestCase):
             1.0,
             1.0,
             symmetry=geometry.SymmetryType.fromStr(
-                geometry._joinSpace([geometry.EIGHTH_CORE, geometry.REFLECTIVE])
+                " ".join([geometry.EIGHTH_CORE, geometry.REFLECTIVE])
             ),
         )
         with self.assertRaises(NotImplementedError):

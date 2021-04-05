@@ -37,9 +37,7 @@ class Zone_TestCase(unittest.TestCase):
         r = reactors.Reactor("zonetest", bp)
         r.add(reactors.Core("Core"))
         r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-        r.core.spatialGrid.symmetry = geometry._joinSpace(
-            [geometry.THIRD_CORE, geometry.PERIODIC]
-        )
+        r.core.spatialGrid.symmetry = " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
         r.core.spatialGrid.geomType = geometry.HEX
         aList = []
         for ring in range(10):
