@@ -1,2 +1,6 @@
 numpy<1.19.4
+
+# docutils 0.17 introduced a bug that prevents bullets from rendering
+# see https://github.com/terrapower/armi/issues/274
+docutils <0.17
 -e .[memprof,dev]
