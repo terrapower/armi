@@ -92,6 +92,65 @@ class TestGeomType(unittest.TestCase):
             self.assertEqual(str(geometry.GeomType.fromStr(geom)), geom)
 
 
+class TestSymmetryType(unittest.TestCase):
+    def testFromStr(self):
+        # note the bonkers case and extra whitespace to exercise the canonicalization
+        self.assertEqual(
+            geometry.SymmetryType.fromStr("thiRd periodic ").shape,
+            geometry.ShapeType.THIRD_CORE,
+        )
+        st = geometry.SymmetryType.fromStr("reflective qwerty sixteenth")
+        self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
+        self.assertEqual(str(st), "sixteenth reflective")
+
+        with self.assertRaises(ValueError):
+            geometry.SymmetryType.fromStr("what even is this?")
+
+    def testFromAny(self):
+        self.assertTrue(
+            geometry.SymmetryType.fromAny(
+                "eighth reflective through center assembly"
+            ).isThroughCenterAssembly
+        )
+        self.assertEqual(geometry.GeomType.fromAny(" thetaRZ"), geometry.GeomType.RZT)
+
+    def testFromSubTypes(self):
+        self.assertEqual(
+            geometry.GeomType.fromSubTypes(
+                geometry.ShapeType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
+            ).shape,
+            geometry.ShapeType.SIXTEENTH_CORE,
+        )
+
+    def testLabel(self):
+        st = geometry.SymmetryType.fromStr("full")
+        self.assertEqual(st.shape.label, "Full")
+        st = geometry.SymmetryType.fromStr("third periodic")
+        self.assertEqual(st.shape.label, "Third")
+        st = geometry.SymmetryType.fromStr("quarter reflective")
+        self.assertEqual(st.shape.label, "Quarter")
+        st = geometry.SymmetryType.fromStr("eighth reflective")
+        self.assertEqual(st.shape.label, "Eighth")
+        st = geometry.SymmetryType.fromStr("sixteenth reflective")
+        self.assertEqual(st.shape.label, "Sixteenth")
+        st = geometry.SymmetryType.fromStr("")
+        self.assertEqual(st.shape.label, "")
+
+    def testSymmetryFactor(self):
+        st = geometry.SymmetryType.fromStr("full")
+        self.assertEqual(st.symmetryFactor(), 1.0)
+        st = geometry.SymmetryType.fromStr("third periodic")
+        self.assertEqual(st.symmetryFactor(), 3.0)
+        st = geometry.SymmetryType.fromStr("quarter reflective")
+        self.assertEqual(st.symmetryFactor(), 4.0)
+        st = geometry.SymmetryType.fromStr("eighth reflective")
+        self.assertEqual(st.symmetryFactor(), 8.0)
+        st = geometry.SymmetryType.fromStr("sixteenth reflective")
+        self.assertEqual(st.symmetryFactor(), 16.0)
+        st = geometry.SymmetryType.fromStr("")
+        self.assertEqual(st.symmetryFactor(), 1.0)
+
+
 class TestSystemLayoutInput(unittest.TestCase):
     def testReadHexGeomXML(self):
         geom = SystemLayoutInput()

@@ -237,7 +237,7 @@ class ShapeType(enum.Enum):
         elif isinstance(source, str):
             return cls.fromStr(source)
         else:
-            raise TypeError("Expected str or GeomType; got {}".format(type(source)))
+            raise TypeError("Expected str or ShapeType; got {}".format(type(source)))
 
     @classmethod
     def fromStr(cls, shapeStr: str) -> "ShapeType":
@@ -337,7 +337,7 @@ class BoundaryType(enum.Enum):
         elif isinstance(source, str):
             return cls.fromStr(source)
         else:
-            raise TypeError("Expected str or GeomType; got {}".format(type(source)))
+            raise TypeError("Expected str or BoundaryType; got {}".format(type(source)))
 
     @classmethod
     def fromStr(cls, symmetryStr: str) -> "BoundaryType":
