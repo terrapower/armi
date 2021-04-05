@@ -107,34 +107,41 @@ class TestSymmetryType(unittest.TestCase):
             geometry.SymmetryType.fromStr("what even is this?")
 
     def testFromAny(self):
-        self.assertTrue(
-            geometry.SymmetryType.fromAny(
-                "eighth reflective through center assembly"
-            ).isThroughCenterAssembly
-        )
-        self.assertEqual(geometry.GeomType.fromAny(" thetaRZ"), geometry.GeomType.RZT)
+        st = geometry.SymmetryType.fromAny("eighth reflective through center assembly")
+        self.assertTrue(st.isThroughCenterAssembly)
+        self.assertEqual(st.shape, geometry.ShapeType.EIGHTH_CORE)
+        self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
 
     def testFromSubTypes(self):
         self.assertEqual(
-            geometry.GeomType.fromSubTypes(
+            geometry.SymmetryType.fromSubTypes(
                 geometry.ShapeType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
             ).shape,
             geometry.ShapeType.SIXTEENTH_CORE,
+        )
+        self.assertEqual(
+            str(
+                geometry.SymmetryType.fromSubTypes(
+                    geometry.ShapeType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+                ).boundary
+            ),
+            geometry.NO_SYMMETRY,
         )
 
     def testLabel(self):
         st = geometry.SymmetryType.fromStr("full")
         self.assertEqual(st.shape.label, "Full")
+        self.assertEqual(st.boundary.label, "No Symmetry")
         st = geometry.SymmetryType.fromStr("third periodic")
         self.assertEqual(st.shape.label, "Third")
+        self.assertEqual(st.boundary.label, "Periodic")
         st = geometry.SymmetryType.fromStr("quarter reflective")
         self.assertEqual(st.shape.label, "Quarter")
+        self.assertEqual(st.boundary.label, "Reflective")
         st = geometry.SymmetryType.fromStr("eighth reflective")
         self.assertEqual(st.shape.label, "Eighth")
         st = geometry.SymmetryType.fromStr("sixteenth reflective")
         self.assertEqual(st.shape.label, "Sixteenth")
-        st = geometry.SymmetryType.fromStr("")
-        self.assertEqual(st.shape.label, "")
 
     def testSymmetryFactor(self):
         st = geometry.SymmetryType.fromStr("full")
@@ -147,8 +154,6 @@ class TestSymmetryType(unittest.TestCase):
         self.assertEqual(st.symmetryFactor(), 8.0)
         st = geometry.SymmetryType.fromStr("sixteenth reflective")
         self.assertEqual(st.symmetryFactor(), 16.0)
-        st = geometry.SymmetryType.fromStr("")
-        self.assertEqual(st.symmetryFactor(), 1.0)
 
 
 class TestSystemLayoutInput(unittest.TestCase):
