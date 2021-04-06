@@ -271,7 +271,11 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getSymmetricIdenticalsThird(self):
         grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
+        grid.symmetry = str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        )
         self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
         self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
@@ -475,7 +479,11 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=" ".join([geometry.QUARTER_CORE, geometry.PERIODIC]),
+            symmetry=str(
+                geometry.SymmetryType(
+                    geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.PERIODIC
+                )
+            ),
         )
 
         expected = {
@@ -496,12 +504,10 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=" ".join(
-                [
-                    geometry.QUARTER_CORE,
-                    geometry.PERIODIC,
-                    geometry.THROUGH_CENTER_ASSEMBLY,
-                ]
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.QUARTER_CORE,
+                geometry.BoundaryType.PERIODIC,
+                throughCenter=True,
             ),
         )
 
@@ -523,7 +529,9 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=" ".join([geometry.QUARTER_CORE, geometry.REFLECTIVE]),
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
+            ),
         )
 
         expected = {
@@ -541,12 +549,10 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=" ".join(
-                [
-                    geometry.QUARTER_CORE,
-                    geometry.REFLECTIVE,
-                    geometry.THROUGH_CENTER_ASSEMBLY,
-                ]
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.QUARTER_CORE,
+                geometry.BoundaryType.REFLECTIVE,
+                throughCenter=True,
             ),
         )
 
@@ -576,7 +582,9 @@ class TestCartesianGrid(unittest.TestCase):
             1.0,
             1.0,
             symmetry=geometry.SymmetryType.fromStr(
-                " ".join([geometry.EIGHTH_CORE, geometry.REFLECTIVE])
+                geometry.SymmetryType(
+                    geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE
+                )
             ),
         )
         with self.assertRaises(NotImplementedError):

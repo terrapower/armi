@@ -199,7 +199,7 @@ class DomainType(enum.Enum):
         elif self == self.NULL:
             return ""
 
-    def symmetryFactor(self):
+    def symmetryFactor(self) -> float:
         if self == self.FULL_CORE or self == self.NULL:
             return 1.0
         elif self == self.THIRD_CORE:
@@ -274,7 +274,7 @@ class BoundaryType(enum.Enum):
     def __str__(self):
         """Inverse of fromStr()"""
         if self == self.NO_SYMMETRY:
-            return NO_SYMMETRY  # should we return an empty string here instead?
+            return ""
         elif self == self.PERIODIC:
             return PERIODIC
         elif self == self.REFLECTIVE:
@@ -306,15 +306,15 @@ class SymmetryType:
         self.domain = DomainType.fromAny(domainType)
         self.boundary = BoundaryType.fromAny(boundaryType)
         self.isThroughCenterAssembly = throughCenterAssembly
-        null = self._returnIfValid()
+        _ = self._returnIfValid()
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         symmetry = cls()
 
         symmetry._checkIfThroughCenter(symmetryString)
-        symmetryString.remove(THROUGH_CENTER_ASSEMBLY)
-        pieces = symmetryString.split()
+        coreString = symmetryString.replace(THROUGH_CENTER_ASSEMBLY, "")
+        pieces = coreString.split()
         symmetry.domain = DomainType.fromStr(pieces[0])
         if len(pieces) > 1:
             symmetry.boundary = BoundaryType.fromStr(pieces[-1])
@@ -350,7 +350,7 @@ class SymmetryType:
             raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
 
     def __str__(self):
-        """Combined string of shape and boundary symmetry type"""
+        """Combined string of domain and boundary symmetry type"""
         strList = [str(self.domain)]
         if self.boundary.hasSymmetry():
             strList.append(str(self.boundary))
@@ -359,9 +359,9 @@ class SymmetryType:
         return " ".join(strList)
 
     def _checkIfThroughCenter(self, centerString: str):
-        self.isThroughCenterAssembly = centerString == THROUGH_CENTER_ASSEMBLY
+        self.isThroughCenterAssembly = THROUGH_CENTER_ASSEMBLY in centerString
 
-    def _returnIfValid(self):
+    def _returnIfValid(self) -> "SymmetryType":
         if self.checkValidSymmetry():
             return self
         else:
@@ -373,11 +373,11 @@ class SymmetryType:
             errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
             raise ValueError(errorMsg)
 
-    def symmetryFactor(self):
-        return self.domain.symmetryFactor()
-
-    def checkValidSymmetry(self):
+    def checkValidSymmetry(self) -> bool:
         return str(self) in VALID_SYMMETRY
+
+    def symmetryFactor(self) -> float:
+        return self.domain.symmetryFactor()
 
 
 def checkValidGeomSymmetryCombo(
@@ -418,7 +418,7 @@ def checkValidGeomSymmetryCombo(
     else:
         raise ValueError(
             "GeomType: {} and SymmetryType: {} is not a valid combination!".format(
-                str(geomType, str(symmetryType))
+                str(geomType), str(symmetryType)
             )
         )
 

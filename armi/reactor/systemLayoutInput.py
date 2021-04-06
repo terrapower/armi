@@ -469,10 +469,13 @@ class SystemLayoutInput:
             raise ValueError(
                 "Cannot convert shape `{}` to full core, must be {}".format(
                     self.symmetry.domain,
-                    " ".join(
-                        [geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC]
+                    str(
+                        geometry.SymmetryType(
+                            geometry.DomainType.THIRD_CORE,
+                            geometry.BoundaryType.PERIODIC,
+                        )
                     ),
-                )
+                ),
             )
 
         grid = grids.HexGrid.fromPitch(1.0)

@@ -284,7 +284,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
             str(self.r.core.symmetry),
-            " ".join([geometry.THIRD_CORE, geometry.PERIODIC]),
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
         )
         initialNumBlocks = len(self.r.core.getBlocks())
         # Perform reactor conversion
@@ -298,7 +300,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         self.assertEqual(
             str(self.r.core.symmetry),
-            " ".join([geometry.THIRD_CORE, geometry.PERIODIC]),
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
         )
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
@@ -307,7 +311,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
             str(self.r.core.symmetry),
-            " ".join([geometry.THIRD_CORE, geometry.PERIODIC]),
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
         )
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)

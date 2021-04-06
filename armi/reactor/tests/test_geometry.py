@@ -125,7 +125,7 @@ class TestSymmetryType(unittest.TestCase):
                     geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
                 ).boundary
             ),
-            geometry.NO_SYMMETRY,
+            "",
         )
 
     def testLabel(self):
@@ -169,7 +169,11 @@ class TestSystemLayoutInput(unittest.TestCase):
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
         reactor.core.symmetry = geometry.SymmetryType.fromStr(
-            " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
+            str(
+                geometry.SymmetryType(
+                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+                )
+            )
         )
         geom = SystemLayoutInput.fromReactor(reactor)
         self.assertEqual(geom.assemTypeByIndices[(2, 1)], "fuel")

@@ -760,7 +760,14 @@ class Block_TestCase(unittest.TestCase):
         # center blocks have a different symmetry factor for 1/3rd core
         for symmetry, powerMult in (
             (geometry.FULL_CORE, 1),
-            (" ".join([geometry.THIRD_CORE, geometry.PERIODIC]), 3),
+            (
+                str(
+                    geometry.SymmetryType(
+                        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+                    ),
+                    3,
+                )
+            ),
         ):
             self.r.core.symmetry = geometry.SymmetryType.fromStr(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
