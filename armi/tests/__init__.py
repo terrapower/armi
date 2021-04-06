@@ -65,7 +65,7 @@ def getEmptyCartesianReactor():
     reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
         geometry.DomainType.QUARTER_CORE,
         geometry.BoundaryType.REFLECTIVE,
-        throughCenter=True,
+        throughCenterAssembly=True,
     )
     reactor.core.spatialGrid.geomType = geometry.CARTESIAN
     reactor.core.spatialGrid.armiObject = reactor.core

@@ -507,7 +507,7 @@ class TestCartesianGrid(unittest.TestCase):
             symmetry=geometry.SymmetryType(
                 geometry.DomainType.QUARTER_CORE,
                 geometry.BoundaryType.PERIODIC,
-                throughCenter=True,
+                throughCenterAssembly=True,
             ),
         )
 
@@ -552,7 +552,7 @@ class TestCartesianGrid(unittest.TestCase):
             symmetry=geometry.SymmetryType(
                 geometry.DomainType.QUARTER_CORE,
                 geometry.BoundaryType.REFLECTIVE,
-                throughCenter=True,
+                throughCenterAssembly=True,
             ),
         )
 
