@@ -615,6 +615,19 @@ class Inspector:
             self.NO_ACTION,
         )
 
+        self.addQuery(
+            lambda: self.cs["geomFile"]
+            and not geometry.checkValidGeomSymmetryCombo(
+                str(self.geomType), str(self.coreSymmetry)
+            ),
+            "{}, {} is not a valid geometry and symmetry combination. Please update "
+            "either geometry or symmetry on the geom file.".format(
+                str(self.geomType), str(self.coreSymmetry)
+            ),
+            "",
+            self.NO_ACTION,
+        )
+
 
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
     """

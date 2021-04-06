@@ -367,6 +367,46 @@ class BoundaryType(enum.Enum):
         return not self == self.NO_SYMMETRY
 
 
+def checkValidGeomSymmetryCombo(
+    geomType: Union[str, GeomType], symmetryType: Union[str, SymmetryType]
+) -> bool:
+    """
+    Check if the given combination of GeomType and SymmetryType is valid.
+    Return a boolean indicating the outcome of the check.
+    """
+
+    geomType = GeomType.fromStr(str(geomType))
+    symmetryType = SymmetryType.fromStr(str(symmetryType))
+
+    if not symmetryType.checkValidSymmetry():
+        errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
+        errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
+        raise ValueError(errorMsg)
+
+    validCombo = False
+    if geomType == GeomType.HEX:
+        validCombo = symmetryType.shape in [ShapeType.FULL_CORE, ShapeType.THIRD_CORE]
+    elif geomType == GeomType.CARTESIAN:
+        validCombo = symmetryType.shape in [
+            ShapeType.FULL_CORE,
+            ShapeType.QUARTER_CORE,
+            ShapeType.EIGHTH_CORE,
+        ]
+    elif geomType == GeomType.RZT:
+        validCombo = True  # any domain size could be valid for RZT
+    elif geomType == GeomType.RZ:
+        validCombo = symmetryType.shape == ShapeType.FULL_CORE
+
+    if validCombo:
+        return True
+    else:
+        raise ValueError(
+            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(
+                str(geomType, str(symmetryType))
+            )
+        )
+
+
 SYSTEMS = "systems"
 VERSION = "version"
 
