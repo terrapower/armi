@@ -639,15 +639,6 @@ class Grid:
         self._geomType: str = str(geomType)
         self._symmetry: str = str(symmetry)
 
-        # check validity of geomType and symmetry combination (if both are present)
-        if not (str(self._geomType) == "" or str(self._symmetry) == ""):
-            if not geometry.checkValidGeomSymmetryCombo(self.geomType, self.symmetry):
-                raise ValueError(
-                    "GeomType = {} and SymmetryType = {} combination is not valid.".format(
-                        str(self.geomType), str(self.symmetry)
-                    )
-                )
-
     def reduce(self):
         """
         Return the set of arguments used to create this Grid.

@@ -22,6 +22,7 @@ is impossible. Would you like to switch to ___?"
 
 """
 import os
+from typing import Union
 
 import armi
 from armi import runLog
@@ -606,10 +607,12 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and str(self.coreSymmetry) not in geometry.VALID_SYMMETRY,
+            and not geometry.SymmetryType.fromAny(
+                self.coreSymmetry
+            ).checkValidSymmetry(),
             "{} is not a valid symmetry Please update symmetry on the geom file. "
             "Valid (case insensitive) symmetries are: {}".format(
-                self.coreSymmetry, geometry.VALID_SYMMETRY
+                self.coreSymmetry, geometry.SymmetryType.validSymmetryStrings()
             ),
             "",
             self.NO_ACTION,
@@ -618,7 +621,7 @@ class Inspector:
         self.addQuery(
             lambda: self.cs["geomFile"]
             and not geometry.checkValidGeomSymmetryCombo(
-                str(self.geomType), str(self.coreSymmetry)
+                self.geomType, self.coreSymmetry
             ),
             "{}, {} is not a valid geometry and symmetry combination. Please update "
             "either geometry or symmetry on the geom file.".format(
@@ -626,6 +629,50 @@ class Inspector:
             ),
             "",
             self.NO_ACTION,
+        )
+
+
+def checkValidGeomSymmetryCombo(
+    geomType: Union[str, geometry.GeomType],
+    symmetryType: Union[str, tuple, geometry.SymmetryType],
+) -> bool:
+    """
+    Check if the given combination of GeomType and SymmetryType is valid.
+    Return a boolean indicating the outcome of the check.
+    """
+
+    geomType = geometry.GeomType.fromAny(geomType)
+    symmetryType = geometry.SymmetryType.fromAny(symmetryType)
+
+    if not symmetryType.checkValidSymmetry():
+        errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
+        errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
+        raise ValueError(errorMsg)
+
+    validCombo = False
+    if geomType == GeomType.HEX:
+        validCombo = symmetryType.domain in [
+            DomainType.FULL_CORE,
+            DomainType.THIRD_CORE,
+        ]
+    elif geomType == GeomType.CARTESIAN:
+        validCombo = symmetryType.domain in [
+            DomainType.FULL_CORE,
+            DomainType.QUARTER_CORE,
+            DomainType.EIGHTH_CORE,
+        ]
+    elif geomType == GeomType.RZT:
+        validCombo = True  # any domain size could be valid for RZT
+    elif geomType == GeomType.RZ:
+        validCombo = symmetryType.domain == DomainType.FULL_CORE
+
+    if validCombo:
+        return True
+    else:
+        raise ValueError(
+            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(
+                str(geomType), str(symmetryType)
+            )
         )
 
 

@@ -317,7 +317,7 @@ class GridBlueprint(yamlize.Object):
             make this more sophisticated.
         """
         if (
-            geometry.SymmetryType.fromStr(self.symmetry).domain
+            geometry.SymmetryType.fromAny(self.symmetry).domain
             == geometry.DomainType.FULL_CORE
         ):
             # No need!
@@ -331,15 +331,11 @@ class GridBlueprint(yamlize.Object):
             for idx2 in equivs:
                 newContents[idx2] = contents
         self.gridContents = newContents
-        split = (
-            geometry.THROUGH_CENTER_ASSEMBLY
-            if geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
-            else ""
-        )
+        split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
         self.symmetry = str(
             geometry.SymmetryType(
-                domainType=geometry.DomainType.FULL_CORE,
-                boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+                geometry.DomainType.FULL_CORE,
+                geometry.BoundaryType.NO_SYMMETRY,
                 throughCenterAssembly=split,
             )
         )

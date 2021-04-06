@@ -112,6 +112,18 @@ class TestSymmetryType(unittest.TestCase):
         self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
 
+        st = geometry.SymmetryType.fromAny(
+            (geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE, True)
+        )
+        self.assertTrue(st.isThroughCenterAssembly)
+        self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
+        self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
+
+        newST = geometry.SymmetryType.fromAny(st)
+        self.assertTrue(newST.isThroughCenterAssembly)
+        self.assertEqual(newST.domain, geometry.DomainType.EIGHTH_CORE)
+        self.assertEqual(newST.boundary, geometry.BoundaryType.REFLECTIVE)
+
     def testBaseConstructor(self):
         self.assertEqual(
             geometry.SymmetryType(
@@ -129,30 +141,50 @@ class TestSymmetryType(unittest.TestCase):
         )
 
     def testLabel(self):
-        st = geometry.SymmetryType.fromStr("full")
+        st = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
         self.assertEqual(st.domain.label, "Full")
         self.assertEqual(st.boundary.label, "No Symmetry")
-        st = geometry.SymmetryType.fromStr("third periodic")
+        st = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
         self.assertEqual(st.domain.label, "Third")
         self.assertEqual(st.boundary.label, "Periodic")
-        st = geometry.SymmetryType.fromStr("quarter reflective")
+        st = geometry.SymmetryType(
+            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
+        )
         self.assertEqual(st.domain.label, "Quarter")
         self.assertEqual(st.boundary.label, "Reflective")
-        st = geometry.SymmetryType.fromStr("eighth reflective")
+        st = geometry.SymmetryType(
+            geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE
+        )
         self.assertEqual(st.domain.label, "Eighth")
-        st = geometry.SymmetryType.fromStr("sixteenth reflective")
+        st = geometry.SymmetryType(
+            geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
+        )
         self.assertEqual(st.domain.label, "Sixteenth")
 
     def testSymmetryFactor(self):
-        st = geometry.SymmetryType.fromStr("full")
+        st = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
         self.assertEqual(st.symmetryFactor(), 1.0)
-        st = geometry.SymmetryType.fromStr("third periodic")
+        st = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
         self.assertEqual(st.symmetryFactor(), 3.0)
-        st = geometry.SymmetryType.fromStr("quarter reflective")
+        st = geometry.SymmetryType(
+            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
+        )
         self.assertEqual(st.symmetryFactor(), 4.0)
-        st = geometry.SymmetryType.fromStr("eighth reflective")
+        st = geometry.SymmetryType(
+            geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE
+        )
         self.assertEqual(st.symmetryFactor(), 8.0)
-        st = geometry.SymmetryType.fromStr("sixteenth reflective")
+        st = geometry.SymmetryType(
+            geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
+        )
         self.assertEqual(st.symmetryFactor(), 16.0)
 
 
@@ -168,11 +200,9 @@ class TestSystemLayoutInput(unittest.TestCase):
 
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
-        reactor.core.symmetry = geometry.SymmetryType.fromStr(
-            str(
-                geometry.SymmetryType(
-                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-                )
+        reactor.core.symmetry = geometry.SymmetryType.fromAny(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             )
         )
         geom = SystemLayoutInput.fromReactor(reactor)

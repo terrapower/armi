@@ -1295,10 +1295,8 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = str(
-        geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-        )
+    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
     )
 
     def convert(self, r=None):
@@ -1318,11 +1316,11 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             )
             return r
         elif not (
-            str(r.core.symmetry) == self.EXPECTED_INPUT_SYMMETRY
+            tuple(r.core.symmetry) == tuple(self.EXPECTED_INPUT_SYMMETRY)
             and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
-                "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
+                "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry. "
                 "Geometry received was {} {} {}".format(
                     r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
                 )
@@ -1337,7 +1335,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         grid = copy.deepcopy(r.core.spatialGrid)
 
         # Set the core grid's symmetry early, since the core uses it for error checks
-        r.core.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
@@ -1350,7 +1350,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
         # set domain after expanding, because it isnt actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
-        r.core.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
     def restorePreviousGeometry(self, cs, reactor):
         """
@@ -1365,7 +1367,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # restore the settings of the core
             cs.unsetTemporarySettings()
 
-            reactor.core.symmetry = geometry.SymmetryType.fromStr(
+            reactor.core.symmetry = geometry.SymmetryType.fromAny(
                 self.EXPECTED_INPUT_SYMMETRY
             )
 

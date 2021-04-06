@@ -761,15 +761,13 @@ class Block_TestCase(unittest.TestCase):
         for symmetry, powerMult in (
             (geometry.FULL_CORE, 1),
             (
-                str(
-                    geometry.SymmetryType(
-                        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-                    )
+                geometry.SymmetryType(
+                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
                 ),
                 3,
             ),
         ):
-            self.r.core.symmetry = geometry.SymmetryType.fromStr(symmetry)
+            self.r.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)

@@ -88,7 +88,14 @@ class GeomType(enum.Enum):
 
         # use the original geomStr with preserved capitalization for better
         # error-finding.
-        raise ValueError("Unrecognized geometry type: `{}`".format(geomStr))
+        raise ValueError(
+            "Unrecognized geometry type: `{}`. Valid types are".format(geomStr)
+        )
+
+        errorMsg = "Unrecognized geometry type {}. Valid geometry options are:".format(
+            geomStr
+        )
+        errorMsg += ", ".join([f"{geom}" for geom in GeomTypes])
 
     @property
     def label(self):
@@ -163,10 +170,14 @@ class DomainType(enum.Enum):
             return cls.EIGHTH_CORE
         elif canonical == SIXTEENTH_CORE:
             return cls.SIXTEENTH_CORE
-        return cls.NULL
-        # use the original shapeStr with preserved capitalization for better
-        # error-finding.
-        # raise ValueError("Unrecognized shape type: `{}`".format(shapeStr))
+        elif canonical == "":
+            return cls.NULL
+
+        errorMsg = "{} is not a valid domain option. Valid domain options are:".format(
+            str(canonical)
+        )
+        errorMsg += ", ".join([f"{sym}" for sym in domainTypes])
+        raise ValueError(errorMsg)
 
     @property
     def label(self):
@@ -258,7 +269,14 @@ class BoundaryType(enum.Enum):
             return cls.PERIODIC
         elif canonical == REFLECTIVE:
             return cls.REFLECTIVE
-        return cls.NO_SYMMETRY
+
+        errorMsg = (
+            "{} is not a valid boundary option. Valid boundary options are:".format(
+                str(canonical)
+            )
+        )
+        errorMsg += ", ".join([f"{sym}" for sym in boundaryTypes])
+        raise ValueError(errorMsg)
 
     @property
     def label(self):
@@ -297,6 +315,22 @@ class SymmetryType:
     yaml and/or the database nicely.
     """
 
+    VALID_SYMMETRY = {
+        (DomainType.FULL_CORE, BoundaryType.NO_SYMMETRY, False),
+        (DomainType.FULL_CORE, BoundaryType.NO_SYMMETRY, True),
+        (DomainType.THIRD_CORE, BoundaryType.PERIODIC, False),
+        (DomainType.QUARTER_CORE, BoundaryType.PERIODIC, False),
+        (DomainType.QUARTER_CORE, BoundaryType.REFLECTIVE, False),
+        (DomainType.QUARTER_CORE, BoundaryType.PERIODIC, True),
+        (DomainType.QUARTER_CORE, BoundaryType.REFLECTIVE, True),
+        (DomainType.EIGHTH_CORE, BoundaryType.PERIODIC, False),
+        (DomainType.EIGHTH_CORE, BoundaryType.REFLECTIVE, False),
+        (DomainType.EIGHTH_CORE, BoundaryType.PERIODIC, True),
+        (DomainType.EIGHTH_CORE, BoundaryType.REFLECTIVE, True),
+        (DomainType.SIXTEENTH_CORE, BoundaryType.PERIODIC, False),
+        (DomainType.SIXTEENTH_CORE, BoundaryType.REFLECTIVE, False),
+    }
+
     def __init__(
         self,
         domainType: Union[str, "DomainType"] = DomainType.THIRD_CORE,
@@ -309,6 +343,11 @@ class SymmetryType:
         _ = self._returnIfValid()
 
     @classmethod
+    def validSymmetryStrings(cls):
+        """Convert VALID_SYMMETRY tuples to strings."""
+        return [str(cls.fromAny(x)) for x in cls.VALID_SYMMETRY]
+
+    @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         symmetry = cls()
 
@@ -316,22 +355,22 @@ class SymmetryType:
         coreString = symmetryString.replace(THROUGH_CENTER_ASSEMBLY, "")
         pieces = coreString.split()
         symmetry.domain = DomainType.fromStr(pieces[0])
-        if len(pieces) > 1:
-            symmetry.boundary = BoundaryType.fromStr(pieces[-1])
-        else:
-            # set the BoundaryType to a defulat for the DomainType
+        if len(pieces) <= 1 or pieces[-1] == "core":
+            # set the BoundaryType to a default for the DomainType
             if symmetry.domain == DomainType.FULL_CORE:
                 symmetry.boundary = BoundaryType.NO_SYMMETRY
             elif symmetry.domain == DomainType.THIRD_CORE:
                 symmetry.boundary = BoundaryType.PERIODIC
             else:
                 symmetry.boundary = BoundaryType.REFLECTIVE
+        else:
+            symmetry.boundary = BoundaryType.fromStr(pieces[-1])
         return symmetry._returnIfValid()
 
     @classmethod
-    def fromAny(cls, symmetry: Union[str, "SymmetryType"]) -> "SymmetryType":
+    def fromAny(cls, symmetry: Union[str, tuple, "SymmetryType"]) -> "SymmetryType":
         """
-        Safely convert from string representation, no-op if already an enum instance.
+        Safely convert from string or tuple representation, no-op if already an enum instance.
 
         This is useful as we transition to using enumerations more throughout the code.
         There will remain situations where a geomType may be provided in string or enum
@@ -344,6 +383,14 @@ class SymmetryType:
         """
         if isinstance(symmetry, SymmetryType):
             return symmetry._returnIfValid()
+        elif isinstance(symmetry, tuple):
+            symmetryType = cls()
+            (
+                symmetryType.domain,
+                symmetryType.boundary,
+                symmetryType.isThroughCenterAssembly,
+            ) = symmetry
+            return symmetryType._returnIfValid()
         elif isinstance(symmetry, str):
             return cls.fromStr(symmetry)
         else:
@@ -358,6 +405,12 @@ class SymmetryType:
             strList.append(THROUGH_CENTER_ASSEMBLY)
         return " ".join(strList)
 
+    def __iter__(self):
+        """Used to succinctly create a tuple of a SymmetryType."""
+        yield self.domain
+        yield self.boundary
+        yield self.isThroughCenterAssembly
+
     def _checkIfThroughCenter(self, centerString: str):
         self.isThroughCenterAssembly = THROUGH_CENTER_ASSEMBLY in centerString
 
@@ -370,57 +423,14 @@ class SymmetryType:
                     str(self)
                 )
             )
-            errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
+            errorMsg += ", ".join([f"{sym}" for sym in self.validSymmetryStrings()])
             raise ValueError(errorMsg)
 
     def checkValidSymmetry(self) -> bool:
-        return str(self) in VALID_SYMMETRY
+        return tuple(self) in self.VALID_SYMMETRY
 
     def symmetryFactor(self) -> float:
         return self.domain.symmetryFactor()
-
-
-def checkValidGeomSymmetryCombo(
-    geomType: Union[str, "GeomType"], symmetryType: Union[str, "SymmetryType"]
-) -> bool:
-    """
-    Check if the given combination of GeomType and SymmetryType is valid.
-    Return a boolean indicating the outcome of the check.
-    """
-
-    geomType = GeomType.fromStr(str(geomType))
-    symmetryType = SymmetryType.fromStr(str(symmetryType))
-
-    if not symmetryType.checkValidSymmetry():
-        errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
-        errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
-        raise ValueError(errorMsg)
-
-    validCombo = False
-    if geomType == GeomType.HEX:
-        validCombo = symmetryType.domain in [
-            DomainType.FULL_CORE,
-            DomainType.THIRD_CORE,
-        ]
-    elif geomType == GeomType.CARTESIAN:
-        validCombo = symmetryType.domain in [
-            DomainType.FULL_CORE,
-            DomainType.QUARTER_CORE,
-            DomainType.EIGHTH_CORE,
-        ]
-    elif geomType == GeomType.RZT:
-        validCombo = True  # any domain size could be valid for RZT
-    elif geomType == GeomType.RZ:
-        validCombo = symmetryType.domain == DomainType.FULL_CORE
-
-    if validCombo:
-        return True
-    else:
-        raise ValueError(
-            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(
-                str(geomType), str(symmetryType)
-            )
-        )
 
 
 SYSTEMS = "systems"
@@ -452,25 +462,6 @@ THROUGH_CENTER_ASSEMBLY = (
     "through center assembly"  # through center assembly applies only to cartesian
 )
 
-VALID_SYMMETRY = {
-    FULL_CORE,
-    " ".join([FULL_CORE, THROUGH_CENTER_ASSEMBLY]),
-    " ".join(
-        [THIRD_CORE, PERIODIC]
-    ),  # third core reflective is not geometrically consistent.
-    " ".join([QUARTER_CORE, PERIODIC]),
-    " ".join([QUARTER_CORE, REFLECTIVE]),
-    " ".join([QUARTER_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
-    " ".join([QUARTER_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
-    " ".join([EIGHTH_CORE, PERIODIC]),
-    " ".join([EIGHTH_CORE, REFLECTIVE]),
-    " ".join([EIGHTH_CORE, PERIODIC, THROUGH_CENTER_ASSEMBLY]),
-    " ".join([EIGHTH_CORE, REFLECTIVE, THROUGH_CENTER_ASSEMBLY]),
-    " ".join([SIXTEENTH_CORE, PERIODIC]),
-    " ".join([SIXTEENTH_CORE, REFLECTIVE]),
-}
-
-
 geomTypes = {HEX, CARTESIAN, RZT, RZ}
-DomainTypes = {FULL_CORE, THIRD_CORE, QUARTER_CORE, EIGHTH_CORE, SIXTEENTH_CORE}
+domainTypes = {FULL_CORE, THIRD_CORE, QUARTER_CORE, EIGHTH_CORE, SIXTEENTH_CORE}
 boundaryTypes = {NO_SYMMETRY, PERIODIC, REFLECTIVE}
