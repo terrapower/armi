@@ -311,25 +311,21 @@ class SymmetryType:
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         symmetry = cls()
+
+        symmetry._checkIfThroughCenter(symmetryString)
+        symmetryString.remove(THROUGH_CENTER_ASSEMBLY)
         pieces = symmetryString.split()
-        domain = pieces[0]
-        symmetry.domain = DomainType.fromStr(domain)
+        symmetry.domain = DomainType.fromStr(pieces[0])
         if len(pieces) > 1:
-            boundary = pieces[1]
-            symmetry.boundary = BoundaryType.fromStr(boundary)
+            symmetry.boundary = BoundaryType.fromStr(pieces[-1])
         else:
-            # set the BoundaryType to a defulat for the DomainTypee
+            # set the BoundaryType to a defulat for the DomainType
             if symmetry.domain == DomainType.FULL_CORE:
                 symmetry.boundary = BoundaryType.NO_SYMMETRY
             elif symmetry.domain == DomainType.THIRD_CORE:
                 symmetry.boundary = BoundaryType.PERIODIC
             else:
                 symmetry.boundary = BoundaryType.REFLECTIVE
-        if len(pieces) > 2:
-            throughCenter = " ".join(pieces[2:])
-            symmetry._checkIfThroughCenter(throughCenter)
-        else:
-            symmetry.isThroughCenterAssembly = False
         return symmetry._returnIfValid()
 
     @classmethod
