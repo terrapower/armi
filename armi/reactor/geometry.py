@@ -72,20 +72,19 @@ class GeomType(enum.Enum):
     @classmethod
     def fromStr(cls, geomStr: str) -> "GeomType":
         # case-insensitive
-        x = geomStr.lower().strip()
-        for canonical in (x, parsing.findString(geomTypes, x)):
-            if canonical == HEX or canonical == HEX_CORNERS_UP:
-                # corners-up is used to rotate grids, but shouldn't be needed after the grid
-                # is appropriately oriented, so we collapse to HEX in the enumeration. If
-                # there is a good reason to make corners-up HEX its own geom type, we will
-                # need to figure out how to design around that.
-                return cls.HEX
-            elif canonical == CARTESIAN:
-                return cls.CARTESIAN
-            elif canonical == RZT:
-                return cls.RZT
-            elif canonical == RZ:
-                return cls.RZ
+        canonical = geomStr.lower().strip()
+        if canonical == HEX or canonical == HEX_CORNERS_UP:
+            # corners-up is used to rotate grids, but shouldn't be needed after the grid
+            # is appropriately oriented, so we collapse to HEX in the enumeration. If
+            # there is a good reason to make corners-up HEX its own geom type, we will
+            # need to figure out how to design around that.
+            return cls.HEX
+        elif canonical == CARTESIAN:
+            return cls.CARTESIAN
+        elif canonical == RZT:
+            return cls.RZT
+        elif canonical == RZ:
+            return cls.RZ
 
         # use the original geomStr with preserved capitalization for better
         # error-finding.
@@ -144,9 +143,14 @@ class SymmetryType:
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         symmetry = cls()
-        symmetry.shape = ShapeType.fromStr(symmetryString)
-        symmetry.boundary = BoundaryType.fromStr(symmetryString)
-        symmetry._checkIfThroughCenter(symmetryString)
+        pieces = symmetryString.split()
+        shape = pieces[0]
+        boundary = pieces[1]
+        if len(pieces > 2):
+            throughCenter = " ".join(pieces[2:])
+        symmetry.shape = ShapeType.fromStr(shape)
+        symmetry.boundary = BoundaryType.fromStr(boundary)
+        symmetry._checkIfThroughCenter(throughCenter)
         return symmetry._returnIfValid()
 
     @classmethod
@@ -179,8 +183,8 @@ class SymmetryType:
             strList.append(THROUGH_CENTER_ASSEMBLY)
         return " ".join(strList)
 
-    def _checkIfThroughCenter(self, symmetryString: str):
-        self.isThroughCenterAssembly = THROUGH_CENTER_ASSEMBLY in symmetryString
+    def _checkIfThroughCenter(self, centerString: str):
+        self.isThroughCenterAssembly = centerString == THROUGH_CENTER_ASSEMBLY
 
     def _returnIfValid(self):
         if self.checkValidSymmetry():
@@ -233,18 +237,17 @@ class ShapeType(enum.Enum):
     @classmethod
     def fromStr(cls, shapeStr: str) -> "ShapeType":
         # case-insensitive
-        x = shapeStr.lower().strip()
-        for canonical in (x, parsing.findString(shapeTypes, x)):
-            if canonical == FULL_CORE:
-                return cls.FULL_CORE
-            elif canonical == THIRD_CORE:
-                return cls.THIRD_CORE
-            elif canonical == QUARTER_CORE:
-                return cls.QUARTER_CORE
-            elif canonical == EIGHTH_CORE:
-                return cls.EIGHTH_CORE
-            elif canonical == SIXTEENTH_CORE:
-                return cls.SIXTEENTH_CORE
+        canonical = shapeStr.lower().strip()
+        if canonical == FULL_CORE:
+            return cls.FULL_CORE
+        elif canonical == THIRD_CORE:
+            return cls.THIRD_CORE
+        elif canonical == QUARTER_CORE:
+            return cls.QUARTER_CORE
+        elif canonical == EIGHTH_CORE:
+            return cls.EIGHTH_CORE
+        elif canonical == SIXTEENTH_CORE:
+            return cls.SIXTEENTH_CORE
         return cls.NULL
         # use the original shapeStr with preserved capitalization for better
         # error-finding.
@@ -333,14 +336,13 @@ class BoundaryType(enum.Enum):
     @classmethod
     def fromStr(cls, symmetryStr: str) -> "BoundaryType":
         # case-insensitive
-        x = symmetryStr.lower().strip()
-        for canonical in (x, parsing.findString(boundaryTypes, x)):
-            if canonical == NO_SYMMETRY:
-                return cls.NO_SYMMETRY
-            elif canonical == PERIODIC:
-                return cls.PERIODIC
-            elif canonical == REFLECTIVE:
-                return cls.REFLECTIVE
+        canonical = symmetryStr.lower().strip()
+        if canonical == NO_SYMMETRY:
+            return cls.NO_SYMMETRY
+        elif canonical == PERIODIC:
+            return cls.PERIODIC
+        elif canonical == REFLECTIVE:
+            return cls.REFLECTIVE
         return cls.NO_SYMMETRY
 
     @property

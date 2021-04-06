@@ -99,7 +99,7 @@ class TestSymmetryType(unittest.TestCase):
             geometry.SymmetryType.fromStr("thiRd periodic ").shape,
             geometry.ShapeType.THIRD_CORE,
         )
-        st = geometry.SymmetryType.fromStr("reflective qwerty sixteenth")
+        st = geometry.SymmetryType.fromStr("sixteenth reflective")
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(str(st), "sixteenth reflective")
 

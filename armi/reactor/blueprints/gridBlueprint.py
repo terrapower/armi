@@ -312,7 +312,10 @@ class GridBlueprint(yamlize.Object):
             such as when expanding fuel shuffling paths or the like. Future work may
             make this more sophisticated.
         """
-        if geometry.ShapeType.fromStr(self.symmetry) == geometry.ShapeType.FULL_CORE:
+        if (
+            geometry.SymmetryType.fromStr(self.symmetry).shape
+            == geometry.ShapeType.FULL_CORE
+        ):
             # No need!
             return
 

@@ -102,31 +102,3 @@ def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
 def datetimeFromStr(string):
     """Converts an arbitrary string to a datetime object"""
     return parser.parse(string)
-
-
-def findString(trialList: Set[str], inputString: str) -> str:
-    """
-    Search a string for at least one of a specific set of substrings.
-
-    Notes
-    -----
-    If the inputString contains any of the individual strings in the trialList as a
-    substring, return that substring. If there are multiple substrings within trialList
-    that exist in inputString, only the first will be returned.
-
-    This is mostly used to parse input strings for options. For example, if user input
-    for symmetry is:
-
-    "quarter reflective through center assembly"
-
-    and the trialList is
-
-    { "reflective", "periodic" }
-
-    The function will return "reflective".
-    """
-
-    for x in trialList:
-        if x in inputString:
-            return x
-    return ""
