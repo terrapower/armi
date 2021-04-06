@@ -193,7 +193,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.r = tests.getEmptyHexReactor()
         self.r.core.symmetry = geometry.SymmetryType(
-            geometry.DomainType.THIRD, geometry.BoundaryType.PERIODIC
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
         )
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
