@@ -338,7 +338,7 @@ class GridBlueprint(yamlize.Object):
         )
         self.symmetry = str(
             geometry.SymmetryType(
-                DomainType=geometry.DomainType.FULL_CORE,
+                domainType=geometry.DomainType.FULL_CORE,
                 boundaryType=geometry.BoundaryType.NO_SYMMETRY,
                 throughCenterAssembly=split,
             )

@@ -515,6 +515,6 @@ def asciiMapFromGeomAndSym(
     return MAP_FROM_GEOM[
         (
             geometry.GeomType.fromAny(geomType),
-            geometry.SymmetryType.fromAny(symmetry).shape,
+            geometry.SymmetryType.fromAny(symmetry).domain,
         )
     ]

@@ -212,7 +212,7 @@ class DomainType(enum.Enum):
             return 16.0
         else:
             raise ValueError(
-                "Could not calculate symmetry factor for shape {}. update logic.".format(
+                "Could not calculate symmetry factor for domain size {}. update logic.".format(
                     self.label
                 )
             )
