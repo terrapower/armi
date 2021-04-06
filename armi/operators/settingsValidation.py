@@ -650,21 +650,21 @@ def checkValidGeomSymmetryCombo(
         raise ValueError(errorMsg)
 
     validCombo = False
-    if geomType == GeomType.HEX:
+    if geomType == geometry.GeomType.HEX:
         validCombo = symmetryType.domain in [
-            DomainType.FULL_CORE,
-            DomainType.THIRD_CORE,
+            geometry.DomainType.FULL_CORE,
+            geometry.DomainType.THIRD_CORE,
         ]
-    elif geomType == GeomType.CARTESIAN:
+    elif geomType == geometry.GeomType.CARTESIAN:
         validCombo = symmetryType.domain in [
-            DomainType.FULL_CORE,
-            DomainType.QUARTER_CORE,
-            DomainType.EIGHTH_CORE,
+            geometry.DomainType.FULL_CORE,
+            geometry.DomainType.QUARTER_CORE,
+            geometry.DomainType.EIGHTH_CORE,
         ]
-    elif geomType == GeomType.RZT:
+    elif geomType == geometry.GeomType.RZT:
         validCombo = True  # any domain size could be valid for RZT
-    elif geomType == GeomType.RZ:
-        validCombo = symmetryType.domain == DomainType.FULL_CORE
+    elif geomType == geometry.GeomType.RZ:
+        validCombo = symmetryType.domain == geometry.DomainType.FULL_CORE
 
     if validCombo:
         return True
