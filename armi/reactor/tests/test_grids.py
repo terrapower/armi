@@ -582,8 +582,11 @@ class TestCartesianGrid(unittest.TestCase):
             1.0,
             1.0,
             symmetry=geometry.SymmetryType.fromStr(
-                geometry.SymmetryType(
-                    geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE
+                str(
+                    geometry.SymmetryType(
+                        geometry.DomainType.EIGHTH_CORE,
+                        geometry.BoundaryType.REFLECTIVE,
+                    )
                 )
             ),
         )

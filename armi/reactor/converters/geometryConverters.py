@@ -1295,8 +1295,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
-        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    EXPECTED_INPUT_SYMMETRY = str(
+        geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
     )
 
     def convert(self, r=None):

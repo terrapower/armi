@@ -764,9 +764,9 @@ class Block_TestCase(unittest.TestCase):
                 str(
                     geometry.SymmetryType(
                         geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-                    ),
-                    3,
-                )
+                    )
+                ),
+                3,
             ),
         ):
             self.r.core.symmetry = geometry.SymmetryType.fromStr(symmetry)
