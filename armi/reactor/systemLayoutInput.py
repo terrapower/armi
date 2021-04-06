@@ -488,7 +488,7 @@ class SystemLayoutInput:
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
         self.symmetry = geometry.SymmetryType(
-            DomainType=geometry.DomainType.FULL_CORE,
+            domainType=geometry.DomainType.FULL_CORE,
             boundaryType=geometry.BoundaryType.NO_SYMMETRY,
         )
 

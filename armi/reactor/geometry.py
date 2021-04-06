@@ -299,26 +299,37 @@ class SymmetryType:
 
     def __init__(
         self,
-        DomainType: Union[str, "DomainType"] = DomainType.THIRD_CORE,
+        domainType: Union[str, "DomainType"] = DomainType.THIRD_CORE,
         boundaryType: Union[str, "BoundaryType"] = BoundaryType.PERIODIC,
         throughCenterAssembly: Optional[bool] = False,
-    ) -> "SymmetryType":
-        self.domain = DomainType.fromAny(DomainType)
+    ):
+        self.domain = DomainType.fromAny(domainType)
         self.boundary = BoundaryType.fromAny(boundaryType)
         self.isThroughCenterAssembly = throughCenterAssembly
-        return symmetry._returnIfValid()
+        null = self._returnIfValid()
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         symmetry = cls()
         pieces = symmetryString.split()
-        shape = pieces[0]
-        boundary = pieces[1]
-        if len(pieces > 2):
+        domain = pieces[0]
+        symmetry.domain = DomainType.fromStr(domain)
+        if len(pieces) > 1:
+            boundary = pieces[1]
+            symmetry.boundary = BoundaryType.fromStr(boundary)
+        else:
+            # set the BoundaryType to a defulat for the DomainTypee
+            if symmetry.domain == DomainType.FULL_CORE:
+                symmetry.boundary = BoundaryType.NO_SYMMETRY
+            elif symmetry.domain == DomainType.THIRD_CORE:
+                symmetry.boundary = BoundaryType.PERIODIC
+            else:
+                symmetry.boundary = BoundaryType.REFLECTIVE
+        if len(pieces) > 2:
             throughCenter = " ".join(pieces[2:])
-        symmetry.domain = DomainType.fromStr(shape)
-        symmetry.boundary = BoundaryType.fromStr(boundary)
-        symmetry._checkIfThroughCenter(throughCenter)
+            symmetry._checkIfThroughCenter(throughCenter)
+        else:
+            symmetry.isThroughCenterAssembly = False
         return symmetry._returnIfValid()
 
     @classmethod
@@ -358,7 +369,11 @@ class SymmetryType:
         if self.checkValidSymmetry():
             return self
         else:
-            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
+            errorMsg = (
+                "{} is not a valid symmetry option. Valid symmetry options are:".format(
+                    str(self)
+                )
+            )
             errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
             raise ValueError(errorMsg)
 
