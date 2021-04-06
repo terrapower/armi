@@ -321,13 +321,13 @@ class Core(composites.Composite):
     def isFullCore(self):
         """Return True if reactor is full core, otherwise False."""
         # Avoid using `not core.isFullCore` to check if third core geometry
-        # use `core.symmetry.shape == geometry.ShapeType.THIRD_CORE
-        return self.symmetry.shape == geometry.ShapeType.FULL_CORE
+        # use `core.symmetry.domain == geometry.DomainType.THIRD_CORE
+        return self.symmetry.domain == geometry.DomainType.FULL_CORE
 
     @property
     def isThirdCore(self):
         """Return True if reactor is third core, otherwise False."""
-        return self.symmetry.shape == geometry.ShapeType.THIRD_CORE
+        return self.symmetry.domain == geometry.DomainType.THIRD_CORE
 
     @property
     def refAssem(self):
@@ -530,7 +530,7 @@ class Core(composites.Composite):
             ):
                 raise exceptions.SymmetryError(
                     "Location `{}` outside of the represented domain: `{}`".format(
-                        spatialLocator, self.spatialGrid.symmetry.shape
+                        spatialLocator, self.spatialGrid.symmetry.domain
                     )
                 )
             a.moveTo(spatialLocator)
@@ -1631,7 +1631,7 @@ class Core(composites.Composite):
                 neighbors.append(neighbor)
             elif showBlanks:
                 if (
-                    self.symmetry.shape == geometry.ShapeType.THIRD_CORE
+                    self.symmetry.domain == geometry.DomainType.THIRD_CORE
                     and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
                     and duplicateAssembliesOnReflectiveBoundary
                 ):

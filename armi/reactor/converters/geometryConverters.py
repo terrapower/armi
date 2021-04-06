@@ -456,7 +456,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
     _GEOMETRY_TYPE = geometry.GeomType.RZT
     _SYMMETRY_TYPE = geometry.SymmetryType(
-        shapeType=geometry.ShapeType.FULL_CORE,
+        domainType=geometry.DomainType.FULL_CORE,
         boundaryType=geometry.BoundaryType.NO_SYMMETRY,
     )
     _BLOCK_MIXTURE_TYPE_MAP = {
@@ -1320,7 +1320,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             raise ValueError(
                 "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
                 "Geometry received was {} {} {}".format(
-                    r.core.symmetry.shape, r.core.symmetry.boundary, r.core.geomType
+                    r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
                 )
             )
         edgeChanger = EdgeAssemblyChanger()
@@ -1344,8 +1344,8 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 
-        # set shape after expanding, because it isnt actually full core until it's
-        # full core; setting the shape causes the core to clear its caches.
+        # set domain after expanding, because it isnt actually full core until it's
+        # full core; setting the domain causes the core to clear its caches.
         r.core.symmetry = geometry.SymmetryType.fromStr(geometry.FULL_CORE)
 
     def restorePreviousGeometry(self, cs, reactor):

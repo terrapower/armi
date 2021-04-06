@@ -116,92 +116,7 @@ class GeomType(enum.Enum):
             return RZ
 
 
-class SymmetryType:
-    """
-    A thin wrapper for ShapeType and BoundaryType enumerations.
-
-    (see GeomType class for explanation of why we want enumerations for ShapeType and
-    BoundaryType).
-
-    The goal of this class is to provide simple functions for storing these options
-    in enumerations and using them to check symmetry conditions, while also providing
-    a standard string representation of the options that facilitates interfacing with
-    yaml and/or the database nicely.
-    """
-
-    def __init__(
-        self,
-        shapeType: Union[str, "ShapeType"] = ShapeType.THIRD_CORE,
-        boundaryType: Union[str, "BoundaryType"] = BoundaryType.PERIODIC,
-        throughCenterAssembly: Optional[bool] = False,
-    ) -> "SymmetryType":
-        self.shape = ShapeType.fromAny(shapeType)
-        self.boundary = BoundaryType.fromAny(boundaryType)
-        self.isThroughCenterAssembly = throughCenterAssembly
-        return symmetry._returnIfValid()
-
-    @classmethod
-    def fromStr(cls, symmetryString: str) -> "SymmetryType":
-        symmetry = cls()
-        pieces = symmetryString.split()
-        shape = pieces[0]
-        boundary = pieces[1]
-        if len(pieces > 2):
-            throughCenter = " ".join(pieces[2:])
-        symmetry.shape = ShapeType.fromStr(shape)
-        symmetry.boundary = BoundaryType.fromStr(boundary)
-        symmetry._checkIfThroughCenter(throughCenter)
-        return symmetry._returnIfValid()
-
-    @classmethod
-    def fromAny(cls, symmetry: Union[str, "SymmetryType"]) -> "SymmetryType":
-        """
-        Safely convert from string representation, no-op if already an enum instance.
-
-        This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a geomType may be provided in string or enum
-        form, in which the consuming code would have to check the type before
-        proceeding. This function serves two useful purposes:
-         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
-         - Provide a location to instrument these conversions for when we actually try
-           to deprecate the strings. E.g., produce a warning when this is called, or
-           eventually forbidding the conversion entirely.
-        """
-        if isinstance(symmetry, SymmetryType):
-            return symmetry._returnIfValid()
-        elif isinstance(symmetry, str):
-            return cls.fromStr(symmetry)
-        else:
-            raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
-
-    def __str__(self):
-        """Combined string of shape and boundary symmetry type"""
-        strList = [str(self.shape)]
-        if self.boundary.hasSymmetry():
-            strList.append(str(self.boundary))
-        if self.isThroughCenterAssembly:
-            strList.append(THROUGH_CENTER_ASSEMBLY)
-        return " ".join(strList)
-
-    def _checkIfThroughCenter(self, centerString: str):
-        self.isThroughCenterAssembly = centerString == THROUGH_CENTER_ASSEMBLY
-
-    def _returnIfValid(self):
-        if self.checkValidSymmetry():
-            return self
-        else:
-            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
-            errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
-            raise ValueError(errorMsg)
-
-    def symmetryFactor(self):
-        return self.shape.symmetryFactor()
-
-    def checkValidSymmetry(self):
-        return str(self) in VALID_SYMMETRY
-
-
-class ShapeType(enum.Enum):
+class DomainType(enum.Enum):
     """
     Enumeration of shape types.
     """
@@ -214,7 +129,7 @@ class ShapeType(enum.Enum):
     SIXTEENTH_CORE = 16
 
     @classmethod
-    def fromAny(cls, source: Union[str, "ShapeType"]) -> "ShapeType":
+    def fromAny(cls, source: Union[str, "DomainType"]) -> "DomainType":
         """
         Safely convert from string representation, no-op if already an enum instance.
 
@@ -227,15 +142,15 @@ class ShapeType(enum.Enum):
            to deprecate the strings. E.g., produce a warning when this is called, or
            eventually forbidding the conversion entirely.
         """
-        if isinstance(source, ShapeType):
+        if isinstance(source, DomainType):
             return source
         elif isinstance(source, str):
             return cls.fromStr(source)
         else:
-            raise TypeError("Expected str or ShapeType; got {}".format(type(source)))
+            raise TypeError("Expected str or DomainType; got {}".format(type(source)))
 
     @classmethod
-    def fromStr(cls, shapeStr: str) -> "ShapeType":
+    def fromStr(cls, shapeStr: str) -> "DomainType":
         # case-insensitive
         canonical = shapeStr.lower().strip()
         if canonical == FULL_CORE:
@@ -369,8 +284,93 @@ class BoundaryType(enum.Enum):
         return not self == self.NO_SYMMETRY
 
 
+class SymmetryType:
+    """
+    A thin wrapper for DomainType and BoundaryType enumerations.
+
+    (see GeomType class for explanation of why we want enumerations for DomainType and
+    BoundaryType).
+
+    The goal of this class is to provide simple functions for storing these options
+    in enumerations and using them to check symmetry conditions, while also providing
+    a standard string representation of the options that facilitates interfacing with
+    yaml and/or the database nicely.
+    """
+
+    def __init__(
+        self,
+        DomainType: Union[str, "DomainType"] = DomainType.THIRD_CORE,
+        boundaryType: Union[str, "BoundaryType"] = BoundaryType.PERIODIC,
+        throughCenterAssembly: Optional[bool] = False,
+    ) -> "SymmetryType":
+        self.domain = DomainType.fromAny(DomainType)
+        self.boundary = BoundaryType.fromAny(boundaryType)
+        self.isThroughCenterAssembly = throughCenterAssembly
+        return symmetry._returnIfValid()
+
+    @classmethod
+    def fromStr(cls, symmetryString: str) -> "SymmetryType":
+        symmetry = cls()
+        pieces = symmetryString.split()
+        shape = pieces[0]
+        boundary = pieces[1]
+        if len(pieces > 2):
+            throughCenter = " ".join(pieces[2:])
+        symmetry.domain = DomainType.fromStr(shape)
+        symmetry.boundary = BoundaryType.fromStr(boundary)
+        symmetry._checkIfThroughCenter(throughCenter)
+        return symmetry._returnIfValid()
+
+    @classmethod
+    def fromAny(cls, symmetry: Union[str, "SymmetryType"]) -> "SymmetryType":
+        """
+        Safely convert from string representation, no-op if already an enum instance.
+
+        This is useful as we transition to using enumerations more throughout the code.
+        There will remain situations where a geomType may be provided in string or enum
+        form, in which the consuming code would have to check the type before
+        proceeding. This function serves two useful purposes:
+         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
+         - Provide a location to instrument these conversions for when we actually try
+           to deprecate the strings. E.g., produce a warning when this is called, or
+           eventually forbidding the conversion entirely.
+        """
+        if isinstance(symmetry, SymmetryType):
+            return symmetry._returnIfValid()
+        elif isinstance(symmetry, str):
+            return cls.fromStr(symmetry)
+        else:
+            raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
+
+    def __str__(self):
+        """Combined string of shape and boundary symmetry type"""
+        strList = [str(self.domain)]
+        if self.boundary.hasSymmetry():
+            strList.append(str(self.boundary))
+        if self.isThroughCenterAssembly:
+            strList.append(THROUGH_CENTER_ASSEMBLY)
+        return " ".join(strList)
+
+    def _checkIfThroughCenter(self, centerString: str):
+        self.isThroughCenterAssembly = centerString == THROUGH_CENTER_ASSEMBLY
+
+    def _returnIfValid(self):
+        if self.checkValidSymmetry():
+            return self
+        else:
+            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
+            errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
+            raise ValueError(errorMsg)
+
+    def symmetryFactor(self):
+        return self.domain.symmetryFactor()
+
+    def checkValidSymmetry(self):
+        return str(self) in VALID_SYMMETRY
+
+
 def checkValidGeomSymmetryCombo(
-    geomType: Union[str, GeomType], symmetryType: Union[str, SymmetryType]
+    geomType: Union[str, "GeomType"], symmetryType: Union[str, "SymmetryType"]
 ) -> bool:
     """
     Check if the given combination of GeomType and SymmetryType is valid.
@@ -387,17 +387,20 @@ def checkValidGeomSymmetryCombo(
 
     validCombo = False
     if geomType == GeomType.HEX:
-        validCombo = symmetryType.shape in [ShapeType.FULL_CORE, ShapeType.THIRD_CORE]
+        validCombo = symmetryType.domain in [
+            DomainType.FULL_CORE,
+            DomainType.THIRD_CORE,
+        ]
     elif geomType == GeomType.CARTESIAN:
-        validCombo = symmetryType.shape in [
-            ShapeType.FULL_CORE,
-            ShapeType.QUARTER_CORE,
-            ShapeType.EIGHTH_CORE,
+        validCombo = symmetryType.domain in [
+            DomainType.FULL_CORE,
+            DomainType.QUARTER_CORE,
+            DomainType.EIGHTH_CORE,
         ]
     elif geomType == GeomType.RZT:
         validCombo = True  # any domain size could be valid for RZT
     elif geomType == GeomType.RZ:
-        validCombo = symmetryType.shape == ShapeType.FULL_CORE
+        validCombo = symmetryType.domain == DomainType.FULL_CORE
 
     if validCombo:
         return True
@@ -458,5 +461,5 @@ VALID_SYMMETRY = {
 
 
 geomTypes = {HEX, CARTESIAN, RZT, RZ}
-shapeTypes = {FULL_CORE, THIRD_CORE, QUARTER_CORE, EIGHTH_CORE, SIXTEENTH_CORE}
+DomainTypes = {FULL_CORE, THIRD_CORE, QUARTER_CORE, EIGHTH_CORE, SIXTEENTH_CORE}
 boundaryTypes = {NO_SYMMETRY, PERIODIC, REFLECTIVE}

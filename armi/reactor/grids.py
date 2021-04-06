@@ -1196,7 +1196,7 @@ class CartesianGrid(Grid):
         return ringPositions
 
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
-        if self.symmetry.shape == geometry.ShapeType.QUARTER_CORE:
+        if self.symmetry.domain == geometry.DomainType.QUARTER_CORE:
             return locator.i >= 0 and locator.j >= 0
         else:
             return True
@@ -1221,9 +1221,9 @@ class CartesianGrid(Grid):
         isRotational = symmetry.boundary == geometry.BoundaryType.PERIODIC
 
         i, j = indices[0:2]
-        if symmetry.shape == geometry.ShapeType.FULL_CORE:
+        if symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
-        elif symmetry.shape == geometry.ShapeType.QUARTER_CORE:
+        elif symmetry.domain == geometry.DomainType.QUARTER_CORE:
             if symmetry.isThroughCenterAssembly:
                 # some locations lie on the symmetric boundary
                 if i == 0 and j == 0:
@@ -1261,14 +1261,14 @@ class CartesianGrid(Grid):
                     #        QII           QIII          QIV
                     return [(-i - 1, j), (-i - 1, -j - 1), (i, -j - 1)]
 
-        elif symmetry.shape == geometry.ShapeType.EIGHTH_CORE:
+        elif symmetry.domain == geometry.DomainType.EIGHTH_CORE:
             raise NotImplementedError(
                 "Eighth-core symmetry isn't fully implemented for grids yet!"
             )
         else:
             raise NotImplementedError(
                 "Unhandled symmetry condition for {}: {}".format(
-                    type(self).__name__, symmetry.shape
+                    type(self).__name__, symmetry.domain
                 )
             )
 
@@ -1527,11 +1527,11 @@ class HexGrid(Grid):
 
     def getSymmetricEquivalents(self, indices):
         if (
-            self.symmetry.shape == geometry.ShapeType.THIRD_CORE
+            self.symmetry.domain == geometry.DomainType.THIRD_CORE
             and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
             return self._getSymmetricIdenticalsThird(indices)
-        elif self.symmetry.shape == geometry.ShapeType.FULL_CORE:
+        elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
             raise NotImplementedError(
@@ -1568,7 +1568,7 @@ class HexGrid(Grid):
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
         # This will include the "top" 120-degree symmetry lines. This is to support
         # adding of edge assemblies.
-        if self.symmetry.shape == geometry.ShapeType.THIRD_CORE:
+        if self.symmetry.domain == geometry.DomainType.THIRD_CORE:
             return self.isInFirstThird(locator, includeTopEdge=symmetryOverlap)
         else:
             return True

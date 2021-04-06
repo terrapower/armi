@@ -499,13 +499,16 @@ def asciiMapFromGeomAndSym(
         return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
-        (geometry.GeomType.HEX, geometry.ShapeType.THIRD_CORE): AsciiMapHexThirdFlatsUp,
-        (geometry.GeomType.HEX, geometry.ShapeType.FULL_CORE): AsciiMapHexFullFlatsUp,
+        (
+            geometry.GeomType.HEX,
+            geometry.DomainType.THIRD_CORE,
+        ): AsciiMapHexThirdFlatsUp,
+        (geometry.GeomType.HEX, geometry.DomainType.FULL_CORE): AsciiMapHexFullFlatsUp,
         (geometry.GeomType.CARTESIAN, None): AsciiMapCartesian,
-        (geometry.GeomType.CARTESIAN, geometry.ShapeType.FULL_CORE): AsciiMapCartesian,
+        (geometry.GeomType.CARTESIAN, geometry.DomainType.FULL_CORE): AsciiMapCartesian,
         (
             geometry.GeomType.CARTESIAN,
-            geometry.ShapeType.QUARTER_CORE,
+            geometry.DomainType.QUARTER_CORE,
         ): AsciiMapCartesian,
     }
 

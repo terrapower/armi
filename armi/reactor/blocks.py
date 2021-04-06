@@ -1868,7 +1868,7 @@ class HexBlock(Block):
         except:
             return 1.0
         if (
-            symmetry.shape == geometry.ShapeType.THIRD_CORE
+            symmetry.domain == geometry.DomainType.THIRD_CORE
             and symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
             indices = self.spatialLocator.getCompleteIndices()

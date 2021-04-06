@@ -313,8 +313,8 @@ class GridBlueprint(yamlize.Object):
             make this more sophisticated.
         """
         if (
-            geometry.SymmetryType.fromStr(self.symmetry).shape
-            == geometry.ShapeType.FULL_CORE
+            geometry.SymmetryType.fromStr(self.symmetry).domain
+            == geometry.DomainType.FULL_CORE
         ):
             # No need!
             return
@@ -334,7 +334,7 @@ class GridBlueprint(yamlize.Object):
         )
         self.symmetry = str(
             geometry.SymmetryType(
-                shapeType=geometry.ShapeType.FULL_CORE,
+                DomainType=geometry.DomainType.FULL_CORE,
                 boundaryType=geometry.BoundaryType.NO_SYMMETRY,
                 throughCenterAssembly=split,
             )

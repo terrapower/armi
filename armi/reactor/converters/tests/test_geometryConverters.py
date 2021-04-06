@@ -292,7 +292,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         changer.convert(self.r)
         # Check the full core conversion is successful
         self.assertGreater(len(self.r.core.getBlocks()), initialNumBlocks)
-        self.assertEqual(self.r.core.symmetry.shape, geometry.ShapeType.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         # Check that the geometry can be restored to a third core
         changer.restorePreviousGeometry(self.o.cs, self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
@@ -313,14 +313,14 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         changer.convert(self.r)
         # Check that the changer does not affect the full core model on converting and restoring
         initialNumBlocks = len(self.r.core.getBlocks())
-        self.assertEqual(self.r.core.symmetry.shape, geometry.ShapeType.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
-        self.assertEqual(self.r.core.symmetry.shape, geometry.ShapeType.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         changer.restorePreviousGeometry(self.o.cs, self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        self.assertEqual(self.r.core.symmetry.shape, geometry.ShapeType.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 
 
 if __name__ == "__main__":

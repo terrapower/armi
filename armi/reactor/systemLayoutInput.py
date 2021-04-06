@@ -309,7 +309,7 @@ class SystemLayoutInput:
         mapTxt = system[INP_LATTICE]
         if (
             self.geomType == geometry.GeomType.HEX
-            and self.symmetry.shape == geometry.ShapeType.THIRD_CORE
+            and self.symmetry.domain == geometry.DomainType.THIRD_CORE
         ):
             asciimap = asciimaps.AsciiMapHexThirdFlatsUp()
             asciimap.readAscii(mapTxt)
@@ -323,7 +323,7 @@ class SystemLayoutInput:
         else:
             raise ValueError(
                 f"ASCII map reading from geom/shape: {self.geomType}/"
-                f"{self.symmetry.shape} not supported."
+                f"{self.symmetry.domain} not supported."
             )
 
     def modifyEqPaths(self, modifiedPaths):
@@ -456,21 +456,21 @@ class SystemLayoutInput:
         -----
         This only works for Hex 1/3rd core geometry inputs.
         """
-        if self.symmetry.shape == geometry.ShapeType.FULL_CORE:
+        if self.symmetry.domain == geometry.DomainType.FULL_CORE:
             # already full core from geometry file. No need to copy symmetry over.
             runLog.important(
                 "Detected that full core geometry already exists. Cannot expand."
             )
             return
         elif (
-            self.symmetry.shape != geometry.ShapeType.THIRD_CORE
+            self.symmetry.domain != geometry.DomainType.THIRD_CORE
             or self.symmetry.boundary != geometry.BoundaryType.PERIODIC
         ):
             raise ValueError(
                 "Cannot convert shape `{}` to full core, must be {}".format(
-                    self.symmetry.shape,
+                    self.symmetry.domain,
                     " ".join(
-                        [geometry.ShapeType.THIRD_CORE, geometry.BoundaryType.PERIODIC]
+                        [geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC]
                     ),
                 )
             )
@@ -488,7 +488,7 @@ class SystemLayoutInput:
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
         self.symmetry = geometry.SymmetryType(
-            shapeType=geometry.ShapeType.FULL_CORE,
+            DomainType=geometry.DomainType.FULL_CORE,
             boundaryType=geometry.BoundaryType.NO_SYMMETRY,
         )
 
@@ -505,7 +505,7 @@ class SystemLayoutInput:
             )
             self.geomType = geometry.GeomType.HEX
             self.symmetry = geometry.SymmetryType(
-                shapeType=geometry.ShapeType.THIRD_CORE,
+                DomainType=geometry.DomainType.THIRD_CORE,
                 boundaryType=geometry.BoundaryType.PERIODIC,
             )
         else:

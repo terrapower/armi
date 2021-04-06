@@ -96,8 +96,8 @@ class TestSymmetryType(unittest.TestCase):
     def testFromStr(self):
         # note the bonkers case and extra whitespace to exercise the canonicalization
         self.assertEqual(
-            geometry.SymmetryType.fromStr("thiRd periodic ").shape,
-            geometry.ShapeType.THIRD_CORE,
+            geometry.SymmetryType.fromStr("thiRd periodic ").domain,
+            geometry.DomainType.THIRD_CORE,
         )
         st = geometry.SymmetryType.fromStr("sixteenth reflective")
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
@@ -109,20 +109,20 @@ class TestSymmetryType(unittest.TestCase):
     def testFromAny(self):
         st = geometry.SymmetryType.fromAny("eighth reflective through center assembly")
         self.assertTrue(st.isThroughCenterAssembly)
-        self.assertEqual(st.shape, geometry.ShapeType.EIGHTH_CORE)
+        self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
 
     def testBaseConstructor(self):
         self.assertEqual(
             geometry.SymmetryType(
-                geometry.ShapeType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
-            ).shape,
-            geometry.ShapeType.SIXTEENTH_CORE,
+                geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
+            ).domain,
+            geometry.DomainType.SIXTEENTH_CORE,
         )
         self.assertEqual(
             str(
                 geometry.SymmetryType(
-                    geometry.ShapeType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+                    geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
                 ).boundary
             ),
             geometry.NO_SYMMETRY,
@@ -130,18 +130,18 @@ class TestSymmetryType(unittest.TestCase):
 
     def testLabel(self):
         st = geometry.SymmetryType.fromStr("full")
-        self.assertEqual(st.shape.label, "Full")
+        self.assertEqual(st.domain.label, "Full")
         self.assertEqual(st.boundary.label, "No Symmetry")
         st = geometry.SymmetryType.fromStr("third periodic")
-        self.assertEqual(st.shape.label, "Third")
+        self.assertEqual(st.domain.label, "Third")
         self.assertEqual(st.boundary.label, "Periodic")
         st = geometry.SymmetryType.fromStr("quarter reflective")
-        self.assertEqual(st.shape.label, "Quarter")
+        self.assertEqual(st.domain.label, "Quarter")
         self.assertEqual(st.boundary.label, "Reflective")
         st = geometry.SymmetryType.fromStr("eighth reflective")
-        self.assertEqual(st.shape.label, "Eighth")
+        self.assertEqual(st.domain.label, "Eighth")
         st = geometry.SymmetryType.fromStr("sixteenth reflective")
-        self.assertEqual(st.shape.label, "Sixteenth")
+        self.assertEqual(st.domain.label, "Sixteenth")
 
     def testSymmetryFactor(self):
         st = geometry.SymmetryType.fromStr("full")
@@ -181,7 +181,7 @@ class TestSystemLayoutInput(unittest.TestCase):
         self.assertNotIn((2, 3), geom.assemTypeByIndices)
         self.assertEqual(8, len(geom.assemTypeByIndices))
         geom.growToFullCore()
-        self.assertEqual(geometry.FULL_CORE, str(geom.symmetry.shape))
+        self.assertEqual(geometry.FULL_CORE, str(geom.symmetry.domain))
         self.assertIn((2, 3), geom.assemTypeByIndices)
         self.assertIn(
             geom.assemTypeByIndices[2, 3],  # perodic repeat
