@@ -283,11 +283,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         # Check the initialization of the third core model
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
-            str(self.r.core.symmetry),
-            str(
-                geometry.SymmetryType(
-                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-                )
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             ),
         )
         initialNumBlocks = len(self.r.core.getBlocks())
@@ -301,11 +299,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         changer.restorePreviousGeometry(self.o.cs, self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         self.assertEqual(
-            str(self.r.core.symmetry),
-            str(
-                geometry.SymmetryType(
-                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-                )
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             ),
         )
 
@@ -314,11 +310,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         # Check the initialization of the third core model and convert to a full core
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
-            str(self.r.core.symmetry),
-            str(
-                geometry.SymmetryType(
-                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-                )
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             ),
         )
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)

@@ -1320,7 +1320,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
-                "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry. "
+                "ThirdCoreHexToFullCoreChanger requires the input to have third core hex geometry. "
                 "Geometry received was {} {} {}".format(
                     r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
                 )

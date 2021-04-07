@@ -92,7 +92,7 @@ INPUT_SCHEMA = vol.Schema(
                         vol.Optional(
                             INP_SYMMETRY,
                             default=geometry.THIRD_CORE + " " + geometry.PERIODIC,
-                        ): vol.In(geometry.SymmetryType.validSymmetryStrings),
+                        ): vol.In(geometry.SymmetryType.createValidSymmetryStrings()),
                         vol.Optional(INP_DISCRETES): DISCRETE_SCHEMA,
                         vol.Optional(INP_LATTICE): str,
                     }
@@ -322,7 +322,7 @@ class SystemLayoutInput:
                 self.maxRings = max(ring, self.maxRings)
         else:
             raise ValueError(
-                f"ASCII map reading from geom/shape: {self.geomType}/"
+                f"ASCII map reading from geom/domain: {self.geomType}/"
                 f"{self.symmetry.domain} not supported."
             )
 
@@ -491,8 +491,8 @@ class SystemLayoutInput:
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
         self.symmetry = geometry.SymmetryType(
-            domainType=geometry.DomainType.FULL_CORE,
-            boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+            geometry.DomainType.FULL_CORE,
+            geometry.BoundaryType.NO_SYMMETRY,
         )
 
     def _getGeomTypeAndSymmetryFromXml(self, root):
@@ -508,8 +508,8 @@ class SystemLayoutInput:
             )
             self.geomType = geometry.GeomType.HEX
             self.symmetry = geometry.SymmetryType(
-                DomainType=geometry.DomainType.THIRD_CORE,
-                boundaryType=geometry.BoundaryType.PERIODIC,
+                geometry.DomainType.THIRD_CORE,
+                geometry.BoundaryType.PERIODIC,
             )
         else:
             inputString = str(root.attrib[INP_SYMMETRY]).lower()

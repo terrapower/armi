@@ -172,8 +172,10 @@ class GridBlueprint(yamlize.Object):
     symmetry = yamlize.Attribute(
         key="symmetry",
         type=str,
-        default=geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        default=str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
         ),
     )
     # gridContents is the final form of grid contents information;

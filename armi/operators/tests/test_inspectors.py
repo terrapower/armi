@@ -19,7 +19,6 @@ import unittest
 
 from armi import settings
 from armi import operators
-from armi.reactor import geometry
 
 
 class Test(unittest.TestCase):

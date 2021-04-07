@@ -21,7 +21,6 @@ This file contains tools for common tasks in parsing in python strings into non-
 import ast
 import copy
 from dateutil import parser
-from typing import Set
 
 
 def tryLiteralEval(source):

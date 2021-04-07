@@ -46,7 +46,6 @@ class GeomType(enum.Enum):
     CARTESIAN = 2
     RZT = 3
     RZ = 4
-    HEX_CORNERS_UP = 5
 
     @classmethod
     def fromAny(cls, source: Union[str, "GeomType"]) -> "GeomType":
@@ -88,7 +87,7 @@ class GeomType(enum.Enum):
 
         # use the original geomStr with preserved capitalization for better
         # error-finding.
-        errorMsg = "Unrecognized geometry type {}. Valid geometry options are:".format(
+        errorMsg = "Unrecognized geometry type {}. Valid geometry options are: ".format(
             geomStr
         )
         errorMsg += ", ".join([f"{geom}" for geom in geomTypes])
@@ -138,7 +137,7 @@ class DomainType(enum.Enum):
         Safely convert from string representation, no-op if already an enum instance.
 
         This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a geomType may be provided in string or enum
+        There will remain situations where a DomainType may be provided in string or enum
         form, in which the consuming code would have to check the type before
         proceeding. This function serves two useful purposes:
          - Relieve client code from having to if/elif/else on ``isinstance()`` checks
@@ -241,7 +240,7 @@ class BoundaryType(enum.Enum):
         Safely convert from string representation, no-op if already an enum instance.
 
         This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a geomType may be provided in string or enum
+        There will remain situations where a BoundaryType may be provided in string or enum
         form, in which the consuming code would have to check the type before
         proceeding. This function serves two useful purposes:
          - Relieve client code from having to if/elif/else on ``isinstance()`` checks
@@ -301,10 +300,7 @@ class BoundaryType(enum.Enum):
 
 class SymmetryType:
     """
-    A thin wrapper for DomainType and BoundaryType enumerations.
-
-    (see GeomType class for explanation of why we want enumerations for DomainType and
-    BoundaryType).
+    A wrapper for DomainType and BoundaryType enumerations.
 
     The goal of this class is to provide simple functions for storing these options
     in enumerations and using them to check symmetry conditions, while also providing
@@ -328,22 +324,6 @@ class SymmetryType:
         (DomainType.SIXTEENTH_CORE, BoundaryType.REFLECTIVE, False),
     }
 
-    validSymmetryStrings = {
-        "full",
-        "full through center assembly",
-        "third periodic",
-        "quarter periodic",
-        "quarter reflective",
-        "quarter periodic through center assembly",
-        "quarter reflective through center assembly",
-        "eighth periodic",
-        "eighth reflective",
-        "eighth periodic through center assembly",
-        "eighth reflective through center assembly",
-        "sixteenth periodic",
-        "sixteenth reflective",
-    }
-
     @staticmethod
     def _checkIfThroughCenter(centerString: str) -> bool:
         return THROUGH_CENTER_ASSEMBLY in centerString
@@ -359,13 +339,21 @@ class SymmetryType:
         self.isThroughCenterAssembly = throughCenterAssembly
 
         if not self.checkValidSymmetry():
-            errorMsg = (
-                "{} is not a valid symmetry option. Valid symmetry options are:".format(
-                    str(self)
-                )
+            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are: ".format(
+                str(self)
             )
-            errorMsg += ", ".join([f"{sym}" for sym in self.validSymmetryStrings])
+            errorMsg += ", ".join(
+                [f"{sym}" for sym in self.createValidSymmetryStrings()]
+            )
             raise ValueError(errorMsg)
+
+    @classmethod
+    def createValidSymmetryStrings(cls):
+        """Create a list of valid symmetry strings based on the set of tuples in VALID_SYMMETRY"""
+        return [
+            cls(domain, boundary, isThroughCenter)
+            for domain, boundary, isThroughCenter in cls.VALID_SYMMETRY
+        ]
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
@@ -389,7 +377,9 @@ class SymmetryType:
             errorMsg = "{} [{}] is not a valid symmetry option. Valid symmetry options are:".format(
                 symmetryString, trimmedString
             )
-            errorMsg += ", ".join([f"{sym}" for sym in self.validSymmetryStrings])
+            errorMsg += ", ".join(
+                [f"{sym}" for sym in self.createValidSymmetryStrings()]
+            )
             raise ValueError(errorMsg)
         return cls(domain, boundary, isThroughCenter)
 
@@ -399,7 +389,7 @@ class SymmetryType:
         Safely convert from string representation, no-op if already an enum instance.
 
         This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a geomType may be provided in string or enum
+        There will remain situations where a SymmetryType may be provided in string or enum
         form, in which the consuming code would have to check the type before
         proceeding. This function serves two useful purposes:
          - Relieve client code from having to if/elif/else on ``isinstance()`` checks
@@ -439,7 +429,7 @@ class SymmetryType:
                 and self.isThroughCenterAssembly == otherSym.isThroughCenterAssembly
             )
         else:
-            return False
+            raise NotImplementedError
 
     def __hash__(self):
         """Hash a SymmetryType object based on a tuple of its options."""
