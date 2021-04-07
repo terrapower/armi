@@ -421,6 +421,14 @@ class SymmetryType:
         yield self.boundary
         yield self.isThroughCenterAssembly
 
+    def __eq__(self, other):
+        """Compare two SymmetryType instances based on their tuples."""
+        return tuple(self) == tuple(other)
+
+    def __hash__(self):
+        """Hash a SymmetryType object based on its tuple."""
+        return hash(tuple(self))
+
     def symmetryFactor(self) -> float:
         return self.domain.symmetryFactor()
 

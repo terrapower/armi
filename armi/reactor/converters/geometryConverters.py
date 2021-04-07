@@ -1316,7 +1316,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             )
             return r
         elif not (
-            tuple(r.core.symmetry) == tuple(self.EXPECTED_INPUT_SYMMETRY)
+            r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
             and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
