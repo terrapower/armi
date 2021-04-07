@@ -331,41 +331,57 @@ class SymmetryType:
         (DomainType.SIXTEENTH_CORE, BoundaryType.REFLECTIVE, False),
     }
 
-    def __init__(
-        self,
-        domainType: Union[str, "DomainType"] = DomainType.THIRD_CORE,
-        boundaryType: Union[str, "BoundaryType"] = BoundaryType.PERIODIC,
-        throughCenterAssembly: Optional[bool] = False,
-    ):
-        self.domain = DomainType.fromAny(domainType)
-        self.boundary = BoundaryType.fromAny(boundaryType)
-        self.isThroughCenterAssembly = throughCenterAssembly
-        _ = self._returnIfValid()
-
     @classmethod
     def validSymmetryStrings(cls):
         """Convert VALID_SYMMETRY tuples to strings."""
         return [str(cls.fromAny(x)) for x in cls.VALID_SYMMETRY]
 
+    @staticmethod
+    def _checkIfThroughCenter(centerString: str):
+        return THROUGH_CENTER_ASSEMBLY in centerString
+
+    def __init__(
+        self,
+        domainType: "DomainType" = DomainType.THIRD_CORE,
+        boundaryType: "BoundaryType" = BoundaryType.PERIODIC,
+        throughCenterAssembly: Optional[bool] = False,
+    ):
+
+        if (domainType, boundaryType, throughCenterAssembly) in self.VALID_SYMMETRY:
+            self.domain = domainType
+            self.boundary = boundaryType
+            self.isThroughCenterAssembly = throughCenterAssembly
+        else:
+            symmetryString = [str(domainType)]
+            if not boundaryType == BoundaryType.NO_SYMMETRY:
+                symmetryString.append(str(boundaryType))
+            if throughCenterAssembly:
+                symmetryString.append(THROUGH_CENTER_ASSEMBLY)
+            errorMsg = (
+                "{} is not a valid symmetry option. Valid symmetry options are:".format(
+                    " ".join(symmetryString)
+                )
+            )
+            errorMsg += ", ".join([f"{sym}" for sym in self.validSymmetryStrings()])
+            raise ValueError(errorMsg)
+
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
-        symmetry = cls()
-
-        symmetry._checkIfThroughCenter(symmetryString)
+        isThroughCenter = cls._checkIfThroughCenter(symmetryString)
         coreString = symmetryString.replace(THROUGH_CENTER_ASSEMBLY, "")
         pieces = coreString.split()
-        symmetry.domain = DomainType.fromStr(pieces[0])
+        domain = DomainType.fromStr(pieces[0])
         if len(pieces) <= 1 or pieces[-1] == "core":
             # set the BoundaryType to a default for the DomainType
-            if symmetry.domain == DomainType.FULL_CORE:
-                symmetry.boundary = BoundaryType.NO_SYMMETRY
-            elif symmetry.domain == DomainType.THIRD_CORE:
-                symmetry.boundary = BoundaryType.PERIODIC
+            if domain == DomainType.FULL_CORE:
+                boundary = BoundaryType.NO_SYMMETRY
+            elif domain == DomainType.THIRD_CORE:
+                boundary = BoundaryType.PERIODIC
             else:
-                symmetry.boundary = BoundaryType.REFLECTIVE
+                boundary = BoundaryType.REFLECTIVE
         else:
-            symmetry.boundary = BoundaryType.fromStr(pieces[-1])
-        return symmetry._returnIfValid()
+            boundary = BoundaryType.fromStr(pieces[-1])
+        return cls(domain, boundary, isThroughCenter)
 
     @classmethod
     def fromAny(cls, symmetry: Union[str, tuple, "SymmetryType"]) -> "SymmetryType":
@@ -382,15 +398,9 @@ class SymmetryType:
            eventually forbidding the conversion entirely.
         """
         if isinstance(symmetry, SymmetryType):
-            return symmetry._returnIfValid()
+            return symmetry
         elif isinstance(symmetry, tuple):
-            symmetryType = cls()
-            (
-                symmetryType.domain,
-                symmetryType.boundary,
-                symmetryType.isThroughCenterAssembly,
-            ) = symmetry
-            return symmetryType._returnIfValid()
+            return cls(symmetry[0], symmetry[1], symmetry[2])
         elif isinstance(symmetry, str):
             return cls.fromStr(symmetry)
         else:
@@ -410,24 +420,6 @@ class SymmetryType:
         yield self.domain
         yield self.boundary
         yield self.isThroughCenterAssembly
-
-    def _checkIfThroughCenter(self, centerString: str):
-        self.isThroughCenterAssembly = THROUGH_CENTER_ASSEMBLY in centerString
-
-    def _returnIfValid(self) -> "SymmetryType":
-        if self.checkValidSymmetry():
-            return self
-        else:
-            errorMsg = (
-                "{} is not a valid symmetry option. Valid symmetry options are:".format(
-                    str(self)
-                )
-            )
-            errorMsg += ", ".join([f"{sym}" for sym in self.validSymmetryStrings()])
-            raise ValueError(errorMsg)
-
-    def checkValidSymmetry(self) -> bool:
-        return tuple(self) in self.VALID_SYMMETRY
 
     def symmetryFactor(self) -> float:
         return self.domain.symmetryFactor()

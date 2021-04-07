@@ -607,19 +607,6 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and not geometry.SymmetryType.fromAny(
-                self.coreSymmetry
-            ).checkValidSymmetry(),
-            "{} is not a valid symmetry Please update symmetry on the geom file. "
-            "Valid (case insensitive) symmetries are: {}".format(
-                self.coreSymmetry, geometry.SymmetryType.validSymmetryStrings()
-            ),
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
-            lambda: self.cs["geomFile"]
             and not geometry.checkValidGeomSymmetryCombo(
                 self.geomType, self.coreSymmetry
             ),
@@ -643,11 +630,6 @@ def checkValidGeomSymmetryCombo(
 
     geomType = geometry.GeomType.fromAny(geomType)
     symmetryType = geometry.SymmetryType.fromAny(symmetryType)
-
-    if not symmetryType.checkValidSymmetry():
-        errorMsg = "{} is not a valid symmetry option. Valid symmetry options are:"
-        errorMsg += ", ".join([f"{sym}" for sym in VALID_SYMMETRY])
-        raise ValueError(errorMsg)
 
     validCombo = False
     if geomType == geometry.GeomType.HEX:
