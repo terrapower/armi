@@ -325,11 +325,6 @@ class Core(composites.Composite):
         return self.symmetry.domain == geometry.DomainType.FULL_CORE
 
     @property
-    def isThirdCore(self):
-        """Return True if reactor is third core, otherwise False."""
-        return self.symmetry.domain == geometry.DomainType.THIRD_CORE
-
-    @property
     def refAssem(self):
         """
         Return the "reference" assembly for this Core.

@@ -112,8 +112,8 @@ class TestSymmetryType(unittest.TestCase):
         self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
 
-        st = geometry.SymmetryType.fromAny(
-            (geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE, True)
+        st = geometry.SymmetryType(
+            geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE, True
         )
         self.assertTrue(st.isThroughCenterAssembly)
         self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
@@ -187,6 +187,41 @@ class TestSymmetryType(unittest.TestCase):
         )
         self.assertEqual(st.symmetryFactor(), 16.0)
 
+    def test_checkValidGeomSymmetryCombo(self):
+        geomHex = geometry.GeomType.HEX
+        geomCart = geometry.GeomType.CARTESIAN
+        geomRZT = geometry.GeomType.RZT
+        geomRZ = geometry.GeomType.RZ
+        fullCore = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
+        thirdPeriodic = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
+        quarterCartesian = geometry.SymmetryType(
+            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
+        )
+
+        self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomHex, thirdPeriodic))
+        self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomHex, fullCore))
+        self.assertTrue(
+            geometry.checkValidGeomSymmetryCombo(geomCart, quarterCartesian)
+        )
+        self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomRZT, quarterCartesian))
+        self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomRZ, fullCore))
+
+        with self.assertRaises(ValueError):
+            thirdReflective = geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE,
+                geometry.BoundaryType.REFLECTIVE,
+                False,
+            )
+        with self.assertRaises(ValueError):
+            geometry.checkValidGeomSymmetryCombo(geomHex, quarterCartesian)
+
+        with self.assertRaises(ValueError):
+            geometry.checkValidGeomSymmetryCombo(geomCart, thirdPeriodic)
+
 
 class TestSystemLayoutInput(unittest.TestCase):
     def testReadHexGeomXML(self):
@@ -200,10 +235,8 @@ class TestSystemLayoutInput(unittest.TestCase):
 
     def testReadReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
-        reactor.core.symmetry = geometry.SymmetryType.fromAny(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
+        reactor.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
         )
         geom = SystemLayoutInput.fromReactor(reactor)
         self.assertEqual(geom.assemTypeByIndices[(2, 1)], "fuel")

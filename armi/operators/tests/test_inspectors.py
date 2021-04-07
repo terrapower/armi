@@ -19,7 +19,6 @@ import unittest
 
 from armi import settings
 from armi import operators
-from armi.operators.settingsValidation import checkValidGeomSymmetryCombo
 from armi.reactor import geometry
 
 
@@ -85,41 +84,6 @@ class Test(unittest.TestCase):
         for correction in failures:
             with self.assertRaises(ValueError):
                 self.inspector.addQuery(lambda: True, "", "", correction)
-
-    def test_checkValidGeomSymmetryCombo(self):
-        geomHex = geometry.GeomType.fromAny(geometry.GeomType.HEX)
-        geomCart = geometry.GeomType.fromAny(geometry.GeomType.CARTESIAN)
-        geomRZT = geometry.GeomType.fromAny(geometry.GeomType.RZT)
-        geomRZ = geometry.GeomType.fromAny(geometry.GeomType.RZ)
-        fullCore = geometry.SymmetryType(
-            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-        )
-        thirdPeriodic = geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-        )
-        thirdReflective = (
-            geometry.DomainType.THIRD_CORE,
-            geometry.BoundaryType.REFLECTIVE,
-            False,
-        )
-        quarterCartesian = geometry.SymmetryType(
-            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
-        )
-
-        self.assertTrue(checkValidGeomSymmetryCombo(geomHex, thirdPeriodic))
-        self.assertTrue(checkValidGeomSymmetryCombo(geomHex, fullCore))
-        self.assertTrue(checkValidGeomSymmetryCombo(geomCart, quarterCartesian))
-        self.assertTrue(checkValidGeomSymmetryCombo(geomRZT, quarterCartesian))
-        self.assertTrue(checkValidGeomSymmetryCombo(geomRZ, fullCore))
-
-        with self.assertRaises(ValueError):
-            checkValidGeomSymmetryCombo(geomHex, thirdReflective)
-
-        with self.assertRaises(ValueError):
-            checkValidGeomSymmetryCombo(geomHex, quarterCartesian)
-
-        with self.assertRaises(ValueError):
-            checkValidGeomSymmetryCombo(geomCart, thirdPeriodic)
 
 
 if __name__ == "__main__":

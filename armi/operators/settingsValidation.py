@@ -619,45 +619,6 @@ class Inspector:
         )
 
 
-def checkValidGeomSymmetryCombo(
-    geomType: Union[str, geometry.GeomType],
-    symmetryType: Union[str, tuple, geometry.SymmetryType],
-) -> bool:
-    """
-    Check if the given combination of GeomType and SymmetryType is valid.
-    Return a boolean indicating the outcome of the check.
-    """
-
-    geomType = geometry.GeomType.fromAny(geomType)
-    symmetryType = geometry.SymmetryType.fromAny(symmetryType)
-
-    validCombo = False
-    if geomType == geometry.GeomType.HEX:
-        validCombo = symmetryType.domain in [
-            geometry.DomainType.FULL_CORE,
-            geometry.DomainType.THIRD_CORE,
-        ]
-    elif geomType == geometry.GeomType.CARTESIAN:
-        validCombo = symmetryType.domain in [
-            geometry.DomainType.FULL_CORE,
-            geometry.DomainType.QUARTER_CORE,
-            geometry.DomainType.EIGHTH_CORE,
-        ]
-    elif geomType == geometry.GeomType.RZT:
-        validCombo = True  # any domain size could be valid for RZT
-    elif geomType == geometry.GeomType.RZ:
-        validCombo = symmetryType.domain == geometry.DomainType.FULL_CORE
-
-    if validCombo:
-        return True
-    else:
-        raise ValueError(
-            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(
-                str(geomType), str(symmetryType)
-            )
-        )
-
-
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
     """
     Return a query to revert a bad path to its default.
