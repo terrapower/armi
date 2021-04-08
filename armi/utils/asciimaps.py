@@ -51,7 +51,10 @@ armi.reactor.geometry : a specific usage of lattices, for core maps
 """
 import re
 
+from typing import Union
+
 from armi import runLog
+from armi.reactor import geometry
 
 PLACEHOLDER = "-"
 
@@ -485,23 +488,33 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         self._ijMax = (self._asciiMaxCol - 1) // 2
 
 
-def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
-    """Get a ascii map class from a geometry type."""
+def asciiMapFromGeomAndSym(
+    geomType: Union[str, geometry.GeomType],
+    symmetry: Union[str, geometry.SymmetryType],
+) -> "AsciiMap":
+    """Get a ascii map class from a geometry and symmetry type."""
     from armi.reactor import geometry
 
-    symmetry = symmetry.replace(geometry.PERIODIC, "")
-    symmetry = symmetry.replace(geometry.REFLECTIVE, "")
-    symmetry = symmetry.replace(geometry.THROUGH_CENTER_ASSEMBLY, "")
-
-    if str(geomType) == geometry.HEX_CORNERS_UP and symmetry == geometry.FULL_CORE:
+    if str(geomType) == geometry.HEX_CORNERS_UP and geometry.FULL_CORE in str(symmetry):
         return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
-        (geometry.GeomType.HEX, geometry.THIRD_CORE): AsciiMapHexThirdFlatsUp,
-        (geometry.GeomType.HEX, geometry.FULL_CORE): AsciiMapHexFullFlatsUp,
+        (
+            geometry.GeomType.HEX,
+            geometry.DomainType.THIRD_CORE,
+        ): AsciiMapHexThirdFlatsUp,
+        (geometry.GeomType.HEX, geometry.DomainType.FULL_CORE): AsciiMapHexFullFlatsUp,
         (geometry.GeomType.CARTESIAN, None): AsciiMapCartesian,
-        (geometry.GeomType.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
-        (geometry.GeomType.CARTESIAN, geometry.QUARTER_CORE): AsciiMapCartesian,
+        (geometry.GeomType.CARTESIAN, geometry.DomainType.FULL_CORE): AsciiMapCartesian,
+        (
+            geometry.GeomType.CARTESIAN,
+            geometry.DomainType.QUARTER_CORE,
+        ): AsciiMapCartesian,
     }
 
-    return MAP_FROM_GEOM[(geometry.GeomType.fromAny(geomType), symmetry)]
+    return MAP_FROM_GEOM[
+        (
+            geometry.GeomType.fromAny(geomType),
+            geometry.SymmetryType.fromAny(symmetry).domain,
+        )
+    ]

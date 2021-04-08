@@ -1862,11 +1862,14 @@ class HexBlock(Block):
 
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
+
+        try:
+            symmetry = self.parent.spatialLocator.grid.symmetry
+        except:
+            return 1.0
         if (
-            self.parent is not None
-            and self.parent.spatialLocator.grid is not None
-            and self.parent.spatialLocator.grid.symmetry
-            == geometry.THIRD_CORE + geometry.PERIODIC
+            symmetry.domain == geometry.DomainType.THIRD_CORE
+            and symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
             indices = self.spatialLocator.getCompleteIndices()
             if indices[0] == 0 and indices[1] == 0:
@@ -2005,7 +2008,7 @@ class CartesianBlock(Block):
         """
         if self.r is not None:
             indices = self.spatialLocator.getCompleteIndices()
-            if geometry.THROUGH_CENTER_ASSEMBLY in self.r.core.symmetry:
+            if self.r.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
                     # central location
                     return 4.0

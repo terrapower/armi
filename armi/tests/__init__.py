@@ -46,7 +46,9 @@ def getEmptyHexReactor():
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
     reactor.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    reactor.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+    reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
     reactor.core.spatialGrid.geomType = geometry.HEX
     reactor.core.spatialGrid.armiObject = reactor.core
     return reactor
@@ -60,8 +62,10 @@ def getEmptyCartesianReactor():
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
     reactor.core.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
-    reactor.core.spatialGrid.symmetry = (
-        geometry.QUARTER_CORE + geometry.REFLECTIVE + geometry.THROUGH_CENTER_ASSEMBLY
+    reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.QUARTER_CORE,
+        geometry.BoundaryType.REFLECTIVE,
+        throughCenterAssembly=True,
     )
     reactor.core.spatialGrid.geomType = geometry.CARTESIAN
     reactor.core.spatialGrid.armiObject = reactor.core
