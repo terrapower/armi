@@ -1767,31 +1767,33 @@ class NewGridBlueprintDialog(wx.Dialog):
         geom = self._geomFromIdx[self.geomType.GetSelection()]
 
         if self.domainFull.GetValue():
-            domain = geometry.FULL_CORE
+            domain = geometry.DomainType.FULL_CORE
         elif self.domain3.GetValue():
-            domain = geometry.THIRD_CORE
+            domain = geometry.DomainType.THIRD_CORE
         elif self.domain4.GetValue():
-            domain = geometry.QUARTER_CORE
+            domain = geometry.DomainType.QUARTER_CORE
         else:
             raise ValueError("Couldn't map selection to supported fractional domain")
 
         if self.periodic.GetValue():
-            bc = geometry.PERIODIC
+            bc = geometry.BoundaryType.PERIODIC
         elif self.reflective.GetValue():
-            bc = geometry.REFLECTIVE
+            bc = geometry.BoundaryType.REFLECTIVE
         else:
-            bc = ""
+            bc = geometry.BoundaryType.NO_SYMMETRY
 
         if self.throughCenter.GetValue():
             through = geometry.THROUGH_CENTER_ASSEMBLY
         else:
             through = ""
 
-        symmetry = domain + bc + through
+        symmetry = geometry.SymmetryType.fromStr(
+            domain, bc, self.throughCenter.GetValue()
+        )
 
-        assert symmetry in geometry.VALID_SYMMETRY, symmetry
+        assert symmetry.checkValidSymmetry()
 
-        bp = GridBlueprint(name=name, geom=str(geom), symmetry=symmetry)
+        bp = GridBlueprint(name=name, geom=str(geom), symmetry=str(symmetry))
 
         return bp
 
