@@ -65,7 +65,7 @@ def createDummyReactor():
     r = reactors.Reactor("Reactor", bp)
     r.add(reactors.Core("Core"))
     r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    r.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+    r.core.spatialGrid.symmetry = " ".join([geometry.THIRD_CORE, geometry.PERIODIC])
     r.core.spatialGrid.geomType = geometry.HEX
     r.core.spatialGrid.armiObject = r.core
     r.core.setOptionsFromCs(cs)
