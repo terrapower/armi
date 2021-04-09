@@ -1787,9 +1787,7 @@ class NewGridBlueprintDialog(wx.Dialog):
         else:
             through = ""
 
-        symmetry = geometry.SymmetryType.fromStr(
-            domain, bc, self.throughCenter.GetValue()
-        )
+        symmetry = geometry.SymmetryType(domain, bc, self.throughCenter.GetValue())
 
         assert symmetry.checkValidSymmetry()
 
