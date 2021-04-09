@@ -358,8 +358,9 @@ class SymmetryType:
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         """Construct a SymmetryType object from a valid string"""
-        isThroughCenter = cls._checkIfThroughCenter(symmetryString)
-        coreString = symmetryString.replace(THROUGH_CENTER_ASSEMBLY, "").strip()
+        canonical = symmetryString.lower().strip()
+        isThroughCenter = cls._checkIfThroughCenter(canonical)
+        coreString = canonical.replace(THROUGH_CENTER_ASSEMBLY, "").strip()
         trimmedString = coreString.replace("core", "").strip()
         pieces = trimmedString.split()
         domain = DomainType.fromStr(pieces[0])
