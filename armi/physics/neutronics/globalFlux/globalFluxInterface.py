@@ -474,7 +474,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         """
         return (
             "FD" in self.options.kernelName
-            and self.options.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+            and self.options.symmetry.domain == geometry.DomainType.THIRD_CORE
+            and self.options.symmetry.boundary == geometry.BoundaryType.PERIODIC
             and self.options.geomType == geometry.GeomType.HEX
         )
 
