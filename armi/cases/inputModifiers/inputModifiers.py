@@ -1,7 +1,7 @@
 """Modifies inputs."""
 
 
-class InputModifier(object):
+class InputModifier:
     """
     Object that modifies input definitions in some well-defined way.
 

@@ -60,7 +60,7 @@ BLOCK_AXIAL_MESH_SPACING = (
 STR_SPACE = " "
 
 
-class GeometryChanger(object):
+class GeometryChanger:
     """Geometry changer class that updates the geometry (number of assems or blocks per assem) of a given reactor."""
 
     def __init__(self, cs=None, quiet=False):

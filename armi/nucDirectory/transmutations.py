@@ -94,7 +94,7 @@ DECAY_MODES = [
 PRODUCT_PARTICLES = {"nalph": "HE4", "np": "H1", "nd": "H2", "nt": "H3", "ad": "HE4"}
 
 
-class Transmutable(object):
+class Transmutable:
     """
     Transmutable base class.
 

@@ -27,7 +27,7 @@ from armi.localization import info, info_once, important
 from armi.localization import warn, warn_once, warn_when_root, warn_once_when_root
 
 
-class DummyClass(object):
+class DummyClass:
     def __init__(self):
         if six.PY3:
             self.counts = [

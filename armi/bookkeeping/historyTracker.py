@@ -658,7 +658,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             return None
 
 
-class HistoryFile(object):
+class HistoryFile:
     r"""
     A general history file that contains the parameter history of an object.
 
@@ -777,7 +777,7 @@ class AssemblyHistory(HistoryFile):
         return mins, maxes
 
 
-class HistoryProcessor(object):
+class HistoryProcessor:
     r"""
     Processes stats on a bunch of assembly history files
 

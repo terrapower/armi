@@ -59,7 +59,7 @@ from armi.reactor import geometry
 PLACEHOLDER = "-"
 
 
-class AsciiMap(object):
+class AsciiMap:
     """
     Base class for maps.
 

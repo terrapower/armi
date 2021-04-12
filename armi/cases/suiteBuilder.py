@@ -40,7 +40,7 @@ def getInputModifiers(cls):
     ]
 
 
-class SuiteBuilder(object):
+class SuiteBuilder:
     """
     Class for constructing a CaseSuite from combinations of modifications on base inputs.
 

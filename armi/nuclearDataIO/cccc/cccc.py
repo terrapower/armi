@@ -33,7 +33,7 @@ IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
 
 
-class IORecord(object):
+class IORecord:
     """
     A single CCCC record.
 
@@ -500,7 +500,7 @@ class DataContainer:
         self.metadata = nuclearFileMetadata._Metadata()
 
 
-class Stream(object):
+class Stream:
     """
     An abstract CCCC IO stream.
 

@@ -72,7 +72,7 @@ from armi import utils
 from armi.utils import iterables
 
 
-class MpiAction(object):
+class MpiAction:
     """Base of all MPI actions.
 
     MPI Actions are tasks that can be executed without needing lots of other

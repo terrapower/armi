@@ -321,7 +321,7 @@ writeBinary = _CompxsIO.writeBinary  # pylint: disable=invalid-name
 writeAscii = _CompxsIO.writeAscii  # pylint: disable=invalid-name
 
 
-class _CompxsRegionIO(object):
+class _CompxsRegionIO:
     """
     Specific object assigned a single region to read/write composition information.
 
@@ -441,7 +441,7 @@ class _CompxsRegionIO(object):
             sparseMat.addColumnData(dataj, indicesj)
 
 
-class _CompxsScatterMatrix(object):
+class _CompxsScatterMatrix:
     """When reading COMPXS scattering blocks, store the data here and then reconstruct after."""
 
     def __init__(self, shape):
@@ -462,7 +462,7 @@ class _CompxsScatterMatrix(object):
         return sparseFunc((self.data, self.indices, self.indptr), shape=self.shape)
 
 
-class CompxsRegion(object):
+class CompxsRegion:
     """
     Class for creating/tracking homogenized region information.
 
