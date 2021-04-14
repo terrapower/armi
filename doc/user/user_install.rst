@@ -13,12 +13,6 @@ You must have the following before proceeding:
 
 * `Python <https://www.python.org/downloads/>`_ version 3.6 or later (preferably 64-bit)
 
-  .. warning:: Python 3.9 was released in October 2020 and some of ARMI's
-      dependencies are non-trivial to build for it at the moment. Thus, the
-      installation process of ARMI will be easier if you have Python 3.6 -- Python
-      3.8 until the dependencies catch up.
-
-
   .. admonition:: The right Python command
 
      Python 2 and Python 3 often co-exist on the same system. Whether the
