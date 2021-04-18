@@ -19,7 +19,6 @@ import math
 import os
 from typing import Dict, Optional
 
-
 import numpy
 import scipy.integrate
 
@@ -225,7 +224,8 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
         GlobalFluxInterface.interactCoupled(self, iteration)
 
-    def getOptionsCls(self):
+    @staticmethod
+    def getOptionsCls():
         """
         Get a blank options object.
 
@@ -233,7 +233,8 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         return GlobalFluxOptions
 
-    def getExecuterCls(self):
+    @staticmethod
+    def getExecuterCls():
         return GlobalFluxExecuter
 
     def getExecuterOptions(self, label=None):

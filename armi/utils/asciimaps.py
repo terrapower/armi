@@ -211,7 +211,8 @@ class AsciiMap(object):
         self._updateSlotSizeFromData()
         self._makeOffsets()
 
-    def _removeTrailingPlaceholders(self, line):
+    @staticmethod
+    def _removeTrailingPlaceholders(line):
         newLine = []
         noDataYet = True
         for col in reversed(line):
@@ -489,8 +490,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
 
 def asciiMapFromGeomAndSym(
-    geomType: Union[str, geometry.GeomType],
-    symmetry: Union[str, geometry.SymmetryType],
+    geomType: Union[str, geometry.GeomType], symmetry: Union[str, geometry.SymmetryType]
 ) -> "AsciiMap":
     """Get a ascii map class from a geometry and symmetry type."""
     from armi.reactor import geometry

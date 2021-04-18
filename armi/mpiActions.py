@@ -230,7 +230,8 @@ class MpiAction(object):
         self.cs = cs
         return self.invokeHook()
 
-    def mpiFlatten(self, allCPUResults):
+    @staticmethod
+    def mpiFlatten(allCPUResults):
         """
         Flatten results to the same order they were in before making a list of mpiIter results.
 
@@ -240,7 +241,8 @@ class MpiAction(object):
         """
         return iterables.flatten(allCPUResults)
 
-    def mpiIter(self, objectsForAllCoresToIter):
+    @staticmethod
+    def mpiIter(objectsForAllCoresToIter):
         """
         Generate the subset of objects one node is responsible for in MPI.
 

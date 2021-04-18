@@ -267,7 +267,8 @@ class MemoryProfiler(interfaces.Interface):
         if reportSize:
             operator.reattach(reactor, cs)
 
-    def _getSpecificReferrers(self, klass, ancestorKlass):
+    @staticmethod
+    def _getSpecificReferrers(klass, ancestorKlass):
         """Try to determine some useful information about the structure of ArmiObjects and potential
         orphans.
 
@@ -328,7 +329,8 @@ class MemoryProfiler(interfaces.Interface):
         for item in info:
             runLog.important("{}".format(item))
 
-    def _getReferrers(self, obj):
+    @staticmethod
+    def _getReferrers(obj):
         """
         Print referrers in a useful way (as opposed to gigabytes of text
         """
@@ -336,7 +338,8 @@ class MemoryProfiler(interfaces.Interface):
         for ref in gc.get_referrers(obj)[:100]:
             print("ref for {}: {}".format(obj, repr(ref)[:100]))
 
-    def _discussSkipped(self, skipped, errors):
+    @staticmethod
+    def _discussSkipped(skipped, errors):
         runLog.warning("Skipped {} objects".format(skipped))
         runLog.warning(
             "errored out on {0} objects:\n {1}".format(

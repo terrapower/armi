@@ -1249,7 +1249,8 @@ class HexToRZThetaConverter(GeometryConverter):
             )
         )
 
-    def _getBlockColor(self, colConverter, colGenerator, blockColors, blockType):
+    @staticmethod
+    def _getBlockColor(colConverter, colGenerator, blockColors, blockType):
         nextColor = None
         if blockType not in blockColors:
             if "fuel" in blockType:
@@ -1490,7 +1491,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         else:
             runLog.extra("No edge assemblies to remove")
 
-    def scaleParamsRelatedToSymmetry(self, reactor, paramsToScaleSubset=None):
+    @staticmethod
+    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges
 

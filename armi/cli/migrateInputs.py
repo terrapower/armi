@@ -53,7 +53,8 @@ class MigrateInputs(EntryPoint):
         else:
             self._migrate(self.args.settings_path, self.args.database_path)
 
-    def _migrate(self, settingsPath, dbPath):
+    @staticmethod
+    def _migrate(settingsPath, dbPath):
         """
         Run all migrations.
 

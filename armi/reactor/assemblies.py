@@ -161,7 +161,8 @@ class Assembly(composites.Composite):
             b.makeUnique()
             b.setName(b.makeName(self.p.assemNum, bi))
 
-    def makeNameFromAssemNum(self, assemNum):
+    @staticmethod
+    def makeNameFromAssemNum(assemNum):
         """
         Set the name of this assembly (and the containing blocks) based on an assemNum.
 
@@ -1331,7 +1332,8 @@ class HexAssembly(Assembly):
                 b.printContents()
         return numpy.average(pList)
 
-    def convert2DPinValsTo1D(self, vals, imax, jmax):
+    @staticmethod
+    def convert2DPinValsTo1D(vals, imax, jmax):
         """
         This converts a 2-D list of vals as a function of (i,j) = (ring-1,pos-1)
         to a 1-D list of the same vals indexed by n = sum(jmax[0:i]) + j

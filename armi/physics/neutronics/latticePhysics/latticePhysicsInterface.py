@@ -152,7 +152,8 @@ class LatticePhysicsInterface(interfaces.Interface):
     def makeCycleXSFilesAsBaseFiles(self, cycle):
         raise NotImplementedError
 
-    def _copyLibraryFilesForCycle(self, cycle, libFiles):
+    @staticmethod
+    def _copyLibraryFilesForCycle(cycle, libFiles):
         runLog.extra("Current library files: {}".format(libFiles))
         for baseName, cycleName in libFiles.items():
             if not os.path.exists(cycleName):
