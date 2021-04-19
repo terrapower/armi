@@ -15,6 +15,7 @@
 """
 Tests functionalities of components within ARMI
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import math
 import unittest

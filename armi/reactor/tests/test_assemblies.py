@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import pathlib
 import random
 import unittest

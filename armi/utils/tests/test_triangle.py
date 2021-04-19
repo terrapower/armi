@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+r""" Test the basic triangle math
+"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 from armi.utils import triangle
 
@@ -19,7 +21,6 @@ from armi.utils import triangle
 class triangleTests(unittest.TestCase):
     def test_getTriangleArea(self):
         """Test that getTriangleArea correctly calculates the area of a right triangle."""
-
         x1 = 0.0
         y1 = 0.0
         x2 = 1.0
@@ -32,7 +33,6 @@ class triangleTests(unittest.TestCase):
 
     def test_checkIfPointIsInTriangle(self):
         """Test that checkIfPointIsInTrinagle can correctly identify if a point is inside or outside of a triangle."""
-
         # First check the right triangle case
         xT1 = 0.0
         yT1 = 0.0

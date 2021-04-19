@@ -26,7 +26,9 @@ from armi.operators import OperatorMPI
 from armi.tests import ARMI_RUN_PATH
 
 
-class FailingInterface1(armi.interfaces.Interface):
+class FailingInterface1(
+    armi.interfaces.Interface
+):  # pylint: disable=abstract-method,no-self-use,unused-argument
     """utility classes to make sure the logging system fails properly"""
 
     name = "failer"
@@ -35,14 +37,20 @@ class FailingInterface1(armi.interfaces.Interface):
         raise RuntimeError("Failing interface failure")
 
 
-class FailingInterface2(armi.interfaces.Interface):
+class FailingInterface2(
+    armi.interfaces.Interface
+):  # pylint: disable=abstract-method,no-self-use,unused-argument
+    """utility class to make sure the logging system fails properly"""
+
     name = "failer"
 
     def interactEveryNode(self, cycle, node):
         raise RuntimeError("Failing interface critical failure")
 
 
-class FailingInterface3(armi.interfaces.Interface):
+class FailingInterface3(
+    armi.interfaces.Interface
+):  # pylint: disable=abstract-method,no-self-use,unused-argument
     """fails on worker operate"""
 
     name = "failer"
@@ -50,7 +58,7 @@ class FailingInterface3(armi.interfaces.Interface):
     def fail(self):
         raise RuntimeError("Failing interface critical worker failure")
 
-    def interactEveryNode(self, c, n):
+    def interactEveryNode(self, c, n):  # pylint:disable=unused-argument
         armi.MPI_COMM.bcast("fail", root=0)
 
     def workerOperate(self, cmd):
@@ -60,27 +68,33 @@ class FailingInterface3(armi.interfaces.Interface):
         return False
 
 
-class OperatorTests(unittest.TestCase):
+class OperatorTests(
+    unittest.TestCase
+):  # pylint: disable=abstract-method,no-self-use,unused-argument
+    """Testing the MPI parallelization operation"""
+
     # @unittest.skipIf(distutils.spawn.find_executable('mpiexec.exe') is None, "mpiexec is not in path.")
     @unittest.skip("MPI tests are not working")
-    def testMpiOperator(self):
+    def testMpiOperator(self):  # pylint: disable=abstract-method,no-self-use
         """
         Calls a subprocess to spawn new tests.
 
         The subprocess is redirected to dev/null (windows <any-dir>\\NUL), to prevent excessive
         output. In order to debug, this test you will likely need to modify this code.
         """
-        args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
-        args += ["armi.tests.test_operators.MpiOperatorTests"]
+        cmds = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
+        cmds += ["armi.tests.test_operators.MpiOperatorTests"]
         with open(os.devnull, "w") as null:
             # check_call needed because call will just keep going in the event
             # of failures.
-            subprocess.check_call(args, stdout=null, stderr=subprocess.STDOUT)
+            subprocess.check_call(cmds, stdout=null, stderr=subprocess.STDOUT)
 
 
 if armi.MPI_SIZE > 1:
 
     class MpiOperatorTests(unittest.TestCase):
+        """Testing the MPI parallelization operation"""
+
         def setUp(self):
             self.cs = settings.Settings(fName=ARMI_RUN_PATH)
             settings.setMasterCs(self.cs)

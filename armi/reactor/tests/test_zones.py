@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test for Zones"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import unittest
 import os

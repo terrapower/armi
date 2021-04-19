@@ -13,6 +13,7 @@
 # limitations under the License.
 
 r"""Tests blocks.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import math
 import os

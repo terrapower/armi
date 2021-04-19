@@ -13,8 +13,8 @@
 # limitations under the License.
 
 r"""
-
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
 from armi.nuclearDataIO import xsNuclides
