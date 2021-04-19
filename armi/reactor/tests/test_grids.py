@@ -591,7 +591,5 @@ class TestCartesianGrid(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestHexGrid.testPositions"]
+    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
     unittest.main()

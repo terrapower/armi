@@ -325,7 +325,5 @@ class Test_LocationPacking(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestDatabase3.test_splitDatabase"]
+    # import sys;sys.argv = ["", "TestDatabase3.test_splitDatabase"]
     unittest.main()

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
 import os
 import unittest
 import types
@@ -394,7 +393,5 @@ class TestStandardFollowOn(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
+    # import sys;sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
     unittest.main()

@@ -16,7 +16,6 @@ r"""
 
 """
 import unittest
-import types
 
 from armi.nuclearDataIO import xsNuclides
 from armi.nucDirectory import nuclideBases

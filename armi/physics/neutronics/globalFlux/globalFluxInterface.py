@@ -16,13 +16,11 @@
 The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
 """
 import math
-import os
 from typing import Dict, Optional
 
 import numpy
 import scipy.integrate
 
-import armi
 from armi import runLog
 from armi import interfaces
 from armi.utils import units

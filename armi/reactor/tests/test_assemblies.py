@@ -27,7 +27,17 @@ from armi.reactor import components
 from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor.assemblies import *
+from armi.reactor.assemblies import (
+    blocks,
+    CartesianAssembly,
+    copy,
+    Flags,
+    grids,
+    HexAssembly,
+    math,
+    numpy,
+    runLog,
+)
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors

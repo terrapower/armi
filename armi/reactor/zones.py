@@ -15,9 +15,6 @@
 """
 Zones are collections of locations.
 """
-
-import math
-
 import tabulate
 
 from armi import runLog

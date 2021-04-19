@@ -16,7 +16,6 @@
 Tests for memoryProfiler
 """
 import unittest
-import math
 
 from armi.bookkeeping import memoryProfiler
 from armi.reactor.tests import test_reactors

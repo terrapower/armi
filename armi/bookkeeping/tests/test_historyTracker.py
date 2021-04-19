@@ -231,7 +231,5 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
+    # import sys;sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
     unittest.main()

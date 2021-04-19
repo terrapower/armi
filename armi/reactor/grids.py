@@ -62,7 +62,6 @@ current grid.
 """
 import itertools
 import math
-import re
 from typing import Tuple, List, Optional, Sequence, Union
 import collections
 

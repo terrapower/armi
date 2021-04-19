@@ -20,14 +20,12 @@ import unittest
 
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
-import armi
-
-from armi.materials import uZr
 
 from armi import operators
 from armi import runLog
 from armi import settings
 from armi import tests
+from armi.materials import uZr
 from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
@@ -745,7 +743,5 @@ class CartesianReactorTests(ReactorTests):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
+    # import sys;sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
     unittest.main()

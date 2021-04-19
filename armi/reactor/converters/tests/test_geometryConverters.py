@@ -330,9 +330,8 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-    import armi
-
-    armi.configure()
+    # import sys
+    # import armi
+    # armi.configure()
     # sys.argv = ["", "TestEdgeAssemblyChanger"]
     unittest.main()
