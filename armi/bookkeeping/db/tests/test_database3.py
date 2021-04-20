@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+r""" Tests for the Database3 class
+"""
+
 import unittest
 
 import numpy
@@ -20,12 +23,16 @@ import h5py
 from armi.bookkeeping.db import database3
 from armi.reactor import grids
 from armi.reactor.tests import test_reactors
-
 from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestDatabase3(unittest.TestCase):
+    r""" Tests for the Database3 class """
+
     def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
         cs = self.o.cs
 
@@ -41,6 +48,7 @@ class TestDatabase3(unittest.TestCase):
     def tearDown(self):
         self.db.close()
         self.stateRetainer.__exit__()
+        self.td.__exit__(None, None, None)
 
     def makeHistory(self):
         """
@@ -251,6 +259,7 @@ class TestDatabase3(unittest.TestCase):
         self._compareRoundTrip(dataDict)
 
     def test_mergeHistory(self):
+        # pylint: disable=protected-access
         self.makeHistory()
 
         # put some big data in an HDF5 attribute. This will exercise the code that pulls
@@ -267,7 +276,8 @@ class TestDatabase3(unittest.TestCase):
             },
         )
 
-        db2 = database3.Database3("restartDB.h5", "w")
+        db_path = "restartDB.h5"
+        db2 = database3.Database3(db_path, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -300,8 +310,33 @@ class TestDatabase3(unittest.TestCase):
             self.assertTrue("c02n00" not in newDb)
             self.assertTrue(newDb.attrs["databaseVersion"] == database3.DB_VERSION)
 
+            # validate that the min set of meta data keys exists
+            meta_data_keys = [
+                "appName",
+                "armiLocation",
+                "databaseVersion",
+                "hostname",
+                "localCommitHash",
+                "machines",
+                "platform",
+                "platformArch",
+                "platformRelease",
+                "platformVersion",
+                "pluginPaths",
+                "python",
+                "startTime",
+                "successfulCompletion",
+                "user",
+                "version",
+            ]
+            for meta_key in meta_data_keys:
+                self.assertIn(meta_key, newDb.attrs)
+                self.assertTrue(newDb.attrs[meta_key] is not None)
+
 
 class Test_LocationPacking(unittest.TestCase):
+    r"""Tests for database location"""
+
     def test_locationPacking(self):
         # pylint: disable=protected-access
         loc1 = grids.IndexLocation(1, 2, 3, None)
@@ -325,7 +360,5 @@ class Test_LocationPacking(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestDatabase3.test_splitDatabase"]
+    # import sys;sys.argv = ["", "TestDatabase3.test_splitDatabase"]
     unittest.main()
