@@ -191,7 +191,9 @@ def encode64(file_path):
             file_path
         )
     with open(file_path, "rb") as img_src:
-        return r"data:image/{};base64,{}".format(xtn, base64.b64encode(img_src.read()))
+        return r"data:image/{};base64,{}".format(
+            xtn, base64.b64encode(img_src.read()).decode()
+        )
 
 
 # ---------------------------
