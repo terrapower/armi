@@ -97,7 +97,6 @@ U235_7
 
 import os
 import pathlib
-import zlib
 
 import yaml
 

@@ -18,7 +18,6 @@ Module of utilities to help dealing with iterable objects in python
 
 from __future__ import print_function
 import struct
-import collections
 from itertools import tee, chain
 
 from builtins import object  # pylint: disable=redefined-builtin

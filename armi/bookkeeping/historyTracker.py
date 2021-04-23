@@ -784,7 +784,8 @@ class HistoryProcessor:
     Original use: computing ranges of operation for testing program
     """
 
-    def findHistoryFiles(self, path=None, title=None):
+    @staticmethod
+    def findHistoryFiles(path=None, title=None):
         r"""
         Finds a list of all history files in a directory
 
@@ -980,7 +981,8 @@ class HistoryProcessor:
 
         return validHistories, dataSets
 
-    def plotBounds(self, filteredSets, filteredBounds, assemTypes):
+    @staticmethod
+    def plotBounds(filteredSets, filteredBounds, assemTypes):
         """
         Plots an incredibly useful figure showing which assemblies have which PICT through the lifetime
 
@@ -1100,7 +1102,8 @@ class HistoryProcessor:
             print(aType)
             self.printBoundingHistories(aType, params, minMax)
 
-    def printBoundingHistories(self, aType, params, minMax):
+    @staticmethod
+    def printBoundingHistories(aType, params, minMax):
         r"""
         Prints a summary of bounding parameter values for all detail assemblies.
 
@@ -1109,7 +1112,6 @@ class HistoryProcessor:
         minMax : dict
             Keys are tracked keys, vals are (value, assembly, timestep) tuples for min and max.
         """
-
         print("Detail History Statistical Summary")
         print(
             "{key:40s} {minV:11s} {maxV:11s}"

@@ -13,11 +13,11 @@
 # limitations under the License.
 
 """Test for Zones"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import unittest
 import os
 
-import armi
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import geometry

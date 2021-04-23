@@ -222,18 +222,15 @@ class Setting:
 
     def addOption(self, option: Option):
         """Extend this Setting's options with an extra option."""
-        self.addOptions(
-            [
-                option,
-            ]
-        )
+        self.addOptions([option])
 
     def changeDefault(self, newDefault: Default):
         """Change the default of a setting, and also the current value."""
         self._default = newDefault.value
         self.value = newDefault.value
 
-    def _load(self, inputVal):
+    @staticmethod
+    def _load(inputVal):
         """
         Create setting value from input value.
 

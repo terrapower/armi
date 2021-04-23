@@ -282,7 +282,8 @@ class CaseSuite:
         for case in self:
             case.writeInputs(sourceDir=self.cs.inputDirectory)
 
-    def writeTable(self, tableResults):
+    @staticmethod
+    def writeTable(tableResults):
         """Write a table summarizing the test differences."""
         fmt = "psql"
         print(

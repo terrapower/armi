@@ -62,7 +62,6 @@ current grid.
 """
 import itertools
 import math
-import re
 from typing import Tuple, List, Optional, Sequence, Union
 import collections
 
@@ -868,18 +867,21 @@ class Grid:
             self._centroidBySteps(indices - 1) + self._centroidBySteps(indices)
         ) / 2.0
 
-    def _centroidByBounds(self, index, bounds):
+    @staticmethod
+    def _centroidByBounds(index, bounds):
         if index < 0:
             # avoid wrap-around
             raise IndexError("Bounds-defined indices may not be negative.")
         return (bounds[index + 1] + bounds[index]) / 2.0
 
-    def _meshBaseByBounds(self, index, bounds):
+    @staticmethod
+    def _meshBaseByBounds(index, bounds):
         if index < 0:
             raise IndexError("Bounds-defined indices may not be negative.")
         return bounds[index]
 
-    def getNeighboringCellIndices(self, i, j=0, k=0):
+    @staticmethod
+    def getNeighboringCellIndices(i, j=0, k=0):
         """Return the indices of the immediate neighbors of a mesh point in the plane."""
         return ((i + 1, j, k), (1, j + 1, k), (i - 1, j, k), (i, j - 1, k))
 
@@ -895,7 +897,8 @@ class Grid:
         """
         raise NotImplementedError
 
-    def getAboveAndBelowCellIndices(self, indices):
+    @staticmethod
+    def getAboveAndBelowCellIndices(indices):
         i, j, k = indices
         return ((i, j, k + 1), (i, j, k - 1))
 
@@ -1402,7 +1405,8 @@ class HexGrid(Grid):
         """
         return hexagon.numRingsToHoldNumCells(n)
 
-    def getNeighboringCellIndices(self, i, j=0, k=0):
+    @staticmethod
+    def getNeighboringCellIndices(i, j=0, k=0):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 

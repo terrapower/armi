@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module to test geometry converters."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import math
 import os
 import unittest
@@ -330,9 +331,8 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-    import armi
-
-    armi.configure()
+    # import sys
+    # import armi
+    # armi.configure()
     # sys.argv = ["", "TestEdgeAssemblyChanger"]
     unittest.main()

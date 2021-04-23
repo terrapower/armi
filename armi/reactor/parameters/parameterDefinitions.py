@@ -584,7 +584,8 @@ class ParameterBuilder:
             return
         self._entered = False
 
-    def _assertDefaultIsProperType(self, default):
+    @staticmethod
+    def _assertDefaultIsProperType(default):
         if default in (NoDefault, None) or isinstance(
             default, (int, str, float, bool, Flags)
         ):

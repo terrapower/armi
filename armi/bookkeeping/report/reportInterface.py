@@ -18,7 +18,6 @@ to show in PDF form to others this is the place to do it.
 """
 import re
 
-import armi
 from armi import runLog
 from armi import interfaces
 from armi.utils import directoryChangers

@@ -23,7 +23,6 @@ Hexagons are fundamental to advanced reactors.
 """
 
 import math
-import itertools
 
 import numpy
 

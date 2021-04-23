@@ -611,7 +611,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self.convertedBlock.add(circularHexagon)
             innerDiameter = outerDiam
 
-    def _addSolidMaterialRing(self, baseComponent, innerDiameter, outDiameter, name):
+    @staticmethod
+    def _addSolidMaterialRing(baseComponent, innerDiameter, outDiameter, name):
         circle = components.Circle(
             name,
             baseComponent.material,

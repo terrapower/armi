@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-
+r""" Testing some utility functions
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 import math
 
@@ -26,12 +26,6 @@ import armi.utils as utils
 
 
 class Utils_TestCase(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def test_parabola(self):
         # test the parabola function
         a, b, c = utils.parabolaFromPoints((0, 1), (1, 2), (-1, 2))

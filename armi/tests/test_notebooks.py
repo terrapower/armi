@@ -13,7 +13,6 @@ import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 
 from armi.tests import TEST_ROOT
-import armi
 
 TUTORIALS = os.path.join(TEST_ROOT, "tutorials")
 

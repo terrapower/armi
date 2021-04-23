@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for grids."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 import math
 from io import BytesIO
@@ -591,7 +592,5 @@ class TestCartesianGrid(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestHexGrid.testPositions"]
+    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
     unittest.main()

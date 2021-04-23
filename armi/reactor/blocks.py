@@ -23,7 +23,6 @@ Blocks are made of components.
 import math
 import copy
 import collections
-import os
 from typing import Optional, Type, Tuple, ClassVar
 
 import matplotlib.pyplot as plt

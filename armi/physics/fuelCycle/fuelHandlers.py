@@ -498,7 +498,8 @@ class FuelHandler:
 
         runLog.info("Rotated {0} assemblies".format(numRotated))
 
-    def getOptimalAssemblyOrientation(self, a, aPrev):
+    @staticmethod
+    def getOptimalAssemblyOrientation(a, aPrev):
         """
         Get optimal assembly orientation/rotation to minimize peak burnup.
 
@@ -1545,7 +1546,8 @@ class FuelHandler:
 
         return moved
 
-    def readMoves(self, fname):
+    @staticmethod
+    def readMoves(fname):
         r"""
         reads a shuffle output file and sets up the moves dictionary
 

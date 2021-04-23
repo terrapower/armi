@@ -17,6 +17,7 @@ Test the cross section manager
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import unittest
 import copy
