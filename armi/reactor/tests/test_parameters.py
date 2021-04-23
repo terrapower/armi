@@ -23,7 +23,7 @@ from armi.localization import exceptions
 from armi.reactor import composites
 
 
-class MockComposite(object):
+class MockComposite:
     def __init__(self, name):
         self.name = name
         self.p = {}
@@ -382,7 +382,7 @@ def makeComp(name):
     return c
 
 
-class SynchronizationTests(object):
+class SynchronizationTests:
     """Some unit tests that must be run with mpirun instead of the standard unittest system."""
 
     def setUp(self):
@@ -424,7 +424,7 @@ class SynchronizationTests(object):
         self.l.flush()
 
     def assertRaises(self, exceptionType):
-        class ExceptionCatcher(object):
+        class ExceptionCatcher:
             def __enter__(self):
                 pass
 

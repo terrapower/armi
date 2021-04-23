@@ -33,7 +33,7 @@ from armi.nucDirectory.elements import LANTHANIDE_ELEMENTS, GASEOUS_ELEMENTS
 from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH
 
 
-class LumpedFissionProduct(object):
+class LumpedFissionProduct:
     r"""
     Lumped fission product.
 
@@ -472,7 +472,7 @@ class SingleLumpedFissionProductCollection(LumpedFissionProductCollection):
         )
 
 
-class FissionProductDefinitionFile(object):
+class FissionProductDefinitionFile:
     """
     Reads a file that has definitions of one or more LFPs in it to produce LFPs
 

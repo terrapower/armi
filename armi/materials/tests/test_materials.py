@@ -24,7 +24,7 @@ from armi.utils import units
 from armi.nucDirectory import nuclideBases
 
 
-class _Material_Test(object):
+class _Material_Test:
     """Base for all specific material test cases."""
 
     MAT_CLASS = None

@@ -260,7 +260,7 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
     return neutronVelocities
 
 
-class _XSLibrary(object):
+class _XSLibrary:
     """Parent class for Isotxs and Compxs library objects."""
 
     neutronEnergyUpperBounds = properties.createImmutableProperty(

@@ -23,7 +23,7 @@ from armi import runLog
 TEMPLATE_DATA = os.path.join(armi.RES, "config")
 
 
-class ConfigHandler(object):  # pylint: disable=missing-docstring
+class ConfigHandler:  # pylint: disable=missing-docstring
     def __init__(self):  # pass in RES to avoid circular import
         """
         Exposes the contents of the config files in the TEMPLATE_DATA location to pythonic access
@@ -180,7 +180,7 @@ class ConfigHandler(object):  # pylint: disable=missing-docstring
         setattr(self, cleaned_filename, _ExposedFile(filename, cleaned_filename, cfg))
 
 
-class _ExposedFile(object):  # pylint: disable=too-few-public-methods
+class _ExposedFile:  # pylint: disable=too-few-public-methods
     def __init__(self, fname, name, cfg):
         self.fname = fname
         self.name = name

@@ -569,7 +569,7 @@ class HexReactorTests(ReactorTests):
 
     def test_saveAllFlux(self):
         # need a lightweight library to indicate number of groups.
-        class MockLib(object):
+        class MockLib:
             numGroups = 5
 
         self.r.core.lib = MockLib()
@@ -580,7 +580,7 @@ class HexReactorTests(ReactorTests):
         os.remove("allFlux.txt")
 
     def test_getFluxVector(self):
-        class MockLib(object):
+        class MockLib:
             numGroups = 5
 
         self.r.core.lib = MockLib()

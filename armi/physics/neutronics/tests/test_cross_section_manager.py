@@ -355,13 +355,13 @@ class TestXSNumberConverters(unittest.TestCase):
         self.assertEqual(num, 9090)
 
 
-class MockReactor(object):
+class MockReactor:
     def __init__(self):
         self.blueprints = MockBlueprints()
         self.spatialGrid = None
 
 
-class MockBlueprints(object):
+class MockBlueprints:
     # this is only needed for allNuclidesInProblem and attributes were acting funky, so this was made.
     def __getattribute__(self, *args, **kwargs):
         return ["U235", "U235", "FE", "NA23"]

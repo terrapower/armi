@@ -67,7 +67,7 @@ def createImmutableProperty(name, dependencyAction, doc):
     --------
     The following example is esentially exactly how this should be used.
 
-    >>> class SomeClass(object):
+    >>> class SomeClass:
     ...     myNum = createImmutableProperty('myNum', 'You must invoke the initialize() method', 'My random number')
     ...     def initialize(self, val):
     ...         unlockImmutableProperties(self)

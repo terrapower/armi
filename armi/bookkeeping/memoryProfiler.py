@@ -345,7 +345,7 @@ class MemoryProfiler(interfaces.Interface):
         )
 
 
-class KlassCounter(object):
+class KlassCounter:
     def __init__(self, reportSize):
         self.counters = dict()
         self.reportSize = reportSize
@@ -387,7 +387,7 @@ class KlassCounter(object):
                     self.countObjects(v)
 
 
-class InstanceCounter(object):
+class InstanceCounter:
     def __init__(self, classType, reportSize):
         self.classType = classType
         self.count = 0
@@ -435,7 +435,7 @@ def _getModName(obj):
         return None
 
 
-class ObjectSizeBreakdown(object):
+class ObjectSizeBreakdown:
     def __init__(
         self,
         name,
@@ -511,7 +511,7 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
         mem.displayMemoryUsage(self.timeDescription)
 
 
-class SystemAndProcessMemoryUsage(object):
+class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = armi.MPI_NODENAME
         # no psutil, no memory diagnostics. TODO: Ideally, we could just cut

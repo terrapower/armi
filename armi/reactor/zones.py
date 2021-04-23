@@ -29,7 +29,7 @@ from armi.utils import hexagon
 from armi.settings.fwSettings import globalSettings
 
 
-class Zone(object):
+class Zone:
     """
     A group of locations labels useful for choosing where to shuffle from or where to compute
     reactivity coefficients.
@@ -125,7 +125,7 @@ class Zone(object):
                 self.append(newLoc)
 
 
-class Zones(object):
+class Zones:
     """Collection of Zone objects."""
 
     def __init__(self, core, cs):

@@ -37,7 +37,7 @@ REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF = [
 ]
 
 
-class _Metadata(object):
+class _Metadata:
     """Simple dictionary wrapper, that returns :code:`None` if the key does not exist.
 
     Notes

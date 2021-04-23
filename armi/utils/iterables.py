@@ -135,7 +135,7 @@ def packHexStrings(valueDict):
 # -------------------------------
 
 
-class Overlap(object):
+class Overlap:
     """common list overlap comparison"""
 
     def __init__(self, src, ref):
@@ -156,7 +156,7 @@ class Overlap(object):
         )
 
 
-class Sequence(object):
+class Sequence:
     """
     The Sequence class partially implements a list-like interface,
     supporting methods like append and extend and also operations like + and +=.

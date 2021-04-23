@@ -46,7 +46,7 @@ LANTHANIDE_ELEMENTS = [
 GASEOUS_ELEMENTS = ["XE", "KR"]
 
 
-class Element(object):
+class Element:
     r"""
     Represents an element, defined by its atomic number.
 

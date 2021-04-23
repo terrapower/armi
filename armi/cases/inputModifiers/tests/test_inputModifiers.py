@@ -17,7 +17,7 @@ from armi.cases.inputModifiers import (
 from armi.reactor.tests import test_reactors
 
 
-class MockGeom(object):
+class MockGeom:
     geomType = "hex"
 
 

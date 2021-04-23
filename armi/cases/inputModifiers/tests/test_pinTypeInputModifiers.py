@@ -9,7 +9,7 @@ from armi import settings
 from armi.reactor import blueprints
 
 
-class MockGeom(object):
+class MockGeom:
     geomType = "hex"
 
 

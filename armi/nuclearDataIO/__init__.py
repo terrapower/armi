@@ -294,7 +294,7 @@ class VARSRC(NHFLUX):
         return pnOrder * (pnOrder + 1) / 2
 
 
-class MacroXS(object):
+class MacroXS:
     """
     Basic macroscopic XS library.
 

@@ -24,7 +24,7 @@ import armi
 from armi import settings
 
 
-class HTMLFile(object):
+class HTMLFile:
     def __init__(self, *args, **kwds):
         self.args = args
         self.kwds = kwds
@@ -44,7 +44,7 @@ class HTMLFile(object):
         self._file.write(html.escape(str(value)))
 
 
-class Tag(object):
+class Tag:
     tag = NotImplementedError
 
     def __init__(self, f, attrs=None):
