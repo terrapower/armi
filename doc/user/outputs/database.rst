@@ -117,42 +117,42 @@ documentation of the database modules.
 
        Also, it is important to note that all components are flattened and then grouped
        by type.
-   * - ``/c{CC}n{NN}/hierarchy/``
+   * - ``/c{CC}n{NN}/layout/``
      - H5Group
      - A group that contains  a description of the ARMI model within this timenode
-   * - ``/c{CC}n{NN}/hierarchy/name``
+   * - ``/c{CC}n{NN}/layout/name``
      - list of strings
      - ``comp.name``
-   * - ``/c{CC}n{NN}/hierarchy/type``
+   * - ``/c{CC}n{NN}/layout/type``
      - list of strings
      - ``type(comp).__name__`` -- The name of the component type. We can use this to
        construct a new object when reading. You could also use it to filter down to data
        that you care about using hdf5 directly.
-   * - ``/c{CC}n{NN}/hierarchy/serialNum``
+   * - ``/c{CC}n{NN}/layout/serialNum``
      - list of int
      - ``comp.p.serialNum`` -- Serial number of the component. This number is unique
        within a component type.
-   * - ``/c{CC}n{NN}/hierarchy/location``
+   * - ``/c{CC}n{NN}/layout/location``
      - list of 3-tuple floats
      - ``tuple(comp.spatialLocator) or (0, 0, 0)`` -- Gives the location indices for a
        given component. Note these are relative, so there are duplicates.
-   * - ``/c{CC}n{NN}/hierarchy/locationType``
+   * - ``/c{CC}n{NN}/layout/locationType``
      - list of strings
      - ``type(comp.spatialLocator).__name__ or "None"`` -- The type name of the
        location.
-   * - ``/c{CC}n{NN}/hierarchy/indexInData``
+   * - ``/c{CC}n{NN}/layout/indexInData``
      - list of int
      - The components are grouped by ``type(comp).__name__``. The integers are a mapping
        between the component and its index in the ``/c{CC}n{NN}/{COMP_TYPE}/`` group.
-   * - ``/c{CC}n{NN}/hierarchy/numChildren``
+   * - ``/c{CC}n{NN}/layout/numChildren``
      - list of int
      - ``len(comp)`` -- The number of direct child composites this composite has.
        Notably, this is not a summation of all the children.
-   * - ``/c{CC}n{NN}/hierarchy/temperatures``
+   * - ``/c{CC}n{NN}/layout/temperatures``
      - list of 2-tuple floats
      - ``(comp.InputTemperatureInC, comp.TemperatureInC) or (-900, -900)`` --
        Temperatures in for Component objects.
-   * - ``/c{CC}n{NN}/hierarchy/material``
+   * - ``/c{CC}n{NN}/layout/material``
      - list of string
      - ``type(comp.material).__name__ or ""`` -- Name of the associated material for an
        Component.
@@ -165,7 +165,7 @@ documentation of the database modules.
    * - ``/c{CC}n{NN}/{COMP_TYPE}/{PARAMETER}``
      - list of inferred data
      - Values for all parameters for a specific component type, in the order defined by
-       the ``/c{CC}n{NN}/hierarchy/``. See the next table to see a description of the
+       the ``/c{CC}n{NN}/layout/``. See the next table to see a description of the
        attributes.
 
 

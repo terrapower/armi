@@ -77,7 +77,7 @@ def getMasterTimer():
     return MasterTimer.getMasterTimer()
 
 
-class MasterTimer(object):
+class MasterTimer:
 
     _instance = None
 
@@ -313,7 +313,7 @@ class MasterTimer(object):
         return os.path.join(os.getcwd(), filename)
 
 
-class _Timer(object):
+class _Timer:
     r"""Code timer to call at various points to measure performance
 
     see MasterTimer.getTimer() for construction

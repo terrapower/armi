@@ -404,7 +404,8 @@ class SettingsWriter:
         if style not in {self.Styles.short, self.Styles.full}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
 
-    def _getVersion(self):
+    @staticmethod
+    def _getVersion():
         tag, attrib = Roots.CUSTOM, {Roots.VERSION: armi.__version__}
         return tag, attrib
 

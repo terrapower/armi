@@ -51,12 +51,15 @@ armi.reactor.geometry : a specific usage of lattices, for core maps
 """
 import re
 
+from typing import Union
+
 from armi import runLog
+from armi.reactor import geometry
 
 PLACEHOLDER = "-"
 
 
-class AsciiMap(object):
+class AsciiMap:
     """
     Base class for maps.
 
@@ -208,7 +211,8 @@ class AsciiMap(object):
         self._updateSlotSizeFromData()
         self._makeOffsets()
 
-    def _removeTrailingPlaceholders(self, line):
+    @staticmethod
+    def _removeTrailingPlaceholders(line):
         newLine = []
         noDataYet = True
         for col in reversed(line):
@@ -485,21 +489,32 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         self._ijMax = (self._asciiMaxCol - 1) // 2
 
 
-def asciiMapFromGeomAndSym(geomType: str, symmetry: str):
-    """Get a ascii map class from a geometry type."""
+def asciiMapFromGeomAndSym(
+    geomType: Union[str, geometry.GeomType], symmetry: Union[str, geometry.SymmetryType]
+) -> "AsciiMap":
+    """Get a ascii map class from a geometry and symmetry type."""
     from armi.reactor import geometry
 
-    symmetry = symmetry.replace(geometry.PERIODIC, "")
-    symmetry = symmetry.replace(geometry.REFLECTIVE, "")
-    symmetry = symmetry.replace(geometry.THROUGH_CENTER_ASSEMBLY, "")
+    if str(geomType) == geometry.HEX_CORNERS_UP and geometry.FULL_CORE in str(symmetry):
+        return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
-        (geometry.HEX, geometry.THIRD_CORE): AsciiMapHexThirdFlatsUp,
-        (geometry.HEX, geometry.FULL_CORE): AsciiMapHexFullFlatsUp,
-        (geometry.HEX_CORNERS_UP, geometry.FULL_CORE): AsciiMapHexFullTipsUp,
-        (geometry.CARTESIAN, None): AsciiMapCartesian,
-        (geometry.CARTESIAN, geometry.FULL_CORE): AsciiMapCartesian,
-        (geometry.CARTESIAN, geometry.QUARTER_CORE): AsciiMapCartesian,
+        (
+            geometry.GeomType.HEX,
+            geometry.DomainType.THIRD_CORE,
+        ): AsciiMapHexThirdFlatsUp,
+        (geometry.GeomType.HEX, geometry.DomainType.FULL_CORE): AsciiMapHexFullFlatsUp,
+        (geometry.GeomType.CARTESIAN, None): AsciiMapCartesian,
+        (geometry.GeomType.CARTESIAN, geometry.DomainType.FULL_CORE): AsciiMapCartesian,
+        (
+            geometry.GeomType.CARTESIAN,
+            geometry.DomainType.QUARTER_CORE,
+        ): AsciiMapCartesian,
     }
 
-    return MAP_FROM_GEOM[(geomType, symmetry)]
+    return MAP_FROM_GEOM[
+        (
+            geometry.GeomType.fromAny(geomType),
+            geometry.SymmetryType.fromAny(symmetry).domain,
+        )
+    ]

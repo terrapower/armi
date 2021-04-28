@@ -17,7 +17,6 @@ Search through a directory tree and modify ARMI settings in existing input
 file(s). All valid settings may be used as keyword arguments.
 """
 
-import armi
 from armi import operators
 from armi import runLog
 from armi import settings

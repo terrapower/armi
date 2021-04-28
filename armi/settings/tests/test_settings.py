@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for new settings system with plugin import"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 import io
 import copy

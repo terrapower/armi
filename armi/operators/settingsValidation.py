@@ -22,6 +22,7 @@ is impossible. Would you like to switch to ___?"
 
 """
 import os
+from typing import Union
 
 import armi
 from armi import runLog
@@ -595,7 +596,7 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and self.geomType not in geometry.VALID_GEOMETRY_TYPE,
+            and str(self.geomType) not in geometry.VALID_GEOMETRY_TYPE,
             "{} is not a valid geometry Please update geom type on the geom file. "
             "Valid (case insensitive) geom types are: {}".format(
                 self.geomType, geometry.VALID_GEOMETRY_TYPE
@@ -606,10 +607,12 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and self.coreSymmetry not in geometry.VALID_SYMMETRY,
-            "{} is not a valid symmetry Please update symmetry on the geom file. "
-            "Valid (case insensitive) symmetries are: {}".format(
-                self.coreSymmetry, geometry.VALID_SYMMETRY
+            and not geometry.checkValidGeomSymmetryCombo(
+                self.geomType, self.coreSymmetry
+            ),
+            "{}, {} is not a valid geometry and symmetry combination. Please update "
+            "either geometry or symmetry on the geom file.".format(
+                str(self.geomType), str(self.coreSymmetry)
             ),
             "",
             self.NO_ACTION,

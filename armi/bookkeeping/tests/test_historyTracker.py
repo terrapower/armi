@@ -76,7 +76,7 @@ class TestHistoryTracker(ArmiTestHelper):
         reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         reloadCs["runType"] = "Snapshots"
         reloadCs["loadStyle"] = "fromDB"
-        reloadCs["detailAssemLocationsBOL"] = ["A1001"]
+        reloadCs["detailAssemLocationsBOL"] = ["001-001"]
         o = armi.init(cs=reloadCs)
         cls.o = o
 
@@ -89,7 +89,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cs["db"] = True
         cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         cs["loadStyle"] = "fromDB"
-        cs["detailAssemLocationsBOL"] = ["A1001"]
+        cs["detailAssemLocationsBOL"] = ["001-001"]
         cs["startNode"] = 1
 
         self.td = directoryChangers.TemporaryDirectoryChanger()
@@ -142,6 +142,9 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNode(ts, self.o.cs)
+            # get coverage for getTimeStepNum by checking against getcycleNode
+            testTS = utils.getTimeStepNum(cycle, node, self.o.cs)
+            self.assertEqual(ts, testTS)
             mgFlux = (
                 hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             )  #  b.p.mgFlux is vol integrated
@@ -228,7 +231,5 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
+    # import sys;sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
     unittest.main()

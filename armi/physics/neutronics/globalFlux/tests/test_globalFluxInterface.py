@@ -167,7 +167,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertGreater(block.p.detailedDpa, 0)
 
         mapper.clearFlux()
-        self.assertFalse(block.p.mgFlux)
+        self.assertTrue(len(block.p.mgFlux) == 0)
 
 
 class TestGlobalFluxUtils(unittest.TestCase):

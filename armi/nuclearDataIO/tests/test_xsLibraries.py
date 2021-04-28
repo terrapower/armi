@@ -177,7 +177,7 @@ def createTestXSLibraryFiles(cachePath):
         shutil.move("ISOTXS.merged", GAMISO_LUMPED)
 
 
-class TempFileMixin(object):  # really a test case...
+class TempFileMixin:  # really a test case...
     @property
     def testFileName(self):
         return os.path.join(

@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+r""" Tests of the Database Interface 
+"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
-import collections
 import os
 import unittest
 import types
@@ -394,7 +396,5 @@ class TestStandardFollowOn(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
+    # import sys;sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
     unittest.main()

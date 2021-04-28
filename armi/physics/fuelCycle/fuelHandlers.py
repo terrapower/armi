@@ -66,12 +66,14 @@ class FuelHandlerInterface(interfaces.Interface):
 
     @staticmethod
     def specifyInputs(cs):
-        files = [
-            cs[label]
+        files = {
+            cs.settings[label]: [
+                cs[label],
+            ]
             for label in ["shuffleLogic", "explicitRepeatShuffles"]
             if cs[label]
-        ]
-        return {"fuel management": files}
+        }
+        return files
 
     def interactBOC(self, cycle=None):
         """
@@ -496,7 +498,8 @@ class FuelHandler:
 
         runLog.info("Rotated {0} assemblies".format(numRotated))
 
-    def getOptimalAssemblyOrientation(self, a, aPrev):
+    @staticmethod
+    def getOptimalAssemblyOrientation(a, aPrev):
         """
         Get optimal assembly orientation/rotation to minimize peak burnup.
 
@@ -1543,7 +1546,8 @@ class FuelHandler:
 
         return moved
 
-    def readMoves(self, fname):
+    @staticmethod
+    def readMoves(fname):
         r"""
         reads a shuffle output file and sets up the moves dictionary
 
@@ -1590,7 +1594,7 @@ class FuelHandler:
             elif "assembly" in line:
                 # this is the new load style where an actual assembly type is written to the shuffle logic
                 # due to legacy reasons, the assembly type will be put into group 4
-                pat = r"([A-Za-z0-9!]+) moved to ([A-Za-z0-9!]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                pat = r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
                 m = re.search(pat, line)
                 if not m:
                     raise InputError(

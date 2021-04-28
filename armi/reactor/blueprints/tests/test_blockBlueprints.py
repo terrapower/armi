@@ -174,6 +174,14 @@ class TestGriddedBlock(unittest.TestCase):
                 seen = True
         self.assertTrue(seen)
 
+    def test_nonLatticeComponentHasRightMult(self):
+        """Make sure non-grid components in blocks with grids get the right multiplicity"""
+        aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
+        a = aDesign.construct(self.cs, self.blueprints)
+        fuelBlock = a.getFirstBlock(Flags.FUEL)
+        duct = fuelBlock.getComponent(Flags.DUCT)
+        self.assertEqual(duct.getDimension("mult"), 1.0)
+
     def test_explicitFlags(self):
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints

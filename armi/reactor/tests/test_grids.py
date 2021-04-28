@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for grids."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 import math
 from io import BytesIO
@@ -22,7 +23,7 @@ from six.moves import cPickle
 
 from armi.reactor import grids
 from armi.reactor import geometry
-from numpy.testing.utils import assert_allclose
+from numpy.testing import assert_allclose
 
 
 class MockLocator(grids.IndexLocation):
@@ -158,7 +159,7 @@ class TestGrid(unittest.TestCase):
 
     def testLabel(self):
         grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
-        self.assertEqual(grid.getLabel((1, 1, 2)), "A1001C")
+        self.assertEqual(grid.getLabel((1, 1, 2)), "001-001-002")
 
     def test_isAxialOnly(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
@@ -176,6 +177,20 @@ class TestGrid(unittest.TestCase):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
+
+    def test_getitem(self):
+        """
+        Test that locations are created on demand, and the multi-index locations are
+        returned when necessary.
+        """
+        grid = grids.HexGrid.fromPitch(1.0, numRings=0)
+        self.assertNotIn((0, 0, 0), grid._locations)
+        loc = grid[0, 0, 0]
+        self.assertIn((0, 0, 0), grid._locations)
+
+        multiLoc = grid[[(0, 0, 0), (1, 0, 0), (0, 1, 0)]]
+        self.assertIsInstance(multiLoc, grids.MultiIndexLocation)
+        self.assertIn((1, 0, 0), grid._locations)
 
 
 class TestHexGrid(unittest.TestCase):
@@ -232,8 +247,13 @@ class TestHexGrid(unittest.TestCase):
     def testLabel(self):
         grid = grids.HexGrid.fromPitch(1.0)
         indices = grid.getIndicesFromRingAndPos(12, 5)
-        self.assertEqual(grid.getLabel(indices), "B2005")
-        self.assertEqual(grid.getLabel(indices + (5,)), "B2005F")
+        label1 = grid.getLabel(indices)
+        self.assertEqual(label1, "012-005")
+        self.assertEqual(grids.locatorLabelToIndices(label1), (12, 5, None))
+
+        label2 = grid.getLabel(indices + (5,))
+        self.assertEqual(label2, "012-005-005")
+        self.assertEqual(grids.locatorLabelToIndices(label2), (12, 5, 5))
 
     def test_overlapsWhichSymmetryLine(self):
         grid = grids.HexGrid.fromPitch(1.0)
@@ -252,7 +272,11 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getSymmetricIdenticalsThird(self):
         grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        grid.symmetry = str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        )
         self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
         self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
@@ -454,7 +478,13 @@ class TestCartesianGrid(unittest.TestCase):
     def testSymmetry(self):
         # PERIODIC, no split
         grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.QUARTER_CORE + geometry.PERIODIC
+            1.0,
+            1.0,
+            symmetry=str(
+                geometry.SymmetryType(
+                    geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.PERIODIC
+                )
+            ),
         )
 
         expected = {
@@ -475,9 +505,11 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry.QUARTER_CORE
-            + geometry.PERIODIC
-            + geometry.THROUGH_CENTER_ASSEMBLY,
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.QUARTER_CORE,
+                geometry.BoundaryType.PERIODIC,
+                throughCenterAssembly=True,
+            ),
         )
 
         expected = {
@@ -496,7 +528,11 @@ class TestCartesianGrid(unittest.TestCase):
 
         # REFLECTIVE, no split
         grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.QUARTER_CORE + geometry.REFLECTIVE
+            1.0,
+            1.0,
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
+            ),
         )
 
         expected = {
@@ -514,9 +550,11 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry.QUARTER_CORE
-            + geometry.REFLECTIVE
-            + geometry.THROUGH_CENTER_ASSEMBLY,
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.QUARTER_CORE,
+                geometry.BoundaryType.REFLECTIVE,
+                throughCenterAssembly=True,
+            ),
         )
 
         expected = {
@@ -533,19 +571,26 @@ class TestCartesianGrid(unittest.TestCase):
             self.assertEqual(expectedEq, equivalents)
 
         # Full core
-        grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, symmetry=geometry.FULL_CORE)
+        grid = grids.CartesianGrid.fromRectangle(
+            1.0,
+            1.0,
+            symmetry=geometry.FULL_CORE,
+        )
         self.assertEqual(grid.getSymmetricEquivalents((5, 6)), [])
 
         # 1/8 core not supported yet
         grid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, symmetry=geometry.EIGHTH_CORE
+            1.0,
+            1.0,
+            symmetry=geometry.SymmetryType(
+                geometry.DomainType.EIGHTH_CORE,
+                geometry.BoundaryType.REFLECTIVE,
+            ),
         )
         with self.assertRaises(NotImplementedError):
             grid.getSymmetricEquivalents((5, 6))
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestHexGrid.testPositions"]
+    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
     unittest.main()

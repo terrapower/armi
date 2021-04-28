@@ -33,7 +33,7 @@ from armi.nucDirectory.elements import LANTHANIDE_ELEMENTS, GASEOUS_ELEMENTS
 from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH
 
 
-class LumpedFissionProduct(object):
+class LumpedFissionProduct:
     r"""
     Lumped fission product.
 
@@ -147,7 +147,7 @@ class LumpedFissionProduct(object):
 
     def getMassFracs(self):
         """
-        Return a dictionary of mass fractions indexed by nuclide names.
+        Return a dictionary of mass fractions indexed by nuclide.
 
         Returns
         -------
@@ -162,18 +162,18 @@ class LumpedFissionProduct(object):
 
     def getNumberFracs(self):
         """
-        Return a dictionary of number fractions indexed by nuclide names.
+        Return a dictionary of number fractions indexed by nuclide.
 
         Returns
         -------
         numberFracs : dict
-            number fractions (floats) of fission products indexed by nuclide names (e.g. 'XE135')
+            number fractions (floats) of fission products indexed by nuclide.
         """
 
         numberFracs = {}
         totalNumber = sum(self.yld.values())
-        for nucName, yld in self.yld.items():
-            numberFracs[nucName] = yld / totalNumber
+        for nuc, yld in self.yld.items():
+            numberFracs[nuc] = yld / totalNumber
         return numberFracs
 
     def getMassFrac(
@@ -259,10 +259,8 @@ class LumpedFissionProduct(object):
 
     def printDensities(self, lfpDens):
         """Print densities of nuclides given a LFP density. """
-        nucs = self.keys()
-        nucs.sort()
-        for n in nucs:
-            runLog.info("{0:6s} {1:.7E}".format(n, lfpDens * self[n]))
+        for n in sorted(self.keys()):
+            runLog.info("{0:6s} {1:.7E}".format(n.name, lfpDens * self[n]))
 
 
 class LumpedFissionProductCollection(dict):
@@ -349,7 +347,7 @@ class LumpedFissionProductCollection(dict):
 
         for lfpName, lfp in self.items():
             lfpMFrac = oldMassFrac[lfpName]
-            for nuc, mFrac in lfp.getMassFracs():
+            for nuc, mFrac in lfp.getMassFracs().items():
                 try:
                     massFrac[nuc] += lfpMFrac * mFrac
                 except KeyError:
@@ -474,7 +472,7 @@ class SingleLumpedFissionProductCollection(LumpedFissionProductCollection):
         )
 
 
-class FissionProductDefinitionFile(object):
+class FissionProductDefinitionFile:
     """
     Reads a file that has definitions of one or more LFPs in it to produce LFPs
 

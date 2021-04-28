@@ -34,7 +34,7 @@ from armi.nuclearDataIO import nuclearFileMetadata
 ALLOWED_NUCLIDE_CONTRIBUTION_ERROR = 1e-5
 
 
-class DelayedNeutronData(object):
+class DelayedNeutronData:
     """
     Container of information about delayed neutron precursors.
 

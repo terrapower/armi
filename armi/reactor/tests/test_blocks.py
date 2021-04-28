@@ -13,6 +13,7 @@
 # limitations under the License.
 
 r"""Tests blocks.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import math
 import os
@@ -38,6 +39,8 @@ from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import geometry
+from armi.physics.neutronics import NEUTRON
+from armi.physics.neutronics import GAMMA
 
 
 def buildSimpleFuelBlock():
@@ -745,7 +748,7 @@ class Block_TestCase(unittest.TestCase):
         # a bit obvious, but location is a property now...
         i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
-        self.assertEqual(b.getLocation(), "A2003A")
+        self.assertEqual(b.getLocation(), "002-003-000")
         self.assertEqual(0, b.spatialLocator.k)
         self.assertEqual(b.getSymmetryFactor(), 1.0)
 
@@ -758,9 +761,14 @@ class Block_TestCase(unittest.TestCase):
         # center blocks have a different symmetry factor for 1/3rd core
         for symmetry, powerMult in (
             (geometry.FULL_CORE, 1),
-            (geometry.THIRD_CORE + geometry.PERIODIC, 3),
+            (
+                geometry.SymmetryType(
+                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+                ),
+                3,
+            ),
         ):
-            self.r.core.symmetry = symmetry
+            self.r.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)
@@ -1174,6 +1182,36 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
+    def test_setPinPowers(self):
+
+        numPins = self.Block.getNumPins()
+        neutronPower = [10.0 * i for i in range(numPins)]
+        gammaPower = [1.0 * i for i in range(numPins)]
+        totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
+        imax = 9  # hexagonal rings of pins
+        jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
+        self.Block.setPinPowers(
+            neutronPower,
+            numPins,
+            imax,
+            jmax,
+            gamma=False,
+            removeSixCornerPins=False,
+            powerKeySuffix=NEUTRON,
+        )
+        self.Block.setPinPowers(
+            gammaPower,
+            numPins,
+            imax,
+            jmax,
+            gamma=True,
+            removeSixCornerPins=False,
+            powerKeySuffix=GAMMA,
+        )
+        assert_allclose(self.Block.p.pinPowersNeutron, numpy.array(neutronPower))
+        assert_allclose(self.Block.p.pinPowersGamma, numpy.array(gammaPower))
+        assert_allclose(self.Block.p.pinPowers, numpy.array(totalPower))
+
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
             tFrac = 0.0
@@ -1441,17 +1479,6 @@ class Block_TestCase(unittest.TestCase):
         self.Block.breakFuelComponentsIntoIndividuals()
         self.assertEqual(fuel.getDimension("mult"), 1.0)
 
-    def test_plotFlux(self):
-        try:
-            xslib = isotxs.readBinary(ISOAA_PATH)
-            self.Block.r.core.lib = xslib
-            self.Block.p.mgFlux = range(33)
-            self.Block.plotFlux(self.Block.r.core, fName="flux.png", bList=[self.Block])
-            self.assertTrue(os.path.exists("flux.png"))
-        finally:
-            os.remove("flux.txt")  # secondarily created during the call.
-            os.remove("flux.png")  # created during the call.
-
     def test_pinMgFluxes(self):
         """
         Test setting/getting of pin-wise fluxes.
@@ -1566,6 +1593,9 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(v0 / 3.0, self.HexBlock.getVolume())
         self.assertAlmostEqual(m0 / 3.0, self.HexBlock.getMass())
 
+        symmetryLine = self.HexBlock.isOnWhichSymmetryLine()
+        self.assertEqual(grids.BOUNDARY_CENTER, symmetryLine)
+
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""
         self.HexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
@@ -1657,6 +1687,128 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(desiredPitch, hexBlock.getPitch())
         self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
+
+    def test_getDuctPitch(self):
+        ductIP = self.HexBlock.getDuctIP()
+        self.assertAlmostEqual(70.0, ductIP)
+        ductOP = self.HexBlock.getDuctOP()
+        self.assertAlmostEqual(70.6, ductOP)
+
+    def test_getPinCenterFlatToFlat(self):
+        nRings = hexagon.numRingsToHoldNumCells(self.HexBlock.getNumPins())
+        pinPitch = self.HexBlock.getPinPitch()
+        pinCenterCornerToCorner = 2 * (nRings - 1) * pinPitch
+        pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
+        f2f = self.HexBlock.getPinCenterFlatToFlat()
+        self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
+
+
+class ThRZBlock_TestCase(unittest.TestCase):
+    def setUp(self):
+        caseSetting = settings.Settings()
+        self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "fuel",
+                "UZr",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=0.0,
+                radius_differential=40.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "coolant",
+                "Sodium",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=40.0,
+                radius_differential=10.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "clad",
+                "HT9",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=50.0,
+                radius_differential=7.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "wire",
+                "HT9",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=57.0,
+                radius_differential=3.0,
+                inner_theta=0.0,
+                azimuthal_differential=1.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+        # random 1/4 chunk taken out to exercise Theta-RZ block capabilities
+        self.ThRZBlock.add(
+            components.DifferentialRadialSegment(
+                "chunk",
+                "Sodium",
+                Tinput=273.0,
+                Thot=273.0,
+                inner_radius=0.0,
+                radius_differential=60.0,
+                inner_theta=1.5 * math.pi,
+                azimuthal_differential=0.5 * math.pi,
+                inner_axial=5.0,
+                height=10.0,
+                mult=1.0,
+            )
+        )
+
+    def test_radii(self):
+        radialInner = self.ThRZBlock.radialInner()
+        self.assertEqual(0.0, radialInner)
+        radialOuter = self.ThRZBlock.radialOuter()
+        self.assertEqual(60.0, radialOuter)
+
+    def test_theta(self):
+        thetaInner = self.ThRZBlock.thetaInner()
+        self.assertEqual(0.0, thetaInner)
+        thetaOuter = self.ThRZBlock.thetaOuter()
+        self.assertEqual(2.0 * math.pi, thetaOuter)
+
+    def test_axial(self):
+        axialInner = self.ThRZBlock.axialInner()
+        self.assertEqual({5.0}, axialInner)
+        axialOuter = self.ThRZBlock.axialOuter()
+        self.assertEqual({15.0}, axialOuter)
+
+    def test_verifyBlockDims(self):
+        """
+        This function is currently null. It consists of a single line that
+        returns nothing. This test covers that line. If the function is ever
+        implemented, it can be tested here.
+        """
+        self.ThRZBlock.verifyBlockDims()
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
@@ -1750,6 +1902,15 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.assertEqual(desiredPitch, cartBlock.getPitch())
         self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
+
+
+class PointTests(unittest.TestCase):
+    def setUp(self):
+        self.Point = blocks.Point()
+
+    def test_getters(self):
+        self.assertEqual(1.0, self.Point.getVolume())
+        self.assertEqual(1.0, self.Point.getBurnupPeakingFactor())
 
 
 class MassConservationTests(unittest.TestCase):

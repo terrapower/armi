@@ -312,7 +312,7 @@ def readEndfMatNumIndex(path):
     endfMatNumbers = {}
 
     for line in endfReferenceFile:
-        if not re.search("^\s+\d+\)", line):
+        if not re.search(r"^\s+\d+\)", line):
             continue
         data = line.split()
         _rowNum, matNum, nuclide = data[:3]

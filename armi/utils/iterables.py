@@ -18,7 +18,6 @@ Module of utilities to help dealing with iterable objects in python
 
 from __future__ import print_function
 import struct
-import collections
 from itertools import tee, chain
 
 from builtins import object  # pylint: disable=redefined-builtin
@@ -135,7 +134,7 @@ def packHexStrings(valueDict):
 # -------------------------------
 
 
-class Overlap(object):
+class Overlap:
     """common list overlap comparison"""
 
     def __init__(self, src, ref):
@@ -156,7 +155,7 @@ class Overlap(object):
         )
 
 
-class Sequence(object):
+class Sequence:
     """
     The Sequence class partially implements a list-like interface,
     supporting methods like append and extend and also operations like + and +=.

@@ -336,7 +336,7 @@ writeBinary = _IsotxsIO.writeBinary  # pylint: disable=invalid-name
 writeAscii = _IsotxsIO.writeAscii  # pylint: disable=invalid-name
 
 
-class _IsotxsNuclideIO(object):
+class _IsotxsNuclideIO:
     """
     A reader/writer class for ISOTXS nuclides.
 

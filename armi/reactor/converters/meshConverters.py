@@ -24,7 +24,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags, TypeSpec
 
 
-class MeshConverter(object):
+class MeshConverter:
     """
     Base class for the reactor mesh conversions.
 

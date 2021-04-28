@@ -18,6 +18,7 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import collections
 import copy
 import os
@@ -431,7 +432,7 @@ class TestFuelHandler(ArmiTestHelper):
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
         self.assertEqual(len(moves), 3)
         firstMove = moves[1][0]
-        self.assertEqual(firstMove[0], "A2001")
+        self.assertEqual(firstMove[0], "002-001")
         self.assertEqual(firstMove[1], "SFP")
         self.assertEqual(len(firstMove[2]), numblocks)
         self.assertEqual(firstMove[3], "igniter fuel")
@@ -440,7 +441,7 @@ class TestFuelHandler(ArmiTestHelper):
         # check the move that came back out of the SFP
         sfpMove = moves[2][-2]
         self.assertEqual(sfpMove[0], "SFP")
-        self.assertEqual(sfpMove[1], "A5003")
+        self.assertEqual(sfpMove[1], "005-003")
         self.assertEqual(sfpMove[4], "A0085")  # name of assem in SFP
 
     def test_processMoveList(self):
@@ -511,7 +512,7 @@ class TestFuelHandler(ArmiTestHelper):
     def test_buildEqRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
         locSchedule = fh.buildEqRingSchedule([2, 1])
-        self.assertEqual(locSchedule, ["A2001", "A2002", "A1001"])
+        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
 
 class TestFuelPlugin(unittest.TestCase):

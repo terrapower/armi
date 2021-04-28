@@ -111,27 +111,32 @@ class BlockBlueprint(yamlize.KeyedList):
             c = componentDesign.construct(blueprint, materialInput)
             components[c.name] = c
             if spatialGrid:
-                c.spatialLocator = gridDesign.getMultiLocator(
+                componentLocators = gridDesign.getMultiLocator(
                     spatialGrid, componentDesign.latticeIDs
                 )
-                mult = c.getDimension("mult")
-                if mult and mult != 1.0 and mult != len(c.spatialLocator):
-                    raise ValueError(
-                        f"Conflicting ``mult`` input ({mult}) and number of "
-                        f"lattice positions ({len(c.spatialLocator)}) for {c}. "
-                        "Recommend leaving off ``mult`` input when using grids."
-                    )
-                elif not mult or mult == 1.0:
-                    # learn mult from grid definition
-                    c.setDimension("mult", len(c.spatialLocator))
+                if componentLocators:
+                    # this component is defined in the block grid
+                    # We can infer the multiplicity from the grid.
+                    # Otherwise it's a component that is in a block
+                    # with grids but that's not in the grid itself.
+                    c.spatialLocator = componentLocators
+                    mult = c.getDimension("mult")
+                    if mult and mult != 1.0 and mult != len(c.spatialLocator):
+                        raise ValueError(
+                            f"Conflicting ``mult`` input ({mult}) and number of "
+                            f"lattice positions ({len(c.spatialLocator)}) for {c}. "
+                            "Recommend leaving off ``mult`` input when using grids."
+                        )
+                    elif not mult or mult == 1.0:
+                        # learn mult from grid definition
+                        c.setDimension("mult", len(c.spatialLocator))
 
         for c in components.values():
             c._resolveLinkedDims(components)
 
         boundingComp = sorted(components.values())[-1]
-        b = self._getBlockClass(boundingComp)(
-            "Bxxx{0}".format(grids.AXIAL_CHARS[axialIndex])
-        )
+        # give a temporary name (will be updated by b.makeName as real blocks populate systems)
+        b = self._getBlockClass(boundingComp)(name=f"block-bol-{axialIndex:03d}")
 
         for paramDef in b.p.paramDefs.inCategory(
             parameters.Category.assignInBlueprints
@@ -177,7 +182,8 @@ class BlockBlueprint(yamlize.KeyedList):
             return blueprint.gridDesigns[self.gridName]
         return None
 
-    def _mergeComponents(self, b):
+    @staticmethod
+    def _mergeComponents(b):
         solventNamesToMergeInto = set(c.p.mergeWith for c in b if c.p.mergeWith)
 
         if solventNamesToMergeInto:

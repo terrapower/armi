@@ -13,11 +13,11 @@
 # limitations under the License.
 
 """Test for Zones"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import unittest
 import os
 
-import armi
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import geometry
@@ -37,7 +37,9 @@ class Zone_TestCase(unittest.TestCase):
         r = reactors.Reactor("zonetest", bp)
         r.add(reactors.Core("Core"))
         r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-        r.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        r.core.spatialGrid.symmetry = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
         r.core.spatialGrid.geomType = geometry.HEX
         aList = []
         for ring in range(10):
@@ -66,17 +68,39 @@ class Zone_TestCase(unittest.TestCase):
         for aLoc in zone:
             self.assertIn(aLoc, locs)
 
+    def test_extend(self):
+        zone = zones.Zone("TestZone")
+        zone.extend([a.getLocation() for a in self.aList])
+        for a in self.aList:
+            self.assertIn(a.getLocation(), zone)
+
+    def test_index(self):
+        zone = zones.Zone("TestZone")
+        zone.addAssemblyLocations(self.aList)
+        for i, loc in enumerate(zone.locList):
+            self.assertEqual(i, zone.index(loc))
+
     def test_addRing(self):
         zone = zones.Zone("TestZone")
         zone.addRing(5)
-        self.assertIn("A5003", zone)
-        self.assertNotIn("A6002", zone)
+        self.assertIn("005-003", zone)
+        self.assertNotIn("006-002", zone)
 
         zone.addRing(6, 3, 9)
-        self.assertIn("A6003", zone)
-        self.assertIn("A6009", zone)
-        self.assertNotIn("A6002", zone)
-        self.assertNotIn("A6010", zone)
+        self.assertIn("006-003", zone)
+        self.assertIn("006-009", zone)
+        self.assertNotIn("006-002", zone)
+        self.assertNotIn("006-010", zone)
+
+    def test_add(self):
+        zone = zones.Zone("TestZone")
+        zone.addRing(5)
+        otherZone = zones.Zone("OtherZone")
+        otherZone.addRing(6, 3, 9)
+        combinedZoneList = zone + otherZone
+        self.assertIn("005-003", combinedZoneList)
+        self.assertIn("006-003", combinedZoneList)
+        self.assertIn("006-009", combinedZoneList)
 
 
 class Zones_InReactor(unittest.TestCase):
@@ -109,6 +133,50 @@ class Zones_InReactor(unittest.TestCase):
         self.assertEqual(len(list(zonez)), 3)
         zone = zonez["ring-3"]
         self.assertEqual(len(zone), 30)  # rings 8 and 9. See above comment
+
+    def test_buildManualZones(self):
+        o, r = self.o, self.r
+        cs = o.cs
+        cs[globalSettings.CONF_ZONING_STRATEGY] = "manual"
+        cs["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+            "ring-3: 003-001, 003-002, 003-003",
+        ]
+        zonez = zones.buildZones(r.core, cs)
+        self.assertEqual(len(list(zonez)), 3)
+        self.assertIn("003-002", zonez["ring-3"])
+
+    def test_buildAssemTypeZones(self):
+        o, r = self.o, self.r
+        cs = o.cs
+        cs[globalSettings.CONF_ZONING_STRATEGY] = "byFuelType"
+        zonez = zones.buildZones(r.core, cs)
+        self.assertEqual(len(list(zonez)), 4)
+        self.assertIn("008-040", zonez["feed fuel"])
+        self.assertIn("005-023", zonez["igniter fuel"])
+        self.assertIn("003-002", zonez["lta fuel"])
+        self.assertIn("004-003", zonez["lta fuel b"])
+
+    def test_buildZonesForEachFA(self):
+        o, r = self.o, self.r
+        cs = o.cs
+        cs[globalSettings.CONF_ZONING_STRATEGY] = "everyFA"
+        zonez = zones.buildZones(r.core, cs)
+        self.assertEqual(len(list(zonez)), 53)
+        self.assertIn("008-040", zonez["channel 1"])
+        self.assertIn("005-023", zonez["channel 2"])
+        self.assertIn("006-029", zonez["channel 3"])
+
+    def test_buildZonesByOrifice(self):
+        o, r = self.o, self.r
+        cs = o.cs
+        cs[globalSettings.CONF_ZONING_STRATEGY] = "byOrifice"
+        zonez = zones.buildZones(r.core, cs)
+        self.assertEqual(len(list(zonez)), 2)
+        self.assertIn("008-040", zonez["zone0"])
+        self.assertIn("005-023", zonez["zone0"])
+        self.assertIn("003-002", zonez["ltazone0"])
 
     def test_removeZone(self):
         o, r = self.o, self.r

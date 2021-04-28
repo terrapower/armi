@@ -20,6 +20,7 @@ doc/tutorials/case-suite
 armi/tests/tutorials/case-suite
 .apidocs/
 doc/gallery
+htmlcov/
 
 # No workspace crumbs.
 *~

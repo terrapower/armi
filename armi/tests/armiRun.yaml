@@ -24,7 +24,7 @@ settings:
   cycleLength: 2000.0
   db: false
   detailAssemLocationsBOL:
-    - A2001
+    - 002-001
   economics: false
   epsBurnTime: 0.001
   epsFSAvg: 1e-06

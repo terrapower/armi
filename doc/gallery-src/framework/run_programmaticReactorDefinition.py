@@ -21,6 +21,7 @@ import armi
 armi.configure(permissive=True)
 # pylint: disable=wrong-import-position
 from armi.reactor import blueprints
+from armi import settings
 from armi.settings import caseSettings
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints import assemblyBlueprint
@@ -45,6 +46,7 @@ def buildCase():
     bp.systemDesigns = buildSystems()
 
     cs = caseSettings.Settings()
+    settings.setMasterCs(cs)  # remove once we eliminate masterCs
     cs.path = None
     cs.caseTitle = "scripted-case"
     case = cases.Case(cs=cs, bp=bp)

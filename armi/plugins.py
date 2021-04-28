@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+r"""
 Plugins allow various built-in or external functionality to be brought into the ARMI ecosystem.
 
 This module defines the hooks that may be defined within plugins. Plugins are ultimately
@@ -89,6 +89,36 @@ rather than an instance of that class. Also notice that all of the hooks are
 and only have access to the state passed into them to perform their function. This is a
 deliberate design choice to keep the plugin system simple and to preclude a large class
 of potential bugs. At some point it may make sense to revisit this.
+
+
+Other customization points
+--------------------------
+While the Plugin API is the main place for ARMI framework customization, there are
+several other areas where ARMI may be extended or customized. These typically pre-dated
+the Plugin-based architecture, and as the need arise may be migrated to here.
+
+ - Component types: Component types are registered dynamically through some metaclass
+   magic, found in :py:class:`armi.reactor.components.component.ComponentType` and
+   :py:class:`armi.reactor.composites.CompositeModelType`. Simply defining a new
+   Component subclass should register it with the appropriate ARMI systems. While this
+   is convenient, it does lead to potential issues, as the behavior of ARMI becomes
+   sensitive to module import order and the like; the containing module needs to be
+   imported before the registration occurs, which can be surprising.
+
+ - Interface input files: Interfaces used to be discovered dynamically, rather than
+   explicitly as they are now in the :py:meth:`armi.plugins.ArmiPlugin.exposeInterfaces`
+   plugin hook. Essentially they functioned as ersatz plugins. One of the ways that they
+   would customize ARMI behavior is through the
+   :py:meth:`armi.physics.interface.Interface.specifyInputs` static method, which is
+   still used to determine inter-Case dependencies and support cloning and hashing Case
+   inputs. Going forward, this approach will likely be deprecated in favor of a plugin
+   hook.
+
+ - Fuel handler logic: The
+   :py:class:`armi.physics.fuelCycle.fuelHandlers.FuelHandlerInterface` supports
+   customization through the dynamic loading of fuel handler logic modules, based on
+   user settings. This also predated the plugin infrastructure, and may one day be
+   replaced with plugin-based fuel handler logic.
 """
 from typing import Dict, Union
 
@@ -371,7 +401,7 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def defineCaseDependencies(case, suite):
-        """
+        r"""
         Function for defining case dependencies.
 
         Some Cases depend on the results of other ``Case``\ s in the same ``CaseSuite``.

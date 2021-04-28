@@ -27,8 +27,6 @@ as instance attributes of the ``Core``, and moving them into sibling systems on 
 import abc
 import itertools
 
-import numpy
-
 from armi import runLog
 from armi.utils import units
 from armi.reactor import grids

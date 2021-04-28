@@ -94,7 +94,7 @@ E_CAPTURE = "ecapt"
 E_FISSION = "efiss"
 
 
-class XSCollection(object):
+class XSCollection:
     """A cross section collection."""
 
     _zeroes = {}
@@ -362,7 +362,7 @@ class XSCollection(object):
             )
 
 
-class MacroscopicCrossSectionCreator(object):
+class MacroscopicCrossSectionCreator:
     """
     Create macroscopic cross sections from micros and number density.
 

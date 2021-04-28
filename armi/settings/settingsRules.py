@@ -21,9 +21,10 @@ The ``settingsRules`` system was developed before the pluginification of ARMI, a
 doesn't play very nicely with the post-plugin world. This is mainly because
 registration of new rules happens at import time of the rule itself, which is
 unreliable and difficult to control, and even sort of implicit and sneaky. They are
-also somewhate redundant with the
+also somewhat redundant with the
 :py:class:`armi.operators.settingsValidation.Query`/:py:class:`armi.operators.settingsValidation.Inspector`
-system. It is not recommended for plugins to define settings rules using the mechanism
+system and the ``scripts.migration`` package.. It is not recommended for plugins to define 
+settings rules using the mechanism
 in this module, which may be removed in the future.
 """
 import re

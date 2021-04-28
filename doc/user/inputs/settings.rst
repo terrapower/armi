@@ -19,7 +19,7 @@ This file is a YAML file that you can edit manually with a text editor or with t
 
 Here is an excerpt from a settings file:
 
-.. literalinclude:: ../../armi/tests/armiRun.yaml
+.. literalinclude:: ../../../armi/tests/armiRun.yaml
     :language: yaml
     :lines: 3-15
 
@@ -89,7 +89,7 @@ through the GUI or the settings system.
 
 Detail Assembly Locations BOL
     The ``detailAssemLocationsBOL`` setting is a list of assembly location strings
-    (e.g. ``A4003`` for ring 4, position 3). Assemblies that are in these locations at the
+    (e.g. ``004-003`` for ring 4, position 3). Assemblies that are in these locations at the
     beginning-of-life will be activated as detail assemblies.
 
 Detail assembly numbers

@@ -278,7 +278,7 @@ class _PmatrxIO(cccc.Stream):
             raise NotImplementedError()
 
 
-class _PmatrxNuclideIO(object):
+class _PmatrxNuclideIO:
     def __init__(self, nuclide, pmatrixIO, numNeutronGroups, numGammaGroups):
         self._nuclide = nuclide
         self._metadata = nuclide.pmatrxMetadata

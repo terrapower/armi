@@ -16,7 +16,7 @@
 The data structures and schema of the cross section modeling options.
 
 These are advanced/compound settings that are carried along in the normal cs
-object but aren't simple key/value pairs. 
+object but aren't simple key/value pairs.
 
 The cs object could either hold the base data (dicts) and create instances
 of these data structure objects as needed, or the settings system could actually

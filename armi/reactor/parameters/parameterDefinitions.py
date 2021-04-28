@@ -108,7 +108,7 @@ class _Undefined:
 
 
 class Serializer:
-    """
+    r"""
     Abstract class describing serialize/deserialize operations for Parameter data.
 
     Parameters need to be stored to and read from database files. This currently
@@ -122,7 +122,7 @@ class Serializer:
     The ``Database3`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
-      - There are ``None`` s.
+      - There are ``None``\ s.
 
       - The dimensions of the values stored on each object are inconsistent (e.g.,
         "jagged" arrays)
@@ -364,7 +364,7 @@ class Parameter:
         return self.location and self.location & loc
 
 
-class ParameterDefinitionCollection(object):
+class ParameterDefinitionCollection:
     r"""
     A very specialized container for managing parameter definitions.
 
@@ -555,7 +555,7 @@ class ParameterDefinitionCollection(object):
         return paramBuilder
 
 
-class ParameterBuilder(object):
+class ParameterBuilder:
     r"""Factory for creating Parameter and parameter properties"""
 
     def __init__(
@@ -584,7 +584,8 @@ class ParameterBuilder(object):
             return
         self._entered = False
 
-    def _assertDefaultIsProperType(self, default):
+    @staticmethod
+    def _assertDefaultIsProperType(default):
         if default in (NoDefault, None) or isinstance(
             default, (int, str, float, bool, Flags)
         ):

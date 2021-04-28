@@ -156,14 +156,14 @@ def keffVsTime(reactor, time, keff, keffUnc=None, ymin=None):
         Minimum y-axis value to target.
     """
     plt.figure()
-    if keffUnc:
+    if any(keffUnc):
         label1 = "Controlled k-eff"
         label2 = "Uncontrolled k-eff"
     else:
         label1 = None
 
     plt.plot(time, keff, ".-", label=label1)
-    if keffUnc:
+    if any(keffUnc):
         plt.plot(time, keffUnc, ".-", label=label2)
         plt.legend()
     plt.xlabel("Time (yr)")

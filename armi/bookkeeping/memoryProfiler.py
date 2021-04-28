@@ -267,7 +267,8 @@ class MemoryProfiler(interfaces.Interface):
         if reportSize:
             operator.reattach(reactor, cs)
 
-    def _getSpecificReferrers(self, klass, ancestorKlass):
+    @staticmethod
+    def _getSpecificReferrers(klass, ancestorKlass):
         """Try to determine some useful information about the structure of ArmiObjects and potential
         orphans.
 
@@ -328,7 +329,8 @@ class MemoryProfiler(interfaces.Interface):
         for item in info:
             runLog.important("{}".format(item))
 
-    def _getReferrers(self, obj):
+    @staticmethod
+    def _getReferrers(obj):
         """
         Print referrers in a useful way (as opposed to gigabytes of text
         """
@@ -336,7 +338,8 @@ class MemoryProfiler(interfaces.Interface):
         for ref in gc.get_referrers(obj)[:100]:
             print("ref for {}: {}".format(obj, repr(ref)[:100]))
 
-    def _discussSkipped(self, skipped, errors):
+    @staticmethod
+    def _discussSkipped(skipped, errors):
         runLog.warning("Skipped {} objects".format(skipped))
         runLog.warning(
             "errored out on {0} objects:\n {1}".format(
@@ -345,7 +348,7 @@ class MemoryProfiler(interfaces.Interface):
         )
 
 
-class KlassCounter(object):
+class KlassCounter:
     def __init__(self, reportSize):
         self.counters = dict()
         self.reportSize = reportSize
@@ -387,7 +390,7 @@ class KlassCounter(object):
                     self.countObjects(v)
 
 
-class InstanceCounter(object):
+class InstanceCounter:
     def __init__(self, classType, reportSize):
         self.classType = classType
         self.count = 0
@@ -435,7 +438,7 @@ def _getModName(obj):
         return None
 
 
-class ObjectSizeBreakdown(object):
+class ObjectSizeBreakdown:
     def __init__(
         self,
         name,
@@ -511,7 +514,7 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
         mem.displayMemoryUsage(self.timeDescription)
 
 
-class SystemAndProcessMemoryUsage(object):
+class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = armi.MPI_NODENAME
         # no psutil, no memory diagnostics. TODO: Ideally, we could just cut

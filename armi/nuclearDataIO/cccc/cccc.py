@@ -33,7 +33,7 @@ IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
 
 
-class IORecord(object):
+class IORecord:
     """
     A single CCCC record.
 
@@ -500,7 +500,7 @@ class DataContainer:
         self.metadata = nuclearFileMetadata._Metadata()
 
 
-class Stream(object):
+class Stream:
     """
     An abstract CCCC IO stream.
 
@@ -555,7 +555,7 @@ class Stream(object):
         return "<{} {}>".format(self.__class__.__name__, self._fileName)
 
     def __enter__(self):
-        """At the inception of a with command, navigate to a new directory if one is supplied"""
+        """At the inception of a with command, open up the file for a read/write."""
         try:
             self._stream = open(self._fileName, self._fileMode)
         except IOError:
@@ -564,7 +564,7 @@ class Stream(object):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """At the termination of a with command, navigate back to the original directory"""
+        """At the termination of a with command, close the file."""
         self._stream.close()
 
     def readWrite(self):

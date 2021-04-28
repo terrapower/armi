@@ -15,8 +15,8 @@
 """
 Tests for memoryProfiler
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
-import math
 
 from armi.bookkeeping import memoryProfiler
 from armi.reactor.tests import test_reactors
