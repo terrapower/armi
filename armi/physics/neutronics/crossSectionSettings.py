@@ -266,7 +266,7 @@ class XSModelingOptions:
             defaults = {
                 CONF_GEOM: "0D",
                 CONF_BUCKLING: True,
-                CONF_DRIVER: False,
+                CONF_DRIVER: "",
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
                 CONF_BLOCKTYPES: validBlockTypes,
             }
@@ -280,7 +280,7 @@ class XSModelingOptions:
         elif self.geometry == "1D cylinder":
             defaults = {
                 CONF_GEOM: "1D cylinder",
-                CONF_DRIVER: None,
+                CONF_DRIVER: "",
                 CONF_MERGE_INTO_CLAD: ["gap"],
                 CONF_MESH_PER_CM: 1.0,
                 CONF_INTERNAL_RINGS: 0,
@@ -294,8 +294,8 @@ class XSModelingOptions:
                 CONF_GEOM: "2D hex",
                 CONF_BUCKLING: False,
                 CONF_EXTERNAL_DRIVER: True,
-                CONF_DRIVER: None,
-                CONF_REACTION_DRIVER: False,
+                CONF_DRIVER: "",
+                CONF_REACTION_DRIVER: None,
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
