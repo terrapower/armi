@@ -1308,9 +1308,11 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
 
-        index = b.rotatePins(4)  # back to 0
-        self.assertEqual(b.getRotationNum(), 0)
-        self.assertEqual(index[2], 2)
+        index = b.rotatePins(2)
+        index = b.rotatePins(4)  # over-rotate to check modulus
+        self.assertEqual(b.getRotationNum(), 2)
+        self.assertEqual(index[2], 4)
+        self.assertEqual(index[6], 2)
 
         self.assertRaises(ValueError, b.rotatePins, -1)
         self.assertRaises(ValueError, b.rotatePins, 10)
