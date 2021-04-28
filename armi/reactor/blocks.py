@@ -1703,10 +1703,9 @@ class HexBlock(Block):
         numPins = self.getNumComponents(Flags.CLAD)  # number of pins in this assembly
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
-        currentRotNum = self.getRotationNum()
         # look up the current orientation and add this to it. The math below just rotates from the
         # reference point so we need a total rotation.
-        rotNum = currentRotNum + rotNum % 6
+        rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
         for pinNum in range(
@@ -1720,9 +1719,8 @@ class HexBlock(Block):
                 ring = int(
                     math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
                 )
-                # Determine the total number of pins in THIS ring PLUS all interior rings.
-                tot_pins = 1 - 6 * (ring - 1) + 3 * (ring - 1) * (ring + 2)
                 # Rotate the pin position (within the ring, which does not change)
+                tot_pins = 1 + 3 * ring * (ring - 1)
                 newPinLocation = pinNum + (ring - 1) * rotNum
                 if newPinLocation > tot_pins:
                     newPinLocation -= (ring - 1) * 6
@@ -1730,7 +1728,7 @@ class HexBlock(Block):
                 rotateIndexLookup[pinNum] = newPinLocation
 
             if not justCompute:
-                self.p["pinLocation", rotateIndexLookup[pinNum]] = pin = pinNum
+                self.p["pinLocation", rotateIndexLookup[pinNum]] = pinNum
 
         if not justCompute:
             self.setRotationNum(rotNum)
