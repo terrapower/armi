@@ -349,7 +349,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         return self.filterTimeIndices(timeIndices, boc, moc, eoc)
 
     def getBOCEOCTimeIndices(self, assem=None):
-        r"""returns a list of time step indices that only include BOC and EOC, no intermediate ones. """
+        r"""returns a list of time step indices that only include BOC and EOC, no intermediate ones."""
         tIndices = self.getTimeIndices(assem)  # list of times in years
         counter = 0
         filtered = []

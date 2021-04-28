@@ -451,7 +451,7 @@ class Material(composites.Leaf):
         return self.p.thermalConductivity
 
     def getProperty(self, propName, Tk=None, Tc=None, **kwargs):
-        r"""gets properties in a way that caches them. """
+        r"""gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
 
         cached = self._getCached(propName)
@@ -512,7 +512,7 @@ class Material(composites.Leaf):
         return self.p.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self):
-        r"""zero out all nuclide mass fractions. """
+        r"""zero out all nuclide mass fractions."""
         self.p.massFrac.clear()
         self.p.massFracNorm = 0.0
 

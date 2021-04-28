@@ -228,7 +228,7 @@ def _mergeAttributes(this, other, attrName):
 
 
 def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
-    r"""plots a matrix to show scattering. """
+    r"""plots a matrix to show scattering."""
     from matplotlib import pyplot
 
     pyplot.imshow(scatterMatrix.todense(), interpolation="nearest")
@@ -244,7 +244,7 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
 
 
 def compareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
-    """Compares scatter matrices graphically between libraries. """
+    """Compares scatter matrices graphically between libraries."""
     from matplotlib import pyplot
 
     diff = scatterMatrix1 - scatterMatrix2

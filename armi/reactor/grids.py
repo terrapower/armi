@@ -1570,7 +1570,7 @@ class HexGrid(Grid):
             return True
 
     def isInFirstThird(self, locator, includeTopEdge=False):
-        """True if locator is in first third of hex grid. """
+        """True if locator is in first third of hex grid."""
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
             return True

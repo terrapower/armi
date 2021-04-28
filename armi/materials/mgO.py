@@ -24,7 +24,7 @@ class MgO(Material):
     name = "MgO"
 
     def setDefaultMassFracs(self):
-        r"""  mass fractions"""
+        r"""mass fractions"""
         self.setMassFrac("MG", 0.603035897)
         self.setMassFrac("O16", 0.396964103)
 

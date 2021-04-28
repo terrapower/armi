@@ -258,7 +258,7 @@ class LumpedFissionProduct:
         return totalLanthanides / self.getTotalYield()
 
     def printDensities(self, lfpDens):
-        """Print densities of nuclides given a LFP density. """
+        """Print densities of nuclides given a LFP density."""
         for n in sorted(self.keys()):
             runLog.info("{0:6s} {1:.7E}".format(n.name, lfpDens * self[n]))
 
