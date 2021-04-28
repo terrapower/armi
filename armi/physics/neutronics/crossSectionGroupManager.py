@@ -1131,12 +1131,6 @@ BLOCK_COLLECTIONS = {
     "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
 }
 
-HOMOGENEOUS_BLOCK_COLLECTIONS = {
-    "Median": MedianBlockCollection,
-    "Average": AverageBlockCollection,
-    "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
-}
-
 
 def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     """

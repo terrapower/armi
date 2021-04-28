@@ -418,11 +418,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
             nucDensities[pu239] = (new, temp, msg)
             runLog.warning(
-                "Adjusting Pu-239 number densities in {} from {} to {} to meet minimum fissile fraction "
-                "of {}.\nNote: This modeling approximation will be deprecated soon so it is recommended to "
-                "drive this composition with an external source.".format(
-                    self.block, old, new, minFrac
-                )
+                f"Adjusting Pu-239 number densities in {self.block} from {old} to {new} "
+                f"to meet minimum fissile fraction of {minFrac}."
             )
         return nucDensities
 

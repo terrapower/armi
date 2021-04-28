@@ -35,7 +35,6 @@ XS_EXAMPLE = """AA:
     blockRepresentation: Median
 BA:
     geometry: 1D slab
-    criticalBuckling: false
     blockRepresentation: Median
 """
 

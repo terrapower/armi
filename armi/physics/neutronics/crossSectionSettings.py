@@ -27,16 +27,20 @@ See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/lattic
 """
 import voluptuous as vol
 
+from armi import runLog
 from armi.settings import Setting
 
-from armi.physics.neutronics.crossSectionGroupManager import (
-    BLOCK_COLLECTIONS,
-    HOMOGENEOUS_BLOCK_COLLECTIONS,
-)
+from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 
 # define conf and schema here since this is closest to where the objects live
-XS_GEOM_TYPES = {"0D", "2D hex", "1D slab", "1D cylinder"}
+XS_GEOM_TYPES = {
+    "0D",
+    "1D slab",
+    "1D cylinder",
+    "2D hex",
+}
 
+CONF_XSID = "xsID"
 CONF_GEOM = "geometry"
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_DRIVER = "driverID"
@@ -51,19 +55,63 @@ CONF_MERGE_INTO_CLAD = "mergeIntoClad"
 CONF_FILE_LOCATION = "fileLocation"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
 
+# This dictionary defines the valid set of inputs based on
+# the geometry type within the ``XSModelingOptions``
+VALID_INPUTS_BY_GEOMETRY_TYPE = {
+    "0D": {
+        CONF_XSID,
+        CONF_GEOM,
+        CONF_BUCKLING,
+        CONF_DRIVER,
+        CONF_BLOCKTYPES,
+        CONF_BLOCK_REPRESENTATION,
+    },
+    "1D slab": {
+        CONF_XSID,
+        CONF_GEOM,
+        CONF_MESH_PER_CM,
+        CONF_BLOCKTYPES,
+        CONF_BLOCK_REPRESENTATION,
+    },
+    "1D cylinder": {
+        CONF_XSID,
+        CONF_GEOM,
+        CONF_MERGE_INTO_CLAD,
+        CONF_DRIVER,
+        CONF_HOMOGBLOCK,
+        CONF_INTERNAL_RINGS,
+        CONF_EXTERNAL_RINGS,
+        CONF_MESH_PER_CM,
+        CONF_BLOCKTYPES,
+        CONF_BLOCK_REPRESENTATION,
+    },
+    "2D hex": {
+        CONF_XSID,
+        CONF_GEOM,
+        CONF_BUCKLING,
+        CONF_EXTERNAL_DRIVER,
+        CONF_DRIVER,
+        CONF_REACTION_DRIVER,
+        CONF_EXTERNAL_RINGS,
+        CONF_BLOCK_REPRESENTATION,
+    },
+}
+
 SINGLE_XS_SCHEMA = vol.Schema(
     {
-        vol.Optional(CONF_GEOM, default="0D"): vol.All(str, vol.In(XS_GEOM_TYPES)),
+        vol.Optional(CONF_GEOM): vol.All(str, vol.In(XS_GEOM_TYPES)),
         vol.Optional(CONF_BLOCK_REPRESENTATION): vol.All(
             str,
-            vol.In(set(BLOCK_COLLECTIONS.keys()) | set(HOMOGENEOUS_BLOCK_COLLECTIONS)),
+            vol.In(
+                set(BLOCK_COLLECTIONS.keys()),
+            ),
         ),
         vol.Optional(CONF_DRIVER): str,
         vol.Optional(CONF_BUCKLING): bool,
         vol.Optional(CONF_REACTION_DRIVER): str,
         vol.Optional(CONF_BLOCKTYPES): [str],
         vol.Optional(CONF_HOMOGBLOCK): bool,
-        vol.Optional(CONF_EXTERNAL_DRIVER, default=True): bool,
+        vol.Optional(CONF_EXTERNAL_DRIVER): bool,
         vol.Optional(CONF_INTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_EXTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_MERGE_INTO_CLAD): [str],
@@ -87,10 +135,10 @@ class XSModelingOptions:
         criticalBuckling=None,
         nuclideReactionDriver=None,
         validBlockTypes=None,
-        externalDriver=True,
-        useHomogenizedBlockComposition=False,
-        numInternalRings=1,
-        numExternalRings=1,
+        externalDriver=None,
+        useHomogenizedBlockComposition=None,
+        numInternalRings=None,
+        numExternalRings=None,
         mergeIntoClad=None,
         fileLocation=None,
         meshSubdivisionsPerCm=None,
@@ -109,6 +157,14 @@ class XSModelingOptions:
         self.mergeIntoClad = mergeIntoClad
         self.fileLocation = fileLocation
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
+        if self.geometry is not None or self.fileLocation is not None:
+            self._validate()
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} XSID: {self.xsID}>"
+
+    def __iter__(self):
+        return iter(self.__dict__.items())
 
     @property
     def xsType(self):
@@ -125,65 +181,132 @@ class XSModelingOptions:
         """True if this points to a pre-generated XS file."""
         return self.fileLocation is not None
 
+    def _validate(self):
+        """
+        Perform validation checks on the set of inputs.
+
+        This makes some design assumptions about the lattice
+        physics code (i.e., critical buckling search is not
+        a valid option for non-0D problems), so if different
+        behavior is desired then it is recommended to subclass
+        this and to make a new cross section setting.
+
+        Notes
+        -----
+        This checks for any inconsistencies in the definition of
+        the inputs.
+        """
+        if self.fileLocation is None and self.geometry is None:
+            raise ValueError(f"{self} is missing a geometry input or a file location.")
+
+        if self.fileLocation is not None and self.geometry is not None:
+            raise ValueError(
+                f"The file location and geometry inputs cannot be combined in {self}. "
+                f"File location set to {self.fileLocation}. "
+                f"Geometry set to {self.geometry}"
+            )
+
+        # Check for valid inputs when the file location is supplied.
+        invalids = []
+        if self.fileLocation is not None:
+            for var, val in self:
+                # Skip the ``xsID`` and ``fileLocation`` attributes.
+                if var == CONF_XSID or var == CONF_FILE_LOCATION:
+                    continue
+                if val is not None:
+                    invalids.append((var, val))
+
+        if invalids:
+            runLog.warning(
+                f"The following inputs in {self} are not valid when the file location is set:"
+            )
+            for var, val in invalids:
+                runLog.warning(f"\tAttribute: {var}, Value: {val}")
+
+        # Check for valid inputs when the geometry is supplied.
+        invalids = []
+        if self.geometry is not None:
+            validOptions = VALID_INPUTS_BY_GEOMETRY_TYPE[self.geometry]
+            for var, val in self:
+                if var not in validOptions and val is not None:
+                    invalids.append((var, val))
+
+        if invalids:
+            runLog.warning(
+                f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:"
+            )
+            for var, val in invalids:
+                runLog.warning(f"\tAttribute: {var}, Value: {val}")
+            runLog.warning(
+                f"The valid options for the `{self.geometry}` geometry are: {validOptions}"
+            )
+
     def setDefaults(self, blockRepresentation, validBlockTypes):
-        # TODO: explain this logic
+        """
+        This sets the defaults based on some recommended values based on the geometry type.
+
+        Notes
+        ----
+        This is useful in cases where the user wants the cross sections to be generated for
+        the defined cross section types in the model, but doesn't have to explictly set
+        all the options.
+
+        The supported defaults for the geometry are: ["0D", "1D slab", "1D cylinder", "2D hex"].
+        """
+        if self.blockRepresentation is not None:
+            blockRepresentation = self.blockRepresentation
+
         validBlockTypes = None if validBlockTypes else ["fuel"]
-        if self.geometry == "0D":
-            defaults = dict(
-                criticalBuckling=True,
-                numExternalRings=None,
-                blockRepresentation=blockRepresentation,
-                validBlockTypes=validBlockTypes,
-            )
+        defaults = None
+
+        if self.isPregenerated:
+            defaults = dict(fileLocation=self.fileLocation)
+
+        elif self.geometry == "0D":
+            defaults = {
+                CONF_GEOM: "0D",
+                CONF_BUCKLING: True,
+                CONF_DRIVER: False,
+                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCKTYPES: validBlockTypes,
+            }
         elif self.geometry == "1D slab":
-            defaults = dict(
-                criticalBuckling=False,
-                mergeIntoClad=[],
-                blockRepresentation=blockRepresentation,
-                validBlockTypes=validBlockTypes,
-            )
+            defaults = {
+                CONF_GEOM: "1D slab",
+                CONF_MESH_PER_CM: 1.0,
+                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCKTYPES: validBlockTypes,
+            }
         elif self.geometry == "1D cylinder":
-            defaults = dict(
-                criticalBuckling=False,
-                mergeIntoClad=[],
-                blockRepresentation=blockRepresentation,
-                numExternalRings=1,
-                validBlockTypes=validBlockTypes,
-            )
+            defaults = {
+                CONF_GEOM: "1D cylinder",
+                CONF_DRIVER: None,
+                CONF_MERGE_INTO_CLAD: ["gap"],
+                CONF_MESH_PER_CM: 1.0,
+                CONF_INTERNAL_RINGS: 0,
+                CONF_EXTERNAL_RINGS: 1,
+                CONF_HOMOGBLOCK: False,
+                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCKTYPES: validBlockTypes,
+            }
         elif self.geometry == "2D hex":
-            defaults = dict(
-                blockRepresentation=blockRepresentation,
-                numExternalRings=1,
-                externalDriver=True,
-            )
-        else:
-            defaults = dict(
-                blockRepresentation=blockRepresentation, validBlockTypes=validBlockTypes
-            )
+            defaults = {
+                CONF_GEOM: "2D hex",
+                CONF_BUCKLING: False,
+                CONF_EXTERNAL_DRIVER: True,
+                CONF_DRIVER: None,
+                CONF_REACTION_DRIVER: False,
+                CONF_EXTERNAL_RINGS: 1,
+                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+            }
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
             if currentValue is None:
                 setattr(self, attrName, defaultValue)
 
-        self._checkSettings()
-
-    def _checkSettings(self):
-        """Fail fast if cross section settings will cause lattice physics to fail."""
-        geomsThatNeedMeshSize = ("1D slab", "1D cylinder")
-        if self.geometry in geomsThatNeedMeshSize:
-            if self.meshSubdivisionsPerCm is None:
-                raise ValueError(
-                    "{} geometry requires `mesh points per cm` to be defined in cross sections.".format(
-                        self.geometry
-                    )
-                )
-            if self.criticalBuckling != False:
-                raise ValueError(
-                    "{} geometry cannot model critical buckling. Please disable".format(
-                        self.geometry
-                    )
-                )
+        if self.geometry is not None or self.fileLocation is not None:
+            self._validate()
 
 
 class XSSettingDef(Setting):
@@ -196,9 +319,14 @@ class XSSettingDef(Setting):
     def _load(self, inputVal):
         """Read a dict of input, validate it, and populate this with new instances."""
         inputVal = XS_SCHEMA(inputVal)
+        vals = XSSettings()
         for xsID, inputParams in inputVal.items():
-            self._value[xsID] = XSModelingOptions(xsID, **inputParams)
-        return self._value
+            # Do not automatically add the xsID if the value of the
+            # dictionary is None or not set.
+            if not inputParams:
+                continue
+            vals[xsID] = XSModelingOptions(xsID, **inputParams)
+        return vals
 
     def dump(self):
         """
@@ -222,23 +350,44 @@ class XSSettingDef(Setting):
         to pass in either a ``XSModelingOptions`` object itself
         or a dictionary representation of one.
         """
-        try:
-            if isinstance(list(val.values())[0], XSModelingOptions):
-                val = self._serialize(val)
-        except TypeError:
-            # value is not a dict, may be a CommentedMapValuesView or related; serialization
-            # not required
-            pass
+        if val is None:
+            Setting.setValue(self, val=XSSettings())
 
-        Setting.setValue(self, val)
+        # If this is a dictionary and it has at least
+        # one input.
+        elif len(list(val.values())) > 0:
+            val = self._serialize(val)
+            Setting.setValue(self, val)
+        else:
+            Setting.setValue(self, val=XSSettings())
 
     @staticmethod
     def _serialize(value):
         output = {}
         for xsID, val in value.items():
+            # Setting the value to an empty dictionary
+            # if it is set to a None or an empty
+            # dictionary.
+
+            if not val:
+                continue
+
+            if isinstance(val, XSModelingOptions):
+                vals = val
+
+            elif isinstance(val, dict):
+                vals = val.items()
+
+            else:
+                # Skip attributes within the dictionary
+                # that are not instances of XSModelingOptions
+                # or dictionaries. This includes comment
+                # sections
+                continue
+
             xsIDVals = {
                 config: confVal
-                for config, confVal in val.__dict__.items()
+                for config, confVal in vals
                 if config != "xsID" and confVal is not None
             }
             output[xsID] = xsIDVals
@@ -305,7 +454,7 @@ class XSSettings(dict):
         self._disableBlockTypeExclusionInXsGeneration = cs[
             "disableBlockTypeExclusionInXsGeneration"
         ]
-        for xsId, xsOpt in self.items():
+        for _xsId, xsOpt in self.items():
             xsOpt.setDefaults(
                 cs["xsBlockRepresentation"],
                 cs["disableBlockTypeExclusionInXsGeneration"],
@@ -313,7 +462,7 @@ class XSSettings(dict):
 
     def _getDefault(self, xsID):
         """
-        Process the optional 'cross section' input field.
+        Process the optional ``crossSectionControl`` setting.
 
         This input allows users to override global defaults for specific cross section IDs (xsID).
 

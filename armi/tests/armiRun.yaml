@@ -19,11 +19,6 @@ settings:
       numInternalRings: 1
       numExternalRings: 1
     XA:
-      geometry: 0D
-      externalDriver: true
-      useHomogenizedBlockComposition: false
-      numInternalRings: 1
-      numExternalRings: 1
       fileLocation:
         - ISOXA
   cycleLength: 2000.0

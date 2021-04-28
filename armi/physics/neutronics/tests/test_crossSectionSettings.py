@@ -19,11 +19,13 @@ from ruamel.yaml import YAML
 import voluptuous as vol
 
 from armi import settings
+from armi.settings import caseSettings
 from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
 from armi.physics.neutronics.crossSectionSettings import XSSettings
 from armi.physics.neutronics.crossSectionSettings import XSSettingDef
 from armi.physics.neutronics.crossSectionSettings import SINGLE_XS_SCHEMA
 from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
 class TestCrossSectionSettings(unittest.TestCase):
@@ -88,7 +90,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         xsModel = XSSettings()
         rq = XSModelingOptions(
             "RQ",
-            geometry="1D slab",
+            geometry="1D cylinder",
             blockRepresentation="Average",
             meshSubdivisionsPerCm=1.0,
         )
@@ -110,11 +112,11 @@ class TestCrossSectionSettings(unittest.TestCase):
     def test_optionalKey(self):
         """Test that optional key shows up with default value."""
         xsModel = XSSettings()
-        da = XSModelingOptions("DA", geometry="1D slab", meshSubdivisionsPerCm=1.0)
+        da = XSModelingOptions("DA", geometry="1D cylinder", meshSubdivisionsPerCm=1.0)
         xsModel["DA"] = da
         xsModel.setDefaults(settings.Settings())
-        self.assertEqual(xsModel["DA"].mergeIntoClad, [])
-        self.assertEqual(xsModel["DA"].criticalBuckling, False)
+        self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
+        self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
 
     def test_badCrossSections(self):
         with self.assertRaises(vol.error.MultipleInvalid):
@@ -133,7 +135,7 @@ class Test_XSSettings(unittest.TestCase):
         yaml = YAML()
         inp = yaml.load(io.StringIO(XS_EXAMPLE))
         xs = XSSettingDef("TestSetting", XSSettings())
-        xs._load(inp)  # pylint: disable=protected-access
+        xs.setValue(inp)
         self.assertEqual(xs.value["BA"].geometry, "1D slab")
         outBuf = io.StringIO()
         output = xs.dump()
@@ -141,6 +143,59 @@ class Test_XSSettings(unittest.TestCase):
         outBuf.seek(0)
         inp2 = yaml.load(outBuf)
         self.assertEqual(inp.keys(), inp2.keys())
+
+    def test_caseSettings(self):
+        """
+        Test the setting of the cross section setting using the case settings object.
+
+        Notes
+        -----
+        The purpose of this test is to ensure that the cross sections sections can
+        be removed from an existing case settings object once they have been set.
+        """
+
+        def _setInitialXSSettings():
+            cs = caseSettings.Settings()
+            cs[CONF_CROSS_SECTION] = XSSettings()
+            cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA")
+            cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions("BA")
+            self.assertIn("AA", cs[CONF_CROSS_SECTION].keys())
+            self.assertIn("BA", cs[CONF_CROSS_SECTION].keys())
+            self.assertNotIn("CA", cs[CONF_CROSS_SECTION].keys())
+            self.assertNotIn("DA", cs[CONF_CROSS_SECTION].keys())
+            return cs
+
+        # Test that the cross section setting can be completely cleared
+        # using a None value, by setting the value to an empty dictionary,
+        # or by setting the individual keys to None or empty dictionaries.
+        cs = _setInitialXSSettings()
+        cs[CONF_CROSS_SECTION] = None
+        self.assertDictEqual(cs[CONF_CROSS_SECTION], {})
+
+        cs = _setInitialXSSettings()
+        cs[CONF_CROSS_SECTION] = {"AA": {}, "BA": {}}
+        self.assertDictEqual(cs[CONF_CROSS_SECTION], {})
+
+        cs = _setInitialXSSettings()
+        cs[CONF_CROSS_SECTION] = {"AA": None, "BA": {}}
+        self.assertDictEqual(cs[CONF_CROSS_SECTION], {})
+
+        # Test that a new XS setting can be added to an existing
+        # caseSetting using the ``XSModelingOptions`` or using
+        # a dictionary.
+        cs = _setInitialXSSettings()
+        cs[CONF_CROSS_SECTION].update(
+            {"CA": XSModelingOptions("CA"), "DA": {"geometry": "0D"}}
+        )
+        self.assertIn("AA", cs[CONF_CROSS_SECTION].keys())
+        self.assertIn("BA", cs[CONF_CROSS_SECTION].keys())
+        self.assertIn("CA", cs[CONF_CROSS_SECTION].keys())
+        self.assertIn("DA", cs[CONF_CROSS_SECTION].keys())
+
+        # Clear out the settings by setting the value to a None.
+        # This will be interpreted as a empty dictionary.
+        cs[CONF_CROSS_SECTION] = None
+        self.assertDictEqual(cs[CONF_CROSS_SECTION], {})
 
 
 if __name__ == "__main__":
