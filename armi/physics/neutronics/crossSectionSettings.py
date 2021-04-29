@@ -157,8 +157,7 @@ class XSModelingOptions:
         self.mergeIntoClad = mergeIntoClad
         self.fileLocation = fileLocation
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
-        if self.geometry is not None or self.fileLocation is not None:
-            self._validate()
+        self._validate()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} XSID: {self.xsID}>"
@@ -183,34 +182,28 @@ class XSModelingOptions:
 
     def _validate(self):
         """
-        Perform validation checks on the set of inputs.
-
-        This makes some design assumptions about the lattice
-        physics code (i.e., critical buckling search is not
-        a valid option for non-0D problems), so if different
-        behavior is desired then it is recommended to subclass
-        this and to make a new cross section setting.
+        Perform additional validation checks on the set of inputs.
 
         Notes
         -----
         This checks for any inconsistencies in the definition of
-        the inputs.
+        the attributes.
         """
         if self.fileLocation is None and self.geometry is None:
             raise ValueError(f"{self} is missing a geometry input or a file location.")
 
         if self.fileLocation is not None and self.geometry is not None:
             raise ValueError(
-                f"The file location and geometry inputs cannot be combined in {self}. "
-                f"File location set to {self.fileLocation}. "
-                f"Geometry set to {self.geometry}"
+                f"Either file location or geometry inputs in {self} must be given, but not both. "
+                "Remove one or the other"
             )
 
         # Check for valid inputs when the file location is supplied.
         invalids = []
         if self.fileLocation is not None:
             for var, val in self:
-                # Skip the ``xsID`` and ``fileLocation`` attributes.
+                # Skip these attributes since they are valid options
+                # when the ``fileLocation`` attribute`` is set.
                 if var in [CONF_XSID, CONF_FILE_LOCATION, CONF_BLOCK_REPRESENTATION]:
                     continue
                 if val is not None:

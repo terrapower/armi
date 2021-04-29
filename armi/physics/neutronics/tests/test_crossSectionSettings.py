@@ -157,8 +157,8 @@ class Test_XSSettings(unittest.TestCase):
         def _setInitialXSSettings():
             cs = caseSettings.Settings()
             cs[CONF_CROSS_SECTION] = XSSettings()
-            cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA")
-            cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions("BA")
+            cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", geometry="0D")
+            cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions("BA", geometry="0D")
             self.assertIn("AA", cs[CONF_CROSS_SECTION].keys())
             self.assertIn("BA", cs[CONF_CROSS_SECTION].keys())
             self.assertNotIn("CA", cs[CONF_CROSS_SECTION].keys())
@@ -185,7 +185,7 @@ class Test_XSSettings(unittest.TestCase):
         # a dictionary.
         cs = _setInitialXSSettings()
         cs[CONF_CROSS_SECTION].update(
-            {"CA": XSModelingOptions("CA"), "DA": {"geometry": "0D"}}
+            {"CA": XSModelingOptions("CA", geometry="0D"), "DA": {"geometry": "0D"}}
         )
         self.assertIn("AA", cs[CONF_CROSS_SECTION].keys())
         self.assertIn("BA", cs[CONF_CROSS_SECTION].keys())
