@@ -211,7 +211,7 @@ class XSModelingOptions:
         if self.fileLocation is not None:
             for var, val in self:
                 # Skip the ``xsID`` and ``fileLocation`` attributes.
-                if var == CONF_XSID or var == CONF_FILE_LOCATION:
+                if var in [CONF_XSID, CONF_FILE_LOCATION, CONF_BLOCK_REPRESENTATION]:
                     continue
                 if val is not None:
                     invalids.append((var, val))
@@ -253,14 +253,13 @@ class XSModelingOptions:
 
         The supported defaults for the geometry are: ["0D", "1D slab", "1D cylinder", "2D hex"].
         """
-        if self.blockRepresentation is not None:
-            blockRepresentation = self.blockRepresentation
-
         validBlockTypes = None if validBlockTypes else ["fuel"]
-        defaults = None
 
         if self.isPregenerated:
-            defaults = dict(fileLocation=self.fileLocation)
+            defaults = {
+                CONF_FILE_LOCATION: self.fileLocation,
+                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+            }
 
         elif self.geometry == "0D":
             defaults = {
@@ -299,14 +298,19 @@ class XSModelingOptions:
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
+        else:
+            raise ValueError(
+                f"{self} has no geometry type `{self.geometry}` or file location `{self.fileLocation}` "
+                "defined"
+            )
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
             if currentValue is None:
                 setattr(self, attrName, defaultValue)
 
-        if self.geometry is not None or self.fileLocation is not None:
-            self._validate()
+        # Validate the defaults
+        self._validate()
 
 
 class XSSettingDef(Setting):

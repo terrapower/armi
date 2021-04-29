@@ -197,6 +197,62 @@ class Test_XSSettings(unittest.TestCase):
         cs[CONF_CROSS_SECTION] = None
         self.assertDictEqual(cs[CONF_CROSS_SECTION], {})
 
+    def test_csBlockRepresentation(self):
+        """
+        Test that the XS block representation is applied globally,
+        but only to XS modeling options where the blockRepresentation
+        has not already been assigned.
+        """
+        cs = caseSettings.Settings()
+        cs["xsBlockRepresentation"] = "FluxWeightedAverage"
+        cs[CONF_CROSS_SECTION] = XSSettings()
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", geometry="0D")
+        cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions(
+            "BA", geometry="0D", blockRepresentation="Average"
+        )
+
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, None)
+        self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
+
+        cs[CONF_CROSS_SECTION].setDefaults(cs)
+
+        self.assertEqual(
+            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
+        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
+
+    def test_csBlockRepresentationFileLocation(self):
+        """
+        Test that default blockRepresentation is applied correctly to a
+        XSModelingOption that has the ``fileLocation`` attribute defined.
+        """
+        cs = caseSettings.Settings()
+        cs["xsBlockRepresentation"] = "FluxWeightedAverage"
+        cs[CONF_CROSS_SECTION] = XSSettings()
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", fileLocation=[])
+
+        # Check FluxWeightedAverage
+        cs[CONF_CROSS_SECTION].setDefaults(cs)
+        self.assertEqual(
+            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
+        )
+
+        # Check Average
+        cs["xsBlockRepresentation"] = "Average"
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", fileLocation=[])
+        cs[CONF_CROSS_SECTION].setDefaults(cs)
+        self.assertEqual(
+            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Average"
+        )
+
+        # Check Median
+        cs["xsBlockRepresentation"] = "Average"
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions(
+            "AA", fileLocation=[], blockRepresentation="Median"
+        )
+        cs[CONF_CROSS_SECTION].setDefaults(cs)
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Median")
+
 
 if __name__ == "__main__":
     # sys.argv = ["", "TestCrossSectionSettings.test_badCrossSections"]

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from framework.armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 """
 Test the cross section manager
@@ -169,7 +170,19 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         1D cases the order of the components matters.
         """
         xsgm = self.o.getInterface("xsGroups")
+
+        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+            self.assertEqual(xsOpt.blockRepresentation, None)
+
         xsgm.interactBOL()
+
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
+        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+            self.assertEqual(
+                xsOpt.blockRepresentation, self.o.cs["xsBlockRepresentation"]
+            )
+
         xsgm.createRepresentativeBlocks()
         representativeBlockList = list(xsgm.representativeBlocks.values())
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
