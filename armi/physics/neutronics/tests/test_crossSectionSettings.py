@@ -241,9 +241,7 @@ class Test_XSSettings(unittest.TestCase):
         cs["xsBlockRepresentation"] = "Average"
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", fileLocation=[])
         cs[CONF_CROSS_SECTION].setDefaults(cs)
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Average"
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Average")
 
         # Check Median
         cs["xsBlockRepresentation"] = "Average"
