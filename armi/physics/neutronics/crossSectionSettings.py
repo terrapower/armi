@@ -388,6 +388,15 @@ class XSModelingOptions:
         }
 
     def validate(self):
+        """
+        Performs validation checks on the inputs and provides warnings for option inconsistencies.
+
+        Raises
+        ------
+        ValueError
+            When the mutually exclusive ``fileLocation`` and ``geometry`` attributes
+            are provided or when neither are provided.
+        """
         # Check for valid inputs when the file location is supplied.
         if self.fileLocation is None and self.geometry is None:
             raise ValueError(f"{self} is missing a geometry input or a file location.")
