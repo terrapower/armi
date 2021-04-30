@@ -14,10 +14,9 @@ import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 
 from armi.reactor import grids
+from armi import configure
 
-import armi
-
-armi.configure(permissive=True)
+configure(permissive=True)
 
 hexes = grids.HexGrid.fromPitch(1.0)
 

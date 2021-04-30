@@ -14,13 +14,12 @@ More info about the materials here: :py:mod:`armi.materials`.
 import numpy as np
 import matplotlib.pyplot as plt
 
-import armi
-from armi import materials
+from armi import configure, materials
 from armi.nucDirectory import nuclideBases
 
 MAX_Z = 96  # stop at Curium
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 materialNames = []
 mats = list(materials.iterAllMaterialClassesInNamespace(materials))

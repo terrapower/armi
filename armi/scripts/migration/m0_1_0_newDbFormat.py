@@ -26,12 +26,10 @@ import io
 
 import h5py
 
-import armi
-from armi import runLog
-from armi import utils
+from armi import __version__ as version
+from armi import getApp, runLog, utils
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-
 from armi.scripts.migration.base import DatabaseMigration
 
 
@@ -96,7 +94,7 @@ def _migrateDatabase(databasePath, preCollector, visitor, postApplier):
         newDB.attrs["original-armi-version"] = oldDB.attrs["version"]
         newDB.attrs["original-db-hash"] = shaHash
         newDB.attrs["original-databaseVersion"] = oldDB.attrs["databaseVersion"]
-        newDB.attrs["version"] = armi.__version__
+        newDB.attrs["version"] = version
 
         postApplier(oldDB, newDB, preCollection)
 
@@ -169,7 +167,7 @@ def _updateParams(newDB, preCollection, name, dataset):
 
 
 def _collectParamRenames():
-    return {"paramRenames": armi.getApp().getParamRenames()}
+    return {"paramRenames": getApp().getParamRenames()}
 
 
 def _collectSymmetry(oldDB):

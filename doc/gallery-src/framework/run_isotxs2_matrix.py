@@ -16,10 +16,9 @@ from armi.utils import units
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO import xsNuclides
-import armi
+from armi import configure
 
-
-armi.configure(permissive=True)
+configure(permissive=True)
 
 lib = isotxs.readBinary(ISOAA_PATH)
 

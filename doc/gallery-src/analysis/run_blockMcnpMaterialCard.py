@@ -14,9 +14,9 @@ from armi.reactor.tests import test_reactors
 from armi.reactor.flags import Flags
 from armi.utils.densityTools import formatMaterialCard
 from armi.nucDirectory import nuclideBases as nb
-import armi
+from armi import configure
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 _o, r = test_reactors.loadTestReactor()
 

@@ -55,7 +55,6 @@ minor revision.
 import os
 from typing import Optional, List, Tuple
 
-import armi
 from armi import settings
 from armi.utils import pathTools
 from armi import runLog

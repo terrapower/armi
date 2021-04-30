@@ -32,10 +32,7 @@ import os
 
 import numpy
 
-import armi
-from armi import runLog
-from armi import nuclearDataIO
-from armi import settings
+from armi import getPluginManagerOrFail, runLog, nuclearDataIO, settings
 from armi.localization import exceptions
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -2323,4 +2320,4 @@ class Core(composites.Composite):
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)

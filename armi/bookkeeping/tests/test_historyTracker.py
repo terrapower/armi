@@ -24,7 +24,8 @@ import os
 import pathlib
 import shutil
 
-import armi
+from armi.context import ROOT
+from armi import init as armi_init
 from armi import utils
 from armi.bookkeeping import historyTracker
 from armi.reactor import blocks
@@ -37,7 +38,7 @@ from armi.tests import ArmiTestHelper
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
 
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
-TUTORIAL_DIR = os.path.join(armi.context.ROOT, "tests", "tutorials")
+TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 CASE_TITLE = "anl-afci-177"
 
 
@@ -77,7 +78,7 @@ class TestHistoryTracker(ArmiTestHelper):
         reloadCs["runType"] = "Snapshots"
         reloadCs["loadStyle"] = "fromDB"
         reloadCs["detailAssemLocationsBOL"] = ["001-001"]
-        o = armi.init(cs=reloadCs)
+        o = armi_init(cs=reloadCs)
         cls.o = o
 
     @classmethod

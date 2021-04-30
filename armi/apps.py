@@ -31,11 +31,7 @@ customizing much of the Framework's behavior.
 from typing import Dict, Optional, Tuple, List
 import collections
 
-import armi
-from armi import plugins
-from armi import pluginManager
-from armi import meta
-
+from armi import plugins, pluginManager, meta, settings
 from armi.settings import Setting
 from armi.settings import fwSettings
 from armi.reactor import parameters
@@ -121,14 +117,12 @@ class App:
         # setting.  If all plugins' settings have been processed and the cache is not
         # empty, that's an error, because a plugin must have provided options to a
         # setting that doesn't exist.
-        optionsCache: Dict[str, List[armi.settings.Option]] = collections.defaultdict(
-            list
-        )
-        defaultsCache: Dict[str, armi.settings.Default] = {}
+        optionsCache: Dict[str, List[settings.Option]] = collections.defaultdict(list)
+        defaultsCache: Dict[str, settings.Default] = {}
 
         for pluginSettings in self._pm.hook.defineSettings():
             for pluginSetting in pluginSettings:
-                if isinstance(pluginSetting, armi.settings.Setting):
+                if isinstance(pluginSetting, settings.Setting):
                     name = pluginSetting.name
                     if name in settingDefs:
                         raise ValueError(
@@ -141,14 +135,14 @@ class App:
                         settingDefs[name].addOptions(optionsCache.pop(name))
                     if name in defaultsCache:
                         settingDefs[name].changeDefault(defaultsCache.pop(name))
-                elif isinstance(pluginSetting, armi.settings.Option):
+                elif isinstance(pluginSetting, settings.Option):
                     if pluginSetting.settingName in settingDefs:
                         # modifier loaded after setting, so just apply it (no cache needed)
                         settingDefs[pluginSetting.settingName].addOption(pluginSetting)
                     else:
                         # no setting yet, cache it and apply when it arrives
                         optionsCache[pluginSetting.settingName].append(pluginSetting)
-                elif isinstance(pluginSetting, armi.settings.Default):
+                elif isinstance(pluginSetting, settings.Default):
                     if pluginSetting.settingName in settingDefs:
                         # modifier loaded after setting, so just apply it (no cache needed)
                         settingDefs[pluginSetting.settingName].changeDefault(

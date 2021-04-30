@@ -21,9 +21,9 @@ from armi.reactor.tests import test_reactors
 from armi.reactor.flags import Flags
 from armi.reactor.converters import geometryConverters
 from armi.utils import plotting
-import armi
+from armi import configure
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 o, r = test_reactors.loadTestReactor()
 kgFis = [a.getHMMass() for a in r.core]

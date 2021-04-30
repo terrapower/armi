@@ -52,7 +52,6 @@ import numpy
 import numpy.linalg
 from ruamel.yaml import scalarstring
 
-import armi
 from armi import runLog
 from armi.utils import hexagon
 from armi.utils import textProcessors
@@ -63,8 +62,7 @@ from armi.reactor import grids
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 import armi.reactor.blueprints
-from armi.reactor.blueprints import Blueprints
-from armi.reactor.blueprints import gridBlueprint
+from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
 from armi.reactor.blueprints.gridBlueprint import GridBlueprint
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
 from armi.settings.fwSettings import globalSettings
@@ -1523,7 +1521,7 @@ class GridBlueprintControl(wx.Panel):
                     # blueprints. Give up.
                     return
 
-                armi.reactor.blueprints.migrate(bp, cs)
+                migrate(bp, cs)
 
         self.bp = bp
 

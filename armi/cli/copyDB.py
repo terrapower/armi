@@ -14,7 +14,7 @@
 
 """Copy database entry point."""
 
-import armi
+from armi import init as armi_init
 from armi import settings
 from armi.bookkeeping import db
 from armi.utils import directoryChangers
@@ -52,5 +52,5 @@ class CopyDB(EntryPoint):
         cs = settings.Settings(fName=self.args.csPath)
 
         with directoryChangers.DirectoryChanger(cs.inputDirectory):
-            o = armi.init(cs=cs)
+            o = armi_init(cs=cs)
             db.copyDatabase(o.r, srcDB, tarDB)

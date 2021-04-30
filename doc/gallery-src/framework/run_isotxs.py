@@ -3,7 +3,7 @@ Plotting Multi-group XS from ISOTXS
 ===================================
 
 In this example, several cross sections are plotted from
-an existing binary cross section library file in :py:mod:`ISOTXS <armi.nuclearDataIO.isotxs>` format. 
+an existing binary cross section library file in :py:mod:`ISOTXS <armi.nuclearDataIO.isotxs>` format.
 
 """
 
@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 from armi.physics.neutronics import energyGroups
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
-import armi
+from armi import configure
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 gs = energyGroups.getGroupStructure("ANL33")
 lib = isotxs.readBinary(ISOAA_PATH)

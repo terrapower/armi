@@ -32,9 +32,9 @@ efficient analysis.
 from armi.reactor.tests import test_reactors
 from armi.reactor.flags import Flags
 from armi.reactor.converters import blockConverters
-import armi
+from armi import configure
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 _o, r = test_reactors.loadTestReactor()
 

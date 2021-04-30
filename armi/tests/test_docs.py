@@ -16,19 +16,13 @@
 import os
 import unittest
 import doctest
-import armi
+from armi import DOC
 
 
 class TestDocs(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     @unittest.skip("Doc code examples need some love before this is going to work.")
     def test_docsHaveWorkingCodeExamples(self):
-        for root, _dirs, files in os.walk(armi.DOC):
+        for root, _dirs, files in os.walk(DOC):
             for f in files:
                 fullpath = os.path.join(root, f)
 

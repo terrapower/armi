@@ -20,7 +20,7 @@ import numpy
 from armi.utils import directoryChangers
 from armi.tests import TEST_ROOT
 from armi.reactor.flags import Flags
-import armi
+from armi import init as armi_init
 from armi.bookkeeping import db
 
 TEST_INPUT_TITLE = "c5g7-settings"
@@ -43,7 +43,7 @@ class C5G7ReactorTests(unittest.TestCase):
         """
         Load the C5G7 case from input and check basic counts.
         """
-        o = armi.init(fName=TEST_INPUT_TITLE + ".yaml")
+        o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
         b = o.r.core.getFirstBlock(Flags.MOX)
         # there are 100 of each high, medium, and low MOX pins
         fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)
@@ -64,7 +64,7 @@ class C5G7ReactorTests(unittest.TestCase):
                 indices = b.spatialLocator.getCompleteIndices()
                 locs[indices] = b.spatialLocator.getGlobalCoordinates()
 
-        o = armi.init(fName=TEST_INPUT_TITLE + ".yaml")
+        o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
         locsInput, locsDB = {}, {}
         _loadLocs(o, locsInput)
         o.operate()

@@ -15,6 +15,7 @@
 """
 Tests for operators
 """
+# pylint: disable=abstract-method,no-self-use,unused-argument
 import os
 import unittest
 import subprocess
@@ -22,13 +23,11 @@ import subprocess
 import armi
 from armi import settings
 from armi.operators import OperatorMPI
-
 from armi.tests import ARMI_RUN_PATH
+from armi.interfaces import Interface
 
 
-class FailingInterface1(
-    armi.interfaces.Interface
-):  # pylint: disable=abstract-method,no-self-use,unused-argument
+class FailingInterface1(Interface):
     """utility classes to make sure the logging system fails properly"""
 
     name = "failer"
@@ -37,9 +36,7 @@ class FailingInterface1(
         raise RuntimeError("Failing interface failure")
 
 
-class FailingInterface2(
-    armi.interfaces.Interface
-):  # pylint: disable=abstract-method,no-self-use,unused-argument
+class FailingInterface2(Interface):
     """utility class to make sure the logging system fails properly"""
 
     name = "failer"
@@ -48,9 +45,7 @@ class FailingInterface2(
         raise RuntimeError("Failing interface critical failure")
 
 
-class FailingInterface3(
-    armi.interfaces.Interface
-):  # pylint: disable=abstract-method,no-self-use,unused-argument
+class FailingInterface3(Interface):
     """fails on worker operate"""
 
     name = "failer"
@@ -68,9 +63,7 @@ class FailingInterface3(
         return False
 
 
-class OperatorTests(
-    unittest.TestCase
-):  # pylint: disable=abstract-method,no-self-use,unused-argument
+class OperatorTests(unittest.TestCase):
     """Testing the MPI parallelization operation"""
 
     # @unittest.skipIf(distutils.spawn.find_executable('mpiexec.exe') is None, "mpiexec is not in path.")
