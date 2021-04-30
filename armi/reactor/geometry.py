@@ -295,7 +295,7 @@ class BoundaryType(enum.Enum):
             return REFLECTIVE
 
     def hasSymmetry(self):
-        return not self == self.NO_SYMMETRY
+        return self != self.NO_SYMMETRY
 
 
 class SymmetryType:

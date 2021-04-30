@@ -102,7 +102,7 @@ _ignoreConfigures = False
 def isStableReleaseVersion(version=None):
     """Determine if the version should be considered a stable release"""
     version = version or __version__
-    return not "-" in version
+    return "-" not in version
 
 
 def _registerUserPlugin(plugManager, userPluginName):
