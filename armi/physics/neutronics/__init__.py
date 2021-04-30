@@ -91,10 +91,6 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
         settings = [
             crossSectionSettings.XSSettingDef(
                 CONF_CROSS_SECTION,
-                default=crossSectionSettings.XSSettings(),
-                label="Cross section control",
-                description="Data structure defining how cross sections are created",
-                schema=crossSectionSettings.XS_SCHEMA,
             )
         ]
         settings += neutronicsSettings.defineSettings()

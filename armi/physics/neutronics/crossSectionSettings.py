@@ -25,20 +25,15 @@ object hold actual instances of these data.
 
 See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/latticePhysics/latticePhysics>`.
 """
+
+from typing import Dict, Union
+
 import voluptuous as vol
 
 from armi import runLog
 from armi.settings import Setting
 
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
-
-# define conf and schema here since this is closest to where the objects live
-XS_GEOM_TYPES = {
-    "0D",
-    "1D slab",
-    "1D cylinder",
-    "2D hex",
-}
 
 CONF_XSID = "xsID"
 CONF_GEOM = "geometry"
@@ -55,9 +50,17 @@ CONF_MERGE_INTO_CLAD = "mergeIntoClad"
 CONF_FILE_LOCATION = "fileLocation"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
 
+# These may be used as arguments to ``latticePhysicsInterface._getGeomDependentWriters``.
+XS_GEOM_TYPES = {
+    "0D",
+    "1D slab",
+    "1D cylinder",
+    "2D hex",
+}
+
 # This dictionary defines the valid set of inputs based on
 # the geometry type within the ``XSModelingOptions``
-VALID_INPUTS_BY_GEOMETRY_TYPE = {
+_VALID_INPUTS_BY_GEOMETRY_TYPE = {
     "0D": {
         CONF_XSID,
         CONF_GEOM,
@@ -97,7 +100,7 @@ VALID_INPUTS_BY_GEOMETRY_TYPE = {
     },
 }
 
-SINGLE_XS_SCHEMA = vol.Schema(
+_SINGLE_XS_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_GEOM): vol.All(str, vol.In(XS_GEOM_TYPES)),
         vol.Optional(CONF_BLOCK_REPRESENTATION): vol.All(
@@ -120,47 +123,242 @@ SINGLE_XS_SCHEMA = vol.Schema(
     }
 )
 
-XS_SCHEMA = vol.Schema({vol.All(str, vol.Length(min=1, max=2)): SINGLE_XS_SCHEMA})
+_XS_SCHEMA = vol.Schema({vol.All(str, vol.Length(min=1, max=2)): _SINGLE_XS_SCHEMA})
+
+
+class XSSettings(dict):
+    """
+    Container for holding multiple cross section settings based on their XSID.
+
+    Notes
+    -----
+    This is a specialized dictionary that functions in a similar manner as a
+    defaultdict where if a key (i.e., XSID) is missing then a default will
+    be set.
+
+    If a missing key is being added before the ``setDefaults`` method
+    is called then this will produce an error.
+    """
+
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self._blockRepresentation = None
+        self._validBlockTypes = None
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} with XS IDs {self.keys()}>"
+
+    def __getitem__(self, xsID):
+        """
+        Return the stored settings of the same xs type and the lowest burnup group if they exist.
+
+        Notes
+        -----
+        1. If `AA` and `AB` exist, but `AC` is created, then the intended behavior is that `AC`
+           settings will be set to the settings in `AA`.
+
+        2. If only `YZ' exists and `YA` is created, then the intended behavior is that
+           `YA` settings will NOT be set to the settings in `YZ`.
+
+        3. Requirements for using the existing cross section settings:
+           a.  The existing XS ID must match the current XS ID.
+           b.  The current xs burnup group must be larger than the lowest burnup group for the
+                existing XS ID
+           c.  If 3a. and 3b. are not met, then the default cross section settings will be
+               set for the current XS ID
+        """
+        if xsID in self:
+            return dict.__getitem__(self, xsID)
+
+        xsType = xsID[0]
+        buGroup = xsID[1]
+        existingXsOpts = [
+            xsOpt
+            for xsOpt in self.values()
+            if xsOpt.xsType == xsType and xsOpt.buGroup < buGroup
+        ]
+
+        if not any(existingXsOpts):
+            return self._getDefault(xsID)
+
+        else:
+            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.buGroup)[0]
+
+    def setDefaults(self, blockRepresentation, validBlockTypes):
+        """
+        Set defaults for current and future xsIDs based on cs.
+
+        This must be delayed past read-time since the settings that effect this
+        may not be loaded yet and could still be at their own defaults when
+        this input is being processed. Thus, defaults are set at a later time.
+
+        See Also
+        --------
+        armi.physics.neutronics.crossSectionGroupManager.CrossSectionGroupManager.interactBOL : calls this
+        """
+        self._blockRepresentation = blockRepresentation
+        self._validBlockTypes = validBlockTypes
+        for _xsId, xsOpt in self.items():
+            xsOpt.setDefaults(
+                blockRepresentation,
+                validBlockTypes,
+            )
+            xsOpt.validate()
+
+    def _getDefault(self, xsID):
+        """
+        Process the optional ``crossSectionControl`` setting.
+
+        This input allows users to override global defaults for specific cross section IDs (xsID).
+
+        To simplify downstream handling of the various XS controls, we build a full data structure here
+        that should fully define the settings for each individual cross section ID.
+        """
+
+        if self._blockRepresentation is None or self._validBlockTypes is None:
+            raise ValueError(
+                f"The defaults of {self} have not been set. Call ``setDefaults`` first "
+                "before attempting to add a new XS ID."
+            )
+
+        xsOpt = XSModelingOptions(xsID, geometry="0D")
+        xsOpt.setDefaults(self._blockRepresentation, self._validBlockTypes)
+        xsOpt.validate()
+        return xsOpt
 
 
 class XSModelingOptions:
-    """Advanced cross section modeling options for a particular XS ID."""
+    """
+    Cross section modeling options for a particular XS ID.
+
+    Attributes
+    ----------
+    xsID : str
+        Cross section ID that is two characters maximum (i.e., AA).
+
+    geometry: str
+        The geometry modeling approximation for regions of the core with
+        this assigned xsID. This is required if the ``fileLocation``
+        attribute is not provided. This cannot be set if the ``fileLocation``
+        is provided.
+
+    fileLocation: list of str
+        This should be a list of paths where the cross sections for this
+        xsID can be copied from. This is required if the ``geometry``
+        attribute is provided. This cannot be set if the ``geometry``
+        is provided.
+
+    validBlockTypes: str or None
+        This is a configuration option for how the cross section group manager
+        determines which blocks/regions to manage as part of the same collection
+        for the current xsID. If this is set to ``None`` then all blocks/regions
+        with the current xsID will be considered.
+
+    blockRepresentation : str
+        This is a configuration option for how the cross section group manager
+        will select how to create a representative block based on the collection
+        within the same xsID. See: ``crossSectionGroupManager.BLOCK_COLLECTIONS``.
+
+    driverID : str
+        This is a lattice physics configuration option used to determine which
+        representative block can be used as a "fixed source" driver for another
+        composition. This is particularly useful for non-fuel or highly subcritical
+        regions.
+
+    criticalBuckling : bool
+        This is a lattice physics configuration option used to enable or disable
+        the critical buckling search option.
+
+    nuclideReactionDriver : str
+        This is a lattice physics configuration option that is similar to the
+        ``driverID``, but rather than applying the source from a specific
+        representative block, the neutron source is taken from a single
+        nuclides fission spectrum (i.e., U235). This is particularly useful
+        for configuring SERPENT 2 lattice physics calculations.
+
+    externalDriver : bool
+        This is a lattice physics configuration option that can be used
+        to determine if the fixed source problem is internally driven
+        or externally driven by the ``driverID`` region. Externally
+        driven means that the region will be placed on the outside of the
+        current xsID block/region.
+
+    useHomogenizedBlockComposition : bool
+        This is a lattice physics configuration option that is useful for
+        modeling spatially dependent problems (i.e., 1D/2D). If this is
+        True then the representative block for the current xsID will be
+        be homogenzied. If this is False then the block will be represented
+        in the geometry type selected. This is mainly used for 1D cylindrical
+        problems.
+
+    numInternalRings : int
+        This is a lattice physics configuration option that is used to
+        specify the number of rings for the internal driver block/region.
+
+    numExternalRings : int
+        This is a lattice physics configuration option that is used to
+        specify the number of rings for the external driver block/region.
+
+    mergeIntoClad : list of str
+        This is a lattice physics configuration option that is a list of component
+        names to merge into a "clad" component. This is highly-design specific
+        and is sometimes used to merge a "gap" or low-density region into
+        a "clad" region to avoid numerical issues.
+
+    meshSubdivisionsPerCm : float
+        This is a lattice physics configuration option that can be used to control
+        subregion meshing of the representative block in 1D problems.
+
+    Notes
+    -----
+    Not all default attributes may be useful for your specific application and you may
+    require other types of configuration options. These are provided as examples since
+    the base ``latticePhysicsInterface`` does not implement models that use these. For
+    additional options, consider subclassing the base ``Setting`` object and using this
+    model as a template.
+    """
 
     def __init__(
         self,
         xsID,
         geometry=None,
+        fileLocation=None,
+        validBlockTypes=None,
         blockRepresentation=None,
         driverID=None,
         criticalBuckling=None,
         nuclideReactionDriver=None,
-        validBlockTypes=None,
         externalDriver=None,
         useHomogenizedBlockComposition=None,
         numInternalRings=None,
         numExternalRings=None,
         mergeIntoClad=None,
-        fileLocation=None,
         meshSubdivisionsPerCm=None,
     ):
         self.xsID = xsID
         self.geometry = geometry
+        self.fileLocation = fileLocation
+        self.validBlockTypes = validBlockTypes
         self.blockRepresentation = blockRepresentation
+
+        # These are application specific, feel free use them
+        # in your own lattice physics plugin(s).
         self.driverID = driverID
         self.criticalBuckling = criticalBuckling
         self.nuclideReactionDriver = nuclideReactionDriver
-        self.validBlockTypes = validBlockTypes
         self.externalDriver = externalDriver
         self.useHomogenizedBlockComposition = useHomogenizedBlockComposition
         self.numInternalRings = numInternalRings
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
-        self.fileLocation = fileLocation
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
-        self._validate()
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} XSID: {self.xsID}>"
+        if self.isPregenerated:
+            suffix = f"Pregenerated: {self.isPregenerated}"
+        else:
+            suffix = f"Geometry Model: {self.geometry}"
+        return f"<{self.__class__.__name__}, XSID: {self.xsID}, {suffix}>"
 
     def __iter__(self):
         return iter(self.__dict__.items())
@@ -180,25 +378,26 @@ class XSModelingOptions:
         """True if this points to a pre-generated XS file."""
         return self.fileLocation is not None
 
-    def _validate(self):
-        """
-        Perform additional validation checks on the set of inputs.
+    def serialize(self):
+        """Return as a dictionary without ``xsID`` and with ``None`` values excluded."""
+        doNotSerialize = ["xsID"]
+        return {
+            key: val
+            for key, val in self
+            if key not in doNotSerialize and val is not None
+        }
 
-        Notes
-        -----
-        This checks for any inconsistencies in the definition of
-        the attributes.
-        """
+    def validate(self):
+        # Check for valid inputs when the file location is supplied.
         if self.fileLocation is None and self.geometry is None:
             raise ValueError(f"{self} is missing a geometry input or a file location.")
 
         if self.fileLocation is not None and self.geometry is not None:
             raise ValueError(
                 f"Either file location or geometry inputs in {self} must be given, but not both. "
-                "Remove one or the other"
+                "Remove one or the other."
             )
 
-        # Check for valid inputs when the file location is supplied.
         invalids = []
         if self.fileLocation is not None:
             for var, val in self:
@@ -219,7 +418,7 @@ class XSModelingOptions:
         # Check for valid inputs when the geometry is supplied.
         invalids = []
         if self.geometry is not None:
-            validOptions = VALID_INPUTS_BY_GEOMETRY_TYPE[self.geometry]
+            validOptions = _VALID_INPUTS_BY_GEOMETRY_TYPE[self.geometry]
             for var, val in self:
                 if var not in validOptions and val is not None:
                     invalids.append((var, val))
@@ -239,15 +438,14 @@ class XSModelingOptions:
         This sets the defaults based on some recommended values based on the geometry type.
 
         Notes
-        ----
-        This is useful in cases where the user wants the cross sections to be generated for
-        the defined cross section types in the model, but doesn't have to explictly set
-        all the options.
-
-        The supported defaults for the geometry are: ["0D", "1D slab", "1D cylinder", "2D hex"].
+        -----
+        These defaults are application-specific and design specific. They are included
+        to provide an example and are tuned to fit the internal needs of TerraPower. Consider
+        a separate implementation/subclass if you would like different behavior.
         """
         validBlockTypes = None if validBlockTypes else ["fuel"]
 
+        defaults = {}
         if self.isPregenerated:
             defaults = {
                 CONF_FILE_LOCATION: self.fileLocation,
@@ -291,183 +489,115 @@ class XSModelingOptions:
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
-        else:
-            raise ValueError(
-                f"{self} has no geometry type `{self.geometry}` or file location `{self.fileLocation}` "
-                "defined"
-            )
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
             if currentValue is None:
+                runLog.extra(
+                    f"Applying default value {defaultValue} to {attrName} to {self}."
+                )
                 setattr(self, attrName, defaultValue)
 
-        # Validate the defaults
-        self._validate()
+        self.validate()
+
+
+def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Dict]:
+    """
+    Return a serialized form of the ``XSSettings`` as a dictionary.
+
+    Notes
+    -----
+    Attributes that are not set (i.e., set to None) will be skipped.
+    """
+    if not isinstance(xsSettingsDict, dict):
+        raise TypeError(f"Expected a dictionary for {xsSettingsDict}")
+
+    output = {}
+    for xsID, xsOpts in xsSettingsDict.items():
+
+        # Setting the value to an empty dictionary
+        # if it is set to a None or an empty
+        # dictionary.
+        if not xsOpts:
+            continue
+
+        if isinstance(xsOpts, XSModelingOptions):
+            xsIDVals = xsOpts.serialize()
+
+        elif isinstance(xsOpts, dict):
+            xsIDVals = {
+                config: confVal
+                for config, confVal in xsOpts.items()
+                if config != "xsID" and confVal is not None
+            }
+        else:
+            raise TypeError(
+                f"{xsOpts} was expected to be a ``dict`` or "
+                f"``XSModelingOptions`` options type but is type {type(xsOpts)}"
+            )
+
+        output[str(xsID)] = xsIDVals
+    return output
 
 
 class XSSettingDef(Setting):
     """
-    The setting object with custom serialization.
+    Custom setting object the manage the cross section dictionary-like inputs.
 
-    Note that the VALUE of the setting will be a XSSettingValue object.
+    Notes
+    -----
+    This uses the ``xsSettingsValidator`` schema to validate the inputs
+    and will automatically coerce the value into a ``XSSettings`` dictionary.
     """
 
-    def _load(self, inputVal):
-        """Read a dict of input, validate it, and populate this with new instances."""
-        inputVal = XS_SCHEMA(inputVal)
-        vals = XSSettings()
-        for xsID, inputParams in inputVal.items():
-            # Do not automatically add the xsID if the value of the
-            # dictionary is None or not set.
-            if not inputParams:
-                continue
-            vals[xsID] = XSModelingOptions(xsID, **inputParams)
-        return vals
+    def __init__(self, name):
+        description = "Data structure defining how cross sections are created"
+        label = "Cross section control"
+        default = XSSettings()
+        options = None
+        schema = xsSettingsValidator
+        enforcedOptions = False
+        subLabels = None
+        isEnvironment = False
+        oldNames = None
+        Setting.__init__(
+            self,
+            name,
+            default,
+            description,
+            label,
+            options,
+            schema,
+            enforcedOptions,
+            subLabels,
+            isEnvironment,
+            oldNames,
+        )
 
     def dump(self):
-        """
-        Dump serialized XSModelingOptions.
-
-        This is used when saving settings to a file. Conveniently,
-        YAML libs can load/dump simple objects like this out of the box.
-
-        We massage the data on its way out for user convenience, leaving None values out
-        and leaving the special ``xsID`` value out.
-        """
-        output = self._serialize(self._value)
-        output = XS_SCHEMA(output)  # validate on the way out too
-        return output
-
-    def setValue(self, val):
-        """
-        Set value of setting to val.
-
-        Since this is a custom serializable setting, we allow users
-        to pass in either a ``XSModelingOptions`` object itself
-        or a dictionary representation of one.
-        """
-        if val is None:
-            Setting.setValue(self, val=XSSettings())
-
-        # If this is a dictionary and it has at least
-        # one input.
-        elif len(list(val.values())) > 0:
-            val = self._serialize(val)
-            Setting.setValue(self, val)
-        else:
-            Setting.setValue(self, val=XSSettings())
-
-    @staticmethod
-    def _serialize(value):
-        output = {}
-        for xsID, val in value.items():
-            # Setting the value to an empty dictionary
-            # if it is set to a None or an empty
-            # dictionary.
-
-            if not val:
-                continue
-
-            if isinstance(val, XSModelingOptions):
-                vals = val
-
-            elif isinstance(val, dict):
-                vals = val.items()
-
-            else:
-                # Skip attributes within the dictionary
-                # that are not instances of XSModelingOptions
-                # or dictionaries. This includes comment
-                # sections
-                continue
-
-            xsIDVals = {
-                config: confVal
-                for config, confVal in vals
-                if config != "xsID" and confVal is not None
-            }
-            output[xsID] = xsIDVals
-        return output
+        """Return a serialized version of the ``XSSetting`` object."""
+        return serializeXSSettings(self._value)
 
 
-class XSSettings(dict):
+def xsSettingsValidator(xsSettingsDict: Dict[str, Dict]) -> XSSettings:
     """
-    The container that holds the multiple individual XS settings for different ids.
+    Returns a ``XSSettings`` object if validation is successful.
 
-    This is what the value of the cs setting is set to. It handles reading/writing the settings
-    to file as well as some other special behavior.
+    Notes
+    -----
+    This provides two levels of checks. The first check is that the attributes
+    provided as user input contains the correct key/values and the values are
+    of the correct type. The second check uses the ``XSModelingOptions.validate``
+    method to check for input inconsistencies and provides warnings if there
+    are any issues.
     """
-
-    def __getitem__(self, xsID):
-        """
-        Return the stored settings of the same xs type and the lowest burnup group if they exist.
-
-        Notes
-        -----
-        1. If `AA` and `AB` exist, but `AC` is created, then the intended behavior is that `AC`
-           settings will be set to the settings in `AA`.
-
-        2. If only `YZ' exists and `YA` is created, then the intended behavior is that
-           `YA` settings will NOT be set to the settings in `YZ`.
-
-        3. Requirements for using the existing cross section settings:
-           a.  The existing XS ID must match the current XS ID.
-           b.  The current xs burnup group must be larger than the lowest burnup group for the
-                existing XS ID
-           c.  If 3a. and 3b. are not met, then the default cross section settings will be
-               set for the current XS ID
-        """
-        if xsID in self:
-            return dict.__getitem__(self, xsID)
-
-        xsType = xsID[0]
-        buGroup = xsID[1]
-        existingXsOpts = [
-            xsOpt
-            for xsOpt in self.values()
-            if xsOpt.xsType == xsType and xsOpt.buGroup < buGroup
-        ]
-
-        if not any(existingXsOpts):
-            return self._getDefault(xsID)
-
-        else:
-            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.buGroup)[0]
-
-    def setDefaults(self, cs):
-        """
-        Set defaults for current and future xsIDs based on cs.
-
-        This must be delayed past read-time since the settings that effect this
-        may not be loaded yet and could still be at their own defaults when
-        this input is being processed. Thus, defaults are set at a later time.
-
-        See Also
-        --------
-        armi.physics.neutronics.crossSectionGroupManager.CrossSectionGroupManager.interactBOL : calls this
-        """
-        self._xsBlockRepresentation = cs["xsBlockRepresentation"]
-        self._disableBlockTypeExclusionInXsGeneration = cs[
-            "disableBlockTypeExclusionInXsGeneration"
-        ]
-        for _xsId, xsOpt in self.items():
-            xsOpt.setDefaults(
-                cs["xsBlockRepresentation"],
-                cs["disableBlockTypeExclusionInXsGeneration"],
-            )
-
-    def _getDefault(self, xsID):
-        """
-        Process the optional ``crossSectionControl`` setting.
-
-        This input allows users to override global defaults for specific cross section IDs (xsID).
-
-        To simplify downstream handling of the various XS controls, we build a full data structure here
-        that should fully define the settings for each individual cross section ID.
-        """
-        xsOpt = XSModelingOptions(xsID, geometry="0D")
-        xsOpt.setDefaults(
-            self._xsBlockRepresentation, self._disableBlockTypeExclusionInXsGeneration
-        )
-        return xsOpt
+    xsSettingsDict = serializeXSSettings(xsSettingsDict)
+    xsSettingsDict = _XS_SCHEMA(xsSettingsDict)
+    vals = XSSettings()
+    for xsID, inputParams in xsSettingsDict.items():
+        if not inputParams:
+            continue
+        xsOpt = XSModelingOptions(xsID, **inputParams)
+        xsOpt.validate()
+        vals[xsID] = xsOpt
+    return vals
