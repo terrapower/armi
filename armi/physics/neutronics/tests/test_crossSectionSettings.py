@@ -298,6 +298,33 @@ class Test_XSSettings(unittest.TestCase):
         )
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Median")
 
+    def test_xsSettingsSetDefault(self):
+        """Test the configuration options of the ``setDefaults`` method."""
+        cs = caseSettings.Settings()
+        cs["xsBlockRepresentation"] = "FluxWeightedAverage"
+        cs[CONF_CROSS_SECTION].setDefaults(
+            blockRepresentation=cs["xsBlockRepresentation"], validBlockTypes=None
+        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
+
+        cs[CONF_CROSS_SECTION].setDefaults(
+            blockRepresentation=cs["xsBlockRepresentation"], validBlockTypes=True
+        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
+
+        cs[CONF_CROSS_SECTION].setDefaults(
+            blockRepresentation=cs["xsBlockRepresentation"], validBlockTypes=False
+        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["fuel"])
+
+        cs[CONF_CROSS_SECTION].setDefaults(
+            blockRepresentation=cs["xsBlockRepresentation"],
+            validBlockTypes=["control", "fuel", "plenum"],
+        )
+        self.assertEqual(
+            cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["control", "fuel", "plenum"]
+        )
+
 
 if __name__ == "__main__":
     # sys.argv = ["", "TestCrossSectionSettings.test_badCrossSections"]

@@ -51,6 +51,7 @@ CONF_FILE_LOCATION = "fileLocation"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
 
 # These may be used as arguments to ``latticePhysicsInterface._getGeomDependentWriters``.
+# This could be an ENUM later.
 XS_GEOM_TYPES = {
     "0D",
     "1D slab",
@@ -130,14 +131,18 @@ class XSSettings(dict):
     """
     Container for holding multiple cross section settings based on their XSID.
 
+    This is intended to be stored as part of a case settings and to be
+    used for cross section modeling within a run.
+
     Notes
     -----
     This is a specialized dictionary that functions in a similar manner as a
     defaultdict where if a key (i.e., XSID) is missing then a default will
-    be set.
-
-    If a missing key is being added before the ``setDefaults`` method
+    be set. If a missing key is being added before the ``setDefaults`` method
     is called then this will produce an error.
+
+    This cannot just be a defaultdict because the creation of new cross
+    section settings are dependent on user settings.
     """
 
     def __init__(self, *args, **kwargs):
@@ -186,11 +191,24 @@ class XSSettings(dict):
 
     def setDefaults(self, blockRepresentation, validBlockTypes):
         """
-        Set defaults for current and future xsIDs based on cs.
+        Set defaults for current and future xsIDs based user settings.
 
         This must be delayed past read-time since the settings that effect this
         may not be loaded yet and could still be at their own defaults when
         this input is being processed. Thus, defaults are set at a later time.
+
+        Parameters
+        ----------
+        blockRepresentation : str
+            Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
+
+        validBlockTypes : list of str or bool
+           This configures which blocks (by their type) that the cross section
+           group manager will merge together to create a representative block. If
+           set to ``None`` or ``True`` then all block types in the XS ID will be
+           considered. If this is set to ``False`` then a default of ["fuel"] will
+           be used. If this is set to a list of strings then the specific list will
+           be used. A typical input may be ["fuel"] to just consider the fuel blocks.
 
         See Also
         --------
@@ -214,8 +232,7 @@ class XSSettings(dict):
         To simplify downstream handling of the various XS controls, we build a full data structure here
         that should fully define the settings for each individual cross section ID.
         """
-
-        if self._blockRepresentation is None or self._validBlockTypes is None:
+        if self._blockRepresentation is None:
             raise ValueError(
                 f"The defaults of {self} have not been set. Call ``setDefaults`` first "
                 "before attempting to add a new XS ID."
@@ -245,7 +262,7 @@ class XSModelingOptions:
     fileLocation: list of str
         This should be a list of paths where the cross sections for this
         xsID can be copied from. This is required if the ``geometry``
-        attribute is provided. This cannot be set if the ``geometry``
+        attribute is not provided. This cannot be set if the ``geometry``
         is provided.
 
     validBlockTypes: str or None
@@ -281,23 +298,25 @@ class XSModelingOptions:
         to determine if the fixed source problem is internally driven
         or externally driven by the ``driverID`` region. Externally
         driven means that the region will be placed on the outside of the
-        current xsID block/region.
+        current xsID block/region. If this is False then the driver
+        region will be "inside" (i.e., an inner ring in a cylindrical
+        model).
 
     useHomogenizedBlockComposition : bool
         This is a lattice physics configuration option that is useful for
         modeling spatially dependent problems (i.e., 1D/2D). If this is
         True then the representative block for the current xsID will be
-        be homogenzied. If this is False then the block will be represented
-        in the geometry type selected. This is mainly used for 1D cylindrical
-        problems.
+        be a homogenized region. If this is False then the block will be
+        represented in the geometry type selected. This is mainly used for
+        1D cylindrical problems.
 
     numInternalRings : int
         This is a lattice physics configuration option that is used to
-        specify the number of rings for the internal driver block/region.
+        specify the number of grid-based rings for the representative block.
 
     numExternalRings : int
         This is a lattice physics configuration option that is used to
-        specify the number of rings for the external driver block/region.
+        specify the number of grid-based rings for the driver block.
 
     mergeIntoClad : list of str
         This is a lattice physics configuration option that is a list of component
@@ -446,13 +465,29 @@ class XSModelingOptions:
         """
         This sets the defaults based on some recommended values based on the geometry type.
 
+        Parameters
+        ----------
+        blockRepresentation : str
+            Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
+
+        validBlockTypes : list of str or bool
+           This configures which blocks (by their type) that the cross section
+           group manager will merge together to create a representative block. If
+           set to ``None`` or ``True`` then all block types in the XS ID will be
+           considered. If this is set to ``False`` then a default of ["fuel"] will
+           be used. If this is set to a list of strings then the specific list will
+           be used. A typical input may be ["fuel"] to just consider the fuel blocks.
+
         Notes
         -----
         These defaults are application-specific and design specific. They are included
         to provide an example and are tuned to fit the internal needs of TerraPower. Consider
         a separate implementation/subclass if you would like different behavior.
         """
-        validBlockTypes = None if validBlockTypes else ["fuel"]
+        if type(validBlockTypes) == bool:
+            validBlockTypes = None if validBlockTypes else ["fuel"]
+        else:
+            validBlockTypes = validBlockTypes
 
         defaults = {}
         if self.isPregenerated:
@@ -551,7 +586,7 @@ def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Di
 
 class XSSettingDef(Setting):
     """
-    Custom setting object the manage the cross section dictionary-like inputs.
+    Custom setting object to manage the cross section dictionary-like inputs.
 
     Notes
     -----
