@@ -63,9 +63,8 @@ always equal.
 
 There are similarities between this code and that in the PyNE cccc subpackage.
 This is the original source of the code. TerraPower authorized the publication
-of some of the CCCC code to the PyNE project way back in the 2011 era. 
-This code has since been updated significantly to both read and 
-write the files.
+of some of the CCCC code to the PyNE project way back in the 2011 era. This code 
+has since been updated significantly to both read and write the files.
 
 This was originally inspired by Prof. James Paul Holloway's alpha
 release of ccccutils written in c++ from 2001. 
