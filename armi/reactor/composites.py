@@ -1679,7 +1679,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
-        r"""returns the fissile mass enrichment. """
+        r"""returns the fissile mass enrichment."""
         hm = self.getHMMass()
         if hm > 0:
             return self.getFissileMass() / hm
@@ -1980,7 +1980,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return numpy.array([child.p[param] for child in self])
 
     def isFuel(self):
-        """True if this is a fuel block. """
+        """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
 
     def containsHeavyMetal(self):
@@ -2113,7 +2113,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams. """
+        """returns mass of fuel in grams."""
         return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
 
     def constituentReport(self):

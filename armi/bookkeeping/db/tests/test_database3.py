@@ -28,7 +28,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestDatabase3(unittest.TestCase):
-    r""" Tests for the Database3 class """
+    r"""Tests for the Database3 class"""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()

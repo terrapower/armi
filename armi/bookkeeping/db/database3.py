@@ -237,7 +237,7 @@ class DatabaseInterface(interfaces.Interface):
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. """
+        """In case anything changed since last cycle (e.g. rxSwing), update DB."""
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
@@ -248,7 +248,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.writeToDB(self.r)
 
     def interactEOL(self):
-        """DB's should be closed at run's end. """
+        """DB's should be closed at run's end."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0

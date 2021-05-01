@@ -37,7 +37,7 @@ class Sulfur(material.Fluid):
         self.setMassFrac("S36", 0.002)
 
     def density(self, Tk=None, Tc=None):
-        r""" P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range" """
+        r"""P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range" """
         Tk = getTk(Tc, Tk)
 
         self.checkTempRange(334, 430, Tk, "density")

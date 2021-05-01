@@ -79,7 +79,7 @@ class Reactor(composites.Composite):
         self.blueprints = blueprints
 
     def __getstate__(self):
-        r"""applies a settings and parent to the reactor and components. """
+        r"""applies a settings and parent to the reactor and components."""
         state = composites.Composite.__getstate__(self)
         state["o"] = None
         return state
@@ -229,7 +229,7 @@ class Core(composites.Composite):
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
 
     def __getstate__(self):
-        """Applies a settings and parent to the core and components. """
+        """Applies a settings and parent to the core and components."""
         state = composites.Composite.__getstate__(self)
         return state
 
@@ -1799,7 +1799,7 @@ class Core(composites.Composite):
         self.zones = zones.splitZones(self, cs, self.zones)
 
     def getCoreRadius(self):
-        """Returns a radius that the core would fit into. """
+        """Returns a radius that the core would fit into."""
         return self.getNumRings(indexBased=True) * self.getFirstBlock().getPitch()
 
     def findAllMeshPoints(self, assems=None, applySubMesh=True):
