@@ -15,28 +15,8 @@
 """
 Read and/or write data files associated with nuclear data and reactor physics data.
 """
-from __future__ import print_function
 
-import os
-import struct
-import math
-import re
-import traceback
-
-import glob
-import numpy
-import pylab
-import scipy.interpolate
-
-from armi.utils import properties
-from armi import runLog
-from armi import settings
-from armi.localization import exceptions
-from armi.utils import units
-from armi.nuclearDataIO import cccc
 from armi.physics import neutronics
-
-from armi.nuclearDataIO.cccc.nhflux import NHFLUX
 
 # export the cccc modules here to keep external clients happy,
 # though prefer full imports in new code
@@ -188,20 +168,4 @@ def _getGammaKeywords(cycle, suffix, xsID):
             raise ValueError("The cycle or XS ID must be specified.")
         keywords.append(".")
     return keywords
-
-
-def ISOTXS(fName="ISOTXS"):
-    # load a library that is in the ARMI tree. This should
-    # be a small library with LFPs, Actinides, structure, and coolant
-    from armi.nuclearDataIO.cccc import isotxs
-
-    return isotxs.readBinary(fName)
-
-
-def GAMISO(fName="GAMISO"):
-    # load a library that is in the ARMI tree. This should
-    # be a small library with LFPs, Actinides, structure, and coolant
-    from armi.nuclearDataIO.cccc import gamiso
-
-    return gamiso.readBinary(fName)
 
