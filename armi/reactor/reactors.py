@@ -21,7 +21,6 @@ more refinement in representing the physical reactor. The reactor is the owner o
 plant-wide state variables such as keff, cycle, and node.
 
 """
-from __future__ import print_function
 import collections
 import copy
 import itertools

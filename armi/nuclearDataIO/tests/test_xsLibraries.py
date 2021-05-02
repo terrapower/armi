@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for xsLibraries.IsotxsLibrary"""
-from __future__ import print_function
 import filecmp
 import os
 import unittest

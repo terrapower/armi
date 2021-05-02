@@ -32,7 +32,6 @@ The default way of using the ARMI runLog is:
     system.
 
 """
-from __future__ import print_function
 import sys
 import os
 import collections
