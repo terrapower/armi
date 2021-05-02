@@ -1974,7 +1974,7 @@ class Core(composites.Composite):
             generates submesh points to further discretize the theta reactor mesh
 
         """
-        i, j, k = self.findAllMeshPoints(extraAssems, applySubMesh)
+        i, _, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return i
 
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
@@ -1994,7 +1994,7 @@ class Core(composites.Composite):
             (not implemented) generates submesh points to further discretize the radial reactor mesh
 
         """
-        i, j, k = self.findAllMeshPoints(extraAssems, applySubMesh)
+        _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return j
 
     def getMaxBlockParam(self, *args, **kwargs):

@@ -10,7 +10,8 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License0.
+""" Testing the settingsIO """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import datetime
@@ -90,7 +91,7 @@ class SettingsRenameTests(unittest.TestCase):
             ]
         }
         with self.assertRaises(exceptions.SettingException):
-            renamer = settingsIO.SettingRenamer(settings)
+            _ = settingsIO.SettingRenamer(settings)
 
 
 class SettingsWriterTests(unittest.TestCase):

@@ -1462,7 +1462,7 @@ class Block(composites.Composite):
 
         # update moles at BOL for each pin
         self.p.molesHmBOLByPin = []
-        for pinNum, pin in enumerate(self.iterComponents(Flags.FUEL)):
+        for pin in self.iterComponents(Flags.FUEL):
             # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
             pin.p.flags = fuelFlags
             self.p.molesHmBOLByPin.append(pin.getHMMoles())

@@ -917,7 +917,7 @@ class GridGui(wx.ScrolledWindow):
         self.pdc.SetBrush(brush)
 
         for idx, loc in self.grid.items():
-            ring, pos = self.grid.getRingPos(idx)
+            ring, _ = self.grid.getRingPos(idx)
             if not self.grid.locatorInDomain(loc) or ring > self.numRings:
                 continue
 
@@ -1085,7 +1085,7 @@ class GridGui(wx.ScrolledWindow):
         region = self.GetUpdateRegion()
         region.Offset(dx * xv, dy * yv)
 
-        rect = region.GetBox()
+        _ = region.GetBox()
 
         self.pdc.DrawToDC(dc)
 
@@ -1095,8 +1095,8 @@ class GridGui(wx.ScrolledWindow):
             return
 
         if event.LeftDown():
-            x = event.GetX()
-            y = event.GetY()
+            _ = event.GetX()
+            _ = event.GetY()
 
             objId = self._getObjectFromEvent(event)
 
@@ -1225,7 +1225,7 @@ class GridGui(wx.ScrolledWindow):
             and self.grid.getRingPos(loc)[0] <= self.numRings
         }
 
-        coordScale = self._gridScale(self.grid)
+        _ = self._gridScale(self.grid)
 
         allCenters = numpy.array(
             [self.grid.getCoordinates(idx)[:2] for idx in inDomain]
@@ -1780,11 +1780,6 @@ class NewGridBlueprintDialog(wx.Dialog):
         else:
             bc = geometry.BoundaryType.NO_SYMMETRY
 
-        if self.throughCenter.GetValue():
-            through = geometry.THROUGH_CENTER_ASSEMBLY
-        else:
-            through = ""
-
         symmetry = geometry.SymmetryType(domain, bc, self.throughCenter.GetValue())
 
         assert symmetry.checkValidSymmetry()
@@ -1798,7 +1793,6 @@ if __name__ == "__main__":
     import sys
 
     app = wx.App()
-
     frame = wx.Frame(None, wx.ID_ANY, title="Grid Blueprints GUI", size=(1000, 1000))
 
     gui = GridBlueprintControl(frame)

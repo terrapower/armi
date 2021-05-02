@@ -212,7 +212,7 @@ class TestSymmetryType(unittest.TestCase):
         self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomRZ, fullCore))
 
         with self.assertRaises(ValueError):
-            thirdReflective = geometry.SymmetryType(
+            _ = geometry.SymmetryType(
                 geometry.DomainType.THIRD_CORE,
                 geometry.BoundaryType.REFLECTIVE,
                 False,
@@ -270,7 +270,7 @@ class TestSystemLayoutInput(unittest.TestCase):
         self.assertEqual(geom2.assemTypeByIndices[2, 2], "A2")
         os.remove(fName)
 
-    def test_asciimap(self):
+    def test_asciimap(self):  # pylint: disable=no-self-use
         """Ensure this can write ascii maps"""
         geom = SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
