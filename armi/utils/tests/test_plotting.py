@@ -63,7 +63,7 @@ class TestPlotting(unittest.TestCase):
             self.r.core.lib = xslib
 
             blockList = self.r.core.getBlocks()
-            for i, b in enumerate(blockList):
+            for _, b in enumerate(blockList):
                 b.p.mgFlux = range(33)
 
             plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blockList)

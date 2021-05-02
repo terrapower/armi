@@ -80,7 +80,7 @@ class TestFlag(unittest.TestCase):
         """
         with self.assertRaises(AssertionError):
 
-            class F(Flag):
+            class F(Flag):  # pylint: disable=unused-variable
                 foo = 1
                 bar = 1
 

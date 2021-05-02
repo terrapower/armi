@@ -97,7 +97,7 @@ class TestGeometryConverters(unittest.TestCase):
         # checks that outer assemblies are removed
         locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(9, 1)
         with self.assertRaises(KeyError):
-            loc = self.r.core.childrenByLocator[locator]
+            _ = self.r.core.childrenByLocator[locator]
 
         # tests ability to remove fuel assemblies
         converter.numFuelAssems = 20

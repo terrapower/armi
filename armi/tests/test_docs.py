@@ -34,7 +34,7 @@ class TestDocs(unittest.TestCase):
 
                 try:
                     doctest.testfile(fullpath)
-                except Exception as ee:
+                except Exception:
                     pass
 
 

@@ -72,7 +72,7 @@ assemblies:
         """
         )
         fuelComponent = a[0][0]
-        nd = fuelComponent.p.numberDensities
+        _ = fuelComponent.p.numberDensities
         u235 = fuelComponent.getMass("U235")
         u = fuelComponent.getMass("U")
         assert_allclose(0.20, u235 / u)

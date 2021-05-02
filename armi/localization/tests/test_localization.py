@@ -180,7 +180,7 @@ class LocalizationTests(unittest.TestCase):
 
     def test_warn_once_decorator(self):
         with mockRunLogs.BufferLog() as mock:
-            for ii in range(1, 4):
+            for _ in range(1, 4):
                 self.exampleWarnOnceMessage()
                 self.assertEqual(
                     "[warn] single warning\n", mock._outputStream.getvalue()

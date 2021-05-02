@@ -234,7 +234,7 @@ def clearNuclideBases():
 
     Necessary when initializing nuclide base information multiple times (often in testing).
     """
-    for name, element in byName.items():
+    for _, element in byName.items():
         element.nuclideBases = []
 
 

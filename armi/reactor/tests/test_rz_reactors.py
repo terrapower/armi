@@ -40,7 +40,7 @@ class Test_RZT_Reactor(unittest.TestCase):
         self.assertTrue(all(aziMesh == 8 for aziMesh in aziMeshes))
 
     def test_findAllMeshPoints(self):
-        i, j, k = self.r.core.findAllMeshPoints()
+        i, _, _ = self.r.core.findAllMeshPoints()
         self.assertLess(i[-1], 2 * math.pi)
 
 

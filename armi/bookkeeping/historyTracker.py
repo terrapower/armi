@@ -567,7 +567,6 @@ class HistoryTrackerInterface(interfaces.Interface):
             val = self._preloadedBlockHistory[block][paramName][ts]
         # not in preloaded or preloaded failed
         except (TypeError, ValueError, KeyError, IndexError):
-            index = 0
             dbi = self.getInterface("database")
             try:
                 data = dbi.database.getHistory(block, [paramName], [ts])

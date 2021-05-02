@@ -187,7 +187,7 @@ class MemoryProfiler(interfaces.Interface):
         for i in self.o.getInterfaces():
             checkAttr(i)
             if i.name == "xsGroups":
-                for xsid, block in i.representativeBlocks.items():
+                for _, block in i.representativeBlocks.items():
                     checkAttr(block)
 
         if len(uniqueIds) == 0:
@@ -653,7 +653,7 @@ def _walkReferrers(o, maxLevel=0, level=0, memo=None, whitelist=None):
         if referrer.__class__.__name__ != "frame" and id(referrer) in whitelist
     ]
     memo.update({oid for (_obj, oid, _seen) in referrers})
-    for (obj, oid, seen) in referrers:
+    for (obj, _, seen) in referrers:
         runLog.important(
             "{}{}    {} at {:x} seen: {}".format(
                 "-" * level, type(obj), "{}".format(obj)[:100], id(obj), seen

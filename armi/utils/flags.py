@@ -304,7 +304,7 @@ class Flag(metaclass=_FlagMeta):
         sense to play with this more.
         """
         new = self._value
-        for name, val in self._nameToValue.items():
+        for _, val in self._nameToValue.items():
             if val & new:
                 new -= val
             else:
@@ -312,7 +312,7 @@ class Flag(metaclass=_FlagMeta):
         return type(self)(new)
 
     def __iter__(self):
-        for name, value in self._nameToValue.items():
+        for _, value in self._nameToValue.items():
             if value & self._value:
                 yield type(self)(value)
 

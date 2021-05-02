@@ -864,7 +864,7 @@ class Assembly_TestCase(unittest.TestCase):
                 "mult": 1.0,
             }
 
-            if i in (0, 4):
+            if (i == 0) or (i == 4):
                 b.setType("plenum")
                 h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
             else:
@@ -906,7 +906,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             # Check densities
             for nuc, dens in b.getNumberDensities().items():
-                if i in (0, 4):
+                if (i == 0) or (i == 4):
                     ref = densities[i][nuc]
                 else:
                     ref = densities[i][nuc] / expandFrac
@@ -941,7 +941,7 @@ class Assembly_TestCase(unittest.TestCase):
                 "ip": 0.0,
                 "mult": 1.0,
             }
-            if blockI in (0, 4):
+            if (blockI == 0) or (blockI == 4):
                 b.setType("plenum")
                 h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
             else:
@@ -982,7 +982,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             # Check densities
             for nuc, dens in b.getNumberDensities().items():
-                if i in (0, 4):
+                if (i == 0) or (i == 4):
                     # these blocks should be unchanged in mass/density.
                     ref = densities[i][nuc]
                 else:

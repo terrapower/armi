@@ -690,7 +690,7 @@ class Database3(database.Database):
 
             # Copy everything except time node data
             timeSteps = set()
-            for groupName, group in dbIn.items():
+            for groupName, _ in dbIn.items():
                 m = self.timeNodeGroupPattern.match(groupName)
                 if m:
                     timeSteps.add((int(m.group(1)), int(m.group(2))))
@@ -1069,8 +1069,7 @@ class Database3(database.Database):
         Given a flat collection of all of the ArmiObjects in the model, reconstitute the
         hierarchy.
         """
-
-        comp, serialNum, numChildren, location = next(comps)
+        comp, _, numChildren, location = next(comps)
 
         # attach the parent early, if provided; some cases need the parent attached for
         # the rest of _compose to work properly.
@@ -1146,7 +1145,7 @@ class Database3(database.Database):
                 linkedDims = []
                 data = []
 
-                for i, c in enumerate(comps):
+                for _, c in enumerate(comps):
                     val = c.p[paramDef.name]
                     if isinstance(val, tuple):
                         linkedDims.append("{}.{}".format(val[0].name, val[1]))
@@ -1223,7 +1222,7 @@ class Database3(database.Database):
                 dataset = g.create_dataset(paramDef.name, data=data, compression="gzip")
                 if any(attrs):
                     _writeAttrs(dataset, h5group, attrs)
-            except Exception as e:
+            except Exception:
                 runLog.error(
                     "Failed to write {} to database. Data: "
                     "{}".format(paramDef.name, data)
@@ -2078,7 +2077,7 @@ class Layout:
             compType,
             name,
             serialNum,
-            indexInData,
+            _,
             numChildren,
             location,
             material,
@@ -2261,7 +2260,7 @@ class Layout:
             # original ancestor array
             indexMap = {sn: i for i, sn in enumerate(serialNum)}
             origAncestors = ancestors
-            for generation in range(depth - 1):
+            for _ in range(depth - 1):
                 ancestors = [
                     origAncestors[indexMap[ia]] if ia is not None else None
                     for ia in ancestors

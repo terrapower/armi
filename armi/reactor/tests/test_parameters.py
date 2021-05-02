@@ -194,7 +194,7 @@ class ParameterTests(unittest.TestCase):
                     pb.defParam("sameName", "units", "description 1", "location")
                     pb.defParam("sameName", "units", "description 2", "location")
 
-            p = MockParamCollection()
+            _ = MockParamCollection()
 
     def test_paramDefinitionsCompose(self):
         class MockBaseParamCollection(parameters.ParameterCollection):
@@ -243,7 +243,7 @@ class ParameterTests(unittest.TestCase):
                 with pDefs.createBuilder() as pb:
                     pb.defParam("sameName", "units", "description 4", "location")
 
-            p = MockPCChild()
+            _ = MockPCChild()
 
         # same name along a different branch from the base ParameterCollection should be fine
         class MockPCUncle(parameters.ParameterCollection):
@@ -261,11 +261,11 @@ class ParameterTests(unittest.TestCase):
 
     def test_cannotCreateInstanceOf_NoDefault(self):
         with self.assertRaises(NotImplementedError):
-            thing = parameters.NoDefault()
+            _ = parameters.NoDefault()
 
     def test_cannotCreateInstanceOf_Undefined(self):
         with self.assertRaises(NotImplementedError):
-            _thing = parameters.parameterDefinitions._Undefined()
+            _ = parameters.parameterDefinitions._Undefined()
 
     def test_defaultLocation(self):
         class MockPC(parameters.ParameterCollection):
@@ -409,7 +409,7 @@ class SynchronizationTests:
                     try:
                         self.setUp()
                         getattr(self, methodName)()
-                    except Exception as ex:
+                    except Exception:
                         self.write("failed, big time")
                         traceback.print_exc(file=self.l)
                         self.write("*** printed exception")
@@ -514,7 +514,7 @@ class SynchronizationTests:
 
     def mpitest_conflictsMaintainWithStateRetainer(self):
         with self.r.retainState(parameters.inCategory("cat2")):
-            for ci, comp in enumerate(self.comps):
+            for _, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * armi.MPI_RANK
 
         with self.assertRaises(exceptions.SynchronizationError):

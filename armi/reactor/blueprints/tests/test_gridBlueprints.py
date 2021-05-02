@@ -266,7 +266,7 @@ class TestRZTGridBlueprint(unittest.TestCase):
     def test_geomFile(self):
         geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(RTH_GEOM))
-        gridDesign = geom.toGridBlueprints("test_grid")[0]
+        _ = geom.toGridBlueprints("test_grid")[0]
 
 
 if __name__ == "__main__":

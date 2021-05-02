@@ -271,7 +271,7 @@ def plotFaceMap(
     """
     if referencesToKeep:
         patches, collection, texts = referencesToKeep
-        fig, ax = plt.gcf(), plt.gca()
+        _, ax = plt.gcf(), plt.gca()
     else:
         fig, ax = plt.subplots(figsize=(12, 12), dpi=100)
         # set patch (shapes such as hexagon) heat map values
@@ -433,7 +433,7 @@ def _makeAssemPatches(core):
 
 def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
     """Write param values down, and return text so it can be edited later."""
-    pitch = core.getAssemblyPitch()
+    _ = core.getAssemblyPitch()
     for a, val, label in zip(core, data, labels):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
 
@@ -944,7 +944,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                     "Energy_Group", "Average_Flux", "Peak_Flux"
                 )
             )
-            for g, (eMax, avgFlux, peakFlux) in bf1.getTable():
+            for _, (eMax, avgFlux, peakFlux) in bf1.getTable():
                 f.write("{0:12E} {1:12E} {2:12E}\n".format(eMax, avgFlux, peakFlux))
 
     if max(bf1.avgFlux) <= 0.0:

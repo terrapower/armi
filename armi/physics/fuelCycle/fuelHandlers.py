@@ -125,8 +125,7 @@ class FuelHandlerInterface(interfaces.Interface):
         # take note of where each assembly is located before the outage
         # for mapping after the outage
         self.r.core.locateAllAssemblies()
-        cycleDuration = self.r.p.cycleLength
-        shuffleFactors, factorSearchFlags = fh.getFactorList(cycle)
+        shuffleFactors, _ = fh.getFactorList(cycle)
         fh.outage(shuffleFactors)  # move the assemblies around
         if self.cs["plotShuffleArrows"]:
             arrows = fh.makeShuffleArrows()
