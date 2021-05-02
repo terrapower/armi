@@ -168,4 +168,3 @@ def _getGammaKeywords(cycle, suffix, xsID):
             raise ValueError("The cycle or XS ID must be specified.")
         keywords.append(".")
     return keywords
-
