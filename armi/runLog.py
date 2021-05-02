@@ -177,7 +177,7 @@ class Log:
 
     def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
         """Return True if the count of the label is greater than 1."""
-        if msgType == "warning" or msgType == "critical":
+        if msgType in ("warning", "critical"):
             self._singleWarningMessageCounts[label] += 1
             if (
                 self._singleWarningMessageCounts[label] > 1

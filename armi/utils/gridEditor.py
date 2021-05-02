@@ -692,7 +692,7 @@ class GridGui(wx.ScrolledWindow):
 
         @property
         def isPosition(self):
-            return self == self.POSITION_IJ or self == self.POSITION_RINGPOS
+            return self in (self.POSITION_IJ, self.POSITION_RINGPOS)
 
     def __init__(self, parent, bp=None, defaultGeom=geometry.CARTESIAN):
         """
