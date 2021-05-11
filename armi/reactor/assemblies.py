@@ -1310,6 +1310,7 @@ class Assembly(composites.Composite):
 class HexAssembly(Assembly):
     pass
 
+
 class CartesianAssembly(Assembly):
     pass
 
