@@ -24,12 +24,13 @@ from armi import nuclearDataIO
 from armi.tests import ISOAA_PATH
 from armi.localization import exceptions
 from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import isotxs
 
 
 class NuclideTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.lib = nuclearDataIO.ISOTXS(ISOAA_PATH)
+        cls.lib = isotxs.readBinary(ISOAA_PATH)
 
     def test_nuclide_createFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
