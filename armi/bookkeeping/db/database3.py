@@ -67,7 +67,7 @@ import re
 import sys
 import time
 import shutil
-from subprocess import check_output
+import subprocess
 from typing import (
     Optional,
     Tuple,
@@ -591,8 +591,10 @@ class Database3(database.Database):
 
     @staticmethod
     def grabLocalCommitHash():
-        """Try to determine the local Git commit.
-        But we have to be sure to handle the errors where the code is run on a system that
+        """
+        Try to determine the local Git commit.
+
+        We have to be sure to handle the errors where the code is run on a system that
         doesn't have Git installed. Or if the code is simply not run from inside a repo.
 
         Returns
@@ -600,15 +602,26 @@ class Database3(database.Database):
         str
             The commit hash if it exists, otherwise "unknown".
         """
-        repo_exists = os.system("git rev-parse --git-dir 2> /dev/null") == 0
+        UNKNOWN = "unknown"
+        if not shutil.which("git"):
+            # no git available. cannot check git info
+            return UNKNOWN
+        repo_exists = (
+            subprocess.run(
+                "git rev-parse --git-dir".split(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
+        )
         if repo_exists:
             try:
-                commit_hash = check_output(["git", "describe"])
+                commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
             except:
-                return "unknown"
+                return UNKNOWN
         else:
-            return "unknown"
+            return UNKNOWN
 
     def close(self, completedSuccessfully=False):
         """
