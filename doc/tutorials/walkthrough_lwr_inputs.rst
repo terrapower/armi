@@ -7,9 +7,15 @@ we introduced the basic input files and made a full
 input for a sodium-cooled fast reactor. In this tutorial, we will build simple
 inputs for the light-water reactor (LWR) benchmark problem called C5G7 as defined
 in `NEA/NSC/DOC(2003)16 <https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-16.pdf>`_.
+The compositions are documented in
+`NEA/NSC/DOC(98)2 <https://www.oecd-nea.org/science/docs/1996/nsc-doc96-02-rev2.pdf>`_.
 
 .. tip:: The full inputs created in this tutorial are available for download at the bottom of
-	this page.
+    this page.
+
+.. warning:: C5G7 is a problem with defined 7-group macroscopic cross sections. Rather than
+    Using those cross sections directly, this input is meant to regenerate them rather
+    than to using the provided macros directly.
 
 .. warning:: ARMI was historically developed in support of fast reactors and most
     features have been used and tested in fast reactor contexts. This
@@ -33,12 +39,6 @@ When using materials that differ in properties or composition from the
 materials in the ARMI material library, you can use custom isotopics
 to specify their composition.
 
-The C5G7 benchmark problem does not define specific compositions. Instead, it
-specifies multigroup macroscopic cross sections in a few regions. For the purposes
-of this tutorial, we will ignore the cross sections and just input the
-geometry. Thus, rather than specifying the actual composition, we will
-start by defining dummy isotopic vectors (using U-235 for every material). Feel
-free to add more realistic compositions to these definitions.
 
 .. literalinclude:: ../../armi/tests/tutorials/c5g7-blueprints.yaml
     :language: yaml
@@ -59,6 +59,9 @@ textual specifiers, which will be used in the ``grids`` input section
 below to count and place the pins into a square-pitch lattice. Note that
 the ``latticeIDs`` section is a list. The component will fill every
 position in the grid that has any of the specifiers in this list.
+
+You will see the `<<: *guide_tube` notation below. This means use the
+specifications of guide_tube, but make the modifications that apear below.
 
 .. literalinclude:: ../../armi/tests/tutorials/c5g7-blueprints.yaml
     :language: yaml
