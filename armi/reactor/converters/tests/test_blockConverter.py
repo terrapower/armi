@@ -128,7 +128,7 @@ class TestBlockConverter(unittest.TestCase):
 
         block = loadTestReactor(TEST_ROOT)[1].core.getFirstBlock(Flags.CONTROL)
 
-        driverBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
+        driverBlock.spatialGrid = None
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
         self._testConvertWithDriverRings(
@@ -137,6 +137,25 @@ class TestBlockConverter(unittest.TestCase):
             blockConverters.HexComponentsToCylConverter,
             hexagon.numPositionsInRing,
         )
+
+        # This should fail because a spatial grid is required
+        # on the block.
+        driverBlock.spatialGrid = None
+        block.spatialGrid = None
+        with self.assertRaises(ValueError):
+            self._testConvertWithDriverRings(
+                block,
+                driverBlock,
+                blockConverters.HexComponentsToCylConverter,
+                hexagon.numPositionsInRing,
+            )
+
+        # The ``BlockAvgToCylConverter`` should work
+        # without any spatial grid defined because it
+        # assumes the grid based on the block type.
+        driverBlock.spatialGrid = None
+        block.spatialGrid = None
+
         self._testConvertWithDriverRings(
             block,
             driverBlock,
