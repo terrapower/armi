@@ -15,8 +15,6 @@
 """Run multiple ARMI cases one after the other on the local machine."""
 import os
 
-import tabulate
-
 from armi.cli.run import RunEntryPoint
 from armi import cases
 from armi.utils import directoryChangers
@@ -76,8 +74,4 @@ class RunSuiteCommand(RunEntryPoint):
             if self.args.list:
                 suite.echoConfiguration()
             else:
-                for ci, case in enumerate(suite):
-                    runLog.important(f"Running case {ci+1}/{len(suite)}: {case}")
-                    with directoryChangers.DirectoryChanger(case.directory):
-                        settings.setMasterCs(case.cs)
-                        case.run()
+                suite.run()

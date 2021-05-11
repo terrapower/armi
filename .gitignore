@@ -15,9 +15,12 @@ dist/
 dist-*/
 doc/*.png
 doc/_build
-doc/user/tutorials/anl-afci-177*
-doc/user/tutorials/case-suite
+doc/tutorials/anl-afci-177*
+doc/tutorials/case-suite
+armi/tests/tutorials/case-suite
 .apidocs/
+doc/gallery
+htmlcov/
 
 # No workspace crumbs.
 *~
@@ -50,6 +53,12 @@ tags
 *.ppm
 *.mp4
 *.h5
+*.txt
+
+# vis files
+*.vtu
+*.vtd
+*.xdmf
 
 # fixtures
 .ipynb_checkpoints

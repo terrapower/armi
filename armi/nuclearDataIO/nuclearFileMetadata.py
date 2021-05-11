@@ -37,7 +37,7 @@ REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF = [
 ]
 
 
-class _Metadata(object):
+class _Metadata:
     """Simple dictionary wrapper, that returns :code:`None` if the key does not exist.
 
     Notes
@@ -67,6 +67,9 @@ class _Metadata(object):
     def keys(self):
         """Returns keys similar to the dict implementation."""
         return self._data.keys()
+
+    def values(self):
+        return self._data.values()
 
     def update(self, other):
         """Updates the underlying dictionary, similar to the dict implementation."""

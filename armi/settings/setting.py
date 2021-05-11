@@ -40,6 +40,7 @@ from typing import List, Optional, Tuple
 import voluptuous as vol
 
 from armi import runLog
+from armi.reactor.flags import Flags
 
 
 # Options are used to imbue existing settings with new Options. This allows a setting
@@ -78,7 +79,7 @@ class Setting:
         enforcedOptions=False,
         subLabels=None,
         isEnvironment=False,
-        oldNames: Optional[List[Tuple[str, Optional[datetime.date]]]] = None
+        oldNames: Optional[List[Tuple[str, Optional[datetime.date]]]] = None,
     ):
         """
         Initialize a Setting object.
@@ -208,7 +209,7 @@ class Setting:
         """
         try:
             val = self.schema(val)
-        except vol.error.MultipleInvalid:
+        except vol.error.Invalid:
             runLog.error(f"Error in setting {self.name}, val: {val}.")
             raise
 
@@ -221,16 +222,15 @@ class Setting:
 
     def addOption(self, option: Option):
         """Extend this Setting's options with an extra option."""
-        self.addOptions(
-            [option,]
-        )
+        self.addOptions([option])
 
     def changeDefault(self, newDefault: Default):
         """Change the default of a setting, and also the current value."""
         self._default = newDefault.value
         self.value = newDefault.value
 
-    def _load(self, inputVal):
+    @staticmethod
+    def _load(inputVal):
         """
         Create setting value from input value.
 
@@ -312,3 +312,58 @@ class Setting:
             "type": type(self.default),
             "default": self.default,
         }
+
+
+class FlagListSetting(Setting):
+    """Subclass of :py:class:`Setting <armi.settings.Setting>` convert settings between flags and strings."""
+
+    def __init__(
+        self,
+        name,
+        default,
+        description=None,
+        label=None,
+        oldNames: Optional[List[Tuple[str, Optional[datetime.date]]]] = None,
+    ):
+        Setting.__init__(
+            self,
+            name=name,
+            default=default,
+            description=description,
+            label=label,
+            options=None,
+            schema=self.schema,
+            enforcedOptions=None,
+            subLabels=None,
+            isEnvironment=False,
+            oldNames=oldNames,
+        )
+
+    @staticmethod
+    def schema(val) -> List[Flags]:
+        """
+        Return a list of :py:class:`Flags <armi.reactor.flags.Flags`.
+
+        Raises
+        ------
+        TypeError
+            When ``val`` is not a list.
+        ValueError
+            When ``val`` is not an instance of str or Flags.
+        """
+        if not isinstance(val, list):
+            raise TypeError(f"Expected `{val}` to be a list.")
+
+        flagVals = []
+        for v in val:
+            if isinstance(v, str):
+                flagVals.append(Flags.fromString(v))
+            elif isinstance(v, Flags):
+                flagVals.append(v)
+            else:
+                raise ValueError(f"Invalid flag input `{v}` in `{self}`")
+        return flagVals
+
+    def dump(self) -> List[str]:
+        """Return a list of strings converted from the flag values."""
+        return [Flags.toString(v) for v in self.value]

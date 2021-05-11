@@ -46,7 +46,7 @@ LANTHANIDE_ELEMENTS = [
 GASEOUS_ELEMENTS = ["XE", "KR"]
 
 
-class Element(object):
+class Element:
     r"""
     Represents an element, defined by its atomic number.
 
@@ -193,7 +193,7 @@ def getSymbol(z=None, name=None):
         element = byZ[z]
     else:
         element = byName[name.lower()]
-    return element.name
+    return element.symbol
 
 
 def getElementZ(symbol=None, name=None):

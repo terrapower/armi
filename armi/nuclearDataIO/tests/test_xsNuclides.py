@@ -13,10 +13,9 @@
 # limitations under the License.
 
 r"""
-
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
-import types
 
 from armi.nuclearDataIO import xsNuclides
 from armi.nucDirectory import nuclideBases
@@ -25,17 +24,13 @@ from armi import nuclearDataIO
 from armi.tests import ISOAA_PATH
 from armi.localization import exceptions
 from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import isotxs
 
 
 class NuclideTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.lib = nuclearDataIO.ISOTXS(ISOAA_PATH)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.lib = None
-        nuclideBases.factory(True)
+        cls.lib = isotxs.readBinary(ISOAA_PATH)
 
     def test_nuclide_createFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
@@ -65,6 +60,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual("whatever", nuc.trans[-1])
         self.assertEqual("whatever", nrAA.trans[-1])
         # I've modified the underlying nuclide... need to reset.
+        nuc.trans.pop()
 
     def test_nuclide_newLabelsDontCauseWarnings(self):
         with mockRunLogs.BufferLog() as logCapture:

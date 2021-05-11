@@ -1,0 +1,21 @@
+core:
+  geom: hex
+  lattice map: |
+    -   -   SH
+      -   SH  SH
+    -   SH  OC  SH
+      SH  OC  OC  SH
+        OC  IC  OC  SH
+      OC  IC  IC  OC  SH
+        IC  IC  IC  OC  SH
+          IC  IC  PC  OC  SH
+        IC  PC  IC  IC  OC  SH
+          LA  IC  IC  IC  OC
+            IC  IC  IC  IC  SH
+          IC  LB  IC  IC  OC
+            IC  IC  PC  IC  SH
+              LA  IC  IC  OC
+            IC  IC  IC  IC  SH
+              IC  IC  IC  OC
+            IC  IC  IC  PC  SH
+  symmetry: third periodic

@@ -30,7 +30,7 @@ from armi.utils import units
 from armi.settings.caseSettings import Settings
 
 DECAY_CONSTANTS = {}
-MINIMUM_HALFLIFE = 2.8e-7
+MINIMUM_HALFLIFE = 1.0e-7
 STABLE_FLAG = -1
 UNKNOWN_HALFLIFE = -2
 EXIT_DATA_FILE = -3
@@ -66,6 +66,7 @@ def getNuclideDecayConstants(fileName):
                 try:
                     level = float(reader.line[:3])
                     halflife = float(reader.line[24:34])
+                    numDecays = int(reader.line[65:66])
                 except ValueError:
                     if level == 1:
                         # RIPL files have empty halflifes for isotopes with
@@ -83,7 +84,9 @@ def getNuclideDecayConstants(fileName):
                     except KeyError:
                         level += numLevels + 1
 
-                elif halflife > MINIMUM_HALFLIFE:  # radioactive isotope
+                elif (
+                    MINIMUM_HALFLIFE < halflife and numDecays > 0
+                ):  # radioactive isotope
                     aaazzzs = "{}{}{}".format(a, z.zfill(3), m)
                     if m <= 1:
                         nb = nuclideBases.byAAAZZZSId.get(aaazzzs, False)
@@ -98,7 +101,7 @@ def getNuclideDecayConstants(fileName):
                     else:
                         level += numLevels + 1
 
-                elif halflife < MINIMUM_HALFLIFE or halflife == UNKNOWN_HALFLIFE:
+                elif numDecays == 0 or halflife == UNKNOWN_HALFLIFE:
                     # skip to next level
                     pass
 

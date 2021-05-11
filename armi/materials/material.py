@@ -17,7 +17,7 @@ Base Material classes.
 
 All temperatures are in K, but Tc can be specified and the functions will convert for you.
 
-.. Caution:: ARMI uses these objects for all material properties. Under the hood,
+.. warning:: ARMI uses these objects for all material properties. Under the hood,
      A system called MAT_PROPS is in charge of several material properties. It
      is a more industrial-strength material property system that is currently
      a TerraPower proprietary system. You will see references to it in this module.
@@ -41,37 +41,30 @@ FAIL_ON_RANGE = False
 
 
 class Material(composites.Leaf):
-    r"""
-    A material is made up of elements or isotopes. It has bulk properties like mass density.
-
-    Attributes
-    ----------
-    params : dict
-        scalar parameters.
-
-    massFrac : dict
-        The mass fractions of each nuclide in this material. These will not always sum to 1.0 after
-        situations like axial expansion.
-
-    massFracNorm : float
-        The sum of massFrac, tracked by the setters so it doesn't have to be added up a lot.
-
-    cache : dict
-        Fast storage for commonly computed values.
-
-    reference : str
-        The literature reference.
-
     """
+    A material is made up of elements or isotopes. It has bulk properties like mass density.
+    """
+
     pDefs = materialParameters.getMaterialParameterDefinitions()
+    """State parameter definitions"""
 
     DATA_SOURCE = "ARMI"
+    """Indication of where the material is loaded from (may be plugin name)"""
 
     name = "Material"
     references = {}  # property : citation
+    """The literature references."""
+
     enrichedNuclide = None
+    """Name of enriched nuclide to be interpreted by enrichment modification methods"""
     correctDensityAfterApplyInputParams = True
+
     modelConst = {}
+    """Constants that may be used in intepolation functions for property lookups"""
+
+    thermalScatteringLaws = ()
+    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances 
+    with information about thermal scattering."""
 
     def __init__(self):
         composites.Leaf.__init__(self, self.__class__.name)
@@ -82,7 +75,7 @@ class Material(composites.Leaf):
 
         # so it doesn't have to be summed each time ( O(1) vs. O(N))
         self.p.atomFracDenom = 0.0
-        self.references = {}  # reference dictionary for each method
+
         self.p.refDens = 0.0
 
         # call subclass implementations
@@ -108,15 +101,20 @@ class Material(composites.Leaf):
         r"""
         the instantaneous linear expansion coefficient (dL/L)/dT
 
-        This is used for reactivity coefficients, etc.
+        This is used for reactivity coefficients, etc. but will not affect
+        density or dimensions.
+
+        See Also
+        --------
+        linearExpansionPercent : average linear thermal expansion to affect dimensions and density
         """
         raise NotImplementedError(
             f"{self} does not have a linear expansion property defined"
         )
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
-        average thermal expansion dL/L. Used for computing hot dimensions
+        """
+        Average thermal expansion dL/L. Used for computing hot dimensions and density.
 
         Defaults to 0.0 for materials that don't expand.
 
@@ -129,7 +127,11 @@ class Material(composites.Leaf):
 
         Returns
         -------
-        %dLL(T) in m/m/K
+        dLL(T) in % m/m/K
+
+        See Also
+        --------
+        linearExpansion : handle instantaneous thermal expansion coefficients
 
         """
         return 0.0
@@ -329,7 +331,8 @@ class Material(composites.Leaf):
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
     def density(self, Tk=None, Tc=None):
-        """Return density that preserves mass when thermally expanded in 2D.
+        """
+        Return density that preserves mass when thermally expanded in 2D.
 
         Warning
         -------
@@ -448,7 +451,7 @@ class Material(composites.Leaf):
         return self.p.thermalConductivity
 
     def getProperty(self, propName, Tk=None, Tc=None, **kwargs):
-        r"""gets properties in a way that caches them. """
+        r"""gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
 
         cached = self._getCached(propName)
@@ -509,7 +512,7 @@ class Material(composites.Leaf):
         return self.p.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self):
-        r"""zero out all nuclide mass fractions. """
+        r"""zero out all nuclide mass fractions."""
         self.p.massFrac.clear()
         self.p.massFracNorm = 0.0
 
@@ -562,61 +565,6 @@ class Material(composites.Leaf):
                     label="T out of bounds for {} {}".format(self.name, label),
                 )
 
-    def isBeyondIncubationDose(self, totalDPA):
-        r"""
-        Checks if the materials is beyond is incubation dose. Passes if the material
-        does not have an incubation dose assigned (self.modelConst['Rincu']
-
-        Parameters
-        ----------
-
-        totalDPA : float
-            Total DPA accumulated in the material
-
-        Returns
-        -------
-        Bool indicating whether the material is beyond its incubation dose or not.
-
-        """
-
-        if not self.modelConst["Rincu"]:
-            msg = "Material missing incubation dose"
-            runLog.warning(msg, single=True, label="Missing incubation dose")
-        elif totalDPA > self.modelConst["Rincu"]:
-            return True
-        else:
-            return False
-
-    def updateDeltaDPApastIncubation(self, totalDPA, deltaDPA):
-        r"""
-        If a material has passed its incubation dose, this method updates deltaDPA. The concern
-        here is when a step in DPA crosses the incubation threshold, the amount of DPA input into a
-        calculation is more than is actually contributing to deformation.
-
-        Parameters
-        ----------
-
-        totalDPA : float
-            Total DPA accumulated in the material.
-
-        deltaDPA : float
-            Change in DPA over a time step.
-
-        Returns
-        -------
-        deltaDPA past the incubation dose of the material.
-
-        """
-        if not self.modelConst["Rincu"]:
-            msg = "Material missing incubation dose"
-            runLog.warning(msg, single=True, label="Missing incubation dose")
-        elif (totalDPA > self.modelConst["Rincu"]) and (
-            (totalDPA - self.modelConst["Rincu"]) < deltaDPA
-        ):
-            return totalDPA - self.modelConst["Rincu"]
-        else:
-            return deltaDPA
-
     def densityTimesHeatCapacity(self, Tk=None, Tc=None):
         r"""
         Return heat capacity * density at a temperature
@@ -647,8 +595,8 @@ class Material(composites.Leaf):
     def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):
         """Return a temperature difference for a given density perturbation."""
         linearExpansion = self.linearExpansion(Tc=Tc)
-        volFrac = densityFrac ** (-1.0 / 3.0) - 1.0
-        deltaT = volFrac / linearExpansion
+        linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
+        deltaT = linearChange / linearExpansion
         if not quiet:
             runLog.info(
                 "The linear expansion for {} at initial temperature of {} C is {}.\nA change in density of {} "
@@ -686,7 +634,7 @@ class Fluid(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         """for void, lets just not allow temperature changes to change dimensions
-        since it is a liquid it will fill its space. """
+        since it is a liquid it will fill its space."""
         return 0.0
 
     def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):

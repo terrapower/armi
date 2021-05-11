@@ -5,6 +5,9 @@ Inputs
 ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
 performed on it.
 
+.. note:: We have an :doc:`input walkthrough </tutorials/walkthrough_inputs>` tutorial for a quick 
+    overview of th inputs.
+
 There are several input files:
 
 Settings file
@@ -25,9 +28,8 @@ Fuel management file
 Depending on the type of analysis, there may be additional inputs required. These include things like
 control logic, ex-core models for transients and shielding, etc.
 
-Settings and core map input files can be conveniently manipulated with the ARMI GUI. The GUI is simply a front-end to
-these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads the input files and runs
-them. 
+The core map input files can be graphically manipulated with the 
+:py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
 -----------

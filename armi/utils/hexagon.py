@@ -23,7 +23,6 @@ Hexagons are fundamental to advanced reactors.
 """
 
 import math
-import itertools
 
 import numpy
 
@@ -50,7 +49,7 @@ def side(pitch):
     return pitch / SQRT3
 
 
-def corners(rotation):
+def corners(rotation=0):
     """
     Return the coordinates of a unit hexagon, rotated as requested.
 
@@ -86,7 +85,8 @@ def pitch(side):
 def numRingsToHoldNumCells(numCells):
     r"""
     Determine the number of rings in a hexagonal grid with this many hex cells.
-    If the number of pins don't fit exactly into any ring, returns the ring just large enough to fit them
+    If the number of pins don't fit exactly into any ring, returns the ring just large
+    enough to fit them.
 
     Parameters
     ----------
@@ -100,10 +100,10 @@ def numRingsToHoldNumCells(numCells):
 
     Notes
     -----
-    The first hex ring (center) holds 1 position. Each subsequent hex ring contains 6 more positions than the last.
-    This method works by incrementing ring numbers until the number of items is reached or exceeded. It
-    could easily be replaced by a lookup table if so desired.
-
+    The first hex ring (center) holds 1 position. Each subsequent hex ring contains 6
+    more positions than the last.  This method works by incrementing ring numbers until
+    the number of items is reached or exceeded. It could easily be replaced by a lookup
+    table if so desired.
     """
     if numCells == 0:
         return 0
@@ -115,3 +115,11 @@ def numRingsToHoldNumCells(numCells):
 def numPositionsInRing(ring):
     """Number of positions in ring (starting at 1) of a hex lattice."""
     return (ring - 1) * 6 if ring != 1 else 1
+
+
+def numPositionsInRings(rings):
+    """
+    Number of positions in all rings up to and including ``ring``.
+    """
+
+    return sum(numPositionsInRing(r + 1) for r in range(rings))

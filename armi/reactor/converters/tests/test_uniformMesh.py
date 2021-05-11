@@ -23,7 +23,7 @@ import numpy
 from armi.reactor.tests import test_reactors
 from armi.reactor.tests import test_assemblies
 from armi.tests import TEST_ROOT, ISOAA_PATH
-from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 
@@ -95,6 +95,7 @@ class TestUniformMesh(unittest.TestCase):
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        self.r.core.p.keff = 1.0
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
     def test_convertNumberDensities(self):

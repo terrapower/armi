@@ -23,6 +23,44 @@ from armi.nuclearDataIO import xsLibraries
 from armi.physics.neutronics.isotopicDepletion.crossSectionTable import (
     CrossSectionTable,
 )
+from armi.reactor import composites
+from armi.reactor.flags import Flags
+
+
+def isDepletable(obj: composites.ArmiObject):
+    """
+    Return True if obj or any child is flagged as DEPLETABLE.
+
+    The DEPLETABLE flag is automatically set to true if any composition contains
+    nuclides that are in the active nuclides list, unless flags are specifically
+    set and DEPLETABLE is left out.
+
+    This is often interpreted by depletion plugins as indicating which parts of the
+    problem to apply depletion to. Analysts may want to turn on and off depletion
+    in certain problems.
+
+    For example, sometimes they want the control rods to deplete
+    to figure out how often to replace them. But in conceptual design, they may want to just
+    leave them as they are as an approximation.
+
+    .. warning:: The ``DEPLETABLE`` flag is automatically added to compositions that have
+        active nuclides. If you explicitly define any flags at all, you must also
+        manually include ``DEPLETABLE`` or else the objects will silently not deplete.
+
+    Notes
+    -----
+    The auto-flagging of ``DEPLETABLE`` happens in the construction of blueprints
+    rather than in a plugin hook because the reactor is not available at the time
+    the plugin hook runs.
+
+    See Also
+    --------
+    armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys
+    """
+
+    return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(
+        Flags.DEPLETABLE
+    )
 
 
 class AbstractIsotopicDepleter:
@@ -109,10 +147,16 @@ def makeXsecTable(
         -- i.e. if you use a .format() call with mcnpId, nG, nF, n2n, n3n, nA,
         and nP you'll get the format you want. If you use a .format() call with  the case name you'll return a
         formatted list of string elements
+
     Results
     -------
     output: list
         a list of string elements that together make a xsec card
+
+    See Also
+    --------
+    crossSectionTable.makeCrossSectionTable
+        Makes a table for arbitrary ArmiObjects
     """
     xsTable = CrossSectionTable()
 
@@ -148,7 +192,7 @@ class AbstractIsotopicDepletionReader(interfaces.OutputReader):
         raise NotImplementedError
 
 
-class Csrc(object):
+class Csrc:
     """
     Writes a continuous source term card in a depletion interface.
 

@@ -126,7 +126,8 @@ class B4C(material.Material):
             DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
         )
 
-    def getMassEnrichmentFromNumEnrich(self, naturalB10NumberFraction):
+    @staticmethod
+    def getMassEnrichmentFromNumEnrich(naturalB10NumberFraction):
         b10AtomicMass = nuclideBases.byName["B10"].weight
         b11AtomicMass = nuclideBases.byName["B11"].weight
         return (

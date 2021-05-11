@@ -14,26 +14,25 @@
 r"""
 testing for reactors.py
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
 import unittest
 
-import voluptuous as vol
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
-import armi
-
-from armi.materials import uZr
 
 from armi import operators
 from armi import runLog
 from armi import settings
 from armi import tests
+from armi.materials import uZr
 from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import grids
 from armi.reactor import locations
+from armi.reactor import geometry
 from armi.reactor import reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
@@ -144,7 +143,6 @@ def loadTestReactor(
     # TODO: it would be nice to have this be more stream-oriented. Juggling files is
     # devilishly difficult.
     global TEST_REACTOR
-    isotopicDepletion.applyDefaultBurnChain()
     fName = os.path.join(inputFilePath, inputFileName)
     customSettings = customSettings or {}
     isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
@@ -177,7 +175,7 @@ def loadTestReactor(
 
     # put some stuff in the SFP too.
     for a in range(10):
-        a = o.r.blueprints.constructAssem(o.r.core.geomType, o.cs, name="feed fuel")
+        a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
         o.r.core.sfp.add(a)
 
     o.r.core.regenAssemblyLists()
@@ -201,162 +199,19 @@ class ReactorTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directoryChanger.close()
 
-    def test_kineticsParameterAssignment(self):
-        """Test that the delayed neutron fraction and precursor decay constants are applied from settings."""
-
-        def _getModifiedSettings(customSettings):
-            cs = settings.Settings()
-            for key, val in customSettings.items():
-                cs[key] = val
-            return cs
-
-        r = tests.getEmptyHexReactor()
-        self.assertIsNone(r.core.p.beta)
-        self.assertIsNone(r.core.p.betaComponents)
-        self.assertIsNone(r.core.p.betaDecayConstants)
-
-        # Test that the group-wise beta and decay constants are assigned
-        # together given that they are the same length.
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
-            customSettings={"beta": [0.0] * 6, "decayConstants": [0.0] * 6,}
-        )
-        r.core.setOptionsFromCs(cs)
-        self.assertEqual(r.core.p.beta, sum(cs["beta"]))
-        self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
-        self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
-
-        # Test the assignment of total beta as a float
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(customSettings={"beta": 0.00670},)
-        r.core.setOptionsFromCs(cs)
-        self.assertEqual(r.core.p.beta, cs["beta"])
-        self.assertIsNone(r.core.p.betaComponents)
-        self.assertIsNone(r.core.p.betaDecayConstants)
-
-        # Test that nothing is assigned if the beta is specified as a list
-        # without a corresponding decay constants list.
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(customSettings={"beta": [0.0] * 6,},)
-        r.core.setOptionsFromCs(cs)
-        self.assertIsNone(r.core.p.beta)
-        self.assertIsNone(r.core.p.betaComponents)
-        self.assertIsNone(r.core.p.betaDecayConstants)
-
-        # Test that 1 group beta components and decay constants can be assigned.
-        # Since beta is a list, ensure that it's assigned to the `betaComponents`
-        # parameter.
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
-            customSettings={"beta": [0.0], "decayConstants": [0.0]},
-        )
-        r.core.setOptionsFromCs(cs)
-        self.assertEqual(r.core.p.beta, sum(cs["beta"]))
-        self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
-        self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
-
-        # Test that decay constants are not assigned without a corresponding
-        # group-wise beta input.
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(customSettings={"decayConstants": [0.0] * 6},)
-        r.core.setOptionsFromCs(cs)
-        self.assertIsNone(r.core.p.beta)
-        self.assertIsNone(r.core.p.betaComponents)
-        self.assertIsNone(r.core.p.betaDecayConstants)
-
-        # Test that decay constants are not assigned without a corresponding
-        # group-wise beta input. This also demonstrates that the total beta
-        # is still assigned.
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
-            customSettings={"decayConstants": [0.0] * 6, "beta": 0.0},
-        )
-        r.core.setOptionsFromCs(cs)
-        self.assertEqual(r.core.p.beta, cs["beta"])
-        self.assertIsNone(r.core.p.betaComponents)
-        self.assertIsNone(r.core.p.betaDecayConstants)
-
-        # Test the demonstrates that None values are acceptable
-        # and that nothing is assigned.
-        r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
-            customSettings={"decayConstants": None, "beta": None},
-        )
-        r.core.setOptionsFromCs(cs)
-        self.assertEqual(r.core.p.beta, cs["beta"])
-        self.assertIsNone(r.core.p.betaComponents)
-        self.assertIsNone(r.core.p.betaDecayConstants)
-
-        # Test that an error is raised if the decay constants
-        # and group-wise beta are inconsistent sizes
-        with self.assertRaises(ValueError):
-            r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(
-                customSettings={"decayConstants": [0.0] * 6, "beta": [0.0]},
-            )
-            r.core.setOptionsFromCs(cs)
-
-        # Test that an error is raised if the decay constants
-        # and group-wise beta are inconsistent sizes
-        with self.assertRaises(ValueError):
-            r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(
-                customSettings={"decayConstants": [0.0] * 6, "beta": [0.0] * 5},
-            )
-            r.core.setOptionsFromCs(cs)
-
-        # The following tests check the voluptuous schema definition. This
-        # ensures that anything except NoneType, [float], float are not valid
-        # inputs.
-        with self.assertRaises(vol.AnyInvalid):
-            r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"decayConstants": [1]},)
-            r.core.setOptionsFromCs(cs)
-
-        with self.assertRaises(vol.AnyInvalid):
-            r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"beta": [1]},)
-            r.core.setOptionsFromCs(cs)
-
-        with self.assertRaises(vol.AnyInvalid):
-            r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"beta": 1},)
-            r.core.setOptionsFromCs(cs)
-
-        with self.assertRaises(vol.AnyInvalid):
-            r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(customSettings={"beta": (1, 2, 3)},)
-            r.core.setOptionsFromCs(cs)
-
 
 class HexReactorTests(ReactorTests):
     def setUp(self):
         self.o, self.r = loadTestReactor(self.directoryChanger.destination)
-
-    def testWhichAssemblyIsIn(self):
-        a = self.r.core.whichAssemblyIsIn(2, 1)
-        loc = a.getLocationObject()  # pylint: disable=maybe-no-member
-        self.assertEqual(loc.i1, 2)
-        self.assertEqual(loc.i2, 1)
-
-        # check ring capabilities
-        allA = self.r.core.whichAssemblyIsIn(4)
-        fuel = self.r.core.whichAssemblyIsIn(4, typeFlags=Flags.FUEL)
-        nonFuel = self.r.core.whichAssemblyIsIn(4, excludeFlags=Flags.FUEL)
-
-        self.assertGreater(len(allA), 0)
-        self.assertGreater(len(fuel), 0)
-        self.assertGreaterEqual(len(allA), len(fuel))
-        self.assertLess(len(nonFuel), len(fuel))
-
-        for a in fuel:
-            self.assertTrue(a.hasFlags(Flags.FUEL))
 
     def testGetTotalParam(self):
         # verify that the block params are being read.
         val = self.r.core.getTotalBlockParam("power")
         val2 = self.r.core.getTotalBlockParam("power", addSymmetricPositions=True)
         self.assertEqual(val2 / self.r.core.powerMultiplier, val)
+
+    def test_geomType(self):
+        self.assertTrue(self.r.core.geomType == geometry.GeomType.HEX)
 
     def test_growToFullCore(self):
         nAssemThird = len(self.r.core)
@@ -376,6 +231,18 @@ class HexReactorTests(ReactorTests):
         nAssemFull = len(self.r.core)
         self.assertEqual(nAssemFull, (nAssemThird - 1) * 3 + 1)
 
+    def test_getBlocksByIndices(self):
+        indices = [(1, 1, 1), (3, 2, 2)]
+        actualBlocks = self.r.core.getBlocksByIndices(indices)
+        actualNames = [b.getName() for b in actualBlocks]
+        expectedNames = ["B0022-001", "B0043-002"]
+        self.assertListEqual(expectedNames, actualNames)
+
+    def test_getAllXsSuffixes(self):
+        actualSuffixes = self.r.core.getAllXsSuffixes()
+        expectedSuffixes = ["AA"]
+        self.assertListEqual(expectedSuffixes, actualSuffixes)
+
     def test_countBlocksOfType(self):
         numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL])
 
@@ -385,6 +252,64 @@ class HexReactorTests(ReactorTests):
             [Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL
         )
         self.assertEqual(numControlBlocks, 3)
+
+    def test_countFuelAxialBlocks(self):
+        numFuelBlocks = self.r.core.countFuelAxialBlocks()
+        self.assertEqual(numFuelBlocks, 3)
+
+    def test_getFirstFuelBlockAxialNode(self):
+        firstFuelBlock = self.r.core.getFirstFuelBlockAxialNode()
+        self.assertEqual(firstFuelBlock, 1)
+
+    def test_getMaxAssembliesInHexRing(self):
+        maxAssems = self.r.core.getMaxAssembliesInHexRing(3)
+        self.assertEqual(maxAssems, 4)
+
+    def test_getMaxNumPins(self):
+        numPins = self.r.core.getMaxNumPins()
+        self.assertEqual(169, numPins)
+
+    def test_addMoreNodes(self):
+        originalMesh = self.r.core.p.axialMesh
+        bigMesh = list(originalMesh)
+        bigMesh[2] = 30.0
+        smallMesh = originalMesh[0:2] + [40.0, 47.0] + originalMesh[2:]
+        newMesh1, originalMeshGood = self.r.core.addMoreNodes(originalMesh)
+        newMesh2, bigMeshGood = self.r.core.addMoreNodes(bigMesh)
+        newMesh3, smallMeshGood = self.r.core.addMoreNodes(smallMesh)
+        expectedMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
+        expectedBigMesh = [
+            0.0,
+            25.0,
+            30.0,
+            36.75,
+            75.0,
+            100.0,
+            118.75,
+            137.5,
+            156.25,
+            175.0,
+        ]
+        expectedSmallMesh = [
+            0.0,
+            25.0,
+            40.0,
+            47.0,
+            50.0,
+            53.75,
+            75.0,
+            100.0,
+            118.75,
+            137.5,
+            156.25,
+            175.0,
+        ]
+        self.assertListEqual(expectedMesh, newMesh1)
+        self.assertListEqual(expectedBigMesh, newMesh2)
+        self.assertListEqual(expectedSmallMesh, newMesh3)
+        self.assertTrue(originalMeshGood)
+        self.assertFalse(bigMeshGood)
+        self.assertFalse(smallMeshGood)
 
     def test_findAxialMeshIndexOf(self):
         numMeshPoints = (
@@ -412,71 +337,123 @@ class HexReactorTests(ReactorTests):
         blockMesh = self.r.core.getFirstAssembly(Flags.FUEL).spatialGrid._bounds[2]
         assert_allclose(blockMesh, mesh)
 
+    def test_findAllAziMeshPoints(self):
+        aziPoints = self.r.core.findAllAziMeshPoints()
+        expectedPoints = [
+            -50.7707392969,
+            -36.2648137835,
+            -21.7588882701,
+            -7.2529627567,
+            7.2529627567,
+            21.7588882701,
+            36.2648137835,
+            50.7707392969,
+            65.2766648103,
+            79.7825903236,
+            94.288515837,
+            108.7944413504,
+            123.3003668638,
+        ]
+        assert_allclose(expectedPoints, aziPoints)
+
+    def test_findAllRadMeshPoints(self):
+        radPoints = self.r.core.findAllRadMeshPoints()
+        expectedPoints = [
+            -12.5625,
+            -4.1875,
+            4.1875,
+            12.5625,
+            20.9375,
+            29.3125,
+            37.6875,
+            46.0625,
+            54.4375,
+            62.8125,
+            71.1875,
+            79.5625,
+            87.9375,
+            96.3125,
+            104.6875,
+            113.0625,
+            121.4375,
+            129.8125,
+            138.1875,
+            146.5625,
+        ]
+        assert_allclose(expectedPoints, radPoints)
+
     def test_findNeighbors(self):
 
-        a = self.r.core.whichAssemblyIsIn(1, 1)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
-        locs = [a.getLocation() for a in neighbs]
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
-        self.assertIn("A2001", locs)
-        self.assertIn("A2002", locs)
-        self.assertEqual(locs.count("A2001"), 3)
+        self.assertIn((2, 1), locs)
+        self.assertIn((2, 2), locs)
+        self.assertEqual(locs.count((2, 1)), 3)
 
-        a = self.r.core.whichAssemblyIsIn(1, 1)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
-        locs = [a.getLocation() for a in neighbs]
-        self.assertEqual(locs, ["A2001", "A2002"] * 3, 6)
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
+        self.assertEqual(locs, [(2, 1), (2, 2)] * 3, 6)
 
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
 
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
-        locs = [a.getLocation() for a in neighbs]
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
-        self.assertEqual(locs, ["A3002", "A3003", "A3012", "A2001", "A1001", "A2001"])
+        self.assertEqual(locs, [(3, 2), (3, 3), (3, 12), (2, 1), (1, 1), (2, 1)])
 
         # try with edge assemblies
         # With edges, the neighbor is the one that's actually next to it.
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
-        locs = [a.getLocation() for a in neighbs]
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
         # in this case no locations that aren't actually in the core should be returned
-        self.assertEqual(locs, ["A3002", "A3003", "A3004", "A2001", "A1001", "A2001"])
+        self.assertEqual(locs, [(3, 2), (3, 3), (3, 4), (2, 1), (1, 1), (2, 1)])
         converter.removeEdgeAssemblies(self.r.core)
 
         # try with full core
         self.r.core.growToFullCore(self.o.cs)
-        a = self.r.core.whichAssemblyIsIn(3, 4)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 4)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(a)
         self.assertEqual(len(neighbs), 6)
-        locs = [a.getLocation() for a in neighbs]
-        for loc in ["A2002", "A2003", "A3003", "A3005", "A4005", "A4006"]:
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
+        for loc in [(2, 2), (2, 3), (3, 3), (3, 5), (4, 5), (4, 6)]:
             self.assertIn(loc, locs)
 
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(a)
-        locs = [a.getLocation() for a in neighbs]
-        for loc in ["A1001", "A2001", "A2003", "A3002", "A3003", "A3004"]:
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
+        for loc in [(1, 1), (2, 1), (2, 3), (3, 2), (3, 3), (3, 4)]:
             self.assertIn(loc, locs)
 
         # Try the duplicate option in full core as well
-        a = self.r.core.whichAssemblyIsIn(2, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
+        a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
             a, duplicateAssembliesOnReflectiveBoundary=True
         )
-        locs = [a.getLocation() for a in neighbs]
+        locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
-        self.assertEqual(locs, ["A3002", "A3003", "A3004", "A2003", "A1001", "A2001"])
+        self.assertEqual(locs, [(3, 2), (3, 3), (3, 4), (2, 3), (1, 1), (2, 1)])
 
     def test_getAssembliesInCircularRing(self):
         expectedAssemsInRing = [5, 6, 8, 10, 12, 16, 14, 2]
@@ -487,7 +464,7 @@ class HexReactorTests(ReactorTests):
             )
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
 
-    def test_getAssembliesInSquareOrHexRing(self):
+    def test_getAssembliesInHexRing(self):
         expectedAssemsInRing = [1, 2, 4, 6, 8, 10, 12, 14, 16]
         actualAssemsInRing = []
         for ring in range(1, self.r.core.getNumRings() + 1):
@@ -495,19 +472,6 @@ class HexReactorTests(ReactorTests):
                 len(self.r.core.getAssembliesInSquareOrHexRing(ring))
             )
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
-
-    def test_getAssembliesInSector(self):
-        allAssems = self.r.core.getAssemblies()
-        fullSector = self.r.core.getAssembliesInSector(0, 360)
-        self.assertGreaterEqual(
-            len(fullSector), len(allAssems)
-        )  # could be > due to edge assems
-        third = self.r.core.getAssembliesInSector(0, 30)
-        self.assertAlmostEqual(
-            25, len(third)
-        )  # could solve this analytically based on test core size
-        oneLine = self.r.core.getAssembliesInSector(0, 0.001)
-        self.assertAlmostEqual(5, len(oneLine))  # same here
 
     def test_genAssembliesAddedThisCycle(self):
         allAssems = self.r.core.getAssemblies()
@@ -533,6 +497,21 @@ class HexReactorTests(ReactorTests):
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
+
+    def test_getAssembly(self):
+        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
+        a2 = self.r.core.getAssembly(locationString="005-023")
+        a3 = self.r.core.getAssembly(assemblyName="A0010")
+        self.assertEqual(a1, a2)
+        self.assertEqual(a1, a3)
+
+    def test_countAssemblies(self):
+        nFuel = self.r.core.countAssemblies(Flags.FUEL)
+        self.assertEqual(2, nFuel)
+        nFuel_r3 = self.r.core.countAssemblies(Flags.FUEL, ring=3)
+        self.assertEqual(1, nFuel_r3)
+        nFuel = self.r.core.countAssemblies(Flags.FUEL, fullCore=True)
+        self.assertEqual(6, nFuel)
 
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
@@ -573,23 +552,23 @@ class HexReactorTests(ReactorTests):
     def test_getSymmetryFactor(self):
         for b in self.r.core.getBlocks():
             sym = b.getSymmetryFactor()
-            loc = b.getLocationObject()
-            if loc.i1 == 1 and loc.i2 == 1:
+            i, j, _ = b.spatialLocator.getCompleteIndices()
+            if i == 0 and j == 0:
                 self.assertEqual(sym, 3.0)
             else:
                 self.assertEqual(sym, 1.0)
 
     def test_getAssembliesOnSymmetryLine(self):
-        center = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_CENTER)
+        center = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_CENTER)
         self.assertEqual(len(center), 1)
-        upper = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_120_DEGREES)
+        upper = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
         self.assertEqual(len(upper), 0)
-        lower = self.r.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_0_DEGREES)
+        lower = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)
         self.assertGreater(len(lower), 1)
 
     def test_saveAllFlux(self):
         # need a lightweight library to indicate number of groups.
-        class MockLib(object):
+        class MockLib:
             numGroups = 5
 
         self.r.core.lib = MockLib()
@@ -598,6 +577,26 @@ class HexReactorTests(ReactorTests):
             b.p.adjMgFlux = range(5)
         self.r.core.saveAllFlux()
         os.remove("allFlux.txt")
+
+    def test_getFluxVector(self):
+        class MockLib:
+            numGroups = 5
+
+        self.r.core.lib = MockLib()
+        for b in self.r.core.getBlocks():
+            b.p.mgFlux = range(5)
+            b.p.adjMgFlux = [i + 0.1 for i in range(5)]
+            b.p.extSrc = [i + 0.2 for i in range(5)]
+        mgFlux = self.r.core.getFluxVector(energyOrder=1)
+        adjFlux = self.r.core.getFluxVector(adjoint=True)
+        srcVec = self.r.core.getFluxVector(extSrc=True)
+        fluxVol = self.r.core.getFluxVector(volumeIntegrated=True)
+        expFlux = [i for i in range(5) for b in self.r.core.getBlocks()]
+        expAdjFlux = [i + 0.1 for b in self.r.core.getBlocks() for i in range(5)]
+        expSrcVec = [i + 0.2 for b in self.r.core.getBlocks() for i in range(5)]
+        assert_allclose(expFlux, mgFlux)
+        assert_allclose(expAdjFlux, adjFlux)
+        assert_allclose(expSrcVec, srcVec)
 
     def test_getFuelBottomHeight(self):
 
@@ -610,29 +609,19 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(fuelBottomHeightInCm, fuelBottomHeightRef)
 
-    def test_whichBlockIsAtCoords(self):
-
-        b = self.r.core.whichBlockIsAtCoords(0, 0, 0)
-        centralAssem = self.r.core.whichAssemblyIsIn(1, 1)
-        self.assertEqual(b, centralAssem[0])
-        b = self.r.core.whichBlockIsAtCoords(0, 0, 50)
-        self.assertEqual(b.parent, centralAssem)
-        self.assertNotEqual(b, centralAssem[0])
-
     def test_getGridBounds(self):
         (_minI, maxI), (_minJ, maxJ), (minK, maxK) = self.r.core.getBoundingIndices()
         self.assertEqual((maxI, maxJ), (8, 8))
         self.assertEqual((minK, maxK), (0, 0))
 
     def test_locations(self):
-        a = self.r.core.whichAssemblyIsIn(3, 2)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 2)
+        a = self.r.core.childrenByLocator[loc]
         assert_allclose(a.spatialLocator.indices, [1, 1, 0])
         for bi, b in enumerate(a):
             assert_allclose(b.spatialLocator.getCompleteIndices(), [1, 1, bi])
-        self.assertEqual(a.getLocation(), "A3002")
-        loc = a.getLocationObject()
-        self.assertEqual(str(loc), "A3002")
-        self.assertEqual(a[0].getLocation(), "A3002A")
+        self.assertEqual(a.getLocation(), "003-002")
+        self.assertEqual(a[0].getLocation(), "003-002-000")
 
     def test_getMass(self):
         # If these are not in agreement check on block symmetry factor being applied to volumes
@@ -690,12 +679,27 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
-        self.assertIsNone(a.spatialLocator.grid)
+        self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
         # confirm only attached to removed assem
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
         self.assertIs(a, b.parent)
         self.assertIs(a, b.spatialLocator.grid.armiObject)
+
+    def test_removeAssembliesInRing(self):
+        aLoc = [
+            self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1)
+            for i in range(12)
+        ]
+        assems = {
+            i: self.r.core.childrenByLocator[loc]
+            for i, loc in enumerate(aLoc)
+            if loc in self.r.core.childrenByLocator
+        }
+        self.r.core.removeAssembliesInRing(3)
+        for i, a in assems.items():
+            self.assertNotEqual(aLoc[i], a.spatialLocator)
+            self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
     def test_createAssemblyOfType(self):
         """Test creation of new assemblies."""
@@ -717,7 +721,7 @@ class HexReactorTests(ReactorTests):
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
-        self.assertAlmostEqual(aNew3.getMass(), bol.getMass() / 3.0)
+        self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
 
 
 class CartesianReactorTests(ReactorTests):
@@ -729,9 +733,16 @@ class CartesianReactorTests(ReactorTests):
         # Cartesian pitch should have 2 dims since it could be a rectangle that is not square.
         assert_equal(self.r.core.getAssemblyPitch(), [10.0, 16.0])
 
+    def test_getAssembliesInSquareRing(self, exclusions=[2]):
+        expectedAssemsInRing = [1, 0]
+        actualAssemsInRing = []
+        for ring in range(1, self.r.core.getNumRings() + 1):
+            actualAssemsInRing.append(
+                len(self.r.core.getAssembliesInSquareOrHexRing(ring))
+            )
+        self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
+
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
+    # import sys;sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
     unittest.main()

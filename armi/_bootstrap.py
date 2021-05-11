@@ -17,9 +17,7 @@ Collection of code that needs to be executed before most ARMI components are saf
 import.
 """
 
-import os
 import sys
-
 import tabulate
 
 # This needs to happen pretty darn early, as one of it's purposes is to provide a better
@@ -58,20 +56,6 @@ def _addCustomTabulateTables():
 # runLog makes tables, so make sure this is setup before we initialize the runLog
 _addCustomTabulateTables()
 
-
-# Creating the FAST_PATH here so that parts of ARMI that dont necessarily create an
-# Operator can use it. Main example is the Database funtionality
-try:
-    os.makedirs(context.FAST_PATH)
-except OSError:
-    # If FAST_PATH exists already that generally should be an error because
-    # different processes will be stepping on each other.
-    # The exception to this rule is in cases that instantiate multiple operators in one
-    # process (e.g. unit tests that loadTestReactor). Since the FAST_PATH is set at
-    # import, these will use the same path multiple times. We pass here for that reason.
-    if not os.path.exists(context.FAST_PATH):
-        # if it actually doesn't exist, that's an actual error. Raise
-        raise
 
 from armi import runLog
 

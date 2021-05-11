@@ -94,7 +94,7 @@ E_CAPTURE = "ecapt"
 E_FISSION = "efiss"
 
 
-class XSCollection(object):
+class XSCollection:
     """A cross section collection."""
 
     _zeroes = {}
@@ -123,7 +123,7 @@ class XSCollection(object):
     def __init__(self, parent):
         """
         Construct a NuclideCollection.
-        
+
         Parameters
         ----------
         parent : object
@@ -157,7 +157,7 @@ class XSCollection(object):
     def __getitem__(self, key):
         """
         Access cross sections by key string (e.g. micros['fission'] = micros.fission.
-        
+
         Notes
         -----
         These containers were originally
@@ -194,7 +194,7 @@ class XSCollection(object):
 
         Multiply reaction-based n2n scatter matrix by 2.0 to convert to production-based.
 
-        .. warning:: Not all lattice codes store (n,2n) matrices consistently. Some are 
+        .. warning:: Not all lattice codes store (n,2n) matrices consistently. Some are
                      production-based and some are absorption-based. If you use an
                      absorption-based one, your scatter matrix will be off, generally
                      leading to about a percent error in your neutron balance.
@@ -253,7 +253,7 @@ class XSCollection(object):
         or computing one-group reaction rates.
 
         .. math::
-        
+
             \bar{\sigma} = \frac{\sum_g{\sigma_g \phi_g}}{\sum_g{\phi_g}}
 
         Parameters
@@ -362,7 +362,7 @@ class XSCollection(object):
             )
 
 
-class MacroscopicCrossSectionCreator(object):
+class MacroscopicCrossSectionCreator:
     """
     Create macroscopic cross sections from micros and number density.
 
@@ -544,30 +544,30 @@ class MacroscopicCrossSectionCreator(object):
 def computeBlockAverageChi(b, isotxsLib):
     r"""
     Return the block average total chi vector based on isotope chi vectors.
-    
+
     This is defined by eq 3.4b in DIF3D manual [DIF3D]_, which corresponds to 1 in A.HMG4C card.
 
     .. math::
-    
-                
+
+
         \chi_g = \frac{\sum_{n} \chi_{g,n} N_n V \sum_{g'}(\nu_{g'}*\sigma_{f,g'})}{\sum_n N_n V \sum_{g'}(\nu_{g'}*\sigma_{f,g'} )}
-                
+
 
     To evaluate efficiently, assume that if :math:`\chi_{g,n}=0`, there will be no contributions
 
     Volume is not used b/c it is already homogenized in the block.
-    
+
     Parameters
     ----------
     b : object
         Block object
-    
+
     isotxsLib : object
         ISOTXS library object
-       
+
     Notes
     -----
-    This methodology is based on option 1 in the HMG4C utility (named total 
+    This methodology is based on option 1 in the HMG4C utility (named total
     fission source weighting).
     """
     numGroups = isotxsLib.numGroups

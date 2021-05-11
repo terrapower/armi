@@ -29,7 +29,7 @@ class LeadBismuth(material.Fluid):
     name = "Lead Bismuth"
 
     def setDefaultMassFracs(self):
-        r"""  mass fractions"""
+        r"""mass fractions"""
         self.setMassFrac("PB", 0.445)
         self.setMassFrac("BI209", 0.555)
 

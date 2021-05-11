@@ -1,16 +1,8 @@
-numpy
-scipy
-yamlize
-matplotlib
-h5py
-tabulate
-ordered-set
-pluggy
-pyyaml>=5.1
-psutil
-xlrd
-pillow
-future
-configparser
-voluptuous
-pympler
+# See the discussion in docs\developer\tooling
+--prefer-binary
+# see https://github.com/numpy/numpy/issues/17726
+# This is included in requirements.txt because it is not a semantic version
+# bound, but rather intended to avoid a bug in windows
+numpy<1.19.4
+
+-e .[memprof]

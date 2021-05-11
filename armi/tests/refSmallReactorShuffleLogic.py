@@ -28,14 +28,13 @@ class EquilibriumShuffler(FuelHandler):
         ]
         cascade = []
         for ring, pos in cycleMoves[self.cycle]:
-            a = self.r.core.whichAssemblyIsIn(ring, pos)
+            loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(ring, pos)
+            a = self.r.core.childrenByLocator[loc]
             if not a:
                 raise RuntimeError("No assembly in {0} {1}".format(ring, pos))
             cascade.append(a)
         self.swapCascade(cascade)
-        fresh = self.r.blueprints.constructAssem(
-            self.r.core.geomType, self.cs, name="igniter fuel"
-        )
+        fresh = self.r.blueprints.constructAssem(self.cs, name="igniter fuel")
         self.dischargeSwap(fresh, cascade[0])
         if self.cycle > 0:
             # do a swap where the assembly comes from the sfp
@@ -44,9 +43,8 @@ class EquilibriumShuffler(FuelHandler):
                 raise RuntimeError(
                     "No assembly in SFP {0}".format(self.r.core.sfp.getChildren())
                 )
-            self.dischargeSwap(
-                incoming, self.r.core.whichAssemblyIsIn(5, 2 + self.cycle)
-            )
+            outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 2 + self.cycle)
+            self.dischargeSwap(incoming, self.r.core.childrenByLocator[outLoc])
 
 
 def getFactorList(cycle, cs=None, fallBack=False):

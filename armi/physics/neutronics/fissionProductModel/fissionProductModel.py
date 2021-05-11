@@ -183,13 +183,13 @@ class FissionProductModel(interfaces.Interface):
 
     def _getAllFissionProductNames(self):
         """
-        Find all fission product names in the problem
+         Find all fission product names in the problem
 
-        Considers all LFP collections, whether they be global,
-        block-level, or a mix of these.
+         Considers all LFP collections, whether they be global,
+         block-level, or a mix of these.
 
-       sets fissionProductNames, a list of nuclide names of all the
-       fission products
+        sets fissionProductNames, a list of nuclide names of all the
+        fission products
         """
         runLog.debug("  Gathering all possible FPs")
         fissionProductNames = []

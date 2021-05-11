@@ -25,6 +25,29 @@ import getpass
 import os
 import time
 import sys
+import enum
+import shutil
+import gc
+
+# h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
+# to atexit below doesn't lead to a segfault on python exit. The Database3 module is
+# imported at call time, since it itself needs stuff that is initialized in this module
+# to import properly.  However, if that import leads to the first time that h5py is
+# imported in this process, doing so will cause a segfault. The theory here is that this
+# happens because the h5py extension module is not safe to import (for whatever reason)
+# when the python interpreter is in whatever state it's in when the atexit callbacks are
+# being invoked.  Importing early avoids this.
+#
+# Minimal code to reproduce the issue:
+#
+# >>> import atexit
+#
+# >>> def willSegFault():
+# >>>     import h5py
+#
+# >>> atexit.register(willSegFault)
+
+import h5py
 
 
 BLUEPRINTS_IMPORTED = False
@@ -39,7 +62,7 @@ BLUEPRINTS_IMPORT_CONTEXT = ""
 APP_NAME = "armi"
 
 
-class Mode:
+class Mode(enum.Enum):
     """
     Mode represents different run modes possible in ARMI.
 
@@ -52,17 +75,15 @@ class Mode:
     ``--batch`` command line argument that can force Batch mode.
     """
 
-    Batch = 1
-    Interactive = 2
-    Gui = 4
+    BATCH = 1
+    INTERACTIVE = 2
+    GUI = 4
 
     @classmethod
     def setMode(cls, mode):
         """Set the run mode of the current ARMI case."""
         global CURRENT_MODE  # pylint: disable=global-statement
-        assert mode in (cls.Batch, cls.Interactive, cls.Gui), "Invalid mode {}".format(
-            mode
-        )
+        assert isinstance(mode, cls), "Invalid mode {}".format(mode)
         CURRENT_MODE = mode
 
 
@@ -74,7 +95,7 @@ START_TIME = time.ctime()
 
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file
 # In this mode you cannot respond to prompts or anything
-CURRENT_MODE = Mode.Interactive if sys.stdout.isatty() else Mode.Batch
+CURRENT_MODE = Mode.INTERACTIVE if sys.stdout.isatty() else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
 MPI_COMM = None
@@ -126,18 +147,139 @@ if MPI_COMM is not None:
 
 MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
 
-# FAST_PATH is often a local hard drive on a cluster node. It's a high-performance
-# scratch space. Different processors on the same node should have different fast paths.
-# Some old code may MPI_RANK-dependent folders/filenames as well, but this is no longer
-# necessary. This path will be obliterated when the job ends so be careful. Note also
-# that this path is set at import time, so if a series of unit tests come through that
-# instantiate one operator after the other, the path will already exist the second time.
-# The directory is created in the Operator constructor.
-FAST_PATH = os.path.join(
-    APP_DATA,
-    "{}{}-{}".format(
-        MPI_RANK,
-        os.environ.get("PYTEST_XDIST_WORKER", ""),  # for parallel unit testing,
-        datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
-    ),
-)
+_FAST_PATH = os.path.join(os.getcwd())
+"""
+A directory available for high-performance I/O  
+
+.. warning:: This is not a constant and can change at runtime.
+"""
+
+_FAST_PATH_IS_TEMPORARY = False
+"""Flag indicating whether or not the FAST_PATH should be cleaned up on exit."""
+
+
+def activateLocalFastPath():
+    """
+    Specify a local temp directory to be the fast path.
+
+    ``FAST_PATH`` is often a local hard drive on a cluster node. It's a high-performance
+    scratch space. Different processors on the same node should have different fast paths.
+    Some old code may MPI_RANK-dependent folders/filenames as well, but this is no longer
+    necessary.
+
+    .. warning:: This path will be obliterated when the job ends so be careful.
+
+    Note also
+    that this path is set at import time, so if a series of unit tests come through that
+    instantiate one operator after the other, the path will already exist the second time.
+    The directory is created in the Operator constructor.
+    """
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY  # pylint: disable=global-statement
+    _FAST_PATH = os.path.join(
+        APP_DATA,
+        "{}{}-{}".format(
+            MPI_RANK,
+            os.environ.get("PYTEST_XDIST_WORKER", ""),  # for parallel unit testing,
+            datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
+        ),
+    )
+    _FAST_PATH_IS_TEMPORARY = True
+
+
+def getFastPath():
+    """
+    Callable to get the current FAST_PATH.
+
+    Notes
+    -----
+    It's too dangerous to use ``FAST_PATH`` directly as it can change between import and
+    runtime. For example, a module that does ``from armi.context import FAST_PATH`` is
+    disconnected from the official ``FAST_PATH`` controlled by this module.
+    """
+    return _FAST_PATH
+
+
+def cleanTempDirs(olderThanDays=None):
+    """
+    Clean up temporary files after a run.
+
+    The Windows HPC system sends a SIGBREAK signal when the user cancels a job, which
+    is NOT handled by ``atexit``. Notably SIGBREAK doesn't exist off Windows.
+    For the SIGBREAK signal to work with a Microsoft HPC, the ``TaskCancelGracePeriod``
+    option must be configured to be non-zero. This sets the period between SIGBREAK
+    and SIGTERM/SIGINT. To do cleanups in this case, we must use the ``signal`` module.
+    Actually, even then it does not work because MS ``mpiexec`` does not pass signals
+    through.
+
+    Parameters
+    ----------
+    olderThanDays: int, optional
+        If provided, deletes other ARMI directories if they are older than the requested
+        time.
+    """
+    from armi import (
+        runLog,
+    )  # pylint: disable=import-outside-toplevel # avoid cyclic import
+
+    disconnectAllHdfDBs()
+
+    if _FAST_PATH_IS_TEMPORARY and os.path.exists(_FAST_PATH):
+        if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
+            print(
+                "Cleaning up temporary files in: {}".format(_FAST_PATH),
+                file=sys.stdout,
+            )
+        try:
+            shutil.rmtree(_FAST_PATH)
+        except Exception as error:  # pylint: disable=broad-except
+            for outputStream in (sys.stderr, sys.stdout):
+                print(
+                    "Failed to delete temporary files in: {}\n"
+                    "    error: {}".format(_FAST_PATH, error),
+                    file=outputStream,
+                )
+
+    # Also delete anything still here after `olderThanDays` days (in case this failed on
+    # earlier runs)
+    if olderThanDays is not None:
+        gracePeriod = datetime.timedelta(days=olderThanDays)
+        now = datetime.datetime.now()
+        thisRunFolder = os.path.basename(_FAST_PATH)
+
+        for dirname in os.listdir(APP_DATA):
+            dirPath = os.path.join(APP_DATA, dirname)
+            if not os.path.isdir(dirPath):
+                continue
+            try:
+                fromThisRun = dirname == thisRunFolder  # second chance to delete
+                _rank, dateString = dirname.split("-")
+                dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
+                runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
+                if runIsOldAndLikleyComplete or fromThisRun:
+                    # Delete old files
+                    shutil.rmtree(dirPath)
+            except:  # pylint: disable=bare-except
+                pass
+
+
+def disconnectAllHdfDBs():
+    """
+    Forcibly disconnect all instances of HdfDB objects
+
+    Notes
+    -----
+    This is a hack to help ARMI exit gracefully when the garbage collector and h5py have
+    issues destroying objects. After lots of investigation, the root cause for why this
+    was having issues was never identified. It appears that when several HDF5 files are
+    open in the same run (e.g.  when calling armi.init() multiple times from a
+    post-processing script), when these h5py File objects were closed, the garbage
+    collector would raise an exception related to the repr'ing the object. We
+    get around this by using the garbage collector to manually disconnect all open HdfDB
+    objects.
+    """
+
+    from armi.bookkeeping.db import Database3  # pylint: disable=import-outside-toplevel
+
+    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
+    for db in h5dbs:
+        db.close()

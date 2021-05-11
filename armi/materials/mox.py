@@ -101,7 +101,7 @@ class MOX(UraniumOxide):
 
     def setDefaultMassFracs(self):
 
-        r""" UO2 + PuO2 mixture mass fractions.
+        r"""UO2 + PuO2 mixture mass fractions.
 
         Pu238: 238.0495599 g/mol
         Pu239: 239.0521634 g/mol

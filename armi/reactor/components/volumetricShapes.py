@@ -58,7 +58,6 @@ class Sphere(ShapedComponent):
         self._linkAndStoreDimensions(
             components, od=od, id=id, mult=mult, modArea=modArea
         )
-        self.setVolume(self.getVolume())
 
     def getComponentArea(self, cold=False):
         raise NotImplementedError("Cannot compute area of a sphere component.")
@@ -122,7 +121,6 @@ class Cube(ShapedComponent):
             mult=mult,
             modArea=modArea,
         )
-        self.setVolume(self.getVolume())
 
     def getComponentArea(self, cold=False):
         raise NotImplementedError("Cannot compute area of a cube component.")
@@ -371,7 +369,6 @@ class RadialSegment(ShapedComponent):
             inner_theta=inner_theta,
             outer_theta=outer_theta,
         )
-        self.setVolume(self.getVolume())
 
     def getComponentArea(self, refVolume=None, refHeight=None, cold=False):
         if refHeight:
@@ -476,7 +473,7 @@ class DifferentialRadialSegment(RadialSegment):
             azimuthal_differential=azimuthal_differential,
             mult=mult,
         )
-        self.setVolume(self.getVolume())
+        self.updateDims()
 
     def updateDims(self, key="", val=None):
         """

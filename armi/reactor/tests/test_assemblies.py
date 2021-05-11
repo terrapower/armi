@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import pathlib
 import random
 import unittest
@@ -27,7 +28,17 @@ from armi.reactor import components
 from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor.assemblies import *
+from armi.reactor.assemblies import (
+    blocks,
+    CartesianAssembly,
+    copy,
+    Flags,
+    grids,
+    HexAssembly,
+    math,
+    numpy,
+    runLog,
+)
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
@@ -101,19 +112,19 @@ def buildTestAssemblies():
     block2 = blocks.HexBlock("fuel", caseSetting)
     block.setType("fuel")
     block.setHeight(10.0)
-    block.addComponent(fuelUZr)
-    block.addComponent(fuelUTh)
-    block.addComponent(clad)
-    block.addComponent(interSodium)
+    block.add(fuelUZr)
+    block.add(fuelUTh)
+    block.add(clad)
+    block.add(interSodium)
     block.p.axMesh = 1
     block.p.molesHmBOL = 1.0
     block.p.molesHmNow = 1.0
 
     block2.setType("fuel")
     block2.setHeight(10.0)
-    block2.addComponent(fuelUThZr)
-    block2.addComponent(clad)
-    block2.addComponent(interSodium)
+    block2.add(fuelUThZr)
+    block2.add(clad)
+    block2.add(interSodium)
     block2.p.axMesh = 1
     block2.p.molesHmBOL = 2
     block2.p.molesHmNow = 1.0
@@ -192,7 +203,9 @@ class Assembly_TestCase(unittest.TestCase):
         )  # Print nothing to the screen that would normally go to the log.
 
         self.r = tests.getEmptyHexReactor()
-        self.r.core.symmetry = "third periodic"
+        self.r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
         self.r.core.add(self.Assembly)
@@ -208,22 +221,6 @@ class Assembly_TestCase(unittest.TestCase):
             "buRate": 0.0,
             "eqRegion": -1,
             "id": 212.0,
-            "nC": 0.0002082939655729809,
-            "nCr": 0.002886865228214986,
-            "nFe": 0.018938452726904774,
-            "nMn55": 0.00013661373306056112,
-            "nMo": 0.0001303849595025718,
-            "nNa23": 0.009129000958507699,
-            "nNi": 0.00010656078341023939,
-            "nSi": 0.00017815341899661907,
-            "nU235": 0.0011370748450841566,
-            "nU238": 0.01010441040669961,
-            "nV": 6.138819542030269e-05,
-            "nW182": 9.01562910227868e-06,
-            "nW183": 4.868378420270543e-06,
-            "nW184": 1.042392172896758e-05,
-            "nW186": 9.671859458339502e-06,
-            "nZr": 0.003255278491569621,
             "pdens": 10.0,
             "percentBu": 25.3,
             "power": 100000.0,
@@ -272,7 +269,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             # non-flaggy name important for testing
             b.setType("igniter fuel unitst")
-            b.addComponent(h)
+            b.add(h)
             b.parent = self.Assembly
             b.setName(b.makeName(self.Assembly.getNum(), i))
             self.Assembly.add(b)
@@ -326,16 +323,13 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(b.parent, a)
 
     def test_moveTo(self):
-        location = locations.HexLocation(i1=3, i2=10)
-        i, j = grids.getIndicesFromRingAndPos(3, 10)
+        ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
         locator = self.r.core.spatialGrid[i, j, 0]
         self.Assembly.moveTo(locator)
 
-        cur = self.Assembly.getLocation()
-        ref = str(location)
+        cur = self.Assembly.spatialLocator
         self.assertEqual(cur, ref)
-
-        self.assertEqual(self.Assembly.getLocationObject().label, "A3010")
 
     def test_getName(self):
         cur = self.Assembly.getName()
@@ -349,12 +343,8 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getLocation(self):
         cur = self.Assembly.getLocation()
-        ref = str("A5003")
+        ref = str("005-003")
         self.assertEqual(cur, ref)
-
-    def test_getLocationObject(self):
-        cur = self.Assembly.getLocationObject()
-        self.assertEqual(str(cur), "A5003")
 
     def test_getArea(self):
         cur = self.Assembly.getArea()
@@ -524,7 +514,7 @@ class Assembly_TestCase(unittest.TestCase):
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
             b = blocks.HexBlock("fuel", self.cs)
             b.setType("igniter fuel")
-            b.addComponent(h)
+            b.add(h)
             b.setHeight(height2)
             assembly2.add(b)
 
@@ -742,7 +732,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_calcTotalParam(self):
         # Remake original assembly
-        self.Assembly = self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -768,7 +758,7 @@ class Assembly_TestCase(unittest.TestCase):
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
 
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -817,13 +807,14 @@ class Assembly_TestCase(unittest.TestCase):
             }
 
             h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
     def test_reestablishBlockOrder(self):
         self.assertEqual(self.Assembly.spatialLocator.indices[0], 2)
-        self.assertEqual(self.Assembly[0].getLocation(), "A5003A")
+        self.assertEqual(self.Assembly[0].spatialLocator.getRingPos(), (5, 3))
+        self.assertEqual(self.Assembly[0].spatialLocator.indices[2], 0)
         axialIndices = [2, 1, 0]
         for ai, b in zip(axialIndices, self.Assembly):
             b.spatialLocator = self.Assembly.spatialGrid[0, 0, ai]
@@ -831,7 +822,7 @@ class Assembly_TestCase(unittest.TestCase):
         cur = []
         for b in self.Assembly:
             cur.append(b.getLocation())
-        ref = ["A5003A", "A5003B", "A5003C"]
+        ref = ["005-003-000", "005-003-001", "005-003-002"]
         self.assertEqual(cur, ref)
 
     def test_countBlocksOfType(self):
@@ -839,13 +830,16 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_axiallyExpandBlockHeights(self):
-        r""" heightList = list of floats.  Entry 0 represents the bottom fuel block closes to the grid plate.  Enrty n represents the top fuel block closes to the plenum
-        adjust list = list of nuclides to modify """
+        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closest to the grid plate.
+        Entry n represents the top fuel block closes to the plenum
+        adjust list = list of nuclides to modify"""
 
         self.assemNum = 5
 
         # Remake original assembly
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.r.core.removeAssembly(self.Assembly)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
+        self.r.core.add(self.Assembly)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -875,7 +869,7 @@ class Assembly_TestCase(unittest.TestCase):
                 b.setType("fuel")
                 h = components.Hexagon("fuel", "UZr", **self.hexDims)
 
-            b.addComponent(h)
+            b.add(h)
 
             self.Assembly.add(b)
 
@@ -923,7 +917,10 @@ class Assembly_TestCase(unittest.TestCase):
         self.assemNum = 5
 
         # Remake original assembly
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.r.core.removeAssembly(self.Assembly)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
+        self.r.core.add(self.Assembly)
+
         # add some blocks with a component
         for blockI in range(self.assemNum):
             b = blocks.HexBlock("TestBlock", self.cs)
@@ -948,7 +945,7 @@ class Assembly_TestCase(unittest.TestCase):
             else:
                 b.setType("fuel")
                 h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b.addComponent(h)
+            b.add(h)
             self.Assembly.add(b)
 
         expandFrac = 1.15
@@ -1124,7 +1121,7 @@ class Assembly_TestCase(unittest.TestCase):
         coolantDims = {"Tinput": 273.0, "Thot": 273.0}
         h = components.DerivedShape("coolant", "Sodium", **coolantDims)
         for b in modifiedAssem:
-            b.addComponent(h)
+            b.add(h)
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
 
@@ -1154,7 +1151,7 @@ class HexAssembly_TestCase(unittest.TestCase):
 
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
             b.setType("defaultType")
-            b.addComponent(h)
+            b.add(h)
             self.HexAssembly.add(b)
             self.blockList.append(b)
 
@@ -1182,7 +1179,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
             "verbosity"
         ] = "error"  # Print nothing to the screen that would normally go to the log.
         self.cs["stationaryBlocks"] = []
-        reactorGrid = grids.Grid.fromRectangle(1.0, 1.0)
+        reactorGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
         a = self.CartesianAssembly = CartesianAssembly(
             "defaultType", assemNum=self.assemNum
         )
@@ -1207,7 +1204,7 @@ class CartesianAssembly_TestCase(unittest.TestCase):
 
             h = components.Square("fuel", "UZr", **self.cartesianDims)
             b.setType("defaultType")
-            b.addComponent(h)
+            b.add(h)
             self.CartesianAssembly.add(b)
             self.blockList.append(b)
 
@@ -1238,14 +1235,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
-        igniterFuel = "A1001"
+        grid = self.r.core.spatialGrid
 
         ################################
         # examine mass change in igniterFuel
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
+        igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
@@ -1253,13 +1250,13 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterMassGrid = b.getMass() - coolMass
         igniterMassGridTotal = b.getMass()
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1 = b.getHMMass()
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMass = b.getMass() - coolMass
@@ -1271,21 +1268,20 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         #############################
         # check igniter mass after expansion
         #############################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterMassGridAfterExpand = b.getMass() - coolMass
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMassAfterExpand = b.getMass() - coolMass
@@ -1305,9 +1301,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         #############################
         # check igniter mass after shrink to original
         #############################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
@@ -1315,13 +1310,13 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterMassGridAfterShrink = b.getMass() - coolMass
         igniterMassGridTotalAfterShrink = b.getMass()
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1AfterShrink = b.getHMMass()
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMassAfterShrink = b.getMass() - coolMass
@@ -1337,12 +1332,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
-        shield = "A9002"
+        # access the shield in ring 9, pos 2
+        grid = self.r.core.spatialGrid
+        i, j = grid.getIndicesFromRingAndPos(9, 2)
 
         ################################
         # examine mass change in radial shield
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
+        a = self.r.core.childrenByLocator[grid[i, j, 0]]
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1372,7 +1369,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         ################################
         # examine mass change in radial shield after expansion
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1413,7 +1409,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         ################################
         # examine mass change in radial shield after shrink to original
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()

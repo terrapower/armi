@@ -15,7 +15,6 @@
 """
 The bookkeeping package handles data persistence, reporting, and some debugging.
 """
-
 from armi import plugins
 
 
@@ -42,6 +41,23 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
+    def defineEntryPoints():
+        from armi.cli import database, copyDB
+        from armi.bookkeeping import visualization
+
+        entryPoints = []
+        # Disabling ConvertDB because there is no other format to convert between. The
+        # entry point is rather general so leaving this here so we don't forget about it
+        # entryPoints.append(database.ConvertDB)
+        entryPoints.append(database.ExtractInputs)
+        entryPoints.append(database.InjectInputs)
+        entryPoints.append(copyDB.CopyDB)
+        entryPoints.append(visualization.VisFileEntryPoint)
+
+        return entryPoints
+
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineCaseDependencies(case, suite):
         if case.cs["loadStyle"] == "fromDB":
             # the ([^\/]) capture basically gets the file name portion and excludes any
@@ -51,3 +67,32 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                 r"^(?P<dirName>.*[\/\\])?(?P<title>[^\/\\]+?)(\.[hH]5)?$",
             )
         return None
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def mpiActionRequiresReset(cmd) -> bool:
+        """
+        Prevent reactor resets after certain mpi actions.
+
+        * Memory profiling is small enough that we don't want to reset
+        * distributing state would be undone by this so we don't want that.
+
+        See Also
+        --------
+        armi.operators.operatorMPI.OperatorMPI.workerOperate
+        """
+        # pylint: disable=import-outside-toplevel ; avoid cyclic imports
+        from armi.bookkeeping import memoryProfiler
+        from armi import mpiActions
+
+        if isinstance(cmd, mpiActions.MpiAction):
+            for donotReset in (
+                mpiActions.DistributeStateAction,
+                mpiActions.DistributionAction,
+                memoryProfiler.PrintSystemMemoryUsageAction,
+                memoryProfiler.ProfileMemoryUsageAction,
+            ):
+                if isinstance(cmd, donotReset):
+                    return False
+
+        return True

@@ -1,20 +1,7 @@
-mako
-pytest
-pytest-xdist
-pytest-cov
-pytest-html
-coverage
-pylint
-docutils
-sphinx>=2.2
-sphinx-rtd-theme
-black ; python_version > '3.0'
-# for running jupyter dynamically in docs
-sphinxcontrib-apidoc
-jupyter_client
-jupyter-contrib-nbextensions
-ipykernel
-nbsphinx
-nbsphinx-link
-pandoc # the executable also needs to be installed in your PATH
-sphinxext-opengraph
+--prefer-binary
+numpy<1.19.4
+
+# docutils 0.17 introduced a bug that prevents bullets from rendering
+# see https://github.com/terrapower/armi/issues/274
+docutils <0.17
+-e .[memprof,dev]

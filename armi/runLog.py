@@ -383,11 +383,12 @@ def flush():
 
 
 def prompt(statement, question, *options):
-    """"Prompt the user for some information."""
+    """ "Prompt the user for some information."""
     from armi.localization import exceptions
 
-    if context.CURRENT_MODE == Mode.Gui:
-        import wx  # avoid hard dependency on wx
+    if context.CURRENT_MODE == Mode.GUI:
+        # avoid hard dependency on wx
+        import wx  # pylint: disable=import-error
 
         msg = statement + "\n\n\n" + question
         if len(msg) < 300:
@@ -407,7 +408,7 @@ def prompt(statement, question, *options):
             raise exceptions.RunLogPromptCancel("Manual cancellation of GUI prompt")
         return response in [wx.ID_OK, wx.ID_YES]
 
-    elif context.CURRENT_MODE == Mode.Interactive:
+    elif context.CURRENT_MODE == Mode.INTERACTIVE:
         response = ""
         responses = [
             opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]

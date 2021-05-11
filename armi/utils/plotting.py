@@ -26,34 +26,35 @@ import matplotlib.collections
 import matplotlib.patches
 from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
+import matplotlib.colors as mcolors
 
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor import grids
+from armi.bookkeeping import report
 
 
 def colorGenerator(skippedColors=10):
     """
-    Selects a color from the built-in wx color database.
+    Selects a color from the matplotlib css color database.
 
     Parameters
     ----------
     skippedColors: int
-        Number of colors to skip in the built-in wx color database when generating the next color. Without skipping
-        colors the next color may be similar to the previous color.
+        Number of colors to skip in the matplotlib CSS color database when generating the
+        next color. Without skipping colors the next color may be similar to the previous
+        color.
 
     Notes
     -----
     Will cycle indefinitely to accommodate large cores. Colors will repeat.
     """
-    from wx.lib.colourdb import getColourList
 
-    excludedColors = ["WHITE", "CREAM", "BLACK", "MINTCREAM"]
-    colors = getColourList()
+    colors = list(mcolors.CSS4_COLORS)
+
     for start in itertools.cycle(range(20, 20 + skippedColors)):
         for i in range(start, len(colors), skippedColors):
-            if colors[i] not in excludedColors:
-                yield colors[i]
+            yield colors[i]
 
 
 def plotBlockDepthMap(
@@ -84,11 +85,11 @@ def plotBlockDepthMap(
     This is useful for visualizing the spatial distribution of a param through the core.
     Blocks could possibly not be in alignment between assemblies, but the depths
     viewable are based on the first fuel assembly.
-    
+
     Parameters
     ----------
     The kwarg definitions are the same as those of ``plotFaceMap``.
-    
+
     depthIndex: int
         The the index of the elevation to show block params.
         The index is determined by the index of the blocks in the first fuel assembly.
@@ -224,6 +225,7 @@ def plotFaceMap(
 
     labelFmt : str, optional
         A format string that determines how the data is printed if ``labels`` is not provided.
+        E.g. ``"{:.1e}"``
 
     fontSize : int, optional
         Font size in points
@@ -269,17 +271,17 @@ def plotFaceMap(
     """
     if referencesToKeep:
         patches, collection, texts = referencesToKeep
+        fig, ax = plt.gcf(), plt.gca()
     else:
-        plt.figure(figsize=(12, 12), dpi=100)
+        fig, ax = plt.subplots(figsize=(12, 12), dpi=100)
         # set patch (shapes such as hexagon) heat map values
         patches = _makeAssemPatches(core)
         collection = matplotlib.collections.PatchCollection(
             patches, cmap=cmapName, alpha=1.0
         )
         texts = []
-    ax = plt.gca()
 
-    plt.title(title, size=titleSize)
+    ax.set_title(title, size=titleSize)
 
     # get param vals
     if data is None:
@@ -321,9 +323,9 @@ def plotFaceMap(
         collection2.set_array(numpy.array(data))
 
         if "radial" in cBarLabel:
-            colbar = plt.colorbar(collection2, ticks=[x + 1 for x in range(max(data))])
+            colbar = ax.colorbar(collection2, ticks=[x + 1 for x in range(max(data))])
         else:
-            colbar = plt.colorbar(collection2)
+            colbar = ax.colorbar(collection2)
 
         colbar.set_label(cBarLabel, size=20)
         colbar.ax.tick_params(labelsize=16)
@@ -358,8 +360,8 @@ def plotFaceMap(
         ax.spines["left"].set_visible(False)
         ax.spines["bottom"].set_visible(False)
     else:
-        plt.xlabel("x (cm)")
-        plt.ylabel("y (cm)")
+        ax.set_xlabel("x (cm)")
+        ax.set_ylabel("y (cm)")
 
     if fName:
         if legend:
@@ -380,8 +382,22 @@ def plotFaceMap(
     else:
         plt.show()
 
-    plt.close()
+    # don't close figure here. Have caller call plotting.close or plt.close when
+    # they are done with it.
+
     return fName
+
+
+def close(fig=None):
+    """
+    Wrapper for matplotlib close.
+
+    This is useful to avoid needing to import plotting and matplotlib.
+    The plot functions cannot always close their figure if it is going
+    to be used somewhere else after becoming active (e.g. in reports
+    or gallery examples).
+    """
+    plt.close(fig)
 
 
 def _makeAssemPatches(core):
@@ -399,7 +415,7 @@ def _makeAssemPatches(core):
 
     pitch = core.getAssemblyPitch()
     for a in core:
-        x, y = a.getLocationObject().coords(pitch)
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
             assemPatch = matplotlib.patches.RegularPolygon(
                 (x, y), nSides, pitch / math.sqrt(3), orientation=math.pi / 2.0
@@ -419,7 +435,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
     """Write param values down, and return text so it can be edited later."""
     pitch = core.getAssemblyPitch()
     for a, val, label in zip(core, data, labels):
-        x, y = a.getLocationObject().coords(pitch)
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
 
         # Write text on top of patch locations.
         if label is None and labelFmt is not None:
@@ -441,7 +457,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
 def _createFaceMapLegend(legendMap, cmap, norm):
     """Make special assembly-legend for the assembly face map plot with assembly counts."""
 
-    class AssemblyLegend(object):
+    class AssemblyLegend:
         """
         Custom Legend artist handler.
 
@@ -586,7 +602,7 @@ class DepthSlider(Slider):
     def set_val(self, val):
         """
         Set the value and update the color.
-        
+
         Notes
         -----
         valmin/valmax are set on the parent to 0 and len(depths).
@@ -617,39 +633,41 @@ class DepthSlider(Slider):
 
 def plotAssemblyTypes(
     blueprints,
-    coreName,
+    fileName=None,
     assems=None,
-    plotNumber=1,
     maxAssems=None,
     showBlockAxMesh=True,
-):
+) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
 
     Parameters
     ----------
-    bluepprints: Blueprints
+    blueprints: Blueprints
         The blueprints to plot assembly types of.
+
+    fileName : str or None
+        Base for filename to write, or None for just returning the fig
 
     assems: list
         list of assembly objects to be plotted.
-
-    plotNumber: integer
-        number of uniquely identify the assembly plot from others and to prevent plots from being overwritten.
 
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
 
     showBlockAxMesh: bool
         if true, the axial mesh information will be displayed on the right side of the assembly plot.
+
+    Returns
+    -------
+    fig : plt.Figure
+        The figure object created
     """
 
     if assems is None:
         assems = list(blueprints.assemblies.values())
     if not isinstance(assems, (list, set, tuple)):
         assems = [assems]
-    if not isinstance(plotNumber, int):
-        raise TypeError("Plot number should be an integer")
     if maxAssems is not None and not isinstance(maxAssems, int):
         raise TypeError("Maximum assemblies should be an integer")
 
@@ -703,17 +721,18 @@ def plotAssemblyTypes(
     ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
-    ax.set_title("Assembly Designs for {}".format(coreName), y=1.03)
+    ax.set_title("Assembly Designs", y=1.03)
     ax.set_ylabel("Thermally Expanded Axial Heights (cm)".upper(), labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
 
     # Plot and save figure
     ax.plot()
-    figName = coreName + "AssemblyTypes{}.png".format(plotNumber)
-    runLog.debug("Writing assem layout {} in {}".format(figName, os.getcwd()))
-    fig.savefig(figName)
-    plt.close(fig)
-    return figName
+    if fileName:
+        fig.savefig(fileName)
+        runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
+        plt.close(fig)
+
+    return fig
 
 
 def _plotBlocksInAssembly(
@@ -813,3 +832,183 @@ def _plotBlocksInAssembly(
             )
 
     return xBlockLoc, yBlockHeights, yBlockAxMesh
+
+
+def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
+    """
+    Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
+
+    Parameters
+    ----------
+    core : Core
+        Core object
+    fName : str, optional
+        the name of the plot file to produce. If none, plot will be shown. A text file with
+        the flux values will also be generated if this is non-empty.
+    bList : iterable, optional
+        is a single block or a list of blocks to average over. If no bList, full core is assumed.
+    peak : bool, optional
+        a flag that will produce the peak as well as the average on the plot.
+    adjoint : bool, optional
+        plot the adjoint as well.
+    bList2 :
+        a separate list of blocks that will also be plotted on a separate axis on the same plot.
+        This is useful for comparing flux in some blocks with flux in some other blocks.
+
+    Notes
+    -----
+    This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
+    """
+
+    class BlockListFlux:
+        def __init__(
+            self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
+        ):
+            if blockList:
+                self.blockList = blockList
+                self.nGroup = nGroup
+                self.avgFlux = numpy.zeros(self.nGroup)
+                self.peakFlux = numpy.zeros(self.nGroup)
+                self.peak = peak
+                self.adjoint = adjoint
+                if self.adjoint:
+                    self.labelAvg = "Average Adjoint Flux"
+                    self.labelPeak = "Peak Adjoint Flux"
+                else:
+                    self.labelAvg = "Average Flux"
+                    self.labelPeak = "Peak Flux"
+                if primary:
+                    self.lineAvg = "-"
+                    self.linePeak = "-"
+                else:
+                    self.lineAvg = "r--"
+                    self.linePeak = "k--"
+
+        def calcAverage(self):
+            for b in self.blockList:
+                thisFlux = numpy.array(b.getMgFlux(adjoint=self.adjoint))
+                self.avgFlux += numpy.array(thisFlux)
+                if sum(thisFlux) > sum(self.peakFlux):
+                    self.peakFlux = thisFlux
+            self.avgFlux = self.avgFlux / len(bList)
+
+        def setEnergyStructure(self, upperEnergyBounds):
+            self.E = [eMax / 1e6 for eMax in upperEnergyBounds]
+
+        def makePlotHistograms(self):
+            self.eHistogram, self.avgHistogram = makeHistogram(self.E, self.avgFlux)
+            if self.peak:
+                _, self.peakHistogram = makeHistogram(self.E, self.peakFlux)
+
+        def checkSize(self):
+            if not len(self.E) == len(self.avgFlux):
+                runLog.error(self.avgFlux)
+                raise
+
+        def getTable(self):
+            return enumerate(zip(self.E, self.avgFlux, self.peakFlux))
+
+    if bList is None:
+        bList = core.getBlocks()
+    bList = list(bList)
+    if adjoint and bList2:
+        runLog.warning("Cannot plot adjoint flux with bList2 argument")
+        return
+    elif adjoint:
+        bList2 = bList
+    try:
+        G = len(core.lib.neutronEnergyUpperBounds)
+    except:
+        runLog.warning("No ISOTXS library attached so no flux plots.")
+        return
+
+    BlockListFluxes = set()
+    bf1 = BlockListFlux(G, blockList=bList, peak=peak, primary=True)
+    BlockListFluxes.add(bf1)
+    if bList2:
+        bf2 = BlockListFlux(G, blockList=bList2, adjoint=adjoint, peak=peak)
+        BlockListFluxes.add(bf2)
+
+    for bf in BlockListFluxes:
+        bf.calcAverage()
+        bf.setEnergyStructure(core.lib.neutronEnergyUpperBounds)
+        bf.checkSize()
+        bf.makePlotHistograms()
+
+    if fName:
+        # write a little flux text file.
+        txtFileName = os.path.splitext(fName)[0] + ".txt"
+        with open(txtFileName, "w") as f:
+            f.write(
+                "{0:16s} {1:16s} {2:16s}\n".format(
+                    "Energy_Group", "Average_Flux", "Peak_Flux"
+                )
+            )
+            for g, (eMax, avgFlux, peakFlux) in bf1.getTable():
+                f.write("{0:12E} {1:12E} {2:12E}\n".format(eMax, avgFlux, peakFlux))
+
+    if max(bf1.avgFlux) <= 0.0:
+        runLog.warning(
+            "Cannot plot flux with maxval=={0} in {1}".format(maxVal, bList[0])
+        )
+        return
+
+    plt.figure()
+    plt.plot(bf1.eHistogram, bf1.avgHistogram, bf1.lineAvg, label=bf1.labelAvg)
+    if peak:
+        plt.plot(bf1.eHistogram, bf1.peakHistogram, bf1.linePeak, label=bf1.labelPeak)
+    ax = plt.gca()
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    plt.xlabel("Energy (MeV)")
+    plt.ylabel("Flux (n/cm$^2$/s)")
+    if peak or bList2:
+        plt.legend(loc="lower right")
+    plt.grid(color="0.70")
+    if bList2:
+        if adjoint:
+            plt.twinx()
+            plt.ylabel("Adjoint Flux (n/cm$^2$/s)", rotation=270)
+            ax2 = plt.gca()
+            ax2.set_yscale("log")
+        plt.plot(bf2.eHistogram, bf2.avgHistogram, bf2.lineAvg, label=bf2.labelAvg)
+        if peak and not adjoint:
+            plt.plot(
+                bf2.eHistogram, bf2.peakHistogram, bf2.linePeak, label=bf2.labelPeak
+            )
+        plt.legend(loc="lower left")
+    plt.title("Group flux")
+
+    if fName:
+        plt.savefig(fName)
+        report.setData(
+            "Flux Plot {}".format(os.path.split(fName)[1]),
+            os.path.abspath(fName),
+            report.FLUX_PLOT,
+        )
+    else:
+        plt.show()
+
+
+def makeHistogram(x, y):
+    """
+    Take a list of x and y values, and return a histogram-ified version
+    Good for plotting multigroup flux spectrum or cross sections
+    """
+    if not len(x) == len(y):
+        raise ValueError(
+            "Cannot make a histogram unless the x and y lists are the same size."
+            + "len(x) == {} and len(y) == {}".format(len(x), len(y))
+        )
+    n = len(x)
+    xHistogram = numpy.zeros(2 * n)
+    yHistogram = numpy.zeros(2 * n)
+    for i in range(n):
+        lower = 2 * i
+        upper = 2 * i + 1
+        xHistogram[lower] = x[i - 1]
+        xHistogram[upper] = x[i]
+        yHistogram[lower] = y[i]
+        yHistogram[upper] = y[i]
+    xHistogram[0] = x[0] / 2.0
+    return xHistogram, yHistogram

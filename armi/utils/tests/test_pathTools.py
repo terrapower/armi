@@ -27,18 +27,6 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 class PathToolsTests(unittest.TestCase):
-    def test_getFullFileNames(self):
-        with directoryChangers.DirectoryChanger(THIS_DIR):
-            baseCall = pathTools.getFullFileNames()
-            # all variations should return the same values.
-            self.assertEqual(
-                pathTools.getFullFileNames(), pathTools.getFullFileNames(THIS_DIR)
-            )
-            self.assertEqual(
-                pathTools.getFullFileNames(recursive=True),
-                pathTools.getFullFileNames(THIS_DIR, recursive=True),
-            )
-
     def test_separateModuleAndAttribute(self):
         self.assertRaises(
             ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon"

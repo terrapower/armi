@@ -426,7 +426,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
     - Iterates through components of all blocks and calculates component average number densities. This calculation
       takes the first component of each block, averages the number densities, and applies this to the number density
       to the representative block.
-    
+
     """
 
     def _makeRepresentativeBlock(self):
@@ -532,7 +532,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         - This component does not serve any purpose for XS generation as it contains void material with zero area.
         - Removing this component does not modify the blocks within the reactor.
         """
-        for c in repBlock.getComponents():
+        for c in repBlock.iterComponents():
             if c.isLatticeComponent():
                 repBlock.remove(c)
         return repBlock
@@ -545,9 +545,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         for c, bWeight in zip(components, bWeights):
             weight = bWeight * c.getArea()
             totalWeight += weight
-            densities += weight * numpy.array(
-                [c.getNumberDensity(nucName) for nucName in allNucNames]
-            )
+            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
         return allNucNames, densities / totalWeight
 
     def _orderComponentsInGroup(self, repBlock):
@@ -617,7 +615,11 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        self.cs[CONF_CROSS_SECTION].setDefaults(self.cs)
+
+        self.cs[CONF_CROSS_SECTION].setDefaults(
+            self.cs["xsBlockRepresentation"],
+            self.cs["disableBlockTypeExclusionInXsGeneration"],
+        )
 
     def interactBOC(self, cycle=None):
         """
@@ -1130,12 +1132,6 @@ BLOCK_COLLECTIONS = {
     "Median": MedianBlockCollection,
     "Average": AverageBlockCollection,
     "ComponentAverage1DSlab": SlabComponentsAverageBlockCollection,
-    "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
-}
-
-HOMOGENEOUS_BLOCK_COLLECTIONS = {
-    "Median": MedianBlockCollection,
-    "Average": AverageBlockCollection,
     "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
 }
 

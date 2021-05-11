@@ -15,6 +15,7 @@
 """
 Tests functionalities of components within ARMI
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import math
 import unittest
@@ -135,7 +136,7 @@ class TestGeneralComponents(unittest.TestCase):
     componentDims = {"Tinput": 25.0, "Thot": 25.0}
 
     def setUp(self):
-        class _Parent(object):
+        class _Parent:
             def getSymmetryFactor(self):
                 return 1.0
 
@@ -194,6 +195,11 @@ class TestUnshapedComponent(TestGeneralComponents):
 
     def test_getBoundingCircleOuterDiameter(self):
         self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 1.0)
+
+    def test_fromComponent(self):
+        circle = components.Circle("testCircle", "Material", 25, 25, 1.0)
+        unshaped = components.UnshapedComponent.fromComponent(circle)
+        self.assertEqual(circle.getComponentArea(), unshaped.getComponentArea())
 
 
 class TestShapedComponent(TestGeneralComponents):
@@ -616,6 +622,7 @@ class TestCube(TestShapedComponent):
         self.assertAlmostEqual(negativeCube.getVolume(), refVolume)
         with self.assertRaises(exceptions.NegativeComponentVolume):
             negativeCube = Cube("test", "UZr", **dims)
+            negativeCube.getVolume()
 
     def test_getVolume(self):
         lengthO = self.component.getDimension("lengthOuter")
@@ -933,7 +940,7 @@ class TestMaterialAdjustments(unittest.TestCase):
         dims = {"Tinput": 25.0, "Thot": 600.0, "od": 10.0, "id": 5.0, "mult": 1.0}
         self.fuel = Circle("fuel", "UZr", **dims)
 
-        class fakeBlock(object):
+        class fakeBlock:
             def getHeight(self):  # unit height
                 return 1.0
 

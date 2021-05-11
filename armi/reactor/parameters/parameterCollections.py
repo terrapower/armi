@@ -116,7 +116,9 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     armi.reactors.parameters
     """
 
-    pDefs: parameterDefinitions.ParameterDefinitionCollection = _getBaseParameterDefinitions()
+    pDefs: parameterDefinitions.ParameterDefinitionCollection = (
+        _getBaseParameterDefinitions()
+    )
     _allFields: List[str] = []
 
     # The ArmiObject class that this ParameterCollection belongs to

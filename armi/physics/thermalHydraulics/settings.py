@@ -15,12 +15,30 @@
 """Settings related to Thermal Hydraulics"""
 
 from armi.settings import setting
-from armi.operators.settingsValidation import Query
+
+CONF_DO_TH = "doTH"
+CONF_TH_KERNEL = "thKernel"
 
 
 def defineSettings():
     """Define generic thermal/hydraulic settings."""
-    settings = []
+    settings = [
+        setting.Setting(
+            CONF_DO_TH,
+            default=False,
+            label="Run Thermal Hydraulics",
+            description=(
+                f"Activate thermal hydraulics calculations using the physics module defined in "
+                f"`{CONF_TH_KERNEL}`"
+            ),
+        ),
+        setting.Setting(
+            CONF_TH_KERNEL,
+            default=False,
+            label="Thermal Hydraulics Kernel",
+            description="Name of primary T/H solver in this run",
+        ),
+    ]
     return settings
 
 

@@ -63,9 +63,7 @@ def _numericSpecialBehavior(source, rt):
 
 
 def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
-    """Tries parse a python value, expecting input to be the right type or a string
-
-    """
+    """Tries parse a python value, expecting input to be the right type or a string"""
     # misuse prevention
     if requestedType == str:
         raise TypeError(

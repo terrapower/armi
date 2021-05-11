@@ -23,9 +23,6 @@ etc. Each member of the hierarchy knows its children and its parent, so full acc
 the hierarchy is available from everywhere. This design was chosen because of the close
 analogy of the model to the physical nature of nuclear reactors.
 
-These objects are mostly abstract and users should use their subclasses (e.g.
-:py:mod:`armi.reactor.blocks.Block`) in most cases.
-
 .. warning:: Because each member of the hierarchy is linked to the entire tree,
     it is often unsafe to save references to individual members; it can cause
     large and unexpected memory inefficiencies.
@@ -33,8 +30,9 @@ These objects are mostly abstract and users should use their subclasses (e.g.
 See Also: :doc:`/developer/index`.
 """
 import collections
+import itertools
 import timeit
-from typing import Dict, Optional, Type, Tuple
+from typing import Dict, Optional, Type, Tuple, List, Union
 
 import numpy
 import tabulate
@@ -45,6 +43,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import resolveCollections
 from armi.reactor.flags import Flags, TypeSpec
 from armi import runLog
+from armi import utils
 from armi.utils import units
 from armi.utils import densityTools
 from armi.nucDirectory import nucDir, nuclideBases
@@ -52,11 +51,9 @@ from armi.nucDirectory import elements
 from armi.localization import exceptions
 from armi.reactor import grids
 
-from armi.physics.neutronics.isotopicDepletion.crossSectionTable import (
-    CrossSectionTable,
-)
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.nuclearDataIO import xsCollections
+from armi.utils.densityTools import calculateNumberDensity
 
 
 class FlagSerializer(parameters.Serializer):
@@ -78,18 +75,87 @@ class FlagSerializer(parameters.Serializer):
         Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
-        reader and the writer agree on the meaning of each bit.
+        reader and the writer can agree on the meaning of each bit.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return FlagSerializer._packImpl(data, Flags)
+
+    @staticmethod
+    def _packImpl(data, flagCls: Type[utils.Flag]):
+        """
+        Implement the pack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
         """
         npa = numpy.array(
             [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
-        ).reshape((len(data), Flags.width()))
+        ).reshape((len(data), flagCls.width()))
 
-        return npa, {"flag_order": Flags.sortedFields()}
+        return npa, {"flag_order": flagCls.sortedFields()}
+
+    @staticmethod
+    def _remapBits(inp: int, mapping: Dict[int, int]):
+        """
+        Given an input bitfield, map each bit to the appropriate new bit position based
+        on the passed mapping.
+
+        Parameters
+        ==========
+        inp : int
+            input bitfield
+
+        mapping : dict
+            dictionary mapping from old bit position -> new bit position
+        """
+        f = 0
+        for bit in itertools.count():
+            if (1 << bit) > inp:
+                break
+            if (1 << bit) & inp:
+                f = f | (1 << mapping[bit])
+
+        return f
 
     @classmethod
     def unpack(cls, data, version, attrs):
+        """
+        Reverse the pack operation
+
+        This will allow for some degree of conversion from old flags to a new set of
+        flags, as long as all of the source flags still exist in the current set of
+        flags.
+
+        Under the hood, this calls the private implementation providing the
+        :py:class:`armi.reactor.flags.Flags` class as the target output class.
+        """
+        return cls._unpackImpl(data, version, attrs, Flags)
+
+    @classmethod
+    def _unpackImpl(cls, data, version, attrs, flagCls: Type[utils.Flag]):
+        """
+        Implement the unpack operation given a target output Flag class.
+
+        This is kept separate from the public interface to permit testing of the
+        functionality without having to do unholy things to ARMI's actual set of
+        ``reactor.flags.Flags``.
+
+        If the set of flags for the currently-configured App match the input set of
+        flags, they are read in directly, which is good and cheap. However, if the set
+        of flags differ from the input and the current App, we will try to convert them
+        (as long as all of the input flags exist in the current App). Conversion is done
+        by forming a map from all input bit positions to the current-App bit positions
+        of the same meaning. E.g., if FUEL flag used to be the 3rd bit position, but now
+        it is the 6th bit position, the map will contain ``map[3] = 6``. Then for each
+        bitfield that is read in, each bit position is queried and if present, mapped to
+        the proper corresponding new bit position. The result of this mapping is used to
+        construct the Flags object.
+        """
         flagOrderPassed = attrs["flag_order"]
-        flagOrderNow = Flags.sortedFields()
+        flagOrderNow = flagCls.sortedFields()
 
         if version != cls.version:
             raise ValueError(
@@ -100,32 +166,34 @@ class FlagSerializer(parameters.Serializer):
                 )
             )
 
-        # Ensure that the meanings of the Flags bits are the same. We could also
-        # implement a more expensive operation which attempts to map from one version's
-        # meaning to another's, but possibly YAGNI.
-        if not len(flagOrderPassed) == len(flagOrderNow):
+        flagSetIn = set(flagOrderPassed)
+        flagSetNow = set(flagOrderNow)
+
+        # Make sure that all of the old flags still exist
+        if not flagSetIn.issubset(flagSetNow):
+            missingFlags = flagSetIn - flagSetNow
             raise ValueError(
-                "The database contains a different number of Flags than the current "
-                "ARMI Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
+                "The set of flags in the database includes unknown flags. "
+                "Make sure you are using the correct ARMI app. Missing flags:\n"
+                "{}".format(missingFlags)
             )
 
-        if not all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
-            raise ValueError(
-                "The database has Flags with different meanings than the current ARMI"
-                "Application!\n"
-                "The database has:\n"
-                "{}\n"
-                "\n"
-                "The current application has:\n"
-                "{}".format(flagOrderPassed, flagOrderNow)
-            )
+        if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
+            out = [flagCls.from_bytes(row.tobytes()) for row in data]
+        else:
+            newFlags = {
+                i: flagOrderNow.index(oldFlag)
+                for (i, oldFlag) in enumerate(flagOrderPassed)
+            }
+            out = [
+                flagCls(
+                    cls._remapBits(
+                        int.from_bytes(row.tobytes(), byteorder="little"), newFlags
+                    )
+                )
+                for row in data
+            ]
 
-        out = [Flags.from_bytes(row.tobytes()) for row in data]
         return out
 
 
@@ -204,7 +272,7 @@ class ArmiObject(metaclass=CompositeModelType):
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all
       classes
-    * Declares and interface for accessing and managing
+    * Declares an interface for accessing and managing
       child objects
     * Defines an interface for accessing parents.
 
@@ -220,6 +288,14 @@ class ArmiObject(metaclass=CompositeModelType):
     all of its parents. A new ``paramCollectionType`` class attribute will be added to
     the ArmiObject subclass to reflect which type of parameter collection should be
     used.
+
+    .. warning::
+        This class has far too many public methods. We are in the midst of a composite
+        tree cleanup that will likely break these out onto a number of separate functional
+        classes grouping things like composition, location, shape/dimensions, and
+        various physics queries. Methods are being collected here from the various
+        specialized subclasses (Block, Assembly) in preparation for this next step.
+        As a result, the public API on this method should be considered unstable.
 
     Attributes
     ----------
@@ -246,7 +322,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def __init__(self, name):
         self.name = name
-        self._children = []
         self.parent = None
         self.cached = {}
         self._backupCache = None
@@ -256,11 +331,8 @@ class ArmiObject(metaclass=CompositeModelType):
         # way to either represent them in parameters, or otherwise reliably
         # recover them.
         self._lumpedFissionProducts = None
-        self.crossSectionTable = None
-
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
-        self.childrenByLocator = {}
 
     def __lt__(self, other):
         """
@@ -273,11 +345,17 @@ class ArmiObject(metaclass=CompositeModelType):
 
         By default, this sorts using the spatial locator, in K, J, I order, which should
         give a relatively intuitive order. For safety, it makes sure that the objects
-        being sorted live in the same grid, however, since it probably doesn't make
+        being sorted live in the same grid, since it probably doesn't make
         sense to sort things across containers or scopes. If this ends up being too
         restrictive, it can probably be relaxed or overridden on specific classes.
-
         """
+
+        if self.spatialLocator is None or other.spatialLocator is None:
+            runLog.error("could not compare {} and {}".format(self, other))
+            raise ValueError(
+                "One or more of the compared objects have no spatialLocator"
+            )
+
         if self.spatialLocator.grid is not other.spatialLocator.grid:
             runLog.error("could not compare {} and {}".format(self, other))
             raise ValueError(
@@ -441,6 +519,31 @@ class ArmiObject(metaclass=CompositeModelType):
         """Get all children that have given flags."""
         return NotImplementedError
 
+    def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return all armi.reactor.component.Component within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the
+            flags specified.
+
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match
+            'interCoolant'.  This has no impact if compLabel is None.
+
+        Returns
+        -------
+        list of Component
+            items matching compLabel and exact criteria
+        """
+        raise NotImplementedError()
+
+    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """Yield components one by one in a generator."""
+        raise NotImplementedError()
+
     def doChildrenHaveFlags(self, typeSpec: TypeSpec, deep=False):
         """
         Generator that yields True if the next child has given flags.
@@ -527,7 +630,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getParamNames(self):
         """
-        Get a list of block-level parameters keys that are available on this block
+        Get a list of parameters keys that are available on this object.
 
         Will not have any corner, edge, or timenode dependence.
         """
@@ -577,7 +680,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         hasFlags : bool
-            True if this block is in the typeID list.
+            True if this object is in the typeID list.
 
         Notes
         -----
@@ -589,7 +692,7 @@ class ArmiObject(metaclass=CompositeModelType):
         operations.
 
         Always returns true if typeID is none and exact is False, allowing for default
-        parameters to be passed in when the method does not care about the block type.
+        parameters to be passed in when the method does not care about the object type.
         If the typeID is none and exact is True, this will always return False.
 
         Examples
@@ -695,7 +798,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolumeFractions(self):
         """
-        Return volume  fractions of each child.
+        Return volume fractions of each child.
 
         Sets volume or area of missing piece (like coolant) if it exists.  Caching would
         be nice here.
@@ -718,86 +821,35 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         children = self.getChildren()
-        volumes = [c.getVolume() for c in children]
-        vol = sum(volumes)
-        return [(ci, vi / vol) for ci, vi in zip(children, volumes)]
+        numerator = [c.getVolume() for c in children]
+        denom = sum(numerator)
+        if denom == 0.0:
+            numerator = [c.getArea() for c in children]
+            denom = sum(numerator)
+
+        fracs = [(ci, nu / denom) for ci, nu in zip(children, numerator)]
+        return fracs
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
+        if self.parent is None:
+            raise ValueError(
+                f"No parent is defined for {self}. Cannot compute its volume fraction."
+            )
+
         for child, frac in self.parent.getVolumeFractions():
             if child is self:
                 return frac
 
-    def _deriveUndefinedVolume(self):
-        """
-        Determine the volume of any DerivedShapes (e.g. coolant components).
-
-        When a coolant component first gets loaded, it has no area. But after that, it
-        does have area so we must detect purely derived components by the fact that they
-        have no dimension keys. Zero area is acceptable (for gaps that will grow, etc.).
-
-        If there are no dimensions but there is still an area, then the user probably
-        specified the area on a generic component. If they did specify it on the input,
-        then the area should not update. HOWEVER, if it was specified by a previous
-        leftover computation, then we should re-compute.  That's why we store the area
-        on the dims.
-
-        """
-        from armi.reactor import components  # avoid circular import
-
-        leftover = []
-        totalVolume = 0.0
-        for child in self.getChildren():
-            # so far, only coolants do this. ThRZBlock's with these must have
-            # area set specifically by input.
-            if child.__class__ is components.DerivedShape:
-                leftover.append(child)
-            else:
-                totalVolume += child.getVolume()
-        derivedVolume = 0.0
-        if len(leftover) == 1:
-            left = leftover[0]
-            derivedVolume = self.getMaxVolume() - totalVolume
-            if derivedVolume < 0:
-                runLog.error(
-                    "Negative remaining volume of {0} cm^3 for {1} in {2}. "
-                    "Check geometry (is pitch correct?). \nMax volume in this object is {3}\n"
-                    "Total of others is {4}\n"
-                    "".format(
-                        derivedVolume, left, self, self.getMaxVolume(), totalVolume
-                    )
-                )
-                raise RuntimeError(
-                    "Negative remaining volume ({}) in {}.".format(derivedVolume, self)
-                )
-            left.setVolume(derivedVolume)
-            totalVolume += derivedVolume
-        elif leftover:
-            runLog.warning(
-                "Gluttony Error incoming, total components {}"
-                "".format(self.getChildren())
-            )
-            for c in self.getChildren():
-                runLog.warning(
-                    "volume {} params {} for component {}"
-                    "".format(c.getVolume(), c.p, c.getName())
-                )
-            runLog.error(
-                "These are leftovers: {0}\n"
-                " Cannot deduce area of more than one component".format(leftover)
-            )
-            raise RuntimeError("Gluttony Error too many leftovers.")
-        return derivedVolume
-
     def getMaxArea(self):
-        """"
+        """ "
         The maximum area of this object if it were totally full.
 
         See Also
         --------
         armi.reactor.blocks.HexBlock.getMaxArea
         """
-        pass
+        raise NotImplementedError()
 
     def getMaxVolume(self):
         """
@@ -808,7 +860,7 @@ class ArmiObject(metaclass=CompositeModelType):
         vol : float
             volume in cm^3.
         """
-        pass
+        raise NotImplementedError()
 
     def getMass(self, nuclideNames=None):
         """
@@ -825,7 +877,9 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum([c.getMass(nuclideNames=nuclideNames) for c in self.getComponents()])
+        return sum(
+            [c.getMass(nuclideNames=nuclideNames) for c in self.iterComponents()]
+        )
 
     def getMassFrac(self, nucName):
         """
@@ -1173,11 +1227,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
-        comps = self.getComponents()  # storing as local is speedup
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
-                for c in comps
+                for c in self.iterComponents()
             ]
         )  # c x 1
         totalVol = volumes.sum()
@@ -1186,7 +1239,10 @@ class ArmiObject(metaclass=CompositeModelType):
             return [0.0] * len(nucNames)
 
         nucDensForEachComp = numpy.array(
-            [[c.getNumberDensity(nuc) for nuc in nucNames] for c in comps]
+            [
+                [c.getNumberDensity(nuc) for nuc in nucNames]
+                for c in self.iterComponents()
+            ]
         )  # c x n
         return volumes.dot(nucDensForEachComp) / totalVol
 
@@ -1623,7 +1679,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
-        r"""returns the fissile mass enrichment. """
+        r"""returns the fissile mass enrichment."""
         hm = self.getHMMass()
         if hm > 0:
             return self.getFissileMass() / hm
@@ -1924,7 +1980,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return numpy.array([child.p[param] for child in self])
 
     def isFuel(self):
-        """True if this is a fuel block. """
+        """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
 
     def containsHeavyMetal(self):
@@ -1948,18 +2004,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for child in self.getChildren():
             nucs.update(child.getNuclides())
         return nucs
-
-    def isDepletable(self):
-        """
-        Return True if itself or any child is depletable.
-
-        See Also
-        --------
-        armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys: sets this flag
-        """
-        return self.hasFlags(Flags.DEPLETABLE) or self.containsAtLeastOneChildWithFlags(
-            Flags.DEPLETABLE
-        )
 
     def getFissileMass(self):
         """Returns fissile mass in grams."""
@@ -2069,7 +2113,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams. """
+        """returns mass of fuel in grams."""
         return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
 
     def constituentReport(self):
@@ -2127,11 +2171,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numerator = 0.0
         denominator = 0.0
-        for nucName in self.getNuclides():
+
+        numDensities = self.getNumberDensities()
+
+        for nucName, nDen in numDensities.items():
             atomicWeight = nuclideBases.byName[nucName].weight
-            ni = self.getNumberDensity(nucName)
-            numerator += atomicWeight * ni
-            denominator += ni
+            numerator += atomicWeight * nDen
+            denominator += nDen
         return numerator / denominator
 
     def getMasses(self):
@@ -2196,60 +2242,62 @@ class ArmiObject(metaclass=CompositeModelType):
     def removeMass(self, nucName, mass):
         self.addMass(nucName, -mass)
 
-    def addMass(self, nucName, mass, density=None, lumpedFissionProducts=None):
+    def addMass(self, nucName, mass):
         """
         Parameters
         ----------
-        nucName - str
+        nucName : str
             nuclide name e.g. 'U235'
 
-        mass - float
+        mass : float
             mass in grams of nuclide to be added to this armi Object
         """
-        pass
+        volume = self.getVolume()
+        addedNumberDensity = densityTools.calculateNumberDensity(nucName, mass, volume)
+        self.setNumberDensity(
+            nucName, self.getNumberDensity(nucName) + addedNumberDensity
+        )
 
-    def addMasses(self, masses, density=None, lumpedFissionProducts=None):
+    def addMasses(self, masses):
         """
         Adds a vector of masses.
 
         Parameters
         ----------
-        masses : Dict
+        masses : dict
             a dictionary of masses (g) indexed by nucNames (string)
         """
         for nucName, mass in masses.items():
-            if mass != 0:
-                self.addMass(
-                    nucName,
-                    mass,
-                    density=density,
-                    lumpedFissionProducts=lumpedFissionProducts,
-                )
+            if mass:
+                self.addMass(nucName, mass)
 
-    def setMass(self, nucName, mass, density=None, lumpedFissionProducts=None):
+    def setMass(self, nucName, mass):
         """
-        Set the mass of a defined nuclide to the defined mass.
+        Set the mass in an object by adjusting the ndens of the nuclides.
 
         Parameters
         ----------
-        nucName - string
-            armi nuclide name (e.g. U235)
-        mass - float
-            this is a dictionary of masses in grams
-        """
-        pass
+        nucName : str
+            Nuclide name to set mass of
+        mass : float
+            Mass in grams to set.
 
-    def setMasses(self, masses, density=None, lumpedFissionProducts=None):
         """
-        Sets a vector of masses.
+        d = calculateNumberDensity(nucName, mass, self.getVolume())
+        self.setNumberDensity(nucName, d)
+
+    def setMasses(self, masses):
+        """
+        Set a vector of masses.
 
         Parameters
         ----------
-        masses : Dict
+        masses : dict
             a dictionary of masses (g) indexed by nucNames (string)
         """
+        self.clearNumberDensities()
         for nucName, mass in masses.items():
-            self.setMass(nucName, mass, density=density)
+            self.setMass(nucName, mass)
 
     def getSymmetryFactor(self):
         """
@@ -2290,6 +2338,257 @@ class ArmiObject(metaclass=CompositeModelType):
                 minK = k
 
         return ((minI, maxI), (minJ, maxJ), (minK, maxK))
+
+    def getComponentNames(self):
+        r"""
+        Get all unique component names of this Composite.
+
+        Returns
+        -------
+        set or str
+            A set of all unique component names found in this Composite.
+        """
+        return set(c.getName() for c in self.iterComponents())
+
+    def getComponentsOfShape(self, shapeClass):
+        """
+        Return list of components in this block of a particular shape.
+
+        Parameters
+        ----------
+        shapeClass : Component
+            The class of component, e.g. Circle, Helix, Hexagon, etc.
+
+        Returns
+        -------
+        param : list
+            List of components in this block that are of the given shape.
+        """
+        return [c for c in self.iterComponents() if isinstance(c, shapeClass)]
+
+    def getComponentsOfMaterial(self, material=None, materialName=None):
+        """
+        Return list of components in this block that are made of a particular material
+
+        Only one of the selectors may be used
+
+        Parameters
+        ----------
+        material : Material object, optional
+            The material to match
+        materialName : str, optional
+            The material name to match.
+
+        Returns
+        -------
+        componentsWithThisMat : list
+
+        """
+
+        if materialName is None:
+            materialName = material.getName()
+        else:
+            assert (
+                material is None
+            ), "Cannot call with more than one selector. Choose one or the other."
+
+        componentsWithThisMat = []
+        for c in self.iterComponents():
+            if c.getProperties().getName() == materialName:
+                componentsWithThisMat.append(c)
+        return componentsWithThisMat
+
+    def hasComponents(self, typeSpec: Union[TypeSpec, List[TypeSpec]], exact=False):
+        """
+        Return true if components matching all TypeSpec exist in this object.
+
+        Parameters
+        ----------
+        typeSpec : Flags or iterable of Flags
+            Component flags to check for
+        """
+        # Wrap the typeSpec in a tuple if we got a scalar
+        try:
+            typeSpec = iter(typeSpec)
+        except TypeError:
+            typeSpec = (typeSpec,)
+
+        for t in typeSpec:
+            # loop b/c getComponents is a OR operation on the flags, but we need AND
+            if not self.getComponents(t, exact):
+                return False
+        return True
+
+    def getComponentByName(self, name):
+        """
+        Gets a particular component from this object, based on its name
+
+        Parameters
+        ----------
+        name : str
+            The blueprint name of the component to return
+        """
+        components = [c for c in self.iterComponents() if c.name == name]
+        nComp = len(components)
+        if nComp == 0:
+            return None
+        elif nComp > 1:
+            raise ValueError(
+                "More than one component named '{}' in {}".format(self, name)
+            )
+        else:
+            return components[0]
+
+    def getComponent(
+        self, typeSpec: TypeSpec, exact=False, returnNull=False, quiet=False
+    ):
+        """
+        Get a particular component from this object.
+
+        Parameters
+        ----------
+        typeSpec : flags.Flags or list of Flags
+            The type specification of the component to return
+
+        exact : boolean, optional
+            Demand that the component flags be exactly equal to the typespec. Default: False
+
+        quiet : boolean, optional
+            Warn if the component is not found. Default: False
+
+        Careful with multiple similar names in one object
+
+        Returns
+        -------
+        Component : The component that matches the critera or None
+
+        """
+        results = self.getComponents(typeSpec, exact=exact)
+        if len(results) == 1:
+            return results[0]
+        elif not results:
+            if not quiet:
+                runLog.warning(
+                    "No component matched {0} in {1}. Returning None".format(
+                        typeSpec, self
+                    ),
+                    single=True,
+                    label="None component returned instead of {0}".format(typeSpec),
+                )
+            return None
+        else:
+            raise ValueError(
+                "Multiple components match in {} match typeSpec {}: {}".format(
+                    self, typeSpec, results
+                )
+            )
+
+    def getNumComponents(self, typeSpec: TypeSpec, exact=False):
+        """
+        Get the number of components that have these flags, taking into account multiplicity. Useful
+        for getting nPins even when there are pin detailed cases.
+
+        Parameters
+        ----------
+        typeSpec : Flags
+            Expected flags of the component to get. e.g. Flags.FUEL
+
+        Returns
+        -------
+        total : int
+            the number of components of this type in this object, including multiplicity.
+        """
+        total = 0
+        for c in self.iterComponents(typeSpec, exact):
+            total += int(c.getDimension("mult"))
+        return total
+
+    def setComponentDimensionsReport(self):
+        """Makes a summary of the dimensions of the components in this object."""
+        reportGroups = []
+        for c in self.iterComponents():
+            reportGroups.append(c.setDimensionReport())
+
+        return reportGroups
+
+    def printDensities(self, expandFissionProducts=False):
+        """Get lines that have the number densities of a object."""
+        numberDensities = self.getNumberDensities(
+            expandFissionProducts=expandFissionProducts
+        )
+        lines = []
+        for nucName, nucDens in numberDensities.items():
+            lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
+        return lines
+
+    def expandAllElementalsToIsotopics(self):
+        reactorNucs = self.getNuclides()
+        for elemental in nuclideBases.where(
+            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase)
+            and nb.name in reactorNucs
+        ):
+            self.expandElementalToIsotopics(elemental)
+
+    def expandElementalToIsotopics(self, elementalNuclide):
+        """
+        Expands the density of a specific elemental nuclides to its natural isotopics.
+
+        Parameters
+        ----------
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide`
+            natural nuclide to replace.
+        """
+        natName = elementalNuclide.name
+        for component in self.iterComponents():
+            elementalDensity = component.getNumberDensity(natName)
+            if elementalDensity == 0.0:
+                continue
+            component.setNumberDensity(natName, 0.0)  # clear the elemental
+            del component.p.numberDensities[natName]
+            # add in isotopics
+            for natNuc in elementalNuclide.getNaturalIsotopics():
+                component.setNumberDensity(
+                    natNuc.name, elementalDensity * natNuc.abundance
+                )
+
+    def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return the average temperature of the ArmiObject in C by averaging all components
+        """
+        tempNumerator = 0.0
+        totalVol = 0.0
+        for component in self.iterComponents(typeSpec, exact):
+            vol = component.getVolume()
+            tempNumerator += component.temperatureInC * vol
+            totalVol += vol
+
+        return tempNumerator / totalVol
+
+    def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return the first sample of the most dominant material (by volume) in this object.
+
+        Parameters
+        ----------
+        typeSpec : Flags or iterable of Flags, optional
+            The types of components to consider (e.g. ``[Flags.FUEL, Flags.CONTROL]``)
+        exact : bool, optional
+            Whether or not the TypeSpec is exact
+
+        Returns
+        -------
+        mat : Material
+             the first instance of the most dominant material (by volume) in this object.
+
+        See Also
+        --------
+        getComponentsOfMaterial
+            Gets components that are made of a particular material
+        gatherMaterialsByVolume
+            Classifies all materials by volume
+
+        """
+        return getDominantMaterial([self], typeSpec, exact)
 
 
 class Composite(ArmiObject):
@@ -2337,6 +2636,11 @@ class Composite(ArmiObject):
     reactors.
 
     """
+
+    def __init__(self, name):
+        ArmiObject.__init__(self, name)
+        self.childrenByLocator = {}
+        self._children = []
 
     def __getitem__(self, index):
         return self._children[index]
@@ -2421,7 +2725,9 @@ class Composite(ArmiObject):
         for c in items:
             self.add(c)
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """
         Return the children objects of this composite.
 
@@ -2438,18 +2744,32 @@ class Composite(ArmiObject):
         includeMaterials : bool, optional
             Include the material properties
 
+        predicate : callable, optional
+            An optional unary predicate to use for filtering results. This can be used
+            to request children of specific types, or with desired attributes. Not all
+            ArmiObjects have the same methods and members, so care should be taken to
+            make sure that the predicate executes gracefully in all cases (e.g., use
+            ``getattr(obj, "attribute", None)`` to access instance attributes). Failure
+            to meet the predicate only affects the object in question; children will
+            still be considered.
+
         Examples
         --------
         >>> obj.getChildren()
         [child1, child2, child3]
 
-        >>>obj.getChildren(generationNum=2)
+        >>> obj.getChildren(generationNum=2)
         [grandchild1, grandchild2, grandchild3]
 
         >>> obj.getChildren(deep=True)
         [child1, child2, child3, grandchild1, grandchild2, grandchild3]
 
+        # Assuming that grandchild1 and grandchild3 are Component objects
+        >>> obj.getChildren(deep=True, predicate=lambda o: isinstance(o, Component))
+        [grandchild1, grandchild3]
+
         """
+        _pred = predicate or (lambda x: True)
         if deep and generationNum > 1:
             raise RuntimeError(
                 "Cannot get children with a generation number set and the deep flag set"
@@ -2458,7 +2778,8 @@ class Composite(ArmiObject):
         children = []
         for child in self._children:
             if generationNum == 1 or deep:
-                children.append(child)
+                if _pred(child):
+                    children.append(child)
 
             if generationNum > 1 or deep:
                 children.extend(
@@ -2466,6 +2787,7 @@ class Composite(ArmiObject):
                         deep=deep,
                         generationNum=generationNum - 1,
                         includeMaterials=includeMaterials,
+                        predicate=predicate,
                     )
                 )
         if includeMaterials:
@@ -2492,36 +2814,7 @@ class Composite(ArmiObject):
         return children
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return all armi.reactor.component.Component within this Composite.
-
-        Parameters
-        ----------
-        typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
-
-        exact : bool, optional
-            Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if compLabel is None.
-
-        Returns
-        -------
-        list of Component
-            items matching compLabel and exact criteria
-        """
         return list(self.iterComponents(typeSpec, exact))
-
-    def getComponentNames(self):
-        r"""
-        Get all unique component names of this Composite.
-
-        Returns
-        -------
-        set or str
-            A set of all unique component names found in this Composite.
-        """
-        return set(c.getName() for c in self.iterComponents())
 
     def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
@@ -2825,70 +3118,6 @@ class Composite(ArmiObject):
 
         return rxnRates
 
-    def getCrossSectionTable(self, nuclides=None):
-        """
-        Return `self.crossSectionTable` if it exists. Otherwise, generate
-        the cross-section table for given nuclides (or the result of
-        self.getNuclides() if nuclides is not specified).
-
-        Parameters
-        ----------
-        nuclides : list, optional
-            list of nuclide names for which to generate the cross-section table.
-            If absent, use all nuclides obtained by self.getNuclides().
-
-        Returns
-        -------
-        self.crossSectionTable : armi.physics.neutronics.isotopicDepletion.crossSectionTable.CrossSectionTable
-
-        Notes
-        -----
-        In an earlier implementation, self.getNuclides() was always called if no
-        nuclides argument was passed, even if self.crossSectionTable had already been
-        generated and, therefore, nuclides was not used. This has been modified so that
-        self.getNuclides() is only called if its result is actually used.
-        """
-        if self.crossSectionTable is None:
-            if nuclides is None:
-                nuclides = self.getNuclides()
-            self.makeCrossSectionTable(nuclides=nuclides)
-        return self.crossSectionTable
-
-    def makeCrossSectionTable(self, nuclides):
-        """
-        See Also
-        --------
-        armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
-        """
-
-        # NOTE: removed default nuclides=None argument since this wouldn't have
-        # worked in that case anyway  (for nucName in nuclides: would've failed)
-
-        # initialize the rxRates dict
-        rxRates = {
-            nucName: {rxName: 0 for rxName in ("nG", "nF", "n2n", "nA", "nP", "n3n")}
-            for nucName in nuclides
-        }
-
-        for armiObject in self.getChildren():
-            for nucName in nuclides:
-                rxnRates = armiObject.getReactionRates(nucName, nDensity=1.0)
-                for rxName, rxRate in rxnRates.items():
-                    rxRates[nucName][rxName] += rxRate
-
-        crossSectionTable = CrossSectionTable()
-        crossSectionTable.setName(self.getName())
-
-        totalFlux = sum(self.getIntegratedMgFlux())
-        if totalFlux:
-            for nucName, nucRxRates in rxRates.items():
-                xSecs = {
-                    rxName: rxRate / totalFlux for rxName, rxRate in nucRxRates.items()
-                }
-                crossSectionTable.add(nucName, **xSecs)
-
-        self.crossSectionTable = crossSectionTable
-
     def printContents(self, includeNuclides=True):
         """Display information about all the comprising children in this object."""
         runLog.important(self)
@@ -2910,7 +3139,9 @@ class Composite(ArmiObject):
 class Leaf(Composite):
     """Defines behavior for primitive objects in the composition."""
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """Return empty list, representing that this object has no children."""
         return []
 
@@ -2973,3 +3204,65 @@ class StateRetainer:
             func(child)
         for paramDef in paramDefs:
             func(paramDef)
+
+
+def gatherMaterialsByVolume(
+    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
+):
+    """
+    Compute the total volume of each material in a set of objects and give samples.
+
+    Parameters
+    ----------
+    objects : list of ArmiObject
+        Objects to look within. This argument allows clients to search though some subset
+        of the three (e.g. when you're looking for all CLADDING components within FUEL blocks)
+
+    typeSpec : TypeSpec
+        Flags for the components to look at
+
+    exact : bool
+        Whether or not the TypeSpec is exact
+
+    Notes
+    -----
+    This helper method is outside the main ArmiObject tree for the special clients that need
+    to filter both by container type (e.g. Block type) with one set of flags, and Components
+    with another set of flags.
+
+    .. warning:: This is a **composition** related helper method that will likely be filed into
+        classes/modules that deal specifically with the composition of things in the data model.
+        Thus clients that use it from here should expect to need updates soon.
+    """
+    volumes = {}
+    samples = {}
+    for obj in objects:
+        for c in obj.iterComponents(typeSpec, exact):
+            vol = c.getVolume()
+            matName = c.material.getName()
+            volumes[matName] = volumes.get(matName, 0.0) + vol
+            if matName not in samples:
+                samples[matName] = c.material
+    return volumes, samples
+
+
+def getDominantMaterial(
+    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
+):
+    """
+    Return the first sample of the most dominant material (by volume) in a set of objects
+
+    .. warning:: This is a **composition** related helper method that will likely be filed into
+        classes/modules that deal specifically with the composition of things in the data model.
+        Thus clients that use it from here should expect to need updates soon.
+
+    """
+    volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
+
+    if volumes:
+        # find matName with max volume
+        maxMatName = list(sorted(volumes.items(), key=lambda item: item[1])).pop()[0]
+        # return this material. Note that if this material
+        # has properties like Zr-frac, enrichment, etc. then this will
+        # just return one in the batch, not an average.
+        return samples[maxMatName]

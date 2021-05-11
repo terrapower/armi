@@ -30,13 +30,14 @@ armi.cases.case : An individual item of a case suite.
 """
 import os
 from typing import Optional, Sequence
+import traceback
 
 import tabulate
 
 from armi import runLog
 from armi import settings
 from armi.cases import case as armicase
-from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
+from armi.utils import directoryChangers
 
 
 class CaseSuite:
@@ -181,7 +182,7 @@ class CaseSuite:
                 newDir = os.path.dirname(os.path.relpath(case.cs.path, oldRoot))
             else:
                 newDir = case.title
-            with ForcedCreationDirectoryChanger(
+            with directoryChangers.ForcedCreationDirectoryChanger(
                 newDir, clean=True, dumpOnException=False
             ):
                 clone.add(case.clone(modifiedSettings=modifiedSettings))
@@ -196,8 +197,16 @@ class CaseSuite:
                     independent way of handling HPCs.
 
         """
-        for case in self:
-            case.run()
+        for ci, case in enumerate(self):
+            runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
+            with directoryChangers.DirectoryChanger(case.directory):
+                settings.setMasterCs(case.cs)
+                try:
+                    case.run()
+                except:  # pylint: disable=bare-except; allow it at this level to run all cases
+                    # allow all errors and continue to next run
+                    runLog.error(f"{case} failed during execution.")
+                    traceback.print_exc()
 
     def compare(
         self,
@@ -273,7 +282,8 @@ class CaseSuite:
         for case in self:
             case.writeInputs(sourceDir=self.cs.inputDirectory)
 
-    def writeTable(self, tableResults):
+    @staticmethod
+    def writeTable(tableResults):
         """Write a table summarizing the test differences."""
         fmt = "psql"
         print(

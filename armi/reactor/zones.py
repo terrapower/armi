@@ -15,9 +15,6 @@
 """
 Zones are collections of locations.
 """
-
-import math
-
 import tabulate
 
 from armi import runLog
@@ -29,7 +26,7 @@ from armi.utils import hexagon
 from armi.settings.fwSettings import globalSettings
 
 
-class Zone(object):
+class Zone:
     """
     A group of locations labels useful for choosing where to shuffle from or where to compute
     reactivity coefficients.
@@ -103,9 +100,9 @@ class Zone(object):
             Ending position within ring.
 
         """
+        grid = grids.HexGrid.fromPitch(1.0)
         if p0 is None or p1 is None:
             if self.symmetry == 3:
-                grid = grids.HexGrid.fromPitch(1.0)
                 posList = grid.allPositionsInThird(ring)
             elif self.symmetry == 1:
                 posList = range(1, hexagon.numPositionsInRing(ring) + 1)
@@ -118,12 +115,14 @@ class Zone(object):
             posList = range(p0, p1 + 1)
 
         for pos in posList:
-            newLoc = str(locations.HexLocation(ring, pos))
+            newLoc = grid.getLabel(
+                grid.getLocatorFromRingAndPos(ring, pos).getCompleteIndices()[:2]
+            )
             if newLoc not in self.locList:
                 self.append(newLoc)
 
 
-class Zones(object):
+class Zones:
     """Collection of Zone objects."""
 
     def __init__(self, core, cs):
@@ -583,7 +582,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
     ----------
     core : Core
         The core
-        
+
     typeSpec : Flags or list of Flags, optional
         Assembly types to consider (e.g. Flags.FUEL)
 
@@ -597,7 +596,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
         try:
             zone = zones[zoneName]
         except KeyError:
-            zone = Zone(a.name)
+            zone = Zone(zoneName)
             zones.add(zone)
         zone.append(a.getLocation())
     return zones

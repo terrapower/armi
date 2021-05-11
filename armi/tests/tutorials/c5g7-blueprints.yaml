@@ -54,11 +54,11 @@ custom isotopics:
         AL: 6.00e-2
     fission chamber:
         # Fission Chamber composition isn't well defined so this is a guess...
-        # U235 density is based on Macros of U02 for fission XS in group 3. Group 3
+        # U235 density is based on Macros of UO2 for fission XS in group 3. Group 3
         # was chosen because it is below the U-238 fast fission cutoff, but also the
         # U-235 fission cross section is not high enough the self shielding will play
-        # a large roll. This assuming U235 is the only fissioning isotope. Assuming FC
-        # is ~90% enriched (90.9% by atom but wanted only 1 sig fig).
+        # a large role. This assuming U235 is the only fissioning isotope. Assuming the
+        # fission chamber is ~90% enriched (90.9% by atom but wanted only 1 sig fig).
         # Had very similar macro absorption XS as guide tube, so using same
         # Al and water with just a little U.
         input format: number densities
@@ -79,7 +79,7 @@ blocks:
             Thot: 25.0
             od: .8190
             latticeIDs: [U]
-        void 1: &fuel_gap_1
+        gap 1: &fuel_gap_1
             shape: Circle
             material: Void
             Tinput: 25.0
@@ -96,7 +96,7 @@ blocks:
             id: .8360
             od: .9500
             latticeIDs: [U]
-        void 2: &fuel_gap_2
+        gap 2: &fuel_gap_2
             shape: Circle
             material: Void
             Tinput: 25.0
@@ -122,7 +122,8 @@ blocks:
             isotopics: moderator
             Tinput: 450.0
             Thot: 450.0
-        inner moderator GT: &guide_tube_moderator
+        # Moderator within the guide tube    
+        inner moderator guide tube: &guide_tube_moderator
             shape: Circle
             material: SaturatedWater
             isotopics: moderator
@@ -139,9 +140,7 @@ blocks:
             id: .6800
             od: 1.0800
             latticeIDs: [GT]
-        FC GT: &fission_chamber_guide_tube
-            # If we instead added lattice id FC above, the fission chamber clad
-            # would also have the Flag "guide tube".
+        fission chamber guide tube: &fission_chamber_guide_tube
             <<: *guide_tube
             latticeIDs: [FC]
         fission chamber: &fission_chamber
@@ -216,13 +215,13 @@ blocks:
         moderator: *moderator
         inner moderator GT: *guide_tube_moderator
         guide tube: *guide_tube
-        FC GT: *fission_chamber_guide_tube
+        fission chamber guide tube: *fission_chamber_guide_tube
         fission chamber: *fission_chamber
-        moderator FC: *fission_chamber_mod
+        moderator fission chamber: *fission_chamber_mod
         pitch: *pitch
 # end-block-mox
     moderator: &block_mod
-        moderator: 
+        moderator:
             shape: Square
             material: SaturatedWater
             isotopics: moderator
@@ -244,6 +243,7 @@ assemblies:
         - 2
 
     UO2:
+        flags: fuel
         specifier: UO2
         blocks:
             - *block_uo2
@@ -254,6 +254,7 @@ assemblies:
         axial mesh points: *mesh
         xs types: [A,A,A,A]
     mox:
+        flags: fuel
         specifier: MOX
         blocks:
             - *block_mox
@@ -283,25 +284,25 @@ systems:
           y: 0.0
           z: 0.0
 # end-systems
-grids: 
+grids:
     core:
-        symmetry: full
+        symmetry: quarter reflective
         geom: cartesian
         lattice pitch:
             x: 21.42
             y: 21.42
         lattice map: |
-         UO2 MOX MOD
-         MOX UO2 MOD
          MOD MOD MOD
+         MOX UO2 MOD
+         UO2 MOX MOD
 # end-grid-core
-    UO2 grid: 
+    UO2 grid:
         symmetry: full
         geom: cartesian
         lattice pitch:
             x: 1.26
             y: 1.26
-        lattice map: | 
+        lattice map: |
             U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
             U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U  U
             U  U  U  U  U  GT U  U  GT U  U  GT U  U  U  U  U
@@ -326,7 +327,7 @@ grids:
         lattice pitch:
             x: 1.26
             y: 1.26
-        lattice map: | 
+        lattice map: |
             ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML ML
             ML MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM ML
             ML MM MM MM MM GT MM MM GT MM MM GT MM MM MM MM ML

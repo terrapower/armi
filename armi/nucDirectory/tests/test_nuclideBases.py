@@ -21,8 +21,6 @@ import re
 
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
-from armi.tests import mockRunLogs
-from armi.physics.neutronics import isotopicDepletion
 
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 
@@ -30,14 +28,7 @@ from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 class TestNuclide(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        isotopicDepletion.applyDefaultBurnChain()
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
-
-    def test_nucBases_factoryIsFast(self):
-        with mockRunLogs.BufferLog():
-            nuclideBases.factory(True)
-        # If we don't re-apply the default burn chain, subsequent tests will fail
-        isotopicDepletion.applyDefaultBurnChain()
 
     def test_nucBases_fromNameBadNameRaisesException(self):
         with self.assertRaises(KeyError):
@@ -321,7 +312,7 @@ def readEndfMatNumIndex(path):
     endfMatNumbers = {}
 
     for line in endfReferenceFile:
-        if not re.search("^\s+\d+\)", line):
+        if not re.search(r"^\s+\d+\)", line):
             continue
         data = line.split()
         _rowNum, matNum, nuclide = data[:3]

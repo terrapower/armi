@@ -97,7 +97,6 @@ U235_7
 
 import os
 import pathlib
-import zlib
 
 import yaml
 
@@ -112,7 +111,6 @@ from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 # unphysically. This is a bit of a crutch for the global state that is the nuclide
 # directory.
 _burnChainImposed = False
-_burnChainHash = None
 
 instances = []
 
@@ -167,8 +165,7 @@ def getIsotopics(nucName):
 
 
 def fromName(name):
-    r"""Get a nuclide from its name.
-    """
+    r"""Get a nuclide from its name."""
     matches = [nn for nn in instances if nn.name == name]
     if len(matches) != 1:
         raise errors.nuclides_TooManyOrTooFew_number_MatchesForNuclide_name(
@@ -266,9 +263,9 @@ def __readRiplNuclides():
 
     This includes roughly 4000 nuclides and should represent anything we ever
     want to model. This builds the large set of NuclideBases available.
-    
-    RIPL is the Reference Input Parameter Library (RIPL-3), which can be found at 
-    https://www-nds.iaea.org/RIPL-3/. 
+
+    RIPL is the Reference Input Parameter Library (RIPL-3), which can be found at
+    https://www-nds.iaea.org/RIPL-3/.
     """
     from armi.nuclearDataIO import ripl
 
@@ -373,34 +370,30 @@ def imposeBurnChain(burnChainStream):
     """
     Apply transmutation and decay information to each nuclide.
 
+    Notes
+    -----
+    You cannot impose a burn chain twice. Doing so would require that you clean out the
+    transmutations and decays from all the module-level nuclide bases, which generally
+    requires that you rebuild them. But rebuilding those is not an option because some
+    of them get set as class-level attributes and would be orphaned. If a need to change
+    burn chains mid-run re-arises, then a better nuclideBase-level burnchain cleanup
+    should be implemented so the objects don't have to change identity.
+
+    Notes
+    -----
+    We believe the transmutation information would probably be better stored on a
+    less fundamental place (e.g. not on the NuclideBase).
+
     See Also
     --------
     armi.nucDirectory.transmutations : describes file format
     """
     global _burnChainImposed  # pylint: disable=global-statement
-    global _burnChainHash  # pylint: disable=global-statement
     if _burnChainImposed:
-
-        # Check that the hash of the burnChain is the same or
-        # different. If different then re-init the nuclides.
-        # The burn chain should really only be changing for
-        # special cases (e.g., unit testing). Note: after
-        # hashing is performed, the stream location has to
-        # be reset.
-        streamHash = zlib.crc32(burnChainStream.read().encode())
-        burnChainStream.seek(0)
-        if _burnChainHash is not None:
-            if streamHash != _burnChainHash:
-                # We cannot apply more than one burn chain at a time, as this would lead to
-                # unphysical traits in the nuclide directory (e.g., duplicate decays and
-                # transmutations)
-                runLog.warning(
-                    "Applying a burn chain when one has already been applied; "
-                    "resetting the nuclide directory to it's default state first."
-                )
-                factory(True)
-        _burnChainHash = streamHash
-
+        # the only time this should happen is if in a unit test that has already
+        # processed conftest.py and is now building a Case that also imposes this.
+        runLog.warning("Burn chain already imposed. Skipping reimposition.")
+        return
     _burnChainImposed = True
     burnData = yaml.load(burnChainStream, Loader=yaml.FullLoader)
     for nucName, burnInfo in burnData.items():
@@ -409,8 +402,9 @@ def imposeBurnChain(burnChainStream):
         nuclide._processBurnData(burnInfo)  # pylint: disable=protected-access
 
 
-def factory(force=False):
-    r"""Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
+def factory():
+    """
+    Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
 
     Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`.
     Also clears and fills in the
@@ -423,22 +417,17 @@ def factory(force=False):
 
     Notes
     -----
+    This may cannot be run more than once. NuclideBase instances are used throughout the ARMI
+    ecosystem and are even class attributes in some cases. Re-instantiating them would orphan
+    any existing ones and break everything.
+
     Nuclide labels from MC2-2, MC2-3, and MCNP are currently handled directly.
     Moving forward, we plan to implement a more generic labeling system so that
     plugins can provide code-specific nuclide labels in a more extensible fashion.
-
-    Attributes
-    ----------
-    force: bool, optional
-        If True, forces the reinstantiation of all :py:class:`INuclides`.
-        Any :py:class:`Nuclides <armi.nucDirectory.nuclide.Nuclde>` objects referring to the
-        original :py:class:`INuclide` will not update their references, and will probably fail.
     """
     # this intentionally clears and reinstantiates all nuclideBases
     global instances  # pylint: disable=global-statement
-    global _burnChainImposed  # pylint: disable=global-statement
-    if force or len(instances) == 0:
-        _burnChainImposed = False
+    if len(instances) == 0:
         # make sure the elements actually exist...
         elements.factory()
         del instances[:]  # there is no .clear() for a list
@@ -455,21 +444,26 @@ def factory(force=False):
         _completeNaturalNuclideBases()
         elements.deriveNaturalWeights()
         __readRiplDecayData()
+        # reload the thermal scattering library with the new nuclideBases too
+        # pylint: disable=import-outside-toplevel; cyclic import
+        from . import thermalScattering
+
+        thermalScattering.factory()
 
 
 def __readRiplDecayData():
     """
     Read in the RIPL-3 decay data files and update nuclide bases.
-    
+
     Notes
     -----
-    This makes an assumption that the RIPL-3 data files have a 
-    `z???.dat` naming convention and assumes that there are 118 
+    This makes an assumption that the RIPL-3 data files have a
+    `z???.dat` naming convention and assumes that there are 118
     total data files in the package.
-    
-    The processing is skipped if the ``ARMI_RIPL_PATH`` environment 
+
+    The processing is skipped if the ``ARMI_RIPL_PATH`` environment
     variable has not been set.
-       
+
     Raises
     ------
     ValueError
@@ -548,9 +542,8 @@ def _addNuclideToIndices(nuc):
             pass
 
 
-class IMcnpNuclide(object):
-    """Interface which defines the contract for getMcnpId.
-    """
+class IMcnpNuclide:
+    """Interface which defines the contract for getMcnpId."""
 
     def getMcnpId(self):
         """
@@ -565,7 +558,7 @@ class IMcnpNuclide(object):
         raise NotImplementedError
 
 
-class NuclideInterface(object):
+class NuclideInterface:
     """An abstract nuclide implementation which defining various methods required for a nuclide object."""
 
     def getDatabaseName(self):

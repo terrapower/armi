@@ -68,15 +68,14 @@ def _setBOLBond(assemblies):
     assemsWithoutMatchingBond = set()
     for a in assemblies:
         for b in a:
-            coolant = b.getComponent(Flags.COOLANT, quiet=True)
             bond = b.getComponent(Flags.BOND, quiet=True)
             if not bond:
                 b.p.bondBOL = 0.0
                 continue
-            b.p.bondBOL = sum(
-                [bond.getNumberDensity(nuc) for nuc in bond.getNuclides()]
-            )
-
+            # only warn if bond doesn't match first of potentially many coolant components
+            coolants = b.getComponents(Flags.COOLANT)
+            coolant = coolants[0]
+            b.p.bondBOL = sum(bond.getNuclideNumberDensities(bond.getNuclides()))
             if not isinstance(bond.material, coolant.material.__class__):
                 assemsWithoutMatchingBond.add(
                     (

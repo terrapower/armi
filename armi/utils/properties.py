@@ -17,7 +17,6 @@ This module contains methods for adding properties with custom behaviors to clas
 """
 
 import numpy
-import six
 
 
 def areEqual(val1, val2, relativeTolerance=0.0):
@@ -30,16 +29,16 @@ def areEqual(val1, val2, relativeTolerance=0.0):
 
 
 def numpyHackForEqual(val1, val2):
-    r""""
+    r"""
     checks lots of types for equality like strings and dicts
     """
     # when doing this with numpy arrays you get an array of booleans which causes the value error
     notEqual = val1 != val2
+
     try:  # should work for everything but numpy arrays
-        if six.PY3:
-            return not notEqual.__bool__()
-        else:
-            return not notEqual.__nonzero__()
+        if isinstance(notEqual, numpy.ndarray) and notEqual.size == 0:
+            return True
+        return not notEqual.__bool__()
     except (AttributeError, ValueError):  # from comparing 2 numpy arrays
         return not notEqual.any()
 
@@ -68,7 +67,7 @@ def createImmutableProperty(name, dependencyAction, doc):
     --------
     The following example is esentially exactly how this should be used.
 
-    >>> class SomeClass(object):
+    >>> class SomeClass:
     ...     myNum = createImmutableProperty('myNum', 'You must invoke the initialize() method', 'My random number')
     ...     def initialize(self, val):
     ...         unlockImmutableProperties(self)

@@ -16,18 +16,17 @@
 The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
 """
 import math
-import os
-
+from typing import Dict, Optional
 
 import numpy
 import scipy.integrate
 
-import armi
 from armi import runLog
 from armi import interfaces
 from armi.utils import units
 from armi.utils import codeTiming
 from armi.reactor import geometry
+from armi.reactor import reactors
 from armi.reactor.converters import uniformMesh
 from armi.reactor.converters import geometryConverters
 from armi.reactor import assemblies
@@ -85,7 +84,7 @@ class GlobalFluxInterface(interfaces.Interface):
         """
         Calculate flux, power, and keff for this cycle and node.
 
-        Flux, power, and keff are generally calculated at every timestep to ensure flux 
+        Flux, power, and keff are generally calculated at every timestep to ensure flux
         is up to date with the reactor state.
         """
         interfaces.Interface.interactEveryNode(self, cycle, node)
@@ -178,10 +177,10 @@ class GlobalFluxInterface(interfaces.Interface):
     def calculateKeff(self, label="keff"):
         """
         Runs neutronics tool and returns keff without applying it to the reactor
-        
+
         Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
         For anything more complicated than getting keff, clients should
-        call ``getExecuter`` to build their case. 
+        call ``getExecuter`` to build their case.
         """
         raise NotImplementedError()
 
@@ -207,7 +206,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         Calculate flux, power, and keff for this cycle and node.
 
-        Flux, power, and keff are generally calculated at every timestep to ensure flux 
+        Flux, power, and keff are generally calculated at every timestep to ensure flux
         is up to date with the reactor state.
         """
         executer = self.getExecuter(label=f"{self.cs.caseTitle}-flux-c{cycle}n{node}")
@@ -223,23 +222,25 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
         GlobalFluxInterface.interactCoupled(self, iteration)
 
-    def getOptionsCls(self):
+    @staticmethod
+    def getOptionsCls():
         """
         Get a blank options object.
-        
+
         Subclass this to allow generic updating of options.
         """
         return GlobalFluxOptions
 
-    def getExecuterCls(self):
+    @staticmethod
+    def getExecuterCls():
         return GlobalFluxExecuter
 
     def getExecuterOptions(self, label=None):
         """
         Get an executer options object populated from current user settings and reactor.
-        
+
         If you want to set settings more deliberately (e.g. to specify a cross section
-        library rather than use an auto-derived name), use ``getOptionsCls`` and build 
+        library rather than use an auto-derived name), use ``getOptionsCls`` and build
         your own.
         """
         opts = self.getOptionsCls()(label)
@@ -250,8 +251,8 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def getExecuter(self, options=None, label=None):
         """
         Get executer object for performing custom client calcs
-        
-        This allows plugins to update options in a somewhat generic 
+
+        This allows plugins to update options in a somewhat generic
         way. For example, reactivity coefficients plugin may want to
         request adjoint flux.
         """
@@ -267,7 +268,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def calculateKeff(self, label="keff"):
         """
         Run global flux with current user options and just return keff without applying it.
-        
+
         Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
         """
         executer = self.getExecuter(label=label)
@@ -279,7 +280,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers"""
 
-    def __init__(self, label=None):
+    def __init__(self, label: Optional[str] = None):
         executers.ExecutionOptions.__init__(self, label)
         self.real = True
         self.adjoint = False
@@ -293,7 +294,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         # can happen in eig if Fredholm Alternative satisfied
         self.includeFixedSource = False
         self.eigenvalueProblem = True
-        self.kernelName = None
+        self.kernelName: str
         self.isRestart = None
         self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
         self.detailedAxialExpansion = None
@@ -306,8 +307,16 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadElevation = None
         self.loadPadLength = None
 
-        self.geomType = None
-        self.symmetry = None
+        self._geomType: geometry.GeomType
+        self.symmetry: str
+
+        # This option is used to recalculate reaction
+        # rates after a mesh conversion and remapping
+        # of neutron flux. This can be disabled
+        # in certain global flux implementations
+        # if reaction rates are not required, but
+        # by default it is enabled.
+        self.calcReactionRatesOnMeshConversion = True
 
     def fromUserSettings(self, cs):
         """
@@ -332,14 +341,14 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
 
-    def fromReactor(self, reactor):
+    def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):
     """
-    A short-lived object that  coordinates the prep, execution, and processing of a flux solve
+    A short-lived object that coordinates the prep, execution, and processing of a flux solve.
 
     There are many forms of global flux solves:
 
@@ -365,9 +374,10 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     global flux, this class provides a unified interface to everything.
     """
 
-    def __init__(self, options, reactor):
+    def __init__(self, options: GlobalFluxOptions, reactor):
         executers.DefaultExecuter.__init__(self, options, reactor)
-        self.geomConverters = {}
+        self.options: GlobalFluxOptions
+        self.geomConverters: Dict[str, geometryConverters.GeometryConverter] = {}
 
     @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
@@ -399,7 +409,10 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if self.options.detailedAxialExpansion:
             converter = self.geomConverters.get("axial")
             if not converter:
-                converter = uniformMesh.NeutronicsUniformMeshConverter(None)
+                converter = uniformMesh.NeutronicsUniformMeshConverter(
+                    None,
+                    calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
+                )
                 neutronicsReactor = converter.convert(self.r)
                 if makePlots:
                     converter.plotConvertedReactor()
@@ -452,7 +465,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
 
-    def edgeAssembliesAreNeeded(self):
+    def edgeAssembliesAreNeeded(self) -> bool:
         """
         True if edge assemblies are needed in this calculation
 
@@ -460,21 +473,22 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         """
         return (
             "FD" in self.options.kernelName
-            and self.options.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
-            and self.options.geomType == geometry.HEX
+            and self.options.symmetry.domain == geometry.DomainType.THIRD_CORE
+            and self.options.symmetry.boundary == geometry.BoundaryType.PERIODIC
+            and self.options.geomType == geometry.GeomType.HEX
         )
 
 
 class GlobalFluxResultMapper(interfaces.OutputReader):
     """
     A short-lived class that maps neutronics output data to a reactor mode.
-    
-    Neutronics results can come from a file or a pipe or in memory. 
+
+    Neutronics results can come from a file or a pipe or in memory.
     This is always subclassed for specific neutronics runs but contains
-    some generic methods that are universally useful for 
+    some generic methods that are universally useful for
     any global flux calculation. These are mostly along the lines of
-    information that can be derived from other information, like 
-    dpa rate coming from dpa deltas and cycle length. 
+    information that can be derived from other information, like
+    dpa rate coming from dpa deltas and cycle length.
     """
 
     def getKeff(self):
@@ -499,7 +513,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         renormalizationCorePower: float
             Specified power to renormalize the neutron flux for using the isotopic energy
             generation rates on the cross section libraries (in Watts)
-            
+
         See Also
         --------
         getTotalEnergyGenerationConstants
@@ -920,7 +934,7 @@ def computeDpaRate(mgFlux, dpaXs):
     Raises
     ------
     RuntimeError
-       Negative dpa rate. 
+       Negative dpa rate.
 
     """
     displacements = 0.0
@@ -980,7 +994,7 @@ def calcReactionRates(obj, keff, lib):
     * n2n
     * absorption
 
-    Scatter could be added as well. This function is quite slow so it is 
+    Scatter could be added as well. This function is quite slow so it is
     skipped for now as it is uncommonly needed.
 
     Rxn rates are Sigma*Flux = Sum_Nuclides(Sum_E(Sigma*Flux*dE))

@@ -1,0 +1,425 @@
+custom isotopics:
+    MOX:
+        input format: number densities
+        AM241: 2.3606e-05
+        PU238: 3.7387e-06
+        PU239: 0.00286038
+        PU240: 0.000712945
+        PU241: 9.82312e-05
+        PU242: 2.02221e-05
+        U235: 0.00405533
+        U238: 0.0134125
+    PuUZr:
+        input format: mass fractions
+        density: 9.491820414019937
+        PU239: 0.1
+        U235: 0.15
+        U238: 0.65
+        ZR: 0.1
+blocks:
+    fuel: &block_fuel
+        fuel: &component_fuel_fuel
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 169.0
+            od: 0.86602
+        clad: &component_fuel_clad
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            mult: fuel.mult
+            od: 1.09
+        bond: &component_fuel_bond
+            shape: Circle
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            id: fuel.od
+            mult: fuel.mult
+            od: clad.id
+        wire: &component_fuel_wire
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            mult: fuel.mult
+            od: 0.10056
+        coolant: &component_fuel_coolant
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+        duct: &component_fuel_duct
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 16.0
+            mult: 1.0
+            op: 16.6
+        intercoolant: &component_fuel_intercoolant
+            shape: Hexagon
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            ip: duct.op
+            mult: 1.0
+            op: 16.75
+    control: &block_control
+        control:
+            shape: Circle
+            material: B4C
+            Tinput: 600.0
+            Thot: 600.0
+            id: 0.0
+            mult: 61.0
+            od: 1.286
+        innerDuct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            ip: 14.268
+            mult: 1.0
+            op: 14.582
+        duct: &component_control_duct
+            shape: Hexagon
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            ip: 15.277
+            mult: 1.0
+            op: 16.28228
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            id: 1.358
+            mult: control.mult
+            od: 1.686
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            axialPitch: 50.0
+            helixDiameter: 1.771
+            id: 0.0
+            mult: control.mult
+            od: 0.085
+        intercoolant: *component_fuel_intercoolant
+        gap:
+            shape: Circle
+            material: Void
+            Tinput: 450.0
+            Thot: 450.0
+            id: control.od
+            mult: control.mult
+            od: clad.id
+        coolant: *component_fuel_coolant
+    duct: &block_duct
+        duct: *component_control_duct
+        coolant: *component_fuel_coolant
+        intercoolant: *component_fuel_intercoolant
+    grid plate: &block_grid_plate
+        grid: &component_grid_plate_grid
+            shape: Hexagon
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            ip: 15.277
+            mult: 1.0
+            op: 16.577
+        coolant: *component_fuel_coolant
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            ip: grid.op
+            mult: 1.0
+            op: 16.75
+    grid plate broken:
+        grid: *component_grid_plate_grid
+        coolant: *component_fuel_coolant
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            ip: grid.op
+            mult: 1.0
+            op: 0.0
+    axial shield: &block_axial_shield
+        shield:
+            shape: Circle
+            material: HT9
+            Tinput: 600.0
+            Thot: 600.0
+            id: 0.0
+            mult: 169.0
+            od: 0.90362
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            id: 0.90562
+            mult: shield.mult
+            od: 1.05036
+        gap:
+            shape: Circle
+            material: Void
+            Tinput: 450.0
+            Thot: 450.0
+            id: shield.od
+            mult: shield.mult
+            od: clad.id
+        duct: *component_control_duct
+        intercoolant: *component_fuel_intercoolant
+        coolant: *component_fuel_coolant
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            axialPitch: 30.15
+            helixDiameter: 16.85056
+            id: 0.0
+            mult: shield.mult
+            od: 0.10056
+    plenum: &block_plenum
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            mult: 169.0
+            od: 1.09
+        gap:
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: clad.mult
+            od: clad.id
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            mult: clad.mult
+            od: 0.10056
+        coolant: *component_fuel_coolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
+    fuel2: &block_fuel2
+        fuel:
+            shape: Circle
+            material: Custom
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            isotopics: MOX
+            mult: 169.0
+            od: 0.86602
+        clad: *component_fuel_clad
+        liner1: &component_fuel2_liner1
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.99
+            mergeWith: clad
+            mult: 169.0
+            od: 1.0
+        liner2: &component_fuel2_liner2
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.98
+            mergeWith: clad
+            mult: 169.0
+            od: 0.99
+        bond: *component_fuel_bond
+        wire: *component_fuel_wire
+        coolant: *component_fuel_coolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
+    lta1 fuel: &block_lta1_fuel
+        fuel: *component_fuel_fuel
+        clad: *component_fuel_clad
+        liner1: *component_fuel2_liner1
+        liner2: *component_fuel2_liner2
+        bond: *component_fuel_bond
+        wire: *component_fuel_wire
+        coolant: *component_fuel_coolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
+    lta2 fuel: &block_lta2_fuel
+        fuel:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            isotopics: PuUZr
+            mult: 169.0
+            od: 0.86602
+        clad: *component_fuel_clad
+        liner1: *component_fuel2_liner1
+        liner2: *component_fuel2_liner2
+        bond: *component_fuel_bond
+        wire: *component_fuel_wire
+        coolant: *component_fuel_coolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
+    annular fuel gap: &block_fuel3
+        gap1:
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 430.0
+            id: 0.0
+            mult: fuel.mult
+            od: fuel.id
+        fuel:
+            shape: Circle
+            material: UZr
+            Tinput: 20.0
+            Thot: 600.0
+            id: 0.600
+            mult: 169.0
+            od: 0.878
+            flags: annular fuel depletable
+        gap2:
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 430.0
+            id: fuel.od
+            mult: fuel.mult
+            od: inner liner.id
+        inner liner:
+            shape: Circle
+            material: HT9
+            Tinput: 20.0
+            Thot: 430.0
+            id: 0.878
+            mult: fuel.mult
+            od: 0.898
+        gap3:
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 430.0
+            id: inner liner.od
+            mult: fuel.mult
+            od: outer liner.id
+        outer liner:
+            shape: Circle
+            material: Zr
+            Tinput: 20.0
+            Thot: 430.0
+            id: 0.898
+            mult: fuel.mult
+            od: 0.900
+        gap4:
+            shape: Circle
+            material: Void
+            Tinput: 20.0
+            Thot: 430.0
+            id: outer liner.od
+            mult: fuel.mult
+            od: clad.id
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 20.0
+            Thot: 430.0
+            id: 0.900
+            mult: fuel.mult
+            od: 1.000
+        wire: *component_fuel_wire
+        coolant: *component_fuel_coolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
+assemblies:
+    heights: &standard_heights [25.0, 25.0, 25.0, 25.0, 75.0]
+    axial mesh points: &standard_axial_mesh_points [1, 1, 1, 1, 4]
+    igniter fuel:
+        specifier: IC
+        blocks: &igniter_fuel_blocks [*block_grid_plate, *block_fuel, *block_fuel, *block_fuel, *block_plenum]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        material modifications:
+            U235_wt_frac: &igniter_fuel_u235_wt_frac ['', 0.11, 0.11, 0.11, '']
+            ZR_wt_frac: &igniter_fuel_zr_wt_frac ['', 0.06, 0.06, 0.06, '']
+        xs types: &igniter_fuel_xs_types [A, A, A, A, A]
+    middle fuel:
+        specifier: MC
+        blocks: [*block_grid_plate, *block_fuel2, *block_fuel2, *block_fuel2, *block_plenum]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: *igniter_fuel_xs_types
+    annular fuel:
+        specifier: AF
+        blocks: [*block_grid_plate, *block_fuel3, *block_fuel3, *block_fuel3, *block_plenum]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: *igniter_fuel_xs_types
+    lta fuel:
+        specifier: LA
+        blocks: [*block_grid_plate, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        material modifications:
+            U235_wt_frac: &lta_fuel_u235_wt_frac ['', 0.2, 0.2, 0.2, '']
+            ZR_wt_frac: &lta_fuel_zr_wt_frac ['', 0.07, 0.07, 0.06, '']
+        xs types: *igniter_fuel_xs_types
+    lta fuel b:
+        specifier: LB
+        blocks: [*block_grid_plate, *block_lta2_fuel, *block_lta2_fuel, *block_lta2_fuel, *block_plenum]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        material modifications:
+            U235_wt_frac: *lta_fuel_u235_wt_frac
+            ZR_wt_frac: *lta_fuel_zr_wt_frac
+        xs types: *igniter_fuel_xs_types
+    feed fuel:
+        specifier: OC
+        blocks: *igniter_fuel_blocks
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        material modifications:
+            U235_wt_frac: *igniter_fuel_u235_wt_frac
+            ZR_wt_frac: *igniter_fuel_zr_wt_frac
+        xs types: *igniter_fuel_xs_types
+    primary control:
+        specifier: PC
+        blocks: [*block_grid_plate, *block_duct, *block_control, *block_plenum, *block_duct]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: *igniter_fuel_xs_types
+    radial shield:
+        specifier: SH
+        blocks: [*block_grid_plate, *block_axial_shield, *block_axial_shield, *block_axial_shield, *block_plenum]
+        height: *standard_heights
+        axial mesh points: *standard_axial_mesh_points
+        xs types: *igniter_fuel_xs_types
+

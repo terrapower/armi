@@ -108,7 +108,7 @@ class _Undefined:
 
 
 class Serializer:
-    """
+    r"""
     Abstract class describing serialize/deserialize operations for Parameter data.
 
     Parameters need to be stored to and read from database files. This currently
@@ -122,7 +122,7 @@ class Serializer:
     The ``Database3`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
-      - There are ``None`` s.
+      - There are ``None``\ s.
 
       - The dimensions of the values stored on each object are inconsistent (e.g.,
         "jagged" arrays)
@@ -364,7 +364,7 @@ class Parameter:
         return self.location and self.location & loc
 
 
-class ParameterDefinitionCollection(object):
+class ParameterDefinitionCollection:
     r"""
     A very specialized container for managing parameter definitions.
 
@@ -418,8 +418,7 @@ class ParameterDefinitionCollection(object):
         return matches[0]
 
     def add(self, paramDef):
-        r"""add a :py:class:`Parameter` to this collection.
-        """
+        r"""add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef
@@ -441,7 +440,10 @@ class ParameterDefinitionCollection(object):
         )
         assert self is not other
         if other is None:
-            raise ValueError(f"Cannot extend {self} with `None`.")
+            raise ValueError(
+                f"Cannot extend {self} with `None`. "
+                "Ensure return value of parameter definitions returns something."
+            )
         for pd in other:
             self.add(pd)
 
@@ -553,7 +555,7 @@ class ParameterDefinitionCollection(object):
         return paramBuilder
 
 
-class ParameterBuilder(object):
+class ParameterBuilder:
     r"""Factory for creating Parameter and parameter properties"""
 
     def __init__(
@@ -563,9 +565,7 @@ class ParameterBuilder(object):
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`
-
-        """
+        r"""Create a :py:class:`ParameterBuilder`"""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set
@@ -584,7 +584,8 @@ class ParameterBuilder(object):
             return
         self._entered = False
 
-    def _assertDefaultIsProperType(self, default):
+    @staticmethod
+    def _assertDefaultIsProperType(default):
         if default in (NoDefault, None) or isinstance(
             default, (int, str, float, bool, Flags)
         ):

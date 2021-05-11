@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
+r"""
 This contains structured meshes in multiple geometries and spatial locators (i.e. locations).
 
 :py:class:`Grids <Grid>` are objects that map indices (i, j, k) to spatial locations
@@ -39,7 +39,7 @@ a grid or in arbitrary, continuous space (using a :py:class:`CoordinateLocation`
 
 Below is a basic example of how to use a 2-D grid::
 
->>> grid = Grid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
+>>> grid = CartesianGrid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
 >>> location = grid[1,2,0]
 >>> location.getGlobalCoordinates()
 array([ 1.,  2.,  0.])
@@ -53,9 +53,6 @@ The "radial" (ring, position) indexing used in DIF3D can be converted to and fro
 more quasi-Cartesian indexing in a hex mesh easily with the utility methods
 :py:meth:`HexGrid.getRingPos` and :py:func:`indicesToRingPos`.
 
-.. note:: ``IndexLocation`` is intended to replace
-:py:class:`armi.reactor.locations.Location`.
-
 This module is designed to satisfy the spatial arrangement requirements of :py:mod:`the
 Reactor package <armi.reactor>`.
 
@@ -65,13 +62,12 @@ current grid.
 """
 import itertools
 import math
-import re
-from typing import Tuple, List, Optional, Sequence
+from typing import Tuple, List, Optional, Sequence, Union
 import collections
 
 import numpy.linalg
 
-from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
+
 from armi.utils import hexagon
 from armi.reactor import geometry
 
@@ -85,16 +81,7 @@ BOUNDARY_0_DEGREES = 1
 BOUNDARY_60_DEGREES = 2
 BOUNDARY_120_DEGREES = 3
 BOUNDARY_CENTER = 4
-# list of valid ASCII representations of axial levels.
-# A-Z, 0-9, and then some special characters, then a-z
-AXIAL_CHARS = [
-    chr(asciiCode)
-    for asciiCode in (
-        list(range(ASCII_LETTER_A, ASCII_LETTER_A + 26))
-        + list(range(ASCII_ZERO, ASCII_ZERO + 10))
-        + list(range(ASCII_LETTER_A + 26, ASCII_LETTER_A + 32 + 26))
-    )
-]
+
 COS30 = math.sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
 # going CCW from "position 1" (top right)
@@ -286,8 +273,14 @@ class IndexLocation(LocationBase):
         a reactor, then the ``parentLocation`` is the spatialLocator of the reactor, which
         will often be a ``CoordinateLocation``.
         """
-        if self.grid and self.grid.armiObject and self.grid.armiObject.parent:
-            return self.grid.armiObject.spatialLocator
+        grid = self.grid  # performance matters a lot here so we remove a dot
+        # check for None rather than __nonzero__ for speed (otherwise it checks the length)
+        if (
+            grid is not None
+            and grid.armiObject is not None
+            and grid.armiObject.parent is not None
+        ):
+            return grid.armiObject.spatialLocator
         return None
 
     @property
@@ -328,8 +321,10 @@ class IndexLocation(LocationBase):
         """
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         indices = self.indices
-        if parentLocation:
-            if parentLocation.grid and addingIsValid(self.grid, parentLocation.grid):
+        if parentLocation is not None:
+            if parentLocation.grid is not None and addingIsValid(
+                self.grid, parentLocation.grid
+            ):
                 indices += parentLocation.indices
         return tuple(indices)
 
@@ -371,6 +366,30 @@ class IndexLocation(LocationBase):
     def getRingPos(self):
         """Return ring and position of this locator."""
         return self.grid.getRingPos(self.getCompleteIndices())
+
+    def getSymmetricEquivalents(self):
+        """
+        Get symmetrically-equivalent locations, based on Grid symmetry.
+
+        See Also
+        --------
+        Grid.getSymmetricEquivalents
+        """
+        return self.grid.getSymmetricEquivalents(self.indices)
+
+    def distanceTo(self, other) -> float:
+        """
+        Return the distance from this locator to another.
+        """
+        return math.sqrt(
+            (
+                (
+                    numpy.array(self.getGlobalCoordinates())
+                    - numpy.array(other.getGlobalCoordinates())
+                )
+                ** 2
+            ).sum()
+        )
 
 
 class MultiIndexLocation(IndexLocation):
@@ -613,26 +632,11 @@ class Grid:
 
         # geometric metadata encapsulated here because it's related to the grid.
         # They do not impact the grid object itself.
-        self.geomType = geomType
-        self.symmetry = symmetry
-
-    @classmethod
-    def fromRectangle(cls, width, height, numRings=25, isOffset=False, armiObject=None):
-        """
-        Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
-
-        isOffset : bool
-            If true will put first mesh cell fully within the grid instead of centering
-            it on the crosshairs.
-        """
-        unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
-        offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
-        return cls(
-            unitSteps=unitSteps,
-            unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
-            offset=offset,
-            armiObject=armiObject,
-        )
+        # Notice that these are stored using their string representations, rather than
+        # the GridType enum. This avoids the danger of deserializing an enum value from
+        # an old version of the code that may have had different numeric values.
+        self._geomType: str = str(geomType)
+        self._symmetry: str = str(symmetry)
 
     def reduce(self):
         """
@@ -673,9 +677,25 @@ class Grid:
             bounds,
             self._unitStepLimits,
             offset,
-            self.geomType,
-            self.symmetry,
+            self._geomType,
+            self._symmetry,
         )
+
+    @property
+    def geomType(self) -> str:
+        return geometry.GeomType.fromStr(self._geomType)
+
+    @geomType.setter
+    def geomType(self, geomType: Union[str, geometry.GeomType]):
+        self._geomType = str(geometry.GeomType.fromAny(geomType))
+
+    @property
+    def symmetry(self) -> str:
+        return geometry.SymmetryType.fromStr(self._symmetry)
+
+    @symmetry.setter
+    def symmetry(self, symmetry: Union[str, geometry.SymmetryType]):
+        self._symmetry = str(geometry.SymmetryType.fromAny(symmetry))
 
     def __repr__(self):
         msg = (
@@ -704,6 +724,7 @@ class Grid:
         """
         state = self.__dict__.copy()
         state["armiObject"] = None
+
         return state
 
     def __setstate__(self, state):
@@ -717,9 +738,19 @@ class Grid:
         for _indices, locator in self.items():
             locator._grid = self
 
-    def __getitem__(self, ijk):
+    def __getitem__(self, ijk: Union[Tuple[int, int, int], List[Tuple[int, int, int]]]):
         """
         Get a location by (i, j, k) indices. If it does not exist, create a new one and return it.
+
+        Parameters
+        ----------
+
+        ijk : tuple of indices or list of the same
+            If provided a tuple, an IndexLocation will be created (if necessary) and
+            returned. If provided a list, each element will create a new IndexLocation
+            (if necessary), and a MultiIndexLocation containing all of the passed
+            indices will be returned.
+
 
         Notes
         -----
@@ -731,11 +762,18 @@ class Grid:
         """
         try:
             return self._locations[ijk]
-        except KeyError:
+        except (KeyError, TypeError):
+            pass
+
+        if isinstance(ijk, tuple):
             i, j, k = ijk
             val = IndexLocation(i, j, k, self)
             self._locations[ijk] = val
-            return val
+        elif isinstance(ijk, list):
+            val = MultiIndexLocation(self)
+            locators = [self[idx] for idx in ijk]
+            val.extend(locators)
+        return val
 
     def __len__(self):
         return len(self._locations)
@@ -751,37 +789,48 @@ class Grid:
     def restoreBackup(self):
         self._unitSteps, self._bounds, self._offset = self._backup
 
-    def getCoordinates(self, indices, nativeCoords=False):
+    def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
         """Return the coordinates of the center of the mesh cell at the given given indices in cm."""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._centroidBySteps, self._centroidByBounds
         )
 
-    def getCellBase(self, indices):
+    def getCellBase(self, indices) -> numpy.ndarray:
         """Get the mesh base (lower left) of this mesh cell in cm"""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
-    def getCellTop(self, indices):
+    def getCellTop(self, indices) -> numpy.ndarray:
         """Get the mesh top (upper right) of this mesh cell in cm"""
         indices = numpy.array(indices) + 1
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
-    def locatorInDomain(self, locator: LocationBase) -> bool:
+    def locatorInDomain(
+        self, locator: LocationBase, symmetryOverlap: Optional[bool] = False
+    ) -> bool:
         """
         Return whether the passed locator is in the domain represented by the Grid.
 
         For instance, if we have a 1/3rd core hex grid, this would return False for
         locators that are outside of the first third of the grid.
+
+        Parameters
+        ----------
+        locator : LocationBase
+            The location to test
+        symmetryOverlap : bool, optional
+            Whether grid locations along the symmetry line should be considered "in the
+            represented domain". This can be useful when assemblies are split along the
+            domain boundary, with fractions of the assembly on either side.
         """
         raise NotImplementedError("Not implemented on base Grid type.")
 
-    def _evaluateMesh(self, indices, stepOperator, boundsOperator):
+    def _evaluateMesh(self, indices, stepOperator, boundsOperator) -> numpy.ndarray:
         """
         Evaluate some function of indices on this grid.
 
@@ -818,18 +867,21 @@ class Grid:
             self._centroidBySteps(indices - 1) + self._centroidBySteps(indices)
         ) / 2.0
 
-    def _centroidByBounds(self, index, bounds):
+    @staticmethod
+    def _centroidByBounds(index, bounds):
         if index < 0:
             # avoid wrap-around
             raise IndexError("Bounds-defined indices may not be negative.")
         return (bounds[index + 1] + bounds[index]) / 2.0
 
-    def _meshBaseByBounds(self, index, bounds):
+    @staticmethod
+    def _meshBaseByBounds(index, bounds):
         if index < 0:
             raise IndexError("Bounds-defined indices may not be negative.")
         return bounds[index]
 
-    def getNeighboringCellIndices(self, i, j=0, k=0):
+    @staticmethod
+    def getNeighboringCellIndices(i, j=0, k=0):
         """Return the indices of the immediate neighbors of a mesh point in the plane."""
         return ((i + 1, j, k), (1, j + 1, k), (i - 1, j, k), (i, j - 1, k))
 
@@ -837,7 +889,7 @@ class Grid:
         """
         Return a list of grid indices that contain matching contents based on symmetry.
 
-        The length of the list with depend on the type of symmetry being used, and
+        The length of the list will depend on the type of symmetry being used, and
         potentially the location of the requested indices. E.g.,
         third-core will return the two sets of indices at the matching location in the
         other two thirds of the grid, unless it is the central location, in which case
@@ -845,7 +897,8 @@ class Grid:
         """
         raise NotImplementedError
 
-    def getAboveAndBelowCellIndices(self, indices):
+    @staticmethod
+    def getAboveAndBelowCellIndices(indices):
         i, j, k = indices
         return ((i, j, k + 1), (i, j, k - 1))
 
@@ -857,34 +910,16 @@ class Grid:
         return None
 
     def getLabel(self, indices):
-        """Get a string label from a 0-based spatial locator."""
+        """
+        Get a string label from a 0-based spatial locator.
+
+        Returns a string representing i, j, and k indices of the locator
+        """
         i, j = indices[:2]
-        chrNum = int(i // 10)
-        label = "{}{:03d}".format(chr(ASCII_LETTER_A + chrNum) + str(i % 10), j)
+        label = f"{i:03d}-{j:03d}"
         if len(indices) == 3:
-            label += AXIAL_CHARS[indices[2]]
+            label += f"-{indices[2]:03d}"
         return label
-
-    def getLocationFromRingAndPos(self, i, j, k=0):
-        """
-        Return the location based on ring and position.
-
-        Parameters
-        ----------
-        i : int
-            Ring index
-        j : int
-            Position index
-        k : int, optional
-            Axial index
-
-        See Also
-        --------
-        HexGrid.getLocationFromRingAndPos
-            This implements a special method to transform the i, j location based
-            on ring and position.
-        """
-        return self[i, j, k]
 
     def getIndexBounds(self):
         """
@@ -914,8 +949,76 @@ class Grid:
         """
         return self._bounds
 
-    def getIndicesFromRingAndPos(self, ring, pos):
-        return ring, pos
+    def getLocatorFromRingAndPos(self, ring, pos, k=0):
+        """
+        Return the location based on ring and position.
+
+        Parameters
+        ----------
+        ring : int
+            Ring number (1-based indexing)
+        pos : int
+            Position number (1-based indexing)
+        k : int, optional
+            Axial index (0-based indexing)
+
+        See Also
+        --------
+        getIndicesFromRingAndPos
+            This implements the transform into i, j indices based on ring and position.
+        """
+        i, j = self.getIndicesFromRingAndPos(ring, pos)
+        return self[i, j, k]
+
+    @staticmethod
+    def getIndicesFromRingAndPos(ring, pos):
+        """
+        Return i, j indices given ring and position.
+
+        Note
+        ----
+        This should be implemented as a staticmethod, since no Grids currently in
+        exsistence actually need any instance data to perform this task, and
+        staticmethods provide the convenience of calling the method without an instance
+        of the class in the first place.
+        """
+        raise NotImplementedError("Base Grid does not know about ring/pos")
+
+    def getMinimumRings(self, n: int) -> int:
+        """
+        Return the minimum number of rings needed to fit ``n`` objects.
+
+        Warning
+        -------
+        While this is useful and safe for answering the question of "how many rings do I
+        need to hold N things?", is generally not safe to use it to answer "I have N
+        things; within how many rings are they distributed?". This function provides a
+        lower bound, assuming that objects are densely-packed. If they are not actually
+        densely packed, this may be unphysical.
+        """
+        raise NotImplementedError("Base grid does not know about rings")
+
+    def getRingPos(self, indices) -> Tuple[int, int]:
+        """
+        Get ring and position number in this grid.
+
+        For non-hex grids this is just i and j.
+
+        A tuple is returned so that it is easy to compare pairs of indices.
+        """
+
+        # Regular grids dont really know about ring and position. We can try to see if
+        # their parent does!
+        if (
+            self.armiObject is not None
+            and self.armiObject.parent is not None
+            and self.armiObject.parent.spatialGrid is not None
+        ):
+            return self.armiObject.parent.spatialGrid.getRingPos(indices)
+
+        # For compatibility's sake, return __something__. TODO: We may want to just
+        # throw here, to be honest.
+        return tuple(i + 1 for i in indices[:2])
 
     def getAllIndices(self):
         """Get all possible indices in this grid."""
@@ -931,15 +1034,167 @@ class Grid:
             loc = IndexLocation(i, j, k, self)
             self._locations[(i, j, k)] = loc
 
-    def getRingPos(self, indices) -> Tuple[int, int]:
+    @property
+    def pitch(self):
         """
-        Get ring and position number in this grid.
+        The pitch of the grid.
 
-        For non-hex grids this is just i and j.
-
-        A tuple is returned so that it is easy to compare pairs of indices.
+        Assumes 2-d unit-step defined (works for cartesian)
         """
-        return tuple(indices[:2])
+        # TODO move this to the CartesianGrid
+        pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
+        if pitch[0] == 0:
+            raise ValueError(f"Grid {self} does not have a defined pitch.")
+        return pitch
+
+
+class CartesianGrid(Grid):
+    """
+    Grid class representing a conformal Cartesian mesh.
+
+    Notes
+    -----
+    In Cartesian, (i, j, k) indices map to (x, y, z) coordinates.
+    In an axial plane (i, j) are as follows::
+
+        (-1, 1) ( 0, 1) ( 1, 1)
+        (-1, 0) ( 0, 0) ( 1, 0)
+        (-1,-1) ( 0,-1) ( 1,-1)
+    """
+
+    @classmethod
+    def fromRectangle(
+        cls, width, height, numRings=5, symmetry="", isOffset=False, armiObject=None
+    ):
+        """
+        Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
+
+        Parameters
+        ----------
+        width : float
+            Width of the unit rectangle
+        height : float
+            Height of the unit rectangle
+        numRings : int
+            Number of rings that the grid should span
+        symmetry : str
+            The symmetry condition (see :py:mod:`armi.reactor.geometry`)
+        isOffset : bool
+            If True, the origin of the Grid's coordinate system will be placed at the
+            bottom-left corner of the center-most cell. Otherwise, the origin will be
+            placed at the center of the center-most cell.
+        armiObject : ArmiObject
+            An object in a Composite model that the Grid should be bound to.
+        """
+        unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
+        offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
+        return cls(
+            unitSteps=unitSteps,
+            unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
+            offset=offset,
+            armiObject=armiObject,
+            symmetry=symmetry,
+        )
+
+    def getRingPos(self, indices):
+        """
+        Return ring and position from indices.
+
+        Ring is the Manhattan distance from (0, 0) to the passed indices. Position
+        counts up around the ring counter-clockwise from the quadrant 1 diagonal, like
+        this::
+
+            7   6  5  4  3  2  1
+            8         |       24
+            9         |       23
+            10 -------|------ 22
+            11        |       21
+            12        |       20
+            13 14 15 16 17 18 19
+
+        Grids that split the central locations have 1 location in in inner-most ring,
+        whereas grids without split central locations will have 4.
+
+        Notes
+        -----
+        This is needed to support GUI, but should not often be used.
+        i, j (0-based) indices are much more useful. For example:
+
+        >>> locator = core.spatialGrid[i, j, 0] # 3rd index is 0 for assembly
+        >>> a = core.childrenByLocator[locator]
+
+        >>> a = core.childrenByLocator[core.spatialGrid[i, j, 0]] # one liner
+        """
+        i, j = indices[0:2]
+        split = self._isThroughCenter()
+
+        if not split:
+            i += 0.5
+            j += 0.5
+
+        ring = max(abs(int(i)), abs(int(j)))
+
+        if not split:
+            ring += 0.5
+
+        if j == ring:
+            # region 1
+            pos = -i + ring
+        elif i == -ring:
+            # region 2
+            pos = 3 * ring - j
+        elif j == -ring:
+            # region 3
+            pos = 5 * ring + i
+        else:
+            # region 4
+            pos = 7 * ring + j
+        return (int(ring) + 1, int(pos) + 1)
+
+    @staticmethod
+    def getIndicesFromRingAndPos(ring, pos):
+        """
+        Not implemented for Cartesian-see getRingPos notes.
+        """
+        raise NotImplementedError(
+            "Cartesian should not need need ring/pos, use i, j indices."
+            "See getRingPos doc string notes for more information/example."
+        )
+
+    def getMinimumRings(self, n):
+        """
+        Return the minimum number of rings needed to fit ``n`` objects.
+        """
+        return self._getMinimumRingsStatic(n, throughCenter=self._isThroughCenter())
+
+    @staticmethod
+    def _getMinimumRingsStatic(n, throughCenter):
+        # Keep private because this is really here to support old locations stuff that
+        # hasn't been removed yet. See module docs for locations.py for more details.
+        numPositions = 0
+        for ring in itertools.count(1):
+            ringPositions = CartesianGrid._getPositionsInRing(ring, throughCenter)
+            numPositions += ringPositions
+            if numPositions >= n:
+                return ring
+
+    @staticmethod
+    def _getPositionsInRing(ring, throughCenter):
+        # Keep private because this is really here to support old locations stuff that
+        # hasn't been removed yet. See module docs for locations.py for more details.
+        if ring == 1:
+            ringPositions = 1 if throughCenter else 4
+        else:
+            ringPositions = (ring - 1) * 8
+            if not throughCenter:
+                ringPositions += 4
+        return ringPositions
+
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+        if self.symmetry.domain == geometry.DomainType.QUARTER_CORE:
+            return locator.i >= 0 and locator.j >= 0
+        else:
+            return True
 
     def changePitch(self, xw, yw):
         """
@@ -956,24 +1211,92 @@ class Grid:
         newOffsetY = self._offset[1] * yw / ywOld
         self._offset = numpy.array((newOffsetX, newOffsetY, 0.0))
 
-    @property
-    def pitch(self):
-        """
-        The pitch of the grid.
+    def getSymmetricEquivalents(self, indices):
+        symmetry = self.symmetry  # construct the symmetry object once up top
+        isRotational = symmetry.boundary == geometry.BoundaryType.PERIODIC
 
-        Assumes 2-d unit-step defined (works for cartesian)
-        """
-        pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
-        if pitch[0] == 0:
-            raise ValueError(f"Grid {self} does not have a defined pitch.")
-        return pitch
+        i, j = indices[0:2]
+        if symmetry.domain == geometry.DomainType.FULL_CORE:
+            return []
+        elif symmetry.domain == geometry.DomainType.QUARTER_CORE:
+            if symmetry.isThroughCenterAssembly:
+                # some locations lie on the symmetric boundary
+                if i == 0 and j == 0:
+                    # on the split corner, so the location is its own symmetric
+                    # equivalent
+                    return []
+                elif i == 0:
+                    if isRotational:
+                        return [(j, i), (i, -j), (-j, i)]
+                    else:
+                        return [(i, -j)]
+                elif j == 0:
+                    if isRotational:
+                        return [(j, i), (-i, j), (j, -i)]
+                    else:
+                        return [(-i, j)]
+                else:
+                    # Math is a bit easier for the split case, since there is an actual
+                    # center location for (0, 0)
+                    if isRotational:
+                        return [(-j, i), (-i, -j), (j, -i)]
+                    else:
+                        return [(-i, j), (-i, -j), (i, -j)]
+            else:
+                # most objects have 3 equivalents. the bottom-left corner of Quadrant I
+                # is (0, 0), so to reflect, add one and negate each index in
+                # combination. To rotate, first flip the indices for the Quadrant II and
+                # Quadrant IV
+                if isRotational:
+                    # rotational
+                    #        QII           QIII          QIV
+                    return [(-j - 1, i), (-i - 1, -j - 1), (j, -i - 1)]
+                else:
+                    # reflective
+                    #        QII           QIII          QIV
+                    return [(-i - 1, j), (-i - 1, -j - 1), (i, -j - 1)]
+
+        elif symmetry.domain == geometry.DomainType.EIGHTH_CORE:
+            raise NotImplementedError(
+                "Eighth-core symmetry isn't fully implemented for grids yet!"
+            )
+        else:
+            raise NotImplementedError(
+                "Unhandled symmetry condition for {}: {}".format(
+                    type(self).__name__, symmetry.domain
+                )
+            )
+
+    def _isThroughCenter(self):
+        """Return whether the central cells are split through the middle for symmetry."""
+        return all(self._offset == [0, 0, 0])
 
 
 class HexGrid(Grid):
-    """Has 6 neighbors in plane."""
+    """
+    Has 6 neighbors in plane.
+
+    Notes
+    -----
+    In an axial plane (i, j) are as follows (second one is pointedEndUp)::
+
+
+                    ( 0, 1)
+             (-1, 1)       ( 1, 0)
+                    ( 0, 0)
+             (-1, 0)       ( 1,-1)
+                    ( 0,-1)
+
+
+                ( 0, 1) ( 1, 0)
+
+            (-1, 1) ( 0, 0) ( 1,-1)
+
+                (-1, 0) ( 0,-1)
+    """
 
     @staticmethod
-    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False):
+    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry=""):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
 
@@ -991,6 +1314,8 @@ class HexGrid(Grid):
         pointedEndUp : bool, optional
             Rotate the hexagons 30 degrees so that the pointed end faces up instead of
             the flat.
+        symmetry : string, optional
+            A string representation of the symmetry options for the grid.
 
         Returns
         -------
@@ -1016,6 +1341,7 @@ class HexGrid(Grid):
             unitSteps=unitSteps,
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
+            symmetry=symmetry,
         )
 
     @property
@@ -1029,12 +1355,64 @@ class HexGrid(Grid):
         """
         return self._unitSteps[1][1]
 
-    def getNeighboringCellIndices(self, i, j=0, k=0):
+    @staticmethod
+    def indicesToRingPos(i, j):
+        """
+        Convert spatialLocator indices to ring/position.
+
+        One benefit it has is that it never has negative numbers.
+
+        Notes
+        -----
+        Ring, pos index system goes in counterclockwise hex rings.
+        """
+        if i > 0 and j >= 0:
+            edge = 0
+            ring = i + j + 1
+            offset = j
+        elif i <= 0 and j > -i:
+            edge = 1
+            ring = j + 1
+            offset = -i
+        elif i < 0 and j > 0:
+            edge = 2
+            ring = -i + 1
+            offset = -j - i
+        elif i < 0:
+            edge = 3
+            ring = -i - j + 1
+            offset = -j
+        elif i >= 0 and j < -i:
+            edge = 4
+            ring = -j + 1
+            offset = i
+        else:
+            edge = 5
+            ring = i + 1
+            offset = i + j
+
+        positionBase = 1 + edge * (ring - 1)
+        return ring, positionBase + offset
+
+    def getMinimumRings(self, n):
+        """
+        Return the minimum number of rings needed to fit ``n`` objects.
+
+        Notes
+        -----
+        ``self`` is not used because hex grids always behave the same w.r.t.
+        rings/positions.
+        """
+        return hexagon.numRingsToHoldNumCells(n)
+
+    @staticmethod
+    def getNeighboringCellIndices(i, j=0, k=0):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
-        Note that these neighbors are ordered counter-clockwise beginning from 2 o'clock.
-        This is very important!"""
+        Note that these neighbors are ordered counter-clockwise beginning from the
+        30 or 60 degree direction. Exact direction is dependent on pointedEndUp arg.
+        """
         return [
             (i + 1, j, k),
             (i, j + 1, k),
@@ -1045,36 +1423,63 @@ class HexGrid(Grid):
         ]
 
     def getLabel(self, indices):
-        """Hex labels start at 1."""
+        """
+        Hex labels start at 1, and are ring/position based rather than i,j.
+
+        This difference is partially because ring/pos is easier to understand in hex
+        geometry, and partially because it is used in some codes ARMI originally was focused
+        on.
+        """
         ring, pos = self.getRingPos(indices)
         if len(indices) == 2:
             return Grid.getLabel(self, (ring, pos))
         else:
             return Grid.getLabel(self, (ring, pos, indices[2]))
 
-    def getIndicesFromRingAndPos(self, ring, pos):
-        i, j, _edge = _indicesAndEdgeFromRingAndPos(ring, pos)
+    @staticmethod
+    def _indicesAndEdgeFromRingAndPos(ring, position):
+        ring = ring - 1
+        pos = position - 1
+
+        if ring == 0:
+            if pos != 0:
+                raise ValueError(f"Position in center ring must be 1, not {pos}")
+            return 0, 0, 0
+
+        # # Edge indicates which edge of the ring in which the hexagon resides.
+        # # Edge 0 is the NE edge, edge 1 is the N edge, etc.
+        # # Offset is (0-based) index of the hexagon in that edge. For instance,
+        # # ring 3, pos 12 resides in edge 5 at index 1; it is the second hexagon
+        # # in ring 3, edge 5.
+        edge, offset = divmod(pos, ring)  # = pos//ring, pos%ring
+        if edge == 0:
+            i = ring - offset
+            j = offset
+        elif edge == 1:
+            i = -offset
+            j = ring
+        elif edge == 2:
+            i = -ring
+            j = -offset + ring
+        elif edge == 3:
+            i = -ring + offset
+            j = -offset
+        elif edge == 4:
+            i = offset
+            j = -ring
+        elif edge == 5:
+            i = ring
+            j = offset - ring
+        else:
+            raise ValueError(
+                "Edge {} is invalid. From ring {}, pos {}".format(edge, ring, pos)
+            )
+        return i, j, edge
+
+    @staticmethod
+    def getIndicesFromRingAndPos(ring, pos):
+        i, j, _edge = HexGrid._indicesAndEdgeFromRingAndPos(ring, pos)
         return i, j
-
-    def getLocationFromRingAndPos(self, i, j, k=0):
-        """
-        Return the location based on ring and position.
-
-        Parameters
-        ----------
-        i : int
-            Ring index
-        j : int
-            Position index
-        k : int, optional
-            Axial index
-
-        See Also
-        --------
-        Grid.getLocationFromRingAndPos
-        """
-        i, j = self.getIndicesFromRingAndPos(i, j)
-        return self[i, j, k]
 
     def getRingPos(self, indices):
         """
@@ -1085,7 +1490,7 @@ class HexGrid(Grid):
         getIndicesFromRingAndPos : does the reverse
         """
         i, j = indices[:2]
-        return indicesToRingPos(i, j)
+        return HexGrid.indicesToRingPos(i, j)
 
     def overlapsWhichSymmetryLine(self, indices):
         """Return a list of which lines of symmetry this is on.
@@ -1095,7 +1500,7 @@ class HexGrid(Grid):
         If on a line of symmetry in 1/3 geometry, returns a list containing a 3.
         Only the 1/3 core view geometry is actually coded in here right now.
 
-        Being "on" a symmety line means the line goes through the middle of you.
+        Being "on" a symmetry line means the line goes through the middle of you.
 
         """
         i, j = indices[:2]
@@ -1117,13 +1522,18 @@ class HexGrid(Grid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices):
-        if geometry.THIRD_CORE in self.symmetry and geometry.PERIODIC in self.symmetry:
+        if (
+            self.symmetry.domain == geometry.DomainType.THIRD_CORE
+            and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
+        ):
             return self._getSymmetricIdenticalsThird(indices)
-        elif geometry.FULL_CORE in self.symmetry:
+        elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
             raise NotImplementedError(
-                "Unhandled symmetry condition for HexGrid: {}".format(self.symmetry)
+                "Unhandled symmetry condition for HexGrid: {}".format(
+                    str(self.symmetry)
+                )
             )
 
     def _getSymmetricIdenticalsThird(self, indices):
@@ -1151,14 +1561,16 @@ class HexGrid(Grid):
             ((1.5 * side, 0.0, 0.0), (newPitchCm / 2.0, newPitchCm, 0.0), (0, 0, 0))
         )[self._stepDims]
 
-    def locatorInDomain(self, locator):
-        if geometry.THIRD_CORE in self.symmetry:
-            return self.isInFirstThird(locator)
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+        # This will include the "top" 120-degree symmetry lines. This is to support
+        # adding of edge assemblies.
+        if self.symmetry.domain == geometry.DomainType.THIRD_CORE:
+            return self.isInFirstThird(locator, includeTopEdge=symmetryOverlap)
         else:
             return True
 
     def isInFirstThird(self, locator, includeTopEdge=False):
-        """True if locator is in first third of hex grid. """
+        """True if locator is in first third of hex grid."""
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
             return True
@@ -1193,7 +1605,7 @@ class HexGrid(Grid):
         for ring in range(1, hexagon.numRingsToHoldNumCells(nLocs) + 1):
             positions = hexagon.numPositionsInRing(ring)
             for position in range(1, positions + 1):
-                i, j = getIndicesFromRingAndPos(ring, position)
+                i, j = self.getIndicesFromRingAndPos(ring, position)
                 locList.append(self[(i, j, 0)])
         # round to avoid differences due to floating point math
         locList.sort(
@@ -1258,7 +1670,7 @@ class ThetaRZGrid(Grid):
 
         See Also
         --------
-        armi.reactor.geometry.SystemLayoutInput.readGeomXML : produces the geomInfo
+        armi.reactor.systemLayoutInput.SystemLayoutInput.readGeomXML : produces the geomInfo
         structure
 
         Examples
@@ -1282,6 +1694,13 @@ class ThetaRZGrid(Grid):
         return ThetaRZGrid(
             bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject
         )
+
+    def getRingPos(self, indices):
+        return (indices[1] + 1, indices[0] + 1)
+
+    @staticmethod
+    def getIndicesFromRingAndPos(ring, pos):
+        return (pos - 1, ring - 1)
 
     def getCoordinates(self, indices, nativeCoords=False):
         meshCoords = theta, r, z = Grid.getCoordinates(self, indices)
@@ -1322,6 +1741,13 @@ class ThetaRZGrid(Grid):
 
         return (i, j, 0)
 
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+        """
+        ThetaRZGrids do not check for bounds, though they could if that becomes a
+        problem.
+        """
+        return True
+
 
 def axialUnitGrid(numCells, armiObject=None):
     """
@@ -1337,112 +1763,16 @@ def axialUnitGrid(numCells, armiObject=None):
     )
 
 
-def ringPosFromRingLabel(ringLabel):
-    """Convert a ring-based label like A2003B into 1-based ring, location indices."""
-    locMatch = re.search(r"([A-Z]\d)(\d\d\d)([A-Z]?)", ringLabel)
-    if locMatch:
-        # we have a valid location label. Process it and set parameters
-        # convert A4 to 04, B2 to 12, etc.
-        ring = locMatch.group(1)
-        posLabel = locMatch.group(2)
-        axLabel = locMatch.group(3)
-        firstDigit = ord(ring[0]) - ASCII_LETTER_A
-        if firstDigit < 10:
-            i = int("{0}{1}".format(firstDigit, ring[1]))
-        else:
-            raise RuntimeError(
-                "invalid label {0}. 1st character too large.".format(ringLabel)
-            )
-        j = int(posLabel)
-        if axLabel:
-            k = AXIAL_CHARS.index(axLabel)
-        else:
-            k = None
-        return i, j, k
-
-
-def indicesToRingPos(i, j):
+def locatorLabelToIndices(label: str) -> Tuple[int]:
     """
-    Convert spatialLocator indices to ring/position.
+    Convert a locator label to numerical i,j,k indices.
 
-    One benefit it has is that it never has negative numbers.
-
-    Notes
-    -----
-    Ring, pos index system goes in counterclockwise hex rings.
+    If there are only i,j  indices, make the last item None
     """
-    if i > 0 and j >= 0:
-        edge = 0
-        ring = i + j + 1
-        offset = j
-    elif i <= 0 and j > -i:
-        edge = 1
-        ring = j + 1
-        offset = -i
-    elif i < 0 and j > 0:
-        edge = 2
-        ring = -i + 1
-        offset = -j - i
-    elif i < 0:
-        edge = 3
-        ring = -i - j + 1
-        offset = -j
-    elif i >= 0 and j < -i:
-        edge = 4
-        ring = -j + 1
-        offset = i
-    else:
-        edge = 5
-        ring = i + 1
-        offset = i + j
-
-    positionBase = 1 + edge * (ring - 1)
-    return ring, positionBase + offset
-
-
-def getIndicesFromRingAndPos(ring, pos):
-    i, j, _edge = _indicesAndEdgeFromRingAndPos(ring, pos)
-    return i, j
-
-
-def _indicesAndEdgeFromRingAndPos(ring, position):
-    ring = ring - 1
-    pos = position - 1
-
-    if ring == 0:
-        if pos != 0:
-            raise ValueError(f"Position in center ring must be 1, not {pos}")
-        return 0, 0, 0
-
-    # # Edge indicates which edge of the ring in which the hexagon resides.
-    # # Edge 0 is the NE edge, edge 1 is the N edge, etc.
-    # # Offset is (0-based) index of the hexagon in that edge. For instance,
-    # # ring 3, pos 12 resides in edge 5 at index 1; it is the second hexagon
-    # # in ring 3, edge 5.
-    edge, offset = divmod(pos, ring)  # = pos//ring, pos%ring
-    if edge == 0:
-        i = ring - offset
-        j = offset
-    elif edge == 1:
-        i = -offset
-        j = ring
-    elif edge == 2:
-        i = -ring
-        j = -offset + ring
-    elif edge == 3:
-        i = -ring + offset
-        j = -offset
-    elif edge == 4:
-        i = offset
-        j = -ring
-    elif edge == 5:
-        i = ring
-        j = offset - ring
-    else:
-        raise ValueError(
-            "Edge {} is invalid. From ring {}, pos {}".format(edge, ring, pos)
-        )
-    return i, j, edge
+    intVals = [int(idx) for idx in label.split("-")]
+    if len(intVals) == 2:
+        intVals.append(None)
+    return tuple(intVals)
 
 
 def addingIsValid(myGrid, parentGrid):

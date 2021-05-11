@@ -25,12 +25,13 @@ from matplotlib.collections import PatchCollection
 from armi.reactor import blocks
 from armi.reactor import components
 from armi.reactor.flags import Flags
+from armi.reactor import locations
 from armi import runLog
 
 SIN60 = math.sin(math.radians(60.0))
 
 
-class BlockConverter(object):
+class BlockConverter:
     """Converts a block."""
 
     def __init__(self, sourceBlock, quiet=False):
@@ -290,13 +291,15 @@ class BlockAvgToCylConverter(BlockConverter):
     Notes
     -----
     This converter is intended for use in building 1-Dimensional models of a set of block.
-    numInternalRings controls the number of rings to use for the source block, while the numExternalRings controls
-    the number of rungs for the driver fuel block.
-    The number of blocks to in each ring grows by 6 for each ring in hex geometry and 8 for each ring in Cartesian.
+    numInternalRings controls the number of rings to use for the source block, while the
+    numExternalRings controls the number of rings for the driver fuel block.  The number
+    of blocks to in each ring grows by 6 for each ring in hex geometry and 8 for each ring
+    in Cartesian.
 
     See Also
     --------
-    HexComponentsToCylConverter: This converter is more useful if the pin lattice is in a hex lattice.
+    HexComponentsToCylConverter: This converter is more useful if the pin lattice is in a
+    hex lattice.
     """
 
     def __init__(
@@ -352,7 +355,8 @@ class BlockAvgToCylConverter(BlockConverter):
             tempInput = tempHot = blockToAdd.getAverageTempInC()
 
         for ringNum in range(firstRing, firstRing + numRingsToAdd):
-            numFuelBlocksInRing = blockToAdd.location.getNumPosInRing(ringNum)
+            numFuelBlocksInRing = locations.numPositionsInRing(blockToAdd, ringNum)
+            assert numFuelBlocksInRing is not None
             fuelBlockTotalArea = numFuelBlocksInRing * self._driverFuelBlock.getArea()
             driverOuterDiam = getOuterDiamFromIDAndArea(innerDiam, fuelBlockTotalArea)
             driverRing = components.Circle(
@@ -402,13 +406,10 @@ class BlockAvgToCylConverter(BlockConverter):
             mainComponent=fuel,
         )
 
-    def plotConvertedBlock(self):
+    def plotConvertedBlock(self, fName=None):
         """Render an image of the converted block."""
-        figName = self._sourceBlock.name + "_1D_cylinder.svg"
         runLog.extra(
-            "Plotting equivalent cylindrical block of {} as {}".format(
-                self._sourceBlock, figName
-            )
+            "Plotting equivalent cylindrical block of {}".format(self._sourceBlock)
         )
         fig, ax = plt.subplots()
         fig.patch.set_visible(False)
@@ -430,24 +431,30 @@ class BlockAvgToCylConverter(BlockConverter):
             patches.append(circle)
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
-        p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.rainbow)
+        p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.YlGn)
         p.set_array(numpy.array(colors))
-        p.set_clim(0, 20)
         ax.add_collection(p)
         ax.autoscale_view(True, True, True)
-        plt.savefig(figName)
-        return figName
+        ax.set_aspect("equal")
+        fig.tight_layout()
+        if fName:
+            plt.savefig(fName)
+        else:
+            plt.show()
+        return fName
 
 
 class HexComponentsToCylConverter(BlockAvgToCylConverter):
     """
     Converts a hexagon full of pins into a circle full of concentric circles.
 
-    This is intended to capture heterogeneous effects while generating cross sections in MCC3. The resulting
-    1D cylindrical block will not be used in subsequent core calculations.
+    This is intended to capture heterogeneous effects while generating cross sections in
+    MCC3. The resulting 1D cylindrical block will not be used in subsequent core
+    calculations.
 
-    Repeated pins/coolant rings will be built, followed by the non-pins like duct/intercoolant
-    pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... | nonpins ...
+    Repeated pins/coolant rings will be built, followed by the non-pins like
+    duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
+    nonpins ...
     """
 
     def __init__(
@@ -490,8 +497,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
         )
         self._dissolveComponents()
-        numRings = self._sourceBlock.location.getNumRings(
-            self._sourceBlock.getNumPins()
+        numRings = locations.minimumRings(
+            self._sourceBlock, self._sourceBlock.getNumPins()
         )
         pinComponents, nonPins = self._classifyComponents()
         self._buildFirstRing(pinComponents)
@@ -553,7 +560,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
         This will be a fuel (or control) meat surrounded on both sides by clad, bond, liner, etc. layers.
         """
-        numPinsInRing = self._sourceBlock.location.getNumPosInRing(ringNum)
+        numPinsInRing = locations.numPositionsInRing(self._sourceBlock, ringNum)
         pinRadii = [c.getDimension("od") / 2.0 for c in pinComponents]
         bigRingRadii = radiiFromRingOfRods(
             self.pinPitch * (ringNum - 1), numPinsInRing, pinRadii
@@ -604,7 +611,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self.convertedBlock.add(circularHexagon)
             innerDiameter = outerDiam
 
-    def _addSolidMaterialRing(self, baseComponent, innerDiameter, outDiameter, name):
+    @staticmethod
+    def _addSolidMaterialRing(baseComponent, innerDiameter, outDiameter, name):
         circle = components.Circle(
             name,
             baseComponent.material,

@@ -159,7 +159,14 @@ class ComponentBlueprint(yamlize.Object):
             component.p.flags = Flags.fromString(self.flags)
         else:
             # potentially add the DEPLETABLE flag. Don't do this if we set flags
-            # explicitly
+            # explicitly. WARNING: If you add flags explicitly, it will
+            # turn off depletion so be sure to add depletable to your list of flags
+            # if you expect depletion
+            if any(nuc in blueprint.activeNuclides for nuc in component.getNuclides()):
+                component.p.flags |= Flags.DEPLETABLE
+
+        if component.hasFlags(Flags.DEPLETABLE):
+            # depletable components, whether auto-derived or explicitly flagged need expanded nucs
             _insertDepletableNuclideKeys(component, blueprint)
         return component
 
@@ -269,9 +276,19 @@ def expandElementals(mat, blueprint):
 
 
 def _insertDepletableNuclideKeys(c, blueprint):
-    if not any(nuc in blueprint.activeNuclides for nuc in c.getNuclides()):
-        return
-    c.p.flags |= Flags.DEPLETABLE
+    """
+    Auto update number density keys on all DEPLETABLE components.
+
+    Notes
+    -----
+    This should be moved to a neutronics/depletion plugin hook but requires some
+    refactoring in how active nuclides and reactors are initialized first.
+
+    See Also
+    --------
+    armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.isDepletable :
+        contains design docs describing the ``DEPLETABLE`` flagging situation
+    """
     nuclideBases.initReachableActiveNuclidesThroughBurnChain(
         c.p.numberDensities, blueprint.activeNuclides
     )

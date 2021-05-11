@@ -278,4 +278,33 @@ assemblies:
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
 
+systems:
+    core:
+        grid name: core
+        origin:
+            x: -65.0
+            y: -65.0
+            z: 0.0
+
+grids:
+    core:
+        geom: cartesian
+        symmetry: full
+        lattice pitch:
+            x: 10.0
+            y: 10.0
+        lattice map: |
+              SH SH SH SH SH SH SH SH SH SH SH SH SH
+              SH OC OC OC OC OC OC OC OC OC OC OC SH
+              SH OC MC MC MC MC MC MC MC MC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC IC IC IC IC IC IC IC MC OC SH
+              SH OC MC MC MC MC MC MC MC MC MC OC SH
+              SH OC OC OC OC OC OC OC OC OC OC OC SH
+              SH SH SH SH SH SH SH SH SH SH SH SH SH
 

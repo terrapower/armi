@@ -20,9 +20,7 @@ It's a bit of a catch-all interface, and it's name is admittedly not very descri
 
 import glob
 import os
-import subprocess
 import re
-import shutil
 import itertools
 
 from armi import interfaces
@@ -45,7 +43,7 @@ def describeInterfaces(_cs):
 class MainInterface(interfaces.Interface):
     """
     Do some basic manipulations, calls, Instantiates the databse.
-    
+
     Notes
     -----
     Interacts early so that the database is accessible as soon as possible in the run.
@@ -136,7 +134,7 @@ class MainInterface(interfaces.Interface):
             raise InputError("Failed to process copyFilesTo/copyFilesFrom")
 
     def interactBOC(self, cycle=None):
-        r"""typically the first interface to interact beginning of cycle. """
+        r"""typically the first interface to interact beginning of cycle."""
 
         runLog.important("Beginning of Cycle {0}".format(cycle))
         runLog.LOG.clearSingleWarnings()
@@ -146,7 +144,6 @@ class MainInterface(interfaces.Interface):
 
     def interactEveryNode(self, cycle, node):
         """Loads from db if necessary."""
-        self.updateClusterProgress()
         if self.cs["loadStyle"] == "fromDB" and self.cs["loadFromDBEveryNode"]:
             if cycle == 0 and node == 0:
                 # skip at BOL because interactBOL handled it.
@@ -163,30 +160,9 @@ class MainInterface(interfaces.Interface):
             self.cleanARMIFiles()
         runLog.warningReport()
 
-    def updateClusterProgress(self):
-        """Updates the status window on the Windows HPC client."""
-        if not shutil.which("job"):
-            return
-        totalSteps = max(
-            (self.cs["burnSteps"] + 1) * self.cs["nCycles"] - 1, 1
-        )  # 0 through 5 if 2 cycles
-        currentStep = (self.cs["burnSteps"] + 1) * self.r.p.cycle + self.r.p.timeNode
-        args = ["job", "modify", "%CCP_JOBID%"]
-        args.append("/progress:{}".format(int((100.0 * currentStep) / totalSteps)))
-        args.append(
-            '/progressmsg:"At time step {} of {}"'.format(currentStep, totalSteps)
-        )
-        msg = "command did not run!"
-        try:
-            runLog.info("Updating cluster progress: {}".format(" ".join(args)))
-            msg = subprocess.check_output(args, shell=True)
-        except:  # pylint: disable=bare-except
-            # we really don't care if the progress updater fails.. it has no impact on our lives.
-            runLog.warning("Failed to update progress on the HPC: {}".format(msg))
-
     def cleanARMIFiles(self):
         r"""delete ARMI run files like MC**2 and REBUS inputs/outputs. Useful
-        if running a clean job that doesn't require restarts. """
+        if running a clean job that doesn't require restarts."""
         runLog.important("Cleaning ARMI files due to smallRun option")
         for fileName in os.listdir(os.getcwd()):
             # clean MC**2 and REBUS inputs and outputs
@@ -222,7 +198,7 @@ class MainInterface(interfaces.Interface):
     # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):
         r"""Delete ARMI files from previous cycle that aren't necessary for the next cycle.
-        Unless you're doing reloads, of course.  """
+        Unless you're doing reloads, of course."""
         runLog.important("Cleaning ARMI files due to reallySmallRun option")
         for fileName in os.listdir(os.getcwd()):
             # clean MC**2 and REBUS inputs and outputs

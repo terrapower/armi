@@ -28,9 +28,9 @@ from armi import settings
 from armi.tests import mockRunLogs
 from armi.localization import exceptions
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import isotxs
-from armi.nuclearDataIO import pmatrx
-from armi.nuclearDataIO import gamiso
+from armi.nuclearDataIO.cccc import isotxs
+from armi.nuclearDataIO.cccc import pmatrx
+from armi.nuclearDataIO.cccc import gamiso
 from armi.nuclearDataIO import xsLibraries
 from armi.utils import directoryChangers
 from armi.utils import properties
@@ -39,6 +39,8 @@ from armi.utils import outputCache
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
 FIXTURE_DIR = os.path.join(THIS_DIR, "fixtures")
+# CCCC fixtures are less fancy than these merging ones.
+FIXTURE_DIR_CCCC = os.path.join(os.path.dirname(isotxs.__file__), "tests", "fixtures")
 
 ISOTXS_AA = os.path.join(FIXTURE_DIR, "mc2v3-AA.isotxs")
 ISOTXS_AB = os.path.join(FIXTURE_DIR, "mc2v3-AB.isotxs")
@@ -55,7 +57,7 @@ GAMISO_AB = os.path.join(FIXTURE_DIR, "mc2v3-AB.gamiso")
 GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
 GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
 
-DLAYXS_MCC3 = os.path.join(FIXTURE_DIR, "mc2v3.dlayxs")
+DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
 
 
@@ -101,7 +103,9 @@ def createTestXSLibraryFiles(cachePath):
         ##                   GENERATE DLAYXS                      ##
         ##                                                        ##
         ############################################################
-        outputCache.cacheCall(cs, mc2v3, ["mc2v3-dlayxs.inp"], ["DLAYXS"])
+        outputCache.cacheCall(
+            cs["outputCacheLocation"], mc2v3, ["mc2v3-dlayxs.inp"], ["DLAYXS"]
+        )
         shutil.move("DLAYXS", DLAYXS_MCC3)
 
         ############################################################
@@ -110,7 +114,7 @@ def createTestXSLibraryFiles(cachePath):
         ##                                                        ##
         ############################################################
         outputCache.cacheCall(
-            cs,
+            cs["outputCacheLocation"],
             mc2v3,
             ["mc2v3-AA.inp"],
             ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged", "output.flux_ufg"],
@@ -121,7 +125,7 @@ def createTestXSLibraryFiles(cachePath):
         shutil.move("output.flux_ufg", UFG_FLUX_EDIT)
 
         outputCache.cacheCall(
-            cs,
+            cs["outputCacheLocation"],
             mc2v3,
             ["mc2v3-AB.inp"],
             ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged"],
@@ -136,16 +140,24 @@ def createTestXSLibraryFiles(cachePath):
         # ::                                                      ::
         # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        outputCache.cacheCall(cs, mc2v3, ["combine-AA-AB.inp"], ["ISOTXS.merged"])
+        outputCache.cacheCall(
+            cs["outputCacheLocation"], mc2v3, ["combine-AA-AB.inp"], ["ISOTXS.merged"]
+        )
         shutil.move("ISOTXS.merged", ISOTXS_AA_AB)
 
         outputCache.cacheCall(
-            cs, mc2v3, ["combine-AA-AB.pmatrx.inp"], ["PMATRX.merged"]
+            cs["outputCacheLocation"],
+            mc2v3,
+            ["combine-AA-AB.pmatrx.inp"],
+            ["PMATRX.merged"],
         )
         shutil.move("PMATRX.merged", PMATRX_AA_AB)
 
         outputCache.cacheCall(
-            cs, mc2v3, ["combine-AA-AB.gamiso.inp"], ["ISOTXS.merged"]
+            cs["outputCacheLocation"],
+            mc2v3,
+            ["combine-AA-AB.gamiso.inp"],
+            ["ISOTXS.merged"],
         )
         shutil.move("ISOTXS.merged", GAMISO_AA_AB)
 
@@ -165,7 +177,7 @@ def createTestXSLibraryFiles(cachePath):
         shutil.move("ISOTXS.merged", GAMISO_LUMPED)
 
 
-class TempFileMixin(object):  # really a test case...
+class TempFileMixin:  # really a test case...
     @property
     def testFileName(self):
         return os.path.join(

@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2021 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 import os
 import datetime
 import inspect
+import itertools
 import timeit
 import unittest
 import re
 import shutil
+from typing import Optional
 
 import armi
 from armi import runLog
@@ -44,7 +46,9 @@ def getEmptyHexReactor():
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
     reactor.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    reactor.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+    reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
     reactor.core.spatialGrid.geomType = geometry.HEX
     reactor.core.spatialGrid.armiObject = reactor.core
     return reactor
@@ -57,9 +61,11 @@ def getEmptyCartesianReactor():
     bp = blueprints.Blueprints()
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
-    reactor.core.spatialGrid = grids.HexGrid.fromRectangle(1.0, 1.0)
-    reactor.core.spatialGrid.symmetry = (
-        geometry.QUARTER_CORE + geometry.REFLECTIVE + geometry.THROUGH_CENTER_ASSEMBLY
+    reactor.core.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
+    reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.QUARTER_CORE,
+        geometry.BoundaryType.REFLECTIVE,
+        throughCenterAssembly=True,
     )
     reactor.core.spatialGrid.geomType = geometry.CARTESIAN
     reactor.core.spatialGrid.armiObject = reactor.core
@@ -210,10 +216,12 @@ class ArmiTestHelper(unittest.TestCase):
     """Class containing common testing methods shared by many tests."""
 
     def compareFilesLineByLine(
-        self, expectedFilePath, actualFilePath, falseNegList=None
+        self, expectedFilePath, actualFilePath, falseNegList=None, eps=None
     ):
         """
         Compare the contents of two files line by line.
+
+        .. warning:: The file located at actualFilePath will be deleted if they do match.
 
         Some tests write text files that should be compared line-by-line with reference files.
         This method performs the comparison.
@@ -236,7 +244,12 @@ class ArmiTestHelper(unittest.TestCase):
         falseNegList: None or Iterable
             Optional argument. If two lines are not equal, then check if any values
             from ``falseNegList`` are in this line. If so, do not fail the test.
+        eps: float, optional
+            If provided, try to determine if the only difference between compared lines
+            is in the value of something that can be parsed into a float, and the
+            relative difference between the two floats is below the passed epsilon.
         """
+
         if falseNegList is None:
             falseNegList = []
         elif isinstance(falseNegList, str):
@@ -245,29 +258,89 @@ class ArmiTestHelper(unittest.TestCase):
         with open(expectedFilePath, "r") as expected, open(
             actualFilePath, "r"
         ) as actual:
-            for lineIndex, expectedLine in enumerate(expected):
-                actualLine = actual.readline()
-                try:
-                    self.assertEqual(
-                        expectedLine.rstrip(),
-                        actualLine.rstrip(),
-                        "Error on line {}:\nE>{}\nA<{}".format(
-                            lineIndex, expectedLine.rstrip(), actualLine.rstrip()
-                        ),
+            for lineIndex, (expectedLine, actualLine) in enumerate(
+                itertools.zip_longest(expected, actual)
+            ):
+                if expectedLine is None:
+                    raise AssertionError(
+                        "The test-generated file is longer than expected file"
                     )
-                except AssertionError as er:
+                if actualLine is None:
+                    raise AssertionError(
+                        "The test-generated file is shorter than expected file"
+                    )
+
+                if not self.compareLines(actualLine, expectedLine, eps):
                     if any(
                         falseNeg in line
                         for falseNeg in falseNegList
                         for line in (actualLine, expectedLine)
                     ):
-                        continue
+                        pass
+                    else:
+                        raise AssertionError(
+                            "Error on line {}:\nE>{}\nA<{}".format(
+                                lineIndex, expectedLine.rstrip(), actualLine.rstrip()
+                            )
+                        )
 
-                    msg = "\nThe files: \n{} and \n{} \nwere not the same.".format(
-                        expectedFilePath, os.path.abspath(actualFilePath)
-                    )
-                    raise AssertionError(msg) from er
         os.remove(actualFilePath)
+
+    @staticmethod
+    def compareLines(actual: str, expected: str, eps: Optional[float] = None):
+        """
+        Impl of line comparison for compareFilesLineByLine.
+
+        if rstripped lines are equal -> Good. Otherwise, split on whitespace and try to
+        parse element pairs as floats. if they are both parsable, compare with relative
+        eps, if provided. A side effect of the epsilon comparison is that differing
+        whitespace **between** words is treated as irrelevant.
+        """
+        actual = actual.rstrip()
+        expected = expected.rstrip()
+
+        if actual == expected:
+            return True
+
+        if eps is None:
+            # no more in-depth comparison is allowed
+            return False
+
+        actualWords = actual.split()
+        expectedWords = expected.split()
+
+        if len(actualWords) != len(expectedWords):
+            # different number of words cant possibly be the same enough
+            return False
+
+        for actualWord, expectedWord in zip(actualWords, expectedWords):
+            actualVal = _tryFloat(actualWord)
+            expectedVal = _tryFloat(expectedWord)
+
+            if (actualVal is None) ^ (expectedVal is None):
+                # could not coerce both words into a float, so they cannot possibly
+                # match
+                return False
+
+            if actualVal is not None:
+                # we have two floats and can compare them
+                if abs(actualVal - expectedVal) / expectedVal > eps:
+                    return False
+            else:
+                # strings, compare directly
+                if actualWord != expectedWord:
+                    return False
+
+        # if we got to the end without pitching a fit, the lines should match
+        return True
+
+
+def _tryFloat(val: str) -> Optional[float]:
+    try:
+        return float(val)
+
+    except ValueError:
+        return None
 
 
 def rebaselineTextComparisons(root):

@@ -25,7 +25,7 @@ from armi import settings
 from armi.utils import directoryChangers
 from armi.tests import ARMI_RUN_PATH
 from armi.tests import TEST_ROOT
-from armi.reactor import blueprints, geometry
+from armi.reactor import blueprints, systemLayoutInput
 
 
 GEOM_INPUT = """<?xml version="1.0" ?>
@@ -92,7 +92,7 @@ class TestArmiCase(unittest.TestCase):
 
     def test_independentVariables(self):
         """Ensure that independentVariables added to a case move with it."""
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
         cs = settings.Settings(ARMI_RUN_PATH)
@@ -115,7 +115,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())
 
-        geom = geometry.SystemLayoutInput()
+        geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
 

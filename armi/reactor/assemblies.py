@@ -77,9 +77,6 @@ class Assembly(composites.Composite):
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
 
-    # armi.reactor.locations.Location subclass, overridden on Assembly subclasses
-    LOCATION_CLASS = None
-
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
     CHARGED_FUEL_POOL = "CFP"
@@ -129,12 +126,25 @@ class Assembly(composites.Composite):
         """
         Compare two assemblies by location.
 
-        This allow consistent sorting of assemblies based on location. If either
-        assembly is not in the core (or more accurately a container), returns False.
+        Notes
+        -----
+        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
+        are more permissive in the grid consistency checks to accomodate situations
+        where assemblies might be children of the same Core, but not in the same grid as
+        each other (as can be the case in the spent fuel or charge fuel pools). In these
+        situations, the operator returns ``False``.  This behavior may lead to some
+        strange sorting behavior when two or more Assemblies are being compared that do
+        not live in the same grid. It may be beneficial in the future to maintain the
+        more strict behavior of ArmiObject's ``__lt__`` implementation once the SFP/CFP
+        situation is cleared up.
+
+        See also
+        --------
+        armi.reactor.composites.ArmiObject.__lt__
         """
         try:
-            return self.spatialLocator.getRingPos() < other.spatialLocator.getRingPos()
-        except:
+            return composites.ArmiObject.__lt__(self, other)
+        except ValueError:
             return False
 
     def makeUnique(self):
@@ -151,7 +161,8 @@ class Assembly(composites.Composite):
             b.makeUnique()
             b.setName(b.makeName(self.p.assemNum, bi))
 
-    def makeNameFromAssemNum(self, assemNum):
+    @staticmethod
+    def makeNameFromAssemNum(assemNum):
         """
         Set the name of this assembly (and the containing blocks) based on an assemNum.
 
@@ -200,7 +211,16 @@ class Assembly(composites.Composite):
         return int(self.p.assemNum)
 
     def getLocation(self):
-        """Get string label representing this object's location."""
+        """
+        Get string label representing this object's location.
+
+        Notes
+        -----
+        This function (and its friends) were created before the advent of both the
+        grid/spatialLocator system and the ability to represent things like the SFP as
+        siblings of a Core. In future, this will likely be re-implemented in terms of
+        just spatialLocator objects.
+        """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
             return self.LOAD_QUEUE
@@ -212,58 +232,12 @@ class Assembly(composites.Composite):
             self.spatialLocator.getCompleteIndices()[:2]
         )
 
-    def getLocationObject(self):
-        """
-        Return the location of the assembly in the plane using spatial grid indices.
-        """
-        loc = self.LOCATION_CLASS()
-        i, j, k = self.spatialLocator.getCompleteIndices()
-        loc.fromLocator((i, j, None))  # cut off axial index.
-        return loc
-
     def coords(self):
         """
         Return the location of the assembly in the plane using cartesian global coordinates.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
-
-    @property
-    def location(self):
-        """
-        Patch to keep code working while location system is refactored to use spatialLocators.
-
-        Just creates a new location object based on current spatialLocator.
-        """
-        return self.getLocationObject()
-
-    @location.setter
-    def location(self, value):
-        """
-        Set spatialLocator based on a (old-style) location object.
-
-        Patch to keep code working while location system is refactored to use
-        spatialLocators.
-
-        Reactors only have 2-D grid info so we only look at i and j.
-        """
-        i, j = value.indices()
-        if i is None or j is None:
-            self.spatialLocator = self.parent.spatialGrid[0, 0, 0]
-        elif self.parent:
-            try:
-                self.spatialLocator = self.parent.spatialGrid[i, j, 0]
-            except KeyError:
-                # location outside pre-generated locator objects requested. Make it
-                # on the fly.
-                loc = grids.IndexLocation(i, j, 0, self.parent.spatialGrid)
-                self.parent.spatialGrid[i, j, 0] = loc
-                self.spatialLocator = loc
-        else:
-            # no parent, set a gridless location (will get converted to gridded upon
-            # adding to parent)
-            runLog.warning("{} has no grid because no parent. ".format(self))
-            self.spatialLocator = grids.IndexLocation(i, j, 0, None)
 
     def getArea(self):
         """
@@ -1336,62 +1310,12 @@ class Assembly(composites.Composite):
         # return none if there is nothing to return
         return None
 
-    def getDominantMaterial(self, typeSpec=None, blockList=None):
-        """
-        Returns the most common material in the compositions of the blocks.
-
-        If you pass ['clad','duct'], you might get HT9, for example.  This allows
-        generality in reading material properties on groups of blocks.  Dominant is
-        defined by most volume. This version is assembly-level.
-
-        Parameters
-        ----------
-        typeSpec : Flags or list of Flags, optional
-            Specification of the type of components to pull the dominant materials from.
-
-        blockList : list of block objects
-            A list of blocks to look at in this assembly.
-
-        Returns
-        -------
-        samples[maxMat] : Material object
-            The material that has the most volume within this assembly within the given
-            typeSpec and blockList.
-
-        """
-        mats = {}
-        samples = {}
-
-        if not blockList:
-            blockList = self.getBlocks()
-        for b in blockList:
-            bmats, bsamples = b.getDominantMaterial(typeSpec)
-            for matName, blockVol in bmats.items():
-                mats[matName] = mats.get(matName, 0.0) + blockVol
-            samples.update(bsamples)
-
-        # find max volume
-        maxVol = 0.0
-        maxMat = None
-        for mName, vol in mats.items():
-            if vol > maxVol:
-                maxVol = vol
-                maxMat = mName
-        if maxMat:
-            # return a copy of this material. Note that if this material
-            # has properties like Zr-frac, enrichment, etc. then this will
-            # just return one in the batch, not an average.
-            return samples[maxMat]
-
     def getSymmetryFactor(self):
         """Return the symmetry factor of this assembly."""
         return self[0].getSymmetryFactor()
 
 
 class HexAssembly(Assembly):
-
-    LOCATION_CLASS = locations.HexLocation
-
     def getPitch(self):
         """returns hex pitch in cm."""
         pList = []
@@ -1408,7 +1332,8 @@ class HexAssembly(Assembly):
                 b.printContents()
         return numpy.average(pList)
 
-    def convert2DPinValsTo1D(self, vals, imax, jmax):
+    @staticmethod
+    def convert2DPinValsTo1D(vals, imax, jmax):
         """
         This converts a 2-D list of vals as a function of (i,j) = (ring-1,pos-1)
         to a 1-D list of the same vals indexed by n = sum(jmax[0:i]) + j
@@ -1454,8 +1379,6 @@ class RZAssembly(Assembly):
     for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
 
-    LOCATION_CLASS = locations.ThetaRZLocation
-
     def __init__(self, name, assemNum=None):
         Assembly.__init__(self, name, assemNum)
         self.p.RadMesh = 1
@@ -1500,11 +1423,6 @@ class RZAssembly(Assembly):
         """
         return self[0].thetaInner()
 
-    def Rcoords(self):
-        # can likely be upgraded to use
-        # ``self.spatialLocator.getGlobalCoordinates(nativeCoords=True)``
-        return self.location.Rcoords()
-
 
 class ThRZAssembly(RZAssembly):
     """
@@ -1515,9 +1433,7 @@ class ThRZAssembly(RZAssembly):
     Notes
     -----
     This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object """
-
-    LOCATION_CLASS = locations.ThetaRZLocation
+    Object"""
 
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)
@@ -1525,8 +1441,6 @@ class ThRZAssembly(RZAssembly):
 
 
 class CartesianAssembly(Assembly):
-
-    LOCATION_CLASS = locations.CartesianLocation
 
     # Don't ignore things.
     ignoredRegions = []

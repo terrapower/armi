@@ -15,13 +15,19 @@
 """
 Change a reactor from one geometry to another.
 
-Examples may include going from Hex to R-Z or from Third-core to full core.
-This module contains **converters** (which create new reactor objects with different geometry),
-and **changers** (which modify a given reactor in place) in this module.
+Examples may include going from Hex to R-Z or from Third-core to full core.  This module
+contains **converters** (which create new reactor objects with different geometry), and
+**changers** (which modify a given reactor in place) in this module.
+
+Generally, mass is conserved in geometry conversions.
+
+.. warning:: These are mostly designed for hex geometry.
+
 """
 import collections
 import copy
 import math
+import os
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -54,7 +60,7 @@ BLOCK_AXIAL_MESH_SPACING = (
 STR_SPACE = " "
 
 
-class GeometryChanger(object):
+class GeometryChanger:
     """Geometry changer class that updates the geometry (number of assems or blocks per assem) of a given reactor."""
 
     def __init__(self, cs=None, quiet=False):
@@ -142,9 +148,8 @@ class BlockNumberModifier(GeometryChanger):
         """
         refAssem = r.core.refAssem
         fuelI = refAssem.getBlocks().index(refAssem.getFirstBlock(Flags.FUEL))
-        origRefBlocks = len(
-            refAssem
-        )  # store this b/c the ref assem length will change.
+        # store this b/c the ref assem length will change.
+        origRefBlocks = len(refAssem)
 
         for a in r.core.getAssemblies(includeBolAssems=True):
             if len(a) == origRefBlocks:
@@ -154,7 +159,7 @@ class BlockNumberModifier(GeometryChanger):
                     self.setNumberOfBlocks(a)
                 else:
                     # non-fuel. Control?
-                    self.setNumberOfBlocks(a, blockType=a[fuelI].getType())
+                    self.setNumberOfBlocks(a, blockFlags=a[fuelI].p.flags)
             else:
                 # radial shields, etc. go here.
                 pass
@@ -168,7 +173,7 @@ class BlockNumberModifier(GeometryChanger):
         # update bookkeeping.
         r.core.regenAssemblyLists()
 
-    def setNumberOfBlocks(self, assem, blockType=Flags.FUEL):
+    def setNumberOfBlocks(self, assem, blockFlags=Flags.FUEL):
         r"""
         Change the region to have a certain number of blocks with uniform height
 
@@ -179,9 +184,9 @@ class BlockNumberModifier(GeometryChanger):
         assem : Assembly
             The assembly to modify
 
-        blockType : str, optional
-            Type of block to change. Default: Fuel. Allows control
-            assemblies, etc. to modified just like fuel assemblies.
+        blockFlags : Flags, optional
+            Type of block to change. Default: Flags.FUEL. Allows control
+            assemblies, etc. to be modified just like fuel assemblies.
 
         Notes
         -----
@@ -193,9 +198,9 @@ class BlockNumberModifier(GeometryChanger):
         if you're tracking history.
 
         """
-        fuelHeight = assem.getTotalHeight(blockType)
+        fuelHeight = assem.getTotalHeight(blockFlags)
         blockHeight = fuelHeight / self.numToAdd
-        fuelBlocks = set(assem.getBlocks(blockType))
+        fuelBlocks = set(assem.getBlocks(blockFlags))
         newBlockStack = []
         numFuelBlocksAdded = 0
         # make a tracker flag that tells us if we're below or above fuel.
@@ -423,9 +428,24 @@ class HexToRZThetaConverter(GeometryConverter):
 
     Parameters
     ----------
-    converterSettings: dictionary like object
-        Settings that specify how the mesh of the RZTheta reactor should be generated. Controls the number of theta
-        regions, how to group regions, etc.
+    converterSettings: dict
+        Settings that specify how the mesh of the RZTheta reactor should be generated.
+        Controls the number of theta regions, how to group regions, etc.
+
+        uniformThetaMesh
+            bool flag that determines if the theta mesh should be uniform or not
+
+        thetaBins
+            Number of theta bins to create
+
+        radialConversionType
+           * ``Ring Compositions`` -- to convert by composition
+
+        axialConversionType
+            * ``Axial Coordinates`` --  use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialCoordinates`
+            * ``Axial Bins`` -- use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialBins`
+
+
     expandReactor : bool
         If True, the HEX-Z reactor will be expanded to full core geometry prior to converting to the RZT reactor.
         Either way the converted RZTheta core will be full core.
@@ -434,7 +454,11 @@ class HexToRZThetaConverter(GeometryConverter):
         RZT block.
     """
 
-    _GEOMETRY_TYPE = geometry.RZT
+    _GEOMETRY_TYPE = geometry.GeomType.RZT
+    _SYMMETRY_TYPE = geometry.SymmetryType(
+        domainType=geometry.DomainType.FULL_CORE,
+        boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+    )
     _BLOCK_MIXTURE_TYPE_MAP = {
         "mixture control": ["control"],
         "mixture fuel": ["fuel"],
@@ -511,25 +535,27 @@ class HexToRZThetaConverter(GeometryConverter):
 
         Notes
         -----
-        As a part of the RZT mesh converters it is possible to obtain a radial mesh that has repeated ring numbers.
-        For instance, if there are fuel assemblies and control assemblies within the same radial hex ring then it's
-        possible that a radial mesh output from the byRingComposition mesh converter method will look something like:
+        As a part of the RZT mesh converters it is possible to obtain a radial mesh that
+        has repeated ring numbers.  For instance, if there are fuel assemblies and control
+        assemblies within the same radial hex ring then it's possible that a radial mesh
+        output from the byRingComposition mesh converter method will look something like:
 
         self.meshConverter.radialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
 
-        In this instance the hex ring will remain the same for multiple iterations over radial direction when
-        homogenizing the hex core into the RZT geometry. In this case, the converter needs to keep track of the
-        compositions within this ring so that it can separate this repeated ring into multiple RZT rings. Each of the
-        RZT rings should have a single composition (fuel1, fuel2, control, etc.)
+        In this instance the hex ring will remain the same for multiple iterations over
+        radial direction when homogenizing the hex core into the RZT geometry. In this
+        case, the converter needs to keep track of the compositions within this ring so
+        that it can separate this repeated ring into multiple RZT rings. Each of the RZT
+        rings should have a single composition (fuel1, fuel2, control, etc.)
 
         See Also
         --------
         armi.reactor.converters.meshConverters
         """
-        if r.core.geomType != geometry.HEX:
+        if r.core.geomType != geometry.GeomType.HEX:
             raise ValueError(
                 "Cannot use {} to convert {} reactor".format(
-                    self, r.core.geomType.upper()
+                    self, str(r.core.geomType).upper()
                 )
             )
 
@@ -647,7 +673,7 @@ class HexToRZThetaConverter(GeometryConverter):
             core.setOptionsFromCs(self._cs)
         self.convReactor.add(core)
         self.convReactor.core.spatialGrid = grid
-        grid.symmetry = geometry.FULL_CORE
+        grid.symmetry = self._SYMMETRY_TYPE
         grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
@@ -682,10 +708,55 @@ class HexToRZThetaConverter(GeometryConverter):
                 )
             )
 
+    @staticmethod
+    def _getAssembliesInSector(core, theta1, theta2):
+        """
+        Locate assemblies in an angular sector.
+
+        Parameters
+        ----------
+        theta1, theta2 : float
+            The angles (in degrees) in which assemblies shall be drawn.
+
+        Returns
+        -------
+        aList : list
+            List of assemblies in this sector
+        """
+        aList = []
+
+        converter = EdgeAssemblyChanger(quiet=True)
+        converter.addEdgeAssemblies(core)
+        for a in core:
+            x, y, _ = a.spatialLocator.getLocalCoordinates()
+            theta = math.atan2(y, x)
+            if theta < 0.0:
+                theta = math.tau + theta
+
+            theta = math.degrees(theta)
+
+            phi = theta
+            if (
+                theta1 <= phi <= theta2
+                or abs(theta1 - phi) < 0.001
+                or abs(theta2 - phi) < 0.001
+            ):
+                aList.append(a)
+        converter.removeEdgeAssemblies(core.r.core)
+
+        if not aList:
+            raise ValueError(
+                "There are no assemblies in {} between angles of {} and {}".format(
+                    core, theta1, theta2
+                )
+            )
+
+        return aList
+
     def _getAssemsInRadialThetaZone(self, lowerRing, upperRing, lowerTheta, upperTheta):
         """Retrieve list of assemblies in the reactor between (lowerRing, upperRing) and (lowerTheta, upperTheta)."""
-        thetaAssems = self._sourceReactor.core.getAssembliesInSector(
-            math.degrees(lowerTheta), math.degrees(upperTheta)
+        thetaAssems = self._getAssembliesInSector(
+            self._sourceReactor.core, math.degrees(lowerTheta), math.degrees(upperTheta)
         )
         ringAssems = self._getAssembliesInCurrentRadialZone(lowerRing, upperRing)
         if self._radialMeshConversionType == self._MESH_BY_RING_COMP:
@@ -888,22 +959,20 @@ class HexToRZThetaConverter(GeometryConverter):
                     )
                 homBlockVolume += blockVolumeHere
                 homBlockTemperature += b.getAverageTempInC() * blockVolumeHere
-                for nucName in b.getNuclides():
-                    homBlockAtoms[nucName] += (
-                        b.getNumberDensity(nucName) * blockVolumeHere
-                    )
+
+                numDensities = b.getNumberDensities()
+
+                for nucName, nDen in numDensities.items():
+                    homBlockAtoms[nucName] += nDen * blockVolumeHere
                 self.blockMap[homBlock].append(b)
                 self.blockVolFracs[homBlock][b] = blockVolumeHere
         # Notify if blocks with different xs types are being homogenized. May be undesired behavior.
         if len(homBlockXsTypes) > 1:
-            msg = (
-                "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} "
-                "cm and {} cm. ".format(
-                    self.blockMap[homBlock],
-                    self.convReactor.core,
-                    lowerAxialZ,
-                    upperAxialZ,
-                )
+            msg = "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} " "cm and {} cm. ".format(
+                self.blockMap[homBlock],
+                self.convReactor.core,
+                lowerAxialZ,
+                upperAxialZ,
             )
             if self._strictHomogenization:
                 raise ValueError(
@@ -1049,28 +1118,38 @@ class HexToRZThetaConverter(GeometryConverter):
         reactorExpander.convert(self._sourceReactor)
         self._sourceReactor.core.summarizeReactorStats()
 
-    def plotConvertedReactor(self):
+    def plotConvertedReactor(self, fNameBase=None):
         """
         Generate plots for the converted RZT reactor.
 
+        Parameters
+        ----------
+        fNameBase : str, optional
+            A name that will form the basis of the N plots that
+            are generated by this method. Will get split on extension
+            and have numbers added. Should be like ``coreMap.png``.
+
         Notes
         -----
-        XTView can be used to view the RZT reactor but this is useful to examine the conversion of the hex-z reactor
-        to the rzt reactor.
+        XTView can be used to view the RZT reactor but this is useful to examine the
+        conversion of the hex-z reactor to the rzt reactor.
+
+        This makes plots of each individual theta mesh
         """
+
         runLog.info(
             "Generating plot(s) of the converted {} reactor".format(
-                self.convReactor.core.geomType.upper()
+                str(self.convReactor.core.geomType).upper()
             )
         )
+        figs = []
         colConv = matplotlib.colors.ColorConverter()
         colGen = plotting.colorGenerator(5)
         blockColors = {}
         thetaMesh, radialMesh, axialMesh = self._getReactorMeshCoordinates()
         innerTheta = 0.0
         for i, outerTheta in enumerate(thetaMesh):
-            plt.figure(figsize=(12, 12), dpi=300)
-            ax = plt.gca()
+            fig, ax = plt.subplots(figsize=(12, 12))
             innerRadius = 0.0
             for outerRadius in radialMesh:
                 innerAxial = 0.0
@@ -1100,9 +1179,9 @@ class HexToRZThetaConverter(GeometryConverter):
                     ax.add_patch(blockPatch)
                     innerAxial = outerAxial
                 innerRadius = outerRadius
-            plt.title(
-                "{} Core Map of from {} to {} revolutions".format(
-                    self.convReactor.core.geomType.upper(),
+            ax.set_title(
+                "{} Core Map from {} to {:.4f} revolutions".format(
+                    str(self.convReactor.core.geomType).upper(),
                     innerTheta * units.RAD_TO_REV,
                     outerTheta * units.RAD_TO_REV,
                 ),
@@ -1123,18 +1202,17 @@ class HexToRZThetaConverter(GeometryConverter):
                 )
                 handles.append(line)
                 labels.append(line.get_label())
-            plt.xlabel("Radial Mesh (cm)".upper(), labelpad=20)
-            plt.ylabel("Axial Mesh (cm)".upper(), labelpad=20)
-            plt.plot()
-            figName = (
-                "coreMap"
-                + "-{}".format(self.convReactor.core.geomType)
-                + "_{}".format(i)
-                + ".png"
-            )
-            plt.savefig(figName)
-            plt.close()
+            ax.set_xlabel("Radial Mesh (cm)".upper(), labelpad=20)
+            ax.set_ylabel("Axial Mesh (cm)".upper(), labelpad=20)
+            if fNameBase:
+                root, ext = os.path.splitext(fNameBase)
+                fName = root + f"{i}" + ext
+                plt.savefig(fName)
+                plt.close()
+            else:
+                figs.append(fig)
             innerTheta = outerTheta
+        return figs
 
     def _getReactorMeshCoordinates(self):
         thetaMesh, radialMesh, axialMesh = self.convReactor.core.findAllMeshPoints(
@@ -1171,7 +1249,8 @@ class HexToRZThetaConverter(GeometryConverter):
             )
         )
 
-    def _getBlockColor(self, colConverter, colGenerator, blockColors, blockType):
+    @staticmethod
+    def _getBlockColor(colConverter, colGenerator, blockColors, blockType):
         nextColor = None
         if blockType not in blockColors:
             if "fuel" in blockType:
@@ -1201,7 +1280,7 @@ class HexToRZConverter(HexToRZThetaConverter):
     the converterSettings.
     """
 
-    _GEOMETRY_TYPE = geometry.RZ
+    _GEOMETRY_TYPE = geometry.GeomType.RZ
 
 
 class ThirdCoreHexToFullCoreChanger(GeometryChanger):
@@ -1217,7 +1296,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = "third periodic"
+    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
 
     def convert(self, r=None):
         """
@@ -1237,30 +1318,42 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             return r
         elif not (
             r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
-            and r.core.geomType == geometry.HEX
+            and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
-                "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
-                "Geometry received was {} {}".format(r.core.symmetry, r.core.geomType)
+                "ThirdCoreHexToFullCoreChanger requires the input to have third core hex geometry. "
+                "Geometry received was {} {} {}".format(
+                    r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
+                )
             )
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(r.core)
         runLog.info("Expanding to full core geometry")
 
+        # store a copy of the 1/3 geometry grid, so that we can use it to find symmetric
+        # locations, while the core has a full-core grid so that it doesnt yell at us
+        # for adding stuff outside of the first 1/3
+        grid = copy.deepcopy(r.core.spatialGrid)
+
+        # Set the core grid's symmetry early, since the core uses it for error checks
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
+
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
-            otherLocs = r.core.spatialGrid.getSymmetricEquivalents(
-                a.spatialLocator.indices
-            )
+            otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
             for i, j in otherLocs:
                 newAssem = copy.deepcopy(a)
                 newAssem.makeUnique()
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 
-        # set symmetry after expanding, because it isnt actually full core until it's
-        # full core.
-        r.core.symmetry = geometry.FULL_CORE
+        # set domain after expanding, because it isnt actually full core until it's
+        # full core; setting the domain causes the core to clear its caches.
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
     def restorePreviousGeometry(self, cs, reactor):
         """
@@ -1275,7 +1368,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # restore the settings of the core
             cs.unsetTemporarySettings()
 
-            reactor.core.symmetry = self.EXPECTED_INPUT_SYMMETRY
+            reactor.core.symmetry = geometry.SymmetryType.fromAny(
+                self.EXPECTED_INPUT_SYMMETRY
+            )
 
 
 class EdgeAssemblyChanger(GeometryChanger):
@@ -1314,7 +1409,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             return False
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
-            locations.BOUNDARY_0_DEGREES
+            grids.BOUNDARY_0_DEGREES
         )
         assembliesOnUpperBoundary = []
         for a in assembliesOnLowerBoundary:
@@ -1370,13 +1465,11 @@ class EdgeAssemblyChanger(GeometryChanger):
             return
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
-            locations.BOUNDARY_0_DEGREES
+            grids.BOUNDARY_0_DEGREES
         )
         # don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh
         # case that has edge assems
-        edgeAssemblies = core.getAssembliesOnSymmetryLine(
-            locations.BOUNDARY_120_DEGREES
-        )
+        edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
         for a in edgeAssemblies:
             runLog.debug(
                 "Removing edge assembly {} from {} from the reactor without discharging".format(
@@ -1398,7 +1491,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         else:
             runLog.extra("No edge assemblies to remove")
 
-    def scaleParamsRelatedToSymmetry(self, reactor, paramsToScaleSubset=None):
+    @staticmethod
+    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges
 
@@ -1418,8 +1512,8 @@ class EdgeAssemblyChanger(GeometryChanger):
             reactor, paramsToScaleSubset
         )
         symmetricAssems = (
-            reactor.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_0_DEGREES),
-            reactor.core.getAssembliesOnSymmetryLine(locations.BOUNDARY_120_DEGREES),
+            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
+            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
         )
         if not all(symmetricAssems):
             runLog.extra("No edge-assemblies found to scale parameters for.")

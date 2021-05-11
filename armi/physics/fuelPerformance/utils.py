@@ -79,7 +79,7 @@ def applyFuelDisplacement(block, displacementInCm):
 
     The bond mass is not conserved; it is assumed to be pushed up into the plenum
     but the modeling of this is not done yet by this method.
-    
+
     .. warning:: A 0.5% buffer is included to avoid overlaps. This should be analyzed
         in detail as a methodology before using in any particular analysis.
 
@@ -98,4 +98,58 @@ def applyFuelDisplacement(block, displacementInCm):
     fuel.setDimension("od", newHotODInCm, retainLink=True, cold=False)
     # reduce number density of fuel to conserve number of atoms (and mass)
     fuel.changeNDensByFactor(originalHotODInCm ** 2 / newHotODInCm ** 2)
-    block.buildNumberDensityParams()
+
+
+def gasConductivityCorrection(tempInC: float, porosity: float, morphology: int = 2):
+    """
+    Calculate the correction to conductivity for a porous, gas-filled solid
+
+    Parameters
+    ----------
+    tempInC
+        temperature in celcius
+    porosity
+        fraction of open/total volume
+    morphology, optional
+        correlation to use regarding pore morphology (default 2 is irregular
+        porosity for conservatism)
+
+    Returns
+    -------
+    chi : float
+        correction to conductivity due to porosity (should be multiplied)
+
+    Notes
+    -----
+    Morphology is treated different by different models:
+
+    0, no porosity correction
+    1, bauer equation, spherical porosity
+    2, bauer equation, irregular porosity
+    3, bauer equation, mixed morphology, above 660, spherical. Below 660, irregular
+    4, maxwell-eucken equation, beta=1.5
+
+    Source1 : In-Pile Measurement of the Thermal Conductivity of Irradiated Metallic Fuel, T.H. Bauer J.W. Holland.
+              Nuclear Technology, Vol. 110, 1995. Pages 407-421
+    Source2 : The Porosity Dependence of the Thermal Conductivity for Nuclear Fuels, G. Ondracek B. Schulz.
+              Journal of Nuclear Materials, Vol. 46, 1973. Pages 253-258
+    """
+    if morphology == 0:
+        chi = 1.0
+    elif morphology == 1:
+        epsilon = 1.0
+        chi = (1.0 - porosity) ** ((3.0 / 2.0) * epsilon)
+    elif morphology == 2:
+        epsilon = 1.72
+        chi = (1.0 - porosity) ** ((3.0 / 2.0) * epsilon)
+    elif morphology == 3:
+        epsilon = 1.0
+        if tempInC < 660:
+            epsilon = 1.72
+        else:
+            epsilon = 1.00
+        chi = (1.0 - porosity) ** ((3.0 / 2.0) * epsilon)
+    elif morphology == 4:
+        chi = (1.0 - porosity) / (1.0 + 1.5 * porosity)
+
+    return chi

@@ -55,6 +55,12 @@ The file structure is expectation is:
             #    hotChannelFactors: TWRPclad
 
 
+Examples
+--------
+>>> design = blueprints.Blueprints.load(self.yamlString)
+>>> print(design.gridDesigns)
+
+
 Notes
 -----
 The blueprints system was built to enable round trip translations between
@@ -86,6 +92,8 @@ from armi.nucDirectory import elements
 from armi.scripts import migration
 from armi.utils import textProcessors
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
+from armi.reactor import assemblies
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -215,20 +223,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self.__class__.__name__, len(self.assemDesigns), len(self.blockDesigns)
         )
 
-    def constructAssem(self, geomType, cs, name=None, specifier=None):
+    def constructAssem(self, cs, name=None, specifier=None):
         """
         Construct a new assembly instance from the assembly designs in this Blueprints object.
 
         Parameters
         ----------
-        geomType : str
-            string indicating the geometry type. This is used to select the correct
-            Assembly and Block subclasses. ``'hex'`` should be used to create hex
-            assemblies. This input is derived based on the Geometry object, though it
-            would be nice to instead infer it from block components, and then possibly
-            fail if there is mismatch. Though, you can fit a round peg in a square hole
-            so long as D <= s.
-
         cs : CaseSettings object
             Used to apply various modeling options when constructing an assembly.
 
@@ -458,10 +458,10 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 continue
 
             assemblyArea = a.getArea()
-            if abs(references[1] - assemblyArea) > 1e-9 and not hasattr(
-                a.location, "ThRZmesh"
-            ):
-                # if the location has a mesh then the assemblies can have irregular areas
+            if isinstance(a, assemblies.RZAssembly):
+                # R-Z assemblies by definition have different areas, so skip the check
+                continue
+            if abs(references[1] - assemblyArea) > 1e-9:
                 runLog.error("REFERENCE COMPARISON ASSEMBLY:")
                 references[0][0].printContents()
                 runLog.error("CURRENT COMPARISON ASSEMBLY:")
@@ -540,7 +540,7 @@ def migrate(bp: Blueprints, cs):
     if "core" in [rd.name for rd in bp.gridDesigns]:
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
-    geom = geometry.SystemLayoutInput()
+    geom = systemLayoutInput.SystemLayoutInput()
     geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs["geomFile"]))
     gridDesigns = geom.toGridBlueprints("core")
     for design in gridDesigns:
@@ -554,7 +554,7 @@ def migrate(bp: Blueprints, cs):
         )
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
 
-    if geom.geomType in (geometry.RZT, geometry.RZ):
+    if geom.geomType in (geometry.GeomType.RZT, geometry.GeomType.RZ):
         aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
         radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
 

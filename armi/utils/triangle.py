@@ -59,22 +59,22 @@ def getTriangleArea(x1, y1, x2, y2, x3, y3):
 def getTriangleCentroid(x1, y1, x2, y2, x3, y3):
     """
     Return the x and y coordinates of a triangle's centroid.
-    
+
     Parameters
     ----------
     x1 : float
         x coordindate of first point defining a triangle
     y1 : float
-        y coordindate of first point defining a triangle            
+        y coordindate of first point defining a triangle
     x2 : float
         x coordindate of second point defining a triangle
     y2 : float
-        y coordindate of second point defining a triangle          
+        y coordindate of second point defining a triangle
     x3 : float
         x coordindate of third point defining a triangle
     y3 : float
-        y coordindate of third point defining a triangle 
-    
+        y coordindate of third point defining a triangle
+
     Returns
     -------
     x : float
@@ -92,18 +92,18 @@ def getTriangleCentroid(x1, y1, x2, y2, x3, y3):
 
 def checkIfPointIsInTriangle(x1, y1, x2, y2, x3, y3, x, y):
     """
-    Test if a point defined by x,y coordinates is within a triangle defined by verticies with x,y coordinates. 
-    
+    Test if a point defined by x,y coordinates is within a triangle defined by verticies with x,y coordinates.
+
     Parameters
     ----------
     x1 : float
         x coordindate of first point of the bounding triangle
     y1 : float
-        y coordindate of first point of the bounding triangle           
+        y coordindate of first point of the bounding triangle
     x2 : float
         x coordindate of second point of the bounding triangle
     y2 : float
-        y coordindate of second point of the bounding triangle        
+        y coordindate of second point of the bounding triangle
     x3 : float
         x coordindate of third point of the bounding triangle
     y3 : float
@@ -112,7 +112,7 @@ def checkIfPointIsInTriangle(x1, y1, x2, y2, x3, y3, x, y):
         x coordinate of point being tested
     y : float
         y coordinate of point being tested
-    
+
     Notes
     -----
     This method uses the barycentric method.

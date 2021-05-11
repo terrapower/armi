@@ -32,6 +32,7 @@ import math
 
 import numpy
 
+from armi import runLog
 from armi.reactor.components.component import *  # pylint: disable=wildcard-import
 from armi.reactor.components.basicShapes import *  # pylint: disable=wildcard-import
 from armi.reactor.components.complexShapes import *  # pylint: disable=wildcard-import
@@ -66,7 +67,16 @@ def factory(shape, bcomps, kwargs):
 
     _removeDimensionNameSpaces(kwargs)
 
-    return class_(components=bcomps, **kwargs)
+    try:
+        return class_(components=bcomps, **kwargs)
+    except TypeError:
+        # TypeError raised when kwarg is missing. We add extra information
+        # to the error to indicate which component needs updating.
+        runLog.error(
+            f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}."
+            " Check input."
+        )
+        raise
 
 
 def _removeDimensionNameSpaces(attrs):
@@ -81,17 +91,17 @@ def _removeDimensionNameSpaces(attrs):
 
 
 class NullComponent(Component):
-    r"""returns zero for all dimensions. is none. """
+    r"""returns zero for all dimensions. is none."""
 
     def __cmp__(self, other):
-        r"""be smaller than everything. """
+        r"""be smaller than everything."""
         return -1
 
     def __lt__(self, other):
         return True
 
     def __bool__(self):
-        r"""handles truth testing. """
+        r"""handles truth testing."""
         return False
 
     __nonzero__ = __bool__  # Python2 compatibility
@@ -161,16 +171,29 @@ class UnshapedComponent(Component):
         """
         return math.sqrt(self.p.area / math.pi)
 
+    @staticmethod
+    def fromComponent(otherComponent):
+        """
+        Build a new UnshapedComponent that has area equal to that of another component.
+
+        This can be used to "freeze" a DerivedShape, among other things.
+        """
+        newC = UnshapedComponent(
+            name=otherComponent.name,
+            material=otherComponent.material,
+            Tinput=otherComponent.inputTemperatureInC,
+            Thot=otherComponent.temperatureInC,
+            area=otherComponent.getComponentArea(),
+        )
+
+        return newC
+
 
 class UnshapedVolumetricComponent(UnshapedComponent):
     """
     A component with undefined dimensions.
 
     Useful for situations where you just want to enter the volume directly.
-
-    See Also
-    --------
-    armi.reactor.batch.Batch
     """
 
     is3D = True
@@ -208,8 +231,8 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         """Get the volume of the component in cm^3."""
         return self.getDimension("userDefinedVolume")
 
-    def setVolume(self, volume):
-        self.setDimension("userDefinedVolume", volume)
+    def setVolume(self, val):
+        self.setDimension("userDefinedVolume", val)
         self.clearCache()
 
 
@@ -288,7 +311,60 @@ class DerivedShape(UnshapedComponent):
 
     def computeVolume(self):
         """Cannot compute volume until it is derived."""
-        return self.parent._deriveUndefinedVolume()  # pylint: disable=protected-access
+        return self._deriveVolumeAndArea()
+
+    def _deriveVolumeAndArea(self):
+        """
+        Derive the volume and area of ``DerivedShape``s.
+
+        Notes
+        -----
+        If a parent exists, this will iterate over it and then determine
+        both the volume and area based on its context within the scope
+        of the parent object by considering the volumes and areas of
+        the surrounding components.
+        """
+
+        if self.parent is None:
+            raise ValueError(
+                f"Cannot compute volume/area of {self} without a parent object."
+            )
+
+        # Determine the volume/areas of the non-derived shape components
+        # within the parent.
+        siblingArea = 0.0
+        siblingVolume = 0.0
+        for sibling in self.parent.getChildren():
+            if sibling is self:
+                continue
+            elif not self and isinstance(sibling, DerivedShape):
+                raise ValueError(
+                    f"More than one ``DerivedShape`` component in {self.parent} is not allowed."
+                )
+
+            siblingArea += sibling.getArea()
+            siblingVolume += sibling.getVolume()
+
+        remainingArea = self.parent.getMaxArea() - siblingArea
+        remainingVolume = self.parent.getMaxVolume() - siblingVolume
+
+        # Check for negative area
+        if remainingArea < 0:
+            msg = (
+                f"The component areas in {self.parent} exceed the maximum "
+                f"allowable area based on the geometry. Check that the "
+                f"geometry is defined correctly.\n"
+                f"Maximum allowable area: {self.parent.getMaxArea()} cm^2\n"
+                f"Area of all non-derived shape components: {siblingArea} cm^2\n"
+            )
+            runLog.error(msg)
+            raise ValueError(
+                f"Negative area/volume errors occurred for {self.parent}. "
+                "Check log for errors."
+            )
+
+        self.p.area = remainingArea
+        return remainingVolume
 
     def getVolume(self):
         """

@@ -62,10 +62,12 @@ import io
 import itertools
 import os
 import pathlib
+from platform import uname
 import re
 import sys
 import time
 import shutil
+import subprocess
 from typing import (
     Optional,
     Tuple,
@@ -82,6 +84,7 @@ import numpy
 import h5py
 
 import armi
+from armi import context
 from armi import interfaces
 from armi import runLog
 from armi import settings
@@ -97,9 +100,9 @@ from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories, LocationHistories
 from armi.bookkeeping.db import database
-from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
-
+from armi.nucDirectory import nuclideBases
 from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
@@ -234,7 +237,7 @@ class DatabaseInterface(interfaces.Interface):
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. """
+        """In case anything changed since last cycle (e.g. rxSwing), update DB."""
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
@@ -245,7 +248,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.writeToDB(self.r)
 
     def interactEOL(self):
-        """DB's should be closed at run's end. """
+        """DB's should be closed at run's end."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
@@ -509,11 +512,11 @@ class Database3(database.Database):
             self._versionMinor = None
 
     @property
-    def version(self):
+    def version(self) -> str:
         return self._version
 
     @version.setter
-    def version(self, value):
+    def version(self, value: str):
         self._version = value
         self._versionMajor, self._versionMinor = (int(v) for v in value.split("."))
 
@@ -547,7 +550,7 @@ class Database3(database.Database):
 
         if self._permission == "w":
             # assume fast path!
-            filePath = os.path.join(armi.FAST_PATH, filePath)
+            filePath = os.path.join(context.getFastPath(), filePath)
             self._fullPath = os.path.abspath(filePath)
 
         else:
@@ -566,6 +569,59 @@ class Database3(database.Database):
         self.h5db.attrs["armiLocation"] = os.path.dirname(armi.ROOT)
         self.h5db.attrs["startTime"] = armi.START_TIME
         self.h5db.attrs["machines"] = numpy.array(armi.MPI_NODENAMES).astype("S")
+        # store platform data
+        platform_data = uname()
+        self.h5db.attrs["platform"] = platform_data.system
+        self.h5db.attrs["hostname"] = platform_data.node
+        self.h5db.attrs["platformRelease"] = platform_data.release
+        self.h5db.attrs["platformVersion"] = platform_data.version
+        self.h5db.attrs["platformArch"] = platform_data.processor
+        # store app and plugin data
+        app = armi.getApp()
+        self.h5db.attrs["appName"] = app.name
+        plugins = app.pluginManager.list_name_plugin()
+        ps = [
+            (os.path.abspath(sys.modules[p[1].__module__].__file__), p[1].__name__)
+            for p in plugins
+        ]
+        ps = numpy.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
+        self.h5db.attrs["pluginPaths"] = ps
+        # store the commit hash of the local repo
+        self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
+
+    @staticmethod
+    def grabLocalCommitHash():
+        """
+        Try to determine the local Git commit.
+
+        We have to be sure to handle the errors where the code is run on a system that
+        doesn't have Git installed. Or if the code is simply not run from inside a repo.
+
+        Returns
+        -------
+        str
+            The commit hash if it exists, otherwise "unknown".
+        """
+        UNKNOWN = "unknown"
+        if not shutil.which("git"):
+            # no git available. cannot check git info
+            return UNKNOWN
+        repo_exists = (
+            subprocess.run(
+                "git rev-parse --git-dir".split(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
+        )
+        if repo_exists:
+            try:
+                commit_hash = subprocess.check_output(["git", "describe"])
+                return commit_hash.decode("utf-8").strip()
+            except:
+                return UNKNOWN
+        else:
+            return UNKNOWN
 
     def close(self, completedSuccessfully=False):
         """
@@ -671,13 +727,31 @@ class Database3(database.Database):
 
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
-        cs.loadFromString(self.h5db["inputs/settings"][()])
+        try:
+            cs.loadFromString(self.h5db["inputs/settings"].asstr()[()])
+        except KeyError:
+            # not all paths to writing a database require inputs to be written to the
+            # database. Technically, settings do affect some of the behavior of database
+            # reading, so not having the settings that made the reactor that went into
+            # the database is not ideal. However, this isn't the right place to crash
+            # into it. Ideally, there would be not way to not have the settings in the
+            # database (force writing in writeToDB), or to make reading invariant to
+            # settings.
+            pass
+
         return cs
 
     def loadBlueprints(self):
         from armi.reactor import blueprints
 
-        bpString = self.h5db["inputs/blueprints"][()]
+        bpString = None
+
+        try:
+            bpString = self.h5db["inputs/blueprints"].asstr()[()]
+        except KeyError:
+            # not all reactors need to be created from blueprints, so they may not exist
+            pass
+
         if not bpString:
             # looks like no blueprints contents
             return None
@@ -689,8 +763,8 @@ class Database3(database.Database):
         return bp
 
     def loadGeometry(self):
-        geom = geometry.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"][()]))
+        geom = systemLayoutInput.SystemLayoutInput()
+        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"].asstr()[()]))
         return geom
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
@@ -733,14 +807,14 @@ class Database3(database.Database):
                 bpString = ""
 
         self.h5db["inputs/settings"] = csString
-        self.h5db["inputs/geomFile"] = geomString
+        self.h5db["inputs/geomFile"] = geomString or ""
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
         return (
-            self.h5db["inputs/settings"][()],
-            self.h5db["inputs/geomFile"][()],
-            self.h5db["inputs/blueprints"][()],
+            self.h5db["inputs/settings"].asstr()[()],
+            self.h5db["inputs/geomFile"].asstr()[()],
+            self.h5db["inputs/blueprints"].asstr()[()],
         )
 
     def mergeHistory(self, inputDB, startCycle, startNode):
@@ -820,6 +894,15 @@ class Database3(database.Database):
         else:
             for step in timeSteps:
                 yield self.h5db[getH5GroupName(*step)]
+
+    def getLayout(self, cycle, node):
+        """
+        Return a Layout object representing the requested cycle and time node.
+        """
+        version = (self._versionMajor, self._versionMinor)
+        timeGroupName = getH5GroupName(cycle, node)
+
+        return Layout(version, self.h5db[timeGroupName])
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
         """
@@ -980,7 +1063,6 @@ class Database3(database.Database):
                     val = getattr(design, pName)
                     if val is not None:
                         comp.p[pName] = val
-        return
 
     def _compose(self, comps, cs, parent=None):
         """
@@ -1147,6 +1229,22 @@ class Database3(database.Database):
                     "{}".format(paramDef.name, data)
                 )
                 raise
+        if isinstance(c, Block):
+            self._addHomogenizedNumberDensityParams(comps, g)
+
+    @staticmethod
+    def _addHomogenizedNumberDensityParams(blocks, h5group):
+        """
+        Create on-the-fly block homog. number density params for XTVIEW viewing.
+
+        See also
+        --------
+        collectBlockNumberDensities
+        """
+        nDens = collectBlockNumberDensities(blocks)
+
+        for nucName, numDens in nDens.items():
+            h5group.create_dataset(nucName, data=numDens, compression="gzip")
 
     @staticmethod
     def _readParams(h5group, compTypeName, comps):
@@ -1163,7 +1261,15 @@ class Database3(database.Database):
             while paramName in renames:
                 paramName = renames[paramName]
 
-            pDef = pDefs[paramName]
+            try:
+                pDef = pDefs[paramName]
+            except KeyError:
+                if re.match(r"^n[A-Z][a-z]?\d*", paramName):
+                    # This is a temporary viz param made by _addHomogenizedNumberDensities
+                    # ignore it safely
+                    continue
+                else:
+                    raise
 
             data = dataSet[:]
             attrs = _resolveAttrs(dataSet.attrs, h5group)
@@ -1735,10 +1841,12 @@ def _unpackLocationsV2(locationTypes, locData):
         elif lt.startswith(LOC_MULTI):
             # extract number of sublocations from e.g. "M:345" string.
             numSubLocs = int(lt.split(":")[1])
+            multiLocs = []
             for _ in range(numSubLocs):
                 subLoc = next(locsIter)
                 # All multiindexes sublocs are index locs
-                unpackedLocs.append(tuple(int(i) for i in subLoc))
+                multiLocs.append(tuple(int(i) for i in subLoc))
+            unpackedLocs.append(multiLocs)
         else:
             raise ValueError(f"Read unknown location type {lt}. Invalid DB.")
 
@@ -1789,6 +1897,14 @@ class Layout:
         self.indexInData: List[int] = []
         self.numChildren: List[int] = []
         self.locationType: List[str] = []
+        # There is a minor asymmetry here in that before writing to the DB, this is
+        # truly a flat list of tuples. However when reading, this may contain lists of
+        # tuples, which represent MI locations. This comes from the fact that we map the
+        # tuples to Location objects in Database3._compose, but map from Locations to
+        # tuples in Layout._createLayout. Ideally we would handle both directions in the
+        # same place so this can be less surprising. Resolving this would require
+        # changing the interface of the various pack/unpack functions, which have
+        # multiple versions, so the update would need to be done with care.
         self.location: List[Tuple[int, int, int]] = []
         self.gridIndex: List[int] = []
         self.temperatures: List[float] = []
@@ -1923,10 +2039,14 @@ class Layout:
                 unitStepLimits = thisGroup["unitStepLimits"][:]
                 offset = thisGroup["offset"][:] if thisGroup.attrs["offset"] else None
                 geomType = (
-                    thisGroup["geomType"][()] if "geomType" in thisGroup else None
+                    thisGroup["geomType"].asstr()[()]
+                    if "geomType" in thisGroup
+                    else None
                 )
                 symmetry = (
-                    thisGroup["symmetry"][()] if "symmetry" in thisGroup else None
+                    thisGroup["symmetry"].asstr()[()]
+                    if "symmetry" in thisGroup
+                    else None
                 )
 
                 self.gridParams.append(
@@ -2415,7 +2535,7 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
         for i in attrs["noneLocations"]:
             unpackedJaggedData[i] = None
 
-        return numpy.array(unpackedJaggedData)
+        return numpy.array(unpackedJaggedData, dtype=object)
     if attrs.get("dict", False):
         keys = numpy.char.decode(attrs["keys"])
         unpackedData = []
@@ -2589,12 +2709,11 @@ def replaceNonesWithNonsense(
     try:
         data = data.astype(realType)
     except:
-        runLog.error(
+        raise ValueError(
             "Could not coerce data for {} to {}, data:\n{}".format(
                 paramName, realType, data
             )
         )
-        raise
 
     if data.dtype.kind == "O":
         raise TypeError(
@@ -2675,3 +2794,34 @@ def _resolveAttrs(attrs, group):
             runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
             raise
     return resolved
+
+
+def collectBlockNumberDensities(blocks) -> Dict[str, numpy.ndarray]:
+    """
+    Collect block-by-block homogenized number densities for each nuclide.
+
+    Long ago, composition was stored on block params. No longer; they are on the
+    component numberDensity params. These block-level params, are still useful to see
+    compositions in some visualization tools. Rather than keep them on the reactor
+    model, we dynamically compute them here and slap them in the database. These are
+    ignored upon reading and will not affect the results.
+
+    Remove this once a better viz tool can view composition distributions. Also remove
+    the try/except in ``_readParams``
+    """
+    nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
+    nucBases = [nuclideBases.byName[nn] for nn in nucNames]
+    # it's faster to loop over blocks first and get all number densities from each
+    # than it is to get one nuclide at a time from each block because of area fraction
+    # calculations. So we use some RAM here instead.
+    nucDensityMatrix = []
+    for block in blocks:
+        nucDensityMatrix.append(block.getNuclideNumberDensities(nucNames))
+    nucDensityMatrix = numpy.array(nucDensityMatrix)
+
+    dataDict = dict()
+    for ni, nb in enumerate(nucBases):
+        # the nth column is a vector of nuclide densities for this nuclide across all blocks
+        dataDict[nb.getDatabaseName()] = nucDensityMatrix[:, ni]
+
+    return dataDict

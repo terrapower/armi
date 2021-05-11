@@ -18,7 +18,7 @@ import unittest
 from armi.utils import properties
 
 
-class ImmutableClass(object):
+class ImmutableClass:
     myNum = properties.createImmutableProperty(
         "myNum", "You must invoke the initialize() method", "My random number"
     )

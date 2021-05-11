@@ -134,7 +134,7 @@ class DirectoryChanger:
     def _transferFiles(initialPath, destinationPath, fileList):
         """
         Transfer files into or out of the directory.
-        
+
         Parameters
         ----------
         initialPath : str
@@ -142,7 +142,7 @@ class DirectoryChanger:
         destinationPath: str
             Path to the folder to move file to.
         fileList : list of str or list of tuple
-            File names to move from initial to destination. If this is a 
+            File names to move from initial to destination. If this is a
             simple list of strings, the files will be transferred. Alternatively
             tuples of (initialName, finalName) are allowed if you want the file
             renamed during transit. In the non-tuple option, globs/wildcards
@@ -187,15 +187,13 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     temporary directory will be deleted.
     """
 
-    _home = armi.context.FAST_PATH
-
     def __init__(
         self, root=None, filesToMove=None, filesToRetrieve=None, dumpOnException=True
     ):
         DirectoryChanger.__init__(
             self, root, filesToMove, filesToRetrieve, dumpOnException
         )
-        root = root or TemporaryDirectoryChanger._home
+        root = root or armi.context.getFastPath()
         if not os.path.exists(root):
             os.makedirs(root)
         self.initial = os.path.abspath(os.getcwd())

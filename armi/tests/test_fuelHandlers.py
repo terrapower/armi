@@ -18,11 +18,14 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+import collections
 import copy
 import os
 import unittest
 
 import armi.physics.fuelCycle.fuelHandlers as fuelHandlers
+from armi.physics.fuelCycle import settings
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
@@ -89,9 +92,9 @@ class TestFuelHandler(ArmiTestHelper):
         self.block = blocks.HexBlock("TestHexBlock", self.o.cs)
         self.block.setType("fuel")
         self.block.setHeight(10.0)
-        self.block.addComponent(fuel)
-        self.block.addComponent(clad)
-        self.block.addComponent(interSodium)
+        self.block.add(fuel)
+        self.block.add(clad)
+        self.block.add(interSodium)
 
         # generate an assembly
         self.assembly = assemblies.HexAssembly("TestAssemblyType")
@@ -119,7 +122,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.directoryChanger.close()
 
     def test_FindHighBu(self):
-        a = self.r.core.whichAssemblyIsIn(5, 4)
+        loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
+        a = self.r.core.childrenByLocator[loc]
         # set burnup way over 1.0, which is otherwise the highest bu in the core
         a[0].p.percentBu = 50
 
@@ -133,9 +137,13 @@ class TestFuelHandler(ArmiTestHelper):
         """Tests the width capability of findAssembly."""
 
         fh = fuelHandlers.FuelHandler(self.o)
+        assemsByRing = collections.defaultdict(list)
+        for a in self.r.core.getAssemblies():
+            assemsByRing[a.spatialLocator.getRingPos()[0]].append(a)
+
         # instantiate reactor power. more power in more outer rings
         for ring, power in zip(range(1, 8), range(10, 80, 10)):
-            aList = self.r.core.whichAssemblyIsIn(ring)
+            aList = assemsByRing[ring]
             for a in aList:
                 for b in a:
                     b.p.power = power
@@ -424,7 +432,7 @@ class TestFuelHandler(ArmiTestHelper):
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
         self.assertEqual(len(moves), 3)
         firstMove = moves[1][0]
-        self.assertEqual(firstMove[0], "A2001")
+        self.assertEqual(firstMove[0], "002-001")
         self.assertEqual(firstMove[1], "SFP")
         self.assertEqual(len(firstMove[2]), numblocks)
         self.assertEqual(firstMove[3], "igniter fuel")
@@ -433,8 +441,8 @@ class TestFuelHandler(ArmiTestHelper):
         # check the move that came back out of the SFP
         sfpMove = moves[2][-2]
         self.assertEqual(sfpMove[0], "SFP")
-        self.assertEqual(sfpMove[1], "A5003")
-        self.assertEqual(sfpMove[4], "A0089")  # name of assem in SFP
+        self.assertEqual(sfpMove[1], "005-003")
+        self.assertEqual(sfpMove[4], "A0085")  # name of assem in SFP
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -447,7 +455,7 @@ class TestFuelHandler(ArmiTestHelper):
             loadNames,
             alreadyDone,
         ) = fh.processMoveList(moves[2])
-        self.assertIn("A0089", loadNames)
+        self.assertIn("A0085", loadNames)
         self.assertIn(None, loadNames)
         self.assertNotIn("SFP", loadChains)
         self.assertNotIn("LoadQueue", loadChains)
@@ -504,7 +512,7 @@ class TestFuelHandler(ArmiTestHelper):
     def test_buildEqRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
         locSchedule = fh.buildEqRingSchedule([2, 1])
-        self.assertEqual(locSchedule, ["A2001", "A2002", "A1001"])
+        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
 
 class TestFuelPlugin(unittest.TestCase):
@@ -512,7 +520,7 @@ class TestFuelPlugin(unittest.TestCase):
 
     def test_settingsAreDiscovered(self):
         cs = caseSettings.Settings()
-        nm = fuelCycle.CONF_CIRCULAR_RING_ORDER
+        nm = settings.CONF_CIRCULAR_RING_ORDER
         self.assertEqual(cs[nm], "angle")
 
         setting = cs.settings[nm]

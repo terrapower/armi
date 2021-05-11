@@ -42,16 +42,28 @@ http://packages.python.org/Pympler/index.html
 https://pythonhosted.org/psutil/
 https://docs.python.org/2/library/gc.html#gc.garbage
 """
-import logging
-import psutil
-import tabulate
 import gc
+import logging
+import tabulate
+from typing import Optional
 
 import armi
 from armi import interfaces
 from armi import mpiActions
 from armi import runLog
 from armi.reactor.composites import ArmiObject
+
+try:
+    import psutil
+
+    # psutil is an optional requirement, since it doesnt support MacOS very well
+    _havePsutil = True
+except ImportError:
+    runLog.warning(
+        "Failed to import psutil; MemoryProfiler will not provide meaningful data."
+    )
+    _havePsutil = False
+
 
 # disable the import warnings (Issue #88)
 logging.disable(logging.CRITICAL)
@@ -255,7 +267,8 @@ class MemoryProfiler(interfaces.Interface):
         if reportSize:
             operator.reattach(reactor, cs)
 
-    def _getSpecificReferrers(self, klass, ancestorKlass):
+    @staticmethod
+    def _getSpecificReferrers(klass, ancestorKlass):
         """Try to determine some useful information about the structure of ArmiObjects and potential
         orphans.
 
@@ -316,7 +329,8 @@ class MemoryProfiler(interfaces.Interface):
         for item in info:
             runLog.important("{}".format(item))
 
-    def _getReferrers(self, obj):
+    @staticmethod
+    def _getReferrers(obj):
         """
         Print referrers in a useful way (as opposed to gigabytes of text
         """
@@ -324,7 +338,8 @@ class MemoryProfiler(interfaces.Interface):
         for ref in gc.get_referrers(obj)[:100]:
             print("ref for {}: {}".format(obj, repr(ref)[:100]))
 
-    def _discussSkipped(self, skipped, errors):
+    @staticmethod
+    def _discussSkipped(skipped, errors):
         runLog.warning("Skipped {} objects".format(skipped))
         runLog.warning(
             "errored out on {0} objects:\n {1}".format(
@@ -333,7 +348,7 @@ class MemoryProfiler(interfaces.Interface):
         )
 
 
-class KlassCounter(object):
+class KlassCounter:
     def __init__(self, reportSize):
         self.counters = dict()
         self.reportSize = reportSize
@@ -375,7 +390,7 @@ class KlassCounter(object):
                     self.countObjects(v)
 
 
-class InstanceCounter(object):
+class InstanceCounter:
     def __init__(self, classType, reportSize):
         self.classType = classType
         self.count = 0
@@ -423,7 +438,7 @@ def _getModName(obj):
         return None
 
 
-class ObjectSizeBreakdown(object):
+class ObjectSizeBreakdown:
     def __init__(
         self,
         name,
@@ -499,15 +514,22 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
         mem.displayMemoryUsage(self.timeDescription)
 
 
-class SystemAndProcessMemoryUsage(object):
+class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = armi.MPI_NODENAME
-        self.percentNodeRamUsed = psutil.virtual_memory().percent
-        self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
+        # no psutil, no memory diagnostics. TODO: Ideally, we could just cut
+        # MemoryProfiler out entirely, but it is referred to directly by the standard
+        # operator and reports, so easier said than done.
+        self.percentNodeRamUsed: Optional[float] = None
+        self.processMemoryInMB: Optional[float] = None
+        if _havePsutil:
+            self.percentNodeRamUsed = psutil.virtual_memory().percent
+            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
 
     def __isub__(self, other):
-        self.percentNodeRamUsed -= other.percentNodeRamUsed
-        self.processMemoryInMB -= other.processMemoryInMB
+        if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
+            self.percentNodeRamUsed -= other.percentNodeRamUsed
+            self.processMemoryInMB -= other.processMemoryInMB
         return self
 
 
@@ -515,13 +537,14 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
     def __init__(self):
         mpiActions.MpiAction.__init__(self)
         self.usages = []
-        self.percentNodeRamUsed = 0.0
+        self.percentNodeRamUsed: Optional[float] = None
 
     def __iter__(self):
         return iter(self.usages)
 
     def __isub__(self, other):
-        self.percentNodeRamUsed -= other.percentNodeRamUsed
+        if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
+            self.percentNodeRamUsed -= other.percentNodeRamUsed
         for mine, theirs in zip(self, other):
             mine -= theirs
         return self
@@ -530,13 +553,13 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
     def minProcessMemoryInMB(self):
         if len(self.usages) == 0:
             return 0.0
-        return min(mu.processMemoryInMB for mu in self)
+        return min(mu.processMemoryInMB or 0.0 for mu in self)
 
     @property
     def maxProcessMemoryInMB(self):
         if len(self.usages) == 0:
             return 0.0
-        return max(mu.processMemoryInMB for mu in self)
+        return max(mu.processMemoryInMB or 0.0 for mu in self)
 
     def invokeHook(self):
         spmu = SystemAndProcessMemoryUsage()
@@ -548,10 +571,10 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
 
         The printout looks something like:
 
-            SYS_MEM EDWARD102.hpcc.tp.int     14.4% RAM. Proc mem (MB):   491   472   471   471   471   470
-            SYS_MEM EDWARD103.hpcc.tp.int     13.9% RAM. Proc mem (MB):   474   473   472   471   460   461
-            SYS_MEM EDWARD104.hpcc.tp.int     ...
-            SYS_MEM EDWARD107.hpcc.tp.int     ...
+            SYS_MEM HOSTNAME     14.4% RAM. Proc mem (MB):   491   472   471   471   471   470
+            SYS_MEM HOSTNAME     13.9% RAM. Proc mem (MB):   474   473   472   471   460   461
+            SYS_MEM HOSTNAME     ...
+            SYS_MEM HOSTNAME     ...
 
         """
         printedNodes = set()
@@ -563,7 +586,7 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                 continue
             printedNodes.add(memoryUsage.nodeName)
             nodeUsages = [mu for mu in self if mu.nodeName == memoryUsage.nodeName]
-            sysMemAvg = sum(mu.percentNodeRamUsed for mu in nodeUsages) / len(
+            sysMemAvg = sum(mu.percentNodeRamUsed or 0.0 for mu in nodeUsages) / len(
                 nodeUsages
             )
 
@@ -573,7 +596,8 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                     "{:5.1f}%".format(sysMemAvg),
                     "{}".format(
                         " ".join(
-                            "{:5.0f}".format(mu.processMemoryInMB) for mu in nodeUsages
+                            "{:5.0f}".format(mu.processMemoryInMB or 0.0)
+                            for mu in nodeUsages
                         )
                     ),
                 )

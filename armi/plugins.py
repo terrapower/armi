@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+r"""
 Plugins allow various built-in or external functionality to be brought into the ARMI ecosystem.
 
 This module defines the hooks that may be defined within plugins. Plugins are ultimately
@@ -89,6 +89,36 @@ rather than an instance of that class. Also notice that all of the hooks are
 and only have access to the state passed into them to perform their function. This is a
 deliberate design choice to keep the plugin system simple and to preclude a large class
 of potential bugs. At some point it may make sense to revisit this.
+
+
+Other customization points
+--------------------------
+While the Plugin API is the main place for ARMI framework customization, there are
+several other areas where ARMI may be extended or customized. These typically pre-dated
+the Plugin-based architecture, and as the need arise may be migrated to here.
+
+ - Component types: Component types are registered dynamically through some metaclass
+   magic, found in :py:class:`armi.reactor.components.component.ComponentType` and
+   :py:class:`armi.reactor.composites.CompositeModelType`. Simply defining a new
+   Component subclass should register it with the appropriate ARMI systems. While this
+   is convenient, it does lead to potential issues, as the behavior of ARMI becomes
+   sensitive to module import order and the like; the containing module needs to be
+   imported before the registration occurs, which can be surprising.
+
+ - Interface input files: Interfaces used to be discovered dynamically, rather than
+   explicitly as they are now in the :py:meth:`armi.plugins.ArmiPlugin.exposeInterfaces`
+   plugin hook. Essentially they functioned as ersatz plugins. One of the ways that they
+   would customize ARMI behavior is through the
+   :py:meth:`armi.physics.interface.Interface.specifyInputs` static method, which is
+   still used to determine inter-Case dependencies and support cloning and hashing Case
+   inputs. Going forward, this approach will likely be deprecated in favor of a plugin
+   hook.
+
+ - Fuel handler logic: The
+   :py:class:`armi.physics.fuelCycle.fuelHandlers.FuelHandlerInterface` supports
+   customization through the dynamic loading of fuel handler logic modules, based on
+   user settings. This also predated the plugin infrastructure, and may one day be
+   replaced with plugin-based fuel handler logic.
 """
 from typing import Dict, Union
 
@@ -198,8 +228,14 @@ class ArmiPlugin:
 
         This allows a plugin to provide novel values for the Flags system.
         Implementations should return a dictionary mapping flag names to their desired
-        values. In most cases, no specific value is needed, in which case
+        numerical values. In most cases, no specific value is needed, in which case
         :py:class:`armi.utils.flags.auto` should be used.
+
+        Flags should be added to the ARMI system with great care; flag values for each
+        object are stored in a bitfield, so each additional flag increases the width of
+        the data needed to store them. Also, due to the `what things are` interpretation
+        of flags (see :py:mod:`armi.reactor.flags`), new flags should probably refer to
+        novel design elements, rather than novel behaviors.
 
         See Also
         --------
@@ -365,7 +401,7 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def defineCaseDependencies(case, suite):
-        """
+        r"""
         Function for defining case dependencies.
 
         Some Cases depend on the results of other ``Case``\ s in the same ``CaseSuite``.
@@ -473,6 +509,31 @@ class ArmiPlugin:
 
             return {"superOldParam": "oldParam",
                     "oldParam": "currentParam"}
+        """
+
+    @staticmethod
+    @HOOKSPEC
+    def mpiActionRequiresReset(cmd) -> bool:
+        """
+        Flag indicating when a reactor reset is required.
+
+        Commands are sent through operators either as strings (old) or as MpiActions (newer).
+        After some are sent, the reactor must be reset. This hook says when to reset. The
+        reset operation is a (arguably suboptimal) response to some memory issues in
+        very large and long-running cases.
+
+        Parameters
+        ----------
+        cmd :  str or MpiAction
+            The ARMI mpi command being sent
+
+        Returns
+        -------
+        bool
+
+        See Also
+        --------
+        armi.operators.operatorMPI.OperatorMPI.workerOperate : Handles these flags
         """
 
 

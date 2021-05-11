@@ -20,13 +20,17 @@ import math
 
 from armi.utils.units import getTc
 from armi.materials.material import Material
+from armi.nucDirectory import thermalScattering as tsl
+from armi.nucDirectory import nuclideBases as nb
 
 
 class SiC(Material):
-    r"""
-
-    """
+    r""" """
     name = "Silicon Carbide"
+    thermalScatteringLaws = (
+        tsl.byNbAndCompound[nb.byName["C"], tsl.SIC],
+        tsl.byNbAndCompound[nb.byName["SI"], tsl.SIC],
+    )
     references = {
         "heat capacity": [
             "Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"

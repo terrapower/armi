@@ -19,17 +19,12 @@ settings:
       numInternalRings: 1
       numExternalRings: 1
     XA:
-      geometry: 0D
-      externalDriver: true
-      useHomogenizedBlockComposition: false
-      numInternalRings: 1
-      numExternalRings: 1
       fileLocation:
         - ISOXA
   cycleLength: 2000.0
   db: false
   detailAssemLocationsBOL:
-    - A2001
+    - 002-001
   economics: false
   epsBurnTime: 0.001
   epsFSAvg: 1e-06
@@ -39,12 +34,12 @@ settings:
     - 1
   freshFeedType: igniter fuel
   fuelHandlerName: EquilibriumShuffler
-  geomFile: geom.xml
   jumpRingNum: 9
   loadingFile: refSmallReactor.yaml
   startNode: 1
   loadPadElevation: 200.0
   max2SigmaCladIDT: 630.0
+  genReports: false
   maxFlowZones: 12
   maxRegionDensityIterations: 5
   nCycles: 6

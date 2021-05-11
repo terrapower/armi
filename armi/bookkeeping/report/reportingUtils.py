@@ -264,7 +264,8 @@ def writeAssemblyMassSummary(r):
         thisTypeList = core.getChildrenOfType(a.getType())
         count = 0
         for t in thisTypeList:
-            if t.getLocationObject().i1 == 1:
+            ring, _pos = t.spatialLocator.getRingPos()
+            if ring == 1:
                 # only count center location once.
                 count += 1
             else:
@@ -660,8 +661,10 @@ def summarizeZones(core, cs):
             flow = 0.0
         puFrac = a.getPuFrac()
         ring, pos = a.spatialLocator.getRingPos()
-        summary += "  {0:10s} ({ring:02d}, {pos:02d}) {1:15.6E} {2:15.6E} {pu:15.6E}\n".format(
-            lab, a.calcTotalParam("power"), flow, ring=ring, pos=pos, pu=puFrac
+        summary += (
+            "  {0:10s} ({ring:02d}, {pos:02d}) {1:15.6E} {2:15.6E} {pu:15.6E}\n".format(
+                lab, a.calcTotalParam("power"), flow, ring=ring, pos=pos, pu=puFrac
+            )
         )
     runLog.important(summary)
 
@@ -933,15 +936,13 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
         report.data.Report.groupsOrderFirst.insert(-1, assemPlotImage)
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
-        assemPlotName = os.path.abspath(
-            plotting.plotAssemblyTypes(
-                core.parent.blueprints,
-                core.name,
-                assemBatch,
-                plotNum,
-                maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
-                showBlockAxMesh=showBlockAxMesh,
-            )
+        assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
+        plotting.plotAssemblyTypes(
+            core.parent.blueprints,
+            assemPlotName,
+            assemBatch,
+            maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
+            showBlockAxMesh=showBlockAxMesh,
         )
         report.setData(
             "Assem Types {}".format(plotNum),
@@ -975,7 +976,7 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     ]
 
     fName = "".join([cs.caseTitle, "RadialCoreMap.", cs["outputFileExtension"]])
-    corePlotName = plotting.plotFaceMap(
+    plotting.plotFaceMap(
         core,
         title="{} Radial Core Map".format(cs.caseTitle),
         fName=fName,
@@ -988,7 +989,8 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         titleSize=10,
         fontSize=8,
     )
+    plotting.close()
 
     report.setData(
-        "Radial Core Map", os.path.abspath(corePlotName), report.FACE_MAP, report.DESIGN
+        "Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN
     )

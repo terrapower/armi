@@ -24,16 +24,57 @@ Tests must be invoked via pytest for this to have any affect, for example::
     $ pytest -n6 framework/armi
 
 """
+import os
 
+import matplotlib
+
+import armi
+from armi.tests import TEST_ROOT
+from armi import apps
 from armi import settings
 from armi.settings import caseSettings
+from armi import context
 
 
 def pytest_sessionstart(session):
-    import armi
-    from armi import apps
 
     print("Initializing generic ARMI Framework application")
     armi.configure(apps.App())
+    bootstrapArmiTestEnv()
+
+
+def bootstrapArmiTestEnv():
+    """
+    Perform ARMI config appropriate for running unit tests
+
+    .. tip:: This can be imported and run from other ARMI applications
+        for test support.
+    """
+    from armi.nucDirectory import nuclideBases
+
     cs = caseSettings.Settings()
+
+    context.Mode.setMode(context.Mode.BATCH)
     settings.setMasterCs(cs)
+    # Need to init burnChain.
+    # see armi.cases.case.Case._initBurnChain
+    with open(cs["burnChainFileName"]) as burnChainStream:
+        nuclideBases.imposeBurnChain(burnChainStream)
+
+    # turn on a non-interactive mpl backend to minimize errors related to
+    # initializing Tcl in parallel tests
+    matplotlib.use("agg")
+
+    # set and create a test-specific FAST_PATH for parallel unit testing
+    # Not all unit tests have operators, and operators are usually
+    # responsible for making FAST_PATH, so we make it here.
+    # It will be deleted by the atexit hook.
+    context.activateLocalFastPath()
+    if not os.path.exists(context.getFastPath()):
+        os.makedirs(context.getFastPath())
+
+    # some tests need to find the TEST_ROOT via an env variable when they're
+    # filling in templates with ``$ARMITESTBASE`` in them or opening
+    # input files use the variable in an `!include` tag. Thus
+    # we provide it here.
+    os.environ["ARMITESTBASE"] = TEST_ROOT

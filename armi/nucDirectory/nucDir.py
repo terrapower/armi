@@ -217,14 +217,12 @@ def getRebusLabel(name):
 
 
 def getMc2LabelFromRebusLabel(rebusLabel):
-    r"""
-    """
+    r""" """
     return getMc2Label(rebusLabel)
 
 
 def getRebusLabelFromMc2Label(mc2Label):
-    r"""
-    """
+    r""" """
     return getRebusNameFromMC2(mc2Label)
 
 
@@ -472,7 +470,7 @@ def getNameFromMC2(mc2LibLabel=None, mc2Label=None):
 
 
 def getStructuralElements():
-    r""" return list of element symbol in structure """
+    r"""return list of element symbol in structure"""
     return ["MN", "W", "HE", "C", "CR", "FE", "MO", "NI", "SI", "V"]
 
 

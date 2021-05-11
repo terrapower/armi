@@ -13,9 +13,7 @@
 # limitations under the License.
 
 import os
-import glob
 
-import armi
 from armi.cli.entryPoint import EntryPoint
 
 

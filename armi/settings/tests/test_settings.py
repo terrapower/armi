@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for new settings system with plugin import"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 import io
 import copy
@@ -29,6 +30,7 @@ from armi.settings import setting
 from armi.operators import settingsValidation
 from armi import plugins
 from armi.utils import directoryChangers
+from armi.reactor.flags import Flags
 
 THIS_DIR = os.path.dirname(__file__)
 TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
@@ -265,6 +267,30 @@ class TestSettingsUtils(unittest.TestCase):
     def test_prompt(self):
         selection = settings.promptForSettingsFile(1)
         self.assertEqual(selection, "settings1.yaml")
+
+
+class TestFlagListSetting(unittest.TestCase):
+    def test_flagListSetting(self):
+        """Test that a list of strings can be converted to a list of flags and back."""
+        flagsAsStringList = ["DUCT", "FUEL", "CLAD"]
+        flagsAsFlagList = [Flags.DUCT, Flags.FUEL, Flags.CLAD]
+
+        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        # Set the value as a list of strings first
+        fs.value = flagsAsStringList
+        self.assertEqual(fs.value, flagsAsFlagList)
+        self.assertEqual(fs.dump(), flagsAsStringList)
+
+        # Set the value as a list of flags
+        fs.value = flagsAsFlagList
+        self.assertEqual(fs.value, flagsAsFlagList)
+        self.assertEqual(fs.dump(), flagsAsStringList)
+
+    def test_invalidFlagListTypeError(self):
+        """Test raising a TypeError when a list is not provided."""
+        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        with self.assertRaises(TypeError):
+            fs.value = "DUCT"
 
 
 if __name__ == "__main__":

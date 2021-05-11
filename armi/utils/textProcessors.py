@@ -81,7 +81,7 @@ def _processIncludes(
             # this line has an !include on it
             if m.group(1) is not None:
                 out.write(leadingSpace + m.group(1))
-            fName = pathlib.Path(m.group(2))
+            fName = pathlib.Path(os.path.expandvars(m.group(2)))
             path = root / fName
             if not path.exists():
                 raise ValueError(
@@ -109,7 +109,7 @@ def _processIncludes(
 def resolveMarkupInclusions(
     src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
 ) -> io.StringIO:
-    """
+    r"""
     Process a text stream, appropriately handling ``!include`` tags.
 
     This will take the passed IO stream or file path, replacing any instances of
@@ -483,7 +483,7 @@ class SequentialStringIOReader(SequentialReader):
     ...     data = []
     ...     while sr.searchForText('start of data chunk'):
     ...         # this needs to repeat for as many chunks as there are.
-    ...         if sr.searchForPatternOnNextLine('some-(?P<data>\w+)-pattern'):
+    ...         if sr.searchForPatternOnNextLine('some-(?P<data>\\w+)-pattern'):
     ...             data.append(sr.match['data'])
     """
 
@@ -526,10 +526,7 @@ class TextProcessor:
             else:
                 # need this not to fail for detecting when RXSUM doesn't exist, etc.
                 # note: Could make it check before instantiating...
-                runLog.warning(
-                    'Cannot open file "{0}" for text processing.\n'
-                    "CWD is {1}".format(fname, os.getcwd())
-                )
+                raise FileNotFoundError(f"{fname} does not exist.")
         if not highMem:
             # keep the file on disk, read as necessary
             self.f = f
@@ -605,7 +602,7 @@ class TextProcessor:
 
 class SmartList:
     r"""A list that does stuff like files do i.e. remembers where it was, can seek, etc.
-    Actually this is pretty slow. so much for being smart. nice idea though. """
+    Actually this is pretty slow. so much for being smart. nice idea though."""
 
     def __init__(self, f):
         self.lines = f.readlines()

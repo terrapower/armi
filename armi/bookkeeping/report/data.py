@@ -26,7 +26,7 @@ from armi.bookkeeping.report import html
 # --------------------------------------------
 #                REPORTS
 # --------------------------------------------
-class Report(object):
+class Report:
     """Storage for data separated out for a particular kind of user"""
 
     # stubs for "further stylization" in the report package init
@@ -148,7 +148,7 @@ class Report(object):
 # --------------------------------------------
 #                GROUPS
 # --------------------------------------------
-class Group(object):
+class Group:
     """Abstract class, when extended is used for storage for data within a report
 
     Only accepts things wrapped in the ReportDatum class

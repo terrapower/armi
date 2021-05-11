@@ -55,8 +55,6 @@ class SnapshotInterface(interfaces.Interface):
         snapText = getCycleNodeStamp(cycle, node)  # CCCNNN
         if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
             self.o.snapshotRequest(cycle, node)
-        if self.cs["dumpLocationSnapshot"]:
-            self._dumpLocationSnapshot(cycle, node)
 
     def activateDefaultSnapshots(self):
         """Figure out and assign some default snapshots (BOL, MOL, EOL)."""
@@ -100,22 +98,6 @@ class SnapshotInterface(interfaces.Interface):
         if eolCycle >= curCycle:
             snapTimeCycleNodePairs.append([eolCycle, self.cs["burnSteps"]])
         return snapTimeCycleNodePairs
-
-    def _dumpLocationSnapshot(self, cycle, node):
-        r"""Debugging ability to dump whatever assembly is in a certain location at a certain time
-        to a pickled assembly. """
-        snapText = "{0:03d}{1:03d}".format(cycle, node)
-        for locSnapTxt in self.cs["dumpLocationSnapshot"]:
-            locLabel, cnLabel = locSnapTxt.split("_")
-            if cnLabel != snapText:
-                continue
-            runLog.extra(
-                "Dumping requested location snapshot to " + locSnapTxt + ".dat "
-            )
-            locObj = locations.locationFactory(self.r.core.geomType)()
-            locObj.fromLabel(locLabel)
-            a = self.r.core.whichAssemblyIsIn(locObj.i1, locObj.i2)
-            a.dump(locSnapTxt + ".dat")  # pylint: disable=no-member
 
 
 def extractCycleNodeFromStamp(stamp):

@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Run ARMI."""
-import armi
+"""Run an ARMI case."""
 from armi.cli.entryPoint import EntryPoint
 
 
 class RunEntryPoint(EntryPoint):
-    """Run ARMI case"""
+    """Run an ARMI case"""
 
     name = "run"
     settingsArgument = "required"

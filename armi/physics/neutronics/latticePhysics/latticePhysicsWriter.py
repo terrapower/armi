@@ -211,7 +211,11 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         )
         objNuclides = subjectObject.getNuclides()
 
-        for nucName in self.r.blueprints.allNuclidesInProblem:
+        numDensities = subjectObject.getNuclideNumberDensities(
+            self.r.blueprints.allNuclidesInProblem
+        )
+
+        for nucName, dens in zip(self.r.blueprints.allNuclidesInProblem, numDensities):
             nuc = nuclideBases.byName[nucName]
             if isinstance(nuc, nuclideBases.LumpNuclideBase):
                 continue  # skip LFPs here but add individual FPs below.
@@ -223,7 +227,6 @@ class LatticePhysicsWriter(interfaces.InputWriter):
                 # Homogeneous number densities and temperatures
                 nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
 
-            dens = subjectObject.getNumberDensity(nucName)
             density = max(dens, self.minimumNuclideDensity)
             if nuc in nucDensities:
                 warnings.LatticePhysicsWriter_Nuclide_name_FoundMultipleTimes(nucName)
@@ -415,11 +418,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
             nucDensities[pu239] = (new, temp, msg)
             runLog.warning(
-                "Adjusting Pu-239 number densities in {} from {} to {} to meet minimum fissile fraction "
-                "of {}.\nNote: This modeling approximation will be deprecated soon so it is recommended to "
-                "drive this composition with an external source.".format(
-                    self.block, old, new, minFrac
-                )
+                f"Adjusting Pu-239 number densities in {self.block} from {old} to {new} "
+                f"to meet minimum fissile fraction of {minFrac}."
             )
         return nucDensities
 

@@ -27,9 +27,7 @@ A master case settings is created as ``masterCs``
 """
 import io
 import os
-import sys
 import copy
-import collections
 
 import armi
 from armi import runLog
@@ -79,7 +77,7 @@ class Settings:
         self.path = ""
 
         app = armi.getApp()
-        assert(app is not None)
+        assert app is not None
         self.settings = app.getSettings()
         if not Settings.instance:
             Settings.instance = self

@@ -30,7 +30,7 @@ class HastelloyN(Material):
     .. [SAB] Sabharwall, et. al.
         Feasibility Study of Secondary Heat Exchanger Concepts for the Advanced High Temperature Reactor
         INL/EXT-11-23076, 2011
-        
+
     """
     name = "HastelloyN"
     type = "Structural"
@@ -74,7 +74,7 @@ class HastelloyN(Material):
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
-        Calculates the thermal conductivity of Hastelloy N. 
+        Calculates the thermal conductivity of Hastelloy N.
         Second order polynomial fit to data from [Haynes]_.
 
         Parameters
@@ -101,8 +101,8 @@ class HastelloyN(Material):
     def heatCapacity(self, Tk=None, Tc=None):
         r"""
         Calculates the specific heat capacity of Hastelloy N.
-        Sixth order polynomial fit to data from Table 2-20 [SAB]_ (R^2=0.97). 
-        
+        Sixth order polynomial fit to data from Table 2-20 [SAB]_ (R^2=0.97).
+
         Parameters
         ----------
         Tk : float

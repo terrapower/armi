@@ -24,17 +24,20 @@ import sys
 import armi
 from armi import apps
 from armi.cli import ArmiCLI
-from armi import plugins
+from armi import context
 
 
 def main():
     # Main entry point into ARMI
     try:
-        armi.configure(apps.App())
+        if not armi.isConfigured():
+            armi.configure(apps.App())
         code = ArmiCLI().run()
         # sys exit interprets None as 0
         sys.exit(code)
-    except Exception as ee:  # pylint: disable=broad-except
+    except Exception:
+        # Make sure not to catch all BaseExceptions, lest we catch the expected
+        # SystemExit exception
         import traceback
 
         # TODO: change to critical after critical no longer throws an exception.
@@ -59,7 +62,7 @@ def main():
             )
             # cleanTempDirs has @atexit.register so it should be called at the end, but mpi.Abort in main
             # will not allow for @atexit.register or except/finally code to be called so calling here as well
-            armi.cleanTempDirs()
+            context.cleanTempDirs()
             # .Abort will not allow for @atexit.register or except/finally code to be called
             armi.MPI_COMM.Abort(errorcode=-1)
         raise SystemExit(1)

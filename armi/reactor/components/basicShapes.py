@@ -173,9 +173,9 @@ class Rectangle(ShapedComponent):
         Tinput,
         Thot,
         lengthOuter=None,
-        lengthInner=None,
+        lengthInner=0.0,
         widthOuter=None,
-        widthInner=None,
+        widthInner=0.0,
         mult=None,
         modArea=None,
         isotopics=None,
@@ -361,7 +361,7 @@ class Square(Rectangle):
 class Triangle(ShapedComponent):
     """
     Triangle with defined base and height.
-    
+
     Notes
     -----
     The exact angles of the triangle are undefined. The exact side lenths and angles

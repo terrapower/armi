@@ -6,9 +6,9 @@ Framework and included plugins.
 .. exec::
    from armi.reactor import assemblies
    from armi.reactor import assemblyParameters
-   from armi.reactor import parameters
+   from armi.utils.dochelpers import generateParamTable
 
-   return parameters.generateTable(
+   return generateParamTable(
        assemblies.Assembly, assemblyParameters.getAssemblyParameterDefinitions()
    )
 

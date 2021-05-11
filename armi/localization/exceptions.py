@@ -42,6 +42,10 @@ class RangeError(Exception):
         Exception.__init__(self, message)
 
 
+class SymmetryError(Exception):
+    """Exception to raise when a symmetry condition is violated."""
+
+
 class InvalidSelectionError(Exception):
     """Exception raised when an invalid value was provided when there is a finite set of valid options."""
 
@@ -61,6 +65,17 @@ class CcccRecordError(Exception):
     """An error which occurs while reading or writing a CCCC record."""
 
     pass
+
+
+class OverConfiguredError(RuntimeError):
+    """An error that occurs when ARMI is configure()'d more than once."""
+
+    def __init__(self, context):
+        RuntimeError.__init__(
+            self,
+            "Multiple calls to armi.configure() are not allowed. "
+            "Previous call from:\n{}".format(context),
+        )
 
 
 class ReactivityCoefficientNonExistentComponentsInRepresentativeBlock(Exception):

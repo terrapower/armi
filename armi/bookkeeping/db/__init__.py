@@ -63,8 +63,7 @@ from armi.reactor import reactors
 
 # re-export package components for easier import
 from .permissions import Permissions
-from .database3 import Database3, DatabaseInterface
-from .xtviewDB import XTViewDatabase
+from .database3 import Database3, DatabaseInterface, updateGlobalAssemblyNum
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
 
@@ -72,7 +71,6 @@ from .factory import databaseFactory
 __all__ = [
     "Database3",
     "DatabaseInterface",
-    "XTViewDatabase",
     "compareDatabases",
     "databaseFactory",
 ]
@@ -142,7 +140,7 @@ def loadOperator(pathToDb, loadCycle, loadNode):
     # blueprints and does not have access to an operator, it is unlikely that there is
     # another reactor that has alter the global assem num. Fresh cases typically want
     # this updated.
-    database3.updateGlobalAssemblyNum(r)
+    updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
     runLog.warning(
@@ -282,7 +280,5 @@ def _getH5File(db):
     """
     if isinstance(db, Database3):
         return db.h5db
-    elif isinstance(db, XTViewDatabase):
-        return db._hdf_file
     else:
         raise TypeError("Unsupported Database type ({})!".format(type(db)))

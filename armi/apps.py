@@ -58,7 +58,13 @@ class App:
     of the code.
     """
 
-    name = "ARMI"
+    name = "armi"
+    """
+    The program name of the app. This should be the actual name of the python entry
+    point that loads the app, or the name of the module that contains the appropriate
+    __main__ function. For example, if the app is expected to be invoked with ``python
+    -m myapp``, ``name`` should be ``"myapp"``
+    """
 
     def __init__(self):
         """
@@ -153,7 +159,9 @@ class App:
                         defaultsCache[pluginSetting.settingName] = pluginSetting
                 else:
                     raise TypeError(
-                        f"Invalid setting definition found: {pluginSetting}"
+                        "Invalid setting definition found: {} ({})".format(
+                            pluginSetting, type(pluginSetting)
+                        )
                     )
 
         if optionsCache:

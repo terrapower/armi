@@ -24,10 +24,10 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags, TypeSpec
 
 
-class MeshConverter(object):
+class MeshConverter:
     """
     Base class for the reactor mesh conversions.
-    
+
     Parameters
     ----------
     converterSettings : dict
@@ -273,7 +273,9 @@ class _RZThetaReactorMeshConverterByRingComposition(RZThetaReactorMeshConverter)
         ringCompositions = []
         numRings = [r for r in range(1, self._numRingsInCore + 1)]
         for _i, ring in enumerate(numRings):
-            assemsInRing = core.getAssembliesInRing(ring)
+            # Note that this needs to be in a HEX ring - Circular ring mode
+            # is not supported.
+            assemsInRing = core.getAssembliesInSquareOrHexRing(ring)
             compsInRing = []
             for a in assemsInRing:
                 assemType = a.getType().lower()
@@ -451,7 +453,7 @@ class AxialExpansionModifier(MeshConverter):
 
         if not self._converterSettings["detailedAxialExpansion"]:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
-            refAssem = r.core.getFirstAssembly(Flags.FUEL) or r.core.getFirstAssembly()
+            refAssem = r.core.refAssem
             axMesh = refAssem.getAxialMesh()
             for a in r.core.getAssemblies(includeBolAssems=True):
                 # See ARMI Ticket #112 for explanation of the commented out code
@@ -486,10 +488,7 @@ def getAxialExpansionNuclideAdjustList(r, componentFlags: TypeSpec = None):
         componentFlags = [Flags.FUEL]
 
     adjustSet = {
-        nuc
-        for b in r.core.getBlocks()
-        for c in b.getComponents(componentFlags)
-        for nuc in c.getNuclides()
+        nuc for c in r.core.iterComponents(componentFlags) for nuc in c.getNuclides()
     }
 
     return list(adjustSet)

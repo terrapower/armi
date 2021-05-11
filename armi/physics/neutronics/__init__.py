@@ -34,10 +34,13 @@ independent interfaces:
 import os
 
 import yamlize
+import numpy
+import tabulate
 
 from armi import plugins
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.utils import directoryChangers
+from armi import runLog
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -88,10 +91,6 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
         settings = [
             crossSectionSettings.XSSettingDef(
                 CONF_CROSS_SECTION,
-                default=crossSectionSettings.XSSettings(),
-                label="Cross section control",
-                description="Data structure defining how cross sections are created",
-                schema=crossSectionSettings.XS_SCHEMA,
             )
         ]
         settings += neutronicsSettings.defineSettings()
@@ -135,18 +134,22 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
         )
         return queries
 
+    @staticmethod
+    @plugins.HOOKIMPL
+    def onProcessCoreLoading(core, cs):
+        applyEffectiveDelayedNeutronFractionToCore(core, cs)
 
-# Particle types constants
-GAMMA = "Gamma"
-NEUTRON = "Neutron"
-NEUTRONGAMMA = "Neutron and Gamma"
 
-# Constants for neutronics setting controlling saving of files after neutronics calculation
-# See setting 'neutronicsOutputsToSave'
-ALL = "All"
-RESTARTFILES = "Restart files"
-INPUTOUTPUT = "Input/Output"
-FLUXFILES = "Flux files"
+from .const import (
+    GAMMA,
+    NEUTRON,
+    NEUTRONGAMMA,
+    ALL,
+    RESTARTFILES,
+    INPUTOUTPUT,
+    FLUXFILES,
+)
+
 
 # ARC and CCCC cross section file format names
 COMPXS = "COMPXS"
@@ -227,3 +230,52 @@ def adjointCalculationRequested(cs):
 def realCalculationRequested(cs):
     """Return true if a real calculation is requested based on the ``neutronicsType`` type setting."""
     return cs["neutronicsType"] in ["real", "both"]
+
+
+def applyEffectiveDelayedNeutronFractionToCore(core, cs):
+    """Process the settings for the delayed neutron fraction and precursor decay constants."""
+    # Verify and set the core beta parameters based on the user-supplied settings
+    beta = cs["beta"]
+    decayConstants = cs["decayConstants"]
+
+    # If beta is interpreted as a float, then assign it to
+    # the total delayed neutron fraction parameter. Otherwise, setup the
+    # group-wise delayed neutron fractions and precursor decay constants.
+    reportTableData = []
+    if isinstance(beta, float):
+        core.p.beta = beta
+        reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
+
+    elif isinstance(beta, list) and isinstance(decayConstants, list):
+        if len(beta) != len(decayConstants):
+            raise ValueError(
+                f"The values for `beta` ({beta}) and `decayConstants` "
+                f"({decayConstants}) are not consistent lengths."
+            )
+
+        core.p.beta = sum(beta)
+        core.p.betaComponents = numpy.array(beta)
+        core.p.betaDecayConstants = numpy.array(decayConstants)
+
+        reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
+        reportTableData.append(
+            ("Group-wise Delayed Neutron Fractions", core.p.betaComponents)
+        )
+        reportTableData.append(
+            ("Group-wise Precursor Decay Constants", core.p.betaDecayConstants)
+        )
+
+    # Report to the user the values were not applied.
+    if not reportTableData and (beta is not None or decayConstants is not None):
+        runLog.warning(
+            f"Delayed neutron fraction(s) - {beta} and decay constants"
+            " - {decayConstants} have not been applied."
+        )
+    else:
+        runLog.extra(
+            tabulate.tabulate(
+                tabular_data=reportTableData,
+                headers=["Component", "Value"],
+                tablefmt="armi",
+            )
+        )

@@ -35,7 +35,9 @@ class Test_RZT_Reactor(unittest.TestCase):
     def test_loadRZT(self):
         self.assertEqual(len(self.r.core), 14)
         radMeshes = [a.p.RadMesh for a in self.r.core]
-        self.assertTrue(all(radMesh == 4 for radMesh in radMeshes))
+        aziMeshes = [a.p.AziMesh for a in self.r.core]
+        self.assertTrue(all(radMesh == 6 for radMesh in radMeshes))
+        self.assertTrue(all(aziMesh == 8 for aziMesh in aziMeshes))
 
     def test_findAllMeshPoints(self):
         i, j, k = self.r.core.findAllMeshPoints()

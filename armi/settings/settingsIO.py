@@ -35,6 +35,7 @@ from armi.localization import exceptions
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
 from armi.reactor import geometry
+from armi.reactor import systemLayoutInput
 
 
 class Roots:
@@ -53,6 +54,7 @@ class SettingRenamer:
     warning messages can be generated if one attempts to use one of them. The renaming
     logic follows the rules described in :py:meth:`renameSetting`.
     """
+
     def __init__(self, settings: Dict[str, Setting]):
         self._currentNames: Set[str] = set()
         self._activeRenames: Dict[str, str] = dict()
@@ -226,7 +228,7 @@ class SettingsReader:
         if settingRoot.tag != self.rootTag:
             # checks to make sure the right kind of settings XML file
             # is being applied to the right class
-            if settingRoot.tag == geometry.SystemLayoutInput.ROOT_TAG:
+            if settingRoot.tag == systemLayoutInput.SystemLayoutInput.ROOT_TAG:
                 customMsg = (
                     "\nSettings file appears to be a reactor geometry file. "
                     "Please provide a valid settings file."
@@ -330,8 +332,7 @@ class SettingsReader:
         self._applySettings(settingName, attributes["value"])
 
     def _applySettings(self, name, val):
-        nameToSet, renamed = self._renamer.renameSetting(name)
-
+        nameToSet, _wasRenamed = self._renamer.renameSetting(name)
         settingsToApply = self.applyConversions(nameToSet, val)
         for settingName, value in settingsToApply.items():
             if settingName not in self.cs.settings:
@@ -341,13 +342,10 @@ class SettingsReader:
                 settingObj = self.cs.settings[settingName]
                 if value:
                     value = applyTypeConversions(settingObj, value)
-                try:
-                    value = settingObj.schema(value)
-                except:
-                    runLog.error(
-                        f"Validation error with setting: {settingName} = {repr(value)}"
-                    )
-                    raise
+
+                # The value is automatically coerced into the
+                # expected type when set using either the default or
+                # user-defined schema
                 self.cs[settingName] = value
 
     def applyConversions(self, name, value):
@@ -406,7 +404,8 @@ class SettingsWriter:
         if style not in {self.Styles.short, self.Styles.full}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
 
-    def _getVersion(self):
+    @staticmethod
+    def _getVersion():
         tag, attrib = Roots.CUSTOM, {Roots.VERSION: armi.__version__}
         return tag, attrib
 
@@ -419,8 +418,8 @@ class SettingsWriter:
 
         for settingObj, settingDatum in settingData.items():
             settingNode = ET.SubElement(root, settingObj.name)
-            for attribName, attribValue in settingDatum.items():
-                settingNode.set(attribName, str(attribValue))
+            for attribName in settingDatum:
+                settingNode.set(attribName, str(settingObj.dump()))
 
         stream.write('<?xml version="1.0" ?>\n')
         stream.write(self.prettyPrintXmlRecursively(tree.getroot(), spacing=False))
@@ -446,8 +445,7 @@ class SettingsWriter:
         for settingObj, settingDatum in settingData.items():
             if "value" in settingDatum and len(settingDatum) == 1:
                 # ok to flatten
-                val = settingObj.dump()
-                cleanedData[settingObj.name] = val
+                cleanedData[settingObj.name] = settingObj.dump()
             else:
                 cleanedData[settingObj.name] = settingDatum
 

@@ -27,7 +27,7 @@ pytest system. Please add new tests if you add new functionality. You can genera
 
 ## Submitting changes
 
-Please send a [GitHub Pull Request to the ARMI develop branch](https://github.com/terrapower/armi/pull/new/develop) with a clear 
+Please send a [GitHub Pull Request to the ARMI master branch](https://github.com/terrapower/armi/pull/new/master) with a clear 
 list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)).  Please follow our 
 coding conventions (below) and make sure all of your commits are atomic (one feature per commit).
 
@@ -37,7 +37,9 @@ Please write a clear log messages for your commits. One-liners are OK for small 
     > 
     > A paragraph describing what changed and its impact."
     
-Note that a bot will require that you sign our Contributor License Agreement before we can accept a pull request from you.
+Note that a bot will require that you sign [our Contributor License
+Agreement](https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a)
+before we can accept a pull request from you.
 
 ## Coding conventions
 
