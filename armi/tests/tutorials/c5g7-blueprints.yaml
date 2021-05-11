@@ -142,6 +142,12 @@ blocks:
             latticeIDs: [GT]
         fission chamber guide tube: &fission_chamber_guide_tube
             <<: *guide_tube
+            # Avoid giving this the same flag as "guide tube" by implementing
+            # a custom flag. This is done to distinguish the "fission chamber guide tube"
+            # from the regular "guide tube". This demonstrates the use of setting
+            # flags directly rather than relying on them to be implied based on the
+            # name.
+            flags: fission chamber structure
             latticeIDs: [FC]
         fission chamber: &fission_chamber
             shape: Circle
