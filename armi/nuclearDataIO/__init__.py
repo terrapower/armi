@@ -15,24 +15,7 @@
 """
 Read and/or write data files associated with nuclear data and reactor physics data.
 """
-import os
-import struct
-import math
-import re
-import traceback
 
-import glob
-import numpy
-import pylab
-import scipy.interpolate
-
-from armi.utils import properties
-from armi import runLog
-from armi import settings
-from armi.localization import exceptions
-from armi.utils import units
-from armi.nuclearDataIO import cccc
->>>>>>> 402d35f... py2to3 - removing future print import
 from armi.physics import neutronics
 
 # export the cccc modules here to keep external clients happy,

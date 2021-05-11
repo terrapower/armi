@@ -190,7 +190,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
             # we are now in cycle 2, node 3 ... AFTER setFluxAwesome
             # lets get the 3rd block ... whatever that is
-            _ = db.getHistory(b, params=["flux"])
+            _fluxes = db.getHistory(b, params=["flux"])
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, setFluxAwesome))
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, getFluxAwesome))

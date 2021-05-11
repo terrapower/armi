@@ -32,6 +32,7 @@ The default way of using the ARMI runLog is:
     system.
 
 """
+from __future__ import print_function
 import sys
 import os
 import collections
@@ -176,7 +177,7 @@ class Log:
 
     def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
         """Return True if the count of the label is greater than 1."""
-        if msgType in ("warning", "critical"):
+        if msgType == "warning" or msgType == "critical":
             self._singleWarningMessageCounts[label] += 1
             if (
                 self._singleWarningMessageCounts[label] > 1

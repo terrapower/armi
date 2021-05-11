@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for grid blueprints."""
+# pylint: disable=wrong-import-position
 import io
 import unittest
 
@@ -266,7 +267,11 @@ class TestRZTGridBlueprint(unittest.TestCase):
     def test_geomFile(self):
         geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(RTH_GEOM))
-        _ = geom.toGridBlueprints("test_grid")[0]
+        gridDesign = geom.toGridBlueprints("test_grid")[0]
+        self.assertEqual(gridDesign.name, "test_grid")
+        self.assertEqual(gridDesign.geom, "thetarz")
+        self.assertEqual(gridDesign.symmetry, "eighth periodic")
+        self.assertEqual(gridDesign.geom, "thetarz")
 
 
 if __name__ == "__main__":
