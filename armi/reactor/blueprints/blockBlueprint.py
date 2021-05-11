@@ -98,7 +98,6 @@ class BlockBlueprint(yamlize.KeyedList):
             dict containing material modification names and values
         """
         runLog.debug("Constructing block {}".format(self.name))
-        appliedMatMods = False
         components = collections.OrderedDict()
         # build grid before components so you can load
         # the components into the grid.
@@ -227,6 +226,12 @@ def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
     """
     Set the blueprint number of axial mesh based on the axial mesh refinement factor.
     """
+    if factor <= 0:
+        raise ValueError(
+            "A positive axial mesh refinement factor "
+            f"must be provided. A value of {factor} is invalid."
+        )
+
     if factor != 1:
         runLog.important(
             "An axial mesh refinement factor of {} is applied "

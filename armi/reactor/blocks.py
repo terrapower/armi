@@ -32,7 +32,6 @@ from armi.reactor import composites
 from armi import runLog
 from armi import settings
 from armi.nucDirectory import nucDir
-from armi.reactor import locations
 from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import blockParameters
@@ -1924,7 +1923,7 @@ class HexBlock(Block):
         # pin lattice is rotated 30 degrees from assembly lattice
         grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
         for ring in range(numPinRings):
-            for pos in range(hexagon.numPositionsInRing(ring + 1)):
+            for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 xyz = grid[i, j, 0].getLocalCoordinates()
                 coordinates.append(xyz)

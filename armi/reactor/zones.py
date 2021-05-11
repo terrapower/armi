@@ -20,9 +20,7 @@ import tabulate
 from armi import runLog
 from armi import utils
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor.flags import Flags
-from armi.utils import hexagon
 from armi.settings.fwSettings import globalSettings
 
 
@@ -105,7 +103,7 @@ class Zone:
             if self.symmetry == 3:
                 posList = grid.allPositionsInThird(ring)
             elif self.symmetry == 1:
-                posList = range(1, hexagon.numPositionsInRing(ring) + 1)
+                posList = range(1, grid.getPositionsInRing(ring) + 1)
             else:
                 raise RuntimeError(
                     "Zones are not written to handle {0}-fold symmetry yet"

@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Convert  block geometry from one to another, etc."""
+"""
+Convert block geometry from one to another, etc.
+"""
 import copy
 import math
 
@@ -23,9 +25,10 @@ from matplotlib.patches import Wedge
 from matplotlib.collections import PatchCollection
 
 from armi.reactor import blocks
+from armi.reactor import grids
 from armi.reactor import components
 from armi.reactor.flags import Flags
-from armi.reactor import locations
+from armi.utils import hexagon
 from armi import runLog
 
 SIN60 = math.sin(math.radians(60.0))
@@ -286,15 +289,21 @@ class MultipleComponentMerger(BlockConverter):
 
 class BlockAvgToCylConverter(BlockConverter):
     """
-    Convert a block and driver block into a block made of a concentric circles using block (homogenized) composition.
+    Convert a block and driver block into a block made of a concentric circles using
+    block (homogenized) composition.
 
     Notes
     -----
-    This converter is intended for use in building 1-Dimensional models of a set of block.
+    This converter is intended for use in building 1-dimensional models of a set of block.
     numInternalRings controls the number of rings to use for the source block, while the
     numExternalRings controls the number of rings for the driver fuel block.  The number
     of blocks to in each ring grows by 6 for each ring in hex geometry and 8 for each ring
     in Cartesian.
+
+    This converter is opinionated in that it uses a spatial grid to determine how many
+    blocks to add based on the type of the ``sourceBlock``. For example, if the ``sourceBlock``
+    is a HexBlock then a HexGrid will be used. If the ``sourceBlock`` is a CartesianBlock
+    then a CartesianGrid without an offset will be used.
 
     See Also
     --------
@@ -310,6 +319,7 @@ class BlockAvgToCylConverter(BlockConverter):
         numExternalRings=None,
         quiet=False,
     ):
+
         BlockConverter.__init__(self, sourceBlock, quiet=quiet)
         self._driverFuelBlock = driverFuelBlock
         self._numExternalRings = numExternalRings
@@ -354,10 +364,19 @@ class BlockAvgToCylConverter(BlockConverter):
             )
             tempInput = tempHot = blockToAdd.getAverageTempInC()
 
+        if isinstance(blockToAdd, blocks.HexBlock):
+            grid = grids.HexGrid.fromPitch(1.0)
+        elif isinstance(blockToAdd, blocks.CartesianBlock):
+            grid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
+        else:
+            raise ValueError(
+                f"The `sourceBlock` of type {type(blockToAdd)} is not supported in {self}."
+            )
+
         for ringNum in range(firstRing, firstRing + numRingsToAdd):
-            numFuelBlocksInRing = locations.numPositionsInRing(blockToAdd, ringNum)
+            numFuelBlocksInRing = grid.getPositionsInRing(ringNum)
             assert numFuelBlocksInRing is not None
-            fuelBlockTotalArea = numFuelBlocksInRing * self._driverFuelBlock.getArea()
+            fuelBlockTotalArea = numFuelBlocksInRing * blockToAdd.getArea()
             driverOuterDiam = getOuterDiamFromIDAndArea(innerDiam, fuelBlockTotalArea)
             driverRing = components.Circle(
                 blockName,
@@ -448,6 +467,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     """
     Converts a hexagon full of pins into a circle full of concentric circles.
 
+    Notes
+    -----
     This is intended to capture heterogeneous effects while generating cross sections in
     MCC3. The resulting 1D cylindrical block will not be used in subsequent core
     calculations.
@@ -455,6 +476,10 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     Repeated pins/coolant rings will be built, followed by the non-pins like
     duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
     nonpins ...
+
+    This converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined and for
+    the ``sourceBlock`` to have a spatial grid defined. Additionally, both the ``sourceBlock``
+    and ``driverFuelBlock`` must be instances of HexBlocks.
     """
 
     def __init__(
@@ -478,6 +503,21 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                     sourceBlock
                 )
             )
+
+        if sourceBlock.spatialGrid is None:
+            raise ValueError(
+                f"{sourceBlock} has no spatial grid attribute, therefore "
+                f"the block conversion with {self.__class__.__name__} cannot proceed."
+            )
+
+        if driverFuelBlock is not None:
+            if not isinstance(driverFuelBlock, blocks.HexBlock):
+                raise TypeError(
+                    "Block {} is not hexagonal and cannot be converted to an equivalent cylinder".format(
+                        driverFuelBlock
+                    )
+                )
+
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
@@ -497,8 +537,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
         )
         self._dissolveComponents()
-        numRings = locations.minimumRings(
-            self._sourceBlock, self._sourceBlock.getNumPins()
+        numRings = self._sourceBlock.spatialGrid.getMinimumRings(
+            self._sourceBlock.getNumPins()
         )
         pinComponents, nonPins = self._classifyComponents()
         self._buildFirstRing(pinComponents)
@@ -560,7 +600,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
         This will be a fuel (or control) meat surrounded on both sides by clad, bond, liner, etc. layers.
         """
-        numPinsInRing = locations.numPositionsInRing(self._sourceBlock, ringNum)
+        numPinsInRing = self._sourceBlock.spatialGrid.getPositionsInRing(ringNum)
         pinRadii = [c.getDimension("od") / 2.0 for c in pinComponents]
         bigRingRadii = radiiFromRingOfRods(
             self.pinPitch * (ringNum - 1), numPinsInRing, pinRadii
@@ -571,7 +611,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         self._addCoolantRing(coolantOD, nameSuffix)
         innerDiameter = coolantOD
 
-        centerPin = pinComponents[0]
         compsToTransformIntoRings = pinComponents[::-1] + pinComponents[1:]
         for i, (bcs, bigRingRadius) in enumerate(
             zip(compsToTransformIntoRings, bigRingRadii[1:])

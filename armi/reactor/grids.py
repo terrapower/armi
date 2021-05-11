@@ -134,7 +134,7 @@ class LocationBase:
 
     def __setstate__(self, state):
         """
-        Unpickle a locator, the grid will attach itself if it was also pickled, otherwis this will
+        Unpickle a locator, the grid will attach itself if it was also pickled, otherwise this will
         be detached.
         """
         self.__init__(*state)
@@ -998,6 +998,12 @@ class Grid:
         """
         raise NotImplementedError("Base grid does not know about rings")
 
+    def getPositionsInRing(self, ring: int) -> int:
+        """
+        Return the number of positions within a ring.
+        """
+        raise NotImplementedError("Base grid does not know about rings")
+
     def getRingPos(self, indices) -> Tuple[int, int]:
         """
         Get ring and position number in this grid.
@@ -1165,28 +1171,30 @@ class CartesianGrid(Grid):
         """
         Return the minimum number of rings needed to fit ``n`` objects.
         """
-        return self._getMinimumRingsStatic(n, throughCenter=self._isThroughCenter())
-
-    @staticmethod
-    def _getMinimumRingsStatic(n, throughCenter):
-        # Keep private because this is really here to support old locations stuff that
-        # hasn't been removed yet. See module docs for locations.py for more details.
         numPositions = 0
         for ring in itertools.count(1):
-            ringPositions = CartesianGrid._getPositionsInRing(ring, throughCenter)
+            ringPositions = self.getPositionsInRing(ring)
             numPositions += ringPositions
             if numPositions >= n:
                 return ring
 
-    @staticmethod
-    def _getPositionsInRing(ring, throughCenter):
-        # Keep private because this is really here to support old locations stuff that
-        # hasn't been removed yet. See module docs for locations.py for more details.
+    def getPositionsInRing(self, ring):
+        """
+        Return the number of positions within a ring.
+
+        Notes
+        -----
+        The number of positions within a ring will change
+        depending on whether the central position in the
+        grid is at origin, or if origin is the point
+        where 4 positions meet (i.e., the ``_isThroughCenter``
+        method returns True).
+        """
         if ring == 1:
-            ringPositions = 1 if throughCenter else 4
+            ringPositions = 1 if self._isThroughCenter() else 4
         else:
             ringPositions = (ring - 1) * 8
-            if not throughCenter:
+            if not self._isThroughCenter():
                 ringPositions += 4
         return ringPositions
 
@@ -1405,8 +1413,13 @@ class HexGrid(Grid):
         """
         return hexagon.numRingsToHoldNumCells(n)
 
-    @staticmethod
-    def getNeighboringCellIndices(i, j=0, k=0):
+    def getPositionsInRing(self, ring):
+        """
+        Return the number of positions within a ring.
+        """
+        return hexagon.numPositionsInRing(ring)
+
+    def getNeighboringCellIndices(self, i, j=0, k=0):
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
@@ -1574,7 +1587,7 @@ class HexGrid(Grid):
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
             return True
-        maxPosTotal = hexagon.numPositionsInRing(ring)
+        maxPosTotal = self.getPositionsInRing(ring)
 
         maxPos1 = ring + ring // 2 - 1
         maxPos2 = maxPosTotal - ring // 2 + 1
@@ -1603,7 +1616,7 @@ class HexGrid(Grid):
         # next, generate a list of locations and corresponding distances
         locList = []
         for ring in range(1, hexagon.numRingsToHoldNumCells(nLocs) + 1):
-            positions = hexagon.numPositionsInRing(ring)
+            positions = self.getPositionsInRing(ring)
             for position in range(1, positions + 1):
                 i, j = self.getIndicesFromRingAndPos(ring, position)
                 locList.append(self[(i, j, 0)])
@@ -1639,7 +1652,7 @@ class HexGrid(Grid):
         positions : int
         """
         positions = []
-        for pos in range(1, hexagon.numPositionsInRing(ring) + 1):
+        for pos in range(1, self.getPositionsInRing(ring) + 1):
             i, j = self.getIndicesFromRingAndPos(ring, pos)
             loc = IndexLocation(i, j, 0, None)
             if self.isInFirstThird(loc, includeEdgeAssems):

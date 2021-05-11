@@ -115,11 +115,3 @@ def numRingsToHoldNumCells(numCells):
 def numPositionsInRing(ring):
     """Number of positions in ring (starting at 1) of a hex lattice."""
     return (ring - 1) * 6 if ring != 1 else 1
-
-
-def numPositionsInRings(rings):
-    """
-    Number of positions in all rings up to and including ``ring``.
-    """
-
-    return sum(numPositionsInRing(r + 1) for r in range(rings))

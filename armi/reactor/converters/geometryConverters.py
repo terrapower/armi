@@ -38,7 +38,6 @@ from armi import runLog
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
-from armi.reactor import locations
 from armi.reactor import reactors
 from armi.reactor import parameters
 from armi.reactor.parameters import Category

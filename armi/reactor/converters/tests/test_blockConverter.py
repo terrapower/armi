@@ -24,6 +24,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 from armi.utils import hexagon
+from armi.reactor import grids
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -67,6 +68,8 @@ class TestBlockConverter(unittest.TestCase):
         """Test building of one ring."""
         RING = 6
         block = loadTestBlock(cold=False)
+        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
+
         numPinsInRing = 30
         converter = blockConverters.HexComponentsToCylConverter(block)
         fuel, clad = _buildJoyoFuel()
@@ -91,6 +94,9 @@ class TestBlockConverter(unittest.TestCase):
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
+
+        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
+
         area = block.getArea()
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter.convert()
@@ -119,13 +125,37 @@ class TestBlockConverter(unittest.TestCase):
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
+
         block = loadTestReactor(TEST_ROOT)[1].core.getFirstBlock(Flags.CONTROL)
+
+        driverBlock.spatialGrid = None
+        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
+
         self._testConvertWithDriverRings(
             block,
             driverBlock,
             blockConverters.HexComponentsToCylConverter,
             hexagon.numPositionsInRing,
         )
+
+        # This should fail because a spatial grid is required
+        # on the block.
+        driverBlock.spatialGrid = None
+        block.spatialGrid = None
+        with self.assertRaises(ValueError):
+            self._testConvertWithDriverRings(
+                block,
+                driverBlock,
+                blockConverters.HexComponentsToCylConverter,
+                hexagon.numPositionsInRing,
+            )
+
+        # The ``BlockAvgToCylConverter`` should work
+        # without any spatial grid defined because it
+        # assumes the grid based on the block type.
+        driverBlock.spatialGrid = None
+        block.spatialGrid = None
+
         self._testConvertWithDriverRings(
             block,
             driverBlock,
@@ -138,6 +168,10 @@ class TestBlockConverter(unittest.TestCase):
         r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
         driverBlock = r.core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
         block = r.core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.BLANKET)
+
+        driverBlock.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
+        block.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
+
         converter = blockConverters.BlockAvgToCylConverter
         self._testConvertWithDriverRings(
             block, driverBlock, converter, lambda n: (n - 1) * 8
