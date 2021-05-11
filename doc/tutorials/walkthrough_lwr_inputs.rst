@@ -13,9 +13,9 @@ The compositions are documented in
 .. tip:: The full inputs created in this tutorial are available for download at the bottom of
     this page.
 
-.. note:: C5G7 is a problem with defined 7-group macroscopic cross sections. Rather than
+.. warning:: C5G7 is a problem with defined 7-group macroscopic cross sections. Rather than
     Using those cross sections directly, this input is meant to regenerate them rather
-    than to use the provided macros directly.
+    than to using the provided macros directly.
 
 .. warning:: ARMI was historically developed in support of fast reactors and most
     features have been used and tested in fast reactor contexts. This
