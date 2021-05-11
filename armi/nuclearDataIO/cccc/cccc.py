@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """
-Standard interface files for reactor physics codes.
+Defines containers for the reading and writing standard interface files 
+for reactor physics codes.
 """
 import io
 import itertools

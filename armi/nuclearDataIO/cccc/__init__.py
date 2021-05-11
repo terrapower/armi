@@ -9,6 +9,40 @@ reactor codes to this day use these files. This package provides a Python abstra
 read many (though not necessarily all) of these files, manipulate the data, and
 write them back out to disk.
 
+Section IV of [CCCC-IV]_ defines the standard interface files that were created by the
+CCCC. In addition to the standard files listed in this document, software like DIF3D, 
+PARTISN, and other reactor physics codes may have their own code-dependent interface files. 
+In most cases, they follow a similar structure and definition as the standardized formats, 
+but were not general enough to be used and implemented across all codes. The following 
+are listed as the standard interface files:
+
+* ISOTXS (:py:mod:`armi.nuclearDataIO.cccc.isotxs`) - Nuclide (isotope) - ordered, multigroup 
+  neutron cross section data
+* GRUPXS - Group-ordered, isotopic, multigroup neutron cross section data.
+* BRKOXS - Bondarenko (Russian format) self-shielding data
+* DLAYXS (:py:mod:`armi.nuclearDataIO.cccc.dlayxs`) - Delayed neutron precursor data
+* ISOGXS (:py:mod:`armi.nuclearDataIO.cccc.gamiso`) - Nuclide (isotope) - ordered, multigroup 
+  gamma cross section data
+* GEODST (:py:mod:`armi.nuclearDataIO.cccc.geodst`) - Geometry description
+* NDXSRF - Nuclear density and cross section referencing data
+* ZNATDN - Zone and subzone atomic densities
+* SEARCH - Criticality search data
+* SNCON - Sn (Discrete Ordinates) constants
+* FIXSRC (:py:mod:`armi.nuclearDataIO.cccc.fixsrc`) - Distributed and surface fixed sources
+* RTFLUX (:py:mod:`armi.nuclearDataIO.cccc.rtflux`) - Regular total (scalar) neutron flux
+* ATFLUX (:py:mod:`armi.nuclearDataIO.cccc.rtflux`) - Adjoint total (scalar) neutron flux
+* RCURNT - Regular neutron current
+* ACURNT - Adjoint neutron current
+* RAFLUX - Regular angular neutron flux
+* AAFLUX - Adjoint angular neutron flux
+* RZFLUX (:py:mod:`armi.nuclearDataIO.cccc.rzflux`) - Regular, zone-avearged flux by neutron group
+* PWDINT (:py:mod:`armi.nuclearDataIO.cccc.pwdint`) - Power densitiy by mesh interval
+* WORTHS - Reactivity (per cc) by mesh interval
+
+Other code-dependent interface files may also be included in this package but should be
+documented which software they are created from and used for. The file structures should
+also be provided in the module-level docstrings.
+
 .. [CCCC-IV] R. Douglas O'Dell, "Standard Interface Files and Procedures for Reactor Physics
              Codes, Version IV," LA-6941-MS, Los Alamos National Laboratory (September 1977).
              Web. doi:10.2172/5369298. (`OSTI <https://www.osti.gov/biblio/5369298>`_)
@@ -63,9 +97,8 @@ always equal.
 
 There are similarities between this code and that in the PyNE cccc subpackage.
 This is the original source of the code. TerraPower authorized the publication
-of some of the CCCC code to the PyNE project way back in the 2011 era. 
-This code has since been updated significantly to both read and 
-write the files.
+of some of the CCCC code to the PyNE project way back in the 2011 era. This code 
+has since been updated significantly to both read and write the files.
 
 This was originally inspired by Prof. James Paul Holloway's alpha
 release of ccccutils written in c++ from 2001. 
