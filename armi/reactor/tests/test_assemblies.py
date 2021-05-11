@@ -27,6 +27,7 @@ from armi.reactor import blueprints
 from armi.reactor import components
 from armi.reactor import parameters
 from armi.reactor import reactors
+from armi.reactor import geometry
 from armi.reactor.assemblies import (
     blocks,
     CartesianAssembly,
