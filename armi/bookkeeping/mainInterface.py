@@ -134,7 +134,7 @@ class MainInterface(interfaces.Interface):
             raise InputError("Failed to process copyFilesTo/copyFilesFrom")
 
     def interactBOC(self, cycle=None):
-        r"""typically the first interface to interact beginning of cycle. """
+        r"""typically the first interface to interact beginning of cycle."""
 
         runLog.important("Beginning of Cycle {0}".format(cycle))
         runLog.LOG.clearSingleWarnings()

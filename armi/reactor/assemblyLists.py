@@ -27,8 +27,6 @@ as instance attributes of the ``Core``, and moving them into sibling systems on 
 import abc
 import itertools
 
-import numpy
-
 from armi import runLog
 from armi.utils import units
 from armi.reactor import grids
@@ -197,7 +195,7 @@ class AssemblyList(composites.Composite):
 
 
 class SpentFuelPool(AssemblyList):
-    """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc. """
+    """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
 
     def report(self):
         title = "{0} Report".format(self.name)
@@ -227,7 +225,7 @@ class SpentFuelPool(AssemblyList):
 
 
 class ChargedFuelPool(AssemblyList):
-    """A place to put boosters so you can see how much you added. Can tell you inventory stats, etc. """
+    """A place to put boosters so you can see how much you added. Can tell you inventory stats, etc."""
 
     def report(self):
         title = "{0} Report".format(self.name)

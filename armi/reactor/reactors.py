@@ -79,7 +79,7 @@ class Reactor(composites.Composite):
         self.blueprints = blueprints
 
     def __getstate__(self):
-        r"""applies a settings and parent to the reactor and components. """
+        r"""applies a settings and parent to the reactor and components."""
         state = composites.Composite.__getstate__(self)
         state["o"] = None
         return state
@@ -229,7 +229,7 @@ class Core(composites.Composite):
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
 
     def __getstate__(self):
-        """Applies a settings and parent to the core and components. """
+        """Applies a settings and parent to the core and components."""
         state = composites.Composite.__getstate__(self)
         return state
 
@@ -266,12 +266,14 @@ class Core(composites.Composite):
         return None
 
     @property
-    def symmetry(self):
+    def symmetry(self) -> geometry.SymmetryType:
+        if not self.spatialGrid:
+            raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
         return self.spatialGrid.symmetry
 
     @symmetry.setter
-    def symmetry(self, val):
-        self.spatialGrid.symmetry = val
+    def symmetry(self, val: str):
+        self.spatialGrid.symmetry = str(val)
         self.clearCache()
 
     @property
@@ -290,7 +292,7 @@ class Core(composites.Composite):
         This should not be a state variable because it just reflects the current geometry.
         It changes automatically if the symmetry changes (e.g. from a geometry conversion).
         """
-        return geometry.SYMMETRY_FACTORS[self.symmetry]
+        return self.symmetry.symmetryFactor()
 
     @property
     def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
@@ -319,8 +321,8 @@ class Core(composites.Composite):
     def isFullCore(self):
         """Return True if reactor is full core, otherwise False."""
         # Avoid using `not core.isFullCore` to check if third core geometry
-        # use `core.symmetry == geometry.THIRD_CORE + geometry.PERIODIC`
-        return self.symmetry == geometry.FULL_CORE
+        # use `core.symmetry.domain == geometry.DomainType.THIRD_CORE
+        return self.symmetry.domain == geometry.DomainType.FULL_CORE
 
     @property
     def refAssem(self):
@@ -523,7 +525,7 @@ class Core(composites.Composite):
             ):
                 raise exceptions.SymmetryError(
                     "Location `{}` outside of the represented domain: `{}`".format(
-                        spatialLocator, self.spatialGrid.symmetry
+                        spatialLocator, self.spatialGrid.symmetry.domain
                     )
                 )
             a.moveTo(spatialLocator)
@@ -1624,7 +1626,8 @@ class Core(composites.Composite):
                 neighbors.append(neighbor)
             elif showBlanks:
                 if (
-                    self.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+                    self.symmetry.domain == geometry.DomainType.THIRD_CORE
+                    and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
                     and duplicateAssembliesOnReflectiveBoundary
                 ):
                     symmetricAssem = self._getReflectiveDuplicateAssembly(neighborLoc)
@@ -1796,7 +1799,7 @@ class Core(composites.Composite):
         self.zones = zones.splitZones(self, cs, self.zones)
 
     def getCoreRadius(self):
-        """Returns a radius that the core would fit into. """
+        """Returns a radius that the core would fit into."""
         return self.getNumRings(indexBased=True) * self.getFirstBlock().getPitch()
 
     def findAllMeshPoints(self, assems=None, applySubMesh=True):

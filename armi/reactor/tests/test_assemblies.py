@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import pathlib
 import random
 import unittest
@@ -26,7 +27,17 @@ from armi.reactor import blueprints
 from armi.reactor import components
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor.assemblies import *
+from armi.reactor.assemblies import (
+    blocks,
+    CartesianAssembly,
+    copy,
+    Flags,
+    grids,
+    HexAssembly,
+    math,
+    numpy,
+    runLog,
+)
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
@@ -193,7 +204,9 @@ class Assembly_TestCase(unittest.TestCase):
         )  # Print nothing to the screen that would normally go to the log.
 
         self.r = tests.getEmptyHexReactor()
-        self.r.core.symmetry = "third periodic"
+        self.r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
         self.r.core.add(self.Assembly)
@@ -720,7 +733,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_calcTotalParam(self):
         # Remake original assembly
-        self.Assembly = self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -818,13 +831,16 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_axiallyExpandBlockHeights(self):
-        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closes to the grid plate.  Enrty n represents the top fuel block closes to the plenum
+        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closest to the grid plate.
+        Entry n represents the top fuel block closes to the plenum
         adjust list = list of nuclides to modify"""
 
         self.assemNum = 5
 
         # Remake original assembly
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.r.core.removeAssembly(self.Assembly)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
+        self.r.core.add(self.Assembly)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -902,7 +918,10 @@ class Assembly_TestCase(unittest.TestCase):
         self.assemNum = 5
 
         # Remake original assembly
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.r.core.removeAssembly(self.Assembly)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
+        self.r.core.add(self.Assembly)
+
         # add some blocks with a component
         for blockI in range(self.assemNum):
             b = blocks.HexBlock("TestBlock", self.cs)

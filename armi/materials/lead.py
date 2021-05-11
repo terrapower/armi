@@ -34,7 +34,7 @@ class Lead(material.Fluid):
         return 1.0 / (9516.9 - Tk)
 
     def setDefaultMassFracs(self):
-        r""" mass fractions"""
+        r"""mass fractions"""
         self.setMassFrac("PB", 1)
 
     def density(self, Tk=None, Tc=None):

@@ -170,7 +170,13 @@ class GridBlueprint(yamlize.Object):
     )
     gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
     symmetry = yamlize.Attribute(
-        key="symmetry", type=str, default=geometry.THIRD_CORE + geometry.PERIODIC
+        key="symmetry",
+        type=str,
+        default=str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        ),
     )
     # gridContents is the final form of grid contents information;
     # it is set regardless of how the input is read. This is how all
@@ -191,7 +197,11 @@ class GridBlueprint(yamlize.Object):
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        symmetry=geometry.THIRD_CORE + geometry.PERIODIC,
+        symmetry=str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        ),
         gridContents=None,
         gridBounds=None,
     ):
@@ -209,9 +219,9 @@ class GridBlueprint(yamlize.Object):
 
         """
         self.name = name
-        self.geom = geom
+        self.geom = str(geom)
         self.latticeMap = latticeMap
-        self.symmetry = symmetry
+        self.symmetry = str(symmetry)
         self.gridContents = gridContents
         self.gridBounds = gridBounds
 
@@ -284,8 +294,8 @@ class GridBlueprint(yamlize.Object):
         # set geometric metadata on spatialGrid. This information is needed in various
         # parts of the code and is best encapsulated on the grid itself rather than on
         # the container state.
-        spatialGrid.geomType = self.geom
-        spatialGrid.symmetry = self.symmetry
+        spatialGrid._geomType: str = str(self.geom)
+        spatialGrid._symmetry: str = str(self.symmetry)
         return spatialGrid
 
     def _getMaxIndex(self):
@@ -310,7 +320,10 @@ class GridBlueprint(yamlize.Object):
             such as when expanding fuel shuffling paths or the like. Future work may
             make this more sophisticated.
         """
-        if geometry.FULL_CORE in self.symmetry:
+        if (
+            geometry.SymmetryType.fromAny(self.symmetry).domain
+            == geometry.DomainType.FULL_CORE
+        ):
             # No need!
             return
 
@@ -322,12 +335,14 @@ class GridBlueprint(yamlize.Object):
             for idx2 in equivs:
                 newContents[idx2] = contents
         self.gridContents = newContents
-        split = (
-            geometry.THROUGH_CENTER_ASSEMBLY
-            if geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
-            else ""
+        split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
+        self.symmetry = str(
+            geometry.SymmetryType(
+                geometry.DomainType.FULL_CORE,
+                geometry.BoundaryType.NO_SYMMETRY,
+                throughCenterAssembly=split,
+            )
         )
-        self.symmetry = geometry.FULL_CORE + split
 
     def _readGridContents(self):
         """

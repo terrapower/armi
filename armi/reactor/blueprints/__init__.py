@@ -554,7 +554,7 @@ def migrate(bp: Blueprints, cs):
         )
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
 
-    if geom.geomType in (geometry.RZT, geometry.RZ):
+    if geom.geomType in (geometry.GeomType.RZT, geometry.GeomType.RZ):
         aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
         radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
 

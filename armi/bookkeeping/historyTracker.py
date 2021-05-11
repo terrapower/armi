@@ -348,7 +348,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         return self.filterTimeIndices(timeIndices, boc, moc, eoc)
 
     def getBOCEOCTimeIndices(self, assem=None):
-        r"""returns a list of time step indices that only include BOC and EOC, no intermediate ones. """
+        r"""returns a list of time step indices that only include BOC and EOC, no intermediate ones."""
         tIndices = self.getTimeIndices(assem)  # list of times in years
         counter = 0
         filtered = []
@@ -657,7 +657,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             return None
 
 
-class HistoryFile(object):
+class HistoryFile:
     r"""
     A general history file that contains the parameter history of an object.
 
@@ -776,14 +776,15 @@ class AssemblyHistory(HistoryFile):
         return mins, maxes
 
 
-class HistoryProcessor(object):
+class HistoryProcessor:
     r"""
     Processes stats on a bunch of assembly history files
 
     Original use: computing ranges of operation for testing program
     """
 
-    def findHistoryFiles(self, path=None, title=None):
+    @staticmethod
+    def findHistoryFiles(path=None, title=None):
         r"""
         Finds a list of all history files in a directory
 
@@ -979,7 +980,8 @@ class HistoryProcessor(object):
 
         return validHistories, dataSets
 
-    def plotBounds(self, filteredSets, filteredBounds, assemTypes):
+    @staticmethod
+    def plotBounds(filteredSets, filteredBounds, assemTypes):
         """
         Plots an incredibly useful figure showing which assemblies have which PICT through the lifetime
 
@@ -1099,7 +1101,8 @@ class HistoryProcessor(object):
             print(aType)
             self.printBoundingHistories(aType, params, minMax)
 
-    def printBoundingHistories(self, aType, params, minMax):
+    @staticmethod
+    def printBoundingHistories(aType, params, minMax):
         r"""
         Prints a summary of bounding parameter values for all detail assemblies.
 
@@ -1108,7 +1111,6 @@ class HistoryProcessor(object):
         minMax : dict
             Keys are tracked keys, vals are (value, assembly, timestep) tuples for min and max.
         """
-
         print("Detail History Statistical Summary")
         print(
             "{key:40s} {minV:11s} {maxV:11s}"

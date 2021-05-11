@@ -19,7 +19,6 @@ Entry point into ARMI to check inputs of a case or a whole folder of cases.
 import sys
 import traceback
 
-import armi
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 

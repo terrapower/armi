@@ -34,8 +34,6 @@ import time
 import textwrap
 import ast
 from typing import Dict, Optional, Sequence
-import glob
-
 import tabulate
 import six
 import coverage

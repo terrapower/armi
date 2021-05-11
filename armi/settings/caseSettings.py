@@ -27,9 +27,7 @@ A master case settings is created as ``masterCs``
 """
 import io
 import os
-import sys
 import copy
-import collections
 
 import armi
 from armi import runLog

@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-
-
+r"""Basic tests of the localization functionality
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
 import six
@@ -27,7 +26,7 @@ from armi.localization import info, info_once, important
 from armi.localization import warn, warn_once, warn_when_root, warn_once_when_root
 
 
-class DummyClass(object):
+class DummyClass:
     def __init__(self):
         if six.PY3:
             self.counts = [

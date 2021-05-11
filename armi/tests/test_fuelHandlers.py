@@ -18,6 +18,7 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import collections
 import copy
 import os

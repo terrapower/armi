@@ -41,6 +41,7 @@ loginctl list-sessions --no-legend | \
 ```
 If it outputs "x11", it should work (and if it outputs "wayland", it probably won't, for now).
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import asyncio
 import os
 import pytest

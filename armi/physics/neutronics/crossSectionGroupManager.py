@@ -615,7 +615,11 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        self.cs[CONF_CROSS_SECTION].setDefaults(self.cs)
+
+        self.cs[CONF_CROSS_SECTION].setDefaults(
+            self.cs["xsBlockRepresentation"],
+            self.cs["disableBlockTypeExclusionInXsGeneration"],
+        )
 
     def interactBOC(self, cycle=None):
         """
@@ -1128,12 +1132,6 @@ BLOCK_COLLECTIONS = {
     "Median": MedianBlockCollection,
     "Average": AverageBlockCollection,
     "ComponentAverage1DSlab": SlabComponentsAverageBlockCollection,
-    "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
-}
-
-HOMOGENEOUS_BLOCK_COLLECTIONS = {
-    "Median": MedianBlockCollection,
-    "Average": AverageBlockCollection,
     "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
 }
 

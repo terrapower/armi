@@ -62,10 +62,12 @@ import io
 import itertools
 import os
 import pathlib
+from platform import uname
 import re
 import sys
 import time
 import shutil
+import subprocess
 from typing import (
     Optional,
     Tuple,
@@ -101,7 +103,6 @@ from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
-
 from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
@@ -236,7 +237,7 @@ class DatabaseInterface(interfaces.Interface):
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. """
+        """In case anything changed since last cycle (e.g. rxSwing), update DB."""
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
@@ -247,7 +248,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.writeToDB(self.r)
 
     def interactEOL(self):
-        """DB's should be closed at run's end. """
+        """DB's should be closed at run's end."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
@@ -568,6 +569,59 @@ class Database3(database.Database):
         self.h5db.attrs["armiLocation"] = os.path.dirname(armi.ROOT)
         self.h5db.attrs["startTime"] = armi.START_TIME
         self.h5db.attrs["machines"] = numpy.array(armi.MPI_NODENAMES).astype("S")
+        # store platform data
+        platform_data = uname()
+        self.h5db.attrs["platform"] = platform_data.system
+        self.h5db.attrs["hostname"] = platform_data.node
+        self.h5db.attrs["platformRelease"] = platform_data.release
+        self.h5db.attrs["platformVersion"] = platform_data.version
+        self.h5db.attrs["platformArch"] = platform_data.processor
+        # store app and plugin data
+        app = armi.getApp()
+        self.h5db.attrs["appName"] = app.name
+        plugins = app.pluginManager.list_name_plugin()
+        ps = [
+            (os.path.abspath(sys.modules[p[1].__module__].__file__), p[1].__name__)
+            for p in plugins
+        ]
+        ps = numpy.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
+        self.h5db.attrs["pluginPaths"] = ps
+        # store the commit hash of the local repo
+        self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
+
+    @staticmethod
+    def grabLocalCommitHash():
+        """
+        Try to determine the local Git commit.
+
+        We have to be sure to handle the errors where the code is run on a system that
+        doesn't have Git installed. Or if the code is simply not run from inside a repo.
+
+        Returns
+        -------
+        str
+            The commit hash if it exists, otherwise "unknown".
+        """
+        UNKNOWN = "unknown"
+        if not shutil.which("git"):
+            # no git available. cannot check git info
+            return UNKNOWN
+        repo_exists = (
+            subprocess.run(
+                "git rev-parse --git-dir".split(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
+        )
+        if repo_exists:
+            try:
+                commit_hash = subprocess.check_output(["git", "describe"])
+                return commit_hash.decode("utf-8").strip()
+            except:
+                return UNKNOWN
+        else:
+            return UNKNOWN
 
     def close(self, completedSuccessfully=False):
         """
@@ -1009,7 +1063,6 @@ class Database3(database.Database):
                     val = getattr(design, pName)
                     if val is not None:
                         comp.p[pName] = val
-        return
 
     def _compose(self, comps, cs, parent=None):
         """

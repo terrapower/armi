@@ -14,20 +14,19 @@
 r"""
 testing for reactors.py
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
 import unittest
 
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
-import armi
-
-from armi.materials import uZr
 
 from armi import operators
 from armi import runLog
 from armi import settings
 from armi import tests
+from armi.materials import uZr
 from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
@@ -568,7 +567,7 @@ class HexReactorTests(ReactorTests):
 
     def test_saveAllFlux(self):
         # need a lightweight library to indicate number of groups.
-        class MockLib(object):
+        class MockLib:
             numGroups = 5
 
         self.r.core.lib = MockLib()
@@ -579,7 +578,7 @@ class HexReactorTests(ReactorTests):
         os.remove("allFlux.txt")
 
     def test_getFluxVector(self):
-        class MockLib(object):
+        class MockLib:
             numGroups = 5
 
         self.r.core.lib = MockLib()
@@ -744,7 +743,5 @@ class CartesianReactorTests(ReactorTests):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
+    # import sys;sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
     unittest.main()

@@ -24,7 +24,7 @@ for all dependencies.
 
 A common source of concern is that the list of dependencies would be duplicated between
 ``setup.py`` and ``requirements.txt``. In our particular case, ARMI does not benefit
-from pointing to special package indices, and most version bounds are semanic. We
+from pointing to special package indices, and most version bounds are semantic. We
 therefore follow the recommendation in the above article of including in
 ``requirements.txt`` a simple ``-e .``. This tells pip to install ``armi`` itself,
 deferring to ``setup.py`` for a list of requiremed dependencies. Non-semantic version

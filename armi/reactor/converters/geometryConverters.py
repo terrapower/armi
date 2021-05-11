@@ -59,7 +59,7 @@ BLOCK_AXIAL_MESH_SPACING = (
 STR_SPACE = " "
 
 
-class GeometryChanger(object):
+class GeometryChanger:
     """Geometry changer class that updates the geometry (number of assems or blocks per assem) of a given reactor."""
 
     def __init__(self, cs=None, quiet=False):
@@ -454,6 +454,10 @@ class HexToRZThetaConverter(GeometryConverter):
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZT
+    _SYMMETRY_TYPE = geometry.SymmetryType(
+        domainType=geometry.DomainType.FULL_CORE,
+        boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+    )
     _BLOCK_MIXTURE_TYPE_MAP = {
         "mixture control": ["control"],
         "mixture fuel": ["fuel"],
@@ -668,7 +672,7 @@ class HexToRZThetaConverter(GeometryConverter):
             core.setOptionsFromCs(self._cs)
         self.convReactor.add(core)
         self.convReactor.core.spatialGrid = grid
-        grid.symmetry = geometry.FULL_CORE
+        grid.symmetry = self._SYMMETRY_TYPE
         grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
@@ -1244,7 +1248,8 @@ class HexToRZThetaConverter(GeometryConverter):
             )
         )
 
-    def _getBlockColor(self, colConverter, colGenerator, blockColors, blockType):
+    @staticmethod
+    def _getBlockColor(colConverter, colGenerator, blockColors, blockType):
         nextColor = None
         if blockType not in blockColors:
             if "fuel" in blockType:
@@ -1290,7 +1295,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = "third periodic"
+    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
 
     def convert(self, r=None):
         """
@@ -1313,8 +1320,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
-                "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
-                "Geometry received was {} {}".format(r.core.symmetry, r.core.geomType)
+                "ThirdCoreHexToFullCoreChanger requires the input to have third core hex geometry. "
+                "Geometry received was {} {} {}".format(
+                    r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
+                )
             )
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(r.core)
@@ -1326,7 +1335,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         grid = copy.deepcopy(r.core.spatialGrid)
 
         # Set the core grid's symmetry early, since the core uses it for error checks
-        r.core.spatialGrid.symmetry = geometry.FULL_CORE
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
@@ -1337,9 +1348,11 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 
-        # set symmetry after expanding, because it isnt actually full core until it's
-        # full core; setting the symmetry causes the core to clear its caches.
-        r.core.symmetry = geometry.FULL_CORE
+        # set domain after expanding, because it isnt actually full core until it's
+        # full core; setting the domain causes the core to clear its caches.
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
     def restorePreviousGeometry(self, cs, reactor):
         """
@@ -1354,7 +1367,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # restore the settings of the core
             cs.unsetTemporarySettings()
 
-            reactor.core.symmetry = self.EXPECTED_INPUT_SYMMETRY
+            reactor.core.symmetry = geometry.SymmetryType.fromAny(
+                self.EXPECTED_INPUT_SYMMETRY
+            )
 
 
 class EdgeAssemblyChanger(GeometryChanger):
@@ -1475,7 +1490,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         else:
             runLog.extra("No edge assemblies to remove")
 
-    def scaleParamsRelatedToSymmetry(self, reactor, paramsToScaleSubset=None):
+    @staticmethod
+    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges
 

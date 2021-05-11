@@ -290,11 +290,12 @@ class VARSRC(NHFLUX):
     def _getNumberOfOddParityTerms(self, pnOrder):
         return self._getNumberOfEvenParityTerms(pnOrder) + pnOrder + 1
 
-    def _getNumberOfEvenParityTerms(self, pnOrder):
+    @staticmethod
+    def _getNumberOfEvenParityTerms(pnOrder):
         return pnOrder * (pnOrder + 1) / 2
 
 
-class MacroXS(object):
+class MacroXS:
     """
     Basic macroscopic XS library.
 

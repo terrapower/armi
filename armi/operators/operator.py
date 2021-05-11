@@ -110,7 +110,8 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         self._initFastPath()
 
-    def _initFastPath(self):
+    @staticmethod
+    def _initFastPath():
         """
         Create the FAST_PATH directory for fast local operations
 

@@ -24,7 +24,7 @@ import armi
 from armi import settings
 
 
-class HTMLFile(object):
+class HTMLFile:
     def __init__(self, *args, **kwds):
         self.args = args
         self.kwds = kwds
@@ -44,7 +44,7 @@ class HTMLFile(object):
         self._file.write(html.escape(str(value)))
 
 
-class Tag(object):
+class Tag:
     tag = NotImplementedError
 
     def __init__(self, f, attrs=None):
@@ -191,7 +191,9 @@ def encode64(file_path):
             file_path
         )
     with open(file_path, "rb") as img_src:
-        return r"data:image/{};base64,{}".format(xtn, base64.b64encode(img_src.read()))
+        return r"data:image/{};base64,{}".format(
+            xtn, base64.b64encode(img_src.read()).decode()
+        )
 
 
 # ---------------------------

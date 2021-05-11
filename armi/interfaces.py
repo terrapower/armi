@@ -39,7 +39,7 @@ from armi.utils import textProcessors
 from armi.reactor import parameters
 
 
-class STACK_ORDER(object):  # pylint: disable=invalid-name, too-few-public-methods
+class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
     """
     Constants that help determine the order of modules in the interface stack.
 
@@ -81,7 +81,7 @@ class STACK_ORDER(object):  # pylint: disable=invalid-name, too-few-public-metho
     POSTPROCESSING = BOOKKEEPING + 1
 
 
-class Interface(object):
+class Interface:
     """
     The eponymous Interface between the ARMI Reactor model and modules that operate upon it.
 
@@ -119,7 +119,7 @@ class Interface(object):
     interfaces.
     """
 
-    class Distribute(object):  # pylint: disable=too-few-public-methods
+    class Distribute:  # pylint: disable=too-few-public-methods
         """Enum-like return flag for behavior on interface broadcasting with MPI."""
 
         DUPLICATE = 1
@@ -461,7 +461,7 @@ class Interface(object):
         pass
 
 
-class InputWriter(object):
+class InputWriter:
     """Use to write input files of external codes."""
 
     def __init__(self, r=None, externalCodeInterface=None, cs=None):
@@ -481,7 +481,7 @@ class InputWriter(object):
         raise NotImplementedError
 
 
-class OutputReader(object):
+class OutputReader:
     """
     A generic representation of a particular module's output.
 

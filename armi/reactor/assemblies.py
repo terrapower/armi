@@ -153,7 +153,8 @@ class Assembly(composites.Composite):
             b.makeUnique()
             b.setName(b.makeName(self.p.assemNum, bi))
 
-    def makeNameFromAssemNum(self, assemNum):
+    @staticmethod
+    def makeNameFromAssemNum(assemNum):
         """
         Set the name of this assembly (and the containing blocks) based on an assemNum.
 
@@ -1308,7 +1309,6 @@ class Assembly(composites.Composite):
 
 class HexAssembly(Assembly):
     pass
-
 
 class CartesianAssembly(Assembly):
     pass

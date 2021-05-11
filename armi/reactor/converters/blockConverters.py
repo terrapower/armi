@@ -31,7 +31,7 @@ from armi import runLog
 SIN60 = math.sin(math.radians(60.0))
 
 
-class BlockConverter(object):
+class BlockConverter:
     """Converts a block."""
 
     def __init__(self, sourceBlock, quiet=False):
@@ -623,7 +623,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self.convertedBlock.add(circularHexagon)
             innerDiameter = outerDiam
 
-    def _addSolidMaterialRing(self, baseComponent, innerDiameter, outDiameter, name):
+    @staticmethod
+    def _addSolidMaterialRing(baseComponent, innerDiameter, outDiameter, name):
         circle = components.Circle(
             name,
             baseComponent.material,

@@ -192,7 +192,7 @@ class AbstractIsotopicDepletionReader(interfaces.OutputReader):
         raise NotImplementedError
 
 
-class Csrc(object):
+class Csrc:
     """
     Writes a continuous source term card in a depletion interface.
 

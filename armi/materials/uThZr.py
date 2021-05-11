@@ -41,7 +41,7 @@ class UThZr(Material):
         self.p.zrFrac = ZR_wt_frac
 
     def setDefaultMassFracs(self):
-        r""" U-ZR mass fractions"""
+        r"""U-ZR mass fractions"""
         self.setMassFrac("U238", 0.8)
         self.setMassFrac("U235", 0.1)
         self.setMassFrac("ZR", 0.09999)

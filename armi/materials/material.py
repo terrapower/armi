@@ -451,7 +451,7 @@ class Material(composites.Leaf):
         return self.p.thermalConductivity
 
     def getProperty(self, propName, Tk=None, Tc=None, **kwargs):
-        r"""gets properties in a way that caches them. """
+        r"""gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
 
         cached = self._getCached(propName)
@@ -512,7 +512,7 @@ class Material(composites.Leaf):
         return self.p.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self):
-        r"""zero out all nuclide mass fractions. """
+        r"""zero out all nuclide mass fractions."""
         self.p.massFrac.clear()
         self.p.massFracNorm = 0.0
 
@@ -565,61 +565,6 @@ class Material(composites.Leaf):
                     label="T out of bounds for {} {}".format(self.name, label),
                 )
 
-    def isBeyondIncubationDose(self, totalDPA):
-        r"""
-        Checks if the materials is beyond is incubation dose. Passes if the material
-        does not have an incubation dose assigned (self.modelConst['Rincu']
-
-        Parameters
-        ----------
-
-        totalDPA : float
-            Total DPA accumulated in the material
-
-        Returns
-        -------
-        Bool indicating whether the material is beyond its incubation dose or not.
-
-        """
-
-        if not self.modelConst["Rincu"]:
-            msg = "Material missing incubation dose"
-            runLog.warning(msg, single=True, label="Missing incubation dose")
-        elif totalDPA > self.modelConst["Rincu"]:
-            return True
-        else:
-            return False
-
-    def updateDeltaDPApastIncubation(self, totalDPA, deltaDPA):
-        r"""
-        If a material has passed its incubation dose, this method updates deltaDPA. The concern
-        here is when a step in DPA crosses the incubation threshold, the amount of DPA input into a
-        calculation is more than is actually contributing to deformation.
-
-        Parameters
-        ----------
-
-        totalDPA : float
-            Total DPA accumulated in the material.
-
-        deltaDPA : float
-            Change in DPA over a time step.
-
-        Returns
-        -------
-        deltaDPA past the incubation dose of the material.
-
-        """
-        if not self.modelConst["Rincu"]:
-            msg = "Material missing incubation dose"
-            runLog.warning(msg, single=True, label="Missing incubation dose")
-        elif (totalDPA > self.modelConst["Rincu"]) and (
-            (totalDPA - self.modelConst["Rincu"]) < deltaDPA
-        ):
-            return totalDPA - self.modelConst["Rincu"]
-        else:
-            return deltaDPA
-
     def densityTimesHeatCapacity(self, Tk=None, Tc=None):
         r"""
         Return heat capacity * density at a temperature
@@ -650,8 +595,8 @@ class Material(composites.Leaf):
     def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):
         """Return a temperature difference for a given density perturbation."""
         linearExpansion = self.linearExpansion(Tc=Tc)
-        volFrac = densityFrac ** (-1.0 / 3.0) - 1.0
-        deltaT = volFrac / linearExpansion
+        linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
+        deltaT = linearChange / linearExpansion
         if not quiet:
             runLog.info(
                 "The linear expansion for {} at initial temperature of {} C is {}.\nA change in density of {} "

@@ -97,7 +97,6 @@ U235_7
 
 import os
 import pathlib
-import zlib
 
 import yaml
 
@@ -543,7 +542,7 @@ def _addNuclideToIndices(nuc):
             pass
 
 
-class IMcnpNuclide(object):
+class IMcnpNuclide:
     """Interface which defines the contract for getMcnpId."""
 
     def getMcnpId(self):
@@ -559,7 +558,7 @@ class IMcnpNuclide(object):
         raise NotImplementedError
 
 
-class NuclideInterface(object):
+class NuclideInterface:
     """An abstract nuclide implementation which defining various methods required for a nuclide object."""
 
     def getDatabaseName(self):

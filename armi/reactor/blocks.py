@@ -23,7 +23,6 @@ Blocks are made of components.
 import math
 import copy
 import collections
-import os
 from typing import Optional, Type, Tuple, ClassVar
 
 import matplotlib.pyplot as plt
@@ -1612,43 +1611,30 @@ class HexBlock(Block):
 
         Outputs
         -------
-        self.p.pinPowers : list of floats
+        self.p.pinPowers : 1-D numpy array
             The block-level pin linear power densities. pinPowers[i] represents the average linear
             power density of pin i.
             Power units are Watts/cm (Watts produced per cm of pin length).
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
-        # numPins = self.getNumPins()
-        self.p.pinPowers = [
-            0 for _n in range(numPins)
-        ]  # leave as a list. maybe go to dictionary later.
+        self.p.pinPowers = numpy.zeros(numPins)
+        self.p["linPowByPin" + powerKeySuffix] = numpy.zeros(numPins)
         j0 = jmax[imax - 1] / 6
         pinNum = 0
-        cornerPinCount = 0
-
-        self.p["linPowByPin" + powerKeySuffix] = []
         for i in range(imax):  # loop through rings
             for j in range(jmax[i]):  # loop through positions in ring i
-                pinNum += 1
-
-                if (
-                    removeSixCornerPins
-                    and (i == imax - 1)
-                    and (math.fmod(j, j0) == 0.0)
-                ):
+                if removeSixCornerPins and i == imax - 1 and math.fmod(j, j0) == 0.0:
                     linPow = 0.0
                 else:
                     if self.hasFlags(Flags.FUEL):
-                        pinLoc = self.p.pinLocation[pinNum - 1]
+                        # -1 to map from pinLocations to list index
+                        pinLoc = self.p.pinLocation[pinNum] - 1
                     else:
                         pinLoc = pinNum
-
-                    linPow = powers[
-                        pinLoc - 1
-                    ]  # -1 to map from pinLocations to list index
-
-                self.p.pinPowers[pinNum - 1 - cornerPinCount] = linPow
-                self.p["linPowByPin" + powerKeySuffix].append(linPow)
+                    linPow = powers[pinLoc]
+                self.p.pinPowers[pinNum] = linPow
+                self.p["linPowByPin" + powerKeySuffix][pinNum] = linPow
+                pinNum += 1
 
         if powerKeySuffix == GAMMA:
             self.p.pinPowersGamma = self.p.pinPowers
@@ -1656,9 +1642,7 @@ class HexBlock(Block):
             self.p.pinPowersNeutron = self.p.pinPowers
 
         if gamma:
-            self.p.pinPowers = [
-                n + g for n, g in zip(self.p.pinPowersNeutron, self.p.pinPowersGamma)
-            ]
+            self.p.pinPowers = self.p.pinPowersNeutron + self.p.pinPowersGamma
         else:
             self.p.pinPowers = self.p.pinPowersNeutron
 
@@ -1718,10 +1702,9 @@ class HexBlock(Block):
         numPins = self.getNumComponents(Flags.CLAD)  # number of pins in this assembly
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
-        currentRotNum = self.getRotationNum()
         # look up the current orientation and add this to it. The math below just rotates from the
         # reference point so we need a total rotation.
-        rotNum = currentRotNum + rotNum % 6
+        rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
         for pinNum in range(
@@ -1735,9 +1718,8 @@ class HexBlock(Block):
                 ring = int(
                     math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
                 )
-                # Determine the total number of pins in THIS ring PLUS all interior rings.
-                tot_pins = 1 - 6 * (ring - 1) + 3 * (ring - 1) * (ring + 2)
                 # Rotate the pin position (within the ring, which does not change)
+                tot_pins = 1 + 3 * ring * (ring - 1)
                 newPinLocation = pinNum + (ring - 1) * rotNum
                 if newPinLocation > tot_pins:
                     newPinLocation -= (ring - 1) * 6
@@ -1745,7 +1727,7 @@ class HexBlock(Block):
                 rotateIndexLookup[pinNum] = newPinLocation
 
             if not justCompute:
-                self.p["pinLocation", rotateIndexLookup[pinNum]] = pin = pinNum
+                self.p["pinLocation", rotateIndexLookup[pinNum]] = pinNum
 
         if not justCompute:
             self.setRotationNum(rotNum)
@@ -1876,11 +1858,14 @@ class HexBlock(Block):
 
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
+
+        try:
+            symmetry = self.parent.spatialLocator.grid.symmetry
+        except:
+            return 1.0
         if (
-            self.parent is not None
-            and self.parent.spatialLocator.grid is not None
-            and self.parent.spatialLocator.grid.symmetry
-            == geometry.THIRD_CORE + geometry.PERIODIC
+            symmetry.domain == geometry.DomainType.THIRD_CORE
+            and symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
             indices = self.spatialLocator.getCompleteIndices()
             if indices[0] == 0 and indices[1] == 0:
@@ -2019,7 +2004,7 @@ class CartesianBlock(Block):
         """
         if self.r is not None:
             indices = self.spatialLocator.getCompleteIndices()
-            if geometry.THROUGH_CENTER_ASSEMBLY in self.r.core.symmetry:
+            if self.r.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
                     # central location
                     return 4.0

@@ -457,7 +457,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
 def _createFaceMapLegend(legendMap, cmap, norm):
     """Make special assembly-legend for the assembly face map plot with assembly counts."""
 
-    class AssemblyLegend(object):
+    class AssemblyLegend:
         """
         Custom Legend artist handler.
 
@@ -860,7 +860,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
     This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
     """
 
-    class BlockListFlux(object):
+    class BlockListFlux:
         def __init__(
             self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
         ):

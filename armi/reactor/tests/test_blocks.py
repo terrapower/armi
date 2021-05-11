@@ -13,6 +13,7 @@
 # limitations under the License.
 
 r"""Tests blocks.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import math
 import os
@@ -760,9 +761,14 @@ class Block_TestCase(unittest.TestCase):
         # center blocks have a different symmetry factor for 1/3rd core
         for symmetry, powerMult in (
             (geometry.FULL_CORE, 1),
-            (geometry.THIRD_CORE + geometry.PERIODIC, 3),
+            (
+                geometry.SymmetryType(
+                    geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+                ),
+                3,
+            ),
         ):
-            self.r.core.symmetry = symmetry
+            self.r.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)
@@ -1302,9 +1308,11 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
 
-        index = b.rotatePins(4)  # back to 0
-        self.assertEqual(b.getRotationNum(), 0)
-        self.assertEqual(index[2], 2)
+        index = b.rotatePins(2)
+        index = b.rotatePins(4)  # over-rotate to check modulus
+        self.assertEqual(b.getRotationNum(), 2)
+        self.assertEqual(index[2], 4)
+        self.assertEqual(index[6], 2)
 
         self.assertRaises(ValueError, b.rotatePins, -1)
         self.assertRaises(ValueError, b.rotatePins, 10)

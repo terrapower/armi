@@ -181,7 +181,8 @@ class BlockBlueprint(yamlize.KeyedList):
             return blueprint.gridDesigns[self.gridName]
         return None
 
-    def _mergeComponents(self, b):
+    @staticmethod
+    def _mergeComponents(b):
         solventNamesToMergeInto = set(c.p.mergeWith for c in b if c.p.mergeWith)
 
         if solventNamesToMergeInto:

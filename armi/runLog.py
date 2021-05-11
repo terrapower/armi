@@ -383,7 +383,7 @@ def flush():
 
 
 def prompt(statement, question, *options):
-    """"Prompt the user for some information."""
+    """ "Prompt the user for some information."""
     from armi.localization import exceptions
 
     if context.CURRENT_MODE == Mode.GUI:

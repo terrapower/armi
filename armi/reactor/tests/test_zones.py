@@ -13,11 +13,11 @@
 # limitations under the License.
 
 """Test for Zones"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import unittest
 import os
 
-import armi
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import geometry
@@ -37,7 +37,9 @@ class Zone_TestCase(unittest.TestCase):
         r = reactors.Reactor("zonetest", bp)
         r.add(reactors.Core("Core"))
         r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-        r.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
+        r.core.spatialGrid.symmetry = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
         r.core.spatialGrid.geomType = geometry.HEX
         aList = []
         for ring in range(10):
