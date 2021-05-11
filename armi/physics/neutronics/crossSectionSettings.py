@@ -456,7 +456,7 @@ class XSModelingOptions:
                 f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:"
             )
             for var, val in invalids:
-                runLog.warning(f"\tAttribute: {var}, Value: {val}")
+                runLog.debug(f"\tAttribute: {var}, Value: {val}")
             runLog.debug(
                 f"The valid options for the `{self.geometry}` geometry are: {validOptions}"
             )
