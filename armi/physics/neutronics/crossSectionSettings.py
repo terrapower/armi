@@ -437,11 +437,11 @@ class XSModelingOptions:
                     invalids.append((var, val))
 
         if invalids:
-            runLog.warning(
+            runLog.debug(
                 f"The following inputs in {self} are not valid when the file location is set:"
             )
             for var, val in invalids:
-                runLog.warning(f"\tAttribute: {var}, Value: {val}")
+                runLog.debug(f"\tAttribute: {var}, Value: {val}")
 
         # Check for valid inputs when the geometry is supplied.
         invalids = []
@@ -452,12 +452,12 @@ class XSModelingOptions:
                     invalids.append((var, val))
 
         if invalids:
-            runLog.warning(
+            runLog.debug(
                 f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:"
             )
             for var, val in invalids:
                 runLog.warning(f"\tAttribute: {var}, Value: {val}")
-            runLog.warning(
+            runLog.debug(
                 f"The valid options for the `{self.geometry}` geometry are: {validOptions}"
             )
 
@@ -537,9 +537,6 @@ class XSModelingOptions:
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
             if currentValue is None:
-                runLog.extra(
-                    f"Applying default value {defaultValue} to {attrName} to {self}."
-                )
                 setattr(self, attrName, defaultValue)
 
         self.validate()
