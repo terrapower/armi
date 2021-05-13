@@ -1502,7 +1502,7 @@ class Block_TestCase(unittest.TestCase):
 
         comps.pop(0)
         with self.assertRaises(RuntimeError):
-            comps2 = self.Block.getComponentsInLinkedOrder(comps)
+            _ = self.Block.getComponentsInLinkedOrder(comps)
 
     def test_mergeWithBlock(self):
         fuel1 = self.Block.getComponent(Flags.FUEL)
@@ -1522,7 +1522,7 @@ class Block_TestCase(unittest.TestCase):
 
 class HexBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        caseSetting = settings.Settings()
+        _ = settings.Settings()
         self.HexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
@@ -1707,7 +1707,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        caseSetting = settings.Settings()
+        _ = settings.Settings()
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
         self.ThRZBlock.add(
             components.DifferentialRadialSegment(

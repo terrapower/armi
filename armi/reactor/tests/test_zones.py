@@ -191,11 +191,11 @@ class Zones_InReactor(unittest.TestCase):
 
         # if indexed like a dict, the zones object should give a key error from the removed zone
         with self.assertRaises(KeyError):
-            daZones["ring-1"]
+            daZones["ring-1"]  # pylint: disable=pointless-statement
 
         # Ensure we can still iterate through our zones object
         for name in daZones.names:
-            aZone = daZones[name]
+            _ = daZones[name]
 
     def test_findZoneAssemblyIsIn(self):
         cs = self.o.cs

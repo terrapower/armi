@@ -98,6 +98,89 @@ class Magnesium_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
+class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Molybdenum
+
+    def test_density(self):
+        cur = self.mat.density(333)
+        ref = 10.28
+        delta = ref * 0.0001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(1390)
+        ref = 10.28
+        delta = ref * 0.0001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+
+class Potassium_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Potassium
+
+    def test_density(self):
+        cur = self.mat.density(333)
+        ref = 0.828
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(500)
+        ref = 0.7909
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(750)
+        ref = 0.732
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+
+class Sodium_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Sodium
+
+    def test_density(self):
+        cur = self.mat.density(300)
+        ref = 0.941
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(1700)
+        ref = 0.597
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_specificVolumeLiquid(self):
+        cur = self.mat.specificVolumeLiquid(300)
+        ref = 0.001062
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.specificVolumeLiquid(1700)
+        ref = 0.001674
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_enthalpy(self):
+        cur = self.mat.enthalpy(300)
+        ref = 107518.523
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.enthalpy(1700)
+        ref = 1959147.963
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_thermalConductivity(self):
+        cur = self.mat.thermalConductivity(300)
+        ref = 95.1776
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.thermalConductivity(1700)
+        ref = 32.616
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+
 class Uranium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Uranium
 
@@ -1064,7 +1147,5 @@ class TZM_TestCase(_Material_Test, unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys
-    # sys.argv = ["", "Sodium_TestCase"]
-
+    # import sys; sys.argv = ["", "Sodium_TestCase"]
     unittest.main()

@@ -741,7 +741,7 @@ def copyInterfaceInputs(
 
     assert destPath.is_dir()
 
-    for klass, kwargs in activeInterfaces:
+    for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
         # returned files can be absolute paths, relative paths, or even glob patterns.
         # Since we don't have an explicit way to signal about these, we sort of have to

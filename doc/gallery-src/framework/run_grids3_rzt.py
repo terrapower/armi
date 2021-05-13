@@ -13,10 +13,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 from armi.reactor import grids
+from armi import configure
 
-import armi
-
-armi.configure(permissive=True)
+configure(permissive=True)
 
 fig = plt.figure()
 theta = np.linspace(0, 2 * np.pi, 10)

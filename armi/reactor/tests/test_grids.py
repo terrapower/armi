@@ -185,7 +185,7 @@ class TestGrid(unittest.TestCase):
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
         self.assertNotIn((0, 0, 0), grid._locations)
-        loc = grid[0, 0, 0]
+        _ = grid[0, 0, 0]
         self.assertIn((0, 0, 0), grid._locations)
 
         multiLoc = grid[[(0, 0, 0), (1, 0, 0), (0, 1, 0)]]

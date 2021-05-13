@@ -15,8 +15,6 @@
 """
 Module of utilities to help dealing with iterable objects in python
 """
-
-from __future__ import print_function
 import struct
 from itertools import tee, chain
 

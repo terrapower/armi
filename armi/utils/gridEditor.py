@@ -52,7 +52,6 @@ import numpy
 import numpy.linalg
 from ruamel.yaml import scalarstring
 
-import armi
 from armi import runLog
 from armi.utils import hexagon
 from armi.utils import textProcessors
@@ -63,8 +62,7 @@ from armi.reactor import grids
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 import armi.reactor.blueprints
-from armi.reactor.blueprints import Blueprints
-from armi.reactor.blueprints import gridBlueprint
+from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
 from armi.reactor.blueprints.gridBlueprint import GridBlueprint
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
 from armi.settings.fwSettings import globalSettings
@@ -694,7 +692,7 @@ class GridGui(wx.ScrolledWindow):
 
         @property
         def isPosition(self):
-            return self == self.POSITION_IJ or self == self.POSITION_RINGPOS
+            return self in (self.POSITION_IJ, self.POSITION_RINGPOS)
 
     def __init__(self, parent, bp=None, defaultGeom=geometry.CARTESIAN):
         """
@@ -919,7 +917,7 @@ class GridGui(wx.ScrolledWindow):
         self.pdc.SetBrush(brush)
 
         for idx, loc in self.grid.items():
-            ring, pos = self.grid.getRingPos(idx)
+            ring, _ = self.grid.getRingPos(idx)
             if not self.grid.locatorInDomain(loc) or ring > self.numRings:
                 continue
 
@@ -1087,7 +1085,7 @@ class GridGui(wx.ScrolledWindow):
         region = self.GetUpdateRegion()
         region.Offset(dx * xv, dy * yv)
 
-        rect = region.GetBox()
+        _ = region.GetBox()
 
         self.pdc.DrawToDC(dc)
 
@@ -1097,8 +1095,8 @@ class GridGui(wx.ScrolledWindow):
             return
 
         if event.LeftDown():
-            x = event.GetX()
-            y = event.GetY()
+            _ = event.GetX()
+            _ = event.GetY()
 
             objId = self._getObjectFromEvent(event)
 
@@ -1227,7 +1225,7 @@ class GridGui(wx.ScrolledWindow):
             and self.grid.getRingPos(loc)[0] <= self.numRings
         }
 
-        coordScale = self._gridScale(self.grid)
+        _ = self._gridScale(self.grid)
 
         allCenters = numpy.array(
             [self.grid.getCoordinates(idx)[:2] for idx in inDomain]
@@ -1523,7 +1521,7 @@ class GridBlueprintControl(wx.Panel):
                     # blueprints. Give up.
                     return
 
-                armi.reactor.blueprints.migrate(bp, cs)
+                migrate(bp, cs)
 
         self.bp = bp
 
@@ -1782,11 +1780,6 @@ class NewGridBlueprintDialog(wx.Dialog):
         else:
             bc = geometry.BoundaryType.NO_SYMMETRY
 
-        if self.throughCenter.GetValue():
-            through = geometry.THROUGH_CENTER_ASSEMBLY
-        else:
-            through = ""
-
         symmetry = geometry.SymmetryType(domain, bc, self.throughCenter.GetValue())
 
         assert symmetry.checkValidSymmetry()
@@ -1800,7 +1793,6 @@ if __name__ == "__main__":
     import sys
 
     app = wx.App()
-
     frame = wx.Frame(None, wx.ID_ANY, title="Grid Blueprints GUI", size=(1000, 1000))
 
     gui = GridBlueprintControl(frame)

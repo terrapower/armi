@@ -23,13 +23,13 @@ import h5py
 import numpy
 from numpy.testing import assert_allclose, assert_equal
 
-import armi
 from armi.reactor.flags import Flags
 from armi import interfaces
 from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
 from armi.bookkeeping.db import convertDatabase
 from armi import settings
 from armi.tests import TEST_ROOT
+from armi import __version__ as version
 from armi.cases import case
 from armi.utils import directoryChangers
 from armi import runLog
@@ -100,7 +100,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertTrue(h5.attrs["successfulCompletion"])
-            self.assertEqual(h5.attrs["version"], armi.__version__)
+            self.assertEqual(h5.attrs["version"], version)
             self.assertIn("user", h5.attrs)
             self.assertIn("python", h5.attrs)
             self.assertIn("armiLocation", h5.attrs)
@@ -128,7 +128,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertFalse(h5.attrs["successfulCompletion"])
-            self.assertEqual(h5.attrs["version"], armi.__version__)
+            self.assertEqual(h5.attrs["version"], version)
             self.assertIn("caseTitle", h5.attrs)
 
     @unittest.skip(
@@ -190,7 +190,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
             # we are now in cycle 2, node 3 ... AFTER setFluxAwesome
             # lets get the 3rd block ... whatever that is
-            fluxes = db.getHistory(b, params=["flux"])
+            _fluxes = db.getHistory(b, params=["flux"])
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, setFluxAwesome))
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, getFluxAwesome))
@@ -200,7 +200,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertFalse(h5.attrs["successfulCompletion"])
-            self.assertEqual(h5.attrs["version"], armi.__version__)
+            self.assertEqual(h5.attrs["version"], version)
 
 
 class TestDatabaseReading(unittest.TestCase):

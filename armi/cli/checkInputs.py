@@ -109,7 +109,7 @@ class CheckInputEntryPoint(EntryPoint):
                     canStart = "PASSED"
                 else:
                     canStart = "UNKNOWN"
-            except Exception as ee:
+            except Exception:
                 runLog.error("Failed to initialize/summarize {}".format(case))
                 runLog.error(traceback.format_exc())
                 canStart = "FAILED"

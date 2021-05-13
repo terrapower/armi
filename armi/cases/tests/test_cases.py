@@ -98,7 +98,7 @@ class TestArmiCase(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         cs["verbosity"] = "important"
         baseCase = cases.Case(cs, bp=bp, geom=geom)
-        with directoryChangers.TemporaryDirectoryChanger() as cwd:  # ensure we are not in IN_USE_TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
             case._independentVariables = vals  # pylint: disable=protected-access

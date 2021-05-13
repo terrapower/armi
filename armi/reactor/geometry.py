@@ -72,7 +72,7 @@ class GeomType(enum.Enum):
     def fromStr(cls, geomStr: str) -> "GeomType":
         # case-insensitive
         canonical = geomStr.lower().strip()
-        if canonical == HEX or canonical == HEX_CORNERS_UP:
+        if canonical in (HEX, HEX_CORNERS_UP):
             # corners-up is used to rotate grids, but shouldn't be needed after the grid
             # is appropriately oriented, so we collapse to HEX in the enumeration. If
             # there is a good reason to make corners-up HEX its own geom type, we will
@@ -207,7 +207,7 @@ class DomainType(enum.Enum):
             return ""
 
     def symmetryFactor(self) -> float:
-        if self == self.FULL_CORE or self == self.NULL:
+        if self in (self.FULL_CORE, self == self.NULL):
             return 1.0
         elif self == self.THIRD_CORE:
             return 3.0
@@ -295,7 +295,7 @@ class BoundaryType(enum.Enum):
             return REFLECTIVE
 
     def hasSymmetry(self):
-        return not self == self.NO_SYMMETRY
+        return self != self.NO_SYMMETRY
 
 
 class SymmetryType:

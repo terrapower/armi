@@ -13,9 +13,9 @@ coloring the squares with the natural abundance.
 import matplotlib.pyplot as plt
 
 from armi.nucDirectory import nuclideBases
-import armi
+from armi import configure
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 xyc = []
 for name, base in nuclideBases.byName.items():

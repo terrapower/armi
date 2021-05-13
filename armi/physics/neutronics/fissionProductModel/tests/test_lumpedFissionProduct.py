@@ -102,7 +102,7 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertLess(frac, 1.0)
 
     def test_printDensities(self):
-        xe135 = nuclideBases.fromName("XE135")
+        _ = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
         lfp.printDensities(10.0)
 

@@ -22,9 +22,7 @@ from typing import Optional, Union
 
 import six
 
-import armi
-from armi import settings
-from armi import runLog
+from armi import context, runLog, settings
 
 
 class _EntryPointEnforcer(type):
@@ -88,7 +86,7 @@ class EntryPoint:
             )
 
         self.parser = argparse.ArgumentParser(
-            prog="{} {}".format(armi.context.APP_NAME, self.name),
+            prog="{} {}".format(context.APP_NAME, self.name),
             description=self.description or self.__doc__,
         )
 

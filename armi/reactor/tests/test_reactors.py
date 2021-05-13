@@ -37,7 +37,6 @@ from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
-from armi.physics.neutronics import isotopicDepletion
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -593,12 +592,13 @@ class HexReactorTests(ReactorTests):
         expFlux = [i for i in range(5) for b in self.r.core.getBlocks()]
         expAdjFlux = [i + 0.1 for b in self.r.core.getBlocks() for i in range(5)]
         expSrcVec = [i + 0.2 for b in self.r.core.getBlocks() for i in range(5)]
+        expFluxVol = list(range(5)) * len(self.r.core.getBlocks())
         assert_allclose(expFlux, mgFlux)
         assert_allclose(expAdjFlux, adjFlux)
         assert_allclose(expSrcVec, srcVec)
+        assert_allclose(expFluxVol, fluxVol)
 
     def test_getFuelBottomHeight(self):
-
         for a in self.r.core.getAssemblies(Flags.FUEL):
             if a[0].hasFlags(Flags.FUEL):
                 a[0].setType("mud")

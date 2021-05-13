@@ -341,14 +341,14 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         """
         self.asciiOffsets = []
         for li, _line in enumerate(self.asciiLines):
-            iBase, jBase = self._getIJBaseByAsciiLine(li)
+            iBase, _ = self._getIJBaseByAsciiLine(li)
             self.asciiOffsets.append(iBase - 1)
         self.asciiOffsets.reverse()  # since getIJ works from bottom to top
         newOffsets = []
 
         # renomalize the offsets to start at 0
         minOffset = min(self.asciiOffsets)
-        for li, (line, offset) in enumerate(zip(self.asciiLines, self.asciiOffsets)):
+        for li, (_, offset) in enumerate(zip(self.asciiLines, self.asciiOffsets)):
             newOffsets.append(offset - minOffset)
         self.asciiOffsets = newOffsets
 

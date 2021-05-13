@@ -12,10 +12,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from armi.reactor import grids
+from armi import configure
 
-import armi
-
-armi.configure(permissive=True)
+configure(permissive=True)
 
 fig = plt.figure()
 zCoords = [1, 4, 8]

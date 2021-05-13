@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Generic ARMI utilities"""
-from __future__ import print_function
-
 import os
 import sys
 import time

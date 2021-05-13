@@ -88,11 +88,11 @@ class triangleTests(unittest.TestCase):
         y3 = 0.376
         xP = 0.0
         yP = 0.17
-        # generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
+        # FIXME: generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(generalTriangleInOrOut)
 
     def test_checkIfPointIsInTriangle2(self):
-        """Test that barycentricCheckIfPointIsInTriangle can  identify if a point is inside or outside of a triangle."""
+        """Test that barycentricCheckIfPointIsInTriangle can identify if a point is inside or outside of a triangle."""
 
         # First check the right triangle case
         xT1 = 0.0
@@ -118,7 +118,7 @@ class triangleTests(unittest.TestCase):
         xP = 0.0
         yP = 0.17
         generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+            x1, y1, x2, y2, x3, y3, xP, yP
         )
         self.assertTrue(generalTriangleInOrOut)
 

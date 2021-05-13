@@ -357,8 +357,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             expansions,
         ) = isotopicOptions.autoSelectElementsToKeepFromSettings(cs)
 
-        nucsFromInput = actives | inerts  # join
-
         # Flag all elementals for expansion unless they've been flagged otherwise by
         # user input or automatic lattice/datalib rules.
         for elemental in nuclideBases.instances:

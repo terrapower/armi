@@ -21,7 +21,6 @@ more refinement in representing the physical reactor. The reactor is the owner o
 plant-wide state variables such as keff, cycle, and node.
 
 """
-from __future__ import print_function
 import collections
 import copy
 import itertools
@@ -32,10 +31,7 @@ import os
 
 import numpy
 
-import armi
-from armi import runLog
-from armi import nuclearDataIO
-from armi import settings
+from armi import getPluginManagerOrFail, runLog, nuclearDataIO, settings
 from armi.localization import exceptions
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -1977,7 +1973,7 @@ class Core(composites.Composite):
             generates submesh points to further discretize the theta reactor mesh
 
         """
-        i, j, k = self.findAllMeshPoints(extraAssems, applySubMesh)
+        i, _, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return i
 
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
@@ -1997,7 +1993,7 @@ class Core(composites.Composite):
             (not implemented) generates submesh points to further discretize the radial reactor mesh
 
         """
-        i, j, k = self.findAllMeshPoints(extraAssems, applySubMesh)
+        _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return j
 
     def getMaxBlockParam(self, *args, **kwargs):
@@ -2323,4 +2319,4 @@ class Core(composites.Composite):
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)

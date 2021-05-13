@@ -503,8 +503,6 @@ def collectPluginParameters(pm):
         for klass, pDefs in pluginParamDefnCollections.items():
             klass.pDefs.extend(pDefs)
 
-    return
-
 
 def applyAllParameters(klass=None):
     klass = klass or ParameterCollection

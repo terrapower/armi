@@ -55,7 +55,7 @@ def getNuclideDecayConstants(fileName):
     with readerClass(fileName) as reader:
         nuclideDecayConstants = {}
         while reader.searchForPattern(r"\d+[A-Z]{1,1}[a-z]{0,1}\s+\d+\s+\d+\s+\d+"):
-            symb, a, z, nol, _Nog, _Nmax, _Nc, _Sn, _Sp = reader.line.split()
+            _, a, z, nol, _Nog, _Nmax, _Nc, _Sn, _Sp = reader.line.split()
 
             level = 0
             numLevels = int(nol)

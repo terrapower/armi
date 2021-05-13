@@ -450,10 +450,10 @@ class TestFuelHandler(ArmiTestHelper):
         (
             loadChains,
             loopChains,
-            enriches,
-            loadChargeTypes,
+            _,
+            _,
             loadNames,
-            alreadyDone,
+            _,
         ) = fh.processMoveList(moves[2])
         self.assertIn("A0085", loadNames)
         self.assertIn(None, loadNames)
@@ -463,7 +463,7 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_getFactorList(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        factors, flags = fh.getFactorList(0)
+        factors, _ = fh.getFactorList(0)
         self.assertIn("eqShuffles", factors)
 
     def test_simpleAssemblyRotation(self):

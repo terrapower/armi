@@ -18,7 +18,6 @@ Primary entry point into ARMI.
 There are a variety of entry points in the ``cli`` package that define the various run options.
 This invokes them according to command-line user input.
 """
-from __future__ import print_function
 import sys
 
 import armi

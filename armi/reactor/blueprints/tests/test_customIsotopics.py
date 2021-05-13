@@ -272,7 +272,7 @@ assemblies:
 class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
     def test_densityMustBePositive(self):
         with self.assertRaises(yamlize.YamlizingError):
-            ci = isotopicOptions.CustomIsotopic.load(
+            _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: atom repellent
             input format: mass fractions
@@ -285,7 +285,7 @@ class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
 
     def test_nonConformantElementName(self):
         with self.assertRaises(yamlize.YamlizingError):
-            ci = isotopicOptions.CustomIsotopic.load(
+            _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: non-upper case
             input format: number densities
@@ -295,7 +295,7 @@ class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
 
     def test_numberDensitiesCannotSpecifyDensity(self):
         with self.assertRaises(yamlize.YamlizingError):
-            ci = isotopicOptions.CustomIsotopic.load(
+            _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: over-specified isotopics
             input format: number densities

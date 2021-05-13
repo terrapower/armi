@@ -19,8 +19,7 @@ import collections
 
 import yamlize
 
-import armi
-from armi import runLog
+from armi import getPluginManagerOrFail, runLog
 from armi.reactor import blocks
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
@@ -31,7 +30,7 @@ from armi.reactor import grids
 
 def _configureGeomOptions():
     blockTypes = dict()
-    pm = armi.getPluginManagerOrFail()
+    pm = getPluginManagerOrFail()
     for pluginBlockTypes in pm.hook.defineBlockTypes():
         for compType, blockType in pluginBlockTypes:
             blockTypes[compType] = blockType

@@ -7,9 +7,9 @@ power distribution from it. You can plot any block parameter.
 """
 from armi.reactor.tests import test_reactors
 from armi.utils import plotting
-import armi
+from armi import configure
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 operator, reactor = test_reactors.loadTestReactor()
 reactor.core.growToFullCore(None)

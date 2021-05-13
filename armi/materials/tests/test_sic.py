@@ -16,6 +16,23 @@ class Test_SiC(test_materials._Material_Test, unittest.TestCase):
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
+    def test_meltingPoint(self):
+        cur = self.mat.meltingPoint()
+        ref = 3003
+        delta = ref * 0.0001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_heatCapacity(self):
+        delta = 0.0001
+
+        cur = self.mat.heatCapacity(300)
+        ref = 982.20789
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.heatCapacity(1500)
+        ref = 1330.27867
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
 
 if __name__ == "__main__":
     unittest.main()

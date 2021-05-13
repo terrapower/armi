@@ -28,7 +28,6 @@ from typing import List, Union
 
 from ruamel import yaml
 
-import armi
 from armi import runLog
 from armi.localization import exceptions
 from armi.settings.caseSettings import Settings

@@ -369,7 +369,7 @@ class LumpedFissionProductCollection(dict):
         lastVal = -1
         for lfp in self.values():
             myVal = lfp.getGasRemovedFrac()
-            if lastVal != -1 and myVal != lastVal:
+            if lastVal not in (-1, lastVal):
                 raise RuntimeError(
                     "Fission gas release fracs in {0} are decoupled" "".format(self)
                 )

@@ -55,7 +55,7 @@ class Utils_TestCase(unittest.TestCase):
         self.assertEqual(x2, 50.0)
 
         with self.assertRaises(ZeroDivisionError):
-            error = utils.linearInterpolation(1.0, 1.0, 1.0, 2.0)
+            _ = utils.linearInterpolation(1.0, 1.0, 1.0, 2.0)
 
     def test_parabolicInterpolation(self):
         realRoots = utils.parabolicInterpolation(2.0e-6, -5.0e-4, 1.02, 1.0)
@@ -68,7 +68,7 @@ class Utils_TestCase(unittest.TestCase):
         self.assertAlmostEqual(noRoots[0][1], 0.0)
         # 3. run time error
         with self.assertRaises(RuntimeError):
-            error = utils.parabolicInterpolation(2.0e-6, 4.0e-4, 1.02, 1.0)
+            _ = utils.parabolicInterpolation(2.0e-6, 4.0e-4, 1.02, 1.0)
 
     def test_rotateXY(self):
         x = [1.0, -1.0]

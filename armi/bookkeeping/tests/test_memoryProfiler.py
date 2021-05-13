@@ -40,7 +40,7 @@ class MemoryProfilerTests(unittest.TestCase):
         results = self.memPro._printFullMemoryBreakdown(
             startsWith="armi.physics", reportSize=False
         )
-        objects, count, size = results["Dif3dInterface"]
+        _objects, count, _size = results["Dif3dInterface"]
         self.assertGreater(count, 0)
 
 
