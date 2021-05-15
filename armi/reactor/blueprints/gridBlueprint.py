@@ -110,7 +110,7 @@ from typing import Sequence, Optional, Tuple
 import numpy
 import yamlize
 
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.utils import asciimaps
 from armi.reactor import geometry
 from armi.reactor import grids

@@ -34,7 +34,7 @@ import numpy
 
 from armi import interfaces
 from armi import runLog
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
 from armi.utils import directoryChangers, pathTools

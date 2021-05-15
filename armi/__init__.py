@@ -83,7 +83,6 @@ from armi import apps
 from armi import pluginManager
 from armi import plugins
 from armi import runLog
-from armi.localization import exceptions
 from armi.reactor import flags
 from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
@@ -288,7 +287,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     ---------
     Since this affects the behavior of several modules at their import time, it is
     generally not safe to re-configure the ARMI framework once it has been configured.
-    Therefore this will raise an ``OverConfiguredError`` if such a re-configuration is
+    Therefore this will raise an ``RuntimeError`` if such a re-configuration is
     attempted, unless ``permissive`` is set to ``True``.
 
     Notes
@@ -310,7 +309,10 @@ def configure(app: Optional[apps.App] = None, permissive=False):
         if permissive and type(_app) is type(app):
             return
         else:
-            raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
+            raise RuntimeError(
+                "Multiple calls to armi.configure() are not allowed. "
+                "Previous call from:\n{}".format(_ARMI_CONFIGURE_CONTEXT)
+            )
 
     assert not context.BLUEPRINTS_IMPORTED, (
         "ARMI can no longer be configured after blueprints have been imported. "

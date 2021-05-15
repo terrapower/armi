@@ -40,11 +40,22 @@ from armi.bookkeeping import report
 from armi.reactor.flags import Flags
 from armi.reactor.components import ComponentType
 from armi.operators import RunTypes
-from armi.localization import strings
 
 
 # Set to prevent the image and text from being too small to read.
 MAX_ASSEMS_PER_ASSEM_PLOT = 6
+
+# String constants
+Operator_CaseTitle = "Case Title:"
+Operator_TypeOfRun = "Run Type:"
+Operator_NumProcessors = "Number of Processors:"
+Operator_WorkingDirectory = "Working Directory:"
+Operator_CurrentUser = "Current User:"
+Operator_PythonInterperter = "Python Interpreter:"
+Operator_ArmiCodebase = "ARMI Location:"
+Operator_MasterMachine = "Master Machine:"
+Operator_Date = "Date and Time:"
+Operator_CaseDescription = "Case Description:"
 
 
 def writeWelcomeHeaders(o, cs):
@@ -53,22 +64,22 @@ def writeWelcomeHeaders(o, cs):
     def _writeCaseInformation(o, cs):
         """Create a table that contains basic case information."""
         caseInfo = [
-            (strings.Operator_CaseTitle, cs.caseTitle),
+            (Operator_CaseTitle, cs.caseTitle),
             (
-                strings.Operator_CaseDescription,
+                Operator_CaseDescription,
                 "{0}".format(textwrap.fill(cs["comment"], break_long_words=False)),
             ),
             (
-                strings.Operator_TypeOfRun,
+                Operator_TypeOfRun,
                 "{} - {}".format(cs["runType"], o.__class__.__name__),
             ),
-            (strings.Operator_CurrentUser, armi.USER),
-            (strings.Operator_ArmiCodebase, armi.ROOT),
-            (strings.Operator_WorkingDirectory, os.getcwd()),
-            (strings.Operator_PythonInterperter, sys.version),
-            (strings.Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
-            (strings.Operator_NumProcessors, armi.MPI_SIZE),
-            (strings.Operator_Date, armi.START_TIME),
+            (Operator_CurrentUser, armi.USER),
+            (Operator_ArmiCodebase, armi.ROOT),
+            (Operator_WorkingDirectory, os.getcwd()),
+            (Operator_PythonInterperter, sys.version),
+            (Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
+            (Operator_NumProcessors, armi.MPI_SIZE),
+            (Operator_Date, armi.START_TIME),
         ]
 
         runLog.header("=========== Case Information ===========")

@@ -25,13 +25,17 @@ from armi.utils import directoryChangers
 from armi import settings
 from armi.settings import setting
 from armi.settings import settingsIO
-from armi.localization import exceptions
+from armi.utils.customExceptions import (
+    InvalidSettingsFileError,
+    NonexistentSetting,
+    SettingException,
+)
 
 
 class SettingsFailureTests(unittest.TestCase):
     def test_settingsObjSetting(self):
         sets = settings.Settings()
-        with self.assertRaises(exceptions.NonexistentSetting):
+        with self.assertRaises(NonexistentSetting):
             sets[
                 "idontexist"
             ] = "this test should fail because no setting named idontexist should exist."
@@ -44,7 +48,7 @@ class SettingsFailureTests(unittest.TestCase):
             ss.loadFromInputFile("this-settings-file-does-not-exist.xml")
 
     def test_invalidFile(self):
-        with self.assertRaises(exceptions.InvalidSettingsFileError):
+        with self.assertRaises(InvalidSettingsFileError):
             cs = settings.caseSettings.Settings()
             reader = settingsIO.SettingsReader(cs)
             reader.readFromStream(
@@ -90,7 +94,7 @@ class SettingsRenameTests(unittest.TestCase):
                 )
             ]
         }
-        with self.assertRaises(exceptions.SettingException):
+        with self.assertRaises(SettingException):
             _ = settingsIO.SettingRenamer(settings)
 
 
@@ -144,5 +148,5 @@ class SettingArgsTests(unittest.TestCase):
     def test_cannotLoadSettingsAfterParsingCommandLineSetting(self):
         self.test_commandLineSetting()
 
-        with self.assertRaises(exceptions.StateError):
+        with self.assertRaises(RuntimeError):
             self.cs.loadFromInputFile("somefile.xml")

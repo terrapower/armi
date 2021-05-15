@@ -39,7 +39,6 @@ import yamlize
 
 import armi
 from armi import runLog
-from armi.localization import exceptions
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
@@ -169,7 +168,7 @@ class SystemBlueprint(yamlize.Object):
             loc = container.spatialGrid[i, j, 0]
             try:
                 container.add(newAssembly, loc)
-            except exceptions.SymmetryError:
+            except LookupError:
                 badLocations.add(loc)
 
         if badLocations:

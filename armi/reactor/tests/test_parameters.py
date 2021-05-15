@@ -19,7 +19,6 @@ import traceback
 import armi
 from armi.reactor import parameters
 from armi.reactor.tests import test_reactors
-from armi.localization import exceptions
 from armi.reactor import composites
 
 
@@ -478,7 +477,7 @@ class SynchronizationTests:
 
     def mpitest_withConflicts(self):
         self.r.core.p.param1 = (armi.MPI_RANK + 1) * 99.0
-        with self.assertRaises(exceptions.SynchronizationError):
+        with self.assertRaises(ValueError):
             self.r.syncMpiState()
 
     def mpitest_withConflictsButSameValue(self):
@@ -517,7 +516,7 @@ class SynchronizationTests:
             for _, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * armi.MPI_RANK
 
-        with self.assertRaises(exceptions.SynchronizationError):
+        with self.assertRaises(ValueError):
             self.r.syncMpiState()
 
     def mpitest_rxCoeffsProcess(self):

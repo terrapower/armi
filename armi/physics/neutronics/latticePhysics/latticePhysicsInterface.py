@@ -22,12 +22,20 @@ import shutil
 
 from armi import nuclearDataIO
 from armi import interfaces, runLog
-from armi.localization import messages
 from armi.utils import codeTiming
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils.customExceptions import important
+
 
 LATTICE_PHYSICS = "latticePhysics"
+
+
+@important
+def SkippingXsGen_BuChangedLessThanTolerance(tolerance):
+    return "Skipping XS Generation this cycle because median block burnups changes less than {}%".format(
+        tolerance
+    )
 
 
 def setBlockNeutronVelocities(r, neutronVelocities):
@@ -436,9 +444,8 @@ class LatticePhysicsInterface(interfaces.Interface):
                         )
 
             if not idsChangedBurnup:
-                messages.latticePhysics_SkippingXsGen_BuChangedLessThanTolerance(
-                    self._burnupTolerance
-                )
+                SkippingXsGen_BuChangedLessThanTolerance(self._burnupTolerance)
+
         return idsChangedBurnup
 
     def _getProcessesPerNode(self):

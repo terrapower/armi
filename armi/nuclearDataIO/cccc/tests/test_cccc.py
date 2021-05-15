@@ -19,7 +19,6 @@ import io
 import six
 
 from armi.nuclearDataIO import cccc
-from armi.localization import exceptions
 
 
 class CcccIOStreamTests(unittest.TestCase):
@@ -28,7 +27,7 @@ class CcccIOStreamTests(unittest.TestCase):
         self.assertIsInstance(cccc.Stream("some-file", "wb"), cccc.Stream)
         self.assertIsInstance(cccc.Stream("some-file", "r"), cccc.Stream)
         self.assertIsInstance(cccc.Stream("some-file", "w"), cccc.Stream)
-        with self.assertRaises(exceptions.InvalidSelectionError):
+        with self.assertRaises(KeyError):
             cccc.Stream("some-file", "bacon")
 
 
@@ -80,7 +79,7 @@ class CcccBinaryRecordTests(unittest.TestCase):
             writer.rwInt(value)
             writer.rwInt(value)
         self.assertEqual(8, writer.numBytes)
-        with self.assertRaises(exceptions.CcccRecordError):
+        with self.assertRaises(BufferError):
             with self.readerClass(self.streamCls(stream.getvalue())) as reader:
                 self.assertEqual(value, reader.rwInt(None))
 
@@ -91,7 +90,7 @@ class CcccBinaryRecordTests(unittest.TestCase):
         with self.writerClass(stream) as writer:
             writer.rwInt(value)
         self.assertEqual(4, writer.numBytes)
-        with self.assertRaises(exceptions.CcccRecordError):
+        with self.assertRaises(BufferError):
             with self.readerClass(self.streamCls(stream.getvalue())) as reader:
                 self.assertEqual(value, reader.rwInt(None))
                 self.assertEqual(4, reader.rwInt(None))

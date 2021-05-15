@@ -45,7 +45,6 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.localization import exceptions
 from armi.utils import units
 
 
@@ -466,7 +465,7 @@ class TestRectangle(TestShapedComponent):
         )
         negativeRectangle = Rectangle("test", "Void", **dims)
         self.assertAlmostEqual(negativeRectangle.getArea(), refArea)
-        with self.assertRaises(exceptions.NegativeComponentArea):
+        with self.assertRaises(ArithmeticError):
             negativeRectangle = Rectangle("test", "UZr", **dims)
             negativeRectangle.getArea()
 
@@ -560,7 +559,7 @@ class TestSquare(TestShapedComponent):
         )
         negativeRectangle = Square("test", "Void", **dims)
         self.assertAlmostEqual(negativeRectangle.getArea(), refArea)
-        with self.assertRaises(exceptions.NegativeComponentArea):
+        with self.assertRaises(ArithmeticError):
             negativeRectangle = Square("test", "UZr", **dims)
             negativeRectangle.getArea()
 
@@ -620,7 +619,7 @@ class TestCube(TestShapedComponent):
         )
         negativeCube = Cube("test", "Void", **dims)
         self.assertAlmostEqual(negativeCube.getVolume(), refVolume)
-        with self.assertRaises(exceptions.NegativeComponentVolume):
+        with self.assertRaises(ArithmeticError):
             negativeCube = Cube("test", "UZr", **dims)
             negativeCube.getVolume()
 

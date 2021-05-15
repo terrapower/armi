@@ -31,11 +31,11 @@ import copy
 
 import armi
 from armi import runLog
-from armi.localization import exceptions
 from armi.settings import fwSettings
 from armi.settings import settingsIO
-from armi.utils import pathTools
 from armi.settings import setting
+from armi.utils import pathTools
+from armi.utils.customExceptions import NonexistentSetting
 
 
 class Settings:
@@ -123,13 +123,13 @@ class Settings:
         if key in self.settings:
             return self.settings[key].value
         else:
-            raise exceptions.NonexistentSetting(key)
+            raise NonexistentSetting(key)
 
     def __setitem__(self, key, val):
         if key in self.settings:
             self.settings[key].setValue(val)
         else:
-            raise exceptions.NonexistentSetting(key)
+            raise NonexistentSetting(key)
 
     def __setstate__(self, state):
         """
@@ -201,7 +201,7 @@ class Settings:
 
     def _prepToRead(self, fName):
         if self._failOnLoad:
-            raise exceptions.StateError(
+            raise RuntimeError(
                 "Cannot load settings file after processing of command "
                 "line options begins.\nYou may be able to fix this by "
                 "reordering the command line arguments, and making sure "
@@ -222,7 +222,7 @@ class Settings:
         reading went like for knowing if a file contained deprecated settings, etc.
         """
         if self._failOnLoad:
-            raise exceptions.StateError(
+            raise RuntimeError(
                 "Cannot load settings after processing of command "
                 "line options begins.\nYou may be able to fix this by "
                 "reordering the command line arguments."

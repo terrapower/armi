@@ -48,7 +48,6 @@ from armi.utils import units
 from armi.utils import densityTools
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nucDirectory import elements
-from armi.localization import exceptions
 from armi.reactor import grids
 
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
@@ -2883,7 +2882,7 @@ class Composite(ArmiObject):
         compsPerNode = {len(nodeSyncData) for nodeSyncData in allSyncData}
 
         if len(compsPerNode) != 1:
-            raise exceptions.SynchronizationError(
+            raise ValueError(
                 "The workers have different reactor sizes! comp lengths: {}".format(
                     compsPerNode
                 )
@@ -2915,7 +2914,7 @@ class Composite(ArmiObject):
                     )
                 )
             )
-            raise exceptions.SynchronizationError(message)
+            raise ValueError(message)
 
         self._markSynchronized()
         runLog.extra(

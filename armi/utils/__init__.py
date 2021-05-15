@@ -38,9 +38,6 @@ import scipy.optimize as sciopt
 import armi
 from armi import runLog
 from armi.utils import iterables
-from armi.localization import strings
-from armi.localization import warnings
-from armi.localization import exceptions
 from armi.utils.flags import Flag
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once

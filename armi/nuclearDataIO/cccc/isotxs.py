@@ -44,7 +44,6 @@ import numpy
 from scipy import sparse
 
 from armi import runLog
-from armi.localization import exceptions
 from armi.nuclearDataIO import cccc
 from armi.nuclearDataIO import xsNuclides
 from armi.nuclearDataIO import xsLibraries
@@ -228,7 +227,7 @@ class _IsotxsIO(cccc.Stream):
                 nuclideIO = self._getNuclideIO()(nuc, self, self._lib)
                 nuclideIO.rwNuclide()
         except:
-            raise exceptions.IsotxsError(
+            raise OSError(
                 "Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc())
             )
         finally:
@@ -470,7 +469,7 @@ class _IsotxsNuclideIO:
                 micros.chi = record.rwMatrix(micros.chi, numGroups)
             elif self._metadata["fisFlag"] > 0:
                 if self._fileWideChiFlag != 1:
-                    raise exceptions.IsotxsError(
+                    raise OSError(
                         "Fissile nuclide {} in library but no individual or global chi!".format(
                             nuc
                         )

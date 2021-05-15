@@ -27,14 +27,17 @@ from typing import Union
 
 import armi
 from armi import runLog, settings, utils
-from armi.localization import exceptions
 from armi.utils import pathTools
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
 from armi.utils import directoryChangers
 from armi.settings.fwSettings import globalSettings
-from armi.settings.settingsIO import prompt
+from armi.settings.settingsIO import (
+    prompt,
+    RunLogPromptCancel,
+    RunLogPromptUnresolvable,
+)
 
 
 class Query:
@@ -107,8 +110,8 @@ class Query:
                             self._corrected = True
                         else:
                             self._passed = True
-                    except exceptions.RunLogPromptCancel:
-                        raise exceptions.InputInspectionDiscontinued()
+                    except RunLogPromptCancel as ki:
+                        raise KeyboardInterrupt from ki
                 else:
                     try:
                         continue_submission = prompt(
@@ -119,11 +122,11 @@ class Query:
                             "CANCEL",
                         )
                         if not continue_submission:
-                            raise exceptions.InputInspectionDiscontinued()
-                    except exceptions.RunLogPromptCancel:
-                        raise exceptions.InputInspectionDiscontinued()
+                            raise KeyboardInterrupt
+                    except RunLogPromptCancel as ki:
+                        raise KeyboardInterrupt from ki
 
-            except exceptions.RunLogPromptUnresolvable:
+            except RunLogPromptUnresolvable:
                 self.autoResolved = False
                 self._passed = True
 
@@ -181,7 +184,7 @@ class Inspector:
 
         Raises
         ------
-        exceptions.InputInspectionMalformed
+        RuntimeError
             When a programming error causes queries to loop.
         """
         if armi.MPI_RANK != 0:
@@ -213,7 +216,7 @@ class Inspector:
             ]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
-                raise exceptions.InputInspectionMalformed(
+                raise RuntimeError(
                     "The input inspection did not resolve all queries, "
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
@@ -258,9 +261,7 @@ class Inspector:
         self.cs[key] = value
 
     def _raise(self):  # pylint: disable=no-self-use
-        raise exceptions.InputInspectionDiscontinued(
-            "Input inspection has been interrupted."
-        )
+        raise KeyboardInterrupt("Input inspection has been interrupted.")
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""

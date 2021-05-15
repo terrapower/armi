@@ -21,7 +21,6 @@ from armi import operators
 from armi import runLog
 from armi import settings
 from armi.cli.entryPoint import EntryPoint
-from armi.localization import exceptions
 
 
 class ModifyCaseSettingsCommand(EntryPoint):

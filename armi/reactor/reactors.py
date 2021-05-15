@@ -33,7 +33,6 @@ import os
 import numpy
 
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings, utils
-from armi.localization import exceptions
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
@@ -521,7 +520,7 @@ class Core(composites.Composite):
             if not self.spatialGrid.locatorInDomain(
                 spatialLocator, symmetryOverlap=True
             ):
-                raise exceptions.SymmetryError(
+                raise LookupError(
                     "Location `{}` outside of the represented domain: `{}`".format(
                         spatialLocator, self.spatialGrid.symmetry.domain
                     )
