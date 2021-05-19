@@ -9,4 +9,7 @@ omit =
 omit =
     armi/cli/gridGui.py
     armi/utils/gridEditor.py
-    armi/utils/tests/test_gridGui.py
+    */tests/*
+
+exclude_lines =
+    raise NotImplementedError
