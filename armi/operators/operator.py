@@ -548,7 +548,12 @@ class Operator:  # pylint: disable=too-many-public-methods
             self.addInterface(klass(self.r, self.cs), **kwargs)
 
     def addInterface(
-        self, interface, index=None, reverseAtEOL=False, enabled=True, bolForce=False
+        self,
+        interface,
+        index=None,
+        reverseAtEOL=False,
+        enabled=True,
+        bolForce=False,
     ):
         """
         Attach an interface to this operator.
@@ -590,21 +595,30 @@ class Operator:  # pylint: disable=too-many-public-methods
             )
 
         iFunc = self.getInterface(function=interface.function)
+
         if iFunc:
-            raise RuntimeError(
-                "Cannot add {0}; the {1} already is designated "
-                "as the {2} interface. Multiple interfaces of the same "
-                "function is not supported.".format(
-                    interface, iFunc, interface.function
+            if issubclass(type(iFunc), type(interface)):
+                runLog.info(
+                    "Ignoring Interface {newFunc} because existing interface {old} already "
+                    " more specific".format(newFunc=interface, old=iFunc)
                 )
-            )
+                return
+            elif issubclass(type(interface), type(iFunc)):
+                self.removeInterface(iFunc)
+            else:
+                raise RuntimeError(
+                    "Cannot add {0}; the {1} already is designated "
+                    "as the {2} interface. Multiple interfaces of the same "
+                    "function is not supported.".format(
+                        interface, iFunc, interface.function
+                    )
+                )
 
         runLog.debug("Adding {0}".format(interface))
         if index is None:
             self.interfaces.append(interface)
         else:
             self.interfaces.insert(index, interface)
-
         if reverseAtEOL:
             interface.reverseAtEOL = True
 
