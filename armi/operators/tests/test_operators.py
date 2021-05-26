@@ -73,7 +73,7 @@ class InterfaceA(Interface):
 
 
 class InterfaceB(InterfaceA):
-    """ Dummy Interface that extends A"""
+    """Dummy Interface that extends A"""
 
     function = "A"
     name = "Second"
