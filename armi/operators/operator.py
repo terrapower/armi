@@ -605,6 +605,10 @@ class Operator:  # pylint: disable=too-many-public-methods
                 return
             elif issubclass(type(interface), type(iFunc)):
                 self.removeInterface(iFunc)
+                runLog.info(
+                    "Will Insert Interface {newFunc} because it is a subclass of {old} interface and "
+                    " more derived".format(newFunc=interface, old=iFunc)
+                )
             else:
                 raise RuntimeError(
                     "Cannot add {0}; the {1} already is designated "

@@ -181,8 +181,7 @@ if armi.MPI_SIZE > 1:
 
 
 if __name__ == "__main__":
-    """args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
-    args += ["armi.tests.test_operators.OperatorTests"]
-    subprocess.call(args)"""
-
+    # args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
+    # args += ["armi.tests.test_operators.OperatorTests"]
+    # subprocess.call(args)
     pytest.main()
