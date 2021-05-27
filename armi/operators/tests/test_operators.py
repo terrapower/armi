@@ -16,15 +16,19 @@
 Tests for operators
 """
 # pylint: disable=abstract-method,no-self-use,unused-argument
+
 import os
 import unittest
 import subprocess
+
+import pytest
 
 import armi
 from armi import settings
 from armi.operators import OperatorMPI
 from armi.tests import ARMI_RUN_PATH
 from armi.interfaces import Interface
+from armi.reactor.tests import test_reactors
 
 
 class FailingInterface1(Interface):
@@ -63,7 +67,62 @@ class FailingInterface3(Interface):
         return False
 
 
+class InterfaceA(Interface):
+    function = "A"
+    name = "First"
+
+
+class InterfaceB(InterfaceA):
+    """Dummy Interface that extends A"""
+
+    function = "A"
+    name = "Second"
+
+
+class InterfaceC(Interface):
+    function = "A"
+    name = "Third"
+
+
 class OperatorTests(unittest.TestCase):
+    def test_addInterfaceSubclassCollision(self):
+
+        self.cs = settings.Settings()
+        o, r = test_reactors.loadTestReactor()
+
+        interfaceA = InterfaceA(r, self.cs)
+
+        interfaceB = InterfaceB(r, self.cs)
+        o.addInterface(interfaceA)
+
+        # 1) Adds B and gets rid of A
+        o.addInterface(interfaceB)
+        self.assertEqual(o.getInterface("Second"), interfaceB)
+        self.assertEqual(o.getInterface("First"), None)
+
+        # 2) Now we have B which is a subclass of A,
+        #    we want to not add A (but also not have an error)
+
+        o.addInterface(interfaceA)
+        self.assertEqual(o.getInterface("Second"), interfaceB)
+        self.assertEqual(o.getInterface("First"), None)
+
+        # 3) Also if another class not a subclass has the same function,
+        #    raise an error
+        interfaceC = InterfaceC(r, self.cs)
+
+        self.assertRaises(RuntimeError, o.addInterface, interfaceC)
+
+        # 4) Check adding a different function Interface
+
+        interfaceC.function = "C"
+
+        o.addInterface(interfaceC)
+        self.assertEqual(o.getInterface("Second"), interfaceB)
+        self.assertEqual(o.getInterface("Third"), interfaceC)
+
+
+class OperatorMPITests(unittest.TestCase):
     """Testing the MPI parallelization operation"""
 
     # @unittest.skipIf(distutils.spawn.find_executable('mpiexec.exe') is None, "mpiexec is not in path.")
@@ -122,7 +181,7 @@ if armi.MPI_SIZE > 1:
 
 
 if __name__ == "__main__":
-    args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
-    args += ["armi.tests.test_operators.OperatorTests"]
-    subprocess.call(args)
-    # unittest.main()
+    # args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
+    # args += ["armi.tests.test_operators.OperatorTests"]
+    # subprocess.call(args)
+    pytest.main()
