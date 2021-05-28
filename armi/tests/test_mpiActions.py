@@ -135,7 +135,7 @@ if armi.MPI_SIZE > 1:
             original_reactor = self.action.r
             self.assertIsNone(self.action.r.core.lib)
             if armi.MPI_RANK == 0:
-                original_reactor.lib = nuclearDataIO.ISOTXS(ISOAA_PATH)
+                original_reactor.lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
             self.action._distributeReactor(self.cs)
             actual = {nb.label: nb.mc2id for nb in self.o.r.core.lib.nuclides}
             if armi.MPI_RANK == 0:

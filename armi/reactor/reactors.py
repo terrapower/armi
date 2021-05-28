@@ -305,7 +305,7 @@ class Core(composites.Composite):
         isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
         if self._lib is None and os.path.exists(isotxsFileName):
             runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
-            self._lib = nuclearDataIO.ISOTXS(isotxsFileName)
+            self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
         return self._lib
 
     @lib.setter
