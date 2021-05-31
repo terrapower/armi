@@ -341,7 +341,7 @@ def applyAsyncioWindowsWorkaround():
 applyAsyncioWindowsWorkaround()
 
 # The ``atexit`` handler is like putting it in a finally after everything.
-atexit.register(context.cleanTempDirs, olderThanDays=14)
+atexit.register(context.cleanTempDirs)
 
 # register cleanups upon HPC cancellations. Linux clusters will send a different signal.
 # SIGBREAK doesn't exist on non-windows

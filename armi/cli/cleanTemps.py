@@ -18,11 +18,14 @@ from armi.cli.entryPoint import EntryPoint
 
 class CleanTemps(EntryPoint):
     """
-    Clear temp directories created by ARMI.
+    Delete all temp directories created by any ARMI run.
+
+    Useful for occasionally cleaning temporary dirs from crashed runs.
+
+    .. warning:: This will break any ongoing runs.
     """
 
     name = "clean-temps"
 
     def invoke(self):
-        # get the case title.
-        context.cleanTempDirs(0)
+        context.cleanTempDirs(olderThanDays=0)
