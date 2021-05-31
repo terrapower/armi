@@ -239,27 +239,36 @@ def cleanTempDirs(olderThanDays=None):
                     file=outputStream,
                 )
 
-    # Also delete anything still here after `olderThanDays` days (in case this failed on
-    # earlier runs)
     if olderThanDays is not None:
-        gracePeriod = datetime.timedelta(days=olderThanDays)
-        now = datetime.datetime.now()
-        thisRunFolder = os.path.basename(_FAST_PATH)
+        cleanAllArmiTempDirs(olderThanDays)
 
-        for dirname in os.listdir(APP_DATA):
-            dirPath = os.path.join(APP_DATA, dirname)
-            if not os.path.isdir(dirPath):
-                continue
-            try:
-                fromThisRun = dirname == thisRunFolder  # second chance to delete
-                _rank, dateString = dirname.split("-")
-                dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
-                runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
-                if runIsOldAndLikleyComplete or fromThisRun:
-                    # Delete old files
-                    shutil.rmtree(dirPath)
-            except:  # pylint: disable=bare-except
-                pass
+def cleanAllArmiTempDirs(olderThanDays: int):
+    """
+    Delete all ARMI-related files from other unrelated runs after `olderThanDays` days (in
+    case this failed on earlier runs).
+
+    .. warning:: This will break any concurrent runs that are still running.
+
+    This is a useful utility in HPC environments when some runs crash sometimes.
+    """
+    gracePeriod = datetime.timedelta(days=olderThanDays)
+    now = datetime.datetime.now()
+    thisRunFolder = os.path.basename(_FAST_PATH)
+
+    for dirname in os.listdir(APP_DATA):
+        dirPath = os.path.join(APP_DATA, dirname)
+        if not os.path.isdir(dirPath):
+            continue
+        try:
+            fromThisRun = dirname == thisRunFolder  # second chance to delete
+            _rank, dateString = dirname.split("-")
+            dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
+            runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
+            if runIsOldAndLikleyComplete or fromThisRun:
+                # Delete old files
+                shutil.rmtree(dirPath)
+        except:  # pylint: disable=bare-except
+            pass
 
 
 def disconnectAllHdfDBs():
