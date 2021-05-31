@@ -222,9 +222,9 @@ def cleanTempDirs(olderThanDays=None):
     )  # pylint: disable=import-outside-toplevel # avoid cyclic import
 
     disconnectAllHdfDBs()
-
+    printMsg = runLog.getVerbosity() <= runLog.getLogVerbosityRank("debug")
     if _FAST_PATH_IS_TEMPORARY and os.path.exists(_FAST_PATH):
-        if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
+        if printMsg:
             print(
                 "Cleaning up temporary files in: {}".format(_FAST_PATH),
                 file=sys.stdout,
@@ -233,14 +233,16 @@ def cleanTempDirs(olderThanDays=None):
             shutil.rmtree(_FAST_PATH)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
-                print(
-                    "Failed to delete temporary files in: {}\n"
-                    "    error: {}".format(_FAST_PATH, error),
-                    file=outputStream,
-                )
+                if printMsg:
+                    print(
+                        "Failed to delete temporary files in: {}\n"
+                        "    error: {}".format(_FAST_PATH, error),
+                        file=outputStream,
+                    )
 
     if olderThanDays is not None:
         cleanAllArmiTempDirs(olderThanDays)
+
 
 def cleanAllArmiTempDirs(olderThanDays: int):
     """
