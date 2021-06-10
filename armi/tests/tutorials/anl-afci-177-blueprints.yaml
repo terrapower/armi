@@ -18,9 +18,9 @@ blocks:
             Tinput: 25.0
             Thot: 450.0
             axialPitch: 30.0
-            helixDiameter: 0.84825
+            helixDiameter: 0.8888
             id: 0.0
-            od: 0.0805
+            od: 0.0808
             mult: 271
 # end-block-wire
         fuel:
@@ -111,9 +111,9 @@ blocks:
             Tinput: 25.0
             Thot: 450.0
             axialPitch: 30.0
-            helixDiameter: 0.84825
+            helixDiameter: 0.777
             id: 0.0
-            od: 0.0805
+            od: 0.0808
             mult: 271
         duct:
             shape: Hexagon
@@ -175,9 +175,9 @@ blocks:
             Tinput: 25.0
             Thot: 450.0
             axialPitch: 30.0
-            helixDiameter: 0.84825
+            helixDiameter: 0.88888
             id: 0.0
-            od: 0.0805
+            od: 0.0808
             mult: 271
         gap:
             shape: Circle
