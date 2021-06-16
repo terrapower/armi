@@ -305,6 +305,8 @@ class _GridControls(wx.Panel):
         self.newButton = wx.Button(self, id=wx.ID_ANY, label="New grid blueprints...")
         self.newButton.SetToolTip("Create a new Grid blueptint.")
         self.helpButton = wx.Button(self, id=wx.ID_ANY, label="Help")
+        self.saveImgButton = wx.Button(self, id=wx.ID_ANY, label="Save image...")
+        self.saveImgButton.SetToolTip("Save the grid layout to an image file.")
 
         self.Bind(wx.EVT_BUTTON, self.onChangeRings, self.ringApply)
         self.Bind(wx.EVT_BUTTON, self.onExpand, self.expandButton)
@@ -312,6 +314,7 @@ class _GridControls(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onOpen, self.openButton)
         self.Bind(wx.EVT_BUTTON, self.onNew, self.newButton)
         self.Bind(wx.EVT_BUTTON, self.onHelp, self.helpButton)
+        self.Bind(wx.EVT_BUTTON, self.onSaveImage, self.saveImgButton)
         self.Bind(wx.EVT_CHOICE, self.onLabelMode, self.labelMode)
 
         self.help = HelpDialog(self)
@@ -337,6 +340,7 @@ class _GridControls(wx.Panel):
 
         sizer.Add(fileBox)
         sizer.Add(self.helpButton)
+        sizer.Add(self.saveImgButton)
 
         self.SetSizerAndFit(sizer)
 
@@ -358,6 +362,9 @@ class _GridControls(wx.Panel):
 
     def onSave(self, event):
         self.parent.save()
+
+    def onSaveImage(self, event):
+        self.parent.saveImage()
 
     def onOpen(self, event):
         self.parent.open(event)
@@ -1073,19 +1080,21 @@ class GridGui(wx.ScrolledWindow):
         self.drawGrid()
         self.Refresh()
 
-    def onPaint(self, event):
-        dc = wx.BufferedPaintDC(self)
+    def onPaint(self, event, dc=None):
+        selfPaint = dc is None
+        dc = dc or wx.BufferedPaintDC(self)
         dc.SetBackground(wx.Brush(wx.Colour(255, 255, 255, 255)))
         dc.Clear()
 
         self.DoPrepareDC(dc)
 
-        xv, yv = self.GetViewStart()
-        dx, dy = self.GetScrollPixelsPerUnit()
-        region = self.GetUpdateRegion()
-        region.Offset(dx * xv, dy * yv)
+        if selfPaint:
+            xv, yv = self.GetViewStart()
+            dx, dy = self.GetScrollPixelsPerUnit()
+            region = self.GetUpdateRegion()
+            region.Offset(dx * xv, dy * yv)
 
-        _ = region.GetBox()
+            _ = region.GetBox()
 
         self.pdc.DrawToDC(dc)
 
@@ -1352,6 +1361,36 @@ class GridBlueprintControl(wx.Panel):
         trying to interact with the layout, we can't know when to increment.
         """
         self.assemblyPalette.editorClicked()
+
+    def saveImage(self):
+        """
+        Save the core layout to an image.
+
+        Currently this only supports PNG images for simplicity. wxpython does not
+        attempt to infer the file type based on extension, so we would need to make a
+        file extension-to-format mapping.
+        """
+        dlg = wx.FileDialog(
+            self,
+            message="Save image to...",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+            wildcard="PNG images (.png)|*.png",
+        )
+
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        else:
+            return
+
+        size = self.clicker.GetVirtualSize()
+        image = wx.Bitmap(size)
+
+        dc = wx.MemoryDC()
+        dc.SelectObject(image)
+
+        self.clicker.onPaint(None, dc=dc)
+        dc.SelectObject(wx.NullBitmap)
+        image.SaveFile(path, wx.BITMAP_TYPE_PNG)
 
     def save(self, stream=None, full=False):
         """
