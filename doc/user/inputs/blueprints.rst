@@ -24,7 +24,10 @@ For example::
        core: !include path/to/core_grid.yaml
 
 would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into
-the main blueprints file.
+the main blueprints file. The rules that ARMI uses to handle things like indentation of
+the included text are usually rather intuitive, but sometimes it can be useful to
+witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run
+for testing inputs with !includes.
 
 ARMI models are built hierarchically, first by defining components, and then by larger and larger
 collections of the levels of the reactor.
