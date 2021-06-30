@@ -41,6 +41,8 @@ def _runInspectorOnSettings(cs):
 class ExpandBlueprints(EntryPoint):
     """
     Perform expansion of !include directives in a blueprint file.
+
+    This is useful for testing inputs that make heavy use of !include directives.
     """
 
     name = "expand-bp"
