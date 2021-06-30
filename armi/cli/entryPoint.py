@@ -75,6 +75,14 @@ class EntryPoint:
     then it is an optional positional argument. Finally, if settingsArgument is
     None, then no settings file argument is added."""
 
+    splash = True
+    """
+    Whether running the entry point should produce a splash text upon executing.
+
+    Setting this to ``False`` is useful for utility commands that produce standard
+    output that would be needlessly cluttered by the splash text.
+    """
+
     #: One of {armi.Mode.BATCH, armi.Mode.INTERACTIVE, armi.Mode.GUI}, optional.
     #: Specifies the ARMI mode in which the command is run. Default is armi.Mode.BATCH.
     mode: Optional[int] = None
