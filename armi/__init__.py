@@ -316,8 +316,6 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
     flags.registerPluginFlags(pm)
-    if MPI_RANK == 0:
-        runLog.raw(app.splashText)
 
 
 def applyAsyncioWindowsWorkaround():
