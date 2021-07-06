@@ -33,6 +33,8 @@ from armi.reactor.flags import Flags
 from armi.reactor import grids
 from armi.bookkeeping import report
 
+LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
+
 
 def colorGenerator(skippedColors=10):
     """
@@ -271,7 +273,7 @@ def plotFaceMap(
     """
     if referencesToKeep:
         patches, collection, texts = referencesToKeep
-        _, ax = plt.gcf(), plt.gca()
+        fig, ax = plt.gcf(), plt.gca()
     else:
         fig, ax = plt.subplots(figsize=(12, 12), dpi=100)
         # set patch (shapes such as hexagon) heat map values
@@ -314,7 +316,8 @@ def plotFaceMap(
     collection.norm.autoscale(numpy.array(data))
 
     # Makes text in the center of each shape displaying the values.
-    _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize)
+    # (The text is either black or white depending on the background color it is written on)
+    _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collection)
 
     if makeColorBar:  # allow a color bar option
         collection2 = matplotlib.collections.PatchCollection(
@@ -323,17 +326,18 @@ def plotFaceMap(
         collection2.set_array(numpy.array(data))
 
         if "radial" in cBarLabel:
-            colbar = ax.colorbar(collection2, ticks=[x + 1 for x in range(max(data))])
+            colbar = fig.colorbar(
+                collection2, ticks=[x + 1 for x in range(max(data))], shrink=0.43
+            )
         else:
-            colbar = ax.colorbar(collection2)
+            colbar = fig.colorbar(collection2, ax=ax, shrink=0.43)
 
         colbar.set_label(cBarLabel, size=20)
         colbar.ax.tick_params(labelsize=16)
 
     if legendMap is not None:
-        legend = _createFaceMapLegend(
-            legendMap, matplotlib.cm.get_cmap(cmapName), collection.norm
-        )
+        legend = _createFaceMapLegend(legendMap, collection)
+
     else:
         legend = None
 
@@ -431,22 +435,43 @@ def _makeAssemPatches(core):
     return patches
 
 
-def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
+def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collection):
     """Write param values down, and return text so it can be edited later."""
     _ = core.getAssemblyPitch()
     for a, val, label in zip(core, data, labels):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
-
+        cmap = collection.get_cmap()
+        patchColor = numpy.asarray(cmap(collection.norm(val)))
+        luminance = patchColor.dot(LUMINANCE_WEIGHTS)
+        dark = luminance < 0.5
+        if dark:
+            color = "white"
+        else:
+            color = "black"
         # Write text on top of patch locations.
         if label is None and labelFmt is not None:
             # Write the value
             labelText = labelFmt.format(val)
             text = ax.text(
-                x, y, labelText, zorder=1, ha="center", va="center", fontsize=fontSize
+                x,
+                y,
+                labelText,
+                zorder=1,
+                ha="center",
+                va="center",
+                fontsize=fontSize,
+                color=color,
             )
         elif label is not None:
             text = ax.text(
-                x, y, label, zorder=1, ha="center", va="center", fontsize=fontSize
+                x,
+                y,
+                label,
+                zorder=1,
+                ha="center",
+                va="center",
+                fontsize=fontSize,
+                color=color,
             )
         else:
             # labelFmt was none, so they don't want any text plotted
@@ -475,7 +500,8 @@ def _createFaceMapLegend(legendMap, cmap, norm):
             width, height = handlebox.width, handlebox.height
             x = x0 + width / 2.0
             y = y0 + height / 2.0
-            normVal = norm(index)
+            normVal = collection.norm(index)
+            cmap = collection.get_cmap()
             colorRgb = cmap(normVal)
             patch = matplotlib.patches.RegularPolygon(
                 (x, y),
@@ -485,8 +511,17 @@ def _createFaceMapLegend(legendMap, cmap, norm):
                 facecolor=colorRgb,
                 transform=handlebox.get_transform(),
             )
+
+            luminance = numpy.array(colorRgb).dot(LUMINANCE_WEIGHTS)
+            dark = luminance < 0.5
+            if dark:
+                color = "white"
+            else:
+                color = "black"
             handlebox.add_artist(patch)
-            txt = mpl_text.Text(x=x, y=y, text=letter, ha="center", va="center", size=7)
+            txt = mpl_text.Text(
+                x=x, y=y, text=letter, ha="center", va="center", size=7, color=color
+            )
             handlebox.add_artist(txt)
             return (patch, txt)
 
@@ -505,7 +540,7 @@ def _createFaceMapLegend(legendMap, cmap, norm):
         loc="center left",
         bbox_to_anchor=(1.0, 0.5),
         frameon=False,
-        prop={"size": 9},
+        prop={"size": size},
     )
     return legend
 
