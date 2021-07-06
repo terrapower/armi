@@ -1738,6 +1738,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
         self.assertTrue(self.HexBlock.spatialGrid is None)
 
+
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
         _ = settings.Settings()
