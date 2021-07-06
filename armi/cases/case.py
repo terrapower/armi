@@ -37,6 +37,7 @@ from typing import Dict, Optional, Sequence
 import tabulate
 import six
 import coverage
+import glob
 
 import armi
 from armi import context
@@ -759,8 +760,20 @@ def copyInterfaceInputs(
                     # looks like an extant, absolute path; no need to do anything
                     pass
                 else:
-                    # relative path/glob. Should be safe to just use glob resolution
-                    srcFiles = list(sourceDirPath.glob(f))
+                    if not (path.exists() and path.is_file()):
+                        runLog.extra(
+                            f"Input file `{f}` not found. Checking for file at path `{sourceDirPath}`"
+                        )
+
+                    # relative path/glob. Should be safe to just use glob resolution.
+                    # Note that `glob.glob` is being used here rather than `pathlib.glob` because
+                    # `pathlib.glob` for Python 3.7.2 does not handle case sensitivity for file and
+                    # path names. This is required for copying and using Python scripts (e.g., fuel management,
+                    # control logic, etc.).
+                    srcFiles = [
+                        pathlib.Path(os.path.join(sourceDirPath, g))
+                        for g in glob.glob(os.path.join(sourceDirPath, f))
+                    ]
                     for sourceFullPath in srcFiles:
                         if not sourceFullPath:
                             continue
