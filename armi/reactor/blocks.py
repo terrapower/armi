@@ -327,10 +327,19 @@ class Block(composites.Composite):
 
     def autoCreateSpatialGrids(self):
         """
+        Creates a spatialGrid for a Block.
+
         Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
         spatialGrids inferred based on the multiplicty of their components.
         This would add the ability to create a spatialGrid for a Block and give its children
         the corresponding spatialLocators if certain conditions are met.
+
+        Raises
+        ------
+        ValueError
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
+
+
         """
         raise NotImplementedError()
 
@@ -1941,20 +1950,29 @@ class HexBlock(Block):
     def autoCreateSpatialGrids(self):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children
-        the corresponding spatialLocators (if it is a simple block). In this case, a simple block would
-        be one that has either multiplicity of components equal to 1 or n but no other multiplicities.
-        Otherwise, raise a ValueError since the number of multiplicities makes it so we cannot generate
-        a grid for this block.
+        the corresponding spatialLocators (if it is a simple block).
 
-        In other words, here we gather all components to either be a multiIndexLocation containing all
+        In this case, a simple block would
+        be one that has either multiplicity of components equal to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly into a given number of hex rings.
+        Otherwise, do not create a grid for this block.
+
+        Notes
+        -----
+        If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
         of the pin positions, otherwise, locator is the center (0,0).
+
+        Raises
+        ------
+        ValueError
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
+
+
         """
 
         # Check multiplicities...
         mults = {c.getDimension("mult") for c in self}
 
         if len(mults) != 2 or 1 not in mults:
-            self.spatialGrid = None
             raise ValueError(
                 "Could not create a spatialGrid for block {}, multiplicities are not 1 or N they are {}".format(
                     self.p.type, mults
@@ -1965,6 +1983,15 @@ class HexBlock(Block):
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
         grid = grids.HexGrid.fromPitch(self.getPinPitch(cold=True), numRings=0)
+        numLocations = 0
+        for ring in range(ringNumber):
+            numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+        if numLocations != self.getNumPins():
+            raise ValueError(
+                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                    numLocations, self.getNumPins()
+                )
+            )
 
         i = 0
         for ring in range(ringNumber):
