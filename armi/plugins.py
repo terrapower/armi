@@ -121,11 +121,13 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
    replaced with plugin-based fuel handler logic.
 """
 from typing import Dict, Union
+from h5py._hl.files import File
 
 import pluggy
 
 from armi import pluginManager
 from armi.utils import flags
+
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
 HOOKIMPL = pluggy.HookimplMarker("armi")
@@ -534,6 +536,23 @@ class ArmiPlugin:
         See Also
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate : Handles these flags
+        """
+
+    @staticmethod
+    @HOOKSPEC
+    def getReportContents(r, cs, report, blueprint, stage):  # ReportContent
+        """
+        To generate a report.
+
+        Parameters
+        ----------
+        r : a reactor
+        cs : case settings
+        report : current report object to add to
+        blueprint : blueprint for a reactor
+        stage : begin/standard/or end (stage of the report for
+                when inserting BOL vs. EOL content)
+
         """
 
 

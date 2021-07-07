@@ -693,50 +693,43 @@ def makeCoreDesignReport(core, cs):
     _setGeneralSimulationData(core, cs, coreDesignTable)
 
 
+def makeCoreDesignReport2(core, cs, report):
+    r"""Builds report to summarize core design inputs
+
+    Parameters
+    ----------
+    core:  armi.reactor.reactors.Core
+    cs: armi.settings.caseSettings.Settings
+    """
+    from armi.bookkeeping import newReports
+
+    coreDesignTable = newReports.TableSection("Core Report Table")
+    coreDesignTable.header = ["", "Input Parameter"]
+    report.sections["Design"]["Core Design Table"] = coreDesignTable
+    # Change the ordering of the core design table in the report relative to the other data
+    # report.data.Report.groupsOrderFirst.insert(0, coreDesignTable)
+    # report.data.Report.componentWellGroups.insert(0, coreDesignTable)
+
+    _setGeneralCoreDesignData(cs, coreDesignTable)
+
+    _setGeneralCoreParametersData(core, cs, coreDesignTable)
+
+    _setGeneralSimulationData(core, cs, coreDesignTable)
+
+
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    report.setData(
-        "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
+    coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
+    coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
+    coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
+    coreDesignTable.addRow(["Loading File", "{}".format(cs["loadingFile"])])
+    coreDesignTable.addRow(
+        ["Fuel Shuffling Logic File", "{}".format(cs["shuffleLogic"])]
     )
-    report.setData(
-        "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Loading File", "{}".format(cs["loadingFile"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Fuel Shuffling Logic File",
-        "{}".format(cs["shuffleLogic"]),
-        coreDesignTable,
-        report.DESIGN,
-    )
-    report.setData(
-        "Reactor State Loading",
-        "{}".format(cs["loadStyle"]),
-        coreDesignTable,
-        report.DESIGN,
-    )
+    coreDesignTable.addRow(["Reactor State Loading", "{}".format(cs["loadStyle"])])
     if cs["loadStyle"] == "fromDB":
-        report.setData(
-            "Database File",
-            "{}".format(cs["reloadDBName"]),
-            coreDesignTable,
-            report.DESIGN,
-        )
-        report.setData(
-            "Starting Cycle",
-            "{}".format(cs["startCycle"]),
-            coreDesignTable,
-            report.DESIGN,
-        )
-        report.setData(
-            "Starting Node",
-            "{}".format(cs["startNode"]),
-            coreDesignTable,
-            report.DESIGN,
-        )
+        coreDesignTable.addRow(["Database File", "{}".format(cs["reloadDBName"])])
+        coreDesignTable.addRow(["Starting Cycle", "{}".format(cs["startCycle"])])
+        coreDesignTable.addRow(["Starting Node", "{}".format(cs["startNode"])])
 
 
 def _setGeneralCoreParametersData(core, cs, coreDesignTable):
@@ -745,119 +738,85 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     fissileMass = sum(b.getFissileMass() for b in blocks)
     heavyMetalMass = sum(b.getHMMass() for b in blocks)
     totalVolume = sum(b.getVolume() for b in blocks)
-    report.setData(" ", "", coreDesignTable, report.DESIGN)
-    report.setData(
-        "Core Power",
-        "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow([" ", ""])
+    coreDesignTable.addRow(
+        ["Core Power", "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW)]
     )
-    report.setData(
-        "Base Capacity Factor",
-        "{}".format(cs["availabilityFactor"]),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        ["Base Capacity Factor", "{}".format(cs["availabilityFactor"])],
     )
-    report.setData(
-        "Cycle Length",
-        "{} days".format(cs["cycleLength"]),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        ["Cycle Length", "{} days".format(cs["cycleLength"])],
     )
-    report.setData(
-        "Burnup Cycles", "{}".format(cs["nCycles"]), coreDesignTable, report.DESIGN
+    coreDesignTable.addRow(
+        ["Burnup Cycles", "{}".format(cs["nCycles"])],
     )
-    report.setData(
-        "Burnup Steps per Cycle",
-        "{}".format(cs["burnSteps"]),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        ["Burnup Steps per Cycle", "{}".format(cs["burnSteps"])],
     )
     corePowerMult = int(core.powerMultiplier)
-    report.setData(
-        "Core Total Volume",
-        "{:.2f} cc".format(totalVolume * corePowerMult),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        ["Core Total Volume", "{:.2f} cc".format(totalVolume * corePowerMult)],
     )
-    report.setData(
-        "Core Fissile Mass",
-        "{:.2f} kg".format(fissileMass / units.G_PER_KG * corePowerMult),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Core Fissile Mass",
+            "{:.2f} kg".format(fissileMass / units.G_PER_KG * corePowerMult),
+        ],
     )
-    report.setData(
-        "Core Heavy Metal Mass",
-        "{:.2f} kg".format(heavyMetalMass / units.G_PER_KG * corePowerMult),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Core Heavy Metal Mass",
+            "{:.2f} kg".format(heavyMetalMass / units.G_PER_KG * corePowerMult),
+        ],
     )
-    report.setData(
-        "Core Total Mass",
-        "{:.2f} kg".format(totalMass / units.G_PER_KG * corePowerMult),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Core Total Mass",
+            "{:.2f} kg".format(totalMass / units.G_PER_KG * corePowerMult),
+        ]
     )
-    report.setData(
-        "Number of Assembly Rings",
-        "{}".format(core.getNumRings()),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        ["Number of Assembly Rings", "{}".format(core.getNumRings())]
     )
-    report.setData(
-        "Number of Assemblies",
-        "{}".format(len(core.getAssemblies() * corePowerMult)),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        ["Number of Assemblies", "{}".format(len(core.getAssemblies() * corePowerMult))]
     )
-    report.setData(
-        "Number of Fuel Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.FUEL) * corePowerMult)),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Number of Fuel Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.FUEL) * corePowerMult)),
+        ]
     )
-    report.setData(
-        "Number of Control Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.CONTROL) * corePowerMult)),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Number of Control Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.CONTROL) * corePowerMult)),
+        ]
     )
-    report.setData(
-        "Number of Reflector Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.REFLECTOR) * corePowerMult)),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Number of Reflector Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.REFLECTOR) * corePowerMult)),
+        ]
     )
-    report.setData(
-        "Number of Shield Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.SHIELD) * corePowerMult)),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(
+        [
+            "Number of Shield Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.SHIELD) * corePowerMult)),
+        ]
     )
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    report.setData("  ", "", coreDesignTable, report.DESIGN)
-    report.setData(
-        "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
+    coreDesignTable.addRow(["  ", ""])
+    coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
+    coreDesignTable.addRow(
+        ["Loose Physics Coupling Enabled", "{}".format(bool(cs["looseCoupling"]))]
     )
-    report.setData(
-        "Loose Physics Coupling Enabled",
-        "{}".format(bool(cs["looseCoupling"])),
-        coreDesignTable,
-        report.DESIGN,
-    )
-    report.setData(
-        "Lattice Physics Enabled for",
-        "{}".format(cs["genXS"]),
-        coreDesignTable,
-        report.DESIGN,
-    )
-    report.setData(
-        "Neutronics Enabled for",
-        "{}".format(cs["globalFluxActive"]),
-        coreDesignTable,
-        report.DESIGN,
+    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
+    coreDesignTable.addRow(
+        ["Neutronics Enabled for", "{}".format(cs["globalFluxActive"])]
     )
 
 
@@ -896,7 +855,70 @@ def makeBlockDesignReport(r):
                 )
 
 
+def makeBlockDesignReport2(blueprint, report, cs):
+    from armi.reactor.components import component
+    from armi.bookkeeping import newReports
+    from armi.bookkeeping import newReportUtils
+
+    r"""Summarize the block designs from the loading file
+
+    Parameters
+    ----------
+    r : armi.reactor.reactors.Reactor
+    """
+    for bDesign in blueprint.blockDesigns:
+        loadingFileTable = newReports.TableSection(
+            "Summary Of Block: {}".format(bDesign.name), "block contents"
+        )
+        loadingFileTable.header = ["", "Input Parameter"]
+        constructedBlock = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
+        loadingFileTable.addRow(["Number of Components", len(bDesign)])
+        lst = [i for i in range(len(bDesign))]
+        for i, cDesign, c in zip(lst, bDesign, constructedBlock):
+            cType = cDesign.name
+            componentSplitter = (i + 1) * " " + "\n"
+            loadingFileTable.addRow([componentSplitter, ""])
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Shape"),
+                    "{} {}".format(cDesign.shape, ""),
+                ]
+            )
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Material"),
+                    "{} {}".format(cDesign.material, ""),
+                ]
+            )
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Hot Temperature"),
+                    "{} {}".format(cDesign.Thot, ""),
+                ]
+            )
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Cold Temperature"),
+                    "{} {}".format(cDesign.Tinput, ""),
+                ]
+            )
+            for dimName in c.DIMENSION_NAMES:
+                value = c.getDimension(dimName, cold=True)
+                if value is not None:
+                    loadingFileTable.addRow(
+                        [
+                            "{} {}".format(cType, dimName),
+                            "{} {}".format(value, "cm"),
+                        ]
+                    )
+            report.sections[newReportUtils.DESIGN][
+                "SUMMARY OF BLOCK: {}".format(bDesign.name)
+            ] = loadingFileTable
+
+
 def _getComponentInputDimensions(cDesign):
+    from armi.reactor.components import component
+
     """Get the input dimensions of a component and place them in a dictionary with labels and units"""
     dims = collections.OrderedDict()
     dims["Shape"] = (cDesign.shape, "")
@@ -908,11 +930,22 @@ def _getComponentInputDimensions(cDesign):
         dims["Custom Isotopics"] = (cDesign.isotopics, "")
 
     for dimName in ComponentType.TYPES[cDesign.shape.lower()].DIMENSION_NAMES:
-        value = getattr(cDesign, dimName)
+        value = cDesign.getDimension(dimName)
 
         if value is not None:
             # if not default, add it to the report
-            dims[dimName] = (getattr(cDesign, dimName).value, "cm")
+            # Here we will want to do something with
+            if type(value) is str:
+                pieces = cDesign.dimName.value.split(".")
+                runLog.info(pieces)
+                dims[dimName] = (
+                    getattr(pieces[0], pieces[1]).value,
+                    "cm",
+                )
+            else:
+                dims[dimName] = (getattr(cDesign, dimName).value, "cm")
+            """else:
+                """
 
     return dims
 
@@ -943,12 +976,6 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
             assemBatch,
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
-        )
-        report.setData(
-            "Assem Types {}".format(plotNum),
-            assemPlotName,
-            assemPlotImage,
-            report.DESIGN,
         )
 
     # Create radial core map
@@ -994,3 +1021,6 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     report.setData(
         "Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN
     )
+
+
+COMPONENT_INFO = "Component Information"

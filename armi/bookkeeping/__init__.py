@@ -17,6 +17,12 @@ The bookkeeping package handles data persistence, reporting, and some debugging.
 """
 from armi import plugins
 
+from armi.bookkeeping import newReports
+
+# from armi.bookkeeping.newReports import ReportContent
+from armi.bookkeeping import newReportUtils
+from htmltree import *
+
 
 class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
@@ -96,3 +102,25 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                     return False
 
         return True
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def getReportContents(r, cs, report, blueprint, stage):
+        """
+        Generate general report content. Where diagrams/tables
+        not specific to additional plugins comes together.
+
+
+        Currently only happening at End and Begin stage because no content gathered
+        in these sections is used to create a graph across time. If
+
+        """
+        from armi.cli import reportsEntryPoint
+
+        if stage == reportsEntryPoint.ReportStage.Begin:
+            return newReportUtils.createGeneralReportContent(
+                cs, r, report, blueprint, stage
+            )
+        elif stage == reportsEntryPoint.ReportStage.End:
+            return newReportUtils.getEndOfLifeContent(r, cs, report)
+        return
