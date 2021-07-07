@@ -1521,6 +1521,9 @@ class Core(composites.Composite):
         Find the assembly pitch for the whole core.
 
         This returns the pitch according to the spatialGrid.
+        To capture any thermal/hydraulic feedback of the core pitch,
+        T/H modules will need to modify the grid pitch directly based
+        on the relevant mechanical assumptions.
 
         Returns
         -------
