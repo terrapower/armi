@@ -1518,38 +1518,20 @@ class Core(composites.Composite):
 
     def getAssemblyPitch(self):
         """
-        Find the representative assembly pitch for the whole core.
+        Find the assembly pitch for the whole core.
 
-        This loops over all fuel blocks to find the best pitch.
+        This returns the pitch according to the spatialGrid.
+        To capture any thermal/hydraulic feedback of the core pitch,
+        T/H modules will need to modify the grid pitch directly based
+        on the relevant mechanical assumptions.
 
         Returns
         -------
-        avgPitch : float
-            The average pitch of fuel assems in cm.
+        pitch : float
+            The assembly pitch.
 
         """
-        pitches = numpy.array([b.getPitch() for b in self.getBlocks(Flags.FUEL)])
-
-        # keepdims assures we get array of length one for when there is only one pitch
-        # value (such as in the hex case), so the same code can be used.
-        keepDims = False if pitches.ndim > 1 else True
-
-        # axis=0 will return average of the horizontal and vertical pitch independently
-        # in the case of rectangular lattice.
-        avgPitch = pitches.mean(axis=0, keepdims=keepDims)
-
-        # Check that pitches are consistent
-        minPitch = pitches.min(axis=0, keepdims=keepDims)
-        maxPitch = pitches.max(axis=0, keepdims=keepDims)
-        minDeviatesTooMuch = any(diff > 1e-10 for diff in avgPitch - minPitch)
-        maxDeviatesTooMuch = any(diff > 1e-10 for diff in maxPitch - avgPitch)
-        if minDeviatesTooMuch or maxDeviatesTooMuch:
-            raise RuntimeError(
-                "Not all fuel blocks have the same pitch (in cm). "
-                "Min: {}, Mean: {}, Max: {}".format(minPitch, avgPitch, maxPitch)
-            )
-        # not keepdims this time so non-tuples are unpacked
-        return pitches.mean(axis=0)
+        return self.spatialGrid.pitch
 
     def findNeighbors(
         self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
