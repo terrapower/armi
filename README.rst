@@ -420,8 +420,7 @@ The ARMI system is licensed as follows:
 
 --------------
 
-.. |Build Status| image:: https://travis-ci.com/terrapower/armi.svg?branch=master
-    :target: https://travis-ci.com/terrapower/armi
+.. |Build Status| image:: https://github.com/terrapower/armi/actions/workflows/unittests.yml/badge.svg?branch=master
 
 .. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master
     :target: https://coveralls.io/github/terrapower/armi?branch=master
