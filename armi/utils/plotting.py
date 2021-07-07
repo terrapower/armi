@@ -479,7 +479,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collectio
         texts.append(text)
 
 
-def _createFaceMapLegend(legendMap, cmap, norm):
+def _createFaceMapLegend(legendMap, collection, size=9):
     """Make special assembly-legend for the assembly face map plot with assembly counts."""
 
     class AssemblyLegend:
