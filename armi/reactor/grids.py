@@ -436,6 +436,11 @@ class MultiIndexLocation(IndexLocation):
     def __len__(self):
         return len(self._locations)
 
+    def detachedCopy(self):
+        loc = MultiIndexLocation(None)
+        loc.extend(self._locations)
+        return loc
+
     def getCompleteIndices(self) -> Tuple[int, int, int]:
         raise NotImplementedError("Multi locations cannot do this yet.")
 
@@ -451,6 +456,17 @@ class MultiIndexLocation(IndexLocation):
     @property
     def indices(self):
         raise NotImplementedError
+
+    @property
+    def allIndices(self):
+        """
+        Return a list containing the indices of all contained locations.
+
+        This could be done in the indices property, but that would violate LSP and
+        probably lead to lots of bugs when callers are expecting a single set of
+        indices, rather than a 2-D array of them.
+        """
+        return numpy.array([loc.indices for loc in self._locations])
 
 
 class CoordinateLocation(IndexLocation):
