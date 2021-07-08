@@ -34,6 +34,7 @@ from armi.cases import case
 from armi.utils import directoryChangers
 from armi import runLog
 from armi.reactor.tests import test_reactors
+from armi.reactor import grids
 
 
 def getSimpleDBOperator(cs):
@@ -265,7 +266,14 @@ class TestDatabaseReading(unittest.TestCase):
 
                 for c1, c2 in zip(sorted(b1), sorted(b2)):
                     self.assertEqual(c1.name, c2.name)
-                    assert_equal(c1.spatialLocator.indices, c2.spatialLocator.indices)
+                    if isinstance(c1.spatialLocator, grids.MultiIndexLocation):
+                        assert_equal(
+                            c1.spatialLocator.allIndices, c2.spatialLocator.allIndices
+                        )
+                    else:
+                        assert_equal(
+                            c1.spatialLocator.indices, c2.spatialLocator.indices
+                        )
                     self.assertEqual(c1.p.serialNum, c2.p.serialNum)
 
                 # volume is pretty difficult to get right. it relies upon linked dimensions

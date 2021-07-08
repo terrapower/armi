@@ -457,6 +457,17 @@ class MultiIndexLocation(IndexLocation):
     def indices(self):
         raise NotImplementedError
 
+    @property
+    def allIndices(self):
+        """
+        Return a list containing the indices of all contained locations.
+
+        This could be done in the indices property, but that would violate LSP and
+        probably lead to lots of bugs when callers are expecting a single set of
+        indices, rather than a 2-D array of them.
+        """
+        return numpy.array([loc.indices for loc in self._locations])
+
 
 class CoordinateLocation(IndexLocation):
     """
