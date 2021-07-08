@@ -1217,12 +1217,15 @@ def plotBlockDiagram(block, cmapName, num, temp):
     """Given a Block with a spatial Grid, plot the diagram of
     it with all of its components. (wire, duct, coolant, etc...)
 
-    Parameters:
-
-    block - block object
-    cmapName - name of a colorMap to use for block colors
-    num - for making the file name (What number block are we plotting)
-
+    Parameters
+    ----------
+    block : block object
+    cmapName : String
+        name of a colorMap to use for block colors
+    num : int
+        for making the file name (What number block are we plotting)
+    temp : boolean
+        cold is true, hot is false.
     """
     from collections import defaultdict
     import copy
