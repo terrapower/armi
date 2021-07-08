@@ -162,6 +162,11 @@ class BlockBlueprint(yamlize.KeyedList):
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid
 
+        if b.spatialGrid is None:
+            try:
+                b.autoCreateSpatialGrids()
+            except (ValueError, NotImplementedError) as e:
+                runLog.warning(str(e), single=True)
         return b
 
     def _getGridDesign(self, blueprint):

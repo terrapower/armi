@@ -1704,6 +1704,67 @@ class HexBlock_TestCase(unittest.TestCase):
         f2f = self.HexBlock.getPinCenterFlatToFlat()
         self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
 
+    def test_gridCreation(self):
+        b = self.HexBlock
+        # The block should have a spatial grid at construction,
+        # since it has mults = 1 or 169 from setup
+        b.autoCreateSpatialGrids()
+        self.assertTrue(b.spatialGrid is not None)
+        for c in b:
+            if c.getDimension("mult", cold=True) == 169:
+                # Then it's spatialLocator must be of size 169
+                locations = c.spatialLocator
+                self.assertEqual(type(locations), grids.MultiIndexLocation)
+                mult = 0
+                for loc in locations:
+                    mult = mult + 1
+                self.assertEqual(mult, 169)
+
+    def test_gridNumPinsAndLocations(self):
+        b = blocks.HexBlock("fuel", height=10.0)
+
+        fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 168.0}
+        cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 168.0}
+        ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+        wireDims = {
+            "Tinput": 25.0,
+            "Thot": 600,
+            "od": 0.1,
+            "id": 0.0,
+            "axialPitch": 30.0,
+            "helixDiameter": 0.9,
+            "mult": 168.0,
+        }
+        wire = components.Helix("wire", "HT9", **wireDims)
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        clad = components.Circle("clad", "HT9", **cladDims)
+        duct = components.Hexagon("duct", "HT9", **ductDims)
+        b.add(fuel)
+        b.add(clad)
+        b.add(duct)
+        b.add(wire)
+        with self.assertRaises(ValueError):
+            b.autoCreateSpatialGrids()
+        self.assertTrue(b.spatialGrid is None)
+
+    def test_gridNotCreatedMultipleMultiplicities(self):
+        wireDims = {
+            "Tinput": 200,
+            "Thot": 200,
+            "od": 0.1,
+            "id": 0.0,
+            "axialPitch": 30.0,
+            "helixDiameter": 1.1,
+            "mult": 21.0,
+        }
+        # add a wire only some places in the block, so grid should not be created.
+        wire = components.Helix("wire", "HT9", **wireDims)
+        self.HexBlock.add(wire)
+        with self.assertRaises(ValueError):
+            self.HexBlock.autoCreateSpatialGrids()
+
+        self.assertTrue(self.HexBlock.spatialGrid is None)
+
 
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
@@ -1812,6 +1873,12 @@ class ThRZBlock_TestCase(unittest.TestCase):
         """
         self.ThRZBlock.verifyBlockDims()
 
+    def test_getThetaRZGrid(self):
+        b = self.ThRZBlock
+        with self.assertRaises(NotImplementedError):
+            b.autoCreateSpatialGrids()
+        # Since not applicable to Cartesian Grids.
+
 
 class CartesianBlock_TestCase(unittest.TestCase):
     """Tests for blocks with rectangular/square outer shape."""
@@ -1904,6 +1971,12 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.assertEqual(desiredPitch, cartBlock.getPitch())
         self.assertAlmostEqual(rectTotalArea, cartBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
+
+    def test_getCartesianGrid(self):
+        b = self.cartesianBlock
+        with self.assertRaises(NotImplementedError):
+            b.autoCreateSpatialGrids()
+        # Since not applicable to Cartesian Grids.
 
 
 class PointTests(unittest.TestCase):

@@ -325,6 +325,24 @@ class Block(composites.Composite):
 
         return smearDensity
 
+    def autoCreateSpatialGrids(self):
+        """
+        Creates a spatialGrid for a Block.
+
+        Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
+        spatialGrids inferred based on the multiplicty of their components.
+        This would add the ability to create a spatialGrid for a Block and give its children
+        the corresponding spatialLocators if certain conditions are met.
+
+        Raises
+        ------
+        ValueError
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
+
+
+        """
+        raise NotImplementedError()
+
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s]
@@ -1928,6 +1946,66 @@ class HexBlock(Block):
                 xyz = grid[i, j, 0].getLocalCoordinates()
                 coordinates.append(xyz)
         return coordinates
+
+    def autoCreateSpatialGrids(self):
+        """
+        Given a block without a spatialGrid, create a spatialGrid and give its children
+        the corresponding spatialLocators (if it is a simple block).
+
+        In this case, a simple block would
+        be one that has either multiplicity of components equal to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly into a given number of hex rings.
+        Otherwise, do not create a grid for this block.
+
+        Notes
+        -----
+        If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
+        of the pin positions, otherwise, locator is the center (0,0).
+
+        Raises
+        ------
+        ValueError
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
+
+
+        """
+
+        # Check multiplicities...
+        mults = {c.getDimension("mult") for c in self}
+
+        if len(mults) != 2 or 1 not in mults:
+            raise ValueError(
+                "Could not create a spatialGrid for block {}, multiplicities are not 1 or N they are {}".format(
+                    self.p.type, mults
+                )
+            )
+
+        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
+        # For the below to work, there must not be multiple wire or multiple clad types.
+        grid = grids.HexGrid.fromPitch(self.getPinPitch(cold=True), numRings=0)
+        numLocations = 0
+        for ring in range(ringNumber):
+            numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+        if numLocations != self.getNumPins():
+            raise ValueError(
+                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                    numLocations, self.getNumPins()
+                )
+            )
+
+        i = 0
+        for ring in range(ringNumber):
+            for pos in range(grid.getPositionsInRing(ring + 1)):
+                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
+                spatialLocators.append(grid[i, j, 0])
+        if self.spatialGrid is None:
+            self.spatialGrid = grid
+            for c in self:
+                if c.getDimension("mult") > 1:
+                    c.spatialLocator = spatialLocators
+                elif c.getDimension("mult") == 1:
+
+                    c.spatialLocator = grids.IndexLocation(0, 0, 0, self.spatialGrid)
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
