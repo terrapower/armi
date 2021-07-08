@@ -436,6 +436,11 @@ class MultiIndexLocation(IndexLocation):
     def __len__(self):
         return len(self._locations)
 
+    def detachedCopy(self):
+        loc = MultiIndexLocation(None)
+        loc.extend(self._locations)
+        return loc
+
     def getCompleteIndices(self) -> Tuple[int, int, int]:
         raise NotImplementedError("Multi locations cannot do this yet.")
 
