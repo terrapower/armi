@@ -32,6 +32,7 @@ from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor import grids
 from armi.bookkeeping import report
+from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
 
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
 
@@ -336,7 +337,7 @@ def plotFaceMap(
         colbar.ax.tick_params(labelsize=16)
 
     if legendMap is not None:
-        legend = _createFaceMapLegend(legendMap, collection)
+        legend = _createLegend(legendMap, collection)
 
     else:
         legend = None
@@ -411,7 +412,7 @@ def _makeAssemPatches(core):
     if isinstance(core.spatialGrid, grids.HexGrid):
         nSides = 6
     elif isinstance(core.spatialGrid, grids.ThetaRZGrid):
-        raise ValueError(
+        raise TypeError(
             "This plot function is not currently supported for ThetaRZGrid grids."
         )
     else:
@@ -479,8 +480,8 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collectio
         texts.append(text)
 
 
-def _createFaceMapLegend(legendMap, collection, size=9):
-    """Make special assembly-legend for the assembly face map plot with assembly counts."""
+def _createLegend(legendMap, collection, size=9, shape=Hexagon):
+    """Make special legend for the assembly face map plot with assembly counts, and Block Diagrams."""
 
     class AssemblyLegend:
         """
@@ -503,14 +504,30 @@ def _createFaceMapLegend(legendMap, collection, size=9):
             normVal = collection.norm(index)
             cmap = collection.get_cmap()
             colorRgb = cmap(normVal)
-            patch = matplotlib.patches.RegularPolygon(
-                (x, y),
-                6,
-                height,
-                orientation=math.pi / 2.0,
-                facecolor=colorRgb,
-                transform=handlebox.get_transform(),
-            )
+            if shape == Hexagon:
+                patch = matplotlib.patches.RegularPolygon(
+                    (x, y),
+                    6,
+                    height,
+                    orientation=math.pi / 2.0,
+                    facecolor=colorRgb,
+                    transform=handlebox.get_transform(),
+                )
+            elif shape == Rectangle:
+                patch = matplotlib.patches.Rectangle(
+                    (x - height / 2, y - height / 2),
+                    height * 2,
+                    height,
+                    facecolor=colorRgb,
+                    transform=handlebox.get_transform(),
+                )
+            else:
+                patch = matplotlib.patches.Circle(
+                    (x, y),
+                    height,
+                    facecolor=colorRgb,
+                    transform=handlebox.get_transform(),
+                )
 
             luminance = numpy.array(colorRgb).dot(LUMINANCE_WEIGHTS)
             dark = luminance < 0.5
@@ -1048,7 +1065,7 @@ def makeHistogram(x, y):
     return xHistogram, yHistogram
 
 
-def _makeBlockPinPatches(block, temp):
+def _makeBlockPinPatches(block, cold):
     """Return lists of block component patches and corresponding data and names (which relates to material
     of the component for later plot-coloring/legend) for a single block.
 
@@ -1059,10 +1076,10 @@ def _makeBlockPinPatches(block, temp):
 
     Parameters
     ----------
-    block : block
+    block : Block
 
-    temp : boolean
-        cold = true, hot = false
+    cold : boolean
+        true for cold temps, hot = false
 
     Return
     ------
@@ -1075,43 +1092,50 @@ def _makeBlockPinPatches(block, temp):
     name : list
         list of the names of these components
     """
+    from armi.reactor.components import DerivedShape
+
     patches = []
     data = []
     name = []
     if isinstance(block.spatialGrid, grids.HexGrid):
-        nSides = 6
-        smallestInnerPitch = block.getPitch()
+        largestPitch, comp = block.getPitch(returnComp=True)
 
     elif isinstance(block.spatialGrid, grids.ThetaRZGrid):
-        raise ValueError(
+        raise TypeError(
             "This plot function is not currently supported for ThetaRZGrid grids."
         )
     else:
-        nSides = 4
-        smallestInnerPitch = block.getPitch()[0]
+        largestPitch, comp = block.getPitch(returnComp=True)
         if block.getPitch()[0] != block.getPitch()[1]:
             raise ValueError("Only works for blocks with equal length and width.")
 
-    sortedComp = []
+    sortedComp = [c for c in block]
 
-    # Finds the smallest innerPitch(for HexBlock), or widthInner(for Cartesian)
-    #  which will be used later for placing the DerivedShape Element.
-    for component in block:
-        sortedComp.append(component)
-        if nSides == 6:
-            if "ip" in component.DIMENSION_NAMES:
-                if component.getDimension("ip", cold=temp) < smallestInnerPitch:
-                    smallestInnerPitch = component.getDimension("ip", cold=temp)
+    derivedComponent = block.getComponentsOfShape(DerivedShape)
+    if len(derivedComponent) == 1:
+        component = derivedComponent[0]
+        cName = component.name
+        material = component.material.name
+        if isinstance(comp, Hexagon):
+            derivedPatch = matplotlib.patches.RegularPolygon(
+                (0, 0), 6, largestPitch / math.sqrt(3)
+            )
+        elif isinstance(comp, Square):
+            derivedPatch = matplotlib.patches.Rectangle(
+                (0, 0), largestPitch[0], largestPitch[0]
+            )
         else:
-            if "widthInner" in component.DIMENSION_NAMES:
-                if (
-                    component.getDimension("widthInner", cold=temp) < smallestInnerPitch
-                    and component.getDimension("widthInner", cold=temp) != 0.0
-                ):
-                    smallestInnerPitch = component.getDimension("widthInner", cold=temp)
-
-    for components in sorted(sortedComp):
-        if components.name != "pitch":
+            raise TypeError(
+                "Shape of the pitch-defining element is not a Square or Hex it is {}, cannot plot for this type of block".format(
+                    comp.shape
+                )
+            )
+        patches.append(derivedPatch)
+        data.append(material)
+        name.append(cName)
+    sortedComp.sort(reverse=True)
+    for components in sortedComp:
+        if components.name is not "pitch" and not isinstance(components, DerivedShape):
             loc = components.spatialLocator
             if not isinstance(loc, grids.MultiIndexLocation):
                 # make a single location a list to iterate.
@@ -1122,16 +1146,16 @@ def _makeBlockPinPatches(block, temp):
                 x, y, _ = local.getLocalCoordinates()
                 # goes through each location
                 # want to place a patch at that location
-                blockPatch = _makeComponentPatch(
-                    components, (x, y), temp, nSides, smallestInnerPitch
-                )
-                patches.insert(0, blockPatch)
-                data.insert(0, components.material.name)
-                name.insert(0, components.name)
+                blockPatch = _makeComponentPatch(components, (x, y), cold)
+                for element in blockPatch:
+                    patches.append(element)
+                    data.append(components.material.name)
+                    name.append(components.name)
+
     return patches, data, name
 
 
-def _makeComponentPatch(component, position, temp, nSides, smallestInnerForDerived):
+def _makeComponentPatch(component, position, cold):
     """Makes a component shaped patch to later be used for making block diagrams.
 
     Parameters
@@ -1141,7 +1165,7 @@ def _makeComponentPatch(component, position, temp, nSides, smallestInnerForDeriv
         position: tuple
             (x, y) position
 
-        temp: boolean
+        cold: boolean
             True if looking for dimension at cold temps
 
         nSides: int
@@ -1152,11 +1176,18 @@ def _makeComponentPatch(component, position, temp, nSides, smallestInnerForDeriv
                                 so to draw it currently, it uses the smallest innerPitch(for HexBlocks)
                                 or smallest widthInner for Cartesian.
 
+    Return
+    ------
+        blockPatch: List
+            A list that is either one element (a single patch), or 6 in the case of a Hexagon
+            (to account for its empty center)
+
     Notes
     -----
     Currently accepts components of shape DerivedShape, Helix, Circle, or Square
     """
-    from armi.reactor.components import DerivedShape, Helix, Circle, Square, Rectangle
+    from armi.reactor.components import Helix, Circle, Rectangle
+    from armi.utils import hexagon
 
     x = position[0]
     y = position[1]
@@ -1167,53 +1198,115 @@ def _makeComponentPatch(component, position, temp, nSides, smallestInnerForDeriv
                 x + component.getDimension("helixDiameter") / 2 * math.cos(math.pi / 6),
                 y + component.getDimension("helixDiameter") / 2 * math.sin(math.pi / 6),
             ),
-            component.getDimension("od", cold=temp) / 2,
+            component.getDimension("od", cold) / 2,
             0,
             360,
-            width=(component.getDimension("od", cold=temp) / 2)
-            - (component.getDimension("id", cold=temp) / 2),
+            width=(component.getDimension("od", cold) / 2)
+            - (component.getDimension("id", cold) / 2),
         )
     elif isinstance(component, Circle):
 
         blockPatch = matplotlib.patches.Wedge(
             (x, y),
-            component.getDimension("od", cold=temp) / 2,
+            component.getDimension("od", cold) / 2,
             0,
             360,
-            width=(component.getDimension("od", cold=temp) / 2)
-            - (component.getDimension("id", cold=temp) / 2),
+            width=(component.getDimension("od", cold) / 2)
+            - (component.getDimension("id", cold) / 2),
         )
     elif isinstance(component, Hexagon):
-        blockPatch = matplotlib.patches.RegularPolygon(
-            (x, y),
-            6,
-            component.getDimension("op", cold=temp) / math.sqrt(3),
-        )
-    elif isinstance(component, DerivedShape):
-        if nSides == 6:
-            blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y),
-                6,
-                smallestInnerForDerived / math.sqrt(3),
+        if component.getDimension("ip", cold) != 0:
+            innerPoints = numpy.array(
+                hexagon.corners(30) * component.getDimension("ip", cold)
             )
+            outerPoints = numpy.array(
+                hexagon.corners(30) * component.getDimension("op", cold)
+            )
+            blockPatch = []
+            for n in range(6):
+                corners = [
+                    innerPoints[n],
+                    innerPoints[(n + 1) % 6],
+                    outerPoints[(n + 1) % 6],
+                    outerPoints[n],
+                ]
+                patch = matplotlib.patches.Polygon(corners, fill=True)
+                blockPatch.append(patch)
         else:
-            blockPatch = matplotlib.patches.Rectangle(
-                (x, y), smallestInnerForDerived, smallestInnerForDerived
+            # Just make it a hexagon...
+            blockPatch = matplotlib.patches.RegularPolygon(
+                (x, y), 6, component.getDimension("op") / math.sqrt(3)
             )
-    elif isinstance(component, Square):
-        blockPatch = matplotlib.patches.Rectangle(
-            (
-                x - component.getDimension("widthOuter", cold=temp) / 2,
-                y - component.getDimension("widthOuter", cold=temp) / 2,
-            ),
-            component.getDimension("widthOuter", cold=temp),
-            component.getDimension("widthOuter", cold=temp),
-        )
 
+    elif isinstance(component, Rectangle):
+        if component.getDimension("widthInner") != 0:
+            innerPoints = numpy.array(
+                [
+                    [
+                        x + component.getDimension("widthInner") / 2,
+                        y + component.getDimension("lengthInner") / 2,
+                    ],
+                    [
+                        x + component.getDimension("widthInner") / 2,
+                        y - component.getDimension("lengthInner") / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthInner") / 2,
+                        y - component.getDimension("lengthInner") / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthInner") / 2,
+                        y + component.getDimension("lengthInner") / 2,
+                    ],
+                ]
+            )
+
+            outerPoints = numpy.array(
+                [
+                    [
+                        x + component.getDimension("widthOuter") / 2,
+                        y + component.getDimension("lengthOuter") / 2,
+                    ],
+                    [
+                        x + component.getDimension("widthOuter") / 2,
+                        y - component.getDimension("lengthOuter") / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthOuter") / 2,
+                        y - component.getDimension("lengthOuter") / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthOuter") / 2,
+                        y + component.getDimension("lengthOuter") / 2,
+                    ],
+                ]
+            )
+            blockPatch = []
+            for n in range(4):
+                corners = [
+                    innerPoints[n],
+                    innerPoints[(n + 1) % 4],
+                    outerPoints[(n + 1) % 4],
+                    outerPoints[n],
+                ]
+                patch = matplotlib.patches.Polygon(corners, fill=True)
+                blockPatch.append(patch)
+        else:
+            # Just make it a rectangle...
+            blockPatch = matplotlib.patches.Rectangle(
+                (
+                    x - component.getDimension("widthOuter", cold) / 2,
+                    y - component.getDimension("lengthOuter", cold) / 2,
+                ),
+                component.getDimension("widthOuter", cold),
+                component.getDimension("lengthOuter", cold),
+            )
+    if type(blockPatch) is not list:
+        blockPatch = [blockPatch]
     return blockPatch
 
 
-def plotBlockDiagram(block, cmapName, num, temp):
+def plotBlockDiagram(block, cmapName, num, cold):
     """Given a Block with a spatial Grid, plot the diagram of
     it with all of its components. (wire, duct, coolant, etc...)
 
@@ -1224,18 +1317,17 @@ def plotBlockDiagram(block, cmapName, num, temp):
         name of a colorMap to use for block colors
     num : int
         for making the file name (What number block are we plotting)
-    temp : boolean
-        cold is true, hot is false.
+    cold : boolean
+        true is for cold temps, hot is false.
     """
     from collections import defaultdict
     import copy
 
     fig, ax = plt.subplots(figsize=(50, 50), dpi=100)
 
-    blockCopy = block
-    if blockCopy.spatialGrid is None:
+    if block.spatialGrid is None:
         return None
-    patches, data, name = _makeBlockPinPatches(blockCopy, temp)
+    patches, data, name = _makeBlockPinPatches(block, cold)
 
     collection = matplotlib.collections.PatchCollection(
         patches, cmap=cmapName, alpha=1.0
@@ -1263,7 +1355,7 @@ def plotBlockDiagram(block, cmapName, num, temp):
         )
         for materialName in colorMap
     ]
-    legend = _createFaceMapLegend(legendMap, collection, 90)
+    legend = _createLegend(legendMap, collection, size=90, shape=Rectangle)
     pltKwargs = {
         "bbox_extra_artists": (legend,),
         "bbox_inches": "tight",
@@ -1278,5 +1370,5 @@ def plotBlockDiagram(block, cmapName, num, temp):
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
-    plt.savefig("practiceBlock{}.svg".format(num), format="svg", **pltKwargs)
-    return os.path.abspath("practiceBlock{}.svg".format(num))
+    plt.savefig("blockDiagram{}.svg".format(num), format="svg", **pltKwargs)
+    return os.path.abspath("blockDiagram{}.svg".format(num))
