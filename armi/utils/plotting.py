@@ -1168,14 +1168,6 @@ def _makeComponentPatch(component, position, cold):
         cold: boolean
             True if looking for dimension at cold temps
 
-        nSides: int
-            Either 4 or 6, for Thermal vs. Fast Reactors.
-
-        smallestInnerForDerived: int
-                                The DerivedShape is the backdrop of everything else,
-                                so to draw it currently, it uses the smallest innerPitch(for HexBlocks)
-                                or smallest widthInner for Cartesian.
-
     Return
     ------
         blockPatch: List

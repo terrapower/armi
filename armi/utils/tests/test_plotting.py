@@ -100,7 +100,9 @@ class TestPlotting(unittest.TestCase):
         from armi import settings
         from armi.reactor import blueprints, reactors
 
-        cs = settings.Settings(os.path.join(TEST_ROOT, "tutorials\\c5g7-settings.yaml"))
+        cs = settings.Settings(
+            os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
+        )
         blueprint = blueprints.loadFromCs(cs)
         r = reactors.factory(cs, blueprint)
 
