@@ -17,6 +17,8 @@ import itertools
 import math
 import re
 import os
+from collections import defaultdict
+
 
 import numpy
 from ordered_set import OrderedSet
@@ -33,6 +35,9 @@ from armi.reactor.flags import Flags
 from armi.reactor import grids
 from armi.bookkeeping import report
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
+from armi.reactor.components import Helix, Circle, Rectangle, DerivedShape
+from armi.utils import hexagon
+
 
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
 
@@ -1092,11 +1097,10 @@ def _makeBlockPinPatches(block, cold):
     name : list
         list of the names of these components
     """
-    from armi.reactor.components import DerivedShape
 
     patches = []
     data = []
-    name = []
+    names = []
     if isinstance(block.spatialGrid, grids.HexGrid):
         largestPitch, comp = block.getPitch(returnComp=True)
 
@@ -1109,13 +1113,14 @@ def _makeBlockPinPatches(block, cold):
         if block.getPitch()[0] != block.getPitch()[1]:
             raise ValueError("Only works for blocks with equal length and width.")
 
-    sortedComp = [c for c in block]
+    sortedComps = sorted(block, reverse=True)
 
-    derivedComponent = block.getComponentsOfShape(DerivedShape)
-    if len(derivedComponent) == 1:
-        component = derivedComponent[0]
-        cName = component.name
-        material = component.material.name
+    derivedComponents = block.getComponentsOfShape(DerivedShape)
+    if len(derivedComponents) == 1:
+        derivedComponent = derivedComponents[0]
+        sortedComps.remove(derivedComponent)
+        cName = derivedComponent.name
+        material = derivedComponent.material.name
         if isinstance(comp, Hexagon):
             derivedPatch = matplotlib.patches.RegularPolygon(
                 (0, 0), 6, largestPitch / math.sqrt(3)
@@ -1132,27 +1137,24 @@ def _makeBlockPinPatches(block, cold):
             )
         patches.append(derivedPatch)
         data.append(material)
-        name.append(cName)
-    sortedComp.sort(reverse=True)
-    for components in sortedComp:
-        if components.name is not "pitch" and not isinstance(components, DerivedShape):
-            loc = components.spatialLocator
-            if not isinstance(loc, grids.MultiIndexLocation):
-                # make a single location a list to iterate.
-                loc = [
-                    loc,
-                ]
-            for local in loc:
-                x, y, _ = local.getLocalCoordinates()
-                # goes through each location
-                # want to place a patch at that location
-                blockPatch = _makeComponentPatch(components, (x, y), cold)
-                for element in blockPatch:
-                    patches.append(element)
-                    data.append(components.material.name)
-                    name.append(components.name)
+        names.append(cName)
+    for component in sortedComps:
+        locs = component.spatialLocator
+        if not isinstance(locs, grids.MultiIndexLocation):
+            # make a single location a list to iterate.
+            locs = [locs]
+        for loc in locs:
+            x, y, _ = loc.getLocalCoordinates()
 
-    return patches, data, name
+            # goes through each location
+            # want to place a patch at that location
+            blockPatches = _makeComponentPatch(component, (x, y), cold)
+            for element in blockPatches:
+                patches.append(element)
+                data.append(component.material.name)
+                names.append(component.name)
+
+    return patches, data, names
 
 
 def _makeComponentPatch(component, position, cold):
@@ -1171,15 +1173,12 @@ def _makeComponentPatch(component, position, cold):
     Return
     ------
         blockPatch: List
-            A list that is either one element (a single patch), or 6 in the case of a Hexagon
-            (to account for its empty center)
+            A list of Patch objects that together represent a component in the diagram.
 
     Notes
     -----
     Currently accepts components of shape DerivedShape, Helix, Circle, or Square
     """
-    from armi.reactor.components import Helix, Circle, Rectangle
-    from armi.utils import hexagon
 
     x = position[0]
     y = position[1]
@@ -1293,27 +1292,25 @@ def _makeComponentPatch(component, position, cold):
                 component.getDimension("widthOuter", cold),
                 component.getDimension("lengthOuter", cold),
             )
-    if type(blockPatch) is not list:
-        blockPatch = [blockPatch]
-    return blockPatch
+    if isinstance(blockPatch, list):
+        return blockPatch
+    return [blockPatch]
 
 
-def plotBlockDiagram(block, cmapName, num, cold):
+def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu"):
     """Given a Block with a spatial Grid, plot the diagram of
     it with all of its components. (wire, duct, coolant, etc...)
 
     Parameters
     ----------
     block : block object
-    cmapName : String
-        name of a colorMap to use for block colors
-    num : int
-        for making the file name (What number block are we plotting)
+    fName : String
+        name of the file to save to
     cold : boolean
         true is for cold temps, hot is false.
+    cmapName : String
+        name of a colorMap to use for block colors
     """
-    from collections import defaultdict
-    import copy
 
     fig, ax = plt.subplots(figsize=(50, 50), dpi=100)
 
@@ -1362,5 +1359,5 @@ def plotBlockDiagram(block, cmapName, num, cold):
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
-    plt.savefig("blockDiagram{}.svg".format(num), format="svg", **pltKwargs)
-    return os.path.abspath("blockDiagram{}.svg".format(num))
+    plt.savefig(fName, format="svg", **pltKwargs)
+    return os.path.abspath(fName)
