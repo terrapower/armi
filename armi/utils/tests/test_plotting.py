@@ -93,8 +93,8 @@ class TestPlotting(unittest.TestCase):
         o, r = test_reactors.loadTestReactor()
         first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
         first_fuel_block.autoCreateSpatialGrids()
-        plotting.plotBlockDiagram(first_fuel_block, "jet", 21, True)
-        self._checkExists("blockDiagram21.svg")
+        plotting.plotBlockDiagram(first_fuel_block, "jet", 23, True)
+        self._checkExists("blockDiagram23.svg")
 
     def test_plotCartesianBlock(self):
         from armi import settings
@@ -107,9 +107,9 @@ class TestPlotting(unittest.TestCase):
         r = reactors.factory(cs, blueprint)
 
         for b in r.core.getBlocks():
-            plotting.plotBlockDiagram(b, "jet", 20, True)
+            plotting.plotBlockDiagram(b, "jet", 22, True)
             break
-        self._checkExists("BlockDiagram20.svg")
+        self._checkExists("blockDiagram22.svg")
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
