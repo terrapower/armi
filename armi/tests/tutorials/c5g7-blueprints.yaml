@@ -177,6 +177,7 @@ blocks:
             widthInner: 21.42
             widthOuter: 21.42
             mult: 1.0
+            latticeIDs: [FC]
 # end-block-uo2
     mox: &block_mox
         grid name: MOX grid

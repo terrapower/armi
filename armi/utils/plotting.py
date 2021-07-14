@@ -1121,13 +1121,19 @@ def _makeBlockPinPatches(block, cold):
         sortedComps.remove(derivedComponent)
         cName = derivedComponent.name
         material = derivedComponent.material.name
+        location = comp.spatialLocator
+        if isinstance(location, grids.MultiIndexLocation):
+            location = location[0]
+        x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
             derivedPatch = matplotlib.patches.RegularPolygon(
-                (0, 0), 6, largestPitch / math.sqrt(3)
+                (x, y), 6, largestPitch / math.sqrt(3)
             )
         elif isinstance(comp, Square):
             derivedPatch = matplotlib.patches.Rectangle(
-                (0, 0), largestPitch[0], largestPitch[0]
+                (x - largestPitch[0] / 2, y - largestPitch[0] / 2),
+                largestPitch[0],
+                largestPitch[0],
             )
         else:
             raise TypeError(
