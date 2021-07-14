@@ -90,8 +90,7 @@ class TestPlotting(unittest.TestCase):
             os.remove("bList2.png")  # created during the call.
 
     def test_plotHexBlock(self):
-        o, r = test_reactors.loadTestReactor()
-        first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
+        first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
         first_fuel_block.autoCreateSpatialGrids()
         plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
         self._checkExists("blockDiagram23.svg")
@@ -103,11 +102,13 @@ class TestPlotting(unittest.TestCase):
         cs = settings.Settings(
             os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
         )
+
         blueprint = blueprints.loadFromCs(cs)
         r = reactors.factory(cs, blueprint)
-        for b in r.core.getBlocks():
-            plotting.plotBlockDiagram(b, "blockDiagram25.svg", True)
-        self._checkExists("blockDiagram25.svg")
+        for name, bDesign in blueprint.blockDesigns.items():
+            b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
+            plotting.plotBlockDiagram(b, "{}.svg".format(name), True)
+        self._checkExists("UO2.svg")
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))

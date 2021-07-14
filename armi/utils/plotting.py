@@ -1186,32 +1186,38 @@ def _makeComponentPatch(component, position, cold):
     if isinstance(component, Helix):
         blockPatch = matplotlib.patches.Wedge(
             (
-                x + component.getDimension("helixDiameter") / 2 * math.cos(math.pi / 6),
-                y + component.getDimension("helixDiameter") / 2 * math.sin(math.pi / 6),
+                x
+                + component.getDimension("helixDiameter", cold=cold)
+                / 2
+                * math.cos(math.pi / 6),
+                y
+                + component.getDimension("helixDiameter", cold=cold)
+                / 2
+                * math.sin(math.pi / 6),
             ),
-            component.getDimension("od", cold) / 2,
+            component.getDimension("od", cold=cold) / 2,
             0,
             360,
-            width=(component.getDimension("od", cold) / 2)
-            - (component.getDimension("id", cold) / 2),
+            width=(component.getDimension("od", cold=cold) / 2)
+            - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Circle):
 
         blockPatch = matplotlib.patches.Wedge(
             (x, y),
-            component.getDimension("od", cold) / 2,
+            component.getDimension("od", cold=cold) / 2,
             0,
             360,
-            width=(component.getDimension("od", cold) / 2)
-            - (component.getDimension("id", cold) / 2),
+            width=(component.getDimension("od", cold=cold) / 2)
+            - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Hexagon):
-        if component.getDimension("ip", cold) != 0:
+        if component.getDimension("ip", cold=cold) != 0:
             innerPoints = numpy.array(
-                hexagon.corners(30) * component.getDimension("ip", cold)
+                hexagon.corners(30) * component.getDimension("ip", cold=cold)
             )
             outerPoints = numpy.array(
-                hexagon.corners(30) * component.getDimension("op", cold)
+                hexagon.corners(30) * component.getDimension("op", cold=cold)
             )
             blockPatch = []
             for n in range(6):
@@ -1226,28 +1232,28 @@ def _makeComponentPatch(component, position, cold):
         else:
             # Just make it a hexagon...
             blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, component.getDimension("op") / math.sqrt(3)
+                (x, y), 6, component.getDimension("op", cold=cold) / math.sqrt(3)
             )
 
     elif isinstance(component, Rectangle):
-        if component.getDimension("widthInner") != 0:
+        if component.getDimension("widthInner", cold=cold) != 0:
             innerPoints = numpy.array(
                 [
                     [
-                        x + component.getDimension("widthInner") / 2,
-                        y + component.getDimension("lengthInner") / 2,
+                        x + component.getDimension("widthInner", cold=cold) / 2,
+                        y + component.getDimension("lengthInner", cold=cold) / 2,
                     ],
                     [
-                        x + component.getDimension("widthInner") / 2,
-                        y - component.getDimension("lengthInner") / 2,
+                        x + component.getDimension("widthInner", cold=cold) / 2,
+                        y - component.getDimension("lengthInner", cold=cold) / 2,
                     ],
                     [
-                        x - component.getDimension("widthInner") / 2,
-                        y - component.getDimension("lengthInner") / 2,
+                        x - component.getDimension("widthInner", cold=cold) / 2,
+                        y - component.getDimension("lengthInner", cold=cold) / 2,
                     ],
                     [
-                        x - component.getDimension("widthInner") / 2,
-                        y + component.getDimension("lengthInner") / 2,
+                        x - component.getDimension("widthInner", cold=cold) / 2,
+                        y + component.getDimension("lengthInner", cold=cold) / 2,
                     ],
                 ]
             )
@@ -1255,20 +1261,20 @@ def _makeComponentPatch(component, position, cold):
             outerPoints = numpy.array(
                 [
                     [
-                        x + component.getDimension("widthOuter") / 2,
-                        y + component.getDimension("lengthOuter") / 2,
+                        x + component.getDimension("widthOuter", cold=cold) / 2,
+                        y + component.getDimension("lengthOuter", cold=cold) / 2,
                     ],
                     [
-                        x + component.getDimension("widthOuter") / 2,
-                        y - component.getDimension("lengthOuter") / 2,
+                        x + component.getDimension("widthOuter", cold=cold) / 2,
+                        y - component.getDimension("lengthOuter", cold=cold) / 2,
                     ],
                     [
-                        x - component.getDimension("widthOuter") / 2,
-                        y - component.getDimension("lengthOuter") / 2,
+                        x - component.getDimension("widthOuter", cold=cold) / 2,
+                        y - component.getDimension("lengthOuter", cold=cold) / 2,
                     ],
                     [
-                        x - component.getDimension("widthOuter") / 2,
-                        y + component.getDimension("lengthOuter") / 2,
+                        x - component.getDimension("widthOuter", cold=cold) / 2,
+                        y + component.getDimension("lengthOuter", cold=cold) / 2,
                     ],
                 ]
             )
@@ -1286,11 +1292,11 @@ def _makeComponentPatch(component, position, cold):
             # Just make it a rectangle...
             blockPatch = matplotlib.patches.Rectangle(
                 (
-                    x - component.getDimension("widthOuter", cold) / 2,
-                    y - component.getDimension("lengthOuter", cold) / 2,
+                    x - component.getDimension("widthOuter", cold=cold) / 2,
+                    y - component.getDimension("lengthOuter", cold=cold) / 2,
                 ),
-                component.getDimension("widthOuter", cold),
-                component.getDimension("lengthOuter", cold),
+                component.getDimension("widthOuter", cold=cold),
+                component.getDimension("lengthOuter", cold=cold),
             )
     if isinstance(blockPatch, list):
         return blockPatch
