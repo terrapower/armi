@@ -108,7 +108,7 @@ class TestPlotting(unittest.TestCase):
         for name, bDesign in blueprint.blockDesigns.items():
             b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
             plotting.plotBlockDiagram(b, "{}.svg".format(name), True)
-        self._checkExists("UO2.svg")
+        self._checkExists("uo2.svg")
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
