@@ -268,7 +268,8 @@ class TestDatabaseReading(unittest.TestCase):
                     self.assertEqual(c1.name, c2.name)
                     if isinstance(c1.spatialLocator, grids.MultiIndexLocation):
                         assert_equal(
-                            c1.spatialLocator.allIndices, c2.spatialLocator.allIndices
+                            numpy.array(c1.spatialLocator.indices),
+                            numpy.array(c2.spatialLocator.indices),
                         )
                     else:
                         assert_equal(

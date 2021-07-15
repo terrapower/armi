@@ -60,10 +60,10 @@ Throughout the module, the term **global** refers to the top-level coordinate sy
 while the word **local** refers to within the current coordinate system defined by the
 current grid.
 """
+import collections
 import itertools
 import math
 from typing import Tuple, List, Optional, Sequence, Union
-import collections
 
 import numpy.linalg
 
@@ -221,6 +221,10 @@ class LocationBase:
     def __len__(self):
         """Returns 3, the number of directions."""
         return 3
+
+    def associate(self, grid):
+        """Re-assign locator to another Grid."""
+        self._grid = grid
 
 
 class IndexLocation(LocationBase):
@@ -406,6 +410,11 @@ class MultiIndexLocation(IndexLocation):
     individual IndexLocation.
     """
 
+    # MIL's cannot be hashed, so we need to scrape off the implementation from
+    # LocationBase. This raises some interesting questions of substitutability of the
+    # various Location classes, which should be addressed.
+    __hash__ = None
+
     def __init__(self, grid):
         IndexLocation.__init__(self, 0, 0, 0, grid)
         self._locations = []
@@ -424,6 +433,11 @@ class MultiIndexLocation(IndexLocation):
         self.__init__(None)
         self._locations = state
 
+    def __repr__(self):
+        return "<{} with {} locations>".format(
+            self.__class__.__name__, len(self._locations)
+        )
+
     def __getitem__(self, index):
         return self._locations[index]
 
@@ -441,6 +455,11 @@ class MultiIndexLocation(IndexLocation):
         loc.extend(self._locations)
         return loc
 
+    def associate(self, grid):
+        self._grid = grid
+        for loc in self._locations:
+            loc.associate(grid)
+
     def getCompleteIndices(self) -> Tuple[int, int, int]:
         raise NotImplementedError("Multi locations cannot do this yet.")
 
@@ -455,18 +474,18 @@ class MultiIndexLocation(IndexLocation):
 
     @property
     def indices(self):
-        raise NotImplementedError
-
-    @property
-    def allIndices(self):
         """
-        Return a list containing the indices of all contained locations.
+        Return indices for all locations.
 
-        This could be done in the indices property, but that would violate LSP and
-        probably lead to lots of bugs when callers are expecting a single set of
-        indices, rather than a 2-D array of them.
+        Notes
+        -----
+        Notice that this returns a list of all of the indices, unlike the ``indices()``
+        implementation for :py:class:`IndexLocation`. This is intended to make the
+        behavior of getting the indices from the Locator symmetric with passing a list
+        of indices to the Grid's ``__getitem__()`` function, which constructs and
+        returns a ``MultiIndexLocation`` containing those indices.
         """
-        return numpy.array([loc.indices for loc in self._locations])
+        return [loc.indices for loc in self._locations]
 
 
 class CoordinateLocation(IndexLocation):
@@ -485,7 +504,7 @@ class CoordinateLocation(IndexLocation):
 
     def getCompleteIndices(self):
         """Top of chain. Stop recursion and return basis."""
-        return numpy.array((0, 0, 0))
+        return 0, 0, 0
 
     def getGlobalCellBase(self):
         return self.indices
@@ -698,7 +717,7 @@ class Grid:
         )
 
     @property
-    def geomType(self) -> str:
+    def geomType(self) -> geometry.GeomType:
         return geometry.GeomType.fromStr(self._geomType)
 
     @geomType.setter
@@ -706,7 +725,7 @@ class Grid:
         self._geomType = str(geometry.GeomType.fromAny(geomType))
 
     @property
-    def symmetry(self) -> str:
+    def symmetry(self) -> geometry.SymmetryType:
         return geometry.SymmetryType.fromStr(self._symmetry)
 
     @symmetry.setter
@@ -789,6 +808,10 @@ class Grid:
             val = MultiIndexLocation(self)
             locators = [self[idx] for idx in ijk]
             val.extend(locators)
+        else:
+            raise TypeError(
+                "Unsupported index type `{}` for `{}`".format(type(ijk), ijk)
+            )
         return val
 
     def __len__(self):
@@ -1792,16 +1815,16 @@ def axialUnitGrid(numCells, armiObject=None):
     )
 
 
-def locatorLabelToIndices(label: str) -> Tuple[int]:
+def locatorLabelToIndices(label: str) -> Tuple[int, int, Optional[int]]:
     """
     Convert a locator label to numerical i,j,k indices.
 
     If there are only i,j  indices, make the last item None
     """
-    intVals = [int(idx) for idx in label.split("-")]
+    intVals = tuple(int(idx) for idx in label.split("-"))
     if len(intVals) == 2:
-        intVals.append(None)
-    return tuple(intVals)
+        intVals = (intVals[0], intVals[1], None)
+    return intVals
 
 
 def addingIsValid(myGrid, parentGrid):

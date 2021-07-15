@@ -239,6 +239,9 @@ class GridBlueprint(yamlize.Object):
         be adjusted to the proper dimensions (often by inspection of children) at a
         later time.
         """
+        symmetry = (
+            geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
+        )
         geom = self.geom
         maxIndex = self._getMaxIndex()
         runLog.extra("Creating the spatial grid")
@@ -284,9 +287,24 @@ class GridBlueprint(yamlize.Object):
                 if self.latticeDimensions
                 else (1.0, 1.0)
             )
-            isOffset = (
-                self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
+
+            # Specifically in the case of grid blueprints, where we have grid contents
+            # available, we can also infer "through center" based on the contents
+            nx = (
+                max(key[0] for key in self.gridContents)
+                - min(key[0] for key in self.gridContents)
+                + 1
             )
+            ny = (
+                max(key[1] for key in self.gridContents)
+                - min(key[1] for key in self.gridContents)
+                + 1
+            )
+            if nx == ny and nx % 2 == 1:
+                symmetry.isThroughCenterAssembly = True
+
+            isOffset = symmetry is not None and not symmetry.isThroughCenterAssembly
+
             spatialGrid = grids.CartesianGrid.fromRectangle(
                 xw, yw, numRings=maxIndex + 1, isOffset=isOffset
             )
@@ -295,7 +313,8 @@ class GridBlueprint(yamlize.Object):
         # parts of the code and is best encapsulated on the grid itself rather than on
         # the container state.
         spatialGrid._geomType: str = str(self.geom)
-        spatialGrid._symmetry: str = str(self.symmetry)
+        self.symmetry = str(symmetry)
+        spatialGrid._symmetry: str = self.symmetry
         return spatialGrid
 
     def _getMaxIndex(self):

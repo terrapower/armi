@@ -414,6 +414,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
         if self.spatialGrid is not None:
             self.spatialGrid.armiObject = self
+            # Spatial locators also get disassociated with their grids when detached;
+            # make sure they get hooked back up
+            for c in self:
+                c.spatialLocator.associate(self.spatialGrid)
 
         # now "reattach" children
         for c in self:
