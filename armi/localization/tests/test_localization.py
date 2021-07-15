@@ -82,12 +82,10 @@ class LocalizationTests(unittest.TestCase):
 
     def test_info_decorator(self):
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream.getvalue())
+            self.assertEqual("", mock._outputStream)
             for ii in range(1, 3):
                 self.exampleInfoMessage()
-                self.assertEqual(
-                    "[info] output message\n" * ii, mock._outputStream.getvalue()
-                )
+                self.assertEqual("[info] output message\n" * ii, mock._outputStream)
 
     @info_once
     def exampleInfoOnceMessage(self):
@@ -95,12 +93,10 @@ class LocalizationTests(unittest.TestCase):
 
     def test_single_message_only_prints_once(self):
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream.getvalue())
+            self.assertEqual("", mock._outputStream)
             for _ in range(1, 3):
                 self.exampleInfoOnceMessage()
-                self.assertEqual(
-                    "[info] example single message\n", mock._outputStream.getvalue()
-                )
+                self.assertEqual("[info] example single message\n", mock._outputStream)
 
     @info_once
     def exampleOutputOnceMessageWithExtraArgs(self, hi, my, name=None, isJerry=False):
@@ -108,12 +104,10 @@ class LocalizationTests(unittest.TestCase):
 
     def test_single_message_with_args_prints_correctly(self):
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream.getvalue())
+            self.assertEqual("", mock._outputStream)
             for _ in range(1, 3):
                 self.exampleOutputOnceMessageWithExtraArgs("yo", "dawg")
-                self.assertEqual(
-                    "[info] yo dawg None False\n", mock._outputStream.getvalue()
-                )
+                self.assertEqual("[info] yo dawg None False\n", mock._outputStream)
 
     @important
     def exampleImportantMessage(self):
@@ -121,12 +115,10 @@ class LocalizationTests(unittest.TestCase):
 
     def test_important_decorator(self):
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream.getvalue())
+            self.assertEqual("", mock._outputStream)
             for ii in range(1, 3):
                 self.exampleImportantMessage()
-                self.assertEqual(
-                    "[impt] important message?\n" * ii, mock._outputStream.getvalue()
-                )
+                self.assertEqual("[impt] important message?\n" * ii, mock._outputStream)
 
     @count_calls
     def exampleCountedMessage(self):
@@ -171,7 +163,7 @@ class LocalizationTests(unittest.TestCase):
                 self.exampleWarnMessage()
                 self.assertEqual(
                     "[warn] you're not tall enough to ride this elephant\n" * ii,
-                    mock._outputStream.getvalue(),
+                    mock._outputStream,
                 )
 
     @warn_once
@@ -182,9 +174,7 @@ class LocalizationTests(unittest.TestCase):
         with mockRunLogs.BufferLog() as mock:
             for _ in range(1, 4):
                 self.exampleWarnOnceMessage()
-                self.assertEqual(
-                    "[warn] single warning\n", mock._outputStream.getvalue()
-                )
+                self.assertEqual("[warn] single warning\n", mock._outputStream)
 
     def test_warn_once_decorator_with_multiple_instances(self):
         with mockRunLogs.BufferLog() as mock:
@@ -194,7 +184,7 @@ class LocalizationTests(unittest.TestCase):
                     mt.exampleWarnOnceMessageForInstances()
                     self.assertEqual(
                         "[warn] exampleWarnOnceMessageForInstances\n",
-                        mock._outputStream.getvalue(),
+                        mock._outputStream,
                     )
 
     @warn_when_root
@@ -206,10 +196,10 @@ class LocalizationTests(unittest.TestCase):
             for ii in range(1, 4):
                 self.exampleWarnWhenRootMessage()
                 msg = "[warn] warning from root\n" * ii
-                self.assertEqual(msg, mock._outputStream.getvalue())
+                self.assertEqual(msg, mock._outputStream)
                 armi.MPI_RANK = 1
                 self.exampleWarnWhenRootMessage()
-                self.assertEqual(msg, mock._outputStream.getvalue())
+                self.assertEqual(msg, mock._outputStream)
                 armi.MPI_RANK = 0
 
     @warn_once_when_root
@@ -221,10 +211,10 @@ class LocalizationTests(unittest.TestCase):
         with mockRunLogs.BufferLog() as mock:
             for _ in range(1, 4):
                 self.exampleWarnOnceWhenRootMessage()
-                self.assertEqual(msg, mock._outputStream.getvalue())
+                self.assertEqual(msg, mock._outputStream)
                 armi.MPI_RANK = 1
                 self.exampleWarnOnceWhenRootMessage()
-                self.assertEqual(msg, mock._outputStream.getvalue())
+                self.assertEqual(msg, mock._outputStream)
                 armi.MPI_RANK = 0
 
     def test_warn_once_when_root_decorator_with_multiple_instances(self):
@@ -234,10 +224,10 @@ class LocalizationTests(unittest.TestCase):
                 mt = DummyClass()
                 for _ in range(1, 4):
                     mt.exampleWarnOnceWhenRootMessageForInstances()
-                    self.assertEqual(msg, mock._outputStream.getvalue())
+                    self.assertEqual(msg, mock._outputStream)
                     armi.MPI_RANK = 1
                     self.exampleWarnOnceWhenRootMessage()
-                    self.assertEqual(msg, mock._outputStream.getvalue())
+                    self.assertEqual(msg, mock._outputStream)
                     armi.MPI_RANK = 0
 
 

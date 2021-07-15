@@ -20,14 +20,15 @@ running. Things like the MPI environment, executing user, etc. live here. These 
 re-exported by the `armi` package, but live here so that import loops won't lead to
 as many issues.
 """
+from logging import DEBUG
 import datetime
+import enum
+import gc
 import getpass
 import os
-import time
-import sys
-import enum
 import shutil
-import gc
+import sys
+import time
 
 # h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
 # to atexit below doesn't lead to a segfault on python exit. The Database3 module is
@@ -149,7 +150,7 @@ MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
 
 _FAST_PATH = os.path.join(os.getcwd())
 """
-A directory available for high-performance I/O  
+A directory available for high-performance I/O
 
 .. warning:: This is not a constant and can change at runtime.
 """
@@ -222,7 +223,7 @@ def cleanTempDirs(olderThanDays=None):
     )  # pylint: disable=import-outside-toplevel # avoid cyclic import
 
     disconnectAllHdfDBs()
-    printMsg = runLog.getVerbosity() <= runLog.getLogVerbosityRank("debug")
+    printMsg = runLog.getVerbosity() <= DEBUG
     if _FAST_PATH_IS_TEMPORARY and os.path.exists(_FAST_PATH):
         if printMsg:
             print(

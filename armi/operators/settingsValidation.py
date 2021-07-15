@@ -22,19 +22,19 @@ is impossible. Would you like to switch to ___?"
 
 """
 import os
+import sys
 from typing import Union
 
 import armi
-from armi import runLog
+from armi import runLog, settings, utils
 from armi.localization import exceptions
-from armi import utils
 from armi.utils import pathTools
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
-from armi import settings
 from armi.utils import directoryChangers
 from armi.settings.fwSettings import globalSettings
+from armi.settings.settingsIO import prompt
 
 
 class Query:
@@ -95,7 +95,7 @@ class Query:
             try:
                 if self.isCorrective():
                     try:
-                        make_correction = runLog.prompt(
+                        make_correction = prompt(
                             "INSPECTOR: " + self.statement,
                             self.question,
                             "YES_NO",
@@ -111,7 +111,7 @@ class Query:
                         raise exceptions.InputInspectionDiscontinued()
                 else:
                     try:
-                        continue_submission = runLog.prompt(
+                        continue_submission = prompt(
                             "INSPECTOR: " + self.statement,
                             "Continue?",
                             "YES_NO",
