@@ -475,21 +475,17 @@ class MultiIndexLocation(IndexLocation):
     @property
     def indices(self):
         """
-        This should be at least symmetric with the way indices passed to __getitem__ on
-        Grid behaves.
-        """
-        return list(self.allIndices)
+        Return indices for all locations.
 
-    @property
-    def allIndices(self):
+        Notes
+        -----
+        Notice that this returns a list of all of the indices, unlike the ``indices()``
+        implementation for :py:class:`IndexLocation`. This is intended to make the
+        behavior of getting the indices from the Locator symmetric with passing a list
+        of indices to the Grid's ``__getitem__()`` function, which constructs and
+        returns a ``MultiIndexLocation`` containing those indices.
         """
-        Return a list containing the indices of all contained locations.
-
-        This could be done in the indices property, but that would violate LSP and
-        probably lead to lots of bugs when callers are expecting a single set of
-        indices, rather than a 2-D array of them.
-        """
-        return numpy.array([loc.indices for loc in self._locations])
+        return [loc.indices for loc in self._locations]
 
 
 class CoordinateLocation(IndexLocation):
