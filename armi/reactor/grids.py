@@ -813,7 +813,9 @@ class Grid:
             locators = [self[idx] for idx in ijk]
             val.extend(locators)
         else:
-            raise TypeError("Unsupported index type `{}` for `{}`".format(type(ijk), ijk))
+            raise TypeError(
+                "Unsupported index type `{}` for `{}`".format(type(ijk), ijk)
+            )
         return val
 
     def __len__(self):
