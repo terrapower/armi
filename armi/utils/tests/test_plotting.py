@@ -23,6 +23,7 @@ from armi.utils import plotting
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.reactor.flags import Flags
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestPlotting(unittest.TestCase):
@@ -90,25 +91,28 @@ class TestPlotting(unittest.TestCase):
             os.remove("bList2.png")  # created during the call.
 
     def test_plotHexBlock(self):
-        first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
-        first_fuel_block.autoCreateSpatialGrids()
-        plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
-        self._checkExists("blockDiagram23.svg")
+        with TemporaryDirectoryChanger():
+            first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
+            first_fuel_block.autoCreateSpatialGrids()
+            plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
+            self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
     def test_plotCartesianBlock(self):
         from armi import settings
         from armi.reactor import blueprints, reactors
 
-        cs = settings.Settings(
-            os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
-        )
+        with TemporaryDirectoryChanger():
+            cs = settings.Settings(
+                os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
+            )
 
-        blueprint = blueprints.loadFromCs(cs)
-        r = reactors.factory(cs, blueprint)
-        for name, bDesign in blueprint.blockDesigns.items():
-            b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
-            plotting.plotBlockDiagram(b, "{}.svg".format(name), True)
-        self._checkExists("uo2.svg")
+            blueprint = blueprints.loadFromCs(cs)
+            r = reactors.factory(cs, blueprint)
+            for name, bDesign in blueprint.blockDesigns.items():
+                b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
+                plotting.plotBlockDiagram(b, "{}.svg".format(name), True)
+            self.assertTrue(os.path.exists("uo2.svg"))
+            self.assertTrue(os.path.exists("mox.svg"))
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))

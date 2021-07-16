@@ -2004,7 +2004,7 @@ class HexBlock(Block):
                 if c.getDimension("mult") > 1:
                     c.spatialLocator = spatialLocators
                 elif c.getDimension("mult") == 1:
-                    c.spatialLocator = grid[0, 0, 0]
+                    c.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, grid)
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
