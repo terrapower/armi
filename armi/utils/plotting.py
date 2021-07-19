@@ -1309,7 +1309,7 @@ def _makeComponentPatch(component, position, cold):
     return [blockPatch]
 
 
-def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu"):
+def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     """Given a Block with a spatial Grid, plot the diagram of
     it with all of its components. (wire, duct, coolant, etc...)
 
@@ -1322,45 +1322,50 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu"):
         true is for cold temps, hot is false.
     cmapName : String
         name of a colorMap to use for block colors
+    materialList: List
+        a list of material names across all blocks to be plotted
+        so that same material on all diagrams will have the same color.
     """
 
     fig, ax = plt.subplots(figsize=(50, 50), dpi=100)
 
     if block.spatialGrid is None:
         return None
+
+    if materialList is None:
+        materialList = []
+        for component in block:
+            if component.material.name not in materialList:
+                materialList.append(component.material.name)
+
+    materialMap = {
+        material: ai for ai, material in enumerate(numpy.unique(materialList))
+    }
     patches, data, name = _makeBlockPinPatches(block, cold)
 
     collection = matplotlib.collections.PatchCollection(
         patches, cmap=cmapName, alpha=1.0
     )
 
-    b, c = numpy.unique(numpy.array(data), return_inverse=True)
-    colorMap = dict()
-    materialMap = defaultdict(set)
+    allColors = numpy.array(list(materialMap.values()))
+    ourColors = numpy.array([materialMap[materialName] for materialName in data])
 
-    for ai in range(len(c)):
-        colorMap[data[ai]] = c[ai]
-        materialMap[data[ai]].add(name[ai])
-
-    collection.set_array(c)
+    collection.set_array(ourColors)
     ax.add_collection(collection)
-    collection.norm.autoscale(numpy.array(c))
-
-    # We want the map from color ----> component
+    collection.norm.autoscale(allColors)
 
     legendMap = [
         (
-            colorMap[materialName],
+            materialMap[materialName],
             "",
             "{}".format(materialName),
         )
-        for materialName in colorMap
+        for materialName in numpy.unique(data)
     ]
     legend = _createLegend(legendMap, collection, size=90, shape=Rectangle)
     pltKwargs = {
         "bbox_extra_artists": (legend,),
         "bbox_inches": "tight",
-        "bbox_to_anchor": "(0.75, 1.15)",
     }
 
     ax.set_xticks([])
