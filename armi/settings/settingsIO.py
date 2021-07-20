@@ -29,8 +29,8 @@ import xml.etree.ElementTree as ET
 from ruamel.yaml import YAML
 import ruamel.yaml.comments
 
-import armi
 from armi import runLog
+from armi.meta import __version__ as version
 from armi.localization import exceptions
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
@@ -159,8 +159,8 @@ class SettingsReader:
 
         self.invalidSettings = set()
         self.settingsAlreadyRead = set()
-        self.liveVersion = armi.__version__
-        self.inputVersion = armi.__version__
+        self.liveVersion = version
+        self.inputVersion = version
 
         self._renamer = SettingRenamer(self.cs.settings)
 
@@ -406,7 +406,7 @@ class SettingsWriter:
 
     @staticmethod
     def _getVersion():
-        tag, attrib = Roots.CUSTOM, {Roots.VERSION: armi.__version__}
+        tag, attrib = Roots.CUSTOM, {Roots.VERSION: version}
         return tag, attrib
 
     def writeXml(self, stream):

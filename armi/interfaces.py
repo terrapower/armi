@@ -32,9 +32,7 @@ from typing import List
 from typing import Dict
 from abc import ABCMeta, abstractmethod
 
-import armi
-from armi import settings
-from armi import utils
+from armi import getPluginManagerOrFail, settings, utils
 from armi.utils import textProcessors
 from armi.reactor import parameters
 
@@ -550,7 +548,7 @@ def getActiveInterfaceInfo(cs):
     """
     interfaceInfo = []
     # pylint: disable = no-member
-    for info in armi.getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
+    for info in getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
         interfaceInfo += info
 
     interfaceInfo = [

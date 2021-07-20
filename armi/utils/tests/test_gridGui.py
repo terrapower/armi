@@ -54,10 +54,10 @@ import test.support
 # rest of the module. Neat!
 wx = test.support.import_module("wx")
 
-import armi
+from armi import configure, getApp
 
-if armi._app is None:
-    armi.configure()
+if getApp() is None:
+    configure()
 from armi.utils import gridEditor
 
 _SECONDS_PER_TICK = 0.05

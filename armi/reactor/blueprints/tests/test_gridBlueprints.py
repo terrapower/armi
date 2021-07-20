@@ -16,10 +16,10 @@
 import io
 import unittest
 
-import armi
+from armi import configure, isConfigured
 
-if not armi.isConfigured():
-    armi.configure()
+if not isConfigured():
+    configure()
 from armi.reactor.blueprints import gridBlueprint
 from armi.reactor import systemLayoutInput
 
