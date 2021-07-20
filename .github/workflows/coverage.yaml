@@ -22,5 +22,5 @@ jobs:
         run: pip install tox
       - name: Run Tox
         # Run tox using the version of Python in `PATH`
-        run: tox -e py,cov,report
+        run: tox -e cov,report
 
