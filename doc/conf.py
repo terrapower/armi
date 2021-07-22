@@ -210,7 +210,12 @@ rst_epilog = r"""
 .. |keff| replace:: k\ :sub:`eff`\
 """
 
-wiki = {"GitHub Discussions": ("https://github.com/terrapower/armi/discussions" + "%s", None)}
+wiki = {
+    "GitHub Discussions": (
+        "https://github.com/terrapower/armi/discussions" + "%s",
+        None,
+    )
+}
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
