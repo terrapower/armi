@@ -281,7 +281,7 @@ def writeStandardReportTemplate(f, report):
                             with A(
                                 f,
                                 attrs={
-                                    "href": r"\\albert\Apps\dev\armi\develop\doc\.build\html\index.html"
+                                    "href": "https://terrapower.github.io/armi/"
                                 },
                             ):
                                 f.write("ARMI docs")
