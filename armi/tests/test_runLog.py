@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from io import StringIO
 import logging
 import os
 import pytest
-import sys
+import shutil
 import unittest
 
 from armi import context, runLog
@@ -29,7 +30,7 @@ class TestRunLog(unittest.TestCase):
 
     def test_setVerbosityFromInteger(self):
         """Test that the log verbosity can be set with an integer."""
-        log = runLog.RunLog(1)
+        log = runLog._RunLog(1)  # pylint: disable=bare-except
         expectedStrVerbosity = "debug"
         verbosityRank = log._getLogVerbosityRank(expectedStrVerbosity)
         runLog.setVerbosity(verbosityRank)
@@ -38,7 +39,7 @@ class TestRunLog(unittest.TestCase):
 
     def test_setVerbosityFromString(self):
         """Test that the log verbosity can be set with a string."""
-        log = runLog.RunLog(1)
+        log = runLog._RunLog(1)  # pylint: disable=bare-except
         expectedStrVerbosity = "error"
         verbosityRank = log._getLogVerbosityRank(expectedStrVerbosity)
         runLog.setVerbosity(expectedStrVerbosity)
@@ -55,50 +56,62 @@ class TestRunLog(unittest.TestCase):
         with self.assertRaises(KeyError):
             runLog.setVerbosity("taco")
 
-    def test_createLogDir(self):
-        """Test the createLogDir() method"""
-        log = runLog.RunLog(1)
-        log._createLogDir()
-        self.assertTrue(os.path.exists("logs"))
+    def test_parentRunLogging(self):
+        """A basic test of the logging of the parent runLog"""
+        # init the _RunLog object
+        log = runLog.LOG = runLog._RunLog(0)  # pylint: disable=bare-except
+        log.startLog("test_parentRunLogging")
+        context.createLogDir(0)
 
-    @unittest.skipIf(context.MPI_COMM is None, "MPI libraries are not installed.")
-    def test_caplogBasicRunLogging(self):
-        """A basic test of the logging of the child runLog"""
-        with self._caplog.at_level(logging.WARNING):
-            runLog.setVerbosity("info")
-            log = runLog.RunLog(1)
-            log._createLogDir()
-            log.startLog("test_caplogBasicChildRunLog")
-            log.log("debug", "You shouldn't see this.", single=False, label=None)
-            log.log("warning", "Hello, ", single=False, label=None)
-            log.log("error", "world!", single=False, label=None)
-            log.close()
+        # divert the logging to a stream, to make testing easier
+        stream = StringIO()
+        handler = logging.StreamHandler(stream)
+        log.logger.handlers = [handler]
 
-        messages = [r.message for r in self._caplog.records]
-        self.assertGreater(len(messages), 0)
-        self.assertIn("Hello", messages[0])
-        self.assertIn("world", messages[1])
+        # log some things
+        log.log("debug", "You shouldn't see this.", single=False, label=None)
+        log.log("warning", "Hello, ", single=False, label=None)
+        log.log("error", "world!", single=False, label=None)
+        runLog.close()
 
-    @unittest.skipIf(context.MPI_COMM is None, "MPI libraries are not installed.")
+        # test what was logged
+        streamVal = stream.getvalue()
+        self.assertIn("Hello", streamVal, msg=streamVal)
+        self.assertIn("world", streamVal, msg=streamVal)
+
     def test_warningReport(self):
         """A simple test of the warning tracking and reporting logic"""
-        with self._caplog.at_level(logging.INFO):
-            runLog.setVerbosity("info")
-            log = runLog.RunLog(1)
-            log.startLog("test_warningReport")
-            log.log("warning", "hello", single=True, label=None)
-            log.log("debug", "invisible due to log level", single=False, label=None)
-            log.log("warning", "hello", single=True, label=None)
-            log.log("error", "invisible due to log level", single=False, label=None)
-            self.assertEqual(
-                len(log._singleWarningMessageCounts), 1
-            )  # pylint: disable=protected-access
-            log.warningReport()
-            log.close()
+        # create the logger and do some logging
+        log = runLog.LOG = runLog._RunLog(321)  # pylint: disable=bare-except
+        log.startLog("test_warningReport")
+        context.createLogDir(0)
 
-        messages = [r.message for r in self._caplog.records]
-        self.assertEqual(len(messages), 2)
-        self.assertIn("hello", messages[0])
+        # divert the logging to a stream, to make testing easier
+        stream = StringIO()
+        handler = logging.StreamHandler(stream)
+        log.logger.handlers = [handler]
+
+        # log some things
+        log.setVerbosity(logging.INFO)
+        log.log("warning", "test_warningReport", single=True, label=None)
+        log.log("debug", "invisible due to log level", single=False, label=None)
+        log.log("warning", "test_warningReport", single=True, label=None)
+        log.log("error", "high level something", single=False, label=None)
+
+        # test that the logging found some duplicate outputs
+        dupsFilter = log.getDuplicatesFilter()
+        self.assertTrue(dupsFilter is not None)
+        warnings = dupsFilter.singleWarningMessageCounts
+        self.assertGreater(len(warnings), 0)
+
+        # run the warning report
+        log.warningReport()
+
+        # test what was logged
+        streamVal = stream.getvalue()
+        self.assertIn("test_warningReport", streamVal, msg=streamVal)
+        self.assertIn("Final Warning Count", streamVal, msg=streamVal)
+        self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
 
 
 if __name__ == "__main__":

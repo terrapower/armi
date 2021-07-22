@@ -16,12 +16,15 @@ testing for reactors.py
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
+import logging
 import os
+import pytest
 import unittest
 
 from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
 
+from armi import context
 from armi import operators
 from armi import runLog
 from armi import settings
@@ -728,6 +731,11 @@ class CartesianReactorTests(ReactorTests):
         self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        """This pytest fixture allows us to caption logging messages that pytest interupts"""
+        self._caplog = caplog
+
     def test_getAssemblyPitch(self):
         # Cartesian pitch should have 2 dims since it could be a rectangle that is not square.
         assert_equal(self.r.core.getAssemblyPitch(), [10.0, 16.0])
@@ -740,6 +748,18 @@ class CartesianReactorTests(ReactorTests):
                 len(self.r.core.getAssembliesInSquareOrHexRing(ring))
             )
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
+
+    @unittest.skipIf(context.MPI_COMM is None, "MPI libraries are not installed.")
+    def test_caplogGetNuclideCategoriesLogging(self):
+        """Simplest possible test of the getNuclideCategories method and its logging"""
+        with self._caplog.at_level(logging.INFO):
+            self.r.core.getNuclideCategories()
+
+        messages = [r.message for r in self._caplog.records]
+        catMessages = "\n".join(messages)
+        self.assertGreaterEqual(len(messages), 14, msg=catMessages)
+        self.assertIn("Case Information", catMessages)
+        self.assertIn("Completed Init Event", catMessages)
 
 
 if __name__ == "__main__":

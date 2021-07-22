@@ -623,6 +623,7 @@ def prompt(statement, question, *options):
         if "NO" in responses:
             responses.append("N")
 
+        # TODO: Using the logger is strange. Perhaps this is a rare use-case for bare print? Or something bespoke.
         while response not in responses:
             runLog.LOG.log("prompt", statement)
             runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))

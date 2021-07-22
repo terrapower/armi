@@ -295,3 +295,32 @@ def disconnectAllHdfDBs():
     h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
     for db in h5dbs:
         db.close()
+
+
+# ============ begin logging support ============
+
+OS_SECONDS_TIMEOUT = 5 * 60
+
+
+def createLogDir(mpiRank=1, logDir="logs"):
+    """A helper method to create the log directory"""
+    # let only do this from one thread
+    if mpiRank == 0:
+        if not os.path.exists(logDir):
+            os.makedirs(logDir)
+
+    # now all ranks should spin until they see the log directory
+    secondsWait = 0.5
+    loopCounter = 0
+    while not os.path.exists(logDir):
+        time.sleep(secondsWait)
+        loopCounter += 1
+        if loopCounter > (OS_SECONDS_TIMEOUT / secondsWait):
+            raise OSError("Was unable to create the log directory: {}".format(logDir))
+
+    # wait until all execution paths can see the log dir
+    if MPI_COMM is not None:
+        MPI_COMM.barrier()
+
+
+createLogDir(MPI_RANK)

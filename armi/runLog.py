@@ -26,6 +26,13 @@ The default way of using the ARMI runLog is:
     runLog.error('extra error info here')
     raise SomeException  # runLog.error() implies that the code will crash!
 
+You can interact with the logger in much the same way now by doing:
+
+.. code::
+
+    import logging
+    runLog = logging.getLogger('whatever')
+
 """
 from __future__ import print_function
 from glob import glob
@@ -39,7 +46,15 @@ import time
 from armi import context
 
 
-class RunLog:
+# global constants
+_WHITE_SPACE = " " * 6
+_ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
+    if self.isEnabledFor({1}):
+        self._log({1}, message, args, **kws)
+logging.Logger.{0} = {0}"""
+
+
+class _RunLog:
     """
     Handles all the logging
     For the parent process, things are allowed to print to stdout and stderr,
@@ -64,16 +79,14 @@ class RunLog:
         """
         self._mpiRank = mpiRank
         self._verbosity = logging.INFO
-        self._singleMessageCounts = collections.defaultdict(lambda: 0)
-        self._singleWarningMessageCounts = collections.defaultdict(lambda: 0)
         self.initialErr = None
-        self.logger = None
-        self.stderrLogger = None
         self._logLevels = None
-        self._whitespace = " " * 6
+        self.logger = logging.getLogger("NULL")
+        self.logger.addHandler(logging.NullHandler())
+        self.stderrLogger = logging.getLogger("NULL2")
+        self.stderrLogger.addHandler(logging.NullHandler())
 
         self._setLogLevels()
-        self._createLogDir()
 
     def _setLogLevels(self):
         """Here we fill the logLevels dict with custom strings that depend on the MPI rank"""
@@ -83,7 +96,7 @@ class RunLog:
             [
                 ("debug", (logging.DEBUG, "[dbug{}] ".format(_rank))),
                 ("extra", (15, "[xtra{}] ".format(_rank))),
-                ("info", (logging.DEBUG, "[info{}] ".format(_rank))),
+                ("info", (logging.INFO, "[info{}] ".format(_rank))),
                 ("important", (25, "[impt{}] ".format(_rank))),
                 ("prompt", (27, "[prmt{}] ".format(_rank))),
                 ("warning", (logging.WARNING, "[warn{}] ".format(_rank))),
@@ -91,80 +104,72 @@ class RunLog:
                 ("header", (100, "".format(_rank))),
             ]
         )
-        self._whitespace = " " * len(max([l[1] for l in self._logLevels.values()]))
+        global _WHITE_SPACE
+        _WHITE_SPACE = " " * len(max([l[1] for l in self._logLevels.values()]))
 
         # modify the logging module strings for printing
-        for logValue, shortLogString in self._logLevels.values():
+        for longLogString, (logValue, shortLogString) in self._logLevels.items():
+            # add the log string name (upper and lower) to logging module
+            logging.addLevelName(logValue, shortLogString.upper())
             logging.addLevelName(logValue, shortLogString)
+
+            # ensure that we add any custom logging levels as constants to the module, e.g. logging.HEADER
+            try:
+                getattr(logging, longLogString.upper())
+            except AttributeError:
+                setattr(logging, longLogString.upper(), logValue)
+
+            # Add logging methods for our new custom levels: LOG.extra("message")
+            try:
+                getattr(logging, longLogString)
+            except AttributeError:
+                exec(_ADD_LOG_METHOD_STR.format(longLogString, logValue))
 
     def log(self, msgType, msg, single=False, label=None):
         """
-        Add formatting to a message and handle its singleness, if applicable.
-
         This is a wrapper around logger.log() that does most of the work and is
         used by all message passers (e.g. info, warning, etc.).
+
+        In this situation, we do the mangling needed to get the log level to the correct number.
+        And we do some custom string manipulation so we can handle de-duplicating warnings.
         """
-        # Skip writing the message if it is below the set verbosity
-        msgVerbosity = self._logLevels[msgType][0]
-        if msgVerbosity < self._verbosity:
-            return
+        # Determine the log level: users can optionally pass in custom strings ("debug")
+        msgLevel = msgType if isinstance(msgType, int) else self._logLevels[msgType][0]
 
-        # the message label is only used to determine unique for single-print warnings
-        if label is None:
-            label = msg
+        # If this is a special "don't duplicate me" string, we need to add that info to the msg temporarily
+        msg = str(msg)
 
-        # Skip writing the message if it is single-print warning
-        if single and self._msgHasAlreadyBeenEmitted(label, msgType):
-            return
+        # Do the actual logging
+        self.logger.log(msgLevel, msg, single=single, label=label)
 
-        # Do the actual logging, but add that custom indenting first
-        msg = self._cleanMsg(msg)
-        if self._mpiRank == 0:
-            print(self._logLevels[msgType][1] + msg)
-        else:
-            self.logger.write(msgVerbosity, msg)
+    def getDuplicatesFilter(self):
+        """
+        The top-level ARMI logger should have a no duplicates filter
+        If it exists, find it.
+        """
+        if not self.logger or not isinstance(self.logger, logging.Logger):
+            return None
 
-    def _cleanMsg(self, msg):
-        """Messages need to be strings, and tabbed if multi-line"""
-        return str(msg).rstrip().replace("\n", "\n" + self._whitespace)
-
-    def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
-        """Return True if the count of the label is greater than 1."""
-        if msgType in ("warning", "critical"):
-            self._singleWarningMessageCounts[label] += 1
-            if self._singleWarningMessageCounts[label] > 1:
-                return True
-        else:
-            self._singleMessageCounts[label] += 1
-            if self._singleMessageCounts[label] > 1:
-                return True
-        return False
+        return self.logger.getDuplicatesFilter()
 
     def clearSingleWarnings(self):
         """Reset the single warned list so we get messages again."""
-        self._singleMessageCounts.clear()
+        dupsFilter = self.getDuplicatesFilter()
+        if dupsFilter:
+            dupsFilter.singleMessageCounts.clear()
 
     def warningReport(self):
         """Summarize all warnings for the run."""
-        info("----- Final Warning Count --------")
-        info("  {0:^10s}   {1:^25s}".format("COUNT", "LABEL"))
+        self.logger.warningReport()
 
-        # sort by labcollections.defaultdict(lambda: 1)
-        for label, count in sorted(
-            self._singleWarningMessageCounts.items(), key=operator.itemgetter(1)
-        ):
-            info("  {0:^10s}   {1:^25s}".format(str(count), str(label)))
-        info("------------------------------------")
-
-    def _getLogVerbosityRank(self, lvl):
+    def _getLogVerbosityRank(self, level):
         """Return integer verbosity rank given the string verbosity name."""
-        level = lvl.strip().lower()
-        if level not in self._logLevels:
+        try:
+            return self._logLevels[level][0]
+        except KeyError:
             log_strs = list(self._logLevels.keys())
             raise KeyError(
-                "{} is not a valid verbosity level. Choose from {}".format(
-                    level, log_strs
-                )
+                "{} is not a valid verbosity level: {}".format(level, log_strs)
             )
         return self._logLevels[level][0]
 
@@ -200,125 +205,113 @@ class RunLog:
             raise TypeError("Invalid verbosity rank {}.".format(level))
 
         if self.logger is not None:
+            for h in self.logger.handlers:
+                h.setLevel(self._verbosity)
             self.logger.setLevel(self._verbosity)
 
     def getVerbosity(self):
         """Return the global runLog verbosity."""
         return self._verbosity
 
-    def _restoreErrStream(self):
+    def _restoreStandardStreams(self):
         """Set the system stderr back to its default (as it was when the run started)."""
         if self.initialErr is not None and self._mpiRank > 0:
             sys.stderr = self.initialErr
 
     def startLog(self, name):
         """Initialize the streams when parallel processing"""
-        # set up the child loggers
-        if self._mpiRank > 0:
-            # init stdout handler
-            filePath = os.path.join(
-                "logs", RunLog.STDOUT_NAME.format(name, self._mpiRank)
-            )
-            fmt = "%(levelname)s%(message)s"
-            self.logger = StreamToLogger("ARMI", filePath, self._verbosity, fmt)
+        self.logger = RunLogger("ARMI", mpiRank=self._mpiRank)
 
-            # init stderr handler
+        if self._mpiRank != 0:
+            # init stderr intercepting logging
             filePath = os.path.join(
-                "logs", RunLog.STDERR_NAME.format(name, self._mpiRank)
+                "logs", _RunLog.STDERR_NAME.format(name, self._mpiRank)
             )
+            self.stderrLogger = logging.Logger("ARMI_ERROR")
+            h = logging.FileHandler(filePath)
             fmt = "%(message)s"
-            self.stderrLogger = StreamToLogger(
-                "ARMI_ERROR", filePath, logging.WARNING, fmt
-            )
+            form = logging.Formatter(fmt)
+            h.setFormatter(form)
+            h.setLevel(logging.WARNING)
+            self.stderrLogger.handlers = [h]
+            self.stderrLogger.setLevel(logging.WARNING)
 
             # force the error logger onto stderr
             self.initialErr = sys.stderr
             sys.stderr = self.stderrLogger
 
-    def _createLogDir(self):
-        """A helper method to create the log directory"""
-        # make the directory
-        if not os.path.exists("logs"):
-            try:
-                os.makedirs("logs")
-            except FileExistsError:
-                pass
 
-        # stall until it shows up in file system (SMB caching issue?)
-        while not os.path.exists("logs"):
-            time.sleep(0.1)
+def close():
+    """End use of the log. Concatenate if needed and restore defaults"""
+    if context.MPI_RANK == 0:
+        try:
+            concatenateLogs()
+        except IOError as ee:
+            warning("Failed to concatenate logs due to IOError.")
+            error(ee)
+    else:
+        if LOG.stderrLogger:
+            _ = [h.close() for h in LOG.stderrLogger.logger.handlers]
+            LOG.stderrLogger = None
+        if LOG.logger:
+            _ = [h.close() for h in LOG.logger.logger.handlers]
+            LOG.logger = None
 
-    def close(self):
-        """End use of the log. Concatenate if needed and restore defaults"""
-        if self._mpiRank == 0:
-            try:
-                self.concatenateLogs()
-            except IOError as ee:
-                warning("Failed to concatenate logs due to IOError.")
-                error(ee)
-        else:
-            if self.stderrLogger:
-                _ = [h.close() for h in self.stderrLogger.logger.handlers]
-                self.stderrLogger = None
-            if self.logger:
-                _ = [h.close() for h in self.logger.logger.handlers]
-                self.logger = None
+    LOG._restoreStandardStreams()
 
-        self._restoreErrStream()
 
-    @staticmethod
-    def concatenateLogs():
-        """
-        Concatenate the armi run logs and delete them.
+def concatenateLogs():
+    """
+    Concatenate the armi run logs and delete them.
 
-        Should only ever be called by parent.
-        """
-        # find all the logging-module-based log files
-        stdoutFiles = sorted(glob(os.path.join("logs", "*.stdout")))
-        if not len(stdoutFiles):
-            return
+    Should only ever be called by parent.
+    """
+    # find all the logging-module-based log files
+    stdoutFiles = sorted(glob(os.path.join("logs", "*.stdout")))
+    if not len(stdoutFiles):
+        return
 
-        info(
-            "Concatenating {0} log files and standard error streams".format(
-                len(stdoutFiles) + 1
-            )
+    info(
+        "Concatenating {0} log files and standard error streams".format(
+            len(stdoutFiles) + 1
         )
+    )
 
-        for stdoutName in stdoutFiles:
-            # NOTE: If the log file name format changes, this will need to change.
-            rank = filePath.split(".")[-2]
+    for stdoutName in stdoutFiles:
+        # NOTE: If the log file name format changes, this will need to change.
+        rank = int(stdoutName.split(".")[-2])
 
-            # first, print the log messages for a child process
-            with open(stdoutName, "r") as logFile:
+        # first, print the log messages for a child process
+        with open(stdoutName, "r") as logFile:
+            data = logFile.read()
+            if data:
+                # only write if there's something to write
+                rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
+                    "-" * 10, rank, "-" * 60
+                )
+                print(rankId)
+                print(data)
+        try:
+            os.remove(stdoutName)
+        except OSError:
+            warning("Could not delete {0}".format(stdoutName))
+
+        # then print the stderr messages for that child process
+        stderrName = stdoutName[:-3] + "err"
+        if os.path.exists(stderrName):
+            with open(stderrName) as logFile:
                 data = logFile.read()
                 if data:
-                    # only write if there's something to write
-                    rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
+                    # only write if there's something to write.
+                    rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format(
                         "-" * 10, rank, "-" * 60
                     )
-                    print(rankId)
-                    print(data)
+                    print(rankId, file=sys.stderr)
+                    print(data, file=sys.stderr)
             try:
-                os.remove(stdoutName)
+                os.remove(stderrName)
             except OSError:
-                warning("Could not delete {0}".format(stdoutName))
-
-            # then print the stderr messages for that child process
-            stderrName = stdouitName[:-3] + "err"
-            if os.path.exists(stderrName):
-                with open(stderrName) as logFile:
-                    data = logFile.read()
-                    if data:
-                        # only write if there's something to write.
-                        rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format(
-                            "-" * 10, rank, "-" * 60
-                        )
-                        print(rankId, file=sys.stderr)
-                        print(data, file=sys.stderr)
-                try:
-                    os.remove(stderrName)
-                except OSError:
-                    warning("Could not delete {0}".format(stderrName))
+                warning("Could not delete {0}".format(stderrName))
 
 
 # Here are all the module-level functions that should be used for most outputs.
@@ -373,37 +366,171 @@ def getVerbosity():
 # ---------------------------------------
 
 
-class StreamToLogger:
+class DeduplicationFilter(logging.Filter):
     """
-    File-like stream object that redirects writes to a logger instance.
+    Important logging filter
+
+    * allow users to turn off duplicate warnings
+    * handles special indentation rules for our logs
     """
 
-    def __init__(self, name, filePath, level, fmt):
-        self.name = name
-        self.filePath = filePath
-        self.level = level
-        self.fmt = fmt
+    def __init__(self, *args, **kwargs):
+        super(DeduplicationFilter, self).__init__(*args, **kwargs)
+        self.singleMessageCounts = {}
+        self.singleWarningMessageCounts = {}
 
-        # configure the logger
-        self.logger = logging.getLogger(self.name)
-        form = logging.Formatter(self.fmt)
+    def filter(self, record):
+        # determine if this is a "do not duplicate" message
+        msg = str(record.msg)
+        single = getattr(record, "single", False)
+        label = getattr(record, "label", msg)
+        label = msg if label is None else label
 
-        if self.filePath:
-            h = logging.FileHandler(self.filePath)
-        else:
+        # If the message is set to "do not duplicate" we may filter it out
+        if single:
+            if record.levelno in (logging.WARNING, logging.CRITICAL):
+                if label not in self.singleWarningMessageCounts:
+                    self.singleWarningMessageCounts[label] = 1
+                else:
+                    self.singleWarningMessageCounts[label] += 1
+                    return False
+            else:
+                if label not in self.singleMessageCounts:
+                    self.singleMessageCounts[label] = 1
+                else:
+                    self.singleMessageCounts[label] += 1
+                    return False
+
+        # Handle some special string-mangling we want to do, for multi-line messages
+        record.msg = msg.rstrip().replace("\n", "\n" + _WHITE_SPACE)
+        return True
+
+
+class RunLogger(logging.Logger):
+    """Custom Logger to support:
+
+    1. Giving users the option to de-duplicate warnings
+    2. Piping stderr to a log file
+    """
+
+    FMT = "%(levelname)s%(message)s"
+
+    def __init__(self, *args, **kwargs):
+        # optionally, the user can pass in the MPI_RANK
+        mpiRank = int(kwargs.pop("mpiRank", context.MPI_RANK))
+
+        super(RunLogger, self).__init__(*args, **kwargs)
+        self.allowStopDuplicates()
+
+        if mpiRank == 0:
             h = logging.StreamHandler()
+            h.setLevel(logging.INFO)
+            self.setLevel(logging.INFO)
+        else:
+            filePath = os.path.join(
+                "logs", _RunLog.STDOUT_NAME.format(args[0], mpiRank)
+            )
+            h = logging.FileHandler(filePath)
+            h.setLevel(logging.WARNING)
+            self.setLevel(logging.WARNING)
 
+        form = logging.Formatter(RunLogger.FMT)
         h.setFormatter(form)
-        self.logger.addHandler(h)
-        self.logger.setLevel(level)
+        self.addHandler(h)
 
-    def write(self, level, message):
-        """generic write method, as required by the standard streams"""
-        self.logger.log(level, message)
+    def log(self, msgType, msg, single=False, label=None):
+        """
+        This is a wrapper around logger.log() that does most of the work and is
+        used by all message passers (e.g. info, warning, etc.).
 
-    def flush(self):
-        """generic flush method, as required by the standard streams"""
+        In this situation, we do the mangling needed to get the log level to the correct number.
+        And we do some custom string manipulation so we can handle de-duplicating warnings.
+        """
+        # Determine the log level: users can optionally pass in custom strings ("debug")
+        msgLevel = msgType if isinstance(msgType, int) else LOG._logLevels[msgType][0]
+
+        # Do the actual logging
+        super(RunLogger, self).log(
+            msgLevel, str(msg), extra={"single": single, "label": label}
+        )
+
+    def _log(self, *args, **kwargs):
+        """wrapper around the standard library Logger._log() method
+        The primary goal here is to allow us to support the deduplication of warnings.
+        NOTE: All of the *args and **kwargs logic here are mandatory, as the standard library implementation of this
+        method has been changing the number of kwargs between Python v3.4 and v3.9.
+        """
+        # we need 'extra' as an output keyword, even if empty
+        if "extra" not in kwargs:
+            kwargs["extra"] = {}
+
+        # make sure to populate the single/label data for de-duplication
+        if "single" not in kwargs["extra"]:
+            msg = args[1]
+            single = kwargs.pop("single", False)
+            label = kwargs.pop("label", None)
+            label = msg if label is None else label
+
+            kwargs["extra"]["single"] = single
+            kwargs["extra"]["label"] = label
+
+        super(RunLogger, self)._log(*args, **kwargs)
+
+    def allowStopDuplicates(self):
+        """helper method to allow us to safely add the deduplication filter at any time"""
+        for f in self.filters:
+            if isinstance(f, DeduplicationFilter):
+                return
+        self.addFilter(DeduplicationFilter())
+
+    def write(self, msg, **kwargs):
+        """the redirect method that allows to do stderr piping"""
+        self.error(msg)
+
+    def flush(self, *args, **kwargs):
+        """stub, purely to allow stderr piping"""
         pass
+
+    def close(self):
+        """helper method, to shutdown and delete a Logger"""
+        self.handlers.clear()
+        del self
+
+    def getDuplicatesFilter(self):
+        """This object should have a no-duplicates filter. If it exists, find it."""
+        for f in self.filters:
+            if isinstance(f, DeduplicationFilter):
+                return f
+
+        return None
+
+    def warningReport(self):
+        """Summarize all warnings for the run."""
+        self.info("----- Final Warning Count --------")
+        self.info("  {0:^10s}   {1:^25s}".format("COUNT", "LABEL"))
+
+        # grab the no-duplicates filter, and exit early if it doesn't exist
+        dupsFilter = self.getDuplicatesFilter()
+        if dupsFilter is None:
+            self.info("  {0:^10s}   {1:^25s}".format(str(0), str("None Found")))
+            self.info("------------------------------------")
+            return
+
+        # sort by labcollections.defaultdict(lambda: 1)
+        for label, count in sorted(
+            dupsFilter.singleWarningMessageCounts.items(), key=operator.itemgetter(1)
+        ):
+            self.info("  {0:^10s}   {1:^25s}".format(str(count), str(label)))
+        self.info("------------------------------------")
+
+    def setVerbosity(self, intLevel):
+        """A helper method to try to partially support the local, historical method of the same name"""
+        self.setLevel(intLevel)
+
+
+# Setting the default logging class to be ours
+logging.RunLogger = RunLogger
+logging.setLoggerClass(RunLogger)
 
 
 # ---------------------------------------
@@ -411,7 +538,7 @@ class StreamToLogger:
 
 def logFactory():
     """Create the default logging object."""
-    return RunLog(int(context.MPI_RANK))
+    return _RunLog(int(context.MPI_RANK))
 
 
 LOG = logFactory()

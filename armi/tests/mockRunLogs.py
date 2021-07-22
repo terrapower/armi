@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module contains subclasses of the armi.runLog.RunLog class that can be used to determine whether or not
+This module contains subclasses of the armi.runLog._RunLog class that can be used to determine whether or not
 one of the specific methods were called. These should only be used in testing.
 """
 
@@ -23,7 +23,7 @@ import sys
 from armi import runLog
 
 
-class BufferLog(runLog.RunLog):
+class BufferLog(runLog._RunLog):  # pylint: disable=protected-access
     r"""Log which captures the output in attributes instead of emitting them
 
     Used mostly in testing to ensure certain things get output, or to prevent any output
@@ -31,9 +31,11 @@ class BufferLog(runLog.RunLog):
     """
 
     def __init__(self, *args, **kwargs):
-        runLog.RunLog.__init__(self, *args, **kwargs)
+        super(BufferLog, self).__init__(*args, **kwargs)
         self.originalLog = None
         self._outputStream = ""
+        self._singleMessageCounts = {}
+        self._singleWarningMessageCounts = {}
         self._errStream = six.StringIO()
         sys.stderr = self._errStream
         self.setVerbosity(0)
@@ -68,9 +70,29 @@ class BufferLog(runLog.RunLog):
 
         # Do the actual logging, but add that custom indenting first
         msg = (
-            self._logLevels[msgType][1] + self._cleanMsg(msg) + "\n"
+            self._logLevels[msgType][1] + str(msg) + "\n"
         )  # pylint: disable=protected-access
         self._outputStream += msg
+
+    def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
+        """Return True if the count of the label is greater than 1."""
+        if msgType in ("warning", "critical"):
+            if label not in self._singleWarningMessageCounts:
+                self._singleWarningMessageCounts[label] = 1
+            else:
+                self._singleWarningMessageCounts[label] += 1
+                return True
+        else:
+            if label not in self._singleMessageCounts:
+                self._singleMessageCounts[label] = 1
+            else:
+                self._singleMessageCounts[label] += 1
+                return True
+        return False
+
+    def clearSingleWarnings(self):
+        """Reset the single warned list so we get messages again."""
+        self._singleMessageCounts.clear()
 
     def getStdoutValue(self):
         return self._outputStream
@@ -87,7 +109,7 @@ class LogCounter(BufferLog):
 
     def __init__(self, *args, **kwargs):
         BufferLog.__init__(self)
-        self.messageCounts = {msgType: 0 for msgType in self._logLevels().keys()}
+        self.messageCounts = {msgType: 0 for msgType in self._logLevels.keys()}
 
     def log(self, msgType, *args, **kwargs):
         self.messageCounts[msgType] += 1
