@@ -77,6 +77,7 @@ from armi.context import (
 )
 from armi.context import Mode
 
+from armi import cli
 from armi.meta import __version__
 from armi import apps
 from armi import pluginManager
@@ -86,6 +87,8 @@ from armi.localization import exceptions
 from armi.reactor import flags
 from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
+
+import __main__ as main
 
 # ARMI does not configure its own application by default. This is mostly to catch issues
 # involving calling code that requires the framework to be configured before that has
@@ -259,6 +262,13 @@ def _cleanupOnCancel(signum, _frame):
     sys.exit(1)  # since we're handling the signal we have to cancel
 
 
+def _liveInterpreter():
+    """
+    Return whether we are running within a live/interactive python interpreter.
+    """
+    return not hasattr(main, "__file__")
+
+
 def configure(app: Optional[apps.App] = None, permissive=False):
     """
     Set the plugin manager for the Framework and configure internals to those plugins.
@@ -310,6 +320,9 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
 
     _app = app
+
+    if _liveInterpreter():
+        cli.splash()
 
     pm = app.pluginManager
     context.APP_NAME = app.name
