@@ -1,112 +1,164 @@
+from armi import runLog
 import os
 from collections import defaultdict
 
 # parts of report for neutronics
-import base64
 from armi.cli.reportsEntryPoint import ReportStage
 
-from htmltree import *
-from armi import runLog, settings
-import matplotlib.pyplot as plt
 from armi.physics.neutronics import reportConstants
 from armi.bookkeeping import newReportUtils
+from armi.bookkeeping import newReports
+from armi.reactor.flags import Flags
+from armi.bookkeeping import newReports
 
 
 def generateNeutronicsReport(r, cs, report, stage):
-    from armi.bookkeeping import newReports
-    from armi.reactor.flags import Flags
+    """Generate the Neutronics section of the Report
 
-    if newReportUtils.COMPREHENSIVE_REPORT not in report.sections:
-        report.sections[newReportUtils.COMPREHENSIVE_REPORT] = dict()
-    if reportConstants.NEUTRONICS_SECTION not in report.sections:
-        report.sections[reportConstants.NEUTRONICS_SECTION] = dict()
+    Parameters
+    ----------
+    r: Reactor
+    cs: Case Settings
+    report: ReportContent
+    stage: ReportStage
+        Begining, Standard, or End to denote what stage of report we are
+        collecting contents for.
+    """
 
-    # Now want to check if these sections already exist and if so then these are one time
-    # So we shouldn't make them again.
     if stage == ReportStage.Begin:
+        nuetronicsBOLContent(r, cs, report)
 
-        for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
-            if (
-                newReportUtils.RUNMETA
-                not in report.sections[newReportUtils.COMPREHENSIVE_REPORT]
-            ):
-                report.sections[newReportUtils.COMPREHENSIVE_REPORT][
-                    newReportUtils.RUNMETA
-                ] = newReports.TableSection("Run Meta", "Overview of the Run")
+    elif stage == ReportStage.Standard:
+        nuetronicsPlotting(r, report, cs)
 
-            report.sections[newReportUtils.COMPREHENSIVE_REPORT][
-                newReportUtils.RUNMETA
-            ].addRow([key, cs[key]])
 
-        initialCoreFuelAssem(r, report)
-        """report.sections[reportConstants.NEUTRONICS_SECTION][
-            "Initial Core Resource Requirements"
-        ] = newReports.TableSection(
-            "Initial Core Resource Requirements",
-            "Summary of core resource requirements",
-            header=["Enrichment %", "Heavy Mass (MT)"],
-        )"""
+def nuetronicsBOLContent(r, cs, report):
+    """Add BOL content to Neutronics Section of the Report
+        This currently includes addtions to Comprehensive Reports
+        Settings table, and an Initial Core Fuel Assembly Table.
 
-    else:
-        labels = ["k-effective"]
-        if (
-            reportConstants.KEFF_PLOT
-            not in report.sections[reportConstants.NEUTRONICS_SECTION]
-        ):
-            report.sections[reportConstants.NEUTRONICS_SECTION][
-                reportConstants.KEFF_PLOT
-            ] = newReports.TimeSeries(
-                "Plot of K-Effective", r.name, labels, "K-eff value", "keff"
-            )
-            # To create the keff section and start populating it's points...
-        differentLines = [r.core.p.keff]
-        lineUncertainties = [r.core.p.keffUnc]
-        report.sections[reportConstants.NEUTRONICS_SECTION][
-            reportConstants.KEFF_PLOT
-        ].add(r.p.time, differentLines, lineUncertainties)
-        if PD_PLOT not in report.sections[reportConstants.NEUTRONICS_SECTION]:
-            report.sections[reportConstants.NEUTRONICS_SECTION][
-                PD_PLOT
-            ] = newReports.TimeSeries(
+    Parameters
+    ----------
+    r: Reactor
+    cs: Case Settings
+    report: ReportContent
+
+    """
+    if newReportUtils.RUNMETA not in report.ensureExistance(
+        newReportUtils.COMPREHENSIVE_REPORT
+    ):
+        report.addSubsection(
+            newReportUtils.COMPREHENSIVE_REPORT,
+            newReportUtils.RUNMETA,
+            newReports.Table("Settings", "Overview of the Run"),
+        )
+
+    for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
+        report.accessSubsection(
+            newReportUtils.COMPREHENSIVE_REPORT, newReportUtils.RUNMETA
+        ).addRow([key, cs[key]])
+
+    initialCoreFuelAssem(r, report)
+
+
+def nuetronicsPlotting(r, report, cs):
+    """Keeps track of plotting content which is collected when Standard Stage of the report
+
+    Parameters
+    ----------
+    r: Reactor
+    report: ReportContent
+    cs: Case Settings
+    """
+
+    # Make K-Effective Plot
+    labels = ["k-effective"]
+    if reportConstants.KEFF_PLOT not in report.ensureExistance(
+        reportConstants.NEUTRONICS_SECTION
+    ):
+        report.addSubsection(
+            reportConstants.NEUTRONICS_SECTION,
+            reportConstants.KEFF_PLOT,
+            newReports.TimeSeries(
+                "Plot of K-Effective",
+                r.name,
+                labels,
+                "K-eff value",
+                "keff." + cs["outputFileExtension"],
+            ),
+        )
+        # To create the keff section and start populating it's points...
+    report.accessSubsection(
+        reportConstants.NEUTRONICS_SECTION, reportConstants.KEFF_PLOT
+    ).add(labels[0], r.p.time, r.core.p.keff, r.core.p.keffUnc)
+
+    # Make PD-Plot
+    if PD_PLOT not in report.sections[reportConstants.NEUTRONICS_SECTION]:
+        report.addSubsection(
+            reportConstants.NEUTRONICS_SECTION,
+            PD_PLOT,
+            newReports.TimeSeries(
                 "Max Areal PD vs. Time",
                 r.name,
-                ["max pd"],
+                ["Max PD"],
                 "Max Areal PD (MW/m^2)",
-                "maxpd",
-            )
-        report.sections[reportConstants.NEUTRONICS_SECTION][PD_PLOT].add(
-            r.p.time, [r.core.p.maxPD], [None]
+                "maxpd." + cs["outputFileExtension"],
+            ),
         )
-        generateLinePlot(DPA_PLOT, r, report, "Displacement per Atom (DPA)", "dpaplot")
-        generateLinePlot(BURNUP_PLOT, r, report, "Peak Burnup (%FIMA)", "burnupplot")
-        # report.sections["keff plot"] = Img(reports.generatePlot(r))
+    report.accessSubsection(reportConstants.NEUTRONICS_SECTION, PD_PLOT).add(
+        "Max PD", r.p.time, r.core.p.maxPD, None
+    )
+
+    # Make DPA_Plot
+    generateLinePlot(
+        DPA_PLOT,
+        r,
+        report,
+        "Displacement per Atom (DPA)",
+        "dpaplot." + cs["outputFileExtension"],
+    )
+
+    # Make Burn-Up Plot
+    generateLinePlot(
+        BURNUP_PLOT,
+        r,
+        report,
+        "Peak Burnup (%FIMA)",
+        "burnupplot." + cs["outputFileExtension"],
+    )
 
 
 def initialCoreFuelAssem(r, report):
-    from armi.reactor.flags import Flags
-    from armi.bookkeeping import newReports
+    """Creates table of initial core fuel assemblies
 
-    """ Creates table of initial core fuel assemblies """
-    report.sections[reportConstants.NEUTRONICS_SECTION][
-        reportConstants.INITIAL_CORE_FUEL_ASSEMBLY
-    ] = newReports.TableSection(
+    Parameters
+    ----------
+    r: Reactor
+    report: ReportContent
+    """
+    report.addSubsection(
+        reportConstants.NEUTRONICS_SECTION,
         reportConstants.INITIAL_CORE_FUEL_ASSEMBLY,
-        "Summary of Initial Core Fuel Assembly",
-        header=[
-            "Assembly Name",
-            "Enrichment %",
-            "# of Assemblies at BOL",
-        ],
+        newReports.Table(
+            reportConstants.INITIAL_CORE_FUEL_ASSEMBLY,
+            "Summary of Initial Core Fuel Assembly",
+            header=[
+                "Assembly Name",
+                "Enrichment %",
+                "# of Assemblies at BOL",
+            ],
+        ),
     )
-    assemTypes = defaultdict(float)
+    assemTypes = defaultdict(int)
     enrichment = defaultdict(float)
     for assem in r.core.getAssemblies(Flags.FUEL):
-        enrichment[assem.p.type] = assem.getFissileMassEnrich() * 100
-        assemTypes[assem.p.type] = assemTypes[assem.p.type] + 1.0
+        enrichment[assem.p.type] = round(assem.getFissileMassEnrich() * 100, 7)
+        assemTypes[assem.p.type] = assemTypes[assem.p.type] + 1
     for typeA in assemTypes:
-        report.sections[reportConstants.NEUTRONICS_SECTION][
-            reportConstants.INITIAL_CORE_FUEL_ASSEMBLY
-        ].addRow(
+        report.accessSubsection(
+            reportConstants.NEUTRONICS_SECTION,
+            reportConstants.INITIAL_CORE_FUEL_ASSEMBLY,
+        ).addRow(
             [
                 typeA,
                 enrichment[typeA],
@@ -115,34 +167,37 @@ def initialCoreFuelAssem(r, report):
         )
 
 
-def generateLinePlot(subsectionHeading, r, report, yaxis, extension):
-    """ Creates the TimeSeries in the Report for finding peak values vs. time """
-    from armi.reactor.flags import Flags
-    from armi.bookkeeping import newReports
-    from armi.reactor import assemblyParameters
-    from armi.utils import runLog
+def generateLinePlot(subsectionHeading, r, report, yaxis, name):
+    """Creates the TimeSeries in the Report for finding peak values vs. time
+
+    Parameters
+    ----------
+    subsectionHeading: String
+                    Heading for the plot
+    r: Reactor
+    report: ReportContent
+    yaxis: String
+        Label for the y-axis
+    name: String
+        name for the file to have.
+    """
 
     if subsectionHeading not in report.sections[reportConstants.NEUTRONICS_SECTION]:
         labels = []
         for a in r.core.getAssemblies(Flags.FUEL):
             if a.p.type not in labels:
                 labels.append(a.p.type)
-        report.sections[reportConstants.NEUTRONICS_SECTION][
-            subsectionHeading
-        ] = newReports.TimeSeries(
+        report.addSubsection(
+            reportConstants.NEUTRONICS_SECTION,
             subsectionHeading,
-            r.name,
-            labels,
-            yaxis,
-            extension,
+            newReports.TimeSeries(
+                subsectionHeading,
+                r.name,
+                labels,
+                yaxis,
+                name,
+            ),
         )
-        dataAndTimes = report.sections[reportConstants.NEUTRONICS_SECTION][
-            subsectionHeading
-        ]
-    else:
-        dataAndTimes = report.sections[reportConstants.NEUTRONICS_SECTION][
-            subsectionHeading
-        ]
     maxValue = defaultdict(float)
     # dictionary for a specific time step.
     for a in r.core.getAssemblies(Flags.FUEL):
@@ -150,32 +205,11 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, extension):
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxPercentBu)
         else:
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxDpaPeak)
-    data = [0] * len(dataAndTimes.labels)
+
     for key in maxValue:
-        data[dataAndTimes.labels.index(key)] = maxValue[key]
-    report.sections[reportConstants.NEUTRONICS_SECTION][subsectionHeading].add(
-        r.p.time, data, [None]
-    )
-
-
-def encode64(file_path):
-    """Return the embedded HTML src attribute for an image in base64"""
-    xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
-    if xtn == "pdf":
-        from armi import runLog
-
-        runLog.warning(
-            "'.pdf' images cannot be embedded into this HTML report. {} will not be inserted.".format(
-                file_path
-            )
-        )
-        return "Faulty PDF image inclusion: {} attempted to be inserted but no support is currently offered for such.".format(
-            file_path
-        )
-    with open(file_path, "rb") as img_src:
-        return r"data:image/{};base64,{}".format(
-            xtn, base64.b64encode(img_src.read()).decode()
-        )
+        report.accessSubsection(
+            reportConstants.NEUTRONICS_SECTION, subsectionHeading
+        ).add(key, r.p.time, maxValue[key], None)
 
 
 """Subsections """

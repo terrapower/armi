@@ -3,17 +3,10 @@ import webbrowser
 import collections
 import shutil
 import os
-from enum import Enum
-from enum import auto
-from armi import runLog
-from armi import interfaces
-from armi.utils import directoryChangers
-from armi.bookkeeping import report
-from armi.bookkeeping.newReportUtils import valueVsTime, tableToHTML, tableOfContents
-from armi.physics import neutronics
-from armi.reactor.flags import Flags
 
-from htmltree import *
+
+import htmltree
+from htmltree import Table as HtmlTable
 
 
 class ReportContent:
@@ -28,47 +21,45 @@ class ReportContent:
 
     def writeReports(self):
         """Renders each report into a document for viewing."""
-        body = Body()
-        head = Head()
-        head.C.append(Link(rel="stylesheet", href="styles.css"))
-        reorderSections = dict_reorder(self.sections)
-        divMain = Div(id="container")
-        # div.C.append(Header().C.append(H1("Report System")))
-        header = Div(H1("Report System", _class="heading", id="myid"), id="heading")
+
+        from armi.bookkeeping.newReportUtils import tableOfContents
+
+        body = htmltree.Body()
+        head = htmltree.Head()
+        head.C.append(htmltree.Link(rel="stylesheet", href="styles.css"))
+
+        divMain = htmltree.Div(id="container")
+        header = htmltree.Div(id="heading")
+        header.C.append(
+            htmltree.Img(
+                src="https://terrapower.github.io/armi/_images/armi-logo.png",
+                alt="logo",
+                _class="heading",
+            )
+        )
+        header.C.append(htmltree.H1("Report System", _class="heading", id="titleFont"))
+
         divMain.C.append(header)
-        div = Div(id="reportContent")
-        div.C.append(H4("Report Generated for : " + self.title))
-        body.C.append(tableOfContents(reorderSections))
-        for group in reorderSections:
-            # add it to the body
-            div.C.append(H1(group, id=group))
-            # but do we want to be able to check sections[group].parent
-            # and put all these parent groups together for ordering?
-            for subgroup in reorderSections[group]:
-                div.C.append(H2(subgroup, id=subgroup))
-                if type(self.sections[group][subgroup]) == TableSection:
-                    # turn it into a table...
-                    tableContent = self.sections[group][subgroup]
-                    table = tableToHTML(tableContent)
-                    div.C.append(table)
-                elif type(self.sections[group][subgroup]) == TimeSeries:
-                    # make it a graph.
-                    timePoints = self.sections[group][subgroup]
-                    graph = valueVsTime(timePoints, ymin=None)
-                    div.C.append(graph)
+        div = htmltree.Div(id="reportContent")
+        div.C.append(htmltree.H4("Report Generated for : " + self.title))
+        body.C.append(tableOfContents(self.sections))
+        for group in self.sections:
+            div.C.append(htmltree.H1(group, id=group))
+            for subgroup in self.sections[group]:
+                div.C.append(htmltree.H2(subgroup, id=subgroup))
+                if type(self.sections[group][subgroup]) == list:
+                    for element in self.sections[group][subgroup]:
+                        div.C.append(htmltree.H2(element.title, id=element.title))
+                        item = element.toHtml()
+                        div.C.append(item)
                 else:
-                    fig = Figure()
-                    fig.C.append(
-                        Img(
-                            src=self.sections[group][subgroup].imagePath,
-                            alt=self.sections[group][subgroup].title,
-                        )
-                    )
-                    fig.C.append(Figcaption(self.sections[group][subgroup].caption))
+                    fig = self.sections[group][subgroup].toHtml()
                     div.C.append(fig)
         divMain.C.append(div)
         body.C.append(divMain)
-        doc = Html(head, body)
+        body.C.append(htmltree.Script(src="report.js"))
+
+        doc = htmltree.Html(head, body)
 
         # Copy css file to the correct folder containing the reportContent.html
         shutil.copy(
@@ -77,24 +68,62 @@ class ReportContent:
             ),
             "styles.css",
         )
+        shutil.copy(
+            os.path.abspath(
+                os.path.join(os.path.abspath(__file__), os.pardir, "report.js")
+            ),
+            "report.js",
+        )
         fileurl = doc.renderToFile("ReportContent.html", 0)
 
         webbrowser.open(fileurl)
 
-    def addContents(self, contents):
-        """contents is itself a ReportContent object"""
+    def addSubsection(self, section, subsection, item):
+        """Add a subsection to contents within a report
 
-        """for key in contents.sections:
-            if key not in self.sections:
-                # They don't have the same section already
-                self.sections[key] = contents.sections[key]
-            else:
-                self.sections[key] = self.sections[key]"""
+        Parameters
+        ----------
+        section: String
+            Name of section to add Subsection to.
+        subsection: String
+            Name of subsection to add item to
+        item: Table, TimeSeries, Image or List
+            content to add into the html report later
 
+        """
+        self.ensureExistance(section)
 
-def dict_reorder(item):
-    # return {k: v for k, v in sorted(item.items())}
-    return item
+        self.sections[section][subsection] = item
+
+    def accessSubsection(self, section, subsection):
+        """Access a subsection of the report for additions
+
+        Parameters
+        ----------
+        section: String
+            Name of section to add Subsection to.
+        subsection: String
+            Name of subsection to add item to
+        """
+        self.ensureExistance(section)
+
+        return self.sections[section][subsection]
+
+    def ensureExistance(self, section):
+        """Adds a section to the report if it is not present
+
+        Parameters
+        ----------
+        section: String
+            Section name to add or ensure existance of
+
+        Returns
+        -------
+        Dictionary for the section that was desired."""
+
+        if section not in self.sections:
+            self.sections[section] = dict()
+        return self.sections[section]
 
 
 class Sections:
@@ -102,16 +131,22 @@ class Sections:
         self.title = title
         self.caption = caption
 
+    def toHtml(self):
+        """Renders the section to a htmltree element for inserting into HTML document tree"""
+        raise NotImplementedError
 
-class ImageSection(Sections):
+
+class Image(Sections):
     """For Images within the report (such as Hexplots premade and not time dependent)
     (For time dependent images see TimeSeries)
 
     Parameters
     ----------
-    title
-    caption
-    imagePath: .png or .img image name to reference later
+    title: String
+    caption: String
+    imagePath: String
+        .png or .img image name to reference later
+
 
     """
 
@@ -120,15 +155,26 @@ class ImageSection(Sections):
         title,
         caption,
         imagePath,
-        header=None,
     ):
         Sections.__init__(self, title, caption=caption)
-        self.header = header
         self.imagePath = imagePath
-        # rows will be a list of lists
+
+    def toHtml(self):
+        from armi.bookkeeping.newReportUtils import encode64
+
+        figure = htmltree.Figure()
+        self.imagePath = encode64(os.path.abspath(self.imagePath))
+        figure.C.append(
+            htmltree.Img(
+                src=self.imagePath,
+                alt="{}_image".format(self.title),
+            )
+        )
+        figure.C.append(htmltree.Figcaption(self.caption))
+        return figure
 
 
-class TableSection(Sections):
+class Table(Sections):
     """For Table Objects that are then later converted to htmltree tables
 
     Parameters
@@ -159,9 +205,31 @@ class TableSection(Sections):
     def addRow(self, row):
         self.rows.append(row)
 
+    def toHtml(self):
+        """Converts a TableSection object into a html table representation htmltree element
+
+        Parameters
+        ----------
+        tableRows: newReports.TableSection
+            Object that holds information to be made into a table.
+        """
+
+        table = htmltree.Table()
+        if self.header is not None:
+            titleRow = htmltree.Tr()
+            for heading in self.header:
+                titleRow.C.append(htmltree.Th(heading))
+            table.C.append(titleRow)
+        for row in self.rows:
+            htmlRow = htmltree.Tr()
+            for element in row:
+                htmlRow.C.append(htmltree.Td(element))
+            table.C.append(htmlRow)
+        return table
+
 
 class TimeSeries(Sections):
-    """Handles storing new values that will come together to make a graph later
+    """Handles storing new data point values for use in graphing later.
 
     Parameters
     ----------
@@ -169,7 +237,7 @@ class TimeSeries(Sections):
         Title for eventual graph
 
     caption: String
-        Caption for eventual graph
+        Reactor Name for eventual graph's title caption and file name
 
     labels: List
         list of stored labels where length = number of lines within graph
@@ -178,42 +246,136 @@ class TimeSeries(Sections):
         label for the y-axis
 
     key: String
-        identifier for the resulting image file name (i.e. linegraph.[key].img,
-        where key may be peakDPA or Keff)
-
+        identifier for the resulting image file name (i.e. rName.[key],
+        where key may be peakDPA.img or Keff.png)
     """
 
     def __init__(self, title, caption, labels, yaxis, key):
         Sections.__init__(self, title, caption)
         self.times = []
         self.labels = labels
-        self.datapoints = [[] for i in range(len(labels))]
-        self.uncertainties = [[] for i in range(len(labels))]
+        self.dataDictionary = dict()
+        # iniialize list of labels...
+        for label in labels:
+            self.dataDictionary[label] = []
         self.yaxis = yaxis
         self.key = key
-        # self.times.append(time)
 
-    # data and uncertainty both lists of values corresponding to different Data Points
-    def add(self, time, data, uncertainty):
-        """
-        Adds data point (with associated time and uncertainty) to a TimeSeries object for
-        later plotting.
+    def add(self, lineToAddTo, time, data, uncertainty=None):
+        """To add a point to our data collection.
 
         Parameters
         ----------
 
-        time : a single time point
-        data : a list with length = to number of lines that will be present on the graph
-            (must be equal to the length of other data objects previously added to this TimeSeries object)
-        uncertainty: list with uncertainy values for each line. Can be all zeroes.
+        lineToAddTo: String
+            Label associated with the line we are adding ths point to
+        time: float
+            time value for the point
+        data: float
+            data value for the point
+        uncertainty: float
+            uncertainty associated with the point
+
+        Notes
+        -----
+        Example Uses:
+
+        1. Adding to a plot with a single line for k-effective...
+
+        series = TimeSeries("Plot of K-effective", "plot", ["k-effective"], "k-eff", "keff.png")
+
+        time = r.p.time                     # The current time node of the reactor.
+
+        data = r.core.p.keff                # The parameter k-effective value at that time.
+
+        uncertainty = r.core.p.keffUnc      # Since the parameter yields keff-uncertainty value at the current time.
+
+        series.add("k-effective", time, data, uncertainty)   # Adds this point to be plotted later.
+
+        2. Adding to a plot with multiple lines for fuel Burn-Up Plot.
+
+        for a in r.core.getAssemblies(Flags.FUEL):
+            if a.p.type not in labels:
+                labels.append(a.p.type)
+        maxValue = defaultdict(float)
+
+        Collect Max Value Data
+
+        for a in r.core.getAssemblies(Flags.FUEL):
+            maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxPercentBu)
+
+        Add this data for each assembly type (which will each be it's own line)
+
+        for a in r.core.getAssemblies(Flags.FUEL):
+            series.add(a.p.type, r.p.time, maxValue[a.p.type], None)
+
+            (Adding a point for line labeled for this type of fuel,
+            at this time, with the found maxValue, and no uncertainty...)
 
         """
-        self.times.append(time)
-        index = 0
-        for plotLine in data:
-            self.datapoints[index].append(plotLine)
-            index = index + 1
-        index = 0
-        for error in uncertainty:
-            self.uncertainties[index].append(error)
-            index = index + 1
+        self.dataDictionary[lineToAddTo].append((time, data, uncertainty))
+
+    def plot(self, ymin=None):
+        """To plot a collected TimeSeries.
+
+        Parameters
+        ----------
+        ext: String
+            The extension to use on the graph.
+        ymin: float
+            The minimum y-value for the graph.
+        """
+
+        from operator import itemgetter
+        import matplotlib.pyplot as plt
+
+        plt.figure()
+        lowestY = True
+        for label in self.labels:
+
+            points = self.dataDictionary[label]
+            # want to sort points by first entry in tuple... (so by asscending time stamp...)
+            points.sort(key=itemgetter(0))
+            if ymin is None or not all([ymin > yi for yi in points]):
+                lowestY = False
+            lineY = []
+            timepoints = []
+            uncertainties = []
+            for point in points:
+                # Now points is sorted, collect times, and a data line...
+
+                timepoints.append(point[0])
+                lineY.append(point[1])
+                uncertainties.append(point[2])
+            self.dataDictionary[label] = (lineY, timepoints, uncertainties)
+            if any(uncertainties):
+                plt.errorbar(
+                    timepoints,
+                    lineY,
+                    yerr=uncertainties,
+                    label=label,
+                )
+            else:
+                plt.plot(timepoints, lineY, ".-", label=label)
+        plt.xlabel("Time (yr)")
+        plt.legend()
+        plt.ylabel(self.yaxis)
+        plt.grid(color="0.70")
+        plt.title(self.title + " for {0}".format(self.caption))
+        if lowestY:
+            # set ymin all values are greater than it and it exists.
+            ax = plt.gca()
+            ax.set_ylim(bottom=ymin)
+
+        figName = self.caption + "." + self.key
+        plt.savefig(figName)
+        plt.close()
+        return figName
+
+    def toHtml(self):
+        from armi.bookkeeping.newReportUtils import encode64
+
+        figName = self.plot()
+        return htmltree.Img(
+            src=encode64(os.path.abspath(figName)), alt="{}_image".format(self.title)
+        )

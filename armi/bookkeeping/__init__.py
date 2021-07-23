@@ -20,7 +20,6 @@ from armi import plugins
 from armi.bookkeeping import newReports
 
 # from armi.bookkeeping.newReports import ReportContent
-from armi.bookkeeping import newReportUtils
 from htmltree import *
 
 
@@ -105,22 +104,23 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def getReportContents(r, cs, report, blueprint, stage):
+    def getReportContents(r, cs, report, stage, blueprint):
         """
         Generate general report content. Where diagrams/tables
         not specific to additional plugins comes together.
 
 
         Currently only happening at End and Begin stage because no content gathered
-        in these sections is used to create a graph across time. If
+        in these sections is used to create a graph across time.
 
         """
         from armi.cli import reportsEntryPoint
+        from armi.bookkeeping import newReportUtils
 
         if stage == reportsEntryPoint.ReportStage.Begin:
-            return newReportUtils.createGeneralReportContent(
-                cs, r, report, blueprint, stage
-            )
+            newReportUtils.createGeneralReportContent(cs, r, report, blueprint, stage)
+            if blueprint is not None:
+                newReportUtils.blueprintContent(r, cs, report, blueprint)
         elif stage == reportsEntryPoint.ReportStage.End:
-            return newReportUtils.getEndOfLifeContent(r, cs, report)
+            newReportUtils.getEndOfLifeContent(r, report)
         return

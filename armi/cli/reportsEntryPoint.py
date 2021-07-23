@@ -63,6 +63,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         # self.createOptionFromSetting("imperialunits", "-i")
 
     def invoke(self):
+        import os
         from armi import settings
         from armi.reactor import blueprints
         from armi.bookkeeping.newReports import ReportContent
@@ -89,14 +90,14 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                     "No Settings with Blueprint or Database, cannot gerenate a report"
                 )
 
-            with directoryChangers.ForcedCreationDirectoryChanger("reportsOutput"):
+            with directoryChangers.ForcedCreationDirectoryChanger("reportsOutputFiles"):
 
                 pluginContent = pm.hook.getReportContents(
                     r=r,
                     cs=cs,
                     report=report,
-                    blueprint=blueprint,
                     stage=ReportStage.Begin,
+                    blueprint=blueprint,
                 )
                 report.writeReports()
 
@@ -107,7 +108,10 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             i = 0
 
             with db:
-                with directoryChangers.ForcedCreationDirectoryChanger("reportsOutput"):
+
+                with directoryChangers.ForcedCreationDirectoryChanger(
+                    "reportsOutputFiles"
+                ):
 
                     dbNodes = list(db.genTimeSteps())
                     runLog.info(dbNodes)
@@ -121,8 +125,8 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                             r=r,
                             cs=cs,
                             report=report,
-                            blueprint=blueprint,
                             stage=ReportStage.Begin,
+                            blueprint=blueprint,
                         )
                     )
                     for cycle, node in dbNodes:
@@ -150,13 +154,10 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                             stage = ReportStage.Standard
                         i += 1
                         pluginContent = pm.hook.getReportContents(
-                            r=r, cs=cs, report=report, blueprint=blueprint, stage=stage
+                            r=r, cs=cs, report=report, stage=stage, blueprint=blueprint
                         )
 
-                        for contents in pluginContent:
-                            report.addContents(contents)
-
-                report.writeReports()
+                    report.writeReports()
 
 
 class ReportStage(Enum):

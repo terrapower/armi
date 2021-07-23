@@ -149,7 +149,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def getReportContents(r, cs, report, blueprint, stage):
+    def getReportContents(r, cs, report, stage, blueprint):
         """
         Generates the Report Content for the Neutronics Report
 

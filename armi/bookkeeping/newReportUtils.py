@@ -1,3 +1,4 @@
+from armi.utils import directoryChangers
 import collections
 
 
@@ -5,10 +6,11 @@ from numpy import ComplexWarning
 from framework.armi import runLog
 from armi.reactor.flags import Flags
 from armi.bookkeeping import newReports
-
+from armi.reactor import blueprints
 import os
 import matplotlib.pyplot as plt
-from htmltree import *
+import htmltree
+from htmltree import Table as HtmlTable
 
 
 def createGeneralReportContent(cs, r, report, blueprint, stage):
@@ -26,6 +28,9 @@ def createGeneralReportContent(cs, r, report, blueprint, stage):
 
     """
     # These items only happen once at BOL
+    from armi.cli.database import ExtractInputs
+    from armi.utils import runLog
+
     if stage == ReportStage.Begin:
         comprehensiveBOLContent(cs, r, report)
         designBOLContent(cs, r, report, blueprint)
@@ -34,48 +39,83 @@ def createGeneralReportContent(cs, r, report, blueprint, stage):
 
 
 def comprehensiveBOLContent(cs, r, report):
+    """Adds BOL content to the Comprehensive section of the report
 
-    if COMPREHENSIVE_REPORT not in report.sections:
-        report.sections[COMPREHENSIVE_REPORT] = dict()
+    Parameters
+    ----------
+    cs: Case Settings
+    r: Reactor
+    report: ReportContent
+    """
 
     report.sections[COMPREHENSIVE_REPORT][RUNMETA] = generateMetaTable(cs, report)
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
     if first_fuel_block is not None:
-        report.sections[COMPREHENSIVE_REPORT][ASSEMBLY_AREA] = newReports.TableSection(
-            "Assembly Area Fractions (of First Fuel Block)",
-            "Of First Block",
-            header=["Component", "Area (cm<sup>2</sup>)", "Fraction"],
+        report.addSubsection(
+            COMPREHENSIVE_REPORT,
+            ASSEMBLY_AREA,
+            newReports.Table(
+                "Assembly Area Fractions (of First Fuel Block)",
+                "Of First Block",
+                header=["Component", "Area (cm<sup>2</sup>)", "Fraction"],
+            ),
         )
         setAreaFractionsReport(first_fuel_block, report)
 
-    if CASE_PARAMETERS not in report.sections[COMPREHENSIVE_REPORT]:
-        settingsData(cs, report)
+    settingsData(cs, report)
 
 
 def designBOLContent(cs, r, report, blueprint):
-    from armi.bookkeeping.report import reportingUtils
+    """Adds Beginning of Life content to the Design section of the report.
 
-    report.sections[DESIGN] = dict()
-    reportingUtils.makeCoreDesignReport2(r.core, cs, report)
-    core = r.core
-    report.sections[DESIGN][CORE_MAP] = newReports.ImageSection(
-        "Core Map",
-        "Map of the Core at BOL",
-        makeCoreAndAssemblyMaps(r, cs, report, blueprint),
+    Parameters
+    ----------
+    cs: Case Settings
+    r: reactor
+    report: ReportContent
+    blueprint: Blueprint
+
+    """
+
+    report.addSubsection(
+        DESIGN, PIN_ASSEMBLY_DESIGN_SUMMARY, summarizePinDesign(r.core)
     )
-    reportBlockDiagrams(cs, blueprint, report, True)
-    report.sections[DESIGN][PIN_ASSEMBLY_DESIGN_SUMMARY] = summarizePinDesign(core)
+
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
     if first_fuel_block is not None:
+        report.addSubsection(DESIGN, "Dimensions in First Fuel Block", [])
         for component_ in sorted(first_fuel_block):
-            report.sections[DESIGN][
-                component_.getName().capitalize() + " Dimensions"
-            ] = setDimensionReport(component_)
+            report.sections[DESIGN]["Dimensions in First Fuel Block"].append(
+                setDimensionReport(component_)
+            )
 
+
+def blueprintContent(r, cs, report, blueprint):
+    from armi.bookkeeping.report import reportingUtils
+
+    reportingUtils.makeCoreDesignReport2(r.core, cs, report)
+    report.addSubsection(
+        DESIGN,
+        CORE_MAP,
+        newReports.Image(
+            "Core Map",
+            "Map of the Core at BOL",
+            makeCoreAndAssemblyMaps(r, cs, report, blueprint),
+        ),
+    )
+    reportBlockDiagrams(cs, blueprint, report, True)
     reportingUtils.makeBlockDesignReport2(blueprint, report, cs)
 
 
-def getEndOfLifeContent(r, cs, report):
+def getEndOfLifeContent(r, report):
+    """Generate End of Life Content for the report
+
+    Parameters:
+    r: Reactor
+    report: ReportContent
+        The report to be added to.
+
+    """
     from armi.utils import plotting
     from armi.utils import units
 
@@ -94,35 +134,71 @@ def getEndOfLifeContent(r, cs, report):
         makeColorBar=True,
     )
 
-    report.sections[DESIGN][TOTAL_POWER_EOL] = newReports.ImageSection(
-        "Power Map", "Total Assembly Power at EOL in MWt", os.path.abspath(fName2)
+    report.addSubsection(
+        DESIGN,
+        TOTAL_POWER_EOL,
+        newReports.Image(
+            "Power Map",
+            "Total Assembly Power at EOL in MWt",
+            os.path.abspath(fName2),
+        ),
     )
 
 
-def reportBlockDiagrams(cs, blueprint, report, temp):
+def reportBlockDiagrams(cs, blueprint, report, cold):
+    """Adds Block Diagrams to the report
+
+    Parameters
+    ----------
+    cs: Case Settings
+    blueprint: Blueprint
+    report: ReportContent
+    cold: boolean
+        True for dimensions at cold temps
+    """
     from armi.utils import plotting
 
+    listMaterials = []
     for ai, bDesign in enumerate(blueprint.blockDesigns):
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
-        fileName = plotting.plotBlockDiagram(block, "RdYlBu_r", ai, temp)
+        for component in block:
+            if component.material.name not in listMaterials:
+                listMaterials.append(component.material.name)
+
+    # So now we know every material possible...
+    # want these all to have the same colors...
+    report.addSubsection(DESIGN, "Block Diagrams", [])
+    for ai, bDesign in enumerate(blueprint.blockDesigns):
+        block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
+        fileName = plotting.plotBlockDiagram(
+            block, "{}.svg".format(bDesign.name), cold, materialList=listMaterials
+        )
+        plotting.close()
         if fileName is not None:
-            report.sections[DESIGN][
-                "Block Diagram {} for {}".format(ai, bDesign.name)
-            ] = newReports.ImageSection(
-                "Block Diagram",
-                "Diagram of Block at Cold Temperature",
-                fileName,
+            report.accessSubsection(DESIGN, "Block Diagrams").append(
+                newReports.Image(
+                    "{}".format(bDesign.name.capitalize()),
+                    "Diagram of Block at Cold Temperature",
+                    fileName,
+                )
             )
 
 
 def generateMetaTable(cs, report):
-    """Generates part of the Runmeta table"""
+    """Generates part of the Runmeta table
+
+    Parameters
+    ----------
+    cs: Case Settings
+    report: ReportContent
+
+    """
     from armi.bookkeeping import newReports
 
     if RUNMETA in report.sections[COMPREHENSIVE_REPORT]:
-        tableList = report.sections[COMPREHENSIVE_REPORT][RUNMETA]
+        tableList = report.accessSubsection(COMPREHENSIVE_REPORT, RUNMETA)
     else:
-        tableList = newReports.TableSection("Run Meta", "General overview of the run")
+        tableList = newReports.Table("Run Meta", "General overview of the run")
     tableList.addRow(["outputFileExtension", cs["outputFileExtension"]])
     tableList.addRow(["Total Core Power", "%8.5E MWt" % (cs["power"] / 1.0e6)])
     if not cs["cycleLengths"]:
@@ -132,21 +208,40 @@ def generateMetaTable(cs, report):
 
 
 def settingsData(cs, report):
-    """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run"""
-    report.sections[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.TableSection(
-        "Case Parameters", "Summary of the case parameters"
+    """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run
+
+    Parameters
+    ----------
+    cs: Case Settings
+    report: ReportContent
+        The report to be added to
+    """
+    from armi.utils import runLog
+
+    report.addSubsection(
+        COMPREHENSIVE_REPORT,
+        CASE_PARAMETERS,
+        newReports.Table("Case Parameters", "Summary of the case parameters"),
     )
-    report.sections[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.TableSection(
-        "Reactor Parameters", "Table of the Reactor Parameters"
+    report.addSubsection(
+        COMPREHENSIVE_REPORT,
+        REACTOR_PARAMS,
+        newReports.Table("Reactor Parameters", "Table of the Reactor Parameters"),
     )
-    report.sections[COMPREHENSIVE_REPORT][CASE_CONTROLS] = newReports.TableSection(
-        "Case Controls", "Case Controls"
+    report.addSubsection(
+        COMPREHENSIVE_REPORT,
+        CASE_CONTROLS,
+        newReports.Table("Case Controls", "Case Controls"),
     )
-    report.sections[COMPREHENSIVE_REPORT][SNAPSHOT] = newReports.TableSection(
-        "Snapshot", "Snapshot of the Reactor"
+    report.addSubsection(
+        COMPREHENSIVE_REPORT,
+        SNAPSHOT,
+        newReports.Table("Snapshot", "Snapshot of the Reactor"),
     )
-    report.sections[COMPREHENSIVE_REPORT][BURNUP_GROUPS] = newReports.TableSection(
-        "Burn Up Groups", "Burn Up Groups"
+    report.addSubsection(
+        COMPREHENSIVE_REPORT,
+        BURNUP_GROUPS,
+        newReports.Table("Burn Up Groups", "Burn Up Groups"),
     )
 
     for key in [
@@ -156,55 +251,87 @@ def settingsData(cs, report):
         "cycleLength",
         "numProcessors",
     ]:
-        report.sections[COMPREHENSIVE_REPORT][CASE_PARAMETERS].addRow([key, cs[key]])
+        report.accessSubsection(COMPREHENSIVE_REPORT, CASE_PARAMETERS).addRow(
+            [key, cs[key]]
+        )
 
-    """for key in cs.environmentSettings:
-        report.setData(key, cs[key], report.RUN_META, [report.ENVIRONMENT])
-    """
+    for key in cs.environmentSettings:
 
+        report.accessSubsection(COMPREHENSIVE_REPORT, RUNMETA).addRow(
+            [key, str(cs[key])]
+        )
     for key in ["reloadDBName", "startCycle", "startNode"]:
-        report.sections[COMPREHENSIVE_REPORT][SNAPSHOT].addRow([key, cs[key]])
+        report.accessSubsection(COMPREHENSIVE_REPORT, SNAPSHOT).addRow([key, cs[key]])
 
     for key in ["power", "Tin", "Tout"]:
-        report.sections[COMPREHENSIVE_REPORT][REACTOR_PARAMS].addRow([key, cs[key]])
+        report.accessSubsection(COMPREHENSIVE_REPORT, REACTOR_PARAMS).addRow(
+            [key, cs[key]]
+        )
+
+    for key in ["genXS", "neutronicsKernel"]:
+        report.accessSubsection(COMPREHENSIVE_REPORT, CASE_CONTROLS).addRow(
+            [key, str(cs[key])]
+        )
+
+    for key in ["buGroups"]:
+        report.accessSubsection(COMPREHENSIVE_REPORT, BURNUP_GROUPS).addRow(
+            [key, str(cs[key])]
+        )
 
 
 def tableOfContents(elements):
-    """Creates a Table of Contents at the top of the document that links to later Sections"""
-    main = Main(id="toc")
-    main.C.append(P("Contents"))
-    outerList = Ul()
-    for group in elements:
-        outerList.C.append(Li(A(group, href="#{}".format(group)), id="section"))
+    """Creates a Table of Contents at the top of the document that links to later Sections
 
-        ul = Ul()
+    Parameters
+    ----------
+    elements: ReportContent
+        Contains sections of subsections that make up the report.
+    """
+    main = htmltree.Main(id="toc")
+    main.C.append(htmltree.P("Contents"))
+    outerList = htmltree.Ul()
+    for group in elements:
+        outerList.C.append(
+            htmltree.Ul(htmltree.A(group, href="#{}".format(group)), _class="section")
+        )
+
+        ul = htmltree.Ul(_class="subsection")
         for subgroup in elements[group]:
-            ul.C.append(Li(A(subgroup, href="#{}".format(subgroup)), id="subsection"))
+            if type(elements[group][subgroup]) is list:
+                sectionHeading = htmltree.Li(
+                    htmltree.A(subgroup, href="#{}".format(subgroup)),
+                    _class="nestedSection",
+                )
+                ul.C.append(sectionHeading)
+
+                ul2 = htmltree.Ul(_class="nestedSubsection")
+                for element in elements[group][subgroup]:
+                    ul2.C.append(
+                        htmltree.Li(
+                            htmltree.A(element.title, href="#{}".format(element.title))
+                        )
+                    )
+                    if element.title == "":
+                        sectionHeading.A.update({"class": "subsection"})
+                ul.C.append(ul2)
+            else:
+                ul.C.append(
+                    htmltree.Li(htmltree.A(subgroup, href="#{}".format(subgroup)))
+                )
+
         outerList.C.append(ul)
 
     main.C.append(outerList)
     return main
 
 
-def tableToHTML(tableRows):
-    """Converts a TableSection object into a html table representation htmltree element"""
-    table = Table()
-    # runLog.info(tableRows.header)
-    if tableRows.header is not None:
-        titleRow = Tr()
-        for heading in tableRows.header:
-            titleRow.C.append(Th(heading))
-        table.C.append(titleRow)
-    for row in tableRows.rows:
-        htmlRow = Tr()
-        for element in row:
-            htmlRow.C.append(Td(element))
-        table.C.append(htmlRow)
-    return table
-
-
 def summarizePinDesign(core):
-    """Summarizes Pin and Assembly Design for the input"""
+    """Summarizes Pin and Assembly Design for the input
+
+    Parameters
+    ----------
+    core: Core
+    """
     import collections
     import numpy
     from armi import runLog
@@ -244,9 +371,7 @@ def summarizePinDesign(core):
 
         # assumption made that all lists contain only numerical data
         designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
-        tableRows = newReports.TableSection(
-            "Pin Design", "Summarizes pin design", header=None
-        )
+        tableRows = newReports.Table("Pin Design", "Summarizes pin design", header=None)
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():
             dim = "{0:10s}".format(key)
@@ -271,18 +396,32 @@ def summarizePinDesign(core):
 
 
 def setAreaFractionsReport(block, report):
+    """Adds to an Assembly Area Fractions table subsection of the Comprehensive Section
+    of the report.
+
+        Parameters
+        ----------
+        block: Block
+        report: ReportContent
+
+    """
     from armi.bookkeeping import newReportUtils
     from armi.bookkeeping import newReports
 
     for c, frac in block.getVolumeFractions():
 
-        report.sections[newReportUtils.COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(
-            [c.getName(), "{0:10f}".format(c.getArea()), "{0:10f}".format(frac)]
-        )
+        report.accessSubsection(
+            newReportUtils.COMPREHENSIVE_REPORT, ASSEMBLY_AREA
+        ).addRow([c.getName(), "{0:10f}".format(c.getArea()), "{0:10f}".format(frac)])
 
 
 def setDimensionReport(comp):
-    """Gives a report of the dimensions of this component."""
+    """Gives a report of the dimensions of this component.
+
+    Parameters
+    ----------
+    comp: Component
+    """
     from armi.reactor.components import component
     from armi.bookkeeping import newReportUtils
     from armi.bookkeeping import newReports
@@ -300,8 +439,11 @@ def setDimensionReport(comp):
     }
     reportGroup = None
     for componentType, componentReport in REPORT_GROUPS.items():
+
         if componentType in comp.getName():
-            reportGroup = newReports.TableSection(componentReport, componentType)
+            reportGroup = newReports.Table(
+                componentType.capitalize() + " Dimensions", componentType
+            )
             break
     if not reportGroup:
         return "No report group designated for {} component.".format(comp.getName())
@@ -359,75 +501,6 @@ def setDimensionReport(comp):
     return reportGroup
 
 
-def valueVsTime(timePoints, ymin=None):
-    """Creates a Value vs. Time graph for input"""
-    import numpy
-
-    import matplotlib.pyplot as plt
-    import matplotlib.path
-    import matplotlib.spines
-    import matplotlib.projections.polar
-    import matplotlib.cm as cm
-    import matplotlib.colors as mpltcolors
-
-    from armi import settings
-
-    r"""
-    Plots a value vs. time with a standard graph format
-
-    Parameters
-    ----------
-    reactor : armi.reactor.reactors object
-
-    reportGroup : armi.bookkeeping.report.data.Group object
-
-    x : timePoints is a TimeSeries object collection of points
-
-    """
-    plt.figure()
-    # x is now a list of lists...
-
-    for num in range(len(timePoints.datapoints)):
-
-        if any(timePoints.uncertainties[num]):
-            plt.errorbar(
-                timePoints.times,
-                timePoints.datapoints[num],
-                yerr=timePoints.uncertainties[num],
-                label=timePoints.labels[num],
-            )
-        else:
-            plt.plot(
-                timePoints.times,
-                timePoints.datapoints[num],
-                ".-",
-                label=timePoints.labels[num],
-            )
-    plt.xlabel("Time (yr)")
-    plt.legend()
-    plt.ylabel(timePoints.yaxis)
-    plt.grid(color="0.70")
-    plt.title(timePoints.title + " for {0}".format(timePoints.caption))
-    if ymin is not None and all([yi > ymin for yi in timePoints.datapoints]):
-        # set ymin all values are greater than it and it exists.
-        ax = plt.gca()
-        ax.set_ylim(bottom=ymin)
-
-    figName = (
-        timePoints.caption
-        + "."
-        + timePoints.key
-        + "."
-        + settings.getMasterCs()["outputFileExtension"]
-    )
-    plt.savefig(figName)
-    plt.close(1)
-
-    return Img(
-        src=encode64(os.path.abspath(figName)), alt="{}_image".format(timePoints.title)
-    )
-
-
 def encode64(file_path):
     """Encodes the file path"""
     import base64
@@ -446,6 +519,11 @@ def encode64(file_path):
             file_path
         )
     with open(file_path, "rb") as img_src:
+        if xtn == "svg":
+            return r"data:image/{};base64,{}".format(
+                xtn + "+xml", base64.b64encode(img_src.read()).decode()
+            )
+
         return r"data:image/{};base64,{}".format(
             xtn, base64.b64encode(img_src.read()).decode()
         )
@@ -465,6 +543,7 @@ def makeCoreAndAssemblyMaps(
     r : armi.reactor.reactors.Reactor
     cs: armi.settings.caseSettings.Settings
     report : armi.bookkeeping.newReports.ReportContent
+    blueprint: Blueprint
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
@@ -479,18 +558,18 @@ def makeCoreAndAssemblyMaps(
     }
 
     core = r.core
+    report.addSubsection(DESIGN, "Assembly Designs", [])
     for plotNum, assemBatch in enumerate(
         iterables.chunk(list(assemPrototypes), MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
-        assemPlotImage = newReports.ImageSection(
-            "Assembly Types",
+        assemPlotImage = newReports.Image(
+            "",
             "The axial block and enrichment distributions of assemblies in the core at "
             "beginning of life. The percentage represents the block enrichment (U-235 or B-10), where as "
             "the additional character represents the cross section id of the block. "
             "The number of fine-mesh subdivisions are provided on the secondary y-axis.",
             os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png"),
         )
-        assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
         plotting.plotAssemblyTypes(
             blueprint,
@@ -499,9 +578,7 @@ def makeCoreAndAssemblyMaps(
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
         )
-        report.sections[COMPREHENSIVE_REPORT][
-            f"Assembly Design{plotNum}"
-        ] = assemPlotImage
+        report.accessSubsection(DESIGN, "Assembly Designs").append(assemPlotImage)
 
     # Create radial core map
     if generateFullCoreMap:
@@ -763,7 +840,7 @@ DESIGN = "Design"
 
 """Subsections Constants"""
 
-RUNMETA = "Run Meta"
+RUNMETA = "Settings"
 CORE_MAP = "Core Map"
 PIN_ASSEMBLY_DESIGN_SUMMARY = "Pin and Assembly Design Summary"
 REACTOR_PARAMS = "Reactor Parameters"

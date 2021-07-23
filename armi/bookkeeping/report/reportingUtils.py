@@ -703,7 +703,7 @@ def makeCoreDesignReport2(core, cs, report):
     """
     from armi.bookkeeping import newReports
 
-    coreDesignTable = newReports.TableSection("Core Report Table")
+    coreDesignTable = newReports.Table("Core Report Table")
     coreDesignTable.header = ["", "Input Parameter"]
     report.sections["Design"]["Core Design Table"] = coreDesignTable
     # Change the ordering of the core design table in the report relative to the other data
@@ -733,6 +733,15 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
 
 
 def _setGeneralCoreParametersData(core, cs, coreDesignTable):
+    """Sets the general Core Parameter Data
+
+    Parameters
+    ----------
+    core: Core
+    cs: Case Settings
+    coreDesignTable: newReports.Table
+        Current state of table to be added to
+    """
     blocks = core.getBlocks()
     totalMass = sum(b.getMass() for b in blocks)
     fissileMass = sum(b.getFissileMass() for b in blocks)
@@ -864,10 +873,15 @@ def makeBlockDesignReport2(blueprint, report, cs):
 
     Parameters
     ----------
-    r : armi.reactor.reactors.Reactor
+
+    blueprint : Blueprint
+    report: ReportContent
+    cs: Case Settings
+
     """
+    report.sections[newReportUtils.DESIGN]["Block Summaries"] = []
     for bDesign in blueprint.blockDesigns:
-        loadingFileTable = newReports.TableSection(
+        loadingFileTable = newReports.Table(
             "Summary Of Block: {}".format(bDesign.name), "block contents"
         )
         loadingFileTable.header = ["", "Input Parameter"]
@@ -902,18 +916,23 @@ def makeBlockDesignReport2(blueprint, report, cs):
                     "{} {}".format(cDesign.Tinput, ""),
                 ]
             )
-            for dimName in c.DIMENSION_NAMES:
-                value = c.getDimension(dimName, cold=True)
-                if value is not None:
-                    loadingFileTable.addRow(
-                        [
-                            "{} {}".format(cType, dimName),
-                            "{} {}".format(value, "cm"),
-                        ]
-                    )
-            report.sections[newReportUtils.DESIGN][
-                "SUMMARY OF BLOCK: {}".format(bDesign.name)
-            ] = loadingFileTable
+            for pd in c.pDefs:
+                if pd.name in c.DIMENSION_NAMES:
+                    value = c.getDimension(pd.name, cold=True)
+                    unit = ""
+                    if pd.units is not None:
+                        unit = pd.units
+                    if value is not None:
+                        loadingFileTable.addRow(
+                            [
+                                "{} {}".format(cType, pd.name),
+                                "{} {}".format(value, unit),
+                            ]
+                        )
+        loadingFileTable.title = "Summary of Block: {}".format(bDesign.name)
+        report.sections[newReportUtils.DESIGN]["Block Summaries"].append(
+            loadingFileTable
+        )
 
 
 def _getComponentInputDimensions(cDesign):

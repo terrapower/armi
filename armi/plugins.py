@@ -540,7 +540,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def getReportContents(r, cs, report, blueprint, stage):  # ReportContent
+    def getReportContents(r, cs, report, stage, blueprint):  # ReportContent
         """
         To generate a report.
 
@@ -549,7 +549,7 @@ class ArmiPlugin:
         r : a reactor
         cs : case settings
         report : current report object to add to
-        blueprint : blueprint for a reactor
+        blueprint : blueprint for a reactor (if None, only partial contents created)
         stage : begin/standard/or end (stage of the report for
                 when inserting BOL vs. EOL content)
 
