@@ -423,7 +423,8 @@ class XSModelingOptions:
         if self.fileLocation is not None and self.geometry is not None:
             runLog.warning(
                 f"Either file location or geometry inputs in {self} should be given, but not both. "
-                "Remove one or the other in the `crossSectionSettings` input to fix this."
+                "The file location setting will take precedence over the geometry inputs. "
+                "Remove one or the other in the `crossSectionSettings` input to fix this warning."
             )
 
         invalids = []
