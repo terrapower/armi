@@ -124,7 +124,6 @@ class ExtractInputs(EntryPoint):
         if settings.lstrip()[0] == "<":
             settingsExt = ".xml"
 
-
         settingsPath = self.args.output_base + "_settings" + settingsExt
         bpPath = self.args.output_base + "_blueprints.yaml"
 
