@@ -421,9 +421,9 @@ class XSModelingOptions:
             raise ValueError(f"{self} is missing a geometry input or a file location.")
 
         if self.fileLocation is not None and self.geometry is not None:
-            raise ValueError(
-                f"Either file location or geometry inputs in {self} must be given, but not both. "
-                "Remove one or the other."
+            runLog.warning(
+                f"Either file location or geometry inputs in {self} should be given, but not both. "
+                "Remove one or the other in the `crossSectionSettings` input to fix this."
             )
 
         invalids = []
