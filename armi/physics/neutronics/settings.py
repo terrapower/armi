@@ -61,7 +61,6 @@ CONF_OPT_DPA = [
 
 # moved from xsSettings
 CONF_CLEAR_XS = "clearXS"
-CONF_DPA_XS_DIRECTORY_PATH = "DPAXSDirectoryPath"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
@@ -250,15 +249,6 @@ def defineSettings():
             default=False,
             label="Clear XS",
             description="Delete all cross section libraries before regenerating them.",
-        ),
-        setting.Setting(
-            CONF_DPA_XS_DIRECTORY_PATH,
-            default="\\\\albert\\apps\\dev\\mc2\\3.2.2\\libraries\\endfb-vii.0\\damage_xs",
-            label="DPA XS Directory Path",
-            description="DPA XS Directory Path",
-            options=[
-                "\\\\albert\\apps\\dev\\mc2\\3.2.2\\libraries\\endfb-vii.0\\damage_xs"
-            ],
         ),
         setting.Setting(
             CONF_MINIMUM_FISSILE_FRACTION,

@@ -73,16 +73,13 @@ def coverageReportHelper(config, dataPaths):
             cov.load()
         cov.html_report()
         cov.xml_report()
-    except PermissionError:
-        # Albert has some issues with filename that start with a '.', such as the
+    except PermissionError as e:
+        # Some file systems have some issues with filenames that start with a '.', such as the
         # .coverage files. If a permissions error is raised, it likely has something to
         # do with that. We changed the COVERAGE_RESULTS_FILE in cases.py for this reason.
-        #
-        # We print here, since this is used to run a one-off command, so runLog isn't
-        # really appropriate.
-        print(
-            "There was an issue in generating coverage reports. Probably related to "
-            "Albert hidden file issues."
+        runLog.error(
+            f"There was an issue in generating coverage reports due "
+            f"to the following permissions error: {e}"
         )
         # disabled until we figure out the problem.
         # raise
@@ -93,7 +90,7 @@ def coverageReportHelper(config, dataPaths):
         # simply be that we dont want a coverage report generated for the TestFixture.
         # Something to think about. Either way, we do not want to fail the job just
         # because of this
-        print(
+        runLog.error(
             "There was an issue generating coverage reports "
             "({}):\n{}".format(type(e), e.args)
         )

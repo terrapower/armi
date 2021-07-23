@@ -207,11 +207,15 @@ exclude_patterns = [
 # add_function_parentheses = True
 
 rst_epilog = r"""
-.. |currentArmi| replace:: ``\\albert\apps\dev\armi\master``
 .. |keff| replace:: k\ :sub:`eff`\
 """
 
-wiki = {"phabricator": ("https://ubuntuprod.tp.int" + "%s", None)}
+wiki = {
+    "GitHub Discussions": (
+        "https://github.com/terrapower/armi/discussions" + "%s",
+        None,
+    )
+}
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
