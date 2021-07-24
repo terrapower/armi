@@ -784,12 +784,18 @@ def copyInterfaceInputs(
                             label, sourceFullPath, destPath / sourceName
                         )
 
-                    if len(srcFiles) > 1:
+                    if len(srcFiles) == 0:
+                        runLog.warning(
+                            f"No input files for `{label}` could be resolved "
+                            f"with the following file path: `{f}`."
+                        )
+                    elif len(srcFiles) > 1:
                         runLog.warning(
                             f"Input files for `{label}` resolved to more "
-                            "than one file; cannot update settings safely."
+                            f"than one file; cannot update settings safely. "
+                            f"Discovered input files: {srcFiles}"
                         )
-                    elif isinstance(key, settings.Setting):
+                    elif len(srcFiles) == 1 and isinstance(key, settings.Setting):
                         newSettings[key.name] = str(destFile)
 
     return newSettings
