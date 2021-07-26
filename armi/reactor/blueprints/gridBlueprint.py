@@ -289,19 +289,22 @@ class GridBlueprint(yamlize.Object):
             )
 
             # Specifically in the case of grid blueprints, where we have grid contents
-            # available, we can also infer "through center" based on the contents
-            nx = (
-                max(key[0] for key in self.gridContents)
-                - min(key[0] for key in self.gridContents)
-                + 1
-            )
-            ny = (
-                max(key[1] for key in self.gridContents)
-                - min(key[1] for key in self.gridContents)
-                + 1
-            )
-            if nx == ny and nx % 2 == 1:
-                symmetry.isThroughCenterAssembly = True
+            # available, we can also infer "through center" based on the contents.
+            # Note that the "through center" symmetry check cannot be performed when
+            # the grid contents has not been provided (i.e., None or empty).
+            if self.gridContents:
+                nx = (
+                    max(key[0] for key in self.gridContents)
+                    - min(key[0] for key in self.gridContents)
+                    + 1
+                )
+                ny = (
+                    max(key[1] for key in self.gridContents)
+                    - min(key[1] for key in self.gridContents)
+                    + 1
+                )
+                if nx == ny and nx % 2 == 1:
+                    symmetry.isThroughCenterAssembly = True
 
             isOffset = symmetry is not None and not symmetry.isThroughCenterAssembly
 
