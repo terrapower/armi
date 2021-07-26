@@ -760,10 +760,16 @@ def copyInterfaceInputs(
                     # looks like an extant, absolute path; no need to do anything
                     pass
                 else:
-                    if not (path.exists() and path.is_file()):
-                        runLog.extra(
-                            f"Input file `{f}` not found. Checking for file at path `{sourceDirPath}`"
-                        )
+                    # An OSError can occur if a wildcard is included in the file name so
+                    # this is wrapped in a try/except to circumvent instances where an
+                    # interface requests to copy multiple files based on some prefix/suffix.
+                    try:
+                        if not (path.exists() and path.is_file()):
+                            runLog.extra(
+                                f"Input file `{f}` not found. Checking for file at path `{sourceDirPath}`"
+                            )
+                    except OSError:
+                        pass
 
                     # relative path/glob. Should be safe to just use glob resolution.
                     # Note that `glob.glob` is being used here rather than `pathlib.glob` because
