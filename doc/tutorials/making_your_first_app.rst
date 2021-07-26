@@ -148,7 +148,7 @@ Plugin code can exist in any directory structure in an app. In this app we
 put it in the :file:`myapp/plugin.py` file.
 
 .. note:: For "serious" plugins, we recommend mirroring the ``armi/physics/[subphysics]``
-    structure of the ARMI framework :py:mod:`physics plugin subpackage <armi.physics>`.
+    structure of the ARMI Framework :py:mod:`physics plugin subpackage <armi.physics>`.
 
 We will start the plugin by pointing to the two physics kernels we wish to register. We
 hook them in and tell ARMI the ``ORDER`` they should be run in based on the built-in
@@ -262,7 +262,7 @@ the directory that contains our app. For testing, an example value for this migh
 
 Make a run directory with some input files in it. You can use the same SFR input files
 we've used in previous tutorials for starters (but quickly transition to your own inputs
-for your own interests!)
+for your own interests!).
 
 Here are the files you can download into the run directory.
 
