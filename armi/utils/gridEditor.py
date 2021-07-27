@@ -1709,7 +1709,9 @@ class NewGridBlueprintDialog(wx.Dialog):
         nameSizer.Add(self.gridName, 1, wx.EXPAND)
 
         self.geomType = wx.Choice(
-            self, id=wx.ID_ANY, choices=[gt.label for gt in self._geomFromIdx.values()],
+            self,
+            id=wx.ID_ANY,
+            choices=[gt.label for gt in self._geomFromIdx.values()],
         )
 
         self.Bind(wx.EVT_CHOICE, self.onSelectGeomType, self.geomType)
