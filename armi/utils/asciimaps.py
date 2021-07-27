@@ -154,6 +154,8 @@ class AsciiMap:
         _updateDimensionsFromAsciiLines : used when reading info from ascii lines
         """
         self._ijMax = max(sum(key) for key in self.asciiLabelByIndices)
+        self._asciiMaxCol = max(key[0] for key in self.asciiLabelByIndices) + 1
+        self._asciiMaxLine = max(key[1] for key in self.asciiLabelByIndices) + 1
 
     @staticmethod
     def fromReactor(reactor):
@@ -245,6 +247,9 @@ class AsciiMap:
     def items(self):
         return self.asciiLabelByIndices.items()
 
+    def keys(self):
+        return self.asciiLabelByIndices.keys()
+
 
 class AsciiMapCartesian(AsciiMap):
     """
@@ -262,6 +267,17 @@ class AsciiMapCartesian(AsciiMap):
             for ci, asciiLabel in enumerate(line):
                 ij = self._getIJFromColRow(ci, li)
                 self.asciiLabelByIndices[ij] = asciiLabel
+
+    def _updateDimensionsFromData(self):
+        AsciiMap._updateDimensionsFromData(self)
+        iMin = min(key[0] for key in self.asciiLabelByIndices)
+        jMin = min(key[1] for key in self.asciiLabelByIndices)
+
+        if iMin > 0 or jMin > 0:
+            raise ValueError(
+                "Asciimaps only supports sets of indices that "
+                "start at less than or equal to zero, got {}, {}".format(iMin, jMin)
+            )
 
     def _getIJFromColRow(self, columNum, lineNum):
         return columNum, lineNum

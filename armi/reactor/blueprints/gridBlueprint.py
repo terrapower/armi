@@ -105,7 +105,7 @@ Examples
 """
 import copy
 import itertools
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Tuple
 
 import numpy
 import yamlize
@@ -293,16 +293,7 @@ class GridBlueprint(yamlize.Object):
             # Note that the "through center" symmetry check cannot be performed when
             # the grid contents has not been provided (i.e., None or empty).
             if self.gridContents:
-                nx = (
-                    max(key[0] for key in self.gridContents)
-                    - min(key[0] for key in self.gridContents)
-                    + 1
-                )
-                ny = (
-                    max(key[1] for key in self.gridContents)
-                    - min(key[1] for key in self.gridContents)
-                    + 1
-                )
+                nx, ny = _getGridSize(self.gridContents.keys())
                 if nx == ny and nx % 2 == 1:
                     symmetry.isThroughCenterAssembly = True
 
@@ -393,16 +384,33 @@ class GridBlueprint(yamlize.Object):
         This update the gridContents attribute, which is a dict mapping grid i,j,k
         indices to textual specifiers (e.g. ``IC``))
         """
+        symmetry = geometry.SymmetryType.fromStr(self.symmetry)
+        geom = geometry.GeomType.fromStr(self.geom)
         latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
         asciimap = latticeCls()
         asciimap.readAscii(self.latticeMap)
         self.gridContents = dict()
 
+        iOffset = 0
+        jOffset = 0
+        if (
+            geom == geometry.GeomType.CARTESIAN
+            and symmetry.domain == geometry.DomainType.FULL_CORE
+        ):
+            # asciimaps is not smart about where the center should be, so we need to
+            # offset appropriately to get (0,0) in the middle
+            nx, ny = _getGridSize(asciimap.keys())
+
+            # turns out this works great for even and odd cases. love it when integer
+            # math works in your favor
+            iOffset = int(-nx / 2)
+            jOffset = int(-ny / 2)
+
         for (i, j), spec in asciimap.items():
             if spec == "-":
                 # skip placeholders
                 continue
-            self.gridContents[i, j] = spec
+            self.gridContents[i + iOffset, j + jOffset] = spec
 
     def getLocators(self, spatialGrid: grids.Grid, latticeIDs: list):
         """
@@ -454,3 +462,18 @@ def _isMonotonicUnique(l: Sequence[float]) -> bool:
         return False
 
     return True
+
+
+def _getGridSize(idx) -> Tuple[int, int]:
+    """
+    Return the number of spaces between the min and max of a collection of (int, int)
+    tuples, inclusive.
+
+    This essentially returns the number of grid locations along the i, and j dimesions,
+    given the (i,j) indices of each occupied location. This is useful for determining
+    certain grid offset behavior.
+    """
+    nx = max(key[0] for key in idx) - min(key[0] for key in idx) + 1
+    ny = max(key[1] for key in idx) - min(key[1] for key in idx) + 1
+
+    return nx, ny

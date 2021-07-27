@@ -18,6 +18,7 @@ from armi.utils import asciimaps
 
 
 CARTESIAN_MAP = """2 2 2 2 2
+2 2 2 2 2
 2 1 1 1 2
 2 1 3 1 2
 2 3 1 1 2
@@ -178,18 +179,21 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             asciimap.readAscii(stream.read())
 
-        with io.StringIO() as stream:
-            asciimap.writeAscii(stream)
-            stream.seek(0)
-            output = stream.read()
-            self.assertEqual(output, CARTESIAN_MAP)
-
         self.assertEqual(asciimap[0, 0], "2")
         self.assertEqual(asciimap[1, 1], "3")
         self.assertEqual(asciimap[2, 2], "3")
         self.assertEqual(asciimap[3, 3], "1")
         with self.assertRaises(KeyError):
             asciimap[5, 2]  # pylint: disable=pointless-statement
+
+        outMap = asciimaps.AsciiMapCartesian()
+        outMap.asciiLabelByIndices = asciimap.asciiLabelByIndices
+        outMap.gridContentsToAscii()
+        with io.StringIO() as stream:
+            outMap.writeAscii(stream)
+            stream.seek(0)
+            output = stream.read()
+            self.assertEqual(output, CARTESIAN_MAP)
 
     def test_hexThird(self):
         """Read 1/3 core flats-up maps."""
