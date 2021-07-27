@@ -358,7 +358,7 @@ First we need to supply some metadata.
 .. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
     :language: yaml
     :start-after: begin-metadata
-    :end-before: begin-settings-1
+    :end-before: begin-settings
 
 The thermal power in this reference is 1000 MWt. The thermal efficiency isn't
 specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.
