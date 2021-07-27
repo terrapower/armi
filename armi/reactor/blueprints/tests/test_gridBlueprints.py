@@ -242,7 +242,9 @@ class TestGridBlueprintsSection(unittest.TestCase):
 
         gridDesign2 = self.grids["sfp"]
         _grid = gridDesign2.construct()
-        self.assertEqual(gridDesign2.gridContents[1, 1], "3")
+        self.assertEqual(gridDesign2.gridContents[1, 1], "1")
+        self.assertEqual(gridDesign2.gridContents[0, 0], "3")
+        self.assertEqual(gridDesign2.gridContents[-1, -1], "3")
 
 
 class TestRZTGridBlueprint(unittest.TestCase):
