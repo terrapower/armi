@@ -57,6 +57,27 @@ sfp:
         2 1 3 1 2
         2 3 1 1 2
         2 2 2 2 2
+
+sfp quarter:
+    geom: cartesian
+    symmetry: quarter through center assembly
+    lattice map: |
+        2 2 2 2 2
+        2 1 1 1 2
+        2 1 3 1 2
+        2 3 1 1 2
+        2 2 2 2 2
+
+sfp even:
+    geom: cartesian
+    symmetry: full
+    lattice map: |
+        1 2 2 2 2 2
+        1 2 1 1 1 2
+        1 2 1 4 1 2
+        1 2 2 1 1 2
+        1 2 2 2 2 2
+        1 1 1 1 1 1
 """
 
 RZT_BLUEPRINT = """
@@ -240,11 +261,28 @@ class TestGridBlueprintsSection(unittest.TestCase):
         _grid = gridDesign.construct()
         self.assertEqual(gridDesign.gridContents[0, -8], "6")
 
+        # Cartesian full, odd
         gridDesign2 = self.grids["sfp"]
         _grid = gridDesign2.construct()
         self.assertEqual(gridDesign2.gridContents[1, 1], "1")
         self.assertEqual(gridDesign2.gridContents[0, 0], "3")
         self.assertEqual(gridDesign2.gridContents[-1, -1], "3")
+
+        # Cartesian quarter, odd
+        gridDesign3 = self.grids["sfp quarter"]
+        _grid = gridDesign3.construct()
+        self.assertEqual(gridDesign3.gridContents[0, 0], "2")
+        self.assertEqual(gridDesign3.gridContents[1, 1], "3")
+        self.assertEqual(gridDesign3.gridContents[2, 2], "3")
+        self.assertEqual(gridDesign3.gridContents[3, 3], "1")
+
+        # Cartesian full, even/odd hybrid
+        gridDesign4 = self.grids["sfp even"]
+        _grid = gridDesign4.construct()
+        self.assertEqual(gridDesign4.gridContents[0, 0], "4")
+        self.assertEqual(gridDesign4.gridContents[-1, -1], "2")
+        self.assertEqual(gridDesign4.gridContents[2, 2], "2")
+        self.assertEqual(gridDesign4.gridContents[-3, -3], "1")
 
 
 class TestRZTGridBlueprint(unittest.TestCase):
