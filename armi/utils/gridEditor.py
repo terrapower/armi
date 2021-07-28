@@ -1487,11 +1487,22 @@ class GridBlueprintControl(wx.Panel):
                     aMap = asciimaps.asciiMapFromGeomAndSym(
                         self.grid.geomType, self.grid.symmetry
                     )()
-                    aMap.asciiLabelByIndices = gridDesign.gridContents
+                    # asciimaps can't handle negative indices, so we bump everything
+                    # forward if needed
+                    offset = (
+                        min(key[0] for key in gridDesign.gridContents.keys()),
+                        min(key[1] for key in gridDesign.gridContents.keys()),
+                    )
+                    aMap.asciiLabelByIndices = {
+                        (key[0] - offset[0], key[1] - offset[1]): val
+                        for key, val in gridDesign.gridContents.items()
+                    }
                     aMap.gridContentsToAscii()
-                except:
+                except Exception as e:
                     runLog.warning(
-                        "Cannot write geometry with asciimap. Defaulting to dict."
+                        "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
+                            e
+                        )
                     )
                     aMap = None
 
