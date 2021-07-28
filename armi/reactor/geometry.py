@@ -379,7 +379,7 @@ class SymmetryType:
                 symmetryString, trimmedString
             )
             errorMsg += ", ".join(
-                [f"{sym}" for sym in self.createValidSymmetryStrings()]
+                [f"{sym}" for sym in cls.createValidSymmetryStrings()]
             )
             raise ValueError(errorMsg)
         return cls(domain, boundary, isThroughCenter)

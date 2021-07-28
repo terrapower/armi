@@ -283,6 +283,8 @@ class TestGridBlueprintsSection(unittest.TestCase):
         self.assertEqual(gridDesign4.gridContents[-1, -1], "2")
         self.assertEqual(gridDesign4.gridContents[2, 2], "2")
         self.assertEqual(gridDesign4.gridContents[-3, -3], "1")
+        with self.assertRaises(KeyError):
+            self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
 
 
 class TestRZTGridBlueprint(unittest.TestCase):
