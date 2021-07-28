@@ -1105,6 +1105,37 @@ class CartesianGrid(Grid):
         (-1, 1) ( 0, 1) ( 1, 1)
         (-1, 0) ( 0, 0) ( 1, 0)
         (-1,-1) ( 0,-1) ( 1,-1)
+
+    The concepts of ring and position are a bit tricker in Cartesian grids than in Hex,
+    because unlike in the Hex case, there is no guaranteed center location. For example,
+    when using a CartesianGrid to lay out assemblies in a core, there is only a single
+    central location if the number of assemblies in the core is odd-by-odd; in an
+    even-by-even case, there are four center-most assemblies. Therefore, the number of
+    locations per ring will vary depending on the "through center" nature of
+    ``symmetry``.
+
+    Furthermore, notice that in the "through center" (odd-by-odd) case, the central
+    index location, (0,0) is typically centered at the origin (0.0, 0.0), whereas with
+    the "not through center" (even-by-even) case, the (0,0) index location is offset,
+    away from the origin.
+
+    These concepts are illustrated in the example drawings below.
+
+    .. figure:: ../.static/through-center.svg
+        :width: 400px
+        :align: center
+
+        Grid example where the axes pass through the "center assembly" (odd-by-odd).
+        Note that ring 1 only has one location in it.
+
+    .. figure:: ../.static/not-through-center.svg
+        :width: 400px
+        :align: center
+
+        Grid example where the axes lie between the "center assemblies" (even-by-even).
+        Note that ring 1 has four locations, and that the center of the (0, 0)-index
+        location is offset from the origin.
+
     """
 
     @classmethod
