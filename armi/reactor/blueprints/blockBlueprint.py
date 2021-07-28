@@ -26,6 +26,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.converters import blockConverters
 from armi.reactor import grids
+from armi.settings.fwSettings import globalSettings
 
 
 def _configureGeomOptions():
@@ -162,7 +163,7 @@ class BlockBlueprint(yamlize.KeyedList):
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid
 
-        if b.spatialGrid is None:
+        if b.spatialGrid is None and cs[globalSettings.CONF_BLOCK_AUTO_GRID]:
             try:
                 b.autoCreateSpatialGrids()
             except (ValueError, NotImplementedError) as e:
