@@ -41,10 +41,11 @@ tags
 .cache/
 .pytest_cache/
 .vim-bookmarks
-.venv*/
+venv*/
 .mypy_cache/
 **/__pycache__
 **/.coverage*
+**/logs/*
 
 # Misc. exclusions
 *.html

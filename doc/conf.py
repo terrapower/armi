@@ -169,8 +169,6 @@ copyright = "2009-{}, TerraPower, LLC".format(datetime.datetime.now().year)
 # built documents.
 #
 # The short X.Y version.
-import armi
-
 version = armi.__version__  #'.'.join(armi.__version__.split('.')[:2])
 # The full version, including alpha/beta/rc tags.
 release = armi.__version__

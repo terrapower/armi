@@ -28,18 +28,15 @@ import os
 
 import matplotlib
 
-import armi
-from armi.tests import TEST_ROOT
-from armi import apps
-from armi import settings
+from armi import apps, configure, context, settings
 from armi.settings import caseSettings
-from armi import context
+from armi.tests import TEST_ROOT
 
 
 def pytest_sessionstart(session):
 
     print("Initializing generic ARMI Framework application")
-    armi.configure(apps.App())
+    configure(apps.App())
     bootstrapArmiTestEnv()
 
 

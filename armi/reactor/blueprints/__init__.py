@@ -81,19 +81,19 @@ import yamlize
 import yamlize.objects
 import ordered_set
 
-import armi
 from armi import context
+from armi import getPluginManager, getPluginManagerOrFail
+from armi import plugins
 from armi import runLog
 from armi import settings
-from armi import plugins
 from armi.localization.exceptions import InputError
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
 from armi.scripts import migration
 from armi.utils import textProcessors
+from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.reactor import assemblies
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -144,7 +144,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
     def __new__(mcs, name, bases, attrs):
         # pylint: disable=no-member
-        pm = armi.getPluginManager()
+        pm = getPluginManager()
         if pm is None:
             runLog.warning(
                 "Blueprints were instantiated before the framework was "
@@ -304,7 +304,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             runLog.header("=========== Verifying Assembly Configurations ===========")
 
             # pylint: disable=no-member
-            armi.getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
+            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs
             )
 
