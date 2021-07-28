@@ -35,10 +35,11 @@ class TestReportContentCreation(unittest.TestCase):
             # Labels are predetermined at creation...
             series = newReports.TimeSeries(
                 "Example Plot",
-                "caption for plot",
+                "Reactor Name",
                 ["data1", "data2"],
                 "height (cm)",
                 "plotexample.png",
+                "This is the Caption",
             )
 
             for val in range(len(times)):
@@ -59,19 +60,6 @@ class TestReportContentCreation(unittest.TestCase):
 
         result = table.toHtml()
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
-
-    def testSectionAccess(self):
-
-        report = newReports.ReportContent("Example Report", "example for Testing...")
-        report.addSubsection(
-            "First", "Second", newReports.Table("Example Table", "table of assems")
-        )
-        self.assertTrue(
-            isinstance(report.accessSubsection("First", "Second"), newReports.Table)
-        )
-        report.accessSubsection("First", "Second").addRow(["name", "value"])
-        report.ensureExistance("Third")
-        self.assertTrue("Third" in report.sections)
 
 
 if __name__ == "__main__":

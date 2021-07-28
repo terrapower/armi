@@ -705,10 +705,7 @@ def makeCoreDesignReport2(core, cs, report):
 
     coreDesignTable = newReports.Table("Core Report Table")
     coreDesignTable.header = ["", "Input Parameter"]
-    report.sections["Design"]["Core Design Table"] = coreDesignTable
-    # Change the ordering of the core design table in the report relative to the other data
-    # report.data.Report.groupsOrderFirst.insert(0, coreDesignTable)
-    # report.data.Report.componentWellGroups.insert(0, coreDesignTable)
+    report["Design"]["Core Design Table"] = coreDesignTable
 
     _setGeneralCoreDesignData(cs, coreDesignTable)
 
@@ -879,7 +876,10 @@ def makeBlockDesignReport2(blueprint, report, cs):
     cs: Case Settings
 
     """
-    report.sections[newReportUtils.DESIGN]["Block Summaries"] = []
+    report[newReportUtils.DESIGN]["Block Summaries"] = newReports.Section(
+        "Block Summaries"
+    )
+
     for bDesign in blueprint.blockDesigns:
         loadingFileTable = newReports.Table(
             "Summary Of Block: {}".format(bDesign.name), "block contents"
@@ -930,14 +930,12 @@ def makeBlockDesignReport2(blueprint, report, cs):
                             ]
                         )
         loadingFileTable.title = "Summary of Block: {}".format(bDesign.name)
-        report.sections[newReportUtils.DESIGN]["Block Summaries"].append(
-            loadingFileTable
+        report[newReportUtils.DESIGN]["Block Summaries"].addChildElement(
+            loadingFileTable, loadingFileTable.title
         )
 
 
 def _getComponentInputDimensions(cDesign):
-    from armi.reactor.components import component
-
     """Get the input dimensions of a component and place them in a dictionary with labels and units"""
     dims = collections.OrderedDict()
     dims["Shape"] = (cDesign.shape, "")
@@ -949,22 +947,11 @@ def _getComponentInputDimensions(cDesign):
         dims["Custom Isotopics"] = (cDesign.isotopics, "")
 
     for dimName in ComponentType.TYPES[cDesign.shape.lower()].DIMENSION_NAMES:
-        value = cDesign.getDimension(dimName)
+        value = getattr(cDesign, dimName)
 
         if value is not None:
             # if not default, add it to the report
-            # Here we will want to do something with
-            if type(value) is str:
-                pieces = cDesign.dimName.value.split(".")
-                runLog.info(pieces)
-                dims[dimName] = (
-                    getattr(pieces[0], pieces[1]).value,
-                    "cm",
-                )
-            else:
-                dims[dimName] = (getattr(cDesign, dimName).value, "cm")
-            """else:
-                """
+            dims[dimName] = (getattr(cDesign, dimName).value, "cm")
 
     return dims
 

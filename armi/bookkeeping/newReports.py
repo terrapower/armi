@@ -1,12 +1,16 @@
+from armi import runLog
 import re
 import webbrowser
 import collections
 import shutil
 import os
 
+from typing import Union, Dict
 
 import htmltree
 from htmltree import Table as HtmlTable
+
+import pdfkit
 
 
 class ReportContent:
@@ -26,6 +30,7 @@ class ReportContent:
 
         body = htmltree.Body()
         head = htmltree.Head()
+
         head.C.append(htmltree.Link(rel="stylesheet", href="styles.css"))
 
         divMain = htmltree.Div(id="container")
@@ -45,16 +50,18 @@ class ReportContent:
         body.C.append(tableOfContents(self.sections))
         for group in self.sections:
             div.C.append(htmltree.H1(group, id=group))
-            for subgroup in self.sections[group]:
-                div.C.append(htmltree.H2(subgroup, id=subgroup))
-                if type(self.sections[group][subgroup]) == list:
-                    for element in self.sections[group][subgroup]:
-                        div.C.append(htmltree.H2(element.title, id=element.title))
-                        item = element.toHtml()
-                        div.C.append(item)
+            for subgroup in self.sections[group].childContents:
+                div.C.append(htmltree.H2(subgroup, id=group + subgroup))
+                if type(self.sections[group].childContents[subgroup]) is Section:
+                    fig = (
+                        self.sections[group]
+                        .childContents[subgroup]
+                        .render(group + subgroup)
+                    )
                 else:
-                    fig = self.sections[group][subgroup].toHtml()
-                    div.C.append(fig)
+                    fig = self.sections[group].childContents[subgroup].render()
+
+                div.C.append(fig)
         divMain.C.append(div)
         body.C.append(divMain)
         body.C.append(htmltree.Script(src="report.js"))
@@ -78,65 +85,102 @@ class ReportContent:
 
         webbrowser.open(fileurl)
 
-    def addSubsection(self, section, subsection, item):
-        """Add a subsection to contents within a report
-
-        Parameters
-        ----------
-        section: String
-            Name of section to add Subsection to.
-        subsection: String
-            Name of subsection to add item to
-        item: Table, TimeSeries, Image or List
-            content to add into the html report later
-
-        """
-        self.ensureExistance(section)
-
-        self.sections[section][subsection] = item
-
-    def accessSubsection(self, section, subsection):
-        """Access a subsection of the report for additions
-
-        Parameters
-        ----------
-        section: String
-            Name of section to add Subsection to.
-        subsection: String
-            Name of subsection to add item to
-        """
-        self.ensureExistance(section)
-
-        return self.sections[section][subsection]
-
-    def ensureExistance(self, section):
-        """Adds a section to the report if it is not present
-
-        Parameters
-        ----------
-        section: String
-            Section name to add or ensure existance of
-
-        Returns
-        -------
-        Dictionary for the section that was desired."""
-
+    def get(self, section):
         if section not in self.sections:
-            self.sections[section] = dict()
+            self.sections[section] = Section(section)
+
         return self.sections[section]
 
+    def __getitem__(self, key):
+        if key not in self.sections:
+            self.sections[key] = Section(key)
 
-class Sections:
-    def __init__(self, title, caption=""):
+        return self.sections[key]
+
+    def __setitem__(self, key, item):
+        if key in self.sections:
+            self.sections[key] = item
+
+
+class ReportNode:
+    def __init__(self, title):
         self.title = title
-        self.caption = caption
 
-    def toHtml(self):
+    def render(self):
         """Renders the section to a htmltree element for inserting into HTML document tree"""
         raise NotImplementedError
 
 
-class Image(Sections):
+class Section(ReportNode):
+    """A section of multiple objects ---> can be either ReportNodes or htmltree HtmlElements"""
+
+    def __init__(self, title):
+        ReportNode.__init__(self, title)
+        self.childContents: Dict[
+            str, Union[Section, htmltree.HtmlElement, ReportNode]
+        ] = collections.OrderedDict()
+
+    def contains(self, item):
+        return item in self.childContents
+
+    def addChildElement(self, element, heading="", subheading=None):
+        """Add an element to the group of Sections.
+
+        Parameter
+        ---------
+        element: ReportNode, or an HtmlElement as defined by htmltree
+            Item to be added as child to this Section.
+
+        """
+
+        # Have to check if that heading exists first...
+        if heading in self.childContents:
+            # Add it to existing section...
+            currentStatus = self.childContents[heading]
+            if isinstance(currentStatus, Section):
+                if subheading is None:
+                    if isinstance(currentStatus.childContents, dict()):
+                        currentStatus.childContents = []
+                    currentStatus.append(element)
+                else:
+                    currentStatus.childContents[subheading] = element
+
+        else:
+            self.childContents[heading] = element
+
+    def getChildren(self):
+        return self.childContents
+
+    def getOrDefault(self, title, default):
+        if title not in self.childContents:
+            self.childContents[title] = default
+        return self.childContents[title]
+
+    def __getitem__(self, key):
+        if key not in self.childContents:
+            self.childContents[key] = Section(key)
+        return self.childContents[key]
+
+    def __setitem__(self, key, item):
+        self.childContents[key] = item
+
+    def render(self, idPrefix="") -> htmltree.HtmlElement:
+        itemsToAdd = []
+        for key in self.childContents:
+            element = self.childContents[key]
+            h2 = htmltree.H2(element.title, id=idPrefix + key)
+
+            if isinstance(element, Section):
+                item = element.render(idPrefix + key)
+            else:
+                item = element.render()
+            itemsToAdd.append(h2)
+            itemsToAdd.append(item)
+
+        return htmltree.Div(*itemsToAdd)
+
+
+class Image(ReportNode):
     """For Images within the report (such as Hexplots premade and not time dependent)
     (For time dependent images see TimeSeries)
 
@@ -156,10 +200,11 @@ class Image(Sections):
         caption,
         imagePath,
     ):
-        Sections.__init__(self, title, caption=caption)
+        ReportNode.__init__(self, title)
         self.imagePath = imagePath
+        self.caption = caption
 
-    def toHtml(self):
+    def render(self) -> htmltree.HtmlElement:
         from armi.bookkeeping.newReportUtils import encode64
 
         figure = htmltree.Figure()
@@ -174,7 +219,7 @@ class Image(Sections):
         return figure
 
 
-class Table(Sections):
+class Table(ReportNode):
     """For Table Objects that are then later converted to htmltree tables
 
     Parameters
@@ -197,15 +242,16 @@ class Table(Sections):
         caption="",
         header=None,
     ):
-        Sections.__init__(self, title, caption=caption)
+        ReportNode.__init__(self, title)
         self.header = header
         self.rows = []
+        self.caption = caption
         # rows will be a list of lists
 
     def addRow(self, row):
         self.rows.append(row)
 
-    def toHtml(self):
+    def render(self) -> htmltree.HtmlElement:
         """Converts a TableSection object into a html table representation htmltree element
 
         Parameters
@@ -228,7 +274,7 @@ class Table(Sections):
         return table
 
 
-class TimeSeries(Sections):
+class TimeSeries(ReportNode):
     """Handles storing new data point values for use in graphing later.
 
     Parameters
@@ -245,21 +291,27 @@ class TimeSeries(Sections):
     yaxis: String
         label for the y-axis
 
-    key: String
-        identifier for the resulting image file name (i.e. rName.[key],
+    fName: String
+        identifier for the resulting image file name (i.e. rName.[fName],
         where key may be peakDPA.img or Keff.png)
+
+    rName: Reactor Name for graphs title and file name
+
+
     """
 
-    def __init__(self, title, caption, labels, yaxis, key):
-        Sections.__init__(self, title, caption)
+    def __init__(self, title, rName, labels, yaxis, fName, caption):
+        ReportNode.__init__(self, title)
         self.times = []
         self.labels = labels
+        self.caption = caption
         self.dataDictionary = dict()
         # iniialize list of labels...
         for label in labels:
             self.dataDictionary[label] = []
         self.yaxis = yaxis
-        self.key = key
+        self.fName = fName
+        self.rName = rName
 
     def add(self, lineToAddTo, time, data, uncertainty=None):
         """To add a point to our data collection.
@@ -361,21 +413,25 @@ class TimeSeries(Sections):
         plt.legend()
         plt.ylabel(self.yaxis)
         plt.grid(color="0.70")
-        plt.title(self.title + " for {0}".format(self.caption))
+        plt.title(self.title + " for {0}".format(self.rName))
         if lowestY:
             # set ymin all values are greater than it and it exists.
             ax = plt.gca()
             ax.set_ylim(bottom=ymin)
 
-        figName = self.caption + "." + self.key
+        figName = self.rName + "." + self.fName
         plt.savefig(figName)
         plt.close()
         return figName
 
-    def toHtml(self):
+    def render(self) -> htmltree.HtmlElement:
         from armi.bookkeeping.newReportUtils import encode64
 
         figName = self.plot()
-        return htmltree.Img(
-            src=encode64(os.path.abspath(figName)), alt="{}_image".format(self.title)
+        return htmltree.Div(
+            htmltree.Img(
+                src=encode64(os.path.abspath(figName)),
+                alt="{}_image".format(self.title),
+            ),
+            htmltree.P(self.caption),
         )
