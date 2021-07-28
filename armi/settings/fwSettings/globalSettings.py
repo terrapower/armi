@@ -186,7 +186,9 @@ def defineSettings() -> List[setting.Setting]:
             description="Turn on the profiler for the submitted case. The profiler "
             "results will not include all import times.",
             isEnvironment=True,
-            oldNames=[("turnOnProfiler", None),],
+            oldNames=[
+                ("turnOnProfiler", None),
+            ],
         ),
         setting.Setting(
             CONF_COVERAGE,
@@ -210,7 +212,9 @@ def defineSettings() -> List[setting.Setting]:
             description="Duration of one single cycle. If availability factor is below "
             "1, the reactor will be at power less than this. If variable, use "
             "cycleLengths setting.",
-            oldNames=[("burnTime", None),],
+            oldNames=[
+                ("burnTime", None),
+            ],
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
@@ -229,7 +233,9 @@ def defineSettings() -> List[setting.Setting]:
             description="Availability factor of the plant. This is the fraction of the "
             "time that the plant is operating. If variable, use availabilityFactors "
             "setting.",
-            oldNames=[("capacityFactor", None),],
+            oldNames=[
+                ("capacityFactor", None),
+            ],
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
@@ -268,7 +274,9 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.Any(
                 [float], None, float, msg="Expected NoneType, float, or list of floats."
             ),
-            oldNames=[("betaComponents", None),],
+            oldNames=[
+                ("betaComponents", None),
+            ],
         ),
         setting.Setting(
             CONF_DECAY_CONSTANTS,
@@ -436,7 +444,9 @@ def defineSettings() -> List[setting.Setting]:
             label="Start Cycle",
             description="Cycle number to continue calculation from. Database will "
             "load from the time step just before. For snapshots use `dumpSnapshot`",
-            oldNames=[("loadCycle", None),],
+            oldNames=[
+                ("loadCycle", None),
+            ],
         ),
         setting.Setting(
             CONF_LOADING_FILE,
@@ -451,7 +461,9 @@ def defineSettings() -> List[setting.Setting]:
             label="StartNode",
             description="Timenode number (0 for BOC, etc.) to continue calulation from. "
             "Database will load from the time step just before.",
-            oldNames=[("loadNode", None),],
+            oldNames=[
+                ("loadNode", None),
+            ],
         ),
         setting.Setting(
             CONF_LOAD_STYLE,
