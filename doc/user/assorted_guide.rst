@@ -1,6 +1,6 @@
 Branch Searching
 ----------------
-An powerful ARMI feature that exists in the Operator is the branch search.
+A powerful ARMI feature that exists in the Operator is the branch search.
 This runs multiple possible fuel management options in parallel and then
 selects the one that is preferred by the user before going on to the
 next time step. A branch search involves several methods.

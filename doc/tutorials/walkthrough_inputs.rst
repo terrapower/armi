@@ -353,6 +353,13 @@ Now we need to specify some **settings** that define fundamental reactor
 parameters, as well as modeling approximation options. For this, we make a
 **settings file**, called ``anl-afci-177.yaml``.
 
+First we need to supply some metadata.
+
+.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
+    :language: yaml
+    :start-after: begin-metadata
+    :end-before: begin-settings
+
 The thermal power in this reference is 1000 MWt. The thermal efficiency isn't
 specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.
 Let's also assume a 0.90 capacity factor which will gives full cycles of 411.1
