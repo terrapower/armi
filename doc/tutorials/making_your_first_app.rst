@@ -209,7 +209,7 @@ block-level temperature (and flow velocity) distribution as we go.
 
 .. math::
 
-    q''' = \dot{m} C_p \Delta T
+    \dot{Q} = \dot{m} C_p \Delta T
 
 .. literalinclude:: armi-example-app/myapp/thermalSolver.py
     :caption: ``myapp/thermalSolver.py``
