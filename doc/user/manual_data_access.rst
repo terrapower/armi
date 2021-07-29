@@ -13,10 +13,11 @@ The following links contain large tables describing the various global settings
 and state parameters in use across ARMI.
 
 * :doc:`Table of all global settings </user/inputs/settings_report>`
-* :py:mod:`Reactor Parameters <armi.reactor.reactorParameters>`
-* :py:mod:`Assembly Parameters <armi.reactor.assemblyParameters>`
-* :py:mod:`Block Parameters <armi.reactor.blockParameters>`
-* :py:mod:`Component Parameters <armi.reactor.components.componentParameters>`
+* :doc:`Reactor Parameters </user/reactor_parameters_report>`
+* :doc:`Core Parameters </user/core_parameters_report>`
+* :doc:`Assembly Parameters </user/assembly_parameters_report>`
+* :doc:`Block Parameters </user/block_parameters_report>`
+* :ref:`Component Parameters <componentTypes>`
 
 
 Accessing Some Interesting Info

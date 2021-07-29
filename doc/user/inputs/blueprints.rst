@@ -156,6 +156,7 @@ id
 od
     Outer diameter (in cm).
 
+.. _componentTypes:
 
 Component Types
 ---------------
