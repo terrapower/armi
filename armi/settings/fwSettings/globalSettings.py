@@ -110,6 +110,7 @@ CONF_DEFERRED_INTERFACE_NAMES = "deferredInterfaceNames"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
+CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 
 
 def defineSettings() -> List[setting.Setting]:
@@ -717,6 +718,15 @@ def defineSettings() -> List[setting.Setting]:
                 "This allows users to specify to get materials out of a plugin rather "
                 "than from the framework."
             ),
+        ),
+        # It may make sense to remove this setting when MILs become more stable.
+        setting.Setting(
+            CONF_BLOCK_AUTO_GRID,
+            default=True,
+            label="Auto-generate Block grids",
+            description="Should block blueprints attempt to auto-generate a spatial "
+            "grid upon construction? This feature makes heavy use of multi-index "
+            "locations, which are not yet universally supported.",
         ),
     ]
     return settings
