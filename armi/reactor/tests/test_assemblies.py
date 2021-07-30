@@ -1137,6 +1137,37 @@ class Assembly_TestCase(unittest.TestCase):
         )
         self.assertEqual(a.coords(), (2.0, 2.0))
 
+    def test_pinPlenumVolume(self):
+        """
+        Test the volume of a pin in the assembly's plenum.
+        """
+        assembly = assemblies.Assembly("dummy")
+        self.assertEqual(0.0, assembly.getPinPlenumVolumeInCubicMeters())
+
+        pinPlenumVolume = 7.853981633974482e-06
+        testAssemblies = buildTestAssemblies()
+        plenumBlock = makeTestAssembly(1, 2, grids.CartesianGrid.fromRectangle(2.0, 2.0))
+        plenumBlock.setType("plenum", Flags.PLENUM)
+        self.Assembly.setBlockMesh([10.0, 20.0, 30.0], conserveMassFlag="auto")
+        plenumBlock.append(testAssemblies[0])
+        self.Assembly.append(plenumBlock)
+
+        self.assertEqual(pinPlenumVolume, self.Assembly.getPinPlenumVolumeInCubicMeters())
+
+    def test_averagePlenumTemperature(self):
+        """
+        Test an assembly's average plenum temperature with a single block outlet.
+        """
+        averagePlenumTemp = 42.0
+        tempParam = assemblies.assemblyParameters.getAssemblyParameterDefinitions().__getitem__('THcoolantOutletT')
+        plenumBlock = makeTestAssembly(1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0))
+        plenumBlock.setType("plenum", Flags.PLENUM)
+        plenumBlock.p[tempParam.name] = averagePlenumTemp
+        self.Assembly.setBlockMesh([10.0, 20.0, 30.0], conserveMassFlag="auto")
+        self.Assembly.append(plenumBlock)
+
+        self.assertEqual(averagePlenumTemp, self.Assembly.getAveragePlenumTemperature())
+
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
     @classmethod
