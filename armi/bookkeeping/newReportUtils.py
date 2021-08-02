@@ -32,12 +32,6 @@ def createGeneralReportContent(cs, r, report, blueprint, stage):
     if stage == ReportStage.Begin:
         comprehensiveBOLContent(cs, r, report)
         designBOLContent(r, report)
-        report["Design"]["Paragraph Example"] = htmltree.Div(
-            htmltree.P("This is a paragraph example.")
-        )
-        report["Comprehensive Report"]["Paragraph Example"] = htmltree.Div(
-            htmltree.P("This is a paragraph example.")
-        )
 
     return report
 
@@ -188,7 +182,7 @@ def generateMetaTable(cs, report):
     from armi.bookkeeping import newReports
 
     section = report[COMPREHENSIVE_REPORT]
-    tableList = section.getOrDefault(
+    tableList = section.get(
         SETTINGS, newReports.Table("Run Meta", "General overview of the run")
     )
     tableList.addRow(["outputFileExtension", cs["outputFileExtension"]])
@@ -289,7 +283,7 @@ def tableOfContents(elements):
                     if element.title == "":
                         sectionHeading.A.update({"class": "subsection"})
                 ul.C.append(ul2)
-            else:
+            elif type(subgroup) is not htmltree.HtmlElement:
                 ul.C.append(
                     htmltree.Li(htmltree.A(subKey, href="#{}".format(group + subKey)))
                 )

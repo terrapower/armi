@@ -69,6 +69,11 @@ img{
     margin: auto;
 }
 
+caption{
+    font-size: 20;
+    padding:20;
+}
+
 table,
 tr,
 th, 

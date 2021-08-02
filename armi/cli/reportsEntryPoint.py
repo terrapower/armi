@@ -114,7 +114,6 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                 ):
 
                     dbNodes = list(db.genTimeSteps())
-                    runLog.info(dbNodes)
                     cs = db.loadCS()
                     if self.args.bp is None:
                         blueprint = db.loadBlueprints()

@@ -1,3 +1,4 @@
+from armi import runLog
 import os
 from collections import defaultdict
 
@@ -45,14 +46,11 @@ def nuetronicsBOLContent(r, cs, report):
 
     """
     section = report[newReportUtils.COMPREHENSIVE_REPORT]
-    section.getOrDefault(
+    table = section.get(
         newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run")
     )
-
     for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
-        report[newReportUtils.COMPREHENSIVE_REPORT][newReportUtils.SETTINGS].addRow(
-            [key, cs[key]]
-        )
+        table.addRow([key, cs[key]])
 
     initialCoreFuelAssem(r, report)
 
@@ -79,7 +77,6 @@ def nuetronicsPlotting(r, report, cs):
             labels,
             "K-eff value",
             "keff." + cs["outputFileExtension"],
-            "For K-eff, this would describe the plot",
         )
         # To create the keff section and start populating it's points...
     report[reportConstants.NEUTRONICS_SECTION][reportConstants.KEFF_PLOT].add(
@@ -94,7 +91,6 @@ def nuetronicsPlotting(r, report, cs):
             ["Max PD"],
             "Max Areal PD (MW/m^2)",
             "maxpd." + cs["outputFileExtension"],
-            "For Pd vs. time, this would be a caption.",
         )
     report[reportConstants.NEUTRONICS_SECTION][PD_PLOT].add(
         "Max PD", r.p.time, r.core.p.maxPD, None
@@ -107,7 +103,6 @@ def nuetronicsPlotting(r, report, cs):
         report,
         "Displacement per Atom (DPA)",
         "dpaplot." + cs["outputFileExtension"],
-        "This is a caption",
     )
 
     # Make Burn-Up Plot
@@ -117,7 +112,6 @@ def nuetronicsPlotting(r, report, cs):
         report,
         "Peak Burnup (%FIMA)",
         "burnupplot." + cs["outputFileExtension"],
-        "This is a caption",
     )
 
 
@@ -157,7 +151,7 @@ def initialCoreFuelAssem(r, report):
         )
 
 
-def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption):
+def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
     """Creates the TimeSeries in the Report for finding peak values vs. time
 
     Parameters
