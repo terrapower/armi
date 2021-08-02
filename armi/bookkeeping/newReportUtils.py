@@ -51,7 +51,6 @@ def comprehensiveBOLContent(cs, r, report):
     if first_fuel_block is not None:
         report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA] = newReports.Table(
             "Assembly Area Fractions (of First Fuel Block)",
-            "Of First Block",
             header=["Component", "Area (cm<sup>2</sup>)", "Fraction"],
         )
         setAreaFractionsReport(first_fuel_block, report)
@@ -90,7 +89,6 @@ def blueprintContent(r, cs, report, blueprint):
 
     reportingUtils.makeCoreDesignReport2(r.core, cs, report)
     report[DESIGN][CORE_MAP] = newReports.Image(
-        "Core Map",
         "Map of the Core at BOL",
         makeCoreAndAssemblyMaps(r, cs, report, blueprint),
     )
@@ -126,7 +124,6 @@ def getEndOfLifeContent(r, report):
     )
 
     report[DESIGN][TOTAL_POWER_EOL] = newReports.Image(
-        "Power Map",
         "Total Assembly Power at EOL in MWt",
         os.path.abspath(fName2),
     )
@@ -145,28 +142,28 @@ def reportBlockDiagrams(cs, blueprint, report, cold):
     """
     from armi.utils import plotting
 
-    listMaterials = []
-    for ai, bDesign in enumerate(blueprint.blockDesigns):
+    materialList = []
+    for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
         for component in block:
-            if component.material.name not in listMaterials:
-                listMaterials.append(component.material.name)
+            if component.material.name not in materialList:
+                materialList.append(component.material.name)
 
     report[DESIGN]["Block Diagrams"] = newReports.Section("Block Diagrams")
-    for ai, bDesign in enumerate(blueprint.blockDesigns):
+    for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
         fileName = plotting.plotBlockDiagram(
-            block, "{}.svg".format(bDesign.name), cold, materialList=listMaterials
+            block, "{}.svg".format(bDesign.name), cold, materialList=materialList
         )
         plotting.close()
         if fileName is not None:
             report[DESIGN]["Block Diagrams"].addChildElement(
                 newReports.Image(
-                    "{}".format(bDesign.name.capitalize()),
                     "Diagram of {} Block at Cold Temperature".format(
                         bDesign.name.capitalize()
                     ),
                     fileName,
+                    "{}".format(bDesign.name.capitalize()),
                 ),
                 bDesign.name.capitalize(),
             )
@@ -185,7 +182,7 @@ def generateMetaTable(cs, report):
 
     section = report[COMPREHENSIVE_REPORT]
     tableList = section.get(
-        SETTINGS, newReports.Table("Run Meta", "General overview of the run")
+        SETTINGS, newReports.Table("Settings", "General overview of the run")
     )
     tableList.addRow(["outputFileExtension", cs["outputFileExtension"]])
     tableList.addRow(["Total Core Power", "%8.5E MWt" % (cs["power"] / 1.0e6)])
@@ -206,17 +203,11 @@ def settingsData(cs, report):
 
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
-        "Reactor Parameters", "Table of the Reactor Parameters"
+        "Reactor Parameters"
     )
-    report[COMPREHENSIVE_REPORT][CASE_CONTROLS] = newReports.Table(
-        "Case Controls", "Case Controls"
-    )
-    report[COMPREHENSIVE_REPORT][SNAPSHOT] = newReports.Table(
-        "Snapshot", "Snapshot of the Reactor"
-    )
-    report[COMPREHENSIVE_REPORT][BURNUP_GROUPS] = newReports.Table(
-        "Burn Up Groups", "Burn Up Groups"
-    )
+    report[COMPREHENSIVE_REPORT][CASE_CONTROLS] = newReports.Table("Case Controls")
+    report[COMPREHENSIVE_REPORT][SNAPSHOT] = newReports.Table("Snapshot")
+    report[COMPREHENSIVE_REPORT][BURNUP_GROUPS] = newReports.Table("Burn Up Groups")
     for key in [
         "nCycles",
         "burnSteps",
@@ -282,7 +273,7 @@ def tableOfContents(elements):
                             )
                         )
                     )
-                    if element.title == "":
+                    if element.title == None:
                         sectionHeading.A.update({"class": "subsection"})
                 ul.C.append(ul2)
             elif type(subgroup) is not htmltree.HtmlElement:
@@ -412,9 +403,7 @@ def setDimensionReport(comp):
     for componentType, componentReport in REPORT_GROUPS.items():
 
         if componentType in comp.getName():
-            reportGroup = newReports.Table(
-                componentType.capitalize() + " Dimensions", componentType
-            )
+            reportGroup = newReports.Table(componentType.capitalize() + " Dimensions")
             break
     if not reportGroup:
         return "No report group designated for {} component.".format(comp.getName())
@@ -535,7 +524,6 @@ def makeCoreAndAssemblyMaps(
         iterables.chunk(list(assemPrototypes), MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
         assemPlotImage = newReports.Image(
-            "",
             "The axial block and enrichment distributions of assemblies in the core at "
             "beginning of life. The percentage represents the block enrichment (U-235 or B-10), where as "
             "the additional character represents the cross section id of the block. "

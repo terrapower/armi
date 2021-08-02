@@ -5,6 +5,7 @@ import shutil
 import os
 import copy
 from typing import DefaultDict, Union, Dict
+from abc import ABC, abstractmethod
 
 import htmltree
 from htmltree import Table as HtmlTable
@@ -106,10 +107,8 @@ levelDict[2] = htmltree.H3()
 levelDict[3] = htmltree.H4()
 
 
-class ReportNode:
-    def __init__(self, title):
-        self.title = title
-
+class ReportNode(ABC):
+    @abstractmethod
     def render(self):
         """Renders the section to a htmltree element for inserting into HTML document tree"""
         raise NotImplementedError
@@ -119,7 +118,7 @@ class Section(ReportNode):
     """A section of multiple objects ---> can be either ReportNodes or htmltree HtmlElements"""
 
     def __init__(self, title):
-        ReportNode.__init__(self, title)
+        self.title = title
         self.childContents: Dict[
             str, Union[Section, htmltree.HtmlElement, ReportNode]
         ] = collections.OrderedDict()
@@ -201,13 +200,8 @@ class Image(ReportNode):
 
     """
 
-    def __init__(
-        self,
-        title,
-        caption,
-        imagePath,
-    ):
-        ReportNode.__init__(self, title)
+    def __init__(self, caption, imagePath, title=None):
+        self.title = title
         self.imagePath = imagePath
         self.caption = caption
 
@@ -218,7 +212,7 @@ class Image(ReportNode):
         self.imagePath = encode64(os.path.abspath(self.imagePath))
         figure.C.append(
             htmltree.Img(
-                src=self.imagePath, alt="{}_image".format(self.title), id=parentId
+                src=self.imagePath, alt="{}_image".format(self.caption), id=parentId
             )
         )
         figure.C.append(htmltree.Figcaption(self.caption))
@@ -248,7 +242,7 @@ class Table(ReportNode):
         caption="",
         header=None,
     ):
-        ReportNode.__init__(self, title)
+        self.title = title
         self.header = header
         self.rows = []
         self.caption = caption
@@ -278,6 +272,11 @@ class Table(ReportNode):
             for element in row:
                 htmlRow.C.append(htmltree.Td(element))
             table.C.append(htmlRow)
+        table.C.append(
+            htmltree.Caption(
+                self.caption, style={"caption-side": "bottom", "font-size": "13"}
+            )
+        )
         return table
 
 
@@ -290,7 +289,7 @@ class TimeSeries(ReportNode):
         Title for eventual graph
 
     caption: String
-        Eventual graph's title caption
+        Eventual graph's title caption, "" default.
 
     labels: List
         list of stored labels where length = number of lines within graph
@@ -319,7 +318,7 @@ class TimeSeries(ReportNode):
     >>> for a in r.core.getAssemblies(Flags.FUEL):
     >>>     if a.p.type not in labels:
     >>>         labels.append(a.p.type)
-    >>> series = TimeSeries("Plot of Burn-Up", "plot", labels, "PeakBU", "bu.png")
+    >>> series = TimeSeries("Plot of Burn-Up", r.name, labels, "PeakBU", "bu.png")
     >>> maxValue = defaultdict(float)
     >>> for a in r.core.getAssemblies(Flags.FUEL):
     >>>     maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxPercentBu)
@@ -331,7 +330,7 @@ class TimeSeries(ReportNode):
     """
 
     def __init__(self, title, rName, labels, yaxis, fName, caption=""):
-        ReportNode.__init__(self, title)
+        self.title = title
         self.times = []
         self.labels = labels
         self.caption = caption
