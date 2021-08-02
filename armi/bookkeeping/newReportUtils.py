@@ -163,7 +163,9 @@ def reportBlockDiagrams(cs, blueprint, report, cold):
             report[DESIGN]["Block Diagrams"].addChildElement(
                 newReports.Image(
                     "{}".format(bDesign.name.capitalize()),
-                    "Diagram of Block at Cold Temperature",
+                    "Diagram of {} Block at Cold Temperature".format(
+                        bDesign.name.capitalize()
+                    ),
                     fileName,
                 ),
                 bDesign.name.capitalize(),

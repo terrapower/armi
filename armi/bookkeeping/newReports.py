@@ -1,10 +1,9 @@
-from armi import runLog
 import re
 import webbrowser
 import collections
 import shutil
 import os
-
+import copy
 from typing import DefaultDict, Union, Dict
 
 import htmltree
@@ -56,7 +55,7 @@ class ReportContent:
                     fig = (
                         self.sections[group]
                         .childContents[subgroup]
-                        .render(str(group) + str(subgroup))
+                        .render(0, str(group) + str(subgroup))
                     )
                 innerDiv.C.append(fig)
                 div.C.append(innerDiv)
@@ -98,6 +97,13 @@ class ReportContent:
     def __setitem__(self, key, item):
         if key in self.sections:
             self.sections[key] = item
+
+
+levelDict = collections.defaultdict(lambda: htmltree.H4())
+levelDict[0] = htmltree.H1()
+levelDict[1] = htmltree.H2()
+levelDict[2] = htmltree.H3()
+levelDict[3] = htmltree.H4()
 
 
 class ReportNode:
@@ -161,9 +167,12 @@ class Section(ReportNode):
     def items(self):
         return self.childContents.items()
 
-    def render(self, idPrefix="") -> htmltree.HtmlElement:
+    def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         itemsToAdd = []
-        heading = htmltree.H2(self.title, id=idPrefix)
+        headingLevel = copy.deepcopy(levelDict[level])
+        headingLevel.A.update({"id": "{}".format(idPrefix)})
+        headingLevel.C.append(self.title)
+        heading = headingLevel
         itemsToAdd.append(heading)
         for key in self.childContents:
             element = self.childContents[key]
@@ -171,7 +180,8 @@ class Section(ReportNode):
             if isinstance(element, htmltree.HtmlElement):
                 item = element.render()
             else:
-                item = element.render(idPrefix + key)
+                item = element.render(level + 1, idPrefix + key)
+
             itemsToAdd.append(item)
 
         return htmltree.Div(*itemsToAdd)
@@ -201,7 +211,7 @@ class Image(ReportNode):
         self.imagePath = imagePath
         self.caption = caption
 
-    def render(self, parentId="") -> htmltree.HtmlElement:
+    def render(self, level, parentId="") -> htmltree.HtmlElement:
         from armi.bookkeeping.newReportUtils import encode64
 
         figure = htmltree.Figure()
@@ -247,7 +257,7 @@ class Table(ReportNode):
     def addRow(self, row):
         self.rows.append(row)
 
-    def render(self, parentId="") -> htmltree.HtmlElement:
+    def render(self, level, parentId="") -> htmltree.HtmlElement:
         """Converts a TableSection object into a html table representation htmltree element
 
         Parameters
@@ -410,7 +420,7 @@ class TimeSeries(ReportNode):
         plt.close()
         return figName
 
-    def render(self, parentId="") -> htmltree.HtmlElement:
+    def render(self, level, parentId="") -> htmltree.HtmlElement:
         from armi.bookkeeping.newReportUtils import encode64
 
         figName = self.plot()
