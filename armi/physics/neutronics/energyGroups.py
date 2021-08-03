@@ -208,6 +208,13 @@ GROUP_STRUCTURE["ANL70"] = _create_anl_energies_with_group_lethargies(
     42, itertools.repeat(30, 67), 29, 1
 )
 
+GROUP_STRUCTURE["ANL116"] = _create_anl_energies_with_group_lethargies(
+    15*[6] + [3] + 2*[6] + [3] + [12] + 3*[6] + 3*[12] + 2*[6] + 2*[12] + [4] + [6] + [2] +
+    [12] + 2*[6] + [12] + 2*[6] +2*[12] + [6] + [12] + 2*[6] + 6*[12] + [6] + 4*[12] + 4*[6] +
+    5*[12] + [6] + 3*[12] + [6] + 2*[30] + 2*[15] + [30] + 4*[15] + [18] + [12] + 5*[30] +
+    [24] + [12] + [24] + [19] + [11] + [18] + [24] + 3*[18] + 2*[12] + 14*[60] + 2*[30] + [29] + [1]
+)
+
 GROUP_STRUCTURE["ANL230"] = _create_anl_energies_with_group_lethargies(
     [
          3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
