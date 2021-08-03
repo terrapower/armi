@@ -16,8 +16,7 @@ import pdfkit
 class ReportContent:
     """Holds the report contents"""
 
-    def __init__(self, title, description):
-        self.description = description
+    def __init__(self, title):
         self.title = title
         self.sections = collections.OrderedDict()
 
@@ -142,7 +141,7 @@ class Section(ReportNode):
             if isinstance(currentStatus, Section):
                 currentStatus.childContents[subheading] = element
         else:
-            self.childContents[heading] = element
+            self.childContents[element] = element
 
     def __contains__(self, key):
         return key in self.childContents
@@ -166,6 +165,9 @@ class Section(ReportNode):
     def items(self):
         return self.childContents.items()
 
+    def __str__(self):
+        return self.title
+
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         itemsToAdd = []
         headingLevel = copy.deepcopy(levelDict[level])
@@ -179,7 +181,7 @@ class Section(ReportNode):
             if isinstance(element, htmltree.HtmlElement):
                 item = element.render()
             else:
-                item = element.render(level + 1, idPrefix + key)
+                item = element.render(level + 1, idPrefix + str(key))
 
             itemsToAdd.append(item)
 
@@ -204,6 +206,9 @@ class Image(ReportNode):
         self.title = title
         self.imagePath = imagePath
         self.caption = caption
+
+    def __str__(self):
+        return self.caption
 
     def render(self, level, parentId="") -> htmltree.HtmlElement:
         from armi.bookkeeping.newReportUtils import encode64
@@ -250,6 +255,9 @@ class Table(ReportNode):
 
     def addRow(self, row):
         self.rows.append(row)
+
+    def __str__(self):
+        return self.title
 
     def render(self, level, parentId="") -> htmltree.HtmlElement:
         """Converts a TableSection object into a html table representation htmltree element
@@ -341,6 +349,9 @@ class TimeSeries(ReportNode):
         self.yaxis = yaxis
         self.fName = fName
         self.rName = rName
+
+    def __str__(self):
+        return self.title
 
     def add(self, lineToAddTo, time, data, uncertainty=None):
         """To add a point to our data collection.

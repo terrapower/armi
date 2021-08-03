@@ -68,7 +68,7 @@ def nuetronicsPlotting(r, report, cs):
     # Make K-Effective Plot
     labels = ["k-effective"]
     neutronicsSection = report[reportConstants.NEUTRONICS_SECTION]
-    if reportConstants.KEFF_PLOT not in neutronicsSection.childContents:
+    if reportConstants.KEFF_PLOT not in neutronicsSection:
         report[reportConstants.NEUTRONICS_SECTION][
             reportConstants.KEFF_PLOT
         ] = newReports.TimeSeries(

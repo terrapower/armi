@@ -241,6 +241,7 @@ def tableOfContents(elements):
     elements: ReportContent
         Contains sections of subsections that make up the report.
     """
+
     main = htmltree.Main(id="toc")
     main.C.append(htmltree.P("Contents"))
     outerList = htmltree.Ul()
@@ -258,7 +259,9 @@ def tableOfContents(elements):
             subgroup = elements[group].childContents[subKey]
             if type(subgroup) is newReports.Section:
                 sectionHeading = htmltree.Li(
-                    htmltree.A(subgroup.title, href="#{}".format(group + subKey)),
+                    htmltree.A(
+                        subgroup.title, href="#{}".format(str(group) + str(subKey))
+                    ),
                     _class="nestedSection",
                 )
                 ul.C.append(sectionHeading)
@@ -266,14 +269,18 @@ def tableOfContents(elements):
                 ul2 = htmltree.Ul(_class="nestedSubsection")
                 for key in subgroup.childContents:
                     element = subgroup.childContents[key]
-                    ul2.C.append(
-                        htmltree.Li(
-                            htmltree.A(
-                                element.title, href="#{}".format(group + subKey + key)
+                    if element.title is not None:
+                        ul2.C.append(
+                            htmltree.Li(
+                                htmltree.A(
+                                    element.title,
+                                    href="#{}".format(
+                                        str(group) + str(subKey) + str(key)
+                                    ),
+                                )
                             )
                         )
-                    )
-                    if element.title == None:
+                    else:
                         sectionHeading.A.update({"class": "subsection"})
                 ul.C.append(ul2)
             elif type(subgroup) is not htmltree.HtmlElement:

@@ -63,15 +63,10 @@ img.heading {
 }
 
 img{
-    width:700;
+    width:800;
     height:auto;
     display: block;
     margin: auto;
-}
-
-caption{
-    font-size: 20;
-    padding:20;
 }
 
 table,
@@ -105,6 +100,7 @@ div {
     flex: 3 3 100%;
     overflow: auto;
     padding:2rem 3rem;
+
 }
 
 div#container{
@@ -118,7 +114,11 @@ div#heading{
     border-bottom-right-radius: 10pt;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 17pt;
-    display: flex;  
+    display: flex;
+    
+    
+    
+    
 }
 
 h1,
@@ -126,7 +126,6 @@ h2,
 p{
     max-width: 700px;
 }
-
 
 ul{
     color: white;

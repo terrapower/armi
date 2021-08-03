@@ -71,7 +71,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         from armi.utils import directoryChangers
 
         nodes = self.args.nodes
-        report = ReportContent("Overview", "practice")
+        report = ReportContent("Overview")
         app = armi.getApp()
         if app is None:
             raise RuntimeError("NEED APP!")
