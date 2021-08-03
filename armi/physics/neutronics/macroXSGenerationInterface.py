@@ -84,8 +84,8 @@ class MacroXSGenerator(mpiActions.MpiAction):
             allMacros = [mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in allBlocks]
 
         if armi.MPI_RANK == 0:
-                for b, macro in zip(allBlocks, allMacros):
-                    b.macros = macro
+            for b, macro in zip(allBlocks, allMacros):
+                b.macros = macro
 
 
 class MacroXSGenerationInterface(interfaces.Interface):
