@@ -86,6 +86,7 @@ def defineSettings():
                 "ANL9",
                 "ANL33",
                 "ANL70",
+                "ANL116",
                 "ANL230",
                 "ANL703",
                 "ANL1041",
