@@ -75,13 +75,17 @@ class MacroXSGenerator(mpiActions.MpiAction):
             lib = armi.MPI_COMM.bcast(lib, root=0)
 
             myMacros = [
-                mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in myBlocks
+                mc.createMacrosFromMicros(lib, b, libType=self.libType)
+                for b in myBlocks
             ]
 
             allMacros = _gatherList(myMacros)
 
         else:
-            allMacros = [mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in allBlocks]
+            allMacros = [
+                mc.createMacrosFromMicros(lib, b, libType=self.libType)
+                for b in allBlocks
+            ]
 
         if armi.MPI_RANK == 0:
             for b, macro in zip(allBlocks, allMacros):
