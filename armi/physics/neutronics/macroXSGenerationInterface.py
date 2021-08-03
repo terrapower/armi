@@ -65,22 +65,27 @@ class MacroXSGenerator(mpiActions.MpiAction):
             allBlocks = []
             lib = None
 
-        myBlocks = _scatterList(allBlocks)
-
-        lib = armi.MPI_COMM.bcast(lib, root=0)
-
         mc = xsCollections.MacroscopicCrossSectionCreator(
             self.buildScatterMatrix, self.buildOnlyCoolant
         )
-        myMacros = [
-            mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in myBlocks
-        ]
 
-        allMacros = _gatherList(myMacros)
+        if armi.MPI_SIZE > 1:
+            myBlocks = _scatterList(allBlocks)
+
+            lib = armi.MPI_COMM.bcast(lib, root=0)
+
+            myMacros = [
+                mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in myBlocks
+            ]
+
+            allMacros = _gatherList(myMacros)
+
+        else:
+            allMacros = [mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in allBlocks]
 
         if armi.MPI_RANK == 0:
-            for b, macro in zip(allBlocks, allMacros):
-                b.macros = macro
+                for b, macro in zip(allBlocks, allMacros):
+                    b.macros = macro
 
 
 class MacroXSGenerationInterface(interfaces.Interface):
