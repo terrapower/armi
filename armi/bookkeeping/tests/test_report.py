@@ -14,6 +14,7 @@
 
 """Test reports."""
 import os
+from typing import OrderedDict
 import unittest
 
 from armi.tests import TEST_ROOT
@@ -60,6 +61,26 @@ class TestReportContentCreation(unittest.TestCase):
 
         result = table.render(0)
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
+
+    def testReportContents(self):
+        import collections
+        import armi
+        import armi.bookkeeping.newReports
+        from armi.cli.reportsEntryPoint import ReportStage
+
+        reportTest = newReports.ReportContent("Test")
+
+        armi.getPluginManagerOrFail().hook.getReportContents(
+            r=self.r,
+            cs=self.o.cs,
+            report=reportTest,
+            stage=ReportStage.Begin,
+            blueprint=self.r.blueprints,
+        )
+
+        self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
+        self.assertTrue("Comprehensive Report" in reportTest.sections)
+        self.assertTrue("Neutronics" in reportTest.sections)
 
 
 if __name__ == "__main__":
