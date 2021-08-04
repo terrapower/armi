@@ -69,6 +69,7 @@ setup(
         "voluptuous",
         "xlrd",
         "yamlize",
+        "htmltree",
     ],
     extras_require={
         "mpi": ["mpi4py"],
