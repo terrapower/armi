@@ -266,8 +266,10 @@ class BoundaryType(enum.Enum):
         elif canonical == REFLECTIVE:
             return cls.REFLECTIVE
 
-        errorMsg = "{} is not a valid boundary option. Valid boundary options are:".format(
-            str(canonical)
+        errorMsg = (
+            "{} is not a valid boundary option. Valid boundary options are:".format(
+                str(canonical)
+            )
         )
         errorMsg += ", ".join([f"{sym}" for sym in boundaryTypes])
         raise ValueError(errorMsg)
@@ -449,7 +451,8 @@ class SymmetryType:
 
 
 def checkValidGeomSymmetryCombo(
-    geomType: Union[str, "GeomType"], symmetryInput: Union[str, "SymmetryType"],
+    geomType: Union[str, "GeomType"],
+    symmetryInput: Union[str, "SymmetryType"],
 ) -> bool:
     """
     Check if the given combination of GeomType and SymmetryType is valid.
