@@ -27,13 +27,13 @@ def generateNeutronicsReport(r, cs, report, stage):
     """
 
     if stage == ReportStage.Begin:
-        nuetronicsBOLContent(r, cs, report)
+        neutronicsBOLContent(r, cs, report)
 
     elif stage == ReportStage.Standard:
-        nuetronicsPlotting(r, report, cs)
+        neutronicsPlotting(r, report, cs)
 
 
-def nuetronicsBOLContent(r, cs, report):
+def neutronicsBOLContent(r, cs, report):
     """Add BOL content to Neutronics Section of the Report
         This currently includes addtions to Comprehensive Reports
         Settings table, and an Initial Core Fuel Assembly Table.
@@ -55,7 +55,7 @@ def nuetronicsBOLContent(r, cs, report):
     initialCoreFuelAssem(r, report)
 
 
-def nuetronicsPlotting(r, report, cs):
+def neutronicsPlotting(r, report, cs):
     """Keeps track of plotting content which is collected when Standard Stage of the report
 
     Parameters

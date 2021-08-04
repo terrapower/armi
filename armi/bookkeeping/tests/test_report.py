@@ -21,6 +21,7 @@ from armi.tests import TEST_ROOT
 from armi.reactor.tests import test_reactors
 from armi.bookkeeping import newReports
 from armi.utils import directoryChangers
+from armi.physics.neutronics.reports import neutronicsPlotting
 
 
 class TestReportContentCreation(unittest.TestCase):
@@ -81,6 +82,17 @@ class TestReportContentCreation(unittest.TestCase):
         self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
         self.assertTrue("Comprehensive Report" in reportTest.sections)
         self.assertTrue("Neutronics" in reportTest.sections)
+
+    def testNeutronicsPlotFunctions(self):
+        from armi.physics import neutronics
+
+        reportTest = newReports.ReportContent("Test")
+
+        neutronicsPlotting(self.r, reportTest, self.o.cs)
+        self.assertTrue("Neutronics" in reportTest.sections)
+        self.assertTrue(
+            isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries)
+        )
 
 
 if __name__ == "__main__":
