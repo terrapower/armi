@@ -65,9 +65,12 @@ class TestReportContentCreation(unittest.TestCase):
 
     def testReportContents(self):
         import collections
+        import htmltree
+
         import armi
         import armi.bookkeeping.newReports
         from armi.cli.reportsEntryPoint import ReportStage
+        from armi.bookkeeping.newReportUtils import tableOfContents
 
         reportTest = newReports.ReportContent("Test")
 
@@ -82,6 +85,9 @@ class TestReportContentCreation(unittest.TestCase):
         self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
         self.assertTrue("Comprehensive Report" in reportTest.sections)
         self.assertTrue("Neutronics" in reportTest.sections)
+        self.assertTrue(
+            isinstance(tableOfContents(reportTest.sections), htmltree.HtmlElement)
+        )
 
     def testNeutronicsPlotFunctions(self):
         from armi.physics import neutronics
