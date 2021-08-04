@@ -157,15 +157,14 @@ def reportBlockDiagrams(cs, blueprint, report, cold):
         )
         plotting.close()
         if fileName is not None:
-            report[DESIGN]["Block Diagrams"].addChildElement(
-                newReports.Image(
-                    "Diagram of {} Block at Cold Temperature".format(
-                        bDesign.name.capitalize()
-                    ),
-                    fileName,
-                    "{}".format(bDesign.name.capitalize()),
+            report[DESIGN]["Block Diagrams"][
+                bDesign.name.capitalize()
+            ] = newReports.Image(
+                "Diagram of {} Block at Cold Temperature".format(
+                    bDesign.name.capitalize()
                 ),
-                bDesign.name.capitalize(),
+                fileName,
+                "{}".format(bDesign.name.capitalize()),
             )
 
 

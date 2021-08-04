@@ -70,7 +70,7 @@ The resulting use of this content to generate the title on the html page:
 
 
 
-ReportContent itself has a dicionary (.sections), and so functionality inherent to dictionaries also exists for ReportContent.
+``ReportContent`` itself has a dicionary (``.sections``), and so functionality inherent to dictionaries also exists for ``ReportContent``.
 
 Instead of having to directly access the dictionary working behind the scenes through ``report.sections["Design"]``, one can instead just
 directly call ``report["Design"]``, since ``__get__()`` has been implemented.
@@ -79,20 +79,40 @@ directly call ``report["Design"]``, since ``__get__()`` has been implemented.
 A major component of the ReportContent class is the function to ``writeReports()``. This converts our dictionary/Section/Table/TimeSeries content into an html page for viewing.
 
 
-Overall, the important functionality examples for ReportContent additions are summarized below.
+Overall, the important functionality examples for ``ReportContent`` additions are summarized below.
 
 Sections
 --------
-The first level of ``ReportContent``'s is made up of ``Section``s. ``Section``s have a ``title``, and themselves a dictionary of contents (``.childContents``),
+The first level of ``ReportContent``'s is made up of ``Section``'s. ``Section``'s have a ``title``, and themselves a dictionary of contents (``.childContents``),
 but again the ability to just directly access a sections children like ``report[Comprehensive][Setting]`` exists, as long as the section already exists,
-(if not, a key error persists, and so it is safer to do ``report[Comprehensive].get(Setting, Table(...)))``, where Table would be the default.
+(if not, a key error persists, and so it is safer to do ``report[Comprehensive].get(Setting, Table(...)))``, where ``Table`` would be the default.
 
 
 Sections can be made of other Sections, Tables, Images, TimeSeries, or Htmltree Elements (for the purpose of directly writing prose).
 
-Each time a Section is written, its title will be a heading above the enclosed content and it will have a reference in the html page tied to this heading.
+Each time a Section is written, it's title will be a heading above the enclosed content and it will have a reference in the html page tied to this heading.
 
 Again, the ability to add different plugins content to the same section exists.
+
+The following demonstrates how to add elements to the same Section through a call to ``addChildElement(item, heading)`` ::
+
+    report["Design"]["Block Diagrams"].addChildElement(Image("Diagram of {} Block at Cold Temperature".format(
+                            bDesign.name.capitalize()
+                        ),
+                        fileName,
+                        "{}".format(bDesign.name.capitalize()),
+                    ),
+                    bDesign.name.capitalize(),
+                )
+
+It is also possible to do the following through dictionary access for the same result ::
+
+        report["Design"]["Block Diagrams"][bDesign.name.capitalize()](Image("Diagram of {} Block at Cold Temperature".format(
+                            bDesign.name.capitalize()
+                        ),
+                        fileName,
+                        "{}".format(bDesign.name.capitalize()),
+                    ))
 
 
 Tables
@@ -150,8 +170,8 @@ The result (with some additional Bookkeeping additions) is outlined in this imag
     >>>        header=["Component", "Area (cm<sup>2</sup>)", "Fraction"],
     >>>    )
 
-    This is because there is no worry for Table overwrite if a Table is only accessed in one plugin and not time dependent
-    So, something like Assembly Area Fractions, or other general Design things that you would want to insert from begining of 
+    This is because there is no worry for Table overwrite if a Table is only accessed in one plugin and not time dependent.
+    So, something like Assembly Area Fractions, or other general Design things that you would want to insert from beginning of 
     reactor life.
 
 
@@ -234,4 +254,4 @@ Summary
 -------
 ``ReportContent`` is made up of many different types of elements (``Sections``, ``Tables``, ``Images``, ``HtmlElements``, ``TimeSeries``), that when
 ``writeReports()`` is called on the ``ReportContent`` object, have the ability to be rendered through their ``render()`` method in order to be translated
-to html for the resulting document.  
+to html for the resulting document. This document is saved in a new folder titled reportsOutputFiles.

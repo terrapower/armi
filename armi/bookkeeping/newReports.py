@@ -10,7 +10,8 @@ from abc import ABC, abstractmethod
 import htmltree
 from htmltree import Table as HtmlTable
 
-import pdfkit
+
+import armi.context
 
 
 class ReportContent:
@@ -39,7 +40,13 @@ class ReportContent:
                 _class="heading",
             )
         )
-        header.C.append(htmltree.H1("Report System", _class="heading", id="titleFont"))
+        header.C.append(
+            htmltree.H1(
+                "{} Report".format(armi.context.APP_NAME.capitalize()),
+                _class="heading",
+                id="titleFont",
+            )
+        )
 
         divMain.C.append(header)
         div = htmltree.Div(id="reportContent")
@@ -108,13 +115,33 @@ levelDict[3] = htmltree.H4()
 
 class ReportNode(ABC):
     @abstractmethod
-    def render(self):
-        """Renders the section to a htmltree element for inserting into HTML document tree"""
+    def render(self, level, idPrefix):
+        """Renders the section to a htmltree element for inserting into HTML document tree
+
+        Parameters
+        ----------
+        level : int
+            level of the nesting for this section, determines the size of the heading title for the Section
+            (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in html terms.
+
+        idPrefix : String
+            used for href/id referencing for the left hand side table of contents to be paired with the item
+            that render() is called upon.
+
+        Returns
+        -------
+        HtmlElement : an html representation of this Nodes report content. Appended into the report
+            after it is rendered within writeReports().
+        """
         raise NotImplementedError
 
 
 class Section(ReportNode):
-    """A section of multiple objects ---> can be either ReportNodes or htmltree HtmlElements"""
+    """A grouping of objects within the report.
+    These items can be either of type ReportNode (Table, Image, Section, TimeSeries)
+    of, HtmlElements as defined by htmltree.
+
+    """
 
     def __init__(self, title):
         self.title = title
@@ -169,6 +196,23 @@ class Section(ReportNode):
         return self.title
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
+        """Renders a Section into the appropriate html representation
+
+        Parameters
+        ----------
+        level : int
+            level of the nesting for this section, determines the size of the heading title for the Section
+            (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in html terms.
+
+        idPrefix : String
+            used for href/id referencing for the left hand side table of contents to be paired with the item
+            that render() is called upon.
+
+        Returns
+        -------
+        HtmlElement : an html representation of this Nodes report content. Appended into the report
+                    after it is rendered within writeReports().
+        """
         itemsToAdd = []
         headingLevel = copy.deepcopy(levelDict[level])
         headingLevel.A.update({"id": "{}".format(idPrefix)})
@@ -210,14 +254,15 @@ class Image(ReportNode):
     def __str__(self):
         return self.caption
 
-    def render(self, level, parentId="") -> htmltree.HtmlElement:
+    def render(self, level, idPrefix="") -> htmltree.HtmlElement:
+        """Wraps an image file into an html Img tag. (With caption included in the figure)"""
         from armi.bookkeeping.newReportUtils import encode64
 
         figure = htmltree.Figure()
         self.imagePath = encode64(os.path.abspath(self.imagePath))
         figure.C.append(
             htmltree.Img(
-                src=self.imagePath, alt="{}_image".format(self.caption), id=parentId
+                src=self.imagePath, alt="{}_image".format(self.caption), id=idPrefix
             )
         )
         figure.C.append(htmltree.Figcaption(self.caption))
@@ -259,17 +304,13 @@ class Table(ReportNode):
     def __str__(self):
         return self.title
 
-    def render(self, level, parentId="") -> htmltree.HtmlElement:
-        """Converts a TableSection object into a html table representation htmltree element
-
-        Parameters
-        ----------
-        tableRows: newReports.TableSection
-            Object that holds information to be made into a table.
+    def render(self, level, idPrefix="") -> htmltree.HtmlElement:
+        """Converts a TableSection object into a html table representation htmltree element with
+        header as heading if not None.
         """
 
         table = htmltree.Table()
-        table.C.append(htmltree.Caption(self.title, id=parentId))
+        table.C.append(htmltree.Caption(self.title, id=idPrefix))
         if self.header is not None:
             titleRow = htmltree.Tr()
             for heading in self.header:
@@ -430,7 +471,8 @@ class TimeSeries(ReportNode):
         plt.close()
         return figName
 
-    def render(self, level, parentId="") -> htmltree.HtmlElement:
+    def render(self, level, idPrefix="") -> htmltree.HtmlElement:
+        """Renders the Timeseries into a graph and places that Image into an html Img tag."""
         from armi.bookkeeping.newReportUtils import encode64
 
         figName = self.plot()
@@ -438,7 +480,7 @@ class TimeSeries(ReportNode):
             htmltree.Img(
                 src=encode64(os.path.abspath(figName)),
                 alt="{}_image".format(self.title),
-                id=parentId,
+                id=idPrefix,
             ),
             htmltree.P(self.caption),
         )

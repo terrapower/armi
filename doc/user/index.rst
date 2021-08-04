@@ -21,3 +21,4 @@ analyzing ARMI output files, etc.
    assembly_parameters_report
    block_parameters_report
    assorted_guide
+   accessingEntryPoints
