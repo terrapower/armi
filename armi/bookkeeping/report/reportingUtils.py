@@ -707,14 +707,60 @@ def makeCoreDesignReport2(core, cs, report):
     coreDesignTable.header = ["", "Input Parameter"]
     report["Design"]["Core Design Table"] = coreDesignTable
 
-    _setGeneralCoreDesignData(cs, coreDesignTable)
+    _setGeneralCoreDesignData2(cs, coreDesignTable)
 
-    _setGeneralCoreParametersData(core, cs, coreDesignTable)
+    _setGeneralCoreParametersData2(core, cs, coreDesignTable)
 
-    _setGeneralSimulationData(core, cs, coreDesignTable)
+    _setGeneralSimulationData2(core, cs, coreDesignTable)
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
+    report.setData(
+        "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
+    )
+    report.setData(
+        "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
+    )
+    report.setData(
+        "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
+    )
+    report.setData(
+        "Loading File", "{}".format(cs["loadingFile"]), coreDesignTable, report.DESIGN
+    )
+    report.setData(
+        "Fuel Shuffling Logic File",
+        "{}".format(cs["shuffleLogic"]),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Reactor State Loading",
+        "{}".format(cs["loadStyle"]),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    if cs["loadStyle"] == "fromDB":
+        report.setData(
+            "Database File",
+            "{}".format(cs["reloadDBName"]),
+            coreDesignTable,
+            report.DESIGN,
+        )
+        report.setData(
+            "Starting Cycle",
+            "{}".format(cs["startCycle"]),
+            coreDesignTable,
+            report.DESIGN,
+        )
+        report.setData(
+            "Starting Node",
+            "{}".format(cs["startNode"]),
+            coreDesignTable,
+            report.DESIGN,
+        )
+
+
+def _setGeneralCoreDesignData2(cs, coreDesignTable):
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
     coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
@@ -729,7 +775,7 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
         coreDesignTable.addRow(["Starting Node", "{}".format(cs["startNode"])])
 
 
-def _setGeneralCoreParametersData(core, cs, coreDesignTable):
+def _setGeneralCoreParametersData2(core, cs, coreDesignTable):
     """Sets the general Core Parameter Data
 
     Parameters
@@ -814,7 +860,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     )
 
 
-def _setGeneralSimulationData(core, cs, coreDesignTable):
+def _setGeneralSimulationData2(core, cs, coreDesignTable):
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
     coreDesignTable.addRow(
@@ -823,6 +869,128 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
     coreDesignTable.addRow(
         ["Neutronics Enabled for", "{}".format(cs["globalFluxActive"])]
+    )
+
+
+def _setGeneralCoreParametersData(core, cs, coreDesignTable):
+    blocks = core.getBlocks()
+    totalMass = sum(b.getMass() for b in blocks)
+    fissileMass = sum(b.getFissileMass() for b in blocks)
+    heavyMetalMass = sum(b.getHMMass() for b in blocks)
+    totalVolume = sum(b.getVolume() for b in blocks)
+    report.setData(" ", "", coreDesignTable, report.DESIGN)
+    report.setData(
+        "Core Power",
+        "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Base Capacity Factor",
+        "{}".format(cs["availabilityFactor"]),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Cycle Length",
+        "{} days".format(cs["cycleLength"]),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Burnup Cycles", "{}".format(cs["nCycles"]), coreDesignTable, report.DESIGN
+    )
+    report.setData(
+        "Burnup Steps per Cycle",
+        "{}".format(cs["burnSteps"]),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    corePowerMult = int(core.powerMultiplier)
+    report.setData(
+        "Core Total Volume",
+        "{:.2f} cc".format(totalVolume * corePowerMult),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Core Fissile Mass",
+        "{:.2f} kg".format(fissileMass / units.G_PER_KG * corePowerMult),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Core Heavy Metal Mass",
+        "{:.2f} kg".format(heavyMetalMass / units.G_PER_KG * corePowerMult),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Core Total Mass",
+        "{:.2f} kg".format(totalMass / units.G_PER_KG * corePowerMult),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Number of Assembly Rings",
+        "{}".format(core.getNumRings()),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Number of Assemblies",
+        "{}".format(len(core.getAssemblies() * corePowerMult)),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Number of Fuel Assemblies",
+        "{}".format(len(core.getAssemblies(Flags.FUEL) * corePowerMult)),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Number of Control Assemblies",
+        "{}".format(len(core.getAssemblies(Flags.CONTROL) * corePowerMult)),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Number of Reflector Assemblies",
+        "{}".format(len(core.getAssemblies(Flags.REFLECTOR) * corePowerMult)),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Number of Shield Assemblies",
+        "{}".format(len(core.getAssemblies(Flags.SHIELD) * corePowerMult)),
+        coreDesignTable,
+        report.DESIGN,
+    )
+
+
+def _setGeneralSimulationData(core, cs, coreDesignTable):
+    report.setData("  ", "", coreDesignTable, report.DESIGN)
+    report.setData(
+        "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
+    )
+    report.setData(
+        "Loose Physics Coupling Enabled",
+        "{}".format(bool(cs["looseCoupling"])),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Lattice Physics Enabled for",
+        "{}".format(cs["genXS"]),
+        coreDesignTable,
+        report.DESIGN,
+    )
+    report.setData(
+        "Neutronics Enabled for",
+        "{}".format(cs["globalFluxActive"]),
+        coreDesignTable,
+        report.DESIGN,
     )
 
 

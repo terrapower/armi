@@ -35,7 +35,7 @@ class TestReportContentCreation(unittest.TestCase):
             # Labels are predetermined at creation...
             series = newReports.TimeSeries(
                 "Example Plot",
-                "Reactor Name",
+                "ReactorName",
                 ["data1", "data2"],
                 "height (cm)",
                 "plotexample.png",
@@ -47,7 +47,7 @@ class TestReportContentCreation(unittest.TestCase):
                 series.add("data2", times[val], data2[val])
 
             series.plot()
-            self.assertTrue(os.path.exists("caption for plot.plotexample.png"))
+            self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
     def testTableCreation(self):
         import htmltree
@@ -58,7 +58,7 @@ class TestReportContentCreation(unittest.TestCase):
         for assem in self.r.core.getAssemblies():
             table.addRow([assem.p.type, assem.p.powerDecay])
 
-        result = table.toHtml()
+        result = table.render(0)
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
 
 
