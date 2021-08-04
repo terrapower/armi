@@ -3,7 +3,6 @@ import collections
 
 
 from numpy import ComplexWarning
-from framework.armi import runLog
 from armi.reactor.flags import Flags
 from armi.bookkeeping import newReports
 from armi.reactor import blueprints
@@ -390,6 +389,7 @@ def setDimensionReport(comp):
     ----------
     comp: Component
     """
+    from armi.utils import runLog
     from armi.reactor.components import component
     from armi.bookkeeping import newReportUtils
     from armi.bookkeeping import newReports
@@ -436,7 +436,7 @@ def setDimensionReport(comp):
         try:
             reportGroup.addRow([niceName, refVal, hotVal])
         except ValueError:
-            runLog.warning(
+            runLog.info(
                 "{0} has an invalid dimension for {1}. refVal: {2} hotVal: {3}".format(
                     comp, dimName, refVal, hotVal
                 )
@@ -689,7 +689,6 @@ def plotAssemblyTypes(
     ax.plot()
     if fileName:
         fig.savefig(fileName)
-        runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
         plt.close(fig)
 
     return fig
