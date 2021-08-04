@@ -292,7 +292,7 @@ class GridBlueprint(yamlize.Object):
             # available, we can also infer "through center" based on the contents.
             # Note that the "through center" symmetry check cannot be performed when
             # the grid contents has not been provided (i.e., None or empty).
-            if self.gridContents:
+            if self.gridContents and symmetry.domain == geometry.DomainType.FULL_CORE:
                 nx, ny = _getGridSize(self.gridContents.keys())
                 if nx == ny and nx % 2 == 1:
                     symmetry.isThroughCenterAssembly = True
