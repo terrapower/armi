@@ -69,6 +69,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
             database,
             runSuite,
             copyDB,
+            reportsEntryPoint,
         )
 
         entryPoints = []
@@ -87,6 +88,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
 
         # testing
         entryPoints.append(cleanTemps.CleanTemps)
+        entryPoints.append(reportsEntryPoint.ReportsEntryPoint)
 
         return entryPoints
 

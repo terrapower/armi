@@ -944,12 +944,6 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
         )
-        report.setData(
-            "Assem Types {}".format(plotNum),
-            assemPlotName,
-            assemPlotImage,
-            report.DESIGN,
-        )
 
     # Create radial core map
     if generateFullCoreMap:
@@ -994,3 +988,6 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     report.setData(
         "Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN
     )
+
+
+COMPONENT_INFO = "Component Information"

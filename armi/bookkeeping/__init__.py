@@ -96,3 +96,26 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                     return False
 
         return True
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def getReportContents(r, cs, report, stage, blueprint):
+        """
+        Generate general report content. Where diagrams/tables
+        not specific to additional plugins comes together.
+
+
+        Currently only happening at End and Begin stage because no content gathered
+        in these sections is used to create a graph across time.
+
+        """
+        from armi.cli import reportsEntryPoint
+        from armi.bookkeeping import newReportUtils
+
+        if stage == reportsEntryPoint.ReportStage.Begin:
+            newReportUtils.insertGeneralReportContent(cs, r, report, stage)
+            if blueprint is not None:
+                newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
+        elif stage == reportsEntryPoint.ReportStage.End:
+            newReportUtils.insertEndOfLifeContent(r, report)
+        return

@@ -31,6 +31,7 @@ independent interfaces:
     plugins outside of ARMI.
 
 """
+
 import os
 
 import yamlize
@@ -138,6 +139,19 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs):
         applyEffectiveDelayedNeutronFractionToCore(core, cs)
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def getReportContents(r, cs, report, stage, blueprint):
+        """
+        Generates the Report Content for the Neutronics Report
+
+
+        """
+
+        from armi.physics.neutronics import reports
+
+        return reports.insertNeutronicsReport(r, cs, report, stage)
 
 
 from .const import (
