@@ -5,6 +5,7 @@ import webbrowser
 import armi
 from armi.cli import entryPoint
 from armi.reactor.reactors import factory
+from armi.utils import runLog
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
@@ -109,7 +110,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             db = databaseFactory(self.args.h5db, "r")
             if self.args.bp is not None:
                 blueprint = self.args.bp
-            i = 0
+            i = 1
 
             with db:
 
@@ -132,6 +133,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                             blueprint=blueprint,
                         )
                     )
+                    stage = ReportStage.Standard
                     for cycle, node in dbNodes:
                         if nodes is not None and (cycle, node) not in nodes:
                             continue
@@ -151,14 +153,13 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         r = db.load(cycle, node)
                         cs = db.loadCS()
 
-                        if i == len(dbNodes) - 1:
-                            stage = ReportStage.End
-                        else:
-                            stage = ReportStage.Standard
-                        i += 1
                         pluginContent = pm.hook.getReportContents(
                             r=r, cs=cs, report=report, stage=stage, blueprint=blueprint
                         )
+                    stage = ReportStage.End
+                    pluginContent = pm.hook.getReportContents(
+                        r=r, cs=cs, report=report, stage=stage, blueprint=blueprint
+                    )
                     site = report.writeReports()
                     if self.args.view:
                         webbrowser.open(site)

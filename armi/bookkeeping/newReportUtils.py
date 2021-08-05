@@ -16,7 +16,7 @@ from armi.cli.reportsEntryPoint import ReportStage
 def insertBlueprintContent(r, cs, report, blueprint):
 
     insertCoreDesignReport(r.core, cs, report)
-    makeCoreAndAssemblyMaps(r, cs, report, blueprint),
+    insertCoreAndAssemblyMaps(r, cs, report, blueprint),
     insertBlockDiagrams(cs, blueprint, report, True)
     insertBlockDesignReport(blueprint, report, cs)
 
@@ -83,7 +83,7 @@ def insertDesignContent(r, report):
 
         for component_ in sorted(first_fuel_block):
             report[DESIGN]["Dimensions in First Fuel Block"].addChildElement(
-                element=setDimensionReport(component_),
+                element=createDimensionReport(component_),
                 heading=str(component_.name) + "dimensionReport",
                 subheading=None,
             )
@@ -505,7 +505,7 @@ def insertAreaFractionsReport(block, report):
         )
 
 
-def setDimensionReport(comp):
+def createDimensionReport(comp):
     """Gives a report of the dimensions of this component.
 
     Parameters
@@ -590,7 +590,7 @@ def setDimensionReport(comp):
     return reportGroup
 
 
-def makeCoreAndAssemblyMaps(
+def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
 

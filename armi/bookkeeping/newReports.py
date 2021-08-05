@@ -13,6 +13,7 @@ import htmltree
 
 
 import armi.context
+from armi import runLog
 
 
 class ReportContent:
@@ -311,6 +312,16 @@ class Image(ReportNode):
         self.caption = caption
         self.encode = encode
 
+        xtn = os.path.splitext(imagePath)[1][1:]  # [1:] to cut out the period
+        if xtn == "pdf":
+
+            runLog.warning(
+                "'.pdf' images cannot be embedded into this HTML report. Path name was {}, cannot be inserted.".format(
+                    imagePath
+                )
+            )
+            raise ValueError
+
     def __str__(self):
         return self.caption
 
@@ -533,7 +544,8 @@ class TimeSeries(ReportNode):
         return figName
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
-        """Renders the Timeseries into a graph and places that Image into an html Img tag."""
+        """Renders the Timeseries into a graph and places that Image into an html Img tag and returns a div
+        containing that image and the images caption if it has one stored."""
 
         figName = self.plot()
         if self.encode:
@@ -555,21 +567,14 @@ class TimeSeries(ReportNode):
 
 
 def encode64(file_path):
-    """Encodes the contents of the file indicated by the path"""
+    """Encodes the contents of the file indicated by the path
 
-    """Return the embedded HTML src attribute for an image in base64"""
+    Return
+    ------
+    String that is the embedded HTML src attribute for an image in base64
+    """
+
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
-    if xtn == "pdf":
-        from armi import runLog
-
-        runLog.warning(
-            "'.pdf' images cannot be embedded into this HTML report. {} will not be inserted.".format(
-                file_path
-            )
-        )
-        return "Faulty PDF image inclusion: {} attempted to be inserted but no support is currently offered for such.".format(
-            file_path
-        )
     with open(file_path, "rb") as img_src:
         if xtn == "svg":
             return r"data:image/{};base64,{}".format(

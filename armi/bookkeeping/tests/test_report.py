@@ -18,6 +18,8 @@ import collections
 from typing import OrderedDict
 import unittest
 
+import htmltree
+
 import armi
 from armi.tests import TEST_ROOT
 from armi.reactor.tests import test_reactors
@@ -26,8 +28,6 @@ from armi.utils import directoryChangers
 from armi.physics.neutronics.reports import neutronicsPlotting
 import armi.bookkeeping.newReports
 from armi.cli.reportsEntryPoint import ReportStage
-
-import htmltree
 
 
 class TestReportContentCreation(unittest.TestCase):
@@ -69,24 +69,25 @@ class TestReportContentCreation(unittest.TestCase):
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
 
     def testReportContents(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            reportTest = newReports.ReportContent("Test")
 
-        reportTest = newReports.ReportContent("Test")
+            armi.getPluginManagerOrFail().hook.getReportContents(
+                r=self.r,
+                cs=self.o.cs,
+                report=reportTest,
+                stage=ReportStage.Begin,
+                blueprint=self.r.blueprints,
+            )
 
-        armi.getPluginManagerOrFail().hook.getReportContents(
-            r=self.r,
-            cs=self.o.cs,
-            report=reportTest,
-            stage=ReportStage.Begin,
-            blueprint=self.r.blueprints,
-        )
-
-        self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
-        self.assertTrue("Comprehensive Report" in reportTest.sections)
-        self.assertTrue("Neutronics" in reportTest.sections)
-        self.assertTrue(isinstance(reportTest.tableOfContents(), htmltree.HtmlElement))
+            self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
+            self.assertTrue("Comprehensive Report" in reportTest.sections)
+            self.assertTrue("Neutronics" in reportTest.sections)
+            self.assertTrue(
+                isinstance(reportTest.tableOfContents(), htmltree.HtmlElement)
+            )
 
     def testNeutronicsPlotFunctions(self):
-        from armi.physics import neutronics
 
         reportTest = newReports.ReportContent("Test")
 
@@ -95,6 +96,24 @@ class TestReportContentCreation(unittest.TestCase):
         self.assertTrue(
             isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries)
         )
+
+    def testWriteReports(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            reportTest = newReports.ReportContent("Test")
+            table = newReports.Table("Example")
+            table.addRow(["example", 1])
+            table.addRow(["example", 2])
+
+            reportTest["TableTest"]["Table Example"] = table
+
+            reportTest.writeReports()
+            # Want to check that two <tr> exists...
+            times = 0
+            with open("ReportContent.html") as f:
+                for line in f:
+                    if "<tr>" in line:
+                        times = times + 1
+            self.assertTrue(times == 2)
 
 
 if __name__ == "__main__":

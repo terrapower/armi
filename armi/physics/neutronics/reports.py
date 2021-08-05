@@ -25,7 +25,7 @@ def insertNeutronicsReport(r, cs, report, stage):
     if stage == ReportStage.Begin:
         insertNeutronicsBOLContent(r, cs, report)
 
-    elif stage == ReportStage.Standard:
+    elif stage == ReportStage.Standard or stage == ReportStage.End:
         neutronicsPlotting(r, report, cs)
 
 
@@ -62,7 +62,7 @@ def neutronicsPlotting(r, report, cs):
     """
 
     # Make K-Effective Plot
-    labels = ["k-effective"]
+    labels = ["k-effective", "keff-uncontrolled"]
     neutronicsSection = report[NEUTRONICS_SECTION]
     if KEFF_PLOT not in neutronicsSection:
         report[NEUTRONICS_SECTION][KEFF_PLOT] = newReports.TimeSeries(
@@ -73,8 +73,9 @@ def neutronicsPlotting(r, report, cs):
             "keff." + cs["outputFileExtension"],
         )
         # To create the keff section and start populating it's points...
+    report[NEUTRONICS_SECTION][KEFF_PLOT].add(labels[0], r.p.time, r.core.p.keff, None)
     report[NEUTRONICS_SECTION][KEFF_PLOT].add(
-        labels[0], r.p.time, r.core.p.keff, r.core.p.keffUnc
+        labels[1], r.p.time, r.core.p.keffUnc, None
     )
 
     # Make PD-Plot
