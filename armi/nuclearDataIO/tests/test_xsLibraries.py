@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """Tests for xsLibraries.IsotxsLibrary"""
+import copy
 import filecmp
 import os
-import unittest
 import shutil
-import copy
 import subprocess
 import traceback
+import unittest
 
 from six.moves import cPickle
 
@@ -236,6 +236,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         dummyFileName = "ISOSOMEFILE"
         with open(dummyFileName, "w") as someFile:
             someFile.write("hi")
+
         try:
             with mockRunLogs.BufferLog() as log:
                 lib = xsLibraries.IsotxsLibrary()

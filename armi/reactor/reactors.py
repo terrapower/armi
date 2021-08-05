@@ -24,6 +24,7 @@ plant-wide state variables such as keff, cycle, and node.
 import collections
 import copy
 import itertools
+import logging
 from typing import Optional
 import tabulate
 import time
@@ -31,7 +32,7 @@ import os
 
 import numpy
 
-from armi import getPluginManagerOrFail, runLog, nuclearDataIO, settings
+from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings, utils
 from armi.localization import exceptions
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -42,14 +43,15 @@ from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import zones
 from armi.reactor import reactorParameters
-from armi import materials
-from armi import utils
 from armi.utils import units
 from armi.utils.iterables import Sequence
 from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.nuclearDataIO import xsLibraries
+
+# init logger
+runLog = logging.getLogger(__name__)
 
 
 class Reactor(composites.Composite):

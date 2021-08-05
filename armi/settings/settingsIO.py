@@ -31,6 +31,7 @@ import ruamel.yaml.comments
 
 from armi import runLog
 from armi.meta import __version__ as version
+from armi import context
 from armi.localization import exceptions
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
@@ -278,7 +279,7 @@ class SettingsReader:
             return
         try:
             invalidNames = "\n\t".join(self.invalidSettings)
-            proceed = runLog.prompt(
+            proceed = prompt(
                 "Found {} invalid settings in {}.\n\n {} \n\t".format(
                     len(self.invalidSettings), self.inputPath, invalidNames
                 ),
@@ -574,3 +575,67 @@ class SettingsWriter:
             "&(?!quot;|lt;|gt;|amp;|apos;)", "&amp;", s
         )  # protects against chaining &amp
         return s
+
+
+def prompt(statement, question, *options):
+    """Prompt the user for some information."""
+    from armi.localization import exceptions
+
+    if context.CURRENT_MODE == context.Mode.GUI:
+        # avoid hard dependency on wx
+        import wx  # pylint: disable=import-error
+
+        msg = statement + "\n\n\n" + question
+        if len(msg) < 300:
+            style = wx.CENTER
+            for opt in options:
+                style |= getattr(wx, opt)
+            dlg = wx.MessageDialog(None, msg, style=style)
+        else:
+            # for shame. Might make sense to move the styles stuff back into the
+            # Framework
+            from tparmi.gui.styles import dialogues
+
+            dlg = dialogues.ScrolledMessageDialog(None, msg, "Prompt")
+        response = dlg.ShowModal()
+        dlg.Destroy()
+        if response == wx.ID_CANCEL:
+            raise exceptions.RunLogPromptCancel("Manual cancellation of GUI prompt")
+        return response in [wx.ID_OK, wx.ID_YES]
+
+    elif context.CURRENT_MODE == context.Mode.INTERACTIVE:
+        response = ""
+        responses = [
+            opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]
+        ]
+
+        if "YES_NO" in responses:
+            index = responses.index("YES_NO")
+            responses[index] = "NO"
+            responses.insert(index, "YES")
+
+        if not any(responses):
+            raise RuntimeError("No suitable responses in {}".format(responses))
+
+        # highly requested shorthand responses
+        if "YES" in responses:
+            responses.append("Y")
+        if "NO" in responses:
+            responses.append("N")
+
+        # TODO: Using the logger is strange. Perhaps this is a rare use-case for bare print? Or something bespoke.
+        while response not in responses:
+            runLog.LOG.log("prompt", statement)
+            runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))
+
+        if response == "CANCEL":
+            raise exceptions.RunLogPromptCancel(
+                "Manual cancellation of interactive prompt"
+            )
+
+        return response in ["YES", "Y", "OK"]
+
+    else:
+        raise exceptions.RunLogPromptUnresolvable(
+            "Incorrect CURRENT_MODE for prompting user: {}".format(context.CURRENT_MODE)
+        )
