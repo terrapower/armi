@@ -79,9 +79,11 @@ class ExecutionOptions:
         use this, you will get a relatively consistent naming convention
         for your fast-past folders.
         """
-        self.runDir = os.path.join(
-            getFastPath(), f"{caseTitle}-{self.label}-{MPI_RANK}"
-        )
+        # This creates a hash of the case title plus the label
+        # to shorten the running directory and to avoid path length
+        # limitations on the OS.
+        caseTitleHash = str(hash(f"{caseTitle}-{self.label}"))[:8]
+        self.runDir = os.path.join(getFastPath(), f"{caseTitleHash}-{MPI_RANK}")
 
     def describe(self):
         """Make a string summary of all options."""
