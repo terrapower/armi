@@ -359,8 +359,10 @@ class SymmetryType:
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
         """Construct a SymmetryType object from a valid string"""
         canonical = symmetryString.lower().strip()
+        # ignore "assembly" since it is unnecessary and overly-verbose and too specific
+        noAssembly = canonical.replace("assembly", "").strip()
         isThroughCenter = cls._checkIfThroughCenter(canonical)
-        coreString = canonical.replace(THROUGH_CENTER_ASSEMBLY, "").strip()
+        coreString = noAssembly.replace(THROUGH_CENTER_ASSEMBLY, "").strip()
         trimmedString = coreString.replace("core", "").strip()
         pieces = trimmedString.split()
         domain = DomainType.fromStr(pieces[0])
@@ -519,9 +521,8 @@ SIXTEENTH_CORE = "sixteenth"
 REFLECTIVE = "reflective"
 PERIODIC = "periodic"
 NO_SYMMETRY = "no symmetry"
-THROUGH_CENTER_ASSEMBLY = (
-    "through center assembly"  # through center assembly applies only to cartesian
-)
+# through center assembly applies only to cartesian
+THROUGH_CENTER_ASSEMBLY = "through center"
 
 geomTypes = {HEX, CARTESIAN, RZT, RZ}
 domainTypes = {FULL_CORE, THIRD_CORE, QUARTER_CORE, EIGHTH_CORE, SIXTEENTH_CORE}

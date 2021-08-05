@@ -732,6 +732,14 @@ class Grid:
     def symmetry(self, symmetry: Union[str, geometry.SymmetryType]):
         self._symmetry = str(geometry.SymmetryType.fromAny(symmetry))
 
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, offset):
+        self._offset = offset
+
     def __repr__(self):
         msg = (
             ["<{} -- {}\nBounds:\n".format(self.__class__.__name__, id(self))]

@@ -68,6 +68,16 @@ sfp quarter:
         2 3 1 1 2
         2 2 2 2 2
 
+sfp quarter even:
+    geom: cartesian
+    symmetry: quarter core
+    lattice map: |
+        2 2 2 2 2
+        2 1 1 1 2
+        2 1 3 1 2
+        2 3 1 1 2
+        2 2 2 2 2
+
 sfp even:
     geom: cartesian
     symmetry: full
@@ -275,6 +285,12 @@ class TestGridBlueprintsSection(unittest.TestCase):
         self.assertEqual(gridDesign3.gridContents[1, 1], "3")
         self.assertEqual(gridDesign3.gridContents[2, 2], "3")
         self.assertEqual(gridDesign3.gridContents[3, 3], "1")
+        self.assertTrue(_grid.symmetry.isThroughCenterAssembly)
+
+        # cartesian quarter, even not through center
+        gridDesign3 = self.grids["sfp quarter even"]
+        _grid = gridDesign3.construct()
+        self.assertFalse(_grid.symmetry.isThroughCenterAssembly)
 
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
