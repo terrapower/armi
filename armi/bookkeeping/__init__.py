@@ -17,10 +17,6 @@ The bookkeeping package handles data persistence, reporting, and some debugging.
 """
 from armi import plugins
 
-from armi.bookkeeping import newReports
-
-# from armi.bookkeeping.newReports import ReportContent
-
 
 class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
@@ -117,7 +113,7 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         from armi.bookkeeping import newReportUtils
 
         if stage == reportsEntryPoint.ReportStage.Begin:
-            newReportUtils.insertGeneralReportContent(cs, r, report, blueprint, stage)
+            newReportUtils.insertGeneralReportContent(cs, r, report, stage)
             if blueprint is not None:
                 newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
         elif stage == reportsEntryPoint.ReportStage.End:

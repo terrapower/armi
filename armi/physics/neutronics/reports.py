@@ -1,5 +1,3 @@
-from armi import runLog
-import os
 from collections import defaultdict
 
 # parts of report for neutronics
@@ -11,7 +9,7 @@ from armi.reactor.flags import Flags
 from armi.bookkeeping import newReports
 
 
-def generateNeutronicsReport(r, cs, report, stage):
+def insertNeutronicsReport(r, cs, report, stage):
     """Generate the Neutronics section of the Report
 
     Parameters
@@ -25,13 +23,13 @@ def generateNeutronicsReport(r, cs, report, stage):
     """
 
     if stage == ReportStage.Begin:
-        neutronicsBOLContent(r, cs, report)
+        insertNeutronicsBOLContent(r, cs, report)
 
     elif stage == ReportStage.Standard:
         neutronicsPlotting(r, report, cs)
 
 
-def neutronicsBOLContent(r, cs, report):
+def insertNeutronicsBOLContent(r, cs, report):
     """Add BOL content to Neutronics Section of the Report
         This currently includes addtions to Comprehensive Reports
         Settings table, and an Initial Core Fuel Assembly Table.
@@ -50,7 +48,7 @@ def neutronicsBOLContent(r, cs, report):
     for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
         table.addRow([key, cs[key]])
 
-    initialCoreFuelAssem(r, report)
+    insertInitialCoreFuelAssem(r, report)
 
 
 def neutronicsPlotting(r, report, cs):
@@ -109,7 +107,7 @@ def neutronicsPlotting(r, report, cs):
     )
 
 
-def initialCoreFuelAssem(r, report):
+def insertInitialCoreFuelAssem(r, report):
     """Creates table of initial core fuel assemblies
 
     Parameters

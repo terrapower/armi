@@ -13,7 +13,15 @@ from armi.utils import iterables
 from armi.cli.reportsEntryPoint import ReportStage
 
 
-def insertGeneralReportContent(cs, r, report, blueprint, stage):
+def insertBlueprintContent(r, cs, report, blueprint):
+
+    insertCoreDesignReport(r.core, cs, report)
+    makeCoreAndAssemblyMaps(r, cs, report, blueprint),
+    insertBlockDiagrams(cs, blueprint, report, True)
+    insertBlockDesignReport(blueprint, report, cs)
+
+
+def insertGeneralReportContent(cs, r, report, stage):
 
     """
     Creates Report content that is not plugin specific. Various things for the Design
@@ -31,16 +39,6 @@ def insertGeneralReportContent(cs, r, report, blueprint, stage):
     if stage == ReportStage.Begin:
         comprehensiveBOLContent(cs, r, report)
         insertDesignContent(r, report)
-
-
-def insertBlueprintContent(r, cs, report, blueprint):
-
-    makeCoreDesignReport(r.core, cs, report)
-
-    makeCoreAndAssemblyMaps(r, cs, report, blueprint),
-
-    insertBlockDiagrams(cs, blueprint, report, True)
-    makeBlockDesignReport(blueprint, report, cs)
 
 
 def comprehensiveBOLContent(cs, r, report):
@@ -91,10 +89,7 @@ def insertDesignContent(r, report):
             )
 
 
-def makeBlockDesignReport(blueprint, report, cs):
-    from armi.reactor.components import component
-    from armi.bookkeeping import newReports
-    from armi.bookkeeping import newReportUtils
+def insertBlockDesignReport(blueprint, report, cs):
 
     r"""Summarize the block designs from the loading file
 
@@ -106,9 +101,7 @@ def makeBlockDesignReport(blueprint, report, cs):
     cs: Case Settings
 
     """
-    report[newReportUtils.DESIGN]["Block Summaries"] = newReports.Section(
-        "Block Summaries"
-    )
+    report[DESIGN]["Block Summaries"] = newReports.Section("Block Summaries")
 
     for bDesign in blueprint.blockDesigns:
         loadingFileTable = newReports.Table(
@@ -160,12 +153,12 @@ def makeBlockDesignReport(blueprint, report, cs):
                             ]
                         )
         loadingFileTable.title = "Summary of Block: {}".format(bDesign.name)
-        report[newReportUtils.DESIGN]["Block Summaries"].addChildElement(
+        report[DESIGN]["Block Summaries"].addChildElement(
             loadingFileTable, loadingFileTable.title
         )
 
 
-def makeCoreDesignReport(core, cs, report):
+def insertCoreDesignReport(core, cs, report):
     r"""Builds report to summarize core design inputs
 
     Parameters
@@ -173,7 +166,6 @@ def makeCoreDesignReport(core, cs, report):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    from armi.bookkeeping import newReports
 
     coreDesignTable = newReports.Table("Core Report Table")
     coreDesignTable.header = ["", "Input Parameter"]
@@ -471,7 +463,7 @@ def getPinDesignTable(core):
 
         # assumption made that all lists contain only numerical data
         designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
-        tableRows = newReports.Table("Pin Design", "Summarizes pin design", header=None)
+        tableRows = newReports.Table("Pin Design", header=None)
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():
             dim = "{0:10s}".format(key)

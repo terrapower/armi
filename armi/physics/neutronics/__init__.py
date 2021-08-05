@@ -151,7 +151,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
 
         from armi.physics.neutronics import reports
 
-        return reports.generateNeutronicsReport(r, cs, report, stage)
+        return reports.insertNeutronicsReport(r, cs, report, stage)
 
 
 from .const import (

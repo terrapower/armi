@@ -1,12 +1,14 @@
-import webbrowser
 import collections
 import shutil
 import os
 import copy
-from typing import DefaultDict, Union, Dict
+from typing import Union, Dict
 from abc import ABC, abstractmethod
 import base64
+from operator import itemgetter
 
+
+import matplotlib.pyplot as plt
 import htmltree
 
 
@@ -297,14 +299,17 @@ class Image(ReportNode):
     caption: String
     imagePath: String
         .png or .img image name to reference later
+    encode: boolean
+        Default true, will result in an encoded file path when rendered to html.
 
 
     """
 
-    def __init__(self, caption, imagePath, title=None):
+    def __init__(self, caption, imagePath, title=None, encode=True):
         self.title = title
         self.imagePath = imagePath
         self.caption = caption
+        self.encode = encode
 
     def __str__(self):
         return self.caption
@@ -313,7 +318,8 @@ class Image(ReportNode):
         """Wraps an image file into an html Img tag. (With caption included in the figure)"""
 
         figure = htmltree.Figure()
-        self.imagePath = encode64(os.path.abspath(self.imagePath))
+        if self.encode:
+            self.imagePath = encode64(os.path.abspath(self.imagePath))
         figure.C.append(
             htmltree.Img(
                 src=self.imagePath, alt="{}_image".format(self.caption), id=idPrefix
@@ -406,6 +412,9 @@ class TimeSeries(ReportNode):
 
     rName: Reactor Name for graphs title and file name
 
+    encode: boolean
+        Default true, whether to encode the resulting file path in the html.
+
     Example
     -------
 
@@ -432,7 +441,7 @@ class TimeSeries(ReportNode):
     >>>    # at this time, with the found maxValue, and no uncertainty...)
     """
 
-    def __init__(self, title, rName, labels, yaxis, fName, caption=""):
+    def __init__(self, title, rName, labels, yaxis, fName, caption="", encode=True):
         self.title = title
         self.times = []
         self.labels = labels
@@ -444,6 +453,7 @@ class TimeSeries(ReportNode):
         self.yaxis = yaxis
         self.fName = fName
         self.rName = rName
+        self.encode = encode
 
     def __str__(self):
         return self.title
@@ -478,9 +488,6 @@ class TimeSeries(ReportNode):
         ymin: float
             The minimum y-value for the graph.
         """
-
-        from operator import itemgetter
-        import matplotlib.pyplot as plt
 
         plt.figure()
         lowestY = True
@@ -529,18 +536,26 @@ class TimeSeries(ReportNode):
         """Renders the Timeseries into a graph and places that Image into an html Img tag."""
 
         figName = self.plot()
-        return htmltree.Div(
-            htmltree.Img(
+        if self.encode:
+            img = htmltree.Img(
                 src=encode64(os.path.abspath(figName)),
                 alt="{}_image".format(self.title),
                 id=idPrefix,
-            ),
+            )
+        else:
+            htmltree.Img(
+                src=os.path.abspath(figName),
+                alt="{}_image".format(self.title),
+                id=idPrefix,
+            )
+        return htmltree.Div(
+            img,
             htmltree.P(self.caption),
         )
 
 
 def encode64(file_path):
-    """Encodes the file path"""
+    """Encodes the contents of the file indicated by the path"""
 
     """Return the embedded HTML src attribute for an image in base64"""
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
