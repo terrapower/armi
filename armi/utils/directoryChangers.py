@@ -247,16 +247,19 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
 
     def __enter__(self):
         if not os.path.exists(self.destination):
-            runLog.debug(f"Creating destination folder {self.destination}")
+            runLog.extra(f"Creating destination folder: {self.destination}")
             try:
                 os.makedirs(self.destination)
-            except OSError:
+            except OSError as ee:
                 # even though we checked exists, this still fails
                 # sometimes when multiple MPI nodes try
                 # to make the dirs due to I/O delays
-                runLog.debug(f"Failed to make destination folder")
+                runLog.error(
+                    f"Failed to make destination folder: {self.destination}. "
+                    f"Exception: {ee}"
+                )
         else:
-            runLog.debug(f"Destination folder already exists: {self.destination}")
+            runLog.extra(f"Destination folder already exists: {self.destination}")
         DirectoryChanger.__enter__(self)
         if self.clean:
             shutil.rmtree(".", ignore_errors=True)
