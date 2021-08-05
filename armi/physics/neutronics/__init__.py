@@ -33,7 +33,6 @@ independent interfaces:
 """
 
 import os
-import base64
 
 import yamlize
 import numpy
@@ -43,12 +42,6 @@ from armi import plugins
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.utils import directoryChangers
 from armi import runLog
-from armi.physics.neutronics import reportConstants
-
-from armi.bookkeeping import newReports
-from armi.bookkeeping.newReports import ReportContent
-
-from htmltree import *
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):

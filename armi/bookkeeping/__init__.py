@@ -20,7 +20,6 @@ from armi import plugins
 from armi.bookkeeping import newReports
 
 # from armi.bookkeeping.newReports import ReportContent
-from htmltree import *
 
 
 class BookkeepingPlugin(plugins.ArmiPlugin):
@@ -118,9 +117,9 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         from armi.bookkeeping import newReportUtils
 
         if stage == reportsEntryPoint.ReportStage.Begin:
-            newReportUtils.createGeneralReportContent(cs, r, report, blueprint, stage)
+            newReportUtils.insertGeneralReportContent(cs, r, report, blueprint, stage)
             if blueprint is not None:
-                newReportUtils.blueprintContent(r, cs, report, blueprint)
+                newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
         elif stage == reportsEntryPoint.ReportStage.End:
-            newReportUtils.getEndOfLifeContent(r, report)
+            newReportUtils.insertEndOfLifeContent(r, report)
         return

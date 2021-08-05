@@ -121,7 +121,6 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
    replaced with plugin-based fuel handler logic.
 """
 from typing import Dict, Union
-from h5py._hl.files import File
 
 import pluggy
 
@@ -552,6 +551,8 @@ class ArmiPlugin:
         blueprint : blueprint for a reactor (if None, only partial contents created)
         stage : begin/standard/or end (stage of the report for
                 when inserting BOL vs. EOL content)
+
+        For more information, see the documentation at https://terrapower.github.io/armi/developer/reports.html
 
         """
 

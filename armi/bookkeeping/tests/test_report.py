@@ -14,14 +14,20 @@
 
 """Test reports."""
 import os
+import collections
 from typing import OrderedDict
 import unittest
 
+import armi
 from armi.tests import TEST_ROOT
 from armi.reactor.tests import test_reactors
 from armi.bookkeeping import newReports
 from armi.utils import directoryChangers
 from armi.physics.neutronics.reports import neutronicsPlotting
+import armi.bookkeeping.newReports
+from armi.cli.reportsEntryPoint import ReportStage
+
+import htmltree
 
 
 class TestReportContentCreation(unittest.TestCase):
@@ -52,7 +58,6 @@ class TestReportContentCreation(unittest.TestCase):
             self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
     def testTableCreation(self):
-        import htmltree
 
         header = ["item", "value"]
         table = newReports.Table("Assembly Table", "table of assemblies", header)
@@ -64,13 +69,6 @@ class TestReportContentCreation(unittest.TestCase):
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
 
     def testReportContents(self):
-        import collections
-        import htmltree
-
-        import armi
-        import armi.bookkeeping.newReports
-        from armi.cli.reportsEntryPoint import ReportStage
-        from armi.bookkeeping.newReportUtils import tableOfContents
 
         reportTest = newReports.ReportContent("Test")
 
@@ -85,9 +83,7 @@ class TestReportContentCreation(unittest.TestCase):
         self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
         self.assertTrue("Comprehensive Report" in reportTest.sections)
         self.assertTrue("Neutronics" in reportTest.sections)
-        self.assertTrue(
-            isinstance(tableOfContents(reportTest.sections), htmltree.HtmlElement)
-        )
+        self.assertTrue(isinstance(reportTest.tableOfContents(), htmltree.HtmlElement))
 
     def testNeutronicsPlotFunctions(self):
         from armi.physics import neutronics

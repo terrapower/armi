@@ -4,9 +4,7 @@ from collections import defaultdict
 
 # parts of report for neutronics
 from armi.cli.reportsEntryPoint import ReportStage
-from armi.physics import neutronics
 
-from armi.physics.neutronics import reportConstants
 from armi.bookkeeping import newReportUtils
 from armi.bookkeeping import newReports
 from armi.reactor.flags import Flags
@@ -67,11 +65,9 @@ def neutronicsPlotting(r, report, cs):
 
     # Make K-Effective Plot
     labels = ["k-effective"]
-    neutronicsSection = report[reportConstants.NEUTRONICS_SECTION]
-    if reportConstants.KEFF_PLOT not in neutronicsSection:
-        report[reportConstants.NEUTRONICS_SECTION][
-            reportConstants.KEFF_PLOT
-        ] = newReports.TimeSeries(
+    neutronicsSection = report[NEUTRONICS_SECTION]
+    if KEFF_PLOT not in neutronicsSection:
+        report[NEUTRONICS_SECTION][KEFF_PLOT] = newReports.TimeSeries(
             "Plot of K-Effective",
             r.name,
             labels,
@@ -79,22 +75,20 @@ def neutronicsPlotting(r, report, cs):
             "keff." + cs["outputFileExtension"],
         )
         # To create the keff section and start populating it's points...
-    report[reportConstants.NEUTRONICS_SECTION][reportConstants.KEFF_PLOT].add(
+    report[NEUTRONICS_SECTION][KEFF_PLOT].add(
         labels[0], r.p.time, r.core.p.keff, r.core.p.keffUnc
     )
 
     # Make PD-Plot
     if PD_PLOT not in neutronicsSection.childContents:
-        report[reportConstants.NEUTRONICS_SECTION][PD_PLOT] = newReports.TimeSeries(
+        report[NEUTRONICS_SECTION][PD_PLOT] = newReports.TimeSeries(
             "Max Areal PD vs. Time",
             r.name,
             ["Max PD"],
             "Max Areal PD (MW/m^2)",
             "maxpd." + cs["outputFileExtension"],
         )
-    report[reportConstants.NEUTRONICS_SECTION][PD_PLOT].add(
-        "Max PD", r.p.time, r.core.p.maxPD, None
-    )
+    report[NEUTRONICS_SECTION][PD_PLOT].add("Max PD", r.p.time, r.core.p.maxPD, None)
 
     # Make DPA_Plot
     generateLinePlot(
@@ -123,10 +117,8 @@ def initialCoreFuelAssem(r, report):
     r: Reactor
     report: ReportContent
     """
-    report[reportConstants.NEUTRONICS_SECTION][
-        reportConstants.INITIAL_CORE_FUEL_ASSEMBLY
-    ] = newReports.Table(
-        reportConstants.INITIAL_CORE_FUEL_ASSEMBLY,
+    report[NEUTRONICS_SECTION][INITIAL_CORE_FUEL_ASSEMBLY] = newReports.Table(
+        INITIAL_CORE_FUEL_ASSEMBLY,
         "Summary of Initial Core Fuel Assembly",
         header=[
             "Assembly Name",
@@ -140,9 +132,7 @@ def initialCoreFuelAssem(r, report):
         enrichment[assem.p.type] = round(assem.getFissileMassEnrich() * 100, 7)
         assemTypes[assem.p.type] = assemTypes[assem.p.type] + 1
     for typeA in assemTypes:
-        report[reportConstants.NEUTRONICS_SECTION][
-            reportConstants.INITIAL_CORE_FUEL_ASSEMBLY
-        ].addRow(
+        report[NEUTRONICS_SECTION][INITIAL_CORE_FUEL_ASSEMBLY].addRow(
             [
                 typeA,
                 enrichment[typeA],
@@ -165,15 +155,13 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
     name: String
         name for the file to have.
     """
-    section = report[reportConstants.NEUTRONICS_SECTION]
+    section = report[NEUTRONICS_SECTION]
     if subsectionHeading not in section.childContents:
         labels = []
         for a in r.core.getAssemblies(Flags.FUEL):
             if a.p.type not in labels:
                 labels.append(a.p.type)
-        report[reportConstants.NEUTRONICS_SECTION][
-            subsectionHeading
-        ] = newReports.TimeSeries(
+        report[NEUTRONICS_SECTION][subsectionHeading] = newReports.TimeSeries(
             subsectionHeading, r.name, labels, yaxis, name, caption
         )
     maxValue = defaultdict(float)
@@ -185,7 +173,7 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxDpaPeak)
 
     for key in maxValue:
-        report[reportConstants.NEUTRONICS_SECTION][subsectionHeading].add(
+        report[NEUTRONICS_SECTION][subsectionHeading].add(
             key, r.p.time, maxValue[key], None
         )
 
@@ -194,3 +182,10 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
 BURNUP_PLOT = "Peak Burn Up vs. Time"
 DPA_PLOT = "Peak DPA vs. Time"
 PD_PLOT = "Max Areal PD vs. Time"
+
+"""
+    Constants
+"""
+NEUTRONICS_SECTION = "Neutronics"
+KEFF_PLOT = "Keff-Plot"
+INITIAL_CORE_FUEL_ASSEMBLY = "Initial Core Fuel Assembly Count"

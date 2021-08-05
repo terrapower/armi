@@ -19,4 +19,4 @@ It is also possible to call this on an h5 file,
 
 .. note:: When working with a h5 file, -h5db must be included
 
-Once these are called, a report is generated and outputed to the webbrowser as an html file.
+Once these are called, a report is generated and outputed as an html file in reportsOutputFiles.

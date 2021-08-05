@@ -1,4 +1,3 @@
-import re
 import webbrowser
 import collections
 import shutil
@@ -6,9 +5,9 @@ import os
 import copy
 from typing import DefaultDict, Union, Dict
 from abc import ABC, abstractmethod
+import base64
 
 import htmltree
-from htmltree import Table as HtmlTable
 
 
 import armi.context
@@ -23,8 +22,6 @@ class ReportContent:
 
     def writeReports(self):
         """Renders each report into a document for viewing."""
-
-        from armi.bookkeeping.newReportUtils import tableOfContents
 
         body = htmltree.Body()
         head = htmltree.Head()
@@ -51,7 +48,7 @@ class ReportContent:
         divMain.C.append(header)
         div = htmltree.Div(id="reportContent")
         div.C.append(htmltree.H4("Report Generated for : " + self.title))
-        body.C.append(tableOfContents(self.sections))
+        body.C.append(self.tableOfContents())
         for group in self.sections:
             div.C.append(htmltree.H1(group, id=group))
             for subgroup in self.sections[group].childContents:
@@ -87,8 +84,7 @@ class ReportContent:
             "report.js",
         )
         fileurl = doc.renderToFile("ReportContent.html", 0)
-
-        webbrowser.open(fileurl)
+        return fileurl
 
     def get(self, section, default=None):
         if section not in self.sections:
@@ -105,15 +101,77 @@ class ReportContent:
         if key in self.sections:
             self.sections[key] = item
 
+    def tableOfContents(self):
+        """Creates a Table of Contents at the top of the document that links to later Sections
 
-levelDict = collections.defaultdict(lambda: htmltree.H4())
-levelDict[0] = htmltree.H1()
-levelDict[1] = htmltree.H2()
-levelDict[2] = htmltree.H3()
-levelDict[3] = htmltree.H4()
+        Parameters
+        ----------
+        elements: ReportContent
+            Contains sections of subsections that make up the report.
+        """
+        elements = self.sections
+        main = htmltree.Main(id="toc")
+        main.C.append(htmltree.P("Contents"))
+        outerList = htmltree.Ul()
+        for group in elements:
+            outerList.C.append(
+                htmltree.Ul(
+                    htmltree.A(elements[group].title, href="#{}".format(group)),
+                    _class="section",
+                )
+            )
+
+            ul = htmltree.Ul(_class="subsection")
+            # Subgroup is either a ReportNode or an Element...
+            for subKey in elements[group].childContents:
+                subgroup = elements[group].childContents[subKey]
+                if type(subgroup) is Section:
+                    sectionHeading = htmltree.Li(
+                        htmltree.A(
+                            subgroup.title, href="#{}".format(str(group) + str(subKey))
+                        ),
+                        _class="nestedSection",
+                    )
+                    ul.C.append(sectionHeading)
+
+                    ul2 = htmltree.Ul(_class="nestedSubsection")
+                    for key in subgroup.childContents:
+                        element = subgroup.childContents[key]
+                        if element.title is not None:
+                            ul2.C.append(
+                                htmltree.Li(
+                                    htmltree.A(
+                                        element.title,
+                                        href="#{}".format(
+                                            str(group) + str(subKey) + str(key)
+                                        ),
+                                    )
+                                )
+                            )
+                        else:
+                            sectionHeading.A.update({"class": "subsection"})
+                    ul.C.append(ul2)
+                elif type(subgroup) is not htmltree.HtmlElement:
+                    ul.C.append(
+                        htmltree.Li(
+                            htmltree.A(subKey, href="#{}".format(group + subKey))
+                        )
+                    )
+
+            outerList.C.append(ul)
+
+        main.C.append(outerList)
+        return main
 
 
 class ReportNode(ABC):
+
+    levelDict = collections.defaultdict(lambda: htmltree.H5())
+    levelDict[0] = htmltree.H2()
+    levelDict[1] = htmltree.H3()
+    levelDict[2] = htmltree.H4()
+    levelDict[3] = htmltree.H5()
+
     @abstractmethod
     def render(self, level, idPrefix):
         """Renders the section to a htmltree element for inserting into HTML document tree
@@ -138,7 +196,7 @@ class ReportNode(ABC):
 
 class Section(ReportNode):
     """A grouping of objects within the report.
-    These items can be either of type ReportNode (Table, Image, Section, TimeSeries)
+    These items can be either of type ReportNode (Table, Image, Section, etc)
     of, HtmlElements as defined by htmltree.
 
     """
@@ -148,9 +206,6 @@ class Section(ReportNode):
         self.childContents: Dict[
             str, Union[Section, htmltree.HtmlElement, ReportNode]
         ] = collections.OrderedDict()
-
-    def contains(self, item):
-        return item in self.childContents
 
     def addChildElement(self, element, heading="", subheading=None):
         """Add an element to the group of Sections.
@@ -202,7 +257,7 @@ class Section(ReportNode):
         ----------
         level : int
             level of the nesting for this section, determines the size of the heading title for the Section
-            (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in html terms.
+            (The higher the level, the smaller the title font-size). Ranges from H2 - H5 in html terms.
 
         idPrefix : String
             used for href/id referencing for the left hand side table of contents to be paired with the item
@@ -214,7 +269,7 @@ class Section(ReportNode):
                     after it is rendered within writeReports().
         """
         itemsToAdd = []
-        headingLevel = copy.deepcopy(levelDict[level])
+        headingLevel = copy.deepcopy(self.levelDict[level])
         headingLevel.A.update({"id": "{}".format(idPrefix)})
         headingLevel.C.append(self.title)
         heading = headingLevel
@@ -256,7 +311,6 @@ class Image(ReportNode):
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         """Wraps an image file into an html Img tag. (With caption included in the figure)"""
-        from armi.bookkeeping.newReportUtils import encode64
 
         figure = htmltree.Figure()
         self.imagePath = encode64(os.path.abspath(self.imagePath))
@@ -473,7 +527,6 @@ class TimeSeries(ReportNode):
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         """Renders the Timeseries into a graph and places that Image into an html Img tag."""
-        from armi.bookkeeping.newReportUtils import encode64
 
         figName = self.plot()
         return htmltree.Div(
@@ -483,4 +536,31 @@ class TimeSeries(ReportNode):
                 id=idPrefix,
             ),
             htmltree.P(self.caption),
+        )
+
+
+def encode64(file_path):
+    """Encodes the file path"""
+
+    """Return the embedded HTML src attribute for an image in base64"""
+    xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
+    if xtn == "pdf":
+        from armi import runLog
+
+        runLog.warning(
+            "'.pdf' images cannot be embedded into this HTML report. {} will not be inserted.".format(
+                file_path
+            )
+        )
+        return "Faulty PDF image inclusion: {} attempted to be inserted but no support is currently offered for such.".format(
+            file_path
+        )
+    with open(file_path, "rb") as img_src:
+        if xtn == "svg":
+            return r"data:image/{};base64,{}".format(
+                xtn + "+xml", base64.b64encode(img_src.read()).decode()
+            )
+
+        return r"data:image/{};base64,{}".format(
+            xtn, base64.b64encode(img_src.read()).decode()
         )

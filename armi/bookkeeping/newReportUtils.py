@@ -1,21 +1,21 @@
-from armi.utils import directoryChangers
+import os
+
 import collections
+import numpy
 
-
-from numpy import ComplexWarning
+from armi.reactor.components import component
+from armi import runLog
 from armi.reactor.flags import Flags
 from armi.bookkeeping import newReports
-from armi.reactor import blueprints
-import os
-import matplotlib.pyplot as plt
-import htmltree
-from htmltree import Table as HtmlTable
+from armi.utils import plotting
+from armi.utils import units
+from armi.utils import iterables
+from armi.cli.reportsEntryPoint import ReportStage
 
 
-def createGeneralReportContent(cs, r, report, blueprint, stage):
-    from armi.cli.reportsEntryPoint import ReportStage
+def insertGeneralReportContent(cs, r, report, blueprint, stage):
 
-    """ 
+    """
     Creates Report content that is not plugin specific. Various things for the Design
     and Comprehensive sections of the report.
 
@@ -30,9 +30,17 @@ def createGeneralReportContent(cs, r, report, blueprint, stage):
 
     if stage == ReportStage.Begin:
         comprehensiveBOLContent(cs, r, report)
-        designBOLContent(r, report)
+        insertDesignContent(r, report)
 
-    return report
+
+def insertBlueprintContent(r, cs, report, blueprint):
+
+    makeCoreDesignReport(r.core, cs, report)
+
+    makeCoreAndAssemblyMaps(r, cs, report, blueprint),
+
+    insertBlockDiagrams(cs, blueprint, report, True)
+    makeBlockDesignReport(blueprint, report, cs)
 
 
 def comprehensiveBOLContent(cs, r, report):
@@ -45,19 +53,19 @@ def comprehensiveBOLContent(cs, r, report):
     report: ReportContent
     """
 
-    generateMetaTable(cs, report)
+    insertMetaTable(cs, report)
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
     if first_fuel_block is not None:
         report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA] = newReports.Table(
             "Assembly Area Fractions (of First Fuel Block)",
             header=["Component", "Area (cm<sup>2</sup>)", "Fraction"],
         )
-        setAreaFractionsReport(first_fuel_block, report)
+        insertAreaFractionsReport(first_fuel_block, report)
 
-    settingsData(cs, report)
+    insertSettingsData(cs, report)
 
 
-def designBOLContent(r, report):
+def insertDesignContent(r, report):
     """Adds Beginning of Life content to the Design section of the report.
 
     Parameters
@@ -67,7 +75,7 @@ def designBOLContent(r, report):
 
     """
 
-    report[DESIGN][PIN_ASSEMBLY_DESIGN_SUMMARY] = summarizePinDesign(r.core)
+    report[DESIGN][PIN_ASSEMBLY_DESIGN_SUMMARY] = getPinDesignTable(r.core)
 
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
     if first_fuel_block is not None:
@@ -83,19 +91,214 @@ def designBOLContent(r, report):
             )
 
 
-def blueprintContent(r, cs, report, blueprint):
-    from armi.bookkeeping.report import reportingUtils
+def makeBlockDesignReport(blueprint, report, cs):
+    from armi.reactor.components import component
+    from armi.bookkeeping import newReports
+    from armi.bookkeeping import newReportUtils
 
-    reportingUtils.makeCoreDesignReport2(r.core, cs, report)
-    report[DESIGN][CORE_MAP] = newReports.Image(
-        "Map of the Core at BOL",
-        makeCoreAndAssemblyMaps(r, cs, report, blueprint),
+    r"""Summarize the block designs from the loading file
+
+    Parameters
+    ----------
+
+    blueprint : Blueprint
+    report: ReportContent
+    cs: Case Settings
+
+    """
+    report[newReportUtils.DESIGN]["Block Summaries"] = newReports.Section(
+        "Block Summaries"
     )
-    reportBlockDiagrams(cs, blueprint, report, True)
-    reportingUtils.makeBlockDesignReport2(blueprint, report, cs)
+
+    for bDesign in blueprint.blockDesigns:
+        loadingFileTable = newReports.Table(
+            "Summary Of Block: {}".format(bDesign.name), "block contents"
+        )
+        loadingFileTable.header = ["", "Input Parameter"]
+        constructedBlock = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
+        loadingFileTable.addRow(["Number of Components", len(bDesign)])
+        lst = [i for i in range(len(bDesign))]
+        for i, cDesign, c in zip(lst, bDesign, constructedBlock):
+            cType = cDesign.name
+            componentSplitter = (i + 1) * " " + "\n"
+            loadingFileTable.addRow([componentSplitter, ""])
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Shape"),
+                    "{} {}".format(cDesign.shape, ""),
+                ]
+            )
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Material"),
+                    "{} {}".format(cDesign.material, ""),
+                ]
+            )
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Hot Temperature"),
+                    "{} {}".format(cDesign.Thot, ""),
+                ]
+            )
+            loadingFileTable.addRow(
+                [
+                    "{} {}".format(cType, "Cold Temperature"),
+                    "{} {}".format(cDesign.Tinput, ""),
+                ]
+            )
+            for pd in c.pDefs:
+                if pd.name in c.DIMENSION_NAMES:
+                    value = c.getDimension(pd.name, cold=True)
+                    unit = ""
+                    if pd.units is not None:
+                        unit = pd.units
+                    if value is not None:
+                        loadingFileTable.addRow(
+                            [
+                                "{} {}".format(cType, pd.name),
+                                "{} {}".format(value, unit),
+                            ]
+                        )
+        loadingFileTable.title = "Summary of Block: {}".format(bDesign.name)
+        report[newReportUtils.DESIGN]["Block Summaries"].addChildElement(
+            loadingFileTable, loadingFileTable.title
+        )
 
 
-def getEndOfLifeContent(r, report):
+def makeCoreDesignReport(core, cs, report):
+    r"""Builds report to summarize core design inputs
+
+    Parameters
+    ----------
+    core:  armi.reactor.reactors.Core
+    cs: armi.settings.caseSettings.Settings
+    """
+    from armi.bookkeeping import newReports
+
+    coreDesignTable = newReports.Table("Core Report Table")
+    coreDesignTable.header = ["", "Input Parameter"]
+    report["Design"]["Core Design Table"] = coreDesignTable
+
+    _setGeneralCoreDesignData(cs, coreDesignTable)
+
+    _setGeneralCoreParametersData(core, cs, coreDesignTable)
+
+    _setGeneralSimulationData(core, cs, coreDesignTable)
+
+
+def _setGeneralCoreDesignData(cs, coreDesignTable):
+    coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
+    coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
+    coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
+    coreDesignTable.addRow(["Loading File", "{}".format(cs["loadingFile"])])
+    coreDesignTable.addRow(
+        ["Fuel Shuffling Logic File", "{}".format(cs["shuffleLogic"])]
+    )
+    coreDesignTable.addRow(["Reactor State Loading", "{}".format(cs["loadStyle"])])
+    if cs["loadStyle"] == "fromDB":
+        coreDesignTable.addRow(["Database File", "{}".format(cs["reloadDBName"])])
+        coreDesignTable.addRow(["Starting Cycle", "{}".format(cs["startCycle"])])
+        coreDesignTable.addRow(["Starting Node", "{}".format(cs["startNode"])])
+
+
+def _setGeneralCoreParametersData(core, cs, coreDesignTable):
+    """Sets the general Core Parameter Data
+
+    Parameters
+    ----------
+    core: Core
+    cs: Case Settings
+    coreDesignTable: newReports.Table
+        Current state of table to be added to
+    """
+    blocks = core.getBlocks()
+    totalMass = sum(b.getMass() for b in blocks)
+    fissileMass = sum(b.getFissileMass() for b in blocks)
+    heavyMetalMass = sum(b.getHMMass() for b in blocks)
+    totalVolume = sum(b.getVolume() for b in blocks)
+    coreDesignTable.addRow([" ", ""])
+    coreDesignTable.addRow(
+        ["Core Power", "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW)]
+    )
+    coreDesignTable.addRow(
+        ["Base Capacity Factor", "{}".format(cs["availabilityFactor"])],
+    )
+    coreDesignTable.addRow(
+        ["Cycle Length", "{} days".format(cs["cycleLength"])],
+    )
+    coreDesignTable.addRow(
+        ["Burnup Cycles", "{}".format(cs["nCycles"])],
+    )
+    coreDesignTable.addRow(
+        ["Burnup Steps per Cycle", "{}".format(cs["burnSteps"])],
+    )
+    corePowerMult = int(core.powerMultiplier)
+    coreDesignTable.addRow(
+        ["Core Total Volume", "{:.2f} cc".format(totalVolume * corePowerMult)],
+    )
+    coreDesignTable.addRow(
+        [
+            "Core Fissile Mass",
+            "{:.2f} kg".format(fissileMass / units.G_PER_KG * corePowerMult),
+        ],
+    )
+    coreDesignTable.addRow(
+        [
+            "Core Heavy Metal Mass",
+            "{:.2f} kg".format(heavyMetalMass / units.G_PER_KG * corePowerMult),
+        ],
+    )
+    coreDesignTable.addRow(
+        [
+            "Core Total Mass",
+            "{:.2f} kg".format(totalMass / units.G_PER_KG * corePowerMult),
+        ]
+    )
+    coreDesignTable.addRow(
+        ["Number of Assembly Rings", "{}".format(core.getNumRings())]
+    )
+    coreDesignTable.addRow(
+        ["Number of Assemblies", "{}".format(len(core.getAssemblies() * corePowerMult))]
+    )
+    coreDesignTable.addRow(
+        [
+            "Number of Fuel Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.FUEL) * corePowerMult)),
+        ]
+    )
+    coreDesignTable.addRow(
+        [
+            "Number of Control Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.CONTROL) * corePowerMult)),
+        ]
+    )
+    coreDesignTable.addRow(
+        [
+            "Number of Reflector Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.REFLECTOR) * corePowerMult)),
+        ]
+    )
+    coreDesignTable.addRow(
+        [
+            "Number of Shield Assemblies",
+            "{}".format(len(core.getAssemblies(Flags.SHIELD) * corePowerMult)),
+        ]
+    )
+
+
+def _setGeneralSimulationData(core, cs, coreDesignTable):
+    coreDesignTable.addRow(["  ", ""])
+    coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
+    coreDesignTable.addRow(
+        ["Loose Physics Coupling Enabled", "{}".format(bool(cs["looseCoupling"]))]
+    )
+    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
+    coreDesignTable.addRow(
+        ["Neutronics Enabled for", "{}".format(cs["globalFluxActive"])]
+    )
+
+
+def insertEndOfLifeContent(r, report):
     """Generate End of Life Content for the report
 
     Parameters:
@@ -104,8 +307,6 @@ def getEndOfLifeContent(r, report):
         The report to be added to.
 
     """
-    from armi.utils import plotting
-    from armi.utils import units
 
     fName2 = "powerMap.png"
     dataForTotalPower = [a.getMaxParam("power") / units.WATTS_PER_MW for a in r.core]
@@ -128,7 +329,7 @@ def getEndOfLifeContent(r, report):
     )
 
 
-def reportBlockDiagrams(cs, blueprint, report, cold):
+def insertBlockDiagrams(cs, blueprint, report, cold):
     """Adds Block Diagrams to the report
 
     Parameters
@@ -139,7 +340,6 @@ def reportBlockDiagrams(cs, blueprint, report, cold):
     cold: boolean
         True for dimensions at cold temps
     """
-    from armi.utils import plotting
 
     materialList = []
     for bDesign in blueprint.blockDesigns:
@@ -167,7 +367,7 @@ def reportBlockDiagrams(cs, blueprint, report, cold):
             )
 
 
-def generateMetaTable(cs, report):
+def insertMetaTable(cs, report):
     """Generates part of the Settings table
 
     Parameters
@@ -176,7 +376,6 @@ def generateMetaTable(cs, report):
     report: ReportContent
 
     """
-    from armi.bookkeeping import newReports
 
     section = report[COMPREHENSIVE_REPORT]
     tableList = section.get(
@@ -189,7 +388,7 @@ def generateMetaTable(cs, report):
     tableList.addRow(["BU Groups", str(cs["buGroups"])])
 
 
-def settingsData(cs, report):
+def insertSettingsData(cs, report):
     """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run
 
     Parameters
@@ -231,79 +430,13 @@ def settingsData(cs, report):
         report[COMPREHENSIVE_REPORT][BURNUP_GROUPS].addRow([key, str(cs[key])])
 
 
-def tableOfContents(elements):
-    """Creates a Table of Contents at the top of the document that links to later Sections
-
-    Parameters
-    ----------
-    elements: ReportContent
-        Contains sections of subsections that make up the report.
-    """
-
-    main = htmltree.Main(id="toc")
-    main.C.append(htmltree.P("Contents"))
-    outerList = htmltree.Ul()
-    for group in elements:
-        outerList.C.append(
-            htmltree.Ul(
-                htmltree.A(elements[group].title, href="#{}".format(group)),
-                _class="section",
-            )
-        )
-
-        ul = htmltree.Ul(_class="subsection")
-        # Subgroup is either a ReportNode or an Element...
-        for subKey in elements[group].childContents:
-            subgroup = elements[group].childContents[subKey]
-            if type(subgroup) is newReports.Section:
-                sectionHeading = htmltree.Li(
-                    htmltree.A(
-                        subgroup.title, href="#{}".format(str(group) + str(subKey))
-                    ),
-                    _class="nestedSection",
-                )
-                ul.C.append(sectionHeading)
-
-                ul2 = htmltree.Ul(_class="nestedSubsection")
-                for key in subgroup.childContents:
-                    element = subgroup.childContents[key]
-                    if element.title is not None:
-                        ul2.C.append(
-                            htmltree.Li(
-                                htmltree.A(
-                                    element.title,
-                                    href="#{}".format(
-                                        str(group) + str(subKey) + str(key)
-                                    ),
-                                )
-                            )
-                        )
-                    else:
-                        sectionHeading.A.update({"class": "subsection"})
-                ul.C.append(ul2)
-            elif type(subgroup) is not htmltree.HtmlElement:
-                ul.C.append(
-                    htmltree.Li(htmltree.A(subKey, href="#{}".format(group + subKey)))
-                )
-
-        outerList.C.append(ul)
-
-    main.C.append(outerList)
-    return main
-
-
-def summarizePinDesign(core):
+def getPinDesignTable(core):
     """Summarizes Pin and Assembly Design for the input
 
     Parameters
     ----------
     core: Core
     """
-    import collections
-    import numpy
-    from armi import runLog
-    from armi.reactor.flags import Flags
-    from armi.bookkeeping import newReports
 
     designInfo = collections.defaultdict(list)
 
@@ -362,7 +495,7 @@ def summarizePinDesign(core):
         runLog.warning(error)
 
 
-def setAreaFractionsReport(block, report):
+def insertAreaFractionsReport(block, report):
     """Adds to an Assembly Area Fractions table subsection of the Comprehensive Section
     of the report.
 
@@ -372,12 +505,10 @@ def setAreaFractionsReport(block, report):
         report: ReportContent
 
     """
-    from armi.bookkeeping import newReportUtils
-    from armi.bookkeeping import newReports
 
     for c, frac in block.getVolumeFractions():
 
-        report[newReportUtils.COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(
+        report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(
             [c.getName(), "{0:10f}".format(c.getArea()), "{0:10f}".format(frac)]
         )
 
@@ -388,28 +519,28 @@ def setDimensionReport(comp):
     Parameters
     ----------
     comp: Component
+
+    Returns
+    -------
+    newReports.Table that corresponds to the passed componenets dimension report
     """
-    from armi.utils import runLog
-    from armi.reactor.components import component
-    from armi.bookkeeping import newReportUtils
-    from armi.bookkeeping import newReports
 
     REPORT_GROUPS = {
-        "intercoolant": newReportUtils.INTERCOOLANT_DIMS,
-        "bond": newReportUtils.BOND_DIMS,
-        "duct": newReportUtils.DUCT_DIMS,
-        "coolant": newReportUtils.COOLANT_DIMS,
-        "clad": newReportUtils.CLAD_DIMS,
-        "fuel": newReportUtils.FUEL_DIMS,
-        "wire": newReportUtils.WIRE_DIMS,
-        "liner": newReportUtils.LINER_DIMS,
-        "gap": newReportUtils.GAP_DIMS,
+        Flags.INTERCOOLANT: INTERCOOLANT_DIMS,
+        Flags.BOND: BOND_DIMS,
+        Flags.DUCT: DUCT_DIMS,
+        Flags.COOLANT: COOLANT_DIMS,
+        Flags.CLAD: CLAD_DIMS,
+        Flags.FUEL: FUEL_DIMS,
+        Flags.WIRE: WIRE_DIMS,
+        Flags.LINER: LINER_DIMS,
+        Flags.GAP: GAP_DIMS,
     }
     reportGroup = None
     for componentType, componentReport in REPORT_GROUPS.items():
 
-        if componentType in comp.getName():
-            reportGroup = newReports.Table(componentType.capitalize() + " Dimensions")
+        if comp.hasFlags(componentType):
+            reportGroup = newReports.Table(componentReport.capitalize())
             break
     if not reportGroup:
         return "No report group designated for {} component.".format(comp.getName())
@@ -467,40 +598,9 @@ def setDimensionReport(comp):
     return reportGroup
 
 
-def encode64(file_path):
-    """Encodes the file path"""
-    import base64
-
-    """Return the embedded HTML src attribute for an image in base64"""
-    xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
-    if xtn == "pdf":
-        from armi import runLog
-
-        runLog.warning(
-            "'.pdf' images cannot be embedded into this HTML report. {} will not be inserted.".format(
-                file_path
-            )
-        )
-        return "Faulty PDF image inclusion: {} attempted to be inserted but no support is currently offered for such.".format(
-            file_path
-        )
-    with open(file_path, "rb") as img_src:
-        if xtn == "svg":
-            return r"data:image/{};base64,{}".format(
-                xtn + "+xml", base64.b64encode(img_src.read()).decode()
-            )
-
-        return r"data:image/{};base64,{}".format(
-            xtn, base64.b64encode(img_src.read()).decode()
-        )
-
-
 def makeCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-    from armi.utils import iterables
-    from armi.utils import plotting, runLog
-    from armi.bookkeeping import newReports
 
     r"""Create core and assembly design plots
 
@@ -524,16 +624,15 @@ def makeCoreAndAssemblyMaps(
     }
 
     core = r.core
+    imageCaption = "The axial block and enrichment distributions of assemblies in the core at beginning of life. The percentage represents the block enrichment (U-235 or B-10), where as the additional character represents the cross section id of the block. The number of fine-mesh subdivisions are provided on the secondary y-axis."
+
     report[DESIGN]["Assembly Designs"] = newReports.Section("Assembly Designs")
     currentSection = report[DESIGN]["Assembly Designs"]
     for plotNum, assemBatch in enumerate(
         iterables.chunk(list(assemPrototypes), MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
         assemPlotImage = newReports.Image(
-            "The axial block and enrichment distributions of assemblies in the core at "
-            "beginning of life. The percentage represents the block enrichment (U-235 or B-10), where as "
-            "the additional character represents the cross section id of the block. "
-            "The number of fine-mesh subdivisions are provided on the secondary y-axis.",
+            imageCaption,
             os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png"),
         )
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
@@ -583,8 +682,9 @@ def makeCoreAndAssemblyMaps(
     )
 
     plotting.close()
-
-    return os.path.abspath(fName)
+    report[DESIGN][CORE_MAP] = newReports.Image(
+        "Map of the Core at BOL", os.path.abspath(fName)
+    )
 
 
 """Sections Constants"""

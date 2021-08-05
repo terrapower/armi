@@ -1,14 +1,10 @@
 from enum import Enum
 from enum import auto
-import re
-import sys
-import pathlib
-
+import webbrowser
 
 import armi
-from armi import runLog
 from armi.cli import entryPoint
-from armi.reactor.reactors import factory, loadFromCs
+from armi.reactor.reactors import factory
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
@@ -60,10 +56,16 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             type=str,
             default=None,
         )
+
+        self.parser.add_argument(
+            "--view",
+            help="An optional argument to allow automatic pop up of the webpage",
+            action="store_true",
+            default=False,
+        )
         # self.createOptionFromSetting("imperialunits", "-i")
 
     def invoke(self):
-        import os
         from armi import settings
         from armi.reactor import blueprints
         from armi.bookkeeping.newReports import ReportContent
@@ -99,7 +101,9 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                     stage=ReportStage.Begin,
                     blueprint=blueprint,
                 )
-                report.writeReports()
+                site = report.writeReports()
+                if self.args.view:
+                    webbrowser.open(site)
 
         else:
             db = databaseFactory(self.args.h5db, "r")
@@ -155,8 +159,9 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         pluginContent = pm.hook.getReportContents(
                             r=r, cs=cs, report=report, stage=stage, blueprint=blueprint
                         )
-
-                    report.writeReports()
+                    site = report.writeReports()
+                    if self.args.view:
+                        webbrowser.open(site)
 
 
 class ReportStage(Enum):
