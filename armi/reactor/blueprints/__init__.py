@@ -68,18 +68,19 @@ text representations of input and objects in the code.
 
 
 """
-import copy
-import collections
 from collections import OrderedDict
+import collections
+import copy
 import os
 import pathlib
 import traceback
 import typing
 
+from ruamel.yaml import CLoader, RoundTripLoader
+import ordered_set
 import tabulate
 import yamlize
 import yamlize.objects
-import ordered_set
 
 from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
@@ -87,13 +88,13 @@ from armi import plugins
 from armi import runLog
 from armi import settings
 from armi.utils.customExceptions import InputError
-from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
-from armi.scripts import migration
-from armi.utils import textProcessors
+from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
+from armi.scripts import migration
+from armi.utils import textProcessors
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -108,7 +109,7 @@ context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
-def loadFromCs(cs):
+def loadFromCs(cs, roundTrip=False):
     """
     Function to load Blueprints based on supplied ``CaseSettings``.
     """
@@ -120,7 +121,7 @@ def loadFromCs(cs):
             root = pathlib.Path(cs["loadingFile"]).parent.absolute()
             bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
             try:
-                bp = Blueprints.load(bpYaml)
+                bp = Blueprints.load(bpYaml, roundTrip=roundTrip)
             except yamlize.yamlizing_error.YamlizingError as err:
                 if "cross sections" in err.args[0]:
                     runLog.error(
@@ -507,6 +508,11 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 mig = migI(stream=inp)
                 inp = mig.apply()
         return inp
+
+    @classmethod
+    def load(cls, stream, roundTrip=False):
+        loader = RoundTripLoader if roundTrip else CLoader
+        return super().load(stream, Loader=loader)
 
 
 def migrate(bp: Blueprints, cs):

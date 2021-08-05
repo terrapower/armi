@@ -142,7 +142,7 @@ class Case:
         This property allows lazy loading.
         """
         if self._bp is None:
-            self._bp = blueprints.loadFromCs(self.cs)
+            self._bp = blueprints.loadFromCs(self.cs, roundTrip=True)
         return self._bp
 
     @bp.setter
