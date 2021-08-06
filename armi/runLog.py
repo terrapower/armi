@@ -47,11 +47,14 @@ from armi import context
 
 
 # global constants
-_WHITE_SPACE = " " * 6
 _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
     if self.isEnabledFor({1}):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
+_WHITE_SPACE = " " * 6
+SEP = "|"
+STDERR_LOGGER_NAME = "ARMI_ERROR"
+STDOUT_LOGGER_NAME = "ARMI"
 
 
 class _RunLog:
@@ -81,12 +84,17 @@ class _RunLog:
         self._verbosity = logging.INFO
         self.initialErr = None
         self._logLevels = None
-        self.logger = logging.getLogger("NULL")
-        self.logger.addHandler(logging.NullHandler())
-        self.stderrLogger = logging.getLogger("NULL2")
-        self.stderrLogger.addHandler(logging.NullHandler())
+        self._logLevelNumbers = []
+        self.logger = None
+        self.stderrLogger = None
 
+        self._setNullLoggers()
         self._setLogLevels()
+
+    def _setNullLoggers(self):
+        """Helper method to set both of our loggers to Null handlers"""
+        self.logger = NullLogger("NULL")
+        self.stderrLogger = NullLogger("NULL2", isStderr=True)
 
     def _setLogLevels(self):
         """Here we fill the logLevels dict with custom strings that depend on the MPI rank"""
@@ -104,6 +112,7 @@ class _RunLog:
                 ("header", (100, "".format(_rank))),
             ]
         )
+        self._logLevelNumbers = sorted([l[0] for l in self._logLevels.values()])
         global _WHITE_SPACE
         _WHITE_SPACE = " " * len(max([l[1] for l in self._logLevels.values()]))
 
@@ -195,18 +204,24 @@ class _RunLog:
         if isinstance(level, str):
             self._verbosity = self._getLogVerbosityRank(level)
         elif isinstance(level, int):
-            if level < 0 or level > 100:
-                raise KeyError(
-                    "Invalid verbosity rank {}. ".format(level)
-                    + "It needs to be in the range [0, 100]."
-                )
-            self._verbosity = level
+            # The logging module does strange things if you set the log level to something other than DEBUG, INFO, etc
+            # So, if someone tries, we HAVE to set the log level at a canonical value.
+            # Otherwise, nearly all log statements will be silently dropped.
+            if level in self._logLevelNumbers:
+                self._verbosity = level
+            elif level < self._logLevelNumbers[0]:
+                self._verbosity = self._logLevelNumbers[0]
+            else:
+                for i in range(len(self._logLevelNumbers) - 1, -1, -1):
+                    if level >= self._logLevelNumbers[i]:
+                        self._verbosity = self._logLevelNumbers[i]
+                        break
         else:
             raise TypeError("Invalid verbosity rank {}.".format(level))
 
         if self.logger is not None:
-            for h in self.logger.handlers:
-                h.setLevel(self._verbosity)
+            for handler in self.logger.handlers:
+                handler.setLevel(self._verbosity)
             self.logger.setLevel(self._verbosity)
 
     def getVerbosity(self):
@@ -220,14 +235,14 @@ class _RunLog:
 
     def startLog(self, name):
         """Initialize the streams when parallel processing"""
-        self.logger = RunLogger("ARMI", mpiRank=self._mpiRank)
+        self.logger = logging.getLogger(STDOUT_LOGGER_NAME + SEP + str(self._mpiRank))
 
         if self._mpiRank != 0:
             # init stderr intercepting logging
             filePath = os.path.join(
                 "logs", _RunLog.STDERR_NAME.format(name, self._mpiRank)
             )
-            self.stderrLogger = logging.Logger("ARMI_ERROR")
+            self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
             h = logging.FileHandler(filePath)
             fmt = "%(message)s"
             form = logging.Formatter(fmt)
@@ -241,9 +256,11 @@ class _RunLog:
             sys.stderr = self.stderrLogger
 
 
-def close():
+def close(mpiRank=None):
     """End use of the log. Concatenate if needed and restore defaults"""
-    if context.MPI_RANK == 0:
+    mpiRank = context.MPI_RANK if mpiRank is None else mpiRank
+
+    if mpiRank == 0:
         try:
             concatenateLogs()
         except IOError as ee:
@@ -251,12 +268,11 @@ def close():
             error(ee)
     else:
         if LOG.stderrLogger:
-            _ = [h.close() for h in LOG.stderrLogger.logger.handlers]
-            LOG.stderrLogger = None
+            _ = [h.close() for h in LOG.stderrLogger.handlers]
         if LOG.logger:
-            _ = [h.close() for h in LOG.logger.logger.handlers]
-            LOG.logger = None
+            _ = [h.close() for h in LOG.logger.handlers]
 
+    LOG._setNullLoggers()
     LOG._restoreStandardStreams()
 
 
@@ -269,13 +285,10 @@ def concatenateLogs():
     # find all the logging-module-based log files
     stdoutFiles = sorted(glob(os.path.join("logs", "*.stdout")))
     if not len(stdoutFiles):
+        info("No log files found to concatenate.")
         return
 
-    info(
-        "Concatenating {0} log files and standard error streams".format(
-            len(stdoutFiles) + 1
-        )
-    )
+    info("Concatenating {0} log files".format(len(stdoutFiles)))
 
     for stdoutName in stdoutFiles:
         # NOTE: If the log file name format changes, this will need to change.
@@ -289,8 +302,8 @@ def concatenateLogs():
                 rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
                     "-" * 10, rank, "-" * 60
                 )
-                print(rankId)
-                print(data)
+                print(rankId, file=sys.stdout)
+                print(data, file=sys.stdout)
         try:
             os.remove(stdoutName)
         except OSError:
@@ -375,7 +388,7 @@ class DeduplicationFilter(logging.Filter):
     """
 
     def __init__(self, *args, **kwargs):
-        super(DeduplicationFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.singleMessageCounts = {}
         self.singleWarningMessageCounts = {}
 
@@ -416,27 +429,31 @@ class RunLogger(logging.Logger):
     FMT = "%(levelname)s%(message)s"
 
     def __init__(self, *args, **kwargs):
-        # optionally, the user can pass in the MPI_RANK
-        mpiRank = int(kwargs.pop("mpiRank", context.MPI_RANK))
+        # optionally, the user can pass in the MPI_RANK by putting it in the logger name after a separator string
+        if SEP in args[0]:
+            mpiRank = int(args[0].split(SEP)[-1].strip())
+            args = (args[0].split(SEP)[0],)
+        else:
+            mpiRank = context.MPI_RANK
 
-        super(RunLogger, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.allowStopDuplicates()
 
         if mpiRank == 0:
-            h = logging.StreamHandler()
-            h.setLevel(logging.INFO)
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setLevel(logging.INFO)
             self.setLevel(logging.INFO)
         else:
             filePath = os.path.join(
                 "logs", _RunLog.STDOUT_NAME.format(args[0], mpiRank)
             )
-            h = logging.FileHandler(filePath)
-            h.setLevel(logging.WARNING)
+            handler = logging.FileHandler(filePath)
+            handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
 
         form = logging.Formatter(RunLogger.FMT)
-        h.setFormatter(form)
-        self.addHandler(h)
+        handler.setFormatter(form)
+        self.addHandler(handler)
 
     def log(self, msgType, msg, single=False, label=None):
         """
@@ -450,9 +467,7 @@ class RunLogger(logging.Logger):
         msgLevel = msgType if isinstance(msgType, int) else LOG._logLevels[msgType][0]
 
         # Do the actual logging
-        super(RunLogger, self).log(
-            msgLevel, str(msg), extra={"single": single, "label": label}
-        )
+        super().log(msgLevel, str(msg), extra={"single": single, "label": label})
 
     def _log(self, *args, **kwargs):
         """wrapper around the standard library Logger._log() method
@@ -474,7 +489,7 @@ class RunLogger(logging.Logger):
             kwargs["extra"]["single"] = single
             kwargs["extra"]["label"] = label
 
-        super(RunLogger, self)._log(*args, **kwargs)
+        super()._log(*args, **kwargs)
 
     def allowStopDuplicates(self):
         """helper method to allow us to safely add the deduplication filter at any time"""
@@ -526,6 +541,19 @@ class RunLogger(logging.Logger):
     def setVerbosity(self, intLevel):
         """A helper method to try to partially support the local, historical method of the same name"""
         self.setLevel(intLevel)
+
+
+class NullLogger(RunLogger):
+    def __init__(self, name, isStderr=False):
+        super().__init__(name)
+        if isStderr:
+            self.handlers = [logging.StreamHandler(sys.stderr)]
+        else:
+            self.handlers = [logging.StreamHandler(sys.stdout)]
+
+    def addHandler(self, *args, **kwargs):
+        """ensure this STAYS a null logger"""
+        pass
 
 
 # Setting the default logging class to be ours
