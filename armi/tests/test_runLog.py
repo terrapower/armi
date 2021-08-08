@@ -39,8 +39,13 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(verbosityRank, runLog.getVerbosity())
         self.assertEqual(verbosityRank, logging.ERROR)
 
-    def test_invalidSetVerbosityByRank(self):
-        """Test that the log verbosity setting fails if the integer is invalid."""
+    def test_verbosityOutOfRange(self):
+        """Test that the log verbosity setting resets to a canonical value when it is out of range"""
+        runLog.setVerbosity(-50)
+        self.assertEqual(
+            runLog.LOG.logger.level, min([v[0] for v in runLog.LOG._logLevels.values()])
+        )
+
         runLog.setVerbosity(5000)
         self.assertEqual(
             runLog.LOG.logger.level, max([v[0] for v in runLog.LOG._logLevels.values()])
@@ -155,17 +160,29 @@ class TestRunLog(unittest.TestCase):
             runLog.debug("invisible")
             self.assertEqual("", mock._outputStream)
 
-            # if we use setVerbosity() to change the log level, it should work
+            # setVerbosity() to WARNING, and verify it is working
             runLog.LOG.setVerbosity(logging.WARNING)
-
             runLog.info("still invisible")
             self.assertEqual("", mock._outputStream)
-
             runLog.warning("visible")
             self.assertIn("visible", mock._outputStream)
+            mock._outputStream = ""
+
+            # setVerbosity() to DEBUG, and verify it is working
+            runLog.LOG.setVerbosity(logging.DEBUG)
+            runLog.debug("Visible")
+            self.assertIn("Visible", mock._outputStream)
+            mock._outputStream = ""
+
+            # setVerbosity() to ERROR, and verify it is working
+            runLog.LOG.setVerbosity(logging.ERROR)
+            runLog.warning("Still Invisible")
+            self.assertEqual("", mock._outputStream)
+            runLog.error("Visible!")
+            self.assertIn("Visible!", mock._outputStream)
 
             # we shouldn't be able to setVerbosity() to a non-canonical value (logging module defense)
-            self.assertEqual(runLog.LOG.getVerbosity(), logging.WARNING)
+            self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)
             runLog.LOG.setVerbosity(logging.WARNING + 1)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.WARNING)
 

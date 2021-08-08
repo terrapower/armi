@@ -388,7 +388,7 @@ class DeduplicationFilter(logging.Filter):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        logging.Filter.__init__(self, *args, **kwargs)
         self.singleMessageCounts = {}
         self.singleWarningMessageCounts = {}
 
@@ -436,7 +436,7 @@ class RunLogger(logging.Logger):
         else:
             mpiRank = context.MPI_RANK
 
-        super().__init__(*args, **kwargs)
+        logging.Logger.__init__(self, *args, **kwargs)
         self.allowStopDuplicates()
 
         if mpiRank == 0:
@@ -467,7 +467,9 @@ class RunLogger(logging.Logger):
         msgLevel = msgType if isinstance(msgType, int) else LOG._logLevels[msgType][0]
 
         # Do the actual logging
-        super().log(msgLevel, str(msg), extra={"single": single, "label": label})
+        logging.Logger.log(
+            self, msgLevel, str(msg), extra={"single": single, "label": label}
+        )
 
     def _log(self, *args, **kwargs):
         """wrapper around the standard library Logger._log() method
@@ -489,7 +491,7 @@ class RunLogger(logging.Logger):
             kwargs["extra"]["single"] = single
             kwargs["extra"]["label"] = label
 
-        super()._log(*args, **kwargs)
+        logging.Logger._log(self, *args, **kwargs)
 
     def allowStopDuplicates(self):
         """helper method to allow us to safely add the deduplication filter at any time"""
@@ -545,7 +547,7 @@ class RunLogger(logging.Logger):
 
 class NullLogger(RunLogger):
     def __init__(self, name, isStderr=False):
-        super().__init__(name)
+        RunLogger.__init__(self, name)
         if isStderr:
             self.handlers = [logging.StreamHandler(sys.stderr)]
         else:
