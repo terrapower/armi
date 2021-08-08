@@ -23,18 +23,18 @@ from armi.tests import mockRunLogs
 class TestRunLog(unittest.TestCase):
     def test_setVerbosityFromInteger(self):
         """Test that the log verbosity can be set with an integer."""
-        log = runLog._RunLog(1)  # pylint: disable=bare-except
+        log = runLog._RunLog(1)  # pylint: disable=protected-access
         expectedStrVerbosity = "debug"
-        verbosityRank = log._getLogVerbosityRank(expectedStrVerbosity)
+        verbosityRank = log.getLogVerbosityRank(expectedStrVerbosity)
         runLog.setVerbosity(verbosityRank)
         self.assertEqual(verbosityRank, runLog.getVerbosity())
         self.assertEqual(verbosityRank, logging.DEBUG)
 
     def test_setVerbosityFromString(self):
         """Test that the log verbosity can be set with a string."""
-        log = runLog._RunLog(1)  # pylint: disable=bare-except
+        log = runLog._RunLog(1)  # pylint: disable=protected-access
         expectedStrVerbosity = "error"
-        verbosityRank = log._getLogVerbosityRank(expectedStrVerbosity)
+        verbosityRank = log.getLogVerbosityRank(expectedStrVerbosity)
         runLog.setVerbosity(expectedStrVerbosity)
         self.assertEqual(verbosityRank, runLog.getVerbosity())
         self.assertEqual(verbosityRank, logging.ERROR)
@@ -154,32 +154,38 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi")
-            self.assertIn("hi", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi", mock._outputStream)  # pylint: disable=protected-access
+            mock._outputStream = ""  # pylint: disable=protected-access
 
             runLog.debug("invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock._outputStream)  # pylint: disable=protected-access
 
             # setVerbosity() to WARNING, and verify it is working
             runLog.LOG.setVerbosity(logging.WARNING)
             runLog.info("still invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock._outputStream)  # pylint: disable=protected-access
             runLog.warning("visible")
-            self.assertIn("visible", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn(
+                "visible", mock._outputStream
+            )  # pylint: disable=protected-access
+            mock._outputStream = ""  # pylint: disable=protected-access
 
             # setVerbosity() to DEBUG, and verify it is working
             runLog.LOG.setVerbosity(logging.DEBUG)
             runLog.debug("Visible")
-            self.assertIn("Visible", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn(
+                "Visible", mock._outputStream
+            )  # pylint: disable=protected-access
+            mock._outputStream = ""  # pylint: disable=protected-access
 
             # setVerbosity() to ERROR, and verify it is working
             runLog.LOG.setVerbosity(logging.ERROR)
             runLog.warning("Still Invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock._outputStream)  # pylint: disable=protected-access
             runLog.error("Visible!")
-            self.assertIn("Visible!", mock._outputStream)
+            self.assertIn(
+                "Visible!", mock._outputStream
+            )  # pylint: disable=protected-access
 
             # we shouldn't be able to setVerbosity() to a non-canonical value (logging module defense)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)

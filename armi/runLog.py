@@ -41,7 +41,6 @@ import logging
 import operator
 import os
 import sys
-import time
 
 from armi import context
 
@@ -171,7 +170,7 @@ class _RunLog:
         """Summarize all warnings for the run."""
         self.logger.warningReport()
 
-    def _getLogVerbosityRank(self, level):
+    def getLogVerbosityRank(self, level):
         """Return integer verbosity rank given the string verbosity name."""
         try:
             return self._logLevels[level][0]
@@ -202,7 +201,7 @@ class _RunLog:
 
         """
         if isinstance(level, str):
-            self._verbosity = self._getLogVerbosityRank(level)
+            self._verbosity = self.getLogVerbosityRank(level)
         elif isinstance(level, int):
             # The logging module does strange things if you set the log level to something other than DEBUG, INFO, etc
             # So, if someone tries, we HAVE to set the log level at a canonical value.

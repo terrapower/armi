@@ -16,7 +16,6 @@ testing for reactors.py
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
-import logging
 import os
 import unittest
 
