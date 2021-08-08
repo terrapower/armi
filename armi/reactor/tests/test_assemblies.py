@@ -564,10 +564,10 @@ class Assembly_TestCase(unittest.TestCase):
             ref = params[param]
             self.assertEqual(cur, ref)
 
-    def _setup_blueprints(self):
+    def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            self.cs["loadingFile"] = "refSmallReactor.yaml"
+            self.cs["loadingFile"] = filename
             with open(self.cs["loadingFile"], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
                     y, pathlib.Path(self.cs.inputDirectory)
@@ -1141,38 +1141,23 @@ class Assembly_TestCase(unittest.TestCase):
         """
         Test the volume of a pin in the assembly's plenum.
         """
-        assembly = assemblies.Assembly("dummy")
-        self.assertEqual(0.0, assembly.getPinPlenumVolumeInCubicMeters())
+        pinPlenumVolume = 5.951978000285659e-05
 
-        pinPlenumVolume = 7.853981633974482e-06
-        testAssemblies = buildTestAssemblies()
-        plenumBlock = makeTestAssembly(
-            1, 2, grids.CartesianGrid.fromRectangle(2.0, 2.0)
-        )
-        plenumBlock.setType("plenum", Flags.PLENUM)
-        self.Assembly.setBlockMesh([10.0, 20.0, 30.0], conserveMassFlag="auto")
-        plenumBlock.append(testAssemblies[0])
-        self.Assembly.append(plenumBlock)
-
-        self.assertEqual(
-            pinPlenumVolume, self.Assembly.getPinPlenumVolumeInCubicMeters()
-        )
+        self._setup_blueprints("refSmallReactorBase.yaml")
+        assembly = list(self.r.blueprints.assemblies.values())[0]
+        self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 
     def test_averagePlenumTemperature(self):
         """
         Test an assembly's average plenum temperature with a single block outlet.
         """
         averagePlenumTemp = 42.0
-        tempParam = (
-            assemblies.assemblyParameters.getAssemblyParameterDefinitions().__getitem__(
-                "THcoolantOutletT"
-            )
-        )
         plenumBlock = makeTestAssembly(
             1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0)
         )
+
         plenumBlock.setType("plenum", Flags.PLENUM)
-        plenumBlock.p[tempParam.name] = averagePlenumTemp
+        plenumBlock.p.THcoolantOutletT = averagePlenumTemp
         self.Assembly.setBlockMesh([10.0, 20.0, 30.0], conserveMassFlag="auto")
         self.Assembly.append(plenumBlock)
 
