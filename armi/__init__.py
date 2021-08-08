@@ -322,6 +322,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     _app = app
 
     if _liveInterpreter():
+        runLog.LOG.startLog(name=f"interactive-{app.name}")
         cli.splash()
 
     pm = app.pluginManager
