@@ -148,16 +148,3 @@ class NonexistentSettingsFileError(SettingException):
         SettingException.__init__(
             self, "Attempted to load settings file, cannot locate file: {}".format(path)
         )
-
-
-# ---------------------------------------------------
-
-
-@important
-def general_submittedJob(job):
-    return "Submitted {} ... {}".format(job, job.get_state())
-
-
-@important
-def general_waitingForJob(job):
-    return "Waiting for {} to complete.".format(job)
