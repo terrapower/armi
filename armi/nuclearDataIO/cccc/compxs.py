@@ -82,7 +82,6 @@ import numpy
 from armi import runLog
 from armi.nuclearDataIO import cccc
 from armi.utils.properties import unlockImmutableProperties, lockImmutableProperties
-from armi.localization.exceptions import CompxsError
 from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.nuclearDataIO.nuclearFileMetadata import (
     RegionXSMetadata,
@@ -244,7 +243,7 @@ class _CompxsIO(cccc.Stream):
                 regionIO.rwRegionData()
             self._rw5DRecord()
         except:
-            raise CompxsError(
+            raise OSError(
                 "Failed to {} {} \n\n\n{}".format(
                     "read" if self._isReading else "write", self, format_exc()
                 )
@@ -639,6 +638,6 @@ class CompxsRegion:
     def merge(self, other):
         """Merge attributes of two homogenized Regions."""
         self.metadata = self.metadata.merge(
-            other.metadata, self, other, "COMPXS", CompxsError
+            other.metadata, self, other, "COMPXS", OSError
         )
         self.macros.merge(other.macros)

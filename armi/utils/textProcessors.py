@@ -22,12 +22,32 @@ from typing import List, Tuple, Union, Optional, TextIO
 
 from armi import runLog
 from armi.utils import directoryChangers
-from armi.localization import strings
 
 
 _INCLUDE_CTOR = False
 _INCLUDE_RE = re.compile(r"^([^#]*\s+)?!include\s+(.*)\n?$")
 _INDENT_RE = re.compile(r"^[\s\-\?:]*([^\s\-\?:].*)?$")
+
+# String constants
+SCIENTIFIC_PATTERN = r"[+-]?\d*\.\d+[eEdD][+-]\d+"
+"""
+Matches:
+* code:` 1.23e10`
+* code:`-1.23Ee10`
+* code:`+1.23d10`
+* code:`  .23D10`
+* code:` 1.23e-10`
+* code:` 1.23e+1`
+"""
+
+FLOATING_PATTERN = r"[+-]?\d+\.*\d*"
+"""
+Matches 1, 100, 1.0, -1.2, +12.234
+"""
+
+DECIMAL_PATTERN = r"[+-]?\d*\.\d+"
+"""matches .1, 1.213423, -23.2342, +.023
+"""
 
 
 class FileMark:
@@ -510,9 +530,9 @@ class TextProcessor:
 
     """
 
-    scipat = strings.SCIENTIFIC_PATTERN
-    number = strings.FLOATING_PATTERN
-    decimal = strings.DECIMAL_PATTERN
+    scipat = SCIENTIFIC_PATTERN
+    number = FLOATING_PATTERN
+    decimal = DECIMAL_PATTERN
 
     def __init__(self, fname, highMem=False):
         self.eChecking = False

@@ -31,7 +31,7 @@ The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
 See Also
 --------
 armi.nucDirectory.nuclideBases._addNuclideToIndices : builds this object
-    
+
 Examples
 --------
 >>> nuclideBases.byName['U235']
@@ -103,7 +103,6 @@ import yaml
 import armi
 from armi.nucDirectory import elements
 from armi.nucDirectory import transmutations
-from armi.localization import errors
 from armi import runLog
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
@@ -168,8 +167,8 @@ def fromName(name):
     r"""Get a nuclide from its name."""
     matches = [nn for nn in instances if nn.name == name]
     if len(matches) != 1:
-        raise errors.nuclides_TooManyOrTooFew_number_MatchesForNuclide_name(
-            len(matches), name
+        raise Exception(
+            "Too many or too few ({}) matches for {}" "".format(len(matches), name)
         )
     return matches[0]
 
@@ -248,7 +247,11 @@ def single(predicate):
     """
     matches = [nuc for nuc in instances if predicate(nuc)]
     if len(matches) != 1:
-        raise errors.general_single_TooManyOrTooFewMatchesFor(matches)
+        raise IndexError(
+            "Expected single match, but got {} matches:\n  {}".format(
+                len(matches), "\n  ".join(str(mo) for mo in matches)
+            )
+        )
     return matches[0]
 
 

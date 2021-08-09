@@ -27,7 +27,6 @@ from armi.materials import material
 from armi.materials import custom
 from armi import runLog
 from armi.bookkeeping import report
-from armi.localization import exceptions
 from armi.reactor import composites
 from armi.reactor import parameters
 from armi.reactor.components import componentParameters
@@ -295,7 +294,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                     linkedKey = match.group(2)
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
                 except:
-                    raise exceptions.ComponentLinkingFailure(
+                    raise KeyError(
                         "Bad component link `{}` defined as `{}`".format(dimName, value)
                     )
 
@@ -477,7 +476,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                         self, self.material, area
                     )
                 )
-                raise exceptions.NegativeComponentArea(negAreaFailure)
+                raise ArithmeticError(negAreaFailure)
 
     def _checkNegativeVolume(self, volume):
         """Check for negative volume
@@ -497,7 +496,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                     self, self.material, volume
                 )
             )
-            raise exceptions.NegativeComponentVolume(negVolFailure)
+            raise ArithmeticError(negVolFailure)
 
     def containsVoidMaterial(self):
         """Returns True if component material is void."""

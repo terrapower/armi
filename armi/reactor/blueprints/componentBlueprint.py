@@ -25,7 +25,6 @@ from armi import materials
 from armi.reactor import components
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
-from armi.localization import exceptions
 from armi.nucDirectory import nuclideBases
 
 
@@ -236,7 +235,7 @@ class ComponentBlueprint(yamlize.Object):
         missing = set(mat.p.massFrac.keys()).difference(nucsInProblem)
 
         if missing:
-            raise exceptions.ConsistencyError(
+            raise ValueError(
                 "The nuclides {} are present in material {} by compositions, but are not "
                 "specified in the `nuclide flags` section of the input file. "
                 "They need to be added, or custom isotopics need to be applied.".format(

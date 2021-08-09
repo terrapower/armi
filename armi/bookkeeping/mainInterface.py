@@ -28,7 +28,7 @@ from armi import runLog
 from armi import utils
 from armi.utils import pathTools
 from armi import operators
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.bookkeeping.db.database3 import Database3
 
 

@@ -86,7 +86,7 @@ from armi import getPluginManager, getPluginManagerOrFail
 from armi import plugins
 from armi import runLog
 from armi import settings
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
 from armi.scripts import migration

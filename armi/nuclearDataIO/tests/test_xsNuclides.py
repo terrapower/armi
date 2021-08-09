@@ -22,7 +22,6 @@ from armi.nucDirectory import nuclideBases
 from armi.tests import mockRunLogs
 from armi import nuclearDataIO
 from armi.tests import ISOAA_PATH
-from armi.localization import exceptions
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import isotxs
 
@@ -35,7 +34,7 @@ class NuclideTests(unittest.TestCase):
     def test_nuclide_createFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
         nuc.isotxsMetadata["nuclideId"] = "BACN87"
-        with self.assertRaises(exceptions.IsotxsError):
+        with self.assertRaises(OSError):
             nuc.updateBaseNuclide()
 
     def test_nuclide_creatingNuclidesDoesNotMessWithUnderlyingNuclideDict(self):

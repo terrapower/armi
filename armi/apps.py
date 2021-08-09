@@ -233,7 +233,7 @@ class App:
                       |         /_/   \_\ |_| \_\  |_|  |_|  |___|        |
                       |         Advanced  Reactor  Modeling Interface     |
                        ---------------------------------------------------
-                                      Version {0:10s}
+                                            Version {0:10s}
 """.format(
             meta.__version__
         )

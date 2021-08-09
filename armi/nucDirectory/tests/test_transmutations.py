@@ -20,7 +20,6 @@ import string
 import random
 
 from armi.nucDirectory import transmutations
-from armi.localization import exceptions
 
 
 def randomString(length):
@@ -51,7 +50,7 @@ class TransmutationTests(unittest.TestCase):
             if rxn in transmutations.TRANSMUTATION_TYPES:
                 self.assertIsNotNone(transmutations.Transmutation(None, data))
             else:
-                with self.assertRaises(exceptions.InvalidSelectionError):
+                with self.assertRaises(KeyError):
                     errorCount += 1
                     transmutations.Transmutation(None, data)
         self.assertGreater(errorCount, 2)
@@ -73,7 +72,7 @@ class DecayModeTests(unittest.TestCase):
             if rxn in transmutations.DECAY_MODES:
                 self.assertIsNotNone(transmutations.DecayMode(None, data))
             else:
-                with self.assertRaises(exceptions.InvalidSelectionError):
+                with self.assertRaises(KeyError):
                     transmutations.DecayMode(None, data)
 
 

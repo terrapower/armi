@@ -25,7 +25,6 @@ from six.moves import cPickle
 
 from armi import settings
 from armi.tests import mockRunLogs
-from armi.localization import exceptions
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO.cccc import pmatrx
@@ -240,7 +239,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         try:
             with mockRunLogs.BufferLog() as log:
                 lib = xsLibraries.IsotxsLibrary()
-                with self.assertRaises(exceptions.IsotxsError):
+                with self.assertRaises(OSError):
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
                 self.assertTrue(dummyFileName in log.getStdoutValue())
         finally:
@@ -439,13 +438,13 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         raise NotImplementedError()
 
     def test_cannotMergeXSLibWithSameNuclideNames(self):
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libAA.merge(self.libAA)
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
     def test_cannotMergeXSLibxWithDifferentGroupStructure(self):
@@ -506,7 +505,7 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
 
 class Pmatrx_merge_Tests(TestXSlibraryMerging):
     def getErrorType(self):
-        return exceptions.IsotxsError
+        return OSError
 
     def getReadFunc(self):
         return pmatrx.readBinary
@@ -540,7 +539,7 @@ class Pmatrx_merge_Tests(TestXSlibraryMerging):
 
 class Isotxs_merge_Tests(TestXSlibraryMerging):
     def getErrorType(self):
-        return exceptions.PmatrxError
+        return OSError
 
     def getReadFunc(self):
         return isotxs.readBinary
@@ -563,7 +562,7 @@ class Isotxs_merge_Tests(TestXSlibraryMerging):
 
 class Gamiso_merge_Tests(TestXSlibraryMerging):
     def getErrorType(self):
-        return exceptions.GamisoError
+        return OSError
 
     def getReadFunc(self):
         return gamiso.readBinary

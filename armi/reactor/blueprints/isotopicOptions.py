@@ -23,12 +23,11 @@ import yamlize
 from armi.utils import units
 from armi import materials
 from armi import runLog
-from armi.localization import exceptions
 from armi.nucDirectory import elements
 from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.utils import densityTools
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
@@ -268,7 +267,7 @@ class CustomIsotopic(yamlize.Map):
 
         elif self.inputFormat == "number densities":
             if self._density is not None:
-                raise exceptions.InputError(
+                raise InputError(
                     "Custom isotopic `{}` is over-specified. It was provided as number "
                     "densities, and but density ({}) was also provided. Is the input format "
                     "correct?".format(self.name, self.density)
@@ -324,7 +323,7 @@ class CustomIsotopic(yamlize.Map):
                     # include all natural isotopes with None flag
                     elementsToExpand.append((element, None))
                 else:
-                    raise exceptions.InputError(
+                    raise InputError(
                         "Unrecognized nuclide/isotope/element in input: {}".format(
                             nucName
                         )

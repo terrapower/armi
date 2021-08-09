@@ -30,7 +30,6 @@ from armi.reactor import reactors
 from armi.reactor.converters import uniformMesh
 from armi.reactor.converters import geometryConverters
 from armi.reactor import assemblies
-from armi.localization import exceptions
 from armi.reactor.flags import Flags
 from armi.physics import neutronics
 from armi.physics import executers
@@ -400,7 +399,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         _undoGeometryTransformations
         """
         if any(self.geomConverters):
-            raise exceptions.StateError(
+            raise RuntimeError(
                 "The reactor has been transformed, but not restored to the original.\n"
                 + "Geometry converter is set to {} \n.".format(self.geomConverters)
                 + "This is a programming error and requires further investigation."

@@ -23,7 +23,7 @@ These are generally managed by the
 """
 import re
 
-from armi.utils import strings
+from armi.utils.textProcessors import SCIENTIFIC_PATTERN
 from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.utils import densityTools
@@ -493,9 +493,7 @@ class FissionProductDefinitionFile:
     The path to this file name is specified by the
     """
 
-    fpPat = re.compile(
-        r"13\s+([A-Z]+\d+)\s+(......)\s+(" + strings.SCIENTIFIC_PATTERN + ")"
-    )
+    fpPat = re.compile(r"13\s+([A-Z]+\d+)\s+(......)\s+(" + SCIENTIFIC_PATTERN + ")")
 
     def __init__(self, stream):
         self.stream = stream

@@ -30,16 +30,21 @@ from armi import runLog
 from armi import interfaces
 from armi.physics import neutronics
 from armi.reactor import components
-from armi.localization import warnings
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils.customExceptions import warn_when_root
 
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
 _NUM_DIGITS_ROUND_TEMPERATURE = 3
 # index of the temperature in the nuclide dictionary: {nuc: (density, temp, category)}
 _NUCLIDE_VALUES_TEMPERATURE_INDEX = 1
+
+
+@warn_when_root
+def NuclideNameFoundMultipleTimes(nuclideName):
+    return "Nuclide `{}' was found multiple times.".format(nuclideName)
 
 
 class LatticePhysicsWriter(interfaces.InputWriter):
@@ -229,7 +234,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
             density = max(dens, self.minimumNuclideDensity)
             if nuc in nucDensities:
-                warnings.LatticePhysicsWriter_Nuclide_name_FoundMultipleTimes(nucName)
+                NuclideNameFoundMultipleTimes(nucName)
                 dens, nucTemperatureInC, nucCategory = nucDensities[nuc]
                 density = dens + density
                 nucDensities[nuc] = (density, nucTemperatureInC, nucCategory)

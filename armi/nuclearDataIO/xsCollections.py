@@ -41,7 +41,6 @@ import numpy
 from scipy import sparse
 
 from armi import runLog
-from armi.localization import exceptions
 from armi.utils import properties
 from armi.utils import units
 
@@ -350,15 +349,11 @@ class XSCollection:
             overlappingAttrs &= set(
                 k for k, v in other.__dict__.items() if v is not None and k != "source"
             )
-            raise exceptions.XSLibraryError(
+            raise AttributeError(
                 "Cannot merge {} and {}.\n Cross sections overlap in "
                 "attributes: {}.".format(
                     self.source, other.source, ", ".join(overlappingAttrs)
                 )
-            )
-            raise exceptions.XSLibraryError(
-                "Cannot merge from and from \n Cross sections overlap in "
-                "attributes:."
             )
 
 

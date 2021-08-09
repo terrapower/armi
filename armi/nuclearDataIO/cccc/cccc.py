@@ -25,7 +25,6 @@ from typing import List
 
 import numpy
 
-from armi.localization import exceptions
 from armi import runLog
 
 from .. import nuclearFileMetadata
@@ -98,7 +97,7 @@ class IORecord:
         except Exception as ee:
             runLog.error("Failed to close CCCC record.")
             runLog.error(ee)
-            raise exceptions.CcccRecordError(
+            raise BufferError(
                 "Failed to close record, {}.\n{}\n"
                 "It is possible too much data was read from the "
                 "record, and the end of the stream was reached.\n"
@@ -307,7 +306,7 @@ class BinaryRecordReader(IORecord):
         numBytes2 = self.rwInt(None)
         self.byteCount -= 4
         if numBytes2 != self.numBytes:
-            raise exceptions.CcccRecordError(
+            raise BufferError(
                 "Number of bytes specified at end the of record, {}, "
                 "does not match the originally specified number, {}.\n"
                 "Read {} bytes.".format(numBytes2, self.numBytes, self.byteCount)
@@ -537,8 +536,8 @@ class Stream:
         self._stream = None
 
         if fileMode not in self._fileModes:
-            raise exceptions.InvalidSelectionError(
-                "fileMode", fileMode, self._fileModes.keys()
+            raise KeyError(
+                "{} not in {}".format("fileMode", list(self._fileModes.keys()))
             )
 
     def __deepcopy__(self, memo):

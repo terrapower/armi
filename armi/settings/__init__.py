@@ -29,13 +29,12 @@ from typing import List, Union
 from ruamel import yaml
 
 from armi import runLog
-from armi.localization import exceptions
 from armi.settings.caseSettings import Settings
-from armi.utils import pathTools
-
 from armi.settings.setting import Setting
 from armi.settings.setting import Option
 from armi.settings.setting import Default
+from armi.utils import pathTools
+from armi.utils.customExceptions import InvalidSettingsFileError
 
 
 NOT_ENABLED = ""  # An empty setting value implies that the feature
@@ -111,7 +110,7 @@ def recursivelyLoadSettingsFiles(
             cs.loadFromInputFile(possibleSettingsFile, handleInvalids=handleInvalids)
             csFiles.append(cs)
             runLog.extra("loaded {}".format(possibleSettingsFile))
-        except exceptions.InvalidSettingsFileError as ee:
+        except InvalidSettingsFileError as ee:
             runLog.info("skipping {}\n    {}".format(possibleSettingsFile, ee))
         except yaml.composer.ComposerError as ee:
             runLog.info(

@@ -32,11 +32,15 @@ import ruamel.yaml.comments
 from armi import runLog
 from armi.meta import __version__ as version
 from armi import context
-from armi.localization import exceptions
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
+from armi.utils.customExceptions import (
+    InvalidSettingsFileError,
+    NonexistentSetting,
+    SettingException,
+)
 
 
 class Roots:
@@ -74,7 +78,7 @@ class SettingRenamer:
                     self._expiredRenames.add((oldName, name, expiry))
                 else:
                     if oldName in self._activeRenames:
-                        raise exceptions.SettingException(
+                        raise SettingException(
                             "The setting rename from {0}->{1} collides with another "
                             "rename {0}->{2}".format(
                                 oldName, name, self._activeRenames[oldName]
@@ -195,7 +199,7 @@ class SettingsReader:
             try:
                 self.readFromStream(f, handleInvalids, self.format)
             except Exception as ee:
-                raise exceptions.InvalidSettingsFileError(path, str(ee))
+                raise InvalidSettingsFileError(path, str(ee))
 
     def readFromStream(self, stream, handleInvalids=True, fmt=SettingsInputFormat.YAML):
         """Read from a file-like stream."""
@@ -238,9 +242,7 @@ class SettingsReader:
                 customMsg = '\nRoot tag "{}" does not match expected value "{}"'.format(
                     settingRoot.tag, self.rootTag
                 )
-            raise exceptions.InvalidSettingsFileError(
-                self.inputPath, customMsgEnd=customMsg
-            )
+            raise InvalidSettingsFileError(self.inputPath, customMsgEnd=customMsg)
 
         for settingElement in list(settingRoot):
             self._interpretXmlSetting(settingElement)
@@ -261,12 +263,12 @@ class SettingsReader:
         yaml = YAML()
         tree = yaml.load(stream)
         if "settings" not in tree:
-            raise exceptions.InvalidSettingsFileError(
+            raise InvalidSettingsFileError(
                 self.inputPath,
                 "Missing the `settings:` header required in YAML settings",
             )
         if const.ORIFICE_SETTING_ZONE_MAP in tree:
-            raise exceptions.InvalidSettingsFileError(
+            raise InvalidSettingsFileError(
                 self.inputPath, "Appears to be an orifice_settings file"
             )
         caseSettings = tree[Roots.CUSTOM]
@@ -286,11 +288,11 @@ class SettingsReader:
                 "Invalid settings will be ignored. Continue running the case?",
                 "YES_NO",
             )
-        except exceptions.RunLogPromptUnresolvable:
+        except RunLogPromptUnresolvable:
             # proceed with invalid settings (they'll be ignored).
             proceed = True
         if not proceed:
-            raise exceptions.InvalidSettingsStopProcess(self)
+            raise InvalidSettingsStopProcess(self)
         else:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
@@ -298,7 +300,7 @@ class SettingsReader:
         settingName = settingElement.tag
         attributes = settingElement.attrib
         if settingName in self.settingsAlreadyRead:
-            raise exceptions.SettingException(
+            raise SettingException(
                 "The setting {} has been specified more than once in {}. Adjust input."
                 "".format(settingName, self.inputPath)
             )
@@ -324,7 +326,7 @@ class SettingsReader:
                 ]
 
         elif "value" not in attributes:
-            raise exceptions.SettingException(
+            raise SettingException(
                 "No value supplied for the setting {} in {}".format(
                     settingName, self.inputPath
                 )
@@ -579,8 +581,6 @@ class SettingsWriter:
 
 def prompt(statement, question, *options):
     """Prompt the user for some information."""
-    from armi.localization import exceptions
-
     if context.CURRENT_MODE == context.Mode.GUI:
         # avoid hard dependency on wx
         import wx  # pylint: disable=import-error
@@ -600,7 +600,7 @@ def prompt(statement, question, *options):
         response = dlg.ShowModal()
         dlg.Destroy()
         if response == wx.ID_CANCEL:
-            raise exceptions.RunLogPromptCancel("Manual cancellation of GUI prompt")
+            raise RunLogPromptCancel("Manual cancellation of GUI prompt")
         return response in [wx.ID_OK, wx.ID_YES]
 
     elif context.CURRENT_MODE == context.Mode.INTERACTIVE:
@@ -629,13 +629,26 @@ def prompt(statement, question, *options):
             runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))
 
         if response == "CANCEL":
-            raise exceptions.RunLogPromptCancel(
-                "Manual cancellation of interactive prompt"
-            )
+            raise RunLogPromptCancel("Manual cancellation of interactive prompt")
 
         return response in ["YES", "Y", "OK"]
 
     else:
-        raise exceptions.RunLogPromptUnresolvable(
+        raise RunLogPromptUnresolvable(
             "Incorrect CURRENT_MODE for prompting user: {}".format(context.CURRENT_MODE)
         )
+
+
+class RunLogPromptCancel(Exception):
+    """An error that occurs when the user submits a cancel on a runLog prompt which allows for cancellation"""
+
+    pass
+
+
+class RunLogPromptUnresolvable(Exception):
+    """
+    An error that occurs when the current mode enum in armi.__init__ suggests the user cannot be communicated with from
+    the current process.
+    """
+
+    pass
