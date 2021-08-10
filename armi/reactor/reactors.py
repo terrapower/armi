@@ -195,7 +195,6 @@ class Core(composites.Composite):
         # build a spent fuel pool for this reactor
         runLog.debug("Building spent fuel pools")
         self.sfp = assemblyLists.SpentFuelPool("Spent Fuel Pool", self)
-        self.cfp = assemblyLists.ChargedFuelPool("Charged Fuel Pool", self)
         self._lib = None  # placeholder for ISOTXS object
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.
@@ -232,7 +231,6 @@ class Core(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
-        self.cfp.parent = self
         self.sfp.parent = self
         self.regenAssemblyLists()
 
@@ -466,7 +464,6 @@ class Core(composites.Composite):
         assems = set(self)
         for a in assems:
             self.removeAssembly(a, discharge)
-        self.cfp.removeAll()
         self.sfp.removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
@@ -985,9 +982,7 @@ class Core(composites.Composite):
         ## NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
         self.assembliesByName = assymap = {}
         # don't includeAll b/c detailed ones are not ready yet
-        for assem in self.getAssemblies(
-            includeBolAssems=True, includeSFP=True, includeCFP=True
-        ):
+        for assem in self.getAssemblies(includeBolAssems=True, includeSFP=True):
             aName = assem.getName()
             if aName in assymap and assymap[aName] != assem:
                 # dangerous situation that can occur in restart runs where the global assemNum isn't updated.
@@ -1027,7 +1022,6 @@ class Core(composites.Composite):
         sortKey=None,
         includeBolAssems=False,
         includeSFP=False,
-        includeCFP=False,
         includeAll=False,
         zones=None,
         exact=False,
@@ -1057,9 +1051,6 @@ class Core(composites.Composite):
         includeSFP : bool, optional
             Include assemblies in the SFP
 
-        includeCFP : bool, optional
-            Include Charged fuel pool
-
         includeAll : bool, optional
             Will include ALL assemblies.
 
@@ -1074,7 +1065,7 @@ class Core(composites.Composite):
 
         """
         if includeAll:
-            includeBolAssems = includeSFP = includeCFP = True
+            includeBolAssems = includeSFP = True
 
         assems = []
         if (
@@ -1087,8 +1078,6 @@ class Core(composites.Composite):
 
         if includeSFP:
             assems.extend(self.sfp.getChildren())
-        if includeCFP:
-            assems.extend(self.cfp.getChildren())
 
         if typeSpec:
             assems = [a for a in assems if a.hasFlags(typeSpec, exact=exact)]
@@ -1724,13 +1713,6 @@ class Core(composites.Composite):
                     # therefore breaks the burnup metric.
                     b.adjustUEnrich(enrich)
 
-        # see if there are tracked assemblies and add this to the list if so
-        if self._trackAssems:
-            self.cfp.add(a)
-
-        self.p.numAssembliesFabricated += int(
-            self.powerMultiplier
-        )  # in 1/3 symmetry you're creating 3 assems.
         return a
 
     def saveAllFlux(self, fName="allFlux.txt"):

@@ -160,7 +160,6 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} assemblies".format(attrName, len(attrObj))
                 )
         runLog.important("SFP has {:4d} assemblies".format(len(self.r.core.sfp)))
-        runLog.important("CFP has {:4d} assemblies".format(len(self.r.core.cfp)))
 
     def _checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
         """

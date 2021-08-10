@@ -78,13 +78,12 @@ class Assembly(composites.Composite):
 
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
-    CHARGED_FUEL_POOL = "CFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
     # of fuel management stuff doesn't treat its re-placement into the core as a new
     # move
     DATABASE = "database"
-    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, CHARGED_FUEL_POOL]
+    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
     def __init__(self, typ, assemNum=None):
         """
@@ -123,12 +122,11 @@ class Assembly(composites.Composite):
         As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
         are more permissive in the grid consistency checks to accomodate situations
         where assemblies might be children of the same Core, but not in the same grid as
-        each other (as can be the case in the spent fuel or charge fuel pools). In these
-        situations, the operator returns ``False``.  This behavior may lead to some
-        strange sorting behavior when two or more Assemblies are being compared that do
-        not live in the same grid. It may be beneficial in the future to maintain the
-        more strict behavior of ArmiObject's ``__lt__`` implementation once the SFP/CFP
-        situation is cleared up.
+        each other (as can be the case in the spent fuel pool). In these situations,
+        the operator returns ``False``.  This behavior may lead to some strange sorting
+        behavior when two or more Assemblies are being compared that do not live in the
+        same grid. It may be beneficial in the future to maintain the more strict behavior
+        of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
 
         See also
         --------
@@ -218,8 +216,6 @@ class Assembly(composites.Composite):
             return self.LOAD_QUEUE
         elif isinstance(self.parent, assemblyLists.SpentFuelPool):
             return self.SPENT_FUEL_POOL
-        elif isinstance(self.parent, assemblyLists.ChargedFuelPool):
-            return self.CHARGED_FUEL_POOL
         return self.parent.spatialGrid.getLabel(
             self.spatialLocator.getCompleteIndices()[:2]
         )

@@ -182,4 +182,3 @@ class ReportInterface(interfaces.Interface):
 
         self.r.core.sfp.report()  # spent fuel pool report
         self.r.core.sfp.count()
-        self.r.core.cfp.report()  # charged fuel pool report

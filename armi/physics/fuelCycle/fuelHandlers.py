@@ -94,10 +94,6 @@ class FuelHandlerInterface(interfaces.Interface):
         if self.enabled():
             self.manageFuel(cycle)
 
-        self.r.core.p.numAssembliesInSFP = self.r.core.powerMultiplier * len(
-            self.r.core.sfp
-        )
-
     def interactEOC(self, cycle=None):
         timeYears = self.r.p.time
         # keep track of the EOC time in years.
@@ -105,11 +101,6 @@ class FuelHandlerInterface(interfaces.Interface):
         runLog.extra(
             "There are {} assemblies in the Spent Fuel Pool".format(
                 len(self.r.core.sfp)
-            )
-        )
-        runLog.extra(
-            "There are {} assemblies in the Fresh Fuel Pool".format(
-                len(self.r.core.cfp)
             )
         )
 
