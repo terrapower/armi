@@ -19,10 +19,9 @@ Assembly Lists are core-like objects that store collections of Assemblies. They 
 originally developed to serve as things like spent-fuel pools and the like, where
 spatial location of Assemblies need not be quite as precise.
 
-Presently, the :py:class:`armi.reactor.reactors.Core` constructs a pair of these as
-`self.sfp` and `self.cfp` (charged-fuel pool). We are in the process of removing these
-as instance attributes of the ``Core``, and moving them into sibling systems on the root
-:py:class:`armi.reactor.reactors.Reactor` object.
+Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel pool
+`self.sfp`. We are in the process of removing these as instance attributes of the 
+``Core``, and moving them into sibling systems on the root :py:class:`armi.reactor.reactors.Reactor` object.
 """
 import abc
 import itertools
@@ -220,43 +219,5 @@ class SpentFuelPool(AssemblyList):
         runLog.important(
             "Total full-core fissile inventory of {0} is {1:.4E} MT".format(
                 self, totFis / 1000.0
-            )
-        )
-
-
-class ChargedFuelPool(AssemblyList):
-    """A place to put boosters so you can see how much you added. Can tell you inventory stats, etc."""
-
-    def report(self):
-        title = "{0} Report".format(self.name)
-        runLog.important("-" * len(title))
-        runLog.important(title)
-        runLog.important("-" * len(title))
-        totFis = 0.0
-        runLog.important(
-            "{assembly:15s} {dTime:10s} {cycle:3s} {bu:5s} {fiss:13s} {cum:13s}".format(
-                assembly="Assem. Name",
-                dTime="Charge Time",
-                cycle="Charge cyc",
-                bu="BU",
-                fiss="kg fis (full core)",
-                cum="Cumulative fis (full, MT)",
-            )
-        )
-        for a in self.getChildren():
-            totFis += a.p.chargeFis * a.p.multiplicity / 1000.0
-            runLog.important(
-                "{assembly:15s} {dTime:10f} {cycle:3f} {bu:5.2f} {fiss:13.4f} {cum:13.4f}".format(
-                    assembly=a,
-                    dTime=a.p.chargeTime,
-                    cycle=a.p.chargeCycle,
-                    fiss=a.p.chargeFis,
-                    bu=a.p.chargeBu,
-                    cum=totFis,
-                )
-            )
-        runLog.important(
-            "Total full core fissile inventory of {0} is {1:.4E} MT".format(
-                self, totFis
             )
         )
