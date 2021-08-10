@@ -511,6 +511,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     @classmethod
     def load(cls, stream, roundTrip=False):
+        """This class method is a wrapper around the `yamlize.Object.load()` method.
+
+        The reason for the wrapper is to allow us to default to `Cloader`. Essentially,
+        the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
+        write) access to YAMLs; for that we have the `RoundTripLoader`.
+        """
         loader = RoundTripLoader if roundTrip else CLoader
         return super().load(stream, Loader=loader)
 
@@ -533,7 +539,6 @@ def migrate(bp: Blueprints, cs):
     dedicated migration portion of the code, and not perform the migration so
     implicitly.
     """
-    from armi.reactor import blueprints
     from armi.reactor.blueprints import gridBlueprint
 
     if bp.systemDesigns is None:
