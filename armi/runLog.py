@@ -239,7 +239,7 @@ class _RunLog:
         if self._mpiRank != 0:
             # init stderr intercepting logging
             filePath = os.path.join(
-                "logs", _RunLog.STDERR_NAME.format(name, self._mpiRank)
+                context.LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
             )
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
             h = logging.FileHandler(filePath)
@@ -444,7 +444,7 @@ class RunLogger(logging.Logger):
             self.setLevel(logging.INFO)
         else:
             filePath = os.path.join(
-                "logs", _RunLog.STDOUT_NAME.format(args[0], mpiRank)
+                context.LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
             )
             handler = logging.FileHandler(filePath)
             handler.setLevel(logging.WARNING)

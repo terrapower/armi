@@ -53,7 +53,7 @@ import h5py
 
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
-
+LOG_DIR = os.path.join(os.getcwd(), "logs")
 
 # App name is used when spawning new tasks that should invoke a specific ARMI
 # application. For instance, the framework provides some features to help with
@@ -302,8 +302,12 @@ def disconnectAllHdfDBs():
 OS_SECONDS_TIMEOUT = 5 * 60
 
 
-def createLogDir(mpiRank=1, logDir="logs"):
+def createLogDir(mpiRank=1, logDir=None):
     """A helper method to create the log directory"""
+    # the usual case is the user does not pass in a log dir path, so we use the global one
+    if logDir is None:
+        logDir = LOG_DIR
+
     # let only do this from one thread
     if mpiRank == 0:
         if not os.path.exists(logDir):
