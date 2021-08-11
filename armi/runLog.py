@@ -275,14 +275,17 @@ def close(mpiRank=None):
     LOG._restoreStandardStreams()
 
 
-def concatenateLogs():
+def concatenateLogs(logDir=None):
     """
     Concatenate the armi run logs and delete them.
 
     Should only ever be called by parent.
     """
+    if logDir is None:
+        logDir = context.LOG_DIR
+
     # find all the logging-module-based log files
-    stdoutFiles = sorted(glob(os.path.join("logs", "*.stdout")))
+    stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
     if not len(stdoutFiles):
         info("No log files found to concatenate.")
         return

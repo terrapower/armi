@@ -14,6 +14,8 @@
 
 from io import StringIO
 import logging
+import os
+from shutil import rmtree
 import unittest
 
 from armi import context, runLog
@@ -191,6 +193,35 @@ class TestRunLog(unittest.TestCase):
             self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)
             runLog.LOG.setVerbosity(logging.WARNING + 1)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.WARNING)
+
+    def test_concatenateLogs(self):
+        """simple test of the concat logs function"""
+        # create the log dir
+        logDir = "test_concatenateLogs"
+        if os.path.exists(logDir):
+            rmtree(logDir)
+        context.createLogDir(0, logDir)
+
+        # create as stdout file
+        stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
+        f = open(stdoutFile, "w")
+        f.write("hello world\n")
+        f.close()
+        self.assertTrue(os.path.exists(stdoutFile))
+
+        # create a stderr file
+        stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
+        f = open(stderrFile, "w")
+        f.write("goodbye cruel world\n")
+        f.close()
+        self.assertTrue(os.path.exists(stderrFile))
+
+        # concat logs
+        runLog.concatenateLogs(logDir=logDir)
+
+        # verify output
+        self.assertFalse(os.path.exists(stdoutFile))
+        self.assertFalse(os.path.exists(stderrFile))
 
 
 if __name__ == "__main__":
