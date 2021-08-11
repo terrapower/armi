@@ -34,10 +34,10 @@ import time
 import textwrap
 import ast
 from typing import Dict, Optional, Sequence
+import glob
 import tabulate
 import six
 import coverage
-import glob
 
 import armi
 from armi import context
@@ -46,7 +46,6 @@ from armi import operators
 from armi import runLog
 from armi import interfaces
 from armi.reactor import blueprints
-from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.reactor import reactors
 from armi.bookkeeping import report
@@ -142,7 +141,7 @@ class Case:
         This property allows lazy loading.
         """
         if self._bp is None:
-            self._bp = blueprints.loadFromCs(self.cs)
+            self._bp = blueprints.loadFromCs(self.cs, roundTrip=True)
         return self._bp
 
     @bp.setter
@@ -674,8 +673,8 @@ class Case:
         ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
-            self.bp
-            self.geom
+            self.bp  # pylint: disable=pointless-statement
+            self.geom  # pylint: disable=pointless-statement
             self.cs["loadingFile"] = self.title + "-blueprints.yaml"
             if self.geom:
                 self.cs["geomFile"] = self.title + "-geom.yaml"
