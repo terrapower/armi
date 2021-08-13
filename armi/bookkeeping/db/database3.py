@@ -1263,14 +1263,19 @@ class Database3(database.Database):
             try:
                 pDef = pDefs[paramName]
             except KeyError:
-                # If a parameter exists in the database but not in the application
-                # reading it, we can technically keep going. Since this may lead to
-                # potential correctness issues, raise a warning
-                runLog.warning(
-                    "Found `{}` parameter `{}` in the database, which is not defined. "
-                    "Ignoring it.".format(compTypeName, paramName)
-                )
-                continue
+                if re.match(r"^n[A-Z][a-z]?\d*", paramName):
+                    # This is a temporary viz param (number density) made by
+                    # _addHomogenizedNumberDensities ignore it safely
+                    continue
+                else:
+                    # If a parameter exists in the database but not in the application
+                    # reading it, we can technically keep going. Since this may lead to
+                    # potential correctness issues, raise a warning
+                    runLog.warning(
+                        "Found `{}` parameter `{}` in the database, which is not defined. "
+                        "Ignoring it.".format(compTypeName, paramName)
+                    )
+                    continue
 
             data = dataSet[:]
             attrs = _resolveAttrs(dataSet.attrs, h5group)
