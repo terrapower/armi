@@ -1273,7 +1273,7 @@ class Database3(database.Database):
             except KeyError:
                 if re.match(r"^n[A-Z][a-z]?\d*", paramName):
                     # This is a temporary viz param (number density) made by
-                    # _addHomogenizedNumberDensities ignore it safely
+                    # _addHomogenizedNumberDensityParams ignore it safely
                     continue
                 else:
                     # If a parameter exists in the database but not in the application
