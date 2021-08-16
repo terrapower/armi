@@ -101,6 +101,9 @@ class TestDatabase3(unittest.TestCase):
         self.r.p.cycleLength = cycle
         self.r.core[0].p.chargeTime = 3
 
+        # add some fake missing parameter data to test allowMissing
+        self.db.h5db["c00n00/Reactor/missingParam"] = "i don't exist"
+
     def _compareArrays(self, ref, src):
         """
         Compare two numpy arrays.
@@ -193,6 +196,14 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(
             database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
+
+    def test_load(self) -> None:
+        self.makeShuffleHistory()
+        with self.assertRaises(KeyError):
+            r = self.db.load(0, 0)
+
+        del self.db.h5db["c00n00/Reactor/missingParam"]
+        r = self.db.load(0, 0)
 
     def test_history(self) -> None:
         self.makeShuffleHistory()

@@ -358,6 +358,7 @@ class DatabaseInterface(interfaces.Interface):
                         statePointName=timeStepName,
                         cs=self.cs,
                         bp=self.r.blueprints,
+                        allowMissing=True,
                     )
                     break
         else:
@@ -989,7 +990,9 @@ class Database3(database.Database):
         self.h5db.flush()
         shutil.copy(self._fullPath, self._fileName)
 
-    def load(self, cycle, node, cs=None, bp=None, statePointName=None):
+    def load(
+        self, cycle, node, cs=None, bp=None, statePointName=None, allowMissing=False
+    ):
         """Load a new reactor from (cycle, node).
 
         Case settings, blueprints, and geom can be provided by the client, or read from
@@ -1008,6 +1011,11 @@ class Database3(database.Database):
             if not provided one is read from the database
         bp : armi.reactor.Blueprints (Optional)
             if not provided one is read from the database
+        statePointName : str
+            Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
+        allowMissing : bool
+            Whether to emit a warning, rather than crash if reading a database
+            with undefined parameters. Default False.
 
         Returns
         -------
@@ -1028,7 +1036,7 @@ class Database3(database.Database):
 
         # populate data onto initialized components
         for compType, compTypeList in groupedComps.items():
-            self._readParams(h5group, compType, compTypeList)
+            self._readParams(h5group, compType, compTypeList, allowMissing=allowMissing)
 
         # assign params from blueprints
         if bp is not None:
@@ -1246,7 +1254,7 @@ class Database3(database.Database):
             h5group.create_dataset(nucName, data=numDens, compression="gzip")
 
     @staticmethod
-    def _readParams(h5group, compTypeName, comps):
+    def _readParams(h5group, compTypeName, comps, allowMissing=False):
         g = h5group[compTypeName]
 
         renames = armi.getApp().getParamRenames()
@@ -1271,11 +1279,14 @@ class Database3(database.Database):
                     # If a parameter exists in the database but not in the application
                     # reading it, we can technically keep going. Since this may lead to
                     # potential correctness issues, raise a warning
-                    runLog.warning(
-                        "Found `{}` parameter `{}` in the database, which is not defined. "
-                        "Ignoring it.".format(compTypeName, paramName)
-                    )
-                    continue
+                    if allowMissing:
+                        runLog.warning(
+                            "Found `{}` parameter `{}` in the database, which is not defined. "
+                            "Ignoring it.".format(compTypeName, paramName)
+                        )
+                        continue
+                    else:
+                        raise
 
             data = dataSet[:]
             attrs = _resolveAttrs(dataSet.attrs, h5group)
