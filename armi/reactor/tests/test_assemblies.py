@@ -1144,7 +1144,7 @@ class Assembly_TestCase(unittest.TestCase):
         pinPlenumVolume = 5.951978000285659e-05
 
         self._setup_blueprints("refSmallReactorBase.yaml")
-        assembly = list(self.r.blueprints.assemblies.values())[0]
+        assembly = self.r.blueprints.assemblies.get("igniter fuel")
         self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 
     def test_averagePlenumTemperature(self):
