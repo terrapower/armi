@@ -200,10 +200,12 @@ class TestDatabase3(unittest.TestCase):
     def test_load(self) -> None:
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
-            r = self.db.load(0, 0)
+            _r = self.db.load(0, 0)
+
+        _r = self.db.load(0, 0, allowMissing=True)
 
         del self.db.h5db["c00n00/Reactor/missingParam"]
-        r = self.db.load(0, 0)
+        _r = self.db.load(0, 0, allowMissing=False)
 
     def test_history(self) -> None:
         self.makeShuffleHistory()
