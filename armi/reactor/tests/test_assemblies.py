@@ -564,10 +564,10 @@ class Assembly_TestCase(unittest.TestCase):
             ref = params[param]
             self.assertEqual(cur, ref)
 
-    def _setup_blueprints(self):
+    def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            self.cs["loadingFile"] = "refSmallReactor.yaml"
+            self.cs["loadingFile"] = filename
             with open(self.cs["loadingFile"], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
                     y, pathlib.Path(self.cs.inputDirectory)
@@ -1136,6 +1136,32 @@ class Assembly_TestCase(unittest.TestCase):
             spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
         )
         self.assertEqual(a.coords(), (2.0, 2.0))
+
+    def test_pinPlenumVolume(self):
+        """
+        Test the volume of a pin in the assembly's plenum.
+        """
+        pinPlenumVolume = 5.951978000285659e-05
+
+        self._setup_blueprints("refSmallReactorBase.yaml")
+        assembly = self.r.blueprints.assemblies.get("igniter fuel")
+        self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
+
+    def test_averagePlenumTemperature(self):
+        """
+        Test an assembly's average plenum temperature with a single block outlet.
+        """
+        averagePlenumTemp = 42.0
+        plenumBlock = makeTestAssembly(
+            1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0)
+        )
+
+        plenumBlock.setType("plenum", Flags.PLENUM)
+        plenumBlock.p.THcoolantOutletT = averagePlenumTemp
+        self.Assembly.setBlockMesh([10.0, 20.0, 30.0], conserveMassFlag="auto")
+        self.Assembly.append(plenumBlock)
+
+        self.assertEqual(averagePlenumTemp, self.Assembly.getAveragePlenumTemperature())
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
