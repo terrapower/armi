@@ -497,8 +497,10 @@ class Inspector:
         )
 
         def _correctCycles():
+            self.cs.lock = False
             self.cs["nCycles"] = 1
             self.cs["burnSteps"] = 0
+            self.cs.lock = True
 
         self.addQuery(
             lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,

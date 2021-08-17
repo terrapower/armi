@@ -80,8 +80,10 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         def _getModifiedSettings(customSettings):
             cs = settings.Settings()
+            cs.lock = False
             for key, val in customSettings.items():
                 cs[key] = val
+            cs.lock = True
             return cs
 
         r = tests.getEmptyHexReactor()

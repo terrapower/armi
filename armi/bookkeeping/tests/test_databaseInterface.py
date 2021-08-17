@@ -46,6 +46,7 @@ def getSimpleDBOperator(cs):
     This reactor has only 1 assembly with 1 type of block.
     It's used to make the db unit tests run very quickly.
     """
+    cs.lock = False
     cs["loadingFile"] = "refOneBlockReactor.yaml"
     cs["verbosity"] = "important"
     cs["db"] = True
@@ -62,6 +63,7 @@ def getSimpleDBOperator(cs):
         for interface in o.interfaces
         if interface.name in ["database", "main"]
     ]
+    cs.lock = True
     return o
 
 
@@ -213,10 +215,10 @@ class TestDatabaseReading(unittest.TestCase):
         # The database writes the settings object to the DB rather
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
+        o.cs.lock = False
         o.cs["nCycles"] = 2
         o.cs["burnSteps"] = 3
         settings.setMasterCs(o.cs)
-        o.cs["db"] = True
 
         o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
         dbi = o.getInterface("database")
@@ -239,6 +241,7 @@ class TestDatabaseReading(unittest.TestCase):
 
         # needed for test_readWritten
         cls.r = o.r
+        o.cs.lock = True
 
     @classmethod
     def tearDownClass(cls):
@@ -247,7 +250,6 @@ class TestDatabaseReading(unittest.TestCase):
         cls.r = None
 
     def test_readWritten(self):
-
         with Database3(self.dbName, "r") as db:
             r2 = db.load(0, 0, self.cs, self.bp)
 
@@ -289,7 +291,6 @@ class TestDatabaseReading(unittest.TestCase):
             )
 
     def test_readWithoutInputs(self):
-
         with Database3(self.dbName, "r") as db:
             r2 = db.load(0, 0)
 
@@ -331,7 +332,9 @@ class TestDatabaseReading(unittest.TestCase):
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+        cs.lock = False
         cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
+        cs.lock = True
         dbi = DatabaseInterface(None, cs)
         with self.assertRaises(ValueError):
             # an error should be raised when the database loaded from
@@ -384,10 +387,12 @@ class TestStandardFollowOn(unittest.TestCase):
             loadDB = "loadFrom.h5"
             os.rename("armiRun.h5", loadDB)
             cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+            cs.lock = False
             cs["loadStyle"] = "fromDB"
             cs["reloadDBName"] = loadDB
             cs["startCycle"] = 1
             cs["startNode"] = 1
+            cs.lock = True
             o = self._getOperatorThatChangesVariables(cs)
 
             # the interact BOL has historically failed due to trying to write inputs

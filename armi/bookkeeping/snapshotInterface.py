@@ -69,7 +69,9 @@ class SnapshotInterface(interfaces.Interface):
                 runLog.info(
                     "Adding default snapshot {0} to snapshot queue.".format(snapT)
                 )
+                self.cs.lock = False
                 self.cs["dumpSnapshot"] = self.cs["dumpSnapshot"] + [snapT]
+                self.cs.lock = True
 
     def _getSnapTimesEquilibrium(self):
         """Set BOEC, MOEC, EOEC snapshots."""

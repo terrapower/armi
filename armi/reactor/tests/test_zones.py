@@ -110,6 +110,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildRingZones(self):
         o, r = self.o, self.r
         cs = o.cs
+        cs.lock = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
         cs["ringZones"] = []
         zonez = zones.buildZones(r.core, cs)
@@ -133,10 +134,12 @@ class Zones_InReactor(unittest.TestCase):
         self.assertEqual(len(list(zonez)), 3)
         zone = zonez["ring-3"]
         self.assertEqual(len(zone), 30)  # rings 8 and 9. See above comment
+        cs.lock = True
 
     def test_buildManualZones(self):
         o, r = self.o, self.r
         cs = o.cs
+        cs.lock = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "manual"
         cs["zoneDefinitions"] = [
             "ring-1: 001-001",
@@ -144,12 +147,14 @@ class Zones_InReactor(unittest.TestCase):
             "ring-3: 003-001, 003-002, 003-003",
         ]
         zonez = zones.buildZones(r.core, cs)
+        cs.lock = True
         self.assertEqual(len(list(zonez)), 3)
         self.assertIn("003-002", zonez["ring-3"])
 
     def test_buildAssemTypeZones(self):
         o, r = self.o, self.r
         cs = o.cs
+        cs.lock = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byFuelType"
         zonez = zones.buildZones(r.core, cs)
         self.assertEqual(len(list(zonez)), 4)
@@ -157,12 +162,15 @@ class Zones_InReactor(unittest.TestCase):
         self.assertIn("005-023", zonez["igniter fuel"])
         self.assertIn("003-002", zonez["lta fuel"])
         self.assertIn("004-003", zonez["lta fuel b"])
+        cs.lock = True
 
     def test_buildZonesForEachFA(self):
         o, r = self.o, self.r
         cs = o.cs
+        cs.lock = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "everyFA"
         zonez = zones.buildZones(r.core, cs)
+        cs.lock = True
         self.assertEqual(len(list(zonez)), 53)
         self.assertIn("008-040", zonez["channel 1"])
         self.assertIn("005-023", zonez["channel 2"])
@@ -171,8 +179,10 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildZonesByOrifice(self):
         o, r = self.o, self.r
         cs = o.cs
+        cs.lock = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byOrifice"
         zonez = zones.buildZones(r.core, cs)
+        cs.lock = True
         self.assertEqual(len(list(zonez)), 2)
         self.assertIn("008-040", zonez["zone0"])
         self.assertIn("005-023", zonez["zone0"])
@@ -181,11 +191,13 @@ class Zones_InReactor(unittest.TestCase):
     def test_removeZone(self):
         o, r = self.o, self.r
         cs = o.cs
+        cs.lock = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
         cs["ringZones"] = [5, 8]
         # produce 2 zones, with the names ringzone0 and ringzone1
         daZones = zones.buildZones(r.core, cs)
         daZones.removeZone("ring-1")
+        cs.lock = True
         # The names list should only house the only other remaining zone now
         self.assertEqual(["ring-2"], daZones.names)
 
@@ -199,6 +211,7 @@ class Zones_InReactor(unittest.TestCase):
 
     def test_findZoneAssemblyIsIn(self):
         cs = self.o.cs
+        cs.lock = False
         cs["ringZones"] = [5, 7, 8]
         daZones = zones.buildZones(self.r.core, cs)
         for zone in daZones:
@@ -212,6 +225,7 @@ class Zones_InReactor(unittest.TestCase):
         daZones.removeZone(
             daZones.names[0]
         )  # remove a zone to ensure that our assem does not have a zone anymore
+        cs.lock = True
         self.assertEqual(daZones.findZoneAssemblyIsIn(a), None)
 
 
@@ -222,6 +236,7 @@ class Zones_InRZReactor(unittest.TestCase):
 
         o, r = test_reactors.loadTestReactor()
         cs = o.cs
+        cs.lock = False
         cs["splitZones"] = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
         cs["ringZones"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -246,6 +261,7 @@ class Zones_InRZReactor(unittest.TestCase):
         # this should split diverseZone into multiple zones by nodalization type.
         cs["splitZones"] = True
         zones.splitZones(r.core, cs, daZones)
+        cs.lock = True
         # test to make sure that we split the ring zone correctly
         self.assertEqual(len(daZones["ring-4-igniter-fuel-5"]), 4)
         self.assertEqual(len(daZones["ring-4-igniter-fuel-6"]), 1)
@@ -258,6 +274,7 @@ class Zones_InRZReactor(unittest.TestCase):
         # Test that if a hot zone can not be created from a single assembly zone.
         o, r = test_reactors.loadTestReactor()
         cs = o.cs
+        cs.lock = False
         cs["splitZones"] = False
         cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
         cs["ringZones"] = [9]  # build one giant zone
@@ -337,6 +354,7 @@ class Zones_InRZReactor(unittest.TestCase):
                 normalCount += 1
         self.assertEqual(hotCount, 1)
         self.assertEqual(normalCount, 2)
+        cs.lock = True
 
 
 if __name__ == "__main__":

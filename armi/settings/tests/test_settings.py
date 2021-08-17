@@ -164,7 +164,9 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()
+        cs.lock = False
         cs["shuffleLogic"] = "nothere"
+        cs.lock = True
         inspector = settingsValidation.Inspector(cs)
         self.assertTrue(
             any(
@@ -180,6 +182,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
+        cs.lock = False
         self.assertEqual(cs["extendableOption"], "DEFAULT")
         # We shouldn't have any settings from the other plugin, so this should be an
         # error.
@@ -202,6 +205,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
         cs["extendableOption"] = "PLUGIN"
+        cs.lock = True
 
     def test_default(self):
         """Make sure default updating mechanism works."""
@@ -221,7 +225,9 @@ class TestSettingsConversion(unittest.TestCase):
 
     def test_empty(self):
         cs = caseSettings.Settings()
+        cs.lock = False
         cs["buGroups"] = []
+        cs.lock = True
         self.assertEqual(cs["buGroups"], [])
 
 

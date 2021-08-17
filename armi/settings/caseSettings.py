@@ -37,6 +37,8 @@ from armi.settings import setting
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
 
+DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
+
 
 class Settings:
     """
@@ -74,6 +76,7 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
+        self.lock = False
         self.path = ""
 
         app = armi.getApp()
@@ -85,6 +88,7 @@ class Settings:
 
         if fName:
             self.loadFromInputFile(fName)
+        self.lock = True
 
     @property
     def inputDirectory(self):
@@ -102,6 +106,8 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
+        if self.lock:
+            runLog.warning(DEP_WARNING.format("caseTitle"), single=True)
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
@@ -127,6 +133,8 @@ class Settings:
 
     def __setitem__(self, key, val):
         if key in self.settings:
+            if self.lock:
+                runLog.warning(DEP_WARNING.format(key), single=True)
             self.settings[key].setValue(val)
         else:
             raise NonexistentSetting(key)
@@ -148,6 +156,7 @@ class Settings:
         for key, val in state.items():
             if key != "settings":
                 setattr(self, key, val)
+
         # with schema restored, restore all setting values
         for name, settingState in state["settings"].items():
             # pylint: disable=protected-access
@@ -194,9 +203,11 @@ class Settings:
         Passes the reader back out in case you want to know something about how the reading went
         like for knowing if a file contained deprecated settings, etc.
         """
+        self.lock = False
         reader, path = self._prepToRead(fName)
         reader.readFromFile(fName, handleInvalids)
         self._applyReadSettings(path if setPath else None)
+        self.lock = True
         return reader
 
     def _prepToRead(self, fName):
@@ -221,6 +232,7 @@ class Settings:
         Passes the reader back out in case you want to know something about how the
         reading went like for knowing if a file contained deprecated settings, etc.
         """
+        self.lock = False
         if self._failOnLoad:
             raise RuntimeError(
                 "Cannot load settings after processing of command "
@@ -241,6 +253,7 @@ class Settings:
         else:
             runLog.setVerbosity(self["branchVerbosity"])
 
+        self.lock = True
         return reader
 
     def _applyReadSettings(self, path=None):
@@ -368,6 +381,7 @@ class Settings:
         --------
         unsetTemporarySettings : reverts this
         """
+        self.lock = False
         runLog.debug(
             "Temporarily changing {} from {} to {}".format(
                 settingName, self[settingName], temporaryValue
@@ -375,8 +389,10 @@ class Settings:
         )
         self._backedup[settingName] = self[settingName]
         self[settingName] = temporaryValue
+        self.lock = True
 
     def unsetTemporarySettings(self):
+        self.lock = False
         for settingName, origValue in self._backedup.items():
             runLog.debug(
                 "Reverting {} from {} back to its original value of {}".format(
@@ -384,3 +400,4 @@ class Settings:
                 )
             )
             self[settingName] = origValue
+        self.lock = True

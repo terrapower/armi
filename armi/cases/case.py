@@ -675,6 +675,7 @@ class Case:
             # they are not yet initialized.
             self.bp  # pylint: disable=pointless-statement
             self.geom  # pylint: disable=pointless-statement
+            self.cs.lock = False
             self.cs["loadingFile"] = self.title + "-blueprints.yaml"
             if self.geom:
                 self.cs["geomFile"] = self.title + "-geom.yaml"
@@ -693,6 +694,7 @@ class Case:
 
             for settingName, value in newSettings.items():
                 self.cs[settingName] = value
+            self.cs.lock = True
 
             self.cs.writeToYamlFile(self.title + ".yaml")
 

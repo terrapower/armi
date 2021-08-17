@@ -81,6 +81,7 @@ class TestReactorBlueprints(unittest.TestCase):
             with open(fn, "w") as f:
                 f.write(GEOM)
         cs = settings.Settings()
+        cs.lock = False
         # test migration from geometry xml files
         cs["geomFile"] = self._testMethodName + "geometry.xml"
         bp = blueprints.Blueprints.load(
@@ -93,6 +94,7 @@ class TestReactorBlueprints(unittest.TestCase):
         sfp = bp.systemDesigns["sfp"].construct(cs, bp, reactor)
         for fn in fnames:
             os.remove(fn)
+        cs.lock = True
         return core, sfp
 
     def test_construct(self):

@@ -89,4 +89,6 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         """Update the state of ARMI to fit the kind of run this operator manages"""
         from armi import operators
 
+        cs.lock = False
         cs["runType"] = operators.RunTypes.SNAPSHOTS
+        cs.lock = True

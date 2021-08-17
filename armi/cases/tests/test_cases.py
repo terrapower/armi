@@ -84,7 +84,9 @@ class TestArmiCase(unittest.TestCase):
         """
         with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
             cs = settings.Settings(ARMI_RUN_PATH)
+            cs.lock = False
             cs["verbosity"] = "important"
+            cs.lock = True
             case = cases.Case(cs)
             c2 = case.clone()
             c2.summarizeDesign(True, True)
@@ -96,7 +98,9 @@ class TestArmiCase(unittest.TestCase):
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
         cs = settings.Settings(ARMI_RUN_PATH)
+        cs.lock = False
         cs["verbosity"] = "important"
+        cs.lock = True
         baseCase = cases.Case(cs, bp=bp, geom=geom)
         with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
@@ -200,8 +204,10 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         for p1, p2, dbPath, isIn in checks:
             self.c1.cs.path = p1
             self.c2.cs.path = p2
+            self.c2.cs.lock = False
             self.c2.cs["loadStyle"] = "fromDB"
             self.c2.cs["reloadDBName"] = dbPath
+            self.c2.cs.lock = True
             # note that case.dependencies is a property and
             # will actually reflect these changes
             self.assertEqual(
@@ -211,6 +217,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
             )
 
     def test_dependencyFromDBName(self):
+        self.c2.cs.lock = False
         self.c2.cs[
             "reloadDBName"
         ] = "c1.h5"  # no effect -> need to specify loadStyle, 'fromDB'
@@ -220,11 +227,14 @@ class TestCaseSuiteDependencies(unittest.TestCase):
 
         # the .h5 extension is optional
         self.c2.cs["reloadDBName"] = "c1"
+        self.c2.cs.lock = True
         self.assertIn(self.c1, self.c2.dependencies)
 
     def test_dependencyFromExplictRepeatShuffles(self):
         self.assertEqual(0, len(self.c2.dependencies))
+        self.c2.cs.lock = False
         self.c2.cs["explicitRepeatShuffles"] = "c1-SHUFFLES.txt"
+        self.c2.cs.lock = True
         self.assertIn(self.c1, self.c2.dependencies)
 
 
