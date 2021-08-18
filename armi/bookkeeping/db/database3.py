@@ -1145,7 +1145,7 @@ class Database3(database.Database):
             g = h5group[groupName]
 
         for paramDef in c.p.paramDefs.toWriteToDB(
-            parameters.SINCE_LAST_DB_TRANSMISSION
+            parameters.SINCE_ANYTHING | parameters.NEVER
         ):
             attrs = {}
 
