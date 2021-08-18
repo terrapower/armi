@@ -58,6 +58,9 @@ class TestRunLog(unittest.TestCase):
         with self.assertRaises(KeyError):
             runLog.setVerbosity("taco")
 
+        with self.assertRaises(TypeError):
+            runLog.setVerbosity(["debug"])
+
     def test_parentRunLogging(self):
         """A basic test of the logging of the parent runLog"""
         # init the _RunLog object
@@ -75,6 +78,8 @@ class TestRunLog(unittest.TestCase):
         log.log("debug", "You shouldn't see this.", single=False, label=None)
         log.log("warning", "Hello, ", single=False, label=None)
         log.log("error", "world!", single=False, label=None)
+        log.logger.flush()
+        log.logger.close()
         runLog.close(99)
 
         # test what was logged

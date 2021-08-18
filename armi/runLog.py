@@ -16,22 +16,34 @@ r"""
 This module handles logging of console output (e.g. warnings, information, errors)
 during an armi run.
 
-The default way of using the ARMI runLog is:
+The default way of calling and the global armi logger is to just import it:
 
 .. code::
 
-    import armi.runLog as runLog
-    runLog.setVerbosity('debug')
-    runLog.info('information here')
-    runLog.error('extra error info here')
-    raise SomeException  # runLog.error() implies that the code will crash!
+    from armi import runLog
 
-You can interact with the logger in much the same way now by doing:
+You may want a logger specific to a single module, say to provide debug logging
+for only one module. That functionality is provided by a global override of
+logging imports:
 
 .. code::
 
     import logging
-    runLog = logging.getLogger('whatever')
+    runLog = logging.getLogger(__name__)
+
+In either case, you can then log things the same way:
+
+.. code::
+
+    runLog.info('information here')
+    runLog.error('extra error info here')
+    raise SomeException  # runLog.error() implies that the code will crash!
+
+Or change the log level the same way:
+
+.. code::
+
+    runLog.setVerbosity('debug')
 
 """
 from __future__ import print_function
@@ -87,10 +99,10 @@ class _RunLog:
         self.logger = None
         self.stderrLogger = None
 
-        self._setNullLoggers()
+        self.setNullLoggers()
         self._setLogLevels()
 
-    def _setNullLoggers(self):
+    def setNullLoggers(self):
         """Helper method to set both of our loggers to Null handlers"""
         self.logger = NullLogger("NULL")
         self.stderrLogger = NullLogger("NULL2", isStderr=True)
@@ -179,7 +191,6 @@ class _RunLog:
             raise KeyError(
                 "{} is not a valid verbosity level: {}".format(level, log_strs)
             )
-        return self._logLevels[level][0]
 
     def setVerbosity(self, level):
         """
@@ -227,7 +238,7 @@ class _RunLog:
         """Return the global runLog verbosity."""
         return self._verbosity
 
-    def _restoreStandardStreams(self):
+    def restoreStandardStreams(self):
         """Set the system stderr back to its default (as it was when the run started)."""
         if self.initialErr is not None and self._mpiRank > 0:
             sys.stderr = self.initialErr
@@ -242,7 +253,7 @@ class _RunLog:
                 context.LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
             )
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
-            h = logging.FileHandler(filePath)
+            h = logging.FileHandler(filePath, delay=True)
             fmt = "%(message)s"
             form = logging.Formatter(fmt)
             h.setFormatter(form)
@@ -271,8 +282,8 @@ def close(mpiRank=None):
         if LOG.logger:
             _ = [h.close() for h in LOG.logger.handlers]
 
-    LOG._setNullLoggers()
-    LOG._restoreStandardStreams()
+    LOG.setNullLoggers()
+    LOG.restoreStandardStreams()
 
 
 def concatenateLogs(logDir=None):
@@ -449,7 +460,7 @@ class RunLogger(logging.Logger):
             filePath = os.path.join(
                 context.LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
             )
-            handler = logging.FileHandler(filePath)
+            handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
 
@@ -548,6 +559,11 @@ class RunLogger(logging.Logger):
 
 
 class NullLogger(RunLogger):
+    """This is really just a placeholder for logging before or after the span of a normal armi run.
+    It will forward all logging to stdout/stderr, as you'd normally expect.
+    But it will preserve the formatting and duplication tools of the armi library.
+    """
+
     def __init__(self, name, isStderr=False):
         RunLogger.__init__(self, name)
         if isStderr:
