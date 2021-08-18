@@ -563,13 +563,16 @@ class DistributeStateAction(MpiAction):
         if armi.MPI_RANK == 0:
             data = {
                 (pName, pdType.__name__): pDef.assigned
-                for (pName, pdType), pDef in parameterDefinitions.ALL_DEFINITIONS.items()
+                for (
+                    pName,
+                    pdType,
+                ), pDef in parameterDefinitions.ALL_DEFINITIONS.items()
             }
 
         data = armi.MPI_COMM.bcast(data, root=0)
 
         if armi.MPI_RANK != 0:
-            for (pName, pdType), pDef  in parameterDefinitions.ALL_DEFINITIONS.items():
+            for (pName, pdType), pDef in parameterDefinitions.ALL_DEFINITIONS.items():
                 pDef.assigned = data[pName, pdType.__name__]
 
     def _distributeInterfaces(self):
