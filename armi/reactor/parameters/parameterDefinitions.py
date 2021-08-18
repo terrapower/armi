@@ -45,13 +45,11 @@ from .exceptions import ParameterError, ParameterDefinitionError
 # In order for that to happen, the flags need to be cleared when the <time-description>
 # begins.
 SINCE_INITIALIZATION = 1
-SINCE_LAST_DB_TRANSMISSION = 2
 SINCE_LAST_DISTRIBUTE_STATE = 4
 SINCE_LAST_GEOMETRY_TRANSFORMATION = 8
 SINCE_BACKUP = 16
 SINCE_ANYTHING = (
     SINCE_LAST_DISTRIBUTE_STATE
-    | SINCE_LAST_DB_TRANSMISSION
     | SINCE_INITIALIZATION
     | SINCE_LAST_GEOMETRY_TRANSFORMATION
     | SINCE_BACKUP
@@ -531,7 +529,7 @@ class ParameterDefinitionCollection:
     def locked(self):
         return self._locked
 
-    def toWriteToDB(self, assignedMask):
+    def toWriteToDB(self, assignedMask: Optional[int] = None):
         """
         Get a list of acceptable parameters to store to the database for a level of the data model.
 
@@ -540,7 +538,8 @@ class ParameterDefinitionCollection:
         assignedMask : int
             a bitmask to down-filter which params to use based on how "stale" they are.
         """
-        return [p for p in self if p.saveToDB and p.assigned & assignedMask]
+        mask = assignMask or SINCE_ANYTHING
+        return [p for p in self if p.saveToDB and p.assigned & mask]
 
     def createBuilder(self, *args, **kwargs):
         """
