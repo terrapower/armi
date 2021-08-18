@@ -2854,7 +2854,7 @@ class Composite(ArmiObject):
             number of parameters synchronized over all components
         """
         if armi.MPI_SIZE == 1:
-            return
+            return 0
 
         startTime = timeit.default_timer()
         # sync parameters...

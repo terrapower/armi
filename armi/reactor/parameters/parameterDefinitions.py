@@ -429,6 +429,9 @@ class ParameterDefinitionCollection:
         pdc.extend(filter(filterFunc, self._paramDefs))
         return pdc
 
+    def items(self):
+        return self._paramDefDict.items()
+
     def extend(self, other):
         """
         Grow a parameter definition collection by another parameter definition collection
