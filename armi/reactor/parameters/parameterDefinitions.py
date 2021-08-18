@@ -538,7 +538,7 @@ class ParameterDefinitionCollection:
         assignedMask : int
             a bitmask to down-filter which params to use based on how "stale" they are.
         """
-        mask = assignMask or SINCE_ANYTHING
+        mask = assignedMask or SINCE_ANYTHING
         return [p for p in self if p.saveToDB and p.assigned & mask]
 
     def createBuilder(self, *args, **kwargs):
