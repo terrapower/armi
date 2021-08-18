@@ -560,6 +560,7 @@ class DistributeStateAction(MpiAction):
         self.o.reattach(self.r, cs)  # sets r and cs
 
     def _distributeParamAssignments(self):
+        data = dict()
         if armi.MPI_RANK == 0:
             data = {
                 (pName, pdType.__name__): pDef.assigned
