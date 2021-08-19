@@ -68,6 +68,7 @@ from armi import settings
 from armi import interfaces
 from armi.reactor import reactors
 from armi.reactor import assemblies
+from armi.reactor.parameters import parameterDefinitions
 from armi import utils
 from armi.utils import iterables
 
@@ -469,6 +470,7 @@ class DistributeStateAction(MpiAction):
             cs = self._distributeSettings()
 
             self._distributeReactor(cs)
+            self._distributeParamAssignments()
 
             if self._skipInterfaces:
                 self.o.reattach(self.r, cs)  # may be redundant?
@@ -481,7 +483,7 @@ class DistributeStateAction(MpiAction):
             # same.
             # XXX: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
-            self.r.core._markSynchronized()  # pylint: disable=protected-access
+            self.r._markSynchronized()  # pylint: disable=protected-access
 
         except (cPickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
@@ -556,6 +558,23 @@ class DistributeStateAction(MpiAction):
         assemblies.setAssemNumCounter(numAssemblies)
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
+
+    def _distributeParamAssignments(self):
+        data = dict()
+        if armi.MPI_RANK == 0:
+            data = {
+                (pName, pdType.__name__): pDef.assigned
+                for (
+                    pName,
+                    pdType,
+                ), pDef in parameterDefinitions.ALL_DEFINITIONS.items()
+            }
+
+        data = armi.MPI_COMM.bcast(data, root=0)
+
+        if armi.MPI_RANK != 0:
+            for (pName, pdType), pDef in parameterDefinitions.ALL_DEFINITIONS.items():
+                pDef.assigned = data[pName, pdType.__name__]
 
     def _distributeInterfaces(self):
         """
