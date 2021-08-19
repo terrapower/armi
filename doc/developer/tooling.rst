@@ -32,3 +32,28 @@ bounds, such as those used to avoid bugs in the dependency, should be specified 
 ``requirements.txt``, rather than ``setup.py``. ARMI itself has several requirements
 files, located at the root of the project, which can be used as jumping-off points for
 more complex scenarios.
+
+Module-Level Logging
+^^^^^^^^^^^^^^^^^^^^
+In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
+This is a custom, global logging object provided by the import:
+
+    from armi import runLog
+
+If you want a logger specific to a single module, say to provide debug logging for only
+one module, that functionality is provided by what might look like a bare Python logging
+import, but is actually calling the same underlying ``armi`` logging tooling:
+
+    import logging
+    runLog = logging.getLogger(__name__)
+
+In either case, you can then log using the same, easy interface:
+
+    runLog.info('information here')
+    runLog.error('extra error info here')
+
+Finally, you can change the logging level in either above scenario by doing:
+
+    runLog.setVerbosity(logging.DEBUG)
+    # or
+    runLog.setVerbosity('debug')
