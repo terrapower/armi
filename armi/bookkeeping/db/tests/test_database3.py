@@ -371,6 +371,29 @@ class Test_LocationPacking(unittest.TestCase):
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
         self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
 
+    def test_locationPackingOlderVerions(self):
+        # pylint: disable=protected-access
+        for version in [1, 2]:
+            loc1 = grids.IndexLocation(1, 2, 3, None)
+            loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
+            loc3 = grids.MultiIndexLocation(None)
+            loc3.append(grids.IndexLocation(7, 8, 9, None))
+            loc3.append(grids.IndexLocation(10, 11, 12, None))
+
+            locs = [loc1, loc2, loc3]
+            tp, data = database3._packLocations(locs, minorVersion=version)
+
+            self.assertEqual(tp[0], "IndexLocation")
+            self.assertEqual(tp[1], "CoordinateLocation")
+            self.assertEqual(tp[2], "MultiIndexLocation")
+
+            unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
+
+            self.assertEqual(unpackedData[0], (1, 2, 3))
+            self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
+            self.assertEqual(unpackedData[2][0].tolist(), [7, 8, 9])
+            self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ["", "TestDatabase3.test_splitDatabase"]
