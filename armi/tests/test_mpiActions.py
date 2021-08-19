@@ -151,16 +151,12 @@ if armi.MPI_SIZE > 1:
                 self.assertEqual(self.cs, self.o.cs)
                 self.assertEqual(original_reactor, self.o.r)
                 self.assertEqual(original_interfaces, self.o.interfaces)
-                self.assertDictEqual(
-                    original_bolassems, self.o.r.blueprints.assemblies
-                )
+                self.assertDictEqual(original_bolassems, self.o.r.blueprints.assemblies)
                 self.assertEqual(original_lib, self.o.r.core.lib)
             else:
                 self.assertNotEqual(self.cs, self.o.cs)
                 self.assertNotEqual(original_reactor, self.o.r)
-                self.assertNotEqual(
-                    original_bolassems, self.o.r.blueprints.assemblies
-                )
+                self.assertNotEqual(original_bolassems, self.o.r.blueprints.assemblies)
                 self.assertEqual(original_interfaces, self.o.interfaces)
                 self.assertEqual(original_lib, self.o.r.core.lib)
 
