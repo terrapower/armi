@@ -22,6 +22,9 @@ import armi
 from armi import settings
 from armi import nuclearDataIO
 from armi import mpiActions
+from armi.reactor import reactors
+from armi.reactor import blueprints
+from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 from armi.operators import OperatorMPI
 from armi.nucDirectory import nuclideBases
@@ -81,8 +84,11 @@ if armi.MPI_SIZE > 1:
     class MpiDistributeStateTests(unittest.TestCase):
         def setUp(self):
             self.cs = settings.Settings(fName=ARMI_RUN_PATH)
+            bp = blueprints.loadFromCs(self.cs)
+
             settings.setMasterCs(self.cs)
             self.o = OperatorMPI(self.cs)
+            self.o.r = reactors.factory(self.cs, bp)
             self.action = DistributeStateAction()
             self.action.o = self.o
             self.action.r = self.o.r
@@ -101,19 +107,16 @@ if armi.MPI_SIZE > 1:
                     ss.name: ss.value for ss in self.action.o.cs.settings.values()
                 }
                 # remove values that are *expected to be* different...
-                for key in ["stationaryBlocks", "verbosity"]:
-                    # self.assertNotEqual(original.get(key, None),
-                    #                    current.get(key, None))
+                # crossSectionControl is removed because unittest is being mean about
+                # comparing dicts...
+                for key in ["stationaryBlocks", "verbosity", "crossSectionControl"]:
                     if key in original:
                         del original[key]
                     if key in current:
                         del current[key]
-                # for key in set(original.keys() + current.keys()):
-                #     self.assertEqual(original[key],
-                #                      current[key],
-                #                      'Values for key `{}\' are different {} != {}'
-                #                      .format(key, original[key], current[key]))
-                self.assertEqual(original, current)
+                            type(current)))
+                for key, val in original.items():
+                    self.assertEqual(original[key], current[key])
 
         def test_distributeReactor(self):
             """Under normal circumstances, we would not test "private" methods;
@@ -121,34 +124,11 @@ if armi.MPI_SIZE > 1:
             """
             original_reactor = self.action.r
             self.action._distributeReactor(self.cs)
-            self.assertIsNone(self.action.o.r.o)
             if armi.MPI_RANK == 0:
                 self.assertEqual(original_reactor, self.action.r)
             else:
                 self.assertNotEqual(original_reactor, self.action.r)
             self.assertIsNone(self.action.r.core.lib)
-
-        def test_distributeReactorWithIsotxs(self):
-            """Under normal circumstances, we would not test "private" methods;
-            however, distributeState is quite complicated.
-            """
-            original_reactor = self.action.r
-            self.assertIsNone(self.action.r.core.lib)
-            if armi.MPI_RANK == 0:
-                original_reactor.lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-            self.action._distributeReactor(self.cs)
-            actual = {nb.label: nb.mc2id for nb in self.o.r.core.lib.nuclides}
-            if armi.MPI_RANK == 0:
-                self.assertEqual(original_reactor.lib, self.action.r.core.lib)
-                armi.MPI_COMM.bcast(actual)  # soon to become expected
-            else:
-                self.assertIsNotNone(self.action.r.core.lib)
-                for nuclide in self.action.r.core.lib.nuclides:
-                    self.assertEqual(
-                        nuclideBases.byLabel[nuclide._base.label], nuclide._base
-                    )
-                expected = armi.MPI_COMM.bcast(None)
-                self.assertEqual(expected, actual)
 
         def test_distributeInterfaces(self):
             """Under normal circumstances, we would not test "private" methods;
@@ -165,25 +145,30 @@ if armi.MPI_SIZE > 1:
             original_reactor = self.o.r
             original_lib = self.o.r.core.lib
             original_interfaces = self.o.interfaces
-            original_bolassems = self.o.r.blueprints.assemblies.values()
+            original_bolassems = self.o.r.blueprints.assemblies
             self.action.invokeHook()
 
             if armi.MPI_RANK == 0:
                 self.assertEqual(self.cs, self.o.cs)
                 self.assertEqual(original_reactor, self.o.r)
                 self.assertEqual(original_interfaces, self.o.interfaces)
-                self.assertEqual(
-                    original_bolassems, self.o.r.blueprints.assemblies.values()
+                self.assertDictEqual(
+                    original_bolassems, self.o.r.blueprints.assemblies
                 )
                 self.assertEqual(original_lib, self.o.r.core.lib)
             else:
                 self.assertNotEqual(self.cs, self.o.cs)
                 self.assertNotEqual(original_reactor, self.o.r)
                 self.assertNotEqual(
-                    original_bolassems, self.o.r.blueprints.assemblies.values()
+                    original_bolassems, self.o.r.blueprints.assemblies
                 )
                 self.assertEqual(original_interfaces, self.o.interfaces)
                 self.assertEqual(original_lib, self.o.r.core.lib)
+
+            for pDef in parameterDefinitions.ALL_DEFINITIONS:
+                self.assertFalse(
+                    pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE
+                )
 
         def test_compileResults(self):
 

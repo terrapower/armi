@@ -483,7 +483,7 @@ class DistributeStateAction(MpiAction):
             # same.
             # XXX: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
-            self.r.core._markSynchronized()  # pylint: disable=protected-access
+            self.r._markSynchronized()  # pylint: disable=protected-access
 
         except (cPickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
