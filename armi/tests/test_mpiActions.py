@@ -114,7 +114,6 @@ if armi.MPI_SIZE > 1:
                         del original[key]
                     if key in current:
                         del current[key]
-                            type(current)))
                 for key, val in original.items():
                     self.assertEqual(original[key], current[key])
 
