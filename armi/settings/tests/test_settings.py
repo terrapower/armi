@@ -30,6 +30,7 @@ from armi.settings import setting
 from armi.operators import settingsValidation
 from armi import plugins
 from armi.utils import directoryChangers
+from armi.utils.customExceptions import NonexistentSetting
 from armi.reactor.flags import Flags
 
 THIS_DIR = os.path.dirname(__file__)
@@ -72,6 +73,46 @@ class TestCaseSettings(unittest.TestCase):
         self.assertEqual(self.cs["nCycles"], 55)
         self.cs.unsetTemporarySettings()
         self.assertEqual(self.cs["nCycles"], startVal)
+
+    def test_update(self):
+        with self.cs.unlock():
+            # grab the keys, and make sure they make some sense
+            keys = sorted(self.cs.keys())
+            self.assertEqual(len(keys), 146)
+            self.assertEqual(keys[:3], ["HCFcoretype", "Tin", "Tout"])
+
+            # test an invalid update
+            d = {"aaba": 1, "aardvark": 2}
+            with self.assertRaises(NonexistentSetting):
+                self.cs.update(d)
+
+            # test a valid udpate
+            d = {"Tin": 0, "Tout": 100}
+            self.cs.update(d)
+            keys_new = sorted(self.cs.keys())
+            self.assertEqual(keys_new, keys)
+            self.assertEqual(self.cs["Tin"], 0)
+            self.assertEqual(self.cs["Tout"], 100)
+
+            # clear all settings, and make sure it worked
+            self.cs.clear()
+            self.assertEqual(len(list(self.cs.keys())), 0)
+
+    def test_updateEnvironmentSettingsFrom(self):
+        envSettings = [
+            "trace",
+            "profile",
+            "coverage",
+            "branchVerbosity",
+            "verbosity",
+            "outputCacheLocation",
+        ]
+        self.assertEqual(self.cs.environmentSettings, envSettings)
+
+        with self.cs.unlock():
+            newEnv = {es: 9 for es in envSettings}
+            self.cs.updateEnvironmentSettingsFrom(newEnv)
+            self.assertEqual(self.cs["verbosity"], "9")
 
 
 class TestSettings2(unittest.TestCase):
@@ -224,9 +265,14 @@ class TestSettingsConversion(unittest.TestCase):
 
     def test_empty(self):
         cs = caseSettings.Settings()
+        self.assertTrue(cs._lock)
+        cs.lock()
+        self.assertTrue(cs._lock)
         with cs.unlock():
+            self.assertFalse(cs._lock)
             cs["buGroups"] = []
 
+        self.assertTrue(cs._lock)
         self.assertEqual(cs["buGroups"], [])
 
 

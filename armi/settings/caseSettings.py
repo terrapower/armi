@@ -182,10 +182,16 @@ class Settings:
         return self.settings.keys()
 
     def update(self, values):
+        if self._lock:
+            runLog.warning(DEP_WARNING.format(sorted(values.keys())), single=True)
+
         for key, val in values.items():
             self[key] = val
 
     def clear(self):
+        if self._lock:
+            runLog.warning(DEP_WARNING.format("ALL"), single=True)
+
         self.settings.clear()
 
     def duplicate(self):
