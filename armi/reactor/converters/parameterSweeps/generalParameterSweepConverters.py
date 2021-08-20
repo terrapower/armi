@@ -62,8 +62,7 @@ class NeutronicConvergenceModifier(ParameterSweepConverter):
     def convert(self, r=None):
         ParameterSweepConverter.convert(self, r)
         fs = 1.0e-12 + self._parameter * 1.0e-3
-        self._cs.lock = False
-        self._cs["epsFSAvg"] = fs
-        self._cs["epsFSPoint"] = fs
-        self._cs["epsEig"] = 1.0e-14 + self._parameter * 1.0e-4
-        self._cs.lock = True
+        with self._cs.unlock():
+            self._cs["epsFSAvg"] = fs
+            self._cs["epsFSPoint"] = fs
+            self._cs["epsEig"] = 1.0e-14 + self._parameter * 1.0e-4

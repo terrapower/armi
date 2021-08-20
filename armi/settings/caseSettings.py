@@ -28,6 +28,7 @@ A master case settings is created as ``masterCs``
 import io
 import os
 import copy
+from contextlib import contextmanager
 
 import armi
 from armi import runLog
@@ -76,7 +77,7 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        self.lock = False
+        self._lock = False
         self.path = ""
 
         app = armi.getApp()
@@ -88,7 +89,22 @@ class Settings:
 
         if fName:
             self.loadFromInputFile(fName)
-        self.lock = True
+        self._lock = True
+
+    def lock(self):
+        """Permanently make the settings immutable
+
+        NOTE: The immutable-lock functionality is not in place yet.
+              This is currently used only for DeprecationWarnings.
+        """
+        self._lock = True
+
+    @contextmanager
+    def unlock(self):
+        """Temporarily make the settings mutable"""
+        self._lock = False
+        yield
+        self._lock = True
 
     @property
     def inputDirectory(self):
@@ -106,7 +122,7 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
-        if self.lock:
+        if self._lock:
             runLog.warning(DEP_WARNING.format("caseTitle"), single=True)
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
@@ -133,7 +149,7 @@ class Settings:
 
     def __setitem__(self, key, val):
         if key in self.settings:
-            if self.lock:
+            if self._lock:
                 runLog.warning(DEP_WARNING.format(key), single=True)
             self.settings[key].setValue(val)
         else:
@@ -203,11 +219,11 @@ class Settings:
         Passes the reader back out in case you want to know something about how the reading went
         like for knowing if a file contained deprecated settings, etc.
         """
-        self.lock = False
-        reader, path = self._prepToRead(fName)
-        reader.readFromFile(fName, handleInvalids)
-        self._applyReadSettings(path if setPath else None)
-        self.lock = True
+        with self.unlock():
+            reader, path = self._prepToRead(fName)
+            reader.readFromFile(fName, handleInvalids)
+            self._applyReadSettings(path if setPath else None)
+
         return reader
 
     def _prepToRead(self, fName):
@@ -232,28 +248,27 @@ class Settings:
         Passes the reader back out in case you want to know something about how the
         reading went like for knowing if a file contained deprecated settings, etc.
         """
-        self.lock = False
-        if self._failOnLoad:
-            raise RuntimeError(
-                "Cannot load settings after processing of command "
-                "line options begins.\nYou may be able to fix this by "
-                "reordering the command line arguments."
+        with self.unlock():
+            if self._failOnLoad:
+                raise RuntimeError(
+                    "Cannot load settings after processing of command "
+                    "line options begins.\nYou may be able to fix this by "
+                    "reordering the command line arguments."
+                )
+
+            reader = settingsIO.SettingsReader(self)
+            fmt = reader.SettingsInputFormat.YAML
+            if string.strip()[0] == "<":
+                fmt = reader.SettingsInputFormat.XML
+            reader.readFromStream(
+                io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
             )
 
-        reader = settingsIO.SettingsReader(self)
-        fmt = reader.SettingsInputFormat.YAML
-        if string.strip()[0] == "<":
-            fmt = reader.SettingsInputFormat.XML
-        reader.readFromStream(
-            io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
-        )
+            if armi.MPI_RANK == 0:
+                runLog.setVerbosity(self["verbosity"])
+            else:
+                runLog.setVerbosity(self["branchVerbosity"])
 
-        if armi.MPI_RANK == 0:
-            runLog.setVerbosity(self["verbosity"])
-        else:
-            runLog.setVerbosity(self["branchVerbosity"])
-
-        self.lock = True
         return reader
 
     def _applyReadSettings(self, path=None):
@@ -381,23 +396,21 @@ class Settings:
         --------
         unsetTemporarySettings : reverts this
         """
-        self.lock = False
-        runLog.debug(
-            "Temporarily changing {} from {} to {}".format(
-                settingName, self[settingName], temporaryValue
-            )
-        )
-        self._backedup[settingName] = self[settingName]
-        self[settingName] = temporaryValue
-        self.lock = True
-
-    def unsetTemporarySettings(self):
-        self.lock = False
-        for settingName, origValue in self._backedup.items():
+        with self.unlock():
             runLog.debug(
-                "Reverting {} from {} back to its original value of {}".format(
-                    settingName, self[settingName], origValue
+                "Temporarily changing {} from {} to {}".format(
+                    settingName, self[settingName], temporaryValue
                 )
             )
-            self[settingName] = origValue
-        self.lock = True
+            self._backedup[settingName] = self[settingName]
+            self[settingName] = temporaryValue
+
+    def unsetTemporarySettings(self):
+        with self.unlock():
+            for settingName, origValue in self._backedup.items():
+                runLog.debug(
+                    "Reverting {} from {} back to its original value of {}".format(
+                        settingName, self[settingName], origValue
+                    )
+                )
+                self[settingName] = origValue

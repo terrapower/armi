@@ -72,14 +72,13 @@ class TestHistoryTracker(ArmiTestHelper):
         runTutorialNotebook()
 
         reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
-        reloadCs.lock = False
-        reloadCs.caseTitle = "armiRun"
-        reloadCs["db"] = True
-        reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        reloadCs["runType"] = "Snapshots"
-        reloadCs["loadStyle"] = "fromDB"
-        reloadCs["detailAssemLocationsBOL"] = ["001-001"]
-        reloadCs.lock = True
+        with reloadCs.unlock():
+            reloadCs.caseTitle = "armiRun"
+            reloadCs["db"] = True
+            reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+            reloadCs["runType"] = "Snapshots"
+            reloadCs["loadStyle"] = "fromDB"
+            reloadCs["detailAssemLocationsBOL"] = ["001-001"]
         o = armi_init(cs=reloadCs)
         cls.o = o
 
@@ -89,13 +88,12 @@ class TestHistoryTracker(ArmiTestHelper):
 
     def setUp(self):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
-        cs.lock = False
-        cs["db"] = True
-        cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        cs["loadStyle"] = "fromDB"
-        cs["detailAssemLocationsBOL"] = ["001-001"]
-        cs["startNode"] = 1
-        cs.lock = True
+        with cs.unlock():
+            cs["db"] = True
+            cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+            cs["loadStyle"] = "fromDB"
+            cs["detailAssemLocationsBOL"] = ["001-001"]
+            cs["startNode"] = 1
 
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
@@ -201,9 +199,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFiltering(self):
         times = range(30)
-        self.history.cs.lock = False
-        self.history.cs["burnSteps"] = 2
-        self.history.cs.lock = True
+        with self.history.cs.unlock():
+            self.history.cs["burnSteps"] = 2
         inputs = [
             {"boc": True},
             {"moc": True},
@@ -222,9 +219,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFilteringWithGap(self):
         times = list(range(10)) + list(range(15, 20))
-        self.history.cs.lock = False
-        self.history.cs["burnSteps"] = 2
-        self.history.cs.lock = True
+        with self.history.cs.unlock():
+            self.history.cs["burnSteps"] = 2
         runResults = self.history.filterTimeIndices(times, boc=True)
         self.assertEqual(runResults, [0, 3, 6, 9, 15, 18])
 

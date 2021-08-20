@@ -188,9 +188,9 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        cs.lock = False
-        cs["xsKernel"] = "MC2v2"
-        cs.lock = True
+        with cs.unlock():
+            cs["xsKernel"] = "MC2v2"
+
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
         cls.numUZrNuclides = 29  # Number of nuclides defined `nuclide flags`
@@ -256,9 +256,9 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        cs.lock = False
-        cs["xsKernel"] = "MC2v3"
-        cs.lock = True
+        with cs.unlock():
+            cs["xsKernel"] = "MC2v3"
+
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")
         b = a[-1]
@@ -353,9 +353,9 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        cs.lock = False
-        cs["xsKernel"] = "MC2v3"
-        cs.lock = True
+        with cs.unlock():
+            cs["xsKernel"] = "MC2v3"
+
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")
         b = a[-1]

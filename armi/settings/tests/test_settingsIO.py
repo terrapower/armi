@@ -110,9 +110,8 @@ class SettingsWriterTests(unittest.TestCase):
             os.getcwd(), self._testMethodName + "test_setting_io.yaml"
         )
         self.cs = settings.Settings()
-        self.cs.lock = False
-        self.cs["nCycles"] = 55
-        self.cs.lock = True
+        with self.cs.unlock():
+            self.cs["nCycles"] = 55
 
     def tearDown(self):
         armi.Mode.setMode(self.init_mode)

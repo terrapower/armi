@@ -54,9 +54,9 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    cs.lock = False
-    cs["db"] = False  # stop use of database
-    cs.lock = True
+    with cs.unlock():
+        cs["db"] = False  # stop use of database
+
     if customSettings is not None:
         cs.update(customSettings)
     r = tests.getEmptyHexReactor()
@@ -90,9 +90,9 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    cs.lock = False
-    cs["db"] = False  # stop use of database
-    cs.lock = True
+    with cs.unlock():
+        cs["db"] = False  # stop use of database
+
     if customSettings is not None:
         cs.update(customSettings)
     r = tests.getEmptyCartesianReactor()
@@ -159,22 +159,19 @@ def loadTestReactor(
         return o, r
 
     cs = settings.Settings(fName=fName)
-    cs.lock = False
 
     # Overwrite settings if desired
     if customSettings:
-        cs.lock = False
-        for settingKey, settingVal in customSettings.items():
-            cs[settingKey] = settingVal
-        cs.lock = True
+        with cs.unlock():
+            for settingKey, settingVal in customSettings.items():
+                cs[settingKey] = settingVal
 
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
     settings.setMasterCs(cs)
-    cs.lock = False
-    cs["stationaryBlocks"] = []
-    cs["nCycles"] = 3
-    cs.lock = True
+    with cs.unlock():
+        cs["stationaryBlocks"] = []
+        cs["nCycles"] = 3
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
@@ -191,7 +188,7 @@ def loadTestReactor(
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
-    cs.lock = True
+
     return o, o.r
 
 

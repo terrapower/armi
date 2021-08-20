@@ -164,9 +164,9 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()
-        cs.lock = False
-        cs["shuffleLogic"] = "nothere"
-        cs.lock = True
+        with cs.unlock():
+            cs["shuffleLogic"] = "nothere"
+
         inspector = settingsValidation.Inspector(cs)
         self.assertTrue(
             any(
@@ -182,30 +182,29 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
-        cs.lock = False
-        self.assertEqual(cs["extendableOption"], "DEFAULT")
-        # We shouldn't have any settings from the other plugin, so this should be an
-        # error.
-        with self.assertRaises(vol.error.MultipleInvalid):
+        with cs.unlock():
+            self.assertEqual(cs["extendableOption"], "DEFAULT")
+            # We shouldn't have any settings from the other plugin, so this should be an
+            # error.
+            with self.assertRaises(vol.error.MultipleInvalid):
+                cs["extendableOption"] = "PLUGIN"
+
+            pm.register(DummyPlugin2)
+            cs = caseSettings.Settings()
+            self.assertEqual(cs["extendableOption"], "PLUGIN")
+            # Now we should have the option from plugin 2; make sure that works
             cs["extendableOption"] = "PLUGIN"
+            self.assertIn("extendableOption", cs.keys())
+            pm.unregister(DummyPlugin2)
+            pm.unregister(DummyPlugin1)
 
-        pm.register(DummyPlugin2)
-        cs = caseSettings.Settings()
-        self.assertEqual(cs["extendableOption"], "PLUGIN")
-        # Now we should have the option from plugin 2; make sure that works
-        cs["extendableOption"] = "PLUGIN"
-        self.assertIn("extendableOption", cs.keys())
-        pm.unregister(DummyPlugin2)
-        pm.unregister(DummyPlugin1)
-
-        # Now try the same, but adding the plugins in a different order. This is to make
-        # sure that it doesnt matter if the Setting or its Options come first
-        pm.register(DummyPlugin2)
-        pm.register(DummyPlugin1)
-        cs = caseSettings.Settings()
-        self.assertEqual(cs["extendableOption"], "PLUGIN")
-        cs["extendableOption"] = "PLUGIN"
-        cs.lock = True
+            # Now try the same, but adding the plugins in a different order. This is to make
+            # sure that it doesnt matter if the Setting or its Options come first
+            pm.register(DummyPlugin2)
+            pm.register(DummyPlugin1)
+            cs = caseSettings.Settings()
+            self.assertEqual(cs["extendableOption"], "PLUGIN")
+            cs["extendableOption"] = "PLUGIN"
 
     def test_default(self):
         """Make sure default updating mechanism works."""
@@ -225,9 +224,9 @@ class TestSettingsConversion(unittest.TestCase):
 
     def test_empty(self):
         cs = caseSettings.Settings()
-        cs.lock = False
-        cs["buGroups"] = []
-        cs.lock = True
+        with cs.unlock():
+            cs["buGroups"] = []
+
         self.assertEqual(cs["buGroups"], [])
 
 

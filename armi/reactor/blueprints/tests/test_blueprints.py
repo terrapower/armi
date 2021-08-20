@@ -165,9 +165,9 @@ grids:
     def test_nuclidesMc2v2(self):
         """Tests that ZR is not expanded to its isotopics for this setting.."""
         cs = settings.Settings()
-        cs.lock = False
-        cs["xsKernel"] = "MC2v2"
-        cs.lock = True
+        with cs.unlock():
+            cs["xsKernel"] = "MC2v2"
+
         design = blueprints.Blueprints.load(self.yamlString)
         design._prepConstruction(cs)
         self.assertTrue(
@@ -182,9 +182,9 @@ grids:
     def test_nuclidesMc2v3(self):
         """Tests that ZR is expanded to its isotopics for MC2v3."""
         cs = settings.Settings()
-        cs.lock = False
-        cs["xsKernel"] = "MC2v3"
-        cs.lock = True
+        with cs.unlock():
+            cs["xsKernel"] = "MC2v3"
+
         design = blueprints.Blueprints.load(self.yamlString)
         design._prepConstruction(cs)
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Tests of the Database Interface 
+r""" Tests of the Database Interface
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
@@ -46,24 +46,24 @@ def getSimpleDBOperator(cs):
     This reactor has only 1 assembly with 1 type of block.
     It's used to make the db unit tests run very quickly.
     """
-    cs.lock = False
-    cs["loadingFile"] = "refOneBlockReactor.yaml"
-    cs["verbosity"] = "important"
-    cs["db"] = True
-    cs["runType"] = "Standard"
-    cs["geomFile"] = "geom1Assem.xml"
-    cs["nCycles"] = 2
-    genDBCase = case.Case(cs)
-    settings.setMasterCs(cs)
-    runLog.setVerbosity("info")
+    with cs.unlock():
+        cs["loadingFile"] = "refOneBlockReactor.yaml"
+        cs["verbosity"] = "important"
+        cs["db"] = True
+        cs["runType"] = "Standard"
+        cs["geomFile"] = "geom1Assem.xml"
+        cs["nCycles"] = 2
+        genDBCase = case.Case(cs)
+        settings.setMasterCs(cs)
+        runLog.setVerbosity("info")
 
-    o = genDBCase.initializeOperator()
-    o.interfaces = [
-        interface
-        for interface in o.interfaces
-        if interface.name in ["database", "main"]
-    ]
-    cs.lock = True
+        o = genDBCase.initializeOperator()
+        o.interfaces = [
+            interface
+            for interface in o.interfaces
+            if interface.name in ["database", "main"]
+        ]
+
     return o
 
 
@@ -215,33 +215,34 @@ class TestDatabaseReading(unittest.TestCase):
         # The database writes the settings object to the DB rather
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
-        o.cs.lock = False
-        o.cs["nCycles"] = 2
-        o.cs["burnSteps"] = 3
-        settings.setMasterCs(o.cs)
+        with o.cs.unlock():
+            o.cs["nCycles"] = 2
+            o.cs["burnSteps"] = 3
+            settings.setMasterCs(o.cs)
 
-        o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
-        dbi = o.getInterface("database")
-        dbi.enabled(True)
-        dbi.initDB()  # Main Interface normally does this
+            o.interfaces = [
+                i for i in o.interfaces if isinstance(i, (DatabaseInterface))
+            ]
+            dbi = o.getInterface("database")
+            dbi.enabled(True)
+            dbi.initDB()  # Main Interface normally does this
 
-        # update a few parameters
-        def writeFlux(cycle, node):
-            for bi, b in enumerate(o.r.core.getBlocks()):
-                b.p.flux = 1e6 * bi + cycle * 100 + node
-                b.p.mgFlux = numpy.repeat(b.p.flux / 33, 33)
+            # update a few parameters
+            def writeFlux(cycle, node):
+                for bi, b in enumerate(o.r.core.getBlocks()):
+                    b.p.flux = 1e6 * bi + cycle * 100 + node
+                    b.p.mgFlux = numpy.repeat(b.p.flux / 33, 33)
 
-        o.interfaces.insert(0, MockInterface(o.r, o.cs, writeFlux))
-        with o:
-            o.operate()
+            o.interfaces.insert(0, MockInterface(o.r, o.cs, writeFlux))
+            with o:
+                o.operate()
 
-        cls.cs = o.cs
-        cls.bp = o.r.blueprints
-        cls.dbName = o.cs.caseTitle + ".h5"
+            cls.cs = o.cs
+            cls.bp = o.r.blueprints
+            cls.dbName = o.cs.caseTitle + ".h5"
 
-        # needed for test_readWritten
-        cls.r = o.r
-        o.cs.lock = True
+            # needed for test_readWritten
+            cls.r = o.r
 
     @classmethod
     def tearDownClass(cls):
@@ -332,9 +333,8 @@ class TestDatabaseReading(unittest.TestCase):
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        cs.lock = False
-        cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
-        cs.lock = True
+        with cs.unlock():
+            cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
         dbi = DatabaseInterface(None, cs)
         with self.assertRaises(ValueError):
             # an error should be raised when the database loaded from
@@ -387,12 +387,11 @@ class TestStandardFollowOn(unittest.TestCase):
             loadDB = "loadFrom.h5"
             os.rename("armiRun.h5", loadDB)
             cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            cs.lock = False
-            cs["loadStyle"] = "fromDB"
-            cs["reloadDBName"] = loadDB
-            cs["startCycle"] = 1
-            cs["startNode"] = 1
-            cs.lock = True
+            with cs.unlock():
+                cs["loadStyle"] = "fromDB"
+                cs["reloadDBName"] = loadDB
+                cs["startCycle"] = 1
+                cs["startNode"] = 1
             o = self._getOperatorThatChangesVariables(cs)
 
             # the interact BOL has historically failed due to trying to write inputs

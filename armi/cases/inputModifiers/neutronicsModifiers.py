@@ -29,11 +29,10 @@ class NeutronicConvergenceModifier(inputModifiers.InputModifier):
             )
 
     def __call__(self, cs, blueprints, geom):
-        cs.lock = False
-        cs["epsFSAvg"] = self.value * 100
-        cs["epsFSPoint"] = self.value * 100
-        cs["epsEig"] = self.value
-        cs.lock = True
+        with cs.unlock():
+            cs["epsFSAvg"] = self.value * 100
+            cs["epsFSPoint"] = self.value * 100
+            cs["epsEig"] = self.value
 
 
 class NeutronicMeshsSizeModifier(inputModifiers.InputModifier):

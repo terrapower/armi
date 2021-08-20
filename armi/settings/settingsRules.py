@@ -193,7 +193,7 @@ def addToDumpSnapshots(cs, _name, _value):
     if not cs["dumpSnapshot"]:
         # Nothing was specified in standard cycle/node or dumpSnapshots.
         # Give old default of 0, 0.
-        cs.lock = False
-        cs["dumpSnapshot"] = ["000000"]
-        cs.lock = True
+        with cs.unlock():
+            cs["dumpSnapshot"] = ["000000"]
+
     return {}

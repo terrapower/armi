@@ -35,9 +35,8 @@ class TestCodeInterface(unittest.TestCase):
         Tests notification of detail points.
         """
         cs = settings.Settings()
-        cs.lock = False
-        cs["dumpSnapshot"] = ["000001", "995190"]
-        cs.lock = True
+        with cs.unlock():
+            cs["dumpSnapshot"] = ["000001", "995190"]
         i = DummyInterface(None, cs)
 
         self.assertEqual(i.isRequestedDetailPoint(0, 1), True)
