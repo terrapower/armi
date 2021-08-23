@@ -15,7 +15,6 @@
 """Test reports."""
 import os
 import collections
-from typing import OrderedDict
 import unittest
 
 import htmltree

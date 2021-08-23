@@ -26,7 +26,6 @@ from numpy.testing import assert_allclose, assert_equal
 from armi.reactor.flags import Flags
 from armi import interfaces
 from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
-from armi.bookkeeping.db import convertDatabase
 from armi import settings
 from armi.tests import TEST_ROOT
 from armi import __version__ as version

@@ -30,7 +30,6 @@ from typing import Union
 from typing import NamedTuple
 from typing import List
 from typing import Dict
-from abc import ABCMeta, abstractmethod
 
 from armi import getPluginManagerOrFail, settings, utils
 from armi.utils import textProcessors

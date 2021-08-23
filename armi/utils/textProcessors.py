@@ -21,7 +21,6 @@ import pathlib
 from typing import List, Tuple, Union, Optional, TextIO
 
 from armi import runLog
-from armi.utils import directoryChangers
 
 
 _INCLUDE_CTOR = False

@@ -20,7 +20,6 @@ import unittest
 from armi.nuclearDataIO import xsNuclides
 from armi.nucDirectory import nuclideBases
 from armi.tests import mockRunLogs
-from armi import nuclearDataIO
 from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import isotxs

@@ -13,24 +13,21 @@
 # limitations under the License.
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
-import distutils.spawn
 import os
 import subprocess
 import unittest
 
 import armi
 from armi import settings
-from armi import nuclearDataIO
 from armi import mpiActions
 from armi.reactor import reactors
 from armi.reactor import blueprints
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 from armi.operators import OperatorMPI
-from armi.nucDirectory import nuclideBases
 from armi.mpiActions import DistributeStateAction
 
-from armi.tests import ARMI_RUN_PATH, ISOAA_PATH
+from armi.tests import ARMI_RUN_PATH
 
 
 class DistributeStateTests(unittest.TestCase):

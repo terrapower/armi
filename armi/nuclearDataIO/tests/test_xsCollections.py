@@ -18,7 +18,6 @@ Module that tests methods within xsCollections
 import unittest
 
 from armi.nuclearDataIO import xsCollections
-from armi import nuclearDataIO
 from armi.tests import ISOAA_PATH
 from armi.physics.neutronics.tests import test_cross_section_manager
 from armi.nuclearDataIO import isotxs
