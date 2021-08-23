@@ -25,7 +25,6 @@ from armi.reactor import blocks
 from armi.reactor import components
 import armi.runLog as runLog
 import armi.settings as settings
-from armi.reactor.components import UnshapedComponent
 from armi import materials
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
@@ -1716,7 +1715,7 @@ class HexBlock_TestCase(unittest.TestCase):
                 locations = c.spatialLocator
                 self.assertEqual(type(locations), grids.MultiIndexLocation)
                 mult = 0
-                for loc in locations:
+                for _ in locations:
                     mult = mult + 1
                 self.assertEqual(mult, 169)
 

@@ -111,7 +111,8 @@ if armi.MPI_SIZE > 1:
                         del original[key]
                     if key in current:
                         del current[key]
-                for key, val in original.items():
+
+                for key in original.keys():
                     self.assertEqual(original[key], current[key])
 
         def test_distributeReactor(self):

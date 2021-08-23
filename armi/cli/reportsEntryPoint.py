@@ -94,8 +94,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                 )
 
             with directoryChangers.ForcedCreationDirectoryChanger("reportsOutputFiles"):
-
-                pluginContent = pm.hook.getReportContents(
+                _ = pm.hook.getReportContents(
                     r=r,
                     cs=cs,
                     report=report,
@@ -110,10 +109,8 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             db = databaseFactory(self.args.h5db, "r")
             if self.args.bp is not None:
                 blueprint = self.args.bp
-            i = 1
 
             with db:
-
                 with directoryChangers.ForcedCreationDirectoryChanger(
                     "reportsOutputFiles"
                 ):

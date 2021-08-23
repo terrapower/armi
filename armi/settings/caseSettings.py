@@ -31,9 +31,7 @@ import copy
 
 import armi
 from armi import runLog
-from armi.settings import fwSettings
 from armi.settings import settingsIO
-from armi.settings import setting
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
 

@@ -30,7 +30,6 @@ from armi.reactor import reactors
 from armi.reactor import geometry
 from armi.reactor.assemblies import (
     blocks,
-    CartesianAssembly,
     copy,
     Flags,
     grids,
@@ -307,7 +306,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_extend(self):
         blockList = []
-        for i in range(2):
+        for _ in range(2):
             b = blocks.HexBlock("TestBlock", self.cs)
             self.blockList.append(b)
             blockList.append(b)
@@ -381,7 +380,7 @@ class Assembly_TestCase(unittest.TestCase):
         assembly2 = makeTestAssembly(assemNum2, assemNum2)
 
         # add some blocks with a component
-        for i in range(assemNum2):
+        for _ in range(assemNum2):
             b = blocks.HexBlock("TestBlock", self.cs)
             b.setHeight(height2)
             assembly2.add(b)

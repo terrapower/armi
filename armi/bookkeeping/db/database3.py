@@ -98,7 +98,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
-from armi.bookkeeping.db.typedefs import History, Histories, LocationHistories
+from armi.bookkeeping.db.typedefs import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
