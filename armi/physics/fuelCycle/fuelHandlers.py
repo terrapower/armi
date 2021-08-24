@@ -67,11 +67,11 @@ class FuelHandlerInterface(interfaces.Interface):
     @staticmethod
     def specifyInputs(cs):
         files = {
-            cs.settings[setting].label: [
-                cs[setting],
+            cs.settings[settingName].label: [
+                cs[settingName],
             ]
-            for setting in ["shuffleLogic", "explicitRepeatShuffles"]
-            if cs[setting]
+            for settingName in ["shuffleLogic", "explicitRepeatShuffles"]
+            if cs[settingName]
         }
         return files
 
