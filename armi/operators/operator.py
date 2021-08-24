@@ -96,6 +96,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         self.r = None
         self.cs = cs
+        runLog.LOG.startLog(self.cs.caseTitle)
         self.timer = codeTiming.getMasterTimer()
         self.interfaces = []
         self.restartData = []

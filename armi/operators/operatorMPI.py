@@ -51,7 +51,6 @@ class OperatorMPI(Operator):
     """MPI-aware Operator."""
 
     def __init__(self, cs):
-        runLog.LOG.startLog(cs.caseTitle)
         try:
             Operator.__init__(self, cs)
         except:

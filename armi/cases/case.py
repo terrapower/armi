@@ -317,6 +317,15 @@ class Case:
         Room for improvement: The coverage, profiling, etc. stuff can probably be moved
         out of here to a more elegant place (like a context manager?).
         """
+        # Start the log here so that the verbosities for the head and workers
+        # can be configured based on the user settings for the rest of the
+        # run.
+        runLog.LOG.startLog(self.cs.caseTitle)
+        if armi.MPI_RANK == 0:
+            runLog.setVerbosity(self.cs["verbosity"])
+        else:
+            runLog.setVerbosity(self.cs["branchVerbosity"])
+
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
@@ -449,7 +458,7 @@ class Case:
                         )
                     )
 
-                if queryData:
+                if queryData and armi.MPI_RANK == 0:
                     runLog.header("=========== Settings Input Queries ===========")
                     runLog.info(
                         tabulate.tabulate(

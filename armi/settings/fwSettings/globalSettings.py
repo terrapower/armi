@@ -555,7 +555,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_EXPLICIT_REPEAT_SHUFFLES,
             default="",
-            label="Browse for shuffle history to repeat",
+            label="Explicit Shuffles File",
             description="Path to file that contains a detailed shuffling history that "
             "is to be repeated exactly.",
             oldNames=[("movesFile", None), ("shuffleFileName", None)],

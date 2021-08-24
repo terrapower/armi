@@ -62,6 +62,8 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
         runLog.debug(
             "Copied {}: {} -> {}".format(fileDescription, sourcePath, destinationPath)
         )
+    except shutil.SameFileError:
+        pass
     except Exception as e:
         runLog.warning(
             "Could not copy {} from {} to {}\nError was: {}".format(
