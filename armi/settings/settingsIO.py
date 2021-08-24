@@ -23,6 +23,7 @@ import enum
 import os
 import re
 from typing import Dict, Tuple, Set
+import sys
 import warnings
 import xml.etree.ElementTree as ET
 
@@ -625,6 +626,7 @@ def prompt(statement, question, *options):
         while response not in responses:
             runLog.LOG.log("prompt", statement)
             runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))
+            response = sys.stdin.readline().strip().upper()
 
         if response == "CANCEL":
             raise RunLogPromptCancel("Manual cancellation of interactive prompt")
