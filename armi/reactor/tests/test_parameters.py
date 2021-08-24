@@ -18,7 +18,6 @@ import traceback
 
 import armi
 from armi.reactor import parameters
-from armi.reactor.tests import test_reactors
 from armi.reactor import composites
 
 
@@ -256,7 +255,7 @@ class ParameterTests(unittest.TestCase):
             with pDefs.createBuilder() as pb:
                 pb.defParam("someParam", "units", "description", "location")
 
-        mockPC = MockPC()
+        _ = MockPC()
 
     def test_cannotCreateInstanceOf_NoDefault(self):
         with self.assertRaises(NotImplementedError):

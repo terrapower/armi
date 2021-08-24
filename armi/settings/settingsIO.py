@@ -22,7 +22,7 @@ import datetime
 import enum
 import os
 import re
-from typing import Dict, Tuple, List, Set, Optional
+from typing import Dict, Tuple, Set
 import warnings
 import xml.etree.ElementTree as ET
 
@@ -34,11 +34,9 @@ from armi.meta import __version__ as version
 from armi import context
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
-from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
-    NonexistentSetting,
     SettingException,
 )
 

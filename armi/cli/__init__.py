@@ -66,9 +66,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
             gridGui,
             # testing
             cleanTemps,
-            database,
             runSuite,
-            copyDB,
             reportsEntryPoint,
         )
 

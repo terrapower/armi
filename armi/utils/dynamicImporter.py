@@ -19,7 +19,6 @@ from importlib import import_module
 import os
 
 from armi import runLog
-from armi.utils import pathTools
 
 
 def _importModule(modules):

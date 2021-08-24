@@ -623,7 +623,6 @@ def _getFunctionObject():
     caller = currentframe().f_back
     func_name = getframeinfo(caller)[2]
     caller = caller.f_back
-    from pprint import pprint
 
     func = caller.f_locals.get(func_name, caller.f_globals.get(func_name))
 

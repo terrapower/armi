@@ -17,8 +17,6 @@ import itertools
 import math
 import re
 import os
-from collections import defaultdict
-
 
 import numpy
 from ordered_set import OrderedSet
@@ -1326,8 +1324,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
         a list of material names across all blocks to be plotted
         so that same material on all diagrams will have the same color.
     """
-
-    fig, ax = plt.subplots(figsize=(50, 50), dpi=100)
+    _, ax = plt.subplots(figsize=(50, 50), dpi=100)
 
     if block.spatialGrid is None:
         return None
@@ -1341,7 +1338,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     materialMap = {
         material: ai for ai, material in enumerate(numpy.unique(materialList))
     }
-    patches, data, name = _makeBlockPinPatches(block, cold)
+    patches, data, _ = _makeBlockPinPatches(block, cold)
 
     collection = matplotlib.collections.PatchCollection(
         patches, cmap=cmapName, alpha=1.0
@@ -1377,4 +1374,5 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
     plt.savefig(fName, format="svg", **pltKwargs)
+
     return os.path.abspath(fName)

@@ -22,8 +22,6 @@ is impossible. Would you like to switch to ___?"
 
 """
 import os
-import sys
-from typing import Union
 
 import armi
 from armi import runLog, settings, utils

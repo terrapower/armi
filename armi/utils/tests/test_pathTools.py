@@ -20,8 +20,6 @@ import os
 import types
 
 from armi.utils import pathTools
-from armi.utils import directoryChangers
-from armi import ROOT
 
 THIS_DIR = os.path.dirname(__file__)
 

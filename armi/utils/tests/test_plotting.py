@@ -107,7 +107,7 @@ class TestPlotting(unittest.TestCase):
             )
 
             blueprint = blueprints.loadFromCs(cs)
-            r = reactors.factory(cs, blueprint)
+            _ = reactors.factory(cs, blueprint)
             for name, bDesign in blueprint.blockDesigns.items():
                 b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
                 plotting.plotBlockDiagram(b, "{}.svg".format(name), True)

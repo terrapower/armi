@@ -6,7 +6,6 @@ can import armi.
 """
 import sys
 import inspect
-from io import StringIO
 import datetime
 import os
 import subprocess
