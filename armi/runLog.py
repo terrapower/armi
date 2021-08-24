@@ -191,7 +191,6 @@ class _RunLog:
             raise KeyError(
                 "{} is not a valid verbosity level: {}".format(level, log_strs)
             )
-        return self._logLevels[level][0]
 
     def setVerbosity(self, level):
         """
@@ -254,7 +253,7 @@ class _RunLog:
                 context.LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
             )
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
-            h = logging.FileHandler(filePath)
+            h = logging.FileHandler(filePath, delay=True)
             fmt = "%(message)s"
             form = logging.Formatter(fmt)
             h.setFormatter(form)
@@ -461,7 +460,7 @@ class RunLogger(logging.Logger):
             filePath = os.path.join(
                 context.LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
             )
-            handler = logging.FileHandler(filePath)
+            handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
 
