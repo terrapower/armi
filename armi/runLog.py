@@ -94,7 +94,7 @@ class _RunLog:
         self._mpiRank = mpiRank
         self._verbosity = logging.INFO
         self.initialErr = None
-        self._logLevels = None
+        self.logLevels = None
         self._logLevelNumbers = []
         self.logger = None
         self.stderrLogger = None
@@ -111,7 +111,7 @@ class _RunLog:
         """Here we fill the logLevels dict with custom strings that depend on the MPI rank"""
         # NOTE: use ordereddict so we can get right order of options in GUI
         _rank = "" if self._mpiRank == 0 else "-{:>03d}".format(self._mpiRank)
-        self._logLevels = collections.OrderedDict(
+        self.logLevels = collections.OrderedDict(
             [
                 ("debug", (logging.DEBUG, "[dbug{}] ".format(_rank))),
                 ("extra", (15, "[xtra{}] ".format(_rank))),
@@ -123,12 +123,12 @@ class _RunLog:
                 ("header", (100, "".format(_rank))),
             ]
         )
-        self._logLevelNumbers = sorted([l[0] for l in self._logLevels.values()])
+        self._logLevelNumbers = sorted([l[0] for l in self.logLevels.values()])
         global _WHITE_SPACE
-        _WHITE_SPACE = " " * len(max([l[1] for l in self._logLevels.values()]))
+        _WHITE_SPACE = " " * len(max([l[1] for l in self.logLevels.values()]))
 
         # modify the logging module strings for printing
-        for longLogString, (logValue, shortLogString) in self._logLevels.items():
+        for longLogString, (logValue, shortLogString) in self.logLevels.items():
             # add the log string name (upper and lower) to logging module
             logging.addLevelName(logValue, shortLogString.upper())
             logging.addLevelName(logValue, shortLogString)
@@ -154,7 +154,7 @@ class _RunLog:
         And we do some custom string manipulation so we can handle de-duplicating warnings.
         """
         # Determine the log level: users can optionally pass in custom strings ("debug")
-        msgLevel = msgType if isinstance(msgType, int) else self._logLevels[msgType][0]
+        msgLevel = msgType if isinstance(msgType, int) else self.logLevels[msgType][0]
 
         # If this is a special "don't duplicate me" string, we need to add that info to the msg temporarily
         msg = str(msg)
@@ -185,9 +185,9 @@ class _RunLog:
     def getLogVerbosityRank(self, level):
         """Return integer verbosity rank given the string verbosity name."""
         try:
-            return self._logLevels[level][0]
+            return self.logLevels[level][0]
         except KeyError:
-            log_strs = list(self._logLevels.keys())
+            log_strs = list(self.logLevels.keys())
             raise KeyError(
                 "{} is not a valid verbosity level: {}".format(level, log_strs)
             )
@@ -203,7 +203,7 @@ class _RunLog:
         ----------
         level : int or str
             The level to set the log output verbosity to.
-            Valid numbers are 0-50 and valid strings are keys of _logLevels
+            Valid numbers are 0-50 and valid strings are keys of logLevels
 
         Examples
         --------
@@ -211,6 +211,7 @@ class _RunLog:
         >>> setVerbosity(0) -> sets to 0
 
         """
+        # first, we have to get a valid integer from the input level
         if isinstance(level, str):
             self._verbosity = self.getLogVerbosityRank(level)
         elif isinstance(level, int):
@@ -229,6 +230,7 @@ class _RunLog:
         else:
             raise TypeError("Invalid verbosity rank {}.".format(level))
 
+        # Finally, set the log level
         if self.logger is not None:
             for handler in self.logger.handlers:
                 handler.setLevel(self._verbosity)
@@ -245,9 +247,18 @@ class _RunLog:
 
     def startLog(self, name):
         """Initialize the streams when parallel processing"""
+        # close the old logger and open a new one
+        self.logger.close()
         self.logger = logging.getLogger(STDOUT_LOGGER_NAME + SEP + str(self._mpiRank))
 
+        # if there was a pre-existing _verbosity, use it now
+        if self._verbosity != logging.INFO:
+            self.setVerbosity(self._verbosity)
+
         if self._mpiRank != 0:
+            # grab any old error logging lying aroudn and close it
+            self.stderrLogger.close()
+
             # init stderr intercepting logging
             filePath = os.path.join(
                 context.LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
@@ -477,7 +488,7 @@ class RunLogger(logging.Logger):
         And we do some custom string manipulation so we can handle de-duplicating warnings.
         """
         # Determine the log level: users can optionally pass in custom strings ("debug")
-        msgLevel = msgType if isinstance(msgType, int) else LOG._logLevels[msgType][0]
+        msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
         # Do the actual logging
         logging.Logger.log(
