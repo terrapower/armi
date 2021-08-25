@@ -60,7 +60,7 @@ class BufferLog(runLog._RunLog):  # pylint: disable=protected-access
             label = msg
 
         # Skip writing the message if it is below the set verbosity
-        msgVerbosity = self._logLevels[msgType][0]  # pylint: disable=protected-access
+        msgVerbosity = self.logLevels[msgType][0]  # pylint: disable=protected-access
         if msgVerbosity < self._verbosity:
             return
 
@@ -70,7 +70,7 @@ class BufferLog(runLog._RunLog):  # pylint: disable=protected-access
 
         # Do the actual logging, but add that custom indenting first
         msg = (
-            self._logLevels[msgType][1] + str(msg) + "\n"
+            self.logLevels[msgType][1] + str(msg) + "\n"
         )  # pylint: disable=protected-access
         self._outputStream += msg
 
@@ -109,7 +109,7 @@ class LogCounter(BufferLog):
 
     def __init__(self, *args, **kwargs):
         BufferLog.__init__(self)
-        self.messageCounts = {msgType: 0 for msgType in self._logLevels.keys()}
+        self.messageCounts = {msgType: 0 for msgType in self.logLevels.keys()}
 
     def log(self, msgType, *args, **kwargs):
         self.messageCounts[msgType] += 1
