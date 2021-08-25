@@ -973,7 +973,7 @@ class Operator:  # pylint: disable=too-many-public-methods
     @staticmethod
     def setStateToDefault(cs):
         """Update the state of ARMI to fit the kind of run this operator manages"""
-        with cs.unlock():
+        with cs._unlock():
             cs["runType"] = runTypes.RunTypes.STANDARD
 
     def couplingIsActive(self):

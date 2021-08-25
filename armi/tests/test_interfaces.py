@@ -35,7 +35,7 @@ class TestCodeInterface(unittest.TestCase):
         Tests notification of detail points.
         """
         cs = settings.Settings()
-        with cs.unlock():
+        with cs._unlock():
             cs["dumpSnapshot"] = ["000001", "995190"]
         i = DummyInterface(None, cs)
 

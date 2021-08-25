@@ -80,7 +80,7 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         def _getModifiedSettings(customSettings):
             cs = settings.Settings()
-            with cs.unlock():
+            with cs._unlock():
                 for key, val in customSettings.items():
                     cs[key] = val
 

@@ -29,7 +29,7 @@ class NeutronicConvergenceModifier(inputModifiers.InputModifier):
             )
 
     def __call__(self, cs, blueprints, geom):
-        with cs.unlock():
+        with cs._unlock():
             cs["epsFSAvg"] = self.value * 100
             cs["epsFSPoint"] = self.value * 100
             cs["epsEig"] = self.value

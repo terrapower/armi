@@ -71,7 +71,7 @@ def _modify_settings(cs):
                 loc = newLoc
             newLocs.append(loc)
 
-        with cs.unlock():
+        with cs._unlock():
             cs["detailAssemLocationsBOL"] = newLocs
 
 

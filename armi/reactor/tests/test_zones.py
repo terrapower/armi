@@ -110,7 +110,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildRingZones(self):
         o, r = self.o, self.r
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
             cs["ringZones"] = []
             zonez = zones.buildZones(r.core, cs)
@@ -138,7 +138,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildManualZones(self):
         o, r = self.o, self.r
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs[globalSettings.CONF_ZONING_STRATEGY] = "manual"
             cs["zoneDefinitions"] = [
                 "ring-1: 001-001",
@@ -153,7 +153,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildAssemTypeZones(self):
         o, r = self.o, self.r
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs[globalSettings.CONF_ZONING_STRATEGY] = "byFuelType"
             zonez = zones.buildZones(r.core, cs)
             self.assertEqual(len(list(zonez)), 4)
@@ -165,7 +165,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildZonesForEachFA(self):
         o, r = self.o, self.r
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs[globalSettings.CONF_ZONING_STRATEGY] = "everyFA"
             zonez = zones.buildZones(r.core, cs)
 
@@ -177,7 +177,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildZonesByOrifice(self):
         o, r = self.o, self.r
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs[globalSettings.CONF_ZONING_STRATEGY] = "byOrifice"
             zonez = zones.buildZones(r.core, cs)
 
@@ -189,7 +189,7 @@ class Zones_InReactor(unittest.TestCase):
     def test_removeZone(self):
         o, r = self.o, self.r
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
             cs["ringZones"] = [5, 8]
             # produce 2 zones, with the names ringzone0 and ringzone1
@@ -209,7 +209,7 @@ class Zones_InReactor(unittest.TestCase):
 
     def test_findZoneAssemblyIsIn(self):
         cs = self.o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs["ringZones"] = [5, 7, 8]
             daZones = zones.buildZones(self.r.core, cs)
             for zone in daZones:
@@ -234,7 +234,7 @@ class Zones_InRZReactor(unittest.TestCase):
 
         o, r = test_reactors.loadTestReactor()
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs["splitZones"] = False
             cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
             cs["ringZones"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -272,7 +272,7 @@ class Zones_InRZReactor(unittest.TestCase):
         # Test that if a hot zone can not be created from a single assembly zone.
         o, r = test_reactors.loadTestReactor()
         cs = o.cs
-        with cs.unlock():
+        with cs._unlock():
             cs["splitZones"] = False
             cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
             cs["ringZones"] = [9]  # build one giant zone

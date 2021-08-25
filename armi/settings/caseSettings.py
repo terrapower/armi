@@ -100,8 +100,12 @@ class Settings:
         self._lock = True
 
     @contextmanager
-    def unlock(self):
-        """Temporarily make the settings mutable"""
+    def _unlock(self):
+        """Temporarily make the settings mutable
+
+        NOTE: This is a termporary measure, which will only exist as long as the
+              DeprecationWarning and mutable settings.
+        """
         self._lock = False
         yield
         self._lock = True
@@ -225,7 +229,7 @@ class Settings:
         Passes the reader back out in case you want to know something about how the reading went
         like for knowing if a file contained deprecated settings, etc.
         """
-        with self.unlock():
+        with self._unlock():
             reader, path = self._prepToRead(fName)
             reader.readFromFile(fName, handleInvalids)
             self._applyReadSettings(path if setPath else None)
@@ -254,7 +258,7 @@ class Settings:
         Passes the reader back out in case you want to know something about how the
         reading went like for knowing if a file contained deprecated settings, etc.
         """
-        with self.unlock():
+        with self._unlock():
             if self._failOnLoad:
                 raise RuntimeError(
                     "Cannot load settings after processing of command "
@@ -402,7 +406,7 @@ class Settings:
         --------
         unsetTemporarySettings : reverts this
         """
-        with self.unlock():
+        with self._unlock():
             runLog.debug(
                 "Temporarily changing {} from {} to {}".format(
                     settingName, self[settingName], temporaryValue
@@ -412,7 +416,7 @@ class Settings:
             self[settingName] = temporaryValue
 
     def unsetTemporarySettings(self):
-        with self.unlock():
+        with self._unlock():
             for settingName, origValue in self._backedup.items():
                 runLog.debug(
                     "Reverting {} from {} back to its original value of {}".format(

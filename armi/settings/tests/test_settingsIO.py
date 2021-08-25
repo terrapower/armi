@@ -110,7 +110,7 @@ class SettingsWriterTests(unittest.TestCase):
             os.getcwd(), self._testMethodName + "test_setting_io.yaml"
         )
         self.cs = settings.Settings()
-        with self.cs.unlock():
+        with self.cs._unlock():
             self.cs["nCycles"] = 55
 
     def tearDown(self):

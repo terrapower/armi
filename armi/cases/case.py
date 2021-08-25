@@ -675,7 +675,7 @@ class Case:
             # they are not yet initialized.
             self.bp  # pylint: disable=pointless-statement
             self.geom  # pylint: disable=pointless-statement
-            with self.cs.unlock():
+            with self.cs._unlock():
                 self.cs["loadingFile"] = self.title + "-blueprints.yaml"
                 if self.geom:
                     self.cs["geomFile"] = self.title + "-geom.yaml"

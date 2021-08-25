@@ -54,7 +54,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    with cs.unlock():
+    with cs._unlock():
         cs["db"] = False  # stop use of database
 
     if customSettings is not None:
@@ -90,7 +90,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    with cs.unlock():
+    with cs._unlock():
         cs["db"] = False  # stop use of database
 
     if customSettings is not None:
@@ -162,14 +162,14 @@ def loadTestReactor(
 
     # Overwrite settings if desired
     if customSettings:
-        with cs.unlock():
+        with cs._unlock():
             for settingKey, settingVal in customSettings.items():
                 cs[settingKey] = settingVal
 
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
     settings.setMasterCs(cs)
-    with cs.unlock():
+    with cs._unlock():
         cs["stationaryBlocks"] = []
         cs["nCycles"] = 3
 

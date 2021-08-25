@@ -72,7 +72,7 @@ class TestHistoryTracker(ArmiTestHelper):
         runTutorialNotebook()
 
         reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
-        with reloadCs.unlock():
+        with reloadCs._unlock():
             reloadCs.caseTitle = "armiRun"
             reloadCs["db"] = True
             reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
@@ -88,7 +88,7 @@ class TestHistoryTracker(ArmiTestHelper):
 
     def setUp(self):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
-        with cs.unlock():
+        with cs._unlock():
             cs["db"] = True
             cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
             cs["loadStyle"] = "fromDB"
@@ -199,7 +199,7 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFiltering(self):
         times = range(30)
-        with self.history.cs.unlock():
+        with self.history.cs._unlock():
             self.history.cs["burnSteps"] = 2
         inputs = [
             {"boc": True},
@@ -219,7 +219,7 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFilteringWithGap(self):
         times = list(range(10)) + list(range(15, 20))
-        with self.history.cs.unlock():
+        with self.history.cs._unlock():
             self.history.cs["burnSteps"] = 2
         runResults = self.history.filterTimeIndices(times, boc=True)
         self.assertEqual(runResults, [0, 3, 6, 9, 15, 18])

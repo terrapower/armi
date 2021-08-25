@@ -89,5 +89,5 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         """Update the state of ARMI to fit the kind of run this operator manages"""
         from armi import operators
 
-        with cs.unlock():
+        with cs._unlock():
             cs["runType"] = operators.RunTypes.SNAPSHOTS

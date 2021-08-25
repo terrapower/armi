@@ -46,7 +46,7 @@ def getSimpleDBOperator(cs):
     This reactor has only 1 assembly with 1 type of block.
     It's used to make the db unit tests run very quickly.
     """
-    with cs.unlock():
+    with cs._unlock():
         cs["loadingFile"] = "refOneBlockReactor.yaml"
         cs["verbosity"] = "important"
         cs["db"] = True
@@ -215,7 +215,7 @@ class TestDatabaseReading(unittest.TestCase):
         # The database writes the settings object to the DB rather
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
-        with o.cs.unlock():
+        with o.cs._unlock():
             o.cs["nCycles"] = 2
             o.cs["burnSteps"] = 3
             settings.setMasterCs(o.cs)
@@ -333,7 +333,7 @@ class TestDatabaseReading(unittest.TestCase):
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        with cs.unlock():
+        with cs._unlock():
             cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
         dbi = DatabaseInterface(None, cs)
         with self.assertRaises(ValueError):
@@ -387,7 +387,7 @@ class TestStandardFollowOn(unittest.TestCase):
             loadDB = "loadFrom.h5"
             os.rename("armiRun.h5", loadDB)
             cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            with cs.unlock():
+            with cs._unlock():
                 cs["loadStyle"] = "fromDB"
                 cs["reloadDBName"] = loadDB
                 cs["startCycle"] = 1

@@ -393,7 +393,7 @@ class TestFuelHandler(ArmiTestHelper):
         # reset core to BOL state
         # reset assembly counter to get the same assem nums.
         self.setUp()
-        with self.o.cs.unlock():
+        with self.o.cs._unlock():
             self.o.cs["plotShuffleArrows"] = True
             # now repeat shuffles
             self.o.cs["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
@@ -469,7 +469,7 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_simpleAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        with self.o.cs.unlock():
+        with self.o.cs._unlock():
             self.o.cs["assemblyRotationStationary"] = True
         hist = self.o.getInterface("history")
         assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
@@ -483,7 +483,7 @@ class TestFuelHandler(ArmiTestHelper):
     def test_buReducingAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
         hist = self.o.getInterface("history")
-        with self.o.cs.unlock():
+        with self.o.cs._unlock():
             self.o.cs["assemblyRotationStationary"] = True
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
         # apply dummy pin-level data to allow intelligent rotation

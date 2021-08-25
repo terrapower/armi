@@ -567,7 +567,7 @@ class Assembly_TestCase(unittest.TestCase):
     def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            with self.cs.unlock():
+            with self.cs._unlock():
                 self.cs["loadingFile"] = filename
 
             with open(self.cs["loadingFile"], "r") as y:
@@ -1386,7 +1386,7 @@ class AnnularFuelTestCase(unittest.TestCase):
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
-        with self.cs.unlock():
+        with self.cs._unlock():
             self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
 
         settings.setMasterCs(self.cs)

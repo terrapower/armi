@@ -69,7 +69,7 @@ class SnapshotInterface(interfaces.Interface):
                 runLog.info(
                     "Adding default snapshot {0} to snapshot queue.".format(snapT)
                 )
-                with self.cs.unlock():
+                with self.cs._unlock():
                     self.cs["dumpSnapshot"] = self.cs["dumpSnapshot"] + [snapT]
 
     def _getSnapTimesEquilibrium(self):

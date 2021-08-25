@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         self.assertFalse(query)
 
         newCS = settings.getMasterCs().duplicate()
-        with newCS.unlock():
+        with newCS._unlock():
             newCS["runType"] = "banane"
 
         self.inspector.cs = newCS

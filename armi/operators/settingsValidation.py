@@ -497,7 +497,7 @@ class Inspector:
         )
 
         def _correctCycles():
-            with self.cs.unlock():
+            with self.cs._unlock():
                 self.cs["nCycles"] = 1
                 self.cs["burnSteps"] = 0
 

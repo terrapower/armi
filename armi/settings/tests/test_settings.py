@@ -75,7 +75,7 @@ class TestCaseSettings(unittest.TestCase):
         self.assertEqual(self.cs["nCycles"], startVal)
 
     def test_update(self):
-        with self.cs.unlock():
+        with self.cs._unlock():
             # grab the keys, and make sure they make some sense
             keys = sorted(self.cs.keys())
             self.assertEqual(len(keys), 146)
@@ -109,7 +109,7 @@ class TestCaseSettings(unittest.TestCase):
         ]
         self.assertEqual(self.cs.environmentSettings, envSettings)
 
-        with self.cs.unlock():
+        with self.cs._unlock():
             newEnv = {es: 9 for es in envSettings}
             self.cs.updateEnvironmentSettingsFrom(newEnv)
             self.assertEqual(self.cs["verbosity"], "9")
@@ -205,7 +205,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()
-        with cs.unlock():
+        with cs._unlock():
             cs["shuffleLogic"] = "nothere"
 
         inspector = settingsValidation.Inspector(cs)
@@ -223,7 +223,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
-        with cs.unlock():
+        with cs._unlock():
             self.assertEqual(cs["extendableOption"], "DEFAULT")
             # We shouldn't have any settings from the other plugin, so this should be an
             # error.
@@ -268,7 +268,7 @@ class TestSettingsConversion(unittest.TestCase):
         self.assertTrue(cs._lock)
         cs.lock()
         self.assertTrue(cs._lock)
-        with cs.unlock():
+        with cs._unlock():
             self.assertFalse(cs._lock)
             cs["buGroups"] = []
 
