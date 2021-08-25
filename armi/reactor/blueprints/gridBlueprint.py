@@ -104,16 +104,17 @@ Examples
 
 """
 import copy
+from io import StringIO
 import itertools
 from typing import Sequence, Optional, Tuple
 
 import numpy
 import yamlize
+from ruamel.yaml import scalarstring
 
 from armi.utils.customExceptions import InputError
 from armi.utils import asciimaps
-from armi.reactor import geometry
-from armi.reactor import grids
+from armi.reactor import geometry, grids
 from armi import runLog
 
 
@@ -165,6 +166,9 @@ class GridBlueprint(yamlize.Object):
     name = yamlize.Attribute(key="name", type=str)
     geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
     latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
+    readFromLatticeMap = yamlize.Attribute(
+        key="readFromLatticeMap", type=bool, default=False
+    )
     latticeDimensions = yamlize.Attribute(
         key="lattice pitch", type=Triplet, default=None
     )
@@ -221,6 +225,7 @@ class GridBlueprint(yamlize.Object):
         self.name = name
         self.geom = str(geom)
         self.latticeMap = latticeMap
+        self.readFromLatticeMap = False
         self.symmetry = str(symmetry)
         self.gridContents = gridContents
         self.gridBounds = gridBounds
@@ -384,6 +389,7 @@ class GridBlueprint(yamlize.Object):
         This update the gridContents attribute, which is a dict mapping grid i,j,k
         indices to textual specifiers (e.g. ``IC``))
         """
+        self.readFromLatticeMap = True
         symmetry = geometry.SymmetryType.fromStr(self.symmetry)
         geom = geometry.GeomType.fromStr(self.geom)
         latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
@@ -477,3 +483,117 @@ def _getGridSize(idx) -> Tuple[int, int]:
     ny = max(key[1] for key in idx) - min(key[1] for key in idx) + 1
 
     return nx, ny
+
+
+def _filterOutsideDomain(gridBp):
+    """Remove grid contents that lie outside the represented domain.
+
+    This removes extra objects; ARMI allows the user input specifiers in regions outside
+    of the represented domain, which is fine as long as the contained specifier is
+    consistent with the corresponding region in the represented domain given the
+    symmetry condition. For instance, if we have a 1/3-core hex model, it is typically
+    okay for an assembly to be specified outside of the first 1/3rd of the core, as long
+    as it is the same assembly as would be there when expanding the first 1/3rd into a
+    full-core model.
+
+    However, we do not really want these hanging around, since editing the represented
+    1/Nth of the core will probably lead to consistency issues, so we remove them.
+    """
+    grid = gridBp.construct()
+
+    contentsToRemove = {
+        idx
+        for idx, _contents in gridBp.gridContents.items()
+        if not grid.locatorInDomain(grid[idx + (0,)], symmetryOverlap=False)
+    }
+    for idx in contentsToRemove:
+        symmetrics = grid.getSymmetricEquivalents(idx)
+        for symmetric in symmetrics:
+            if symmetric in gridBp.gridContents:
+                if gridBp.gridContents[symmetric] != gridBp.gridContents[idx]:
+                    raise ValueError(
+                        "The contents at `{}` (`{}`) in grid `{}` is not the "
+                        "same as it's symmetric equivalent at `{}` (`{}`). "
+                        "Check your grid blueprints for symmetry.".format(
+                            idx,
+                            gridBp.gridContents[idx],
+                            gridBp.name,
+                            symmetric,
+                            gridBp.gridContents[symmetric],
+                        )
+                    )
+        del gridBp.gridContents[idx]
+
+
+def save_to_stream(stream, bluep, grid, full=False):
+    """Save the blueprints to the passed stream.
+
+    This can save either the entire blueprints, or just the `grids:` section of the
+    blueprints, based on the passed ``full`` argument. Saving just the grid
+    blueprints can be useful when cobbling blueprints together with !include flags.
+
+    stream: file output stream of some kind
+    bluep: armi.reactor.blueprints.Blueprints
+    grid: armi.reactor.grids.Grid
+    full: bool ~ Is this a full output file, or just a partial/grids?
+    """
+    # To save, we want to try our best to output our grid blueprints in the lattice
+    # map style. However, we do not want to wreck the state that the current
+    # blueprints are in. So we make a copy and do some manipulations to try to
+    # canonicalize it and save that, leaving the original blueprints unmolested.
+    bp = copy.deepcopy(bluep)
+
+    for gridDesignType, gridDesign in bp.gridDesigns.items():
+        # The core equilibrium path should be put into the
+        # grid contents rather than a lattice map until we write
+        # a string-> tuple parser for reading it back in. Skip
+        # this type of grid.
+        if gridDesignType == "coreEqPath":
+            continue
+        _filterOutsideDomain(gridDesign)
+
+        if not gridDesign.gridContents:
+            # there is no grid, so there must be lattice, and that goes to output
+            continue
+        elif not gridDesign.readFromLatticeMap:
+            # there is a grid, but we didn't read from latttice, so we block lattic output
+            gridDesign.latticeMap = None
+            continue
+
+        # this should never wind up in an output file, it is purely used to pass info around
+        if hasattr(gridDesign, "readFromLatticeMap"):
+            del gridDesign.readFromLatticeMap
+
+        try:
+            aMap = asciimaps.asciiMapFromGeomAndSym(grid.geomType, grid.symmetry)()
+            # asciimaps can't handle negative indices, so we bump everything
+            # forward if needed
+            offset = (
+                min(key[0] for key in gridDesign.gridContents.keys()),
+                min(key[1] for key in gridDesign.gridContents.keys()),
+            )
+            aMap.asciiLabelByIndices = {
+                (key[0] - offset[0], key[1] - offset[1]): val
+                for key, val in gridDesign.gridContents.items()
+            }
+            aMap.gridContentsToAscii()
+        except Exception as e:
+            runLog.warning(
+                "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
+                    e
+                )
+            )
+            aMap = None
+
+        gridDesign.gridContents = None
+        if aMap is not None:
+            mapString = StringIO()
+            aMap.writeAscii(mapString)
+            # deep ruamel.yaml magic
+            fmtStr = scalarstring.LiteralScalarString(mapString.getvalue())
+            gridDesign.latticeMap = fmtStr
+
+    toSave = bp if full else bp.gridDesigns
+
+    # NOTE: type(bp) here used because importing Blueprints causes a circular import
+    type(toSave).dump(toSave, stream)
