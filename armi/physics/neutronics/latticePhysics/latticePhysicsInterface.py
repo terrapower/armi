@@ -377,21 +377,38 @@ class LatticePhysicsInterface(interfaces.Interface):
             # changes that occurred during fuel management?
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)
             if missing and not executeXSGen:
-                runLog.warning(
-                    "Even though XS generation is not activated, new XS {0} are needed. "
-                    "Perhaps a booster came in.".format(missing)
+                runLog.info(
+                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
+                    f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
+                    f"is not enabled, but will be run to generate these missing cross sections."
                 )
+                executeXSGen = True
             elif missing:
-                runLog.important(
-                    "New XS sets {0} will be generated for this cycle".format(missing)
+                runLog.info(
+                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
+                    f"there are missing XS IDs {missing} required. These will be generated "
+                    f"on cycle {cycle}."
                 )
+                executeXSGen = True
             else:
-                runLog.important(
-                    "No new XS needed for this cycle. {0} exist. Skipping".format(
-                        self.r.core.lib.xsIDs
-                    )
+                runLog.info(
+                    f"A XS library {self.r.core._lib} exists on {self.r.core} and contains "
+                    f"the required XS data for XS IDs {self.r.core.lib.xsIDs}. The generation "
+                    "of XS will be skipped."
                 )
-                executeXSGen = False  # no newXs
+                executeXSGen = False
+
+        if executeXSGen:
+            runLog.info(
+                f"Cross sections will be generated on cycle {cycle} for the "
+                f"following XS IDs: {xsIDs}"
+            )
+        else:
+            runLog.info(
+                f"Cross sections will not be generated on cycle {cycle}. The "
+                f"setting `genXS` is {self.cs['genXS']} and `skipCycles` "
+                f"is {self.cs['skipCycles']}"
+            )
 
         return executeXSGen
 
