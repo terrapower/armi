@@ -177,9 +177,6 @@ class TestNuclide(unittest.TestCase):
         decayers = list(nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
         for nuc in decayers:
-            # print nuc
-            # for tt in nuc.decays: print '  ', tt
-            # TODO: BUG 102
             if nuc.name in [
                 "U238",
                 "PU240",
@@ -188,6 +185,7 @@ class TestNuclide(unittest.TestCase):
                 "CM244",
                 "CM246",
                 "CF250",
+                "CF252",
             ]:
                 continue
             self.assertAlmostEqual(1.0, sum(dd.branch for dd in nuc.decays))
@@ -237,6 +235,12 @@ class TestNuclide(unittest.TestCase):
             "CM244": 2.6875,
             "CM245": 0.0000,
             "CM246": 2.9480,
+            "TH232": 1.5,
+            "NP237": 2.05,
+            "PU241": 2.25,
+            "U232": 1.71,
+            "U233": 1.76,
+            "AM241": 2.5,
         }
         for key, val in actual.items():
             self.assertEqual(val, expected[key])

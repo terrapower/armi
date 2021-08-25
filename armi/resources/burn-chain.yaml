@@ -1,7 +1,5 @@
-# Spontaneous fission data is added from Table 5.1 of
-# "Application Guide to Neutron Multiplicity Counting" - LA-13422-M
 AM241:
-- nuSF: 3.22
+- nuSF: 2.5
 - transmutation:
     branch: 1.0
     products:
@@ -349,7 +347,7 @@ CF252:
     - LFP41
     type: sf
 CM242:
-- nuSF: 2.54
+- nuSF: 2.5280
 - transmutation:
     branch: 0.99
     products:
@@ -419,7 +417,7 @@ CM243:
     - LFP41
     type: sf
 CM244:
-- nuSF: 2.72
+- nuSF: 2.6875
 - transmutation:
     branch: 1.0
     products:
@@ -830,7 +828,7 @@ PU239:
     - LFP39
     type: sf
 PU240:
-- nuSF: 2.16
+- nuSF: 2.1510
 - transmutation:
     branch: 1.0
     products:
@@ -902,7 +900,7 @@ PU241:
     - LFP41
     type: sf
 PU242:
-- nuSF: 2.15
+- nuSF: 2.1410
 - transmutation:
     branch: 1.0
     products:
@@ -938,7 +936,7 @@ PU242:
     - LFP41
     type: sf
 TH232:
-- nuSF: 2.14
+- nuSF: 1.5
 - transmutation:
     branch: 1.0
     products:
@@ -1032,7 +1030,7 @@ U233:
     - LFP35
     type: sf
 U234:
-- nuSF: 1.81
+- nuSF: 1.8
 - transmutation:
     branch: 1.0
     products:
@@ -1069,7 +1067,7 @@ U234:
     - LFP35
     type: sf
 U235:
-- nuSF: 1.86
+- nuSF: 1.87
 - transmutation:
     branch: 1.0
     products:
@@ -1106,7 +1104,7 @@ U235:
     - LFP35
     type: sf
 U236:
-- nuSF: 1.91
+- nuSF: 1.90
 - transmutation:
     branch: 1.0
     products:
@@ -1141,7 +1139,7 @@ U236:
     - LFP35
     type: sf
 U238:
-- nuSF: 2.01
+- nuSF: 2.00
 - transmutation:
     branch: 1.0
     products:
