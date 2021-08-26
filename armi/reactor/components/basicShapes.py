@@ -66,7 +66,7 @@ class Circle(ShapedComponent):
         return max(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
 
     def getComponentArea(self, cold=False):
-        """Computes the area for the circle component in cm^2."""
+        """Computes the area for the circle component."""
         idiam = self.getDimension("id", cold=cold)
         od = self.getDimension("od", cold=cold)
         mult = self.getDimension("mult", cold=cold)
@@ -124,7 +124,7 @@ class Hexagon(ShapedComponent):
 
     def getComponentArea(self, cold=False):
         """
-        Computes the area for the hexagon component in cm^2.
+        Computes the area for the hexagon component.
 
         Notes
         -----
@@ -138,7 +138,7 @@ class Hexagon(ShapedComponent):
         return area
 
     def getPerimeter(self, Tc=None):
-        """Computes the perimeter of the hexagon component in cm."""
+        """Computes the perimeter of the hexagon component."""
         ip = self.getDimension("ip", Tc)
         mult = self.getDimension("mult", Tc)
         perimeter = 6 * (ip / math.sqrt(3)) * mult
@@ -208,7 +208,7 @@ class Rectangle(ShapedComponent):
         return math.sqrt(widthO ** 2 + lengthO ** 2)
 
     def getComponentArea(self, cold=False):
-        """Computes the area of the rectangle in cm^2."""
+        """Computes the area of the rectangle."""
         lengthO = self.getDimension("lengthOuter", cold=cold)
         widthO = self.getDimension("widthOuter", cold=cold)
         lengthI = self.getDimension("lengthInner", cold=cold)
@@ -284,7 +284,7 @@ class SolidRectangle(Rectangle):
         self.p.widthInner = 0
 
     def getComponentArea(self, cold=False):
-        """Computes the area of the solid rectangle in cm^2."""
+        """Computes the area of the solid rectangle."""
         lengthO = self.getDimension("lengthOuter", cold=cold)
         widthO = self.getDimension("widthOuter", cold=cold)
         mult = self.getDimension("mult")
@@ -332,7 +332,7 @@ class Square(Rectangle):
         )
 
     def getComponentArea(self, cold=False):
-        """Computes the area of the square in cm^2."""
+        """Computes the area of the square."""
         widthO = self.getDimension("widthOuter", cold=cold)
         widthI = self.getDimension("widthInner", cold=cold)
         mult = self.getDimension("mult")
@@ -403,7 +403,7 @@ class Triangle(ShapedComponent):
         )
 
     def getComponentArea(self, cold=False):
-        """Computes the area of the triangle in cm^2."""
+        """Computes the area of the triangle."""
         base = self.getDimension("base", cold=cold)
         height = self.getDimension("height", cold=cold)
         mult = self.getDimension("mult")

@@ -60,7 +60,7 @@ class HoledHexagon(basicShapes.Hexagon):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area for the hexagon with n number of circular holes in cm^2."""
+        r"""Computes the area for the hexagon with n number of circular holes."""
         op = self.getDimension("op", cold=cold)
         holeOD = self.getDimension("holeOD", cold=cold)
         nHoles = self.getDimension("nHoles", cold=cold)
@@ -113,7 +113,7 @@ class HoledRectangle(basicShapes.Rectangle):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area (in cm^2) for the the rectangle with one hole in it."""
+        r"""Computes the area for the the rectangle with one hole in it."""
         length = self.getDimension("lengthOuter", cold=cold)
         width = self.getDimension("widthOuter", cold=cold)
         rectangleArea = length * width
@@ -160,7 +160,7 @@ class HoledSquare(basicShapes.Square):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area (in cm^2) for the the square with one hole in it."""
+        r"""Computes the area for the the square with one hole in it."""
         width = self.getDimension("widthOuter", cold=cold)
         rectangleArea = width ** 2
         holeOD = self.getDimension("holeOD", cold=cold)
@@ -228,7 +228,7 @@ class Helix(ShapedComponent):
         )
 
     def getComponentArea(self, cold=False):
-        """Computes the area for the helix in cm^2."""
+        """Computes the area for the helix."""
         ap = self.getDimension("axialPitch", cold=cold)
         hd = self.getDimension("helixDiameter", cold=cold)
         id = self.getDimension("id", cold=cold)

@@ -63,7 +63,7 @@ class Sphere(ShapedComponent):
         raise NotImplementedError("Cannot compute area of a sphere component.")
 
     def getComponentVolume(self):
-        """Computes the volume of the sphere in cm^3."""
+        """Computes the volume of the sphere."""
         od = self.getDimension("od")
         iD = self.getDimension("id")
         mult = self.getDimension("mult")
@@ -127,7 +127,7 @@ class Cube(ShapedComponent):
 
     def getComponentVolume(self):
         r"""
-        Computes the volume of the cube in cm^3.
+        Computes the volume of the cube.
         """
         lengthO = self.getDimension("lengthOuter")
         widthO = self.getDimension("widthOuter")
@@ -295,7 +295,7 @@ class Torus(ShapedComponent):
         return self.getVolume() * refArea / refVolume
 
     def getComponentVolume(self):
-        """Computes the volume of the torus in cm^3.
+        """Computes the volume of the torus.
 
         Notes
         -----

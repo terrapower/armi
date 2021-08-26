@@ -24,7 +24,6 @@ from armi.reactor.flags import Flags  # non-standard import to avoid name confli
 
 def getComponentParameterDefinitions():
     """Return the base Component parameters."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("volume", units="cm^3", description="Volume of this object.")
@@ -126,7 +125,6 @@ def getComponentParameterDefinitions():
 
 def getCircleParameterDefinitions():
     """Return parameters for Circle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
@@ -233,7 +231,6 @@ def getCubeParameterDefinitions():
 
 def getTriangleParameterDefinitions():
     """Return parameters for Triangle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("base", units="?", description="?")
@@ -245,7 +242,6 @@ def getTriangleParameterDefinitions():
 
 def getUnshapedParameterDefinitions():
     """Return parameters for UnshapedComponent."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("op", units="cm", description="Outer pitch")
@@ -259,7 +255,6 @@ def getUnshapedParameterDefinitions():
 
 def getRadialSegmentParameterDefinitions():
     """Return parameters for RadialSegment."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("inner_theta", units="?", description="?")
@@ -285,7 +280,6 @@ def getRadialSegmentParameterDefinitions():
 
 def getTorusParameterDefinitions():
     """Return parameters for Torus."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("inner_theta", units="?", description="?")

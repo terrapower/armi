@@ -149,7 +149,7 @@ class UnshapedComponent(Component):
 
     def getComponentArea(self, cold=False):
         """
-        Get the area of this component in cm^2.
+        Get the area of this component
 
         Parameters
         ----------
@@ -228,7 +228,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         return self.getVolume() / self.parent.getHeight()
 
     def getComponentVolume(self):
-        """Get the volume of the component in cm^3."""
+        """Get the volume of the component"""
         return self.getDimension("userDefinedVolume")
 
     def setVolume(self, val):
@@ -379,7 +379,7 @@ class DerivedShape(UnshapedComponent):
         Returns
         -------
         float
-            volume of component in cm^3.
+            volume of component
 
         """
         if self.parent.derivedMustUpdate:
@@ -391,7 +391,7 @@ class DerivedShape(UnshapedComponent):
 
     def getComponentArea(self, cold=False):
         """
-        Get the area of this component in cm^2.
+        Get the area of this component.
 
         Parameters
         ----------

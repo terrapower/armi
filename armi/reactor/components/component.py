@@ -382,7 +382,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getArea(self, cold=False):
         """
-        Get the area of a component in cm^2.
+        Get the area of a component.
 
         See Also
         --------
@@ -403,7 +403,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getVolume(self):
         """
-        Return the volume [cm^3] of the component.
+        Return the volume of the component.
 
         Notes
         -----
@@ -508,7 +508,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getComponentArea(self, cold=False):
         """
-        Get the area of this component in cm^2.
+        Get the area of this component.
 
         Parameters
         ----------
