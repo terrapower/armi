@@ -242,6 +242,16 @@ class TestRunLog(unittest.TestCase):
             self.assertIn("hi3", mock._outputStream)
             mock._outputStream = ""
 
+            # call startLog() again, with a duplicate logger name
+            runLog.LOG.startLog("test_callingStartLogMultipleTimes3")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            # we should start at info level, and that should be working correctly
+            self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
+            runLog.info("hi333")
+            self.assertIn("hi333", mock._outputStream)
+            mock._outputStream = ""
+
     def test_concatenateLogs(self):
         """simple test of the concat logs function"""
         # create the log dir
