@@ -744,6 +744,9 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                     peakDoseAssem = a
             self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
 
+            if peakDoseAssem is None:
+                return
+
             doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
                 "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
             )
