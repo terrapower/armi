@@ -247,8 +247,7 @@ class _RunLog:
 
     def startLog(self, name):
         """Initialize the streams when parallel processing"""
-        # close the old logger and open a new one
-        self.logger.close()
+        # open the main logger
         self.logger = logging.getLogger(STDOUT_LOGGER_NAME + SEP + str(self._mpiRank))
 
         # if there was a pre-existing _verbosity, use it now
@@ -256,9 +255,6 @@ class _RunLog:
             self.setVerbosity(self._verbosity)
 
         if self._mpiRank != 0:
-            # grab any old error logging lying aroudn and close it
-            self.stderrLogger.close()
-
             # init stderr intercepting logging
             filePath = os.path.join(
                 context.LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
