@@ -736,16 +736,12 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         for xsFileLocation, xsFileName in self._getPregeneratedXsFileLocationData(xsID):
             dest = os.path.join(os.getcwd(), xsFileName)
-            # Optimization to reduce the number of times the files are copied over
-            if not os.path.exists(dest):
-                runLog.extra(
-                    "Copying pre-generated XS file {} from {} for XS ID {}".format(
-                        xsFileName, os.path.dirname(xsFileLocation), xsID
-                    )
+            runLog.extra(
+                "Copying pre-generated XS file {} from {} for XS ID {}".format(
+                    xsFileName, os.path.dirname(xsFileLocation), xsID
                 )
-                shutil.copy(xsFileLocation, dest)
-            else:
-                runLog.extra("Using existing pre-generated XS file: {}".format(dest))
+            )
+            shutil.copy(xsFileLocation, dest)
 
     def _getPregeneratedXsFileLocationData(self, xsID):
         """
