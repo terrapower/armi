@@ -50,7 +50,6 @@ import wx.adv
 from wx.lib import buttons
 import numpy
 import numpy.linalg
-from ruamel.yaml import scalarstring
 
 from armi import runLog
 from armi.utils import hexagon
@@ -63,7 +62,7 @@ from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 import armi.reactor.blueprints
 from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
-from armi.reactor.blueprints.gridBlueprint import GridBlueprint
+from armi.reactor.blueprints.gridBlueprint import GridBlueprint, save_to_stream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
 from armi.settings.fwSettings import globalSettings
 
@@ -98,47 +97,6 @@ FLAG_STYLES = {
 # RGB weights for calculating luminance. We use this to decide whether we should put
 # white or black text on top of the color. These come from CCIR 601
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11])
-
-
-def _filterOutsideDomain(gridBp):
-    """
-    Remove grid contents that lie outside the represented domain.
-
-    This removes extra objects; ARMI allows the user input specifiers in regions outside
-    of the represented domain, which is fine as long as the contained specifier is
-    consistent with the corresponding region in the represented domain given the
-    symmetry condition. For instance, if we have a 1/3-core hex model, it is typically
-    okay for an assembly to be specified outside of the first 1/3rd of the core, as long
-    as it is the same assembly as would be there when expanding the first 1/3rd into a
-    full-core model.
-
-    However, we do not really want these hanging around, since editing the represented
-    1/Nth of the core will probably lead to consistency issues, so we remove them.
-    """
-    grid = gridBp.construct()
-
-    contentsToRemove = {
-        idx
-        for idx, _contents in gridBp.gridContents.items()
-        if not grid.locatorInDomain(grid[idx + (0,)], symmetryOverlap=False)
-    }
-    for idx in contentsToRemove:
-        symmetrics = grid.getSymmetricEquivalents(idx)
-        for symmetric in symmetrics:
-            if symmetric in gridBp.gridContents:
-                if gridBp.gridContents[symmetric] != gridBp.gridContents[idx]:
-                    raise ValueError(
-                        "The contents at `{}` (`{}`) in grid `{}` is not the "
-                        "same as it's symmetric equivalent at `{}` (`{}`). "
-                        "Check your grid blueprints for symmetry.".format(
-                            idx,
-                            gridBp.gridContents[idx],
-                            gridBp.name,
-                            symmetric,
-                            gridBp.gridContents[symmetric],
-                        )
-                    )
-        del gridBp.gridContents[idx]
 
 
 def _translationMatrix(x, y):
@@ -1402,123 +1360,77 @@ class GridBlueprintControl(wx.Panel):
         blueprints can be useful when cobbling blueprints together with !include flags.
         """
         if stream is None:
-            # Prompt the user for a file name, open it, and call ourself again with that
-            # as the stream argument
-            if self._fName is None:
-                wd = os.getcwd()
-            else:
-                wd = os.path.split(self._fName)[0]
+            self._save_no_stream(full)
+        else:
+            save_to_stream(stream, self.bp, self.grid, full)
 
-            # Don't use the blueprints filename as the default if we are only saving the
-            # grids section; doing so may encourage users to overwrite their main
-            # blueprints file.
-            if full:
-                fName = self._fName or ""
-            else:
-                fName = ""
+    def _save_no_stream(self, full=False):
+        """Prompt for a file to save to.
 
-            title = "Save blueprints to..." if full else "Save grid designs to..."
+        This can save either the entire blueprints, or just the `grids:` section of the
+        blueprints, based on the passed ``full`` argument. Saving just the grid
+        blueprints can be useful when cobbling blueprints together with !include flags.
+        """
+        # Prompt the user for a file name, open it, and call ourself again with that
+        # as the stream argument
+        if self._fName is None:
+            wd = os.getcwd()
+        else:
+            wd = os.path.split(self._fName)[0]
 
-            dlg = wx.FileDialog(
-                self,
-                message=title,
-                defaultDir=wd,
-                defaultFile=fName,
-                wildcard=self._wildcard,
-                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
-            )
+        # Don't use the blueprints filename as the default if we are only saving the
+        # grids section; doing so may encourage users to overwrite their main
+        # blueprints file.
+        if full:
+            fName = self._fName or ""
+        else:
+            fName = ""
 
-            if dlg.ShowModal() == wx.ID_OK:
-                path = dlg.GetPath()
-            else:
-                return
+        title = "Save blueprints to..." if full else "Save grid designs to..."
 
-            # Disallow overwriting the main blueprints with the grids section
-            if (
-                not full
-                and pathlib.Path(path).exists()
-                and pathlib.Path(path).samefile(self._fName)
-            ):
-                message = (
-                    "The chosen path, `{}` is the same as the main blueprints "
-                    'file. This tool only saves the "grids" section of the '
-                    "blueprints file, so saving over the original top-level blueprints "
-                    "will lead to data loss. Try again with a different name.".format(
-                        path
-                    )
-                )
+        dlg = wx.FileDialog(
+            self,
+            message=title,
+            defaultDir=wd,
+            defaultFile=fName,
+            wildcard=self._wildcard,
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+        )
 
-                with wx.MessageDialog(
-                    self,
-                    message,
-                    "Overwriting top-level blueprints!",
-                    style=wx.ICON_WARNING,
-                ) as dlg:
-                    dlg.ShowModal()
-                    return
-
-            # Try writing to an internal buffer before opening the file for write. This
-            # way to don't destroy anything unless we know we have something with which
-            # to replace it.
-            bpStream = io.StringIO()
-            self.save(bpStream)
-            with open(path, "w") as stream:
-                stream.write(bpStream.getvalue())
-
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        else:
             return
 
-        # To save, we want to try our best to output our grid blueprints in the lattice
-        # map style. However, we do not want to wreck the state that the current
-        # blueprints are in. So we make a copy and do some manipulations to try to
-        # canonicalize it and save that, leaving the original blueprints unmolested.
-        bp = copy.deepcopy(self.bp)
+        # Disallow overwriting the main blueprints with the grids section
+        if (
+            not full
+            and pathlib.Path(path).exists()
+            and pathlib.Path(path).samefile(self._fName)
+        ):
+            message = (
+                "The chosen path, `{}` is the same as the main blueprints "
+                'file. This tool only saves the "grids" section of the '
+                "blueprints file, so saving over the original top-level blueprints "
+                "will lead to data loss. Try again with a different name.".format(path)
+            )
 
-        for gridDesignType, gridDesign in bp.gridDesigns.items():
-            # The core equilibrium path should be put into the
-            # grid contents rather than a lattice map until we write
-            # a string-> tuple parser for reading it back in. Skip
-            # this type of grid.
-            if gridDesignType == "coreEqPath":
-                continue
-            _filterOutsideDomain(gridDesign)
-            if gridDesign.gridContents:
+            with wx.MessageDialog(
+                self,
+                message,
+                "Overwriting top-level blueprints!",
+                style=wx.ICON_WARNING,
+            ) as dlg:
+                dlg.ShowModal()
+                return
 
-                try:
-                    aMap = asciimaps.asciiMapFromGeomAndSym(
-                        self.grid.geomType, self.grid.symmetry
-                    )()
-                    # asciimaps can't handle negative indices, so we bump everything
-                    # forward if needed
-                    offset = (
-                        min(key[0] for key in gridDesign.gridContents.keys()),
-                        min(key[1] for key in gridDesign.gridContents.keys()),
-                    )
-                    aMap.asciiLabelByIndices = {
-                        (key[0] - offset[0], key[1] - offset[1]): val
-                        for key, val in gridDesign.gridContents.items()
-                    }
-                    aMap.gridContentsToAscii()
-                except Exception as e:
-                    runLog.warning(
-                        "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
-                            e
-                        )
-                    )
-                    aMap = None
-
-                if aMap is not None:
-                    mapString = io.StringIO()
-                    aMap.writeAscii(mapString)
-                    # deep ruamel.yaml magic
-                    formattedStr = scalarstring.LiteralScalarString(
-                        mapString.getvalue()
-                    )
-                    gridDesign.latticeMap = formattedStr
-                    gridDesign.gridContents = None
-
-        toSave = bp if full else bp.gridDesigns
-
-        type(toSave).dump(toSave, stream)
+        # Try writing to an internal buffer before opening the file for write. This
+        # way to don't destroy anything unless we know we have something with which
+        # to replace it.
+        bpStream = io.StringIO()
+        save_to_stream(bpStream, self.bp, self.grid, full)
+        with open(path, "w") as stream:
+            stream.write(bpStream.getvalue())
 
     def open(self, _event):
         if self._fName is None:

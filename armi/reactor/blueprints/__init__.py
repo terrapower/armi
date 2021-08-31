@@ -402,7 +402,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 newNuclides = expansions[elemental]
                 # overlay code details onto nuclideFlags for other parts of the code
                 # that will use them.
-                # CRAP: would be better if nuclideFlags did this upon reading s.t.
+                # TODO: would be better if nuclideFlags did this upon reading s.t.
                 # order didn't matter. On the other hand, this is the only place in
                 # the code where NuclideFlags get built and have user settings around
                 # (hence "resolve").

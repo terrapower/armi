@@ -14,14 +14,18 @@
 """Tests for grid blueprints."""
 # pylint: disable=wrong-import-position
 import io
+import os
 import unittest
 
 from armi import configure, isConfigured
 
 if not isConfigured():
     configure()
-from armi.reactor.blueprints import gridBlueprint
 from armi.reactor import systemLayoutInput
+from armi.reactor.blueprints import Blueprints
+from armi.reactor.blueprints.gridBlueprint import Grids, save_to_stream
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP, FULL_BP_GRID
+
 
 LATTICE_BLUEPRINT = """
 control:
@@ -262,39 +266,37 @@ class TestGridBlueprintsSection(unittest.TestCase):
     """Tests for lattice blueprint section."""
 
     def setUp(self):
-        self.grids = gridBlueprint.Grids.load(
-            LATTICE_BLUEPRINT.format(self._testMethodName)
-        )
+        self.grids = Grids.load(LATTICE_BLUEPRINT.format(self._testMethodName))
 
-    def test_simple_read(self):
+    def test_simpleRead(self):
         gridDesign = self.grids["control"]
-        _grid = gridDesign.construct()
+        _ = gridDesign.construct()
         self.assertEqual(gridDesign.gridContents[0, -8], "6")
 
         # Cartesian full, odd
         gridDesign2 = self.grids["sfp"]
-        _grid = gridDesign2.construct()
+        _ = gridDesign2.construct()
         self.assertEqual(gridDesign2.gridContents[1, 1], "1")
         self.assertEqual(gridDesign2.gridContents[0, 0], "3")
         self.assertEqual(gridDesign2.gridContents[-1, -1], "3")
 
         # Cartesian quarter, odd
         gridDesign3 = self.grids["sfp quarter"]
-        _grid = gridDesign3.construct()
+        grid = gridDesign3.construct()
         self.assertEqual(gridDesign3.gridContents[0, 0], "2")
         self.assertEqual(gridDesign3.gridContents[1, 1], "3")
         self.assertEqual(gridDesign3.gridContents[2, 2], "3")
         self.assertEqual(gridDesign3.gridContents[3, 3], "1")
-        self.assertTrue(_grid.symmetry.isThroughCenterAssembly)
+        self.assertTrue(grid.symmetry.isThroughCenterAssembly)
 
         # cartesian quarter, even not through center
         gridDesign3 = self.grids["sfp quarter even"]
-        _grid = gridDesign3.construct()
-        self.assertFalse(_grid.symmetry.isThroughCenterAssembly)
+        grid = gridDesign3.construct()
+        self.assertFalse(grid.symmetry.isThroughCenterAssembly)
 
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
-        _grid = gridDesign4.construct()
+        grid = gridDesign4.construct()
         self.assertEqual(gridDesign4.gridContents[0, 0], "4")
         self.assertEqual(gridDesign4.gridContents[-1, -1], "2")
         self.assertEqual(gridDesign4.gridContents[2, 2], "2")
@@ -302,14 +304,82 @@ class TestGridBlueprintsSection(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
 
+    def test_simpleReadLatticeMap(self):
+        # Cartesian full, even/odd hybrid
+        gridDesign4 = self.grids["sfp even"]
+        grid = gridDesign4.construct()
+
+        # test that we can correctly save this to a YAML
+        bp = Blueprints.load(FULL_BP)
+        filePath = "TestGridBlueprintsSection__test_simpleReadLatticeMap.log"
+        with open(filePath, "w") as stream:
+            save_to_stream(stream, bp, grid, True)
+
+        # test that the output looks valid, and includes a lattice map
+        with open(filePath, "r") as f:
+            outText = f.read()
+            self.assertIn("blocks:", outText)
+            self.assertIn("shape: Circle", outText)
+            self.assertIn("assemblies:", outText)
+            self.assertIn("flags: fuel test", outText)
+            self.assertIn("grid contents:", outText)
+            self.assertIn("lattice map:", outText)
+            before, after = outText.split("lattice map:")
+            self.assertGreater(len(before), 100)
+            self.assertGreater(len(after), 20)
+            self.assertIn("1 3 1 2 1 3 1", after, msg="lattice map not showing up")
+            self.assertNotIn(
+                "- -3", after, msg="grid contents are showing up when they shouldn't"
+            )
+            self.assertNotIn("readFromLatticeMap", outText)
+
+        self.assertTrue(os.path.exists(filePath))
+        try:
+            os.remove(filePath)
+        except:
+            pass
+
+    def test_simpleReadNoLatticeMap(self):
+        # Cartesian full, even/odd hybrid
+        gridDesign4 = self.grids["sfp even"]
+        grid = gridDesign4.construct()
+
+        # test that we can correctly save this to a YAML
+        bp = Blueprints.load(FULL_BP_GRID)
+        filePath = "TestGridBlueprintsSection__test_simpleReadNoLatticeMap.log"
+        with open(filePath, "w") as stream:
+            save_to_stream(stream, bp, grid, True)
+
+        # test that the output looks valid, and includes a lattice map
+        with open(filePath, "r") as f:
+            outText = f.read()
+            self.assertIn("blocks:", outText)
+            self.assertIn("shape: Circle", outText)
+            self.assertIn("assemblies:", outText)
+            self.assertIn("flags: fuel test", outText)
+            self.assertIn("grid contents:", outText)
+            self.assertIn("lattice map:", outText)
+            before, after = outText.split("grid contents:")
+            self.assertGreater(len(before), 100)
+            self.assertGreater(len(after), 20)
+            self.assertIn("- -3", after, msg="grid contents not showing up")
+            self.assertNotIn(
+                "1 3 1 2 1 3 1", after, msg="lattice map showing up when it shouldn't"
+            )
+            self.assertNotIn("readFromLatticeMap", outText)
+
+        self.assertTrue(os.path.exists(filePath))
+        try:
+            os.remove(filePath)
+        except:
+            pass
+
 
 class TestRZTGridBlueprint(unittest.TestCase):
-    """
-    Tests for R-Z-Theta grid inputs.
-    """
+    """Tests for R-Z-Theta grid inputs."""
 
     def setUp(self):
-        self.grids = gridBlueprint.Grids.load(RZT_BLUEPRINT)
+        self.grids = Grids.load(RZT_BLUEPRINT)
 
     def test_construct(self):
         gridDesign = self.grids["rzt_core"]
