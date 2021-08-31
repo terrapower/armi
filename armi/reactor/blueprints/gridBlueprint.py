@@ -166,9 +166,6 @@ class GridBlueprint(yamlize.Object):
     name = yamlize.Attribute(key="name", type=str)
     geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
     latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
-    readFromLatticeMap = yamlize.Attribute(
-        key="readFromLatticeMap", type=bool, default=False
-    )
     latticeDimensions = yamlize.Attribute(
         key="lattice pitch", type=Triplet, default=None
     )
@@ -555,14 +552,12 @@ def save_to_stream(stream, bluep, grid, full=False):
         if not gridDesign.gridContents:
             # there is no grid, so there must be lattice, and that goes to output
             continue
-        elif not gridDesign.readFromLatticeMap:
+
+        readFromLatticeMap = getattr(gridDesign, "readFromLatticeMap", False)
+        if not readFromLatticeMap:
             # there is a grid, but we didn't read from latttice, so we block lattic output
             gridDesign.latticeMap = None
             continue
-
-        # this should never wind up in an output file, it is purely used to pass info around
-        if hasattr(gridDesign, "readFromLatticeMap"):
-            del gridDesign.readFromLatticeMap
 
         try:
             aMap = asciimaps.asciiMapFromGeomAndSym(grid.geomType, grid.symmetry)()
