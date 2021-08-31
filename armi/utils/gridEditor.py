@@ -62,7 +62,7 @@ from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 import armi.reactor.blueprints
 from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
-from armi.reactor.blueprints.gridBlueprint import GridBlueprint, save_to_stream
+from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
 from armi.settings.fwSettings import globalSettings
 
@@ -1360,11 +1360,11 @@ class GridBlueprintControl(wx.Panel):
         blueprints can be useful when cobbling blueprints together with !include flags.
         """
         if stream is None:
-            self._save_no_stream(full)
+            self._saveNoStream(full)
         else:
-            save_to_stream(stream, self.bp, self.grid, full)
+            saveToStream(stream, self.bp, self.grid, full)
 
-    def _save_no_stream(self, full=False):
+    def _saveNoStream(self, full=False):
         """Prompt for a file to save to.
 
         This can save either the entire blueprints, or just the `grids:` section of the
@@ -1428,7 +1428,7 @@ class GridBlueprintControl(wx.Panel):
         # way to don't destroy anything unless we know we have something with which
         # to replace it.
         bpStream = io.StringIO()
-        save_to_stream(bpStream, self.bp, self.grid, full)
+        saveToStream(bpStream, self.bp, self.grid, full)
         with open(path, "w") as stream:
             stream.write(bpStream.getvalue())
 

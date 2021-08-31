@@ -23,7 +23,7 @@ if not isConfigured():
     configure()
 from armi.reactor import systemLayoutInput
 from armi.reactor.blueprints import Blueprints
-from armi.reactor.blueprints.gridBlueprint import Grids, save_to_stream
+from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
 from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP, FULL_BP_GRID
 
 
@@ -313,7 +313,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
         bp = Blueprints.load(FULL_BP)
         filePath = "TestGridBlueprintsSection__test_simpleReadLatticeMap.log"
         with open(filePath, "w") as stream:
-            save_to_stream(stream, bp, grid, True)
+            saveToStream(stream, bp, grid, True)
 
         # test that the output looks valid, and includes a lattice map
         with open(filePath, "r") as f:
@@ -348,7 +348,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
         bp = Blueprints.load(FULL_BP_GRID)
         filePath = "TestGridBlueprintsSection__test_simpleReadNoLatticeMap.log"
         with open(filePath, "w") as stream:
-            save_to_stream(stream, bp, grid, True)
+            saveToStream(stream, bp, grid, True)
 
         # test that the output looks valid, and includes a lattice map
         with open(filePath, "r") as f:
