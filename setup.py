@@ -83,7 +83,7 @@ setup(
             "pytest-html",
             "pylint",
             "docutils",
-            "sphinx>=2.2",
+            "sphinx==2.2",
             "sphinx-rtd-theme",
             "black",
             # for running jupyter dynamically in docs
