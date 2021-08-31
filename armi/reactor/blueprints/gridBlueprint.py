@@ -522,7 +522,7 @@ def _filterOutsideDomain(gridBp):
         del gridBp.gridContents[idx]
 
 
-def save_to_stream(stream, bluep, grid, full=False):
+def saveToStream(stream, bluep, grid, full=False):
     """Save the blueprints to the passed stream.
 
     This can save either the entire blueprints, or just the `grids:` section of the
