@@ -1,0 +1,37 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Update package index
+        run: sudo apt-get update
+      - name: Install mpi libs
+        run: sudo apt-get -y install libopenmpi-dev
+      - name: Install Pandoc
+        run: sudo apt-get -y install pandoc
+      - name: Install Tox and any other packages
+        run: pip install tox
+      - name: Make HTML Docs
+        run: tox -e doc
+        continue-on-error: true
+      - name: deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          repository-name: ${{ github.actor }}/terrapower.github.io
+          branch: master
+          folder: doc/_build/html
+          target-folder: armi
