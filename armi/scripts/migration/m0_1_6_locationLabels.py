@@ -71,7 +71,8 @@ def _modify_settings(cs):
                 loc = newLoc
             newLocs.append(loc)
 
-        cs["detailAssemLocationsBOL"] = newLocs
+        with cs._unlock():
+            cs["detailAssemLocationsBOL"] = newLocs
 
 
 def getIndicesFromDIF3DStyleLocatorLabel(label):

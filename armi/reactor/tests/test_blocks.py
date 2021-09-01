@@ -451,9 +451,9 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(ref, cur, places=places)
 
     def test_getXsType(self):
-
         self.cs = settings.getMasterCs()
-        self.cs["loadingFile"] = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+        with self.cs._unlock():
+            self.cs["loadingFile"] = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
 
         self.Block.p.xsType = "B"
         cur = self.Block.p.xsType
@@ -461,12 +461,15 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
         oldBuGroups = self.cs["buGroups"]
-        self.cs["buGroups"] = [100]
+        with self.cs._unlock():
+            self.cs["buGroups"] = [100]
+
         self.Block.p.xsType = "BB"
         cur = self.Block.p.xsType
         ref = "BB"
         self.assertEqual(cur, ref)
-        self.cs["buGroups"] = oldBuGroups
+        with self.cs._unlock():
+            self.cs["buGroups"] = oldBuGroups
 
     def test27b_setBuGroup(self):
         type_ = "A"

@@ -110,59 +110,65 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildRingZones(self):
         o, r = self.o, self.r
         cs = o.cs
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
-        cs["ringZones"] = []
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 1)
-        self.assertEqual(9, r.core.numRings)
+        with cs._unlock():
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
+            cs["ringZones"] = []
+            zonez = zones.buildZones(r.core, cs)
+            self.assertEqual(len(list(zonez)), 1)
+            self.assertEqual(9, r.core.numRings)
 
-        cs["ringZones"] = [5, 8]
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 2)
-        zone = zonez["ring-1"]
-        self.assertEqual(len(zone), (5 * (5 - 1) + 1))
-        zone = zonez["ring-2"]
-        # Note that the actual number of rings in the reactor model is 9. Even though we
-        # asked for the last zone to to to 8, the zone engine should bump it out. Not
-        # sure if this is behavior that we want to preserve, but at least it's being
-        # tested properly now.
-        self.assertEqual(len(zone), (9 * (9 - 1) + 1) - (5 * (5 - 1) + 1))
+            cs["ringZones"] = [5, 8]
+            zonez = zones.buildZones(r.core, cs)
+            self.assertEqual(len(list(zonez)), 2)
+            zone = zonez["ring-1"]
+            self.assertEqual(len(zone), (5 * (5 - 1) + 1))
+            zone = zonez["ring-2"]
+            # Note that the actual number of rings in the reactor model is 9. Even though we
+            # asked for the last zone to to to 8, the zone engine should bump it out. Not
+            # sure if this is behavior that we want to preserve, but at least it's being
+            # tested properly now.
+            self.assertEqual(len(zone), (9 * (9 - 1) + 1) - (5 * (5 - 1) + 1))
 
-        cs["ringZones"] = [5, 7, 8]
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 3)
-        zone = zonez["ring-3"]
-        self.assertEqual(len(zone), 30)  # rings 8 and 9. See above comment
+            cs["ringZones"] = [5, 7, 8]
+            zonez = zones.buildZones(r.core, cs)
+            self.assertEqual(len(list(zonez)), 3)
+            zone = zonez["ring-3"]
+            self.assertEqual(len(zone), 30)  # rings 8 and 9. See above comment
 
     def test_buildManualZones(self):
         o, r = self.o, self.r
         cs = o.cs
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "manual"
-        cs["zoneDefinitions"] = [
-            "ring-1: 001-001",
-            "ring-2: 002-001, 002-002",
-            "ring-3: 003-001, 003-002, 003-003",
-        ]
-        zonez = zones.buildZones(r.core, cs)
+        with cs._unlock():
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "manual"
+            cs["zoneDefinitions"] = [
+                "ring-1: 001-001",
+                "ring-2: 002-001, 002-002",
+                "ring-3: 003-001, 003-002, 003-003",
+            ]
+            zonez = zones.buildZones(r.core, cs)
+
         self.assertEqual(len(list(zonez)), 3)
         self.assertIn("003-002", zonez["ring-3"])
 
     def test_buildAssemTypeZones(self):
         o, r = self.o, self.r
         cs = o.cs
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "byFuelType"
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 4)
-        self.assertIn("008-040", zonez["feed fuel"])
-        self.assertIn("005-023", zonez["igniter fuel"])
-        self.assertIn("003-002", zonez["lta fuel"])
-        self.assertIn("004-003", zonez["lta fuel b"])
+        with cs._unlock():
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "byFuelType"
+            zonez = zones.buildZones(r.core, cs)
+            self.assertEqual(len(list(zonez)), 4)
+            self.assertIn("008-040", zonez["feed fuel"])
+            self.assertIn("005-023", zonez["igniter fuel"])
+            self.assertIn("003-002", zonez["lta fuel"])
+            self.assertIn("004-003", zonez["lta fuel b"])
 
     def test_buildZonesForEachFA(self):
         o, r = self.o, self.r
         cs = o.cs
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "everyFA"
-        zonez = zones.buildZones(r.core, cs)
+        with cs._unlock():
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "everyFA"
+            zonez = zones.buildZones(r.core, cs)
+
         self.assertEqual(len(list(zonez)), 53)
         self.assertIn("008-040", zonez["channel 1"])
         self.assertIn("005-023", zonez["channel 2"])
@@ -171,8 +177,10 @@ class Zones_InReactor(unittest.TestCase):
     def test_buildZonesByOrifice(self):
         o, r = self.o, self.r
         cs = o.cs
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "byOrifice"
-        zonez = zones.buildZones(r.core, cs)
+        with cs._unlock():
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "byOrifice"
+            zonez = zones.buildZones(r.core, cs)
+
         self.assertEqual(len(list(zonez)), 2)
         self.assertIn("008-040", zonez["zone0"])
         self.assertIn("005-023", zonez["zone0"])
@@ -181,11 +189,13 @@ class Zones_InReactor(unittest.TestCase):
     def test_removeZone(self):
         o, r = self.o, self.r
         cs = o.cs
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
-        cs["ringZones"] = [5, 8]
-        # produce 2 zones, with the names ringzone0 and ringzone1
-        daZones = zones.buildZones(r.core, cs)
-        daZones.removeZone("ring-1")
+        with cs._unlock():
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
+            cs["ringZones"] = [5, 8]
+            # produce 2 zones, with the names ringzone0 and ringzone1
+            daZones = zones.buildZones(r.core, cs)
+            daZones.removeZone("ring-1")
+
         # The names list should only house the only other remaining zone now
         self.assertEqual(["ring-2"], daZones.names)
 
@@ -199,19 +209,21 @@ class Zones_InReactor(unittest.TestCase):
 
     def test_findZoneAssemblyIsIn(self):
         cs = self.o.cs
-        cs["ringZones"] = [5, 7, 8]
-        daZones = zones.buildZones(self.r.core, cs)
-        for zone in daZones:
-            a = self.r.core.getAssemblyWithStringLocation(zone.locList[0])
-            aZone = daZones.findZoneAssemblyIsIn(a)
-            self.assertEqual(aZone, zone)
-        # lets test if we get a none and a warning if the assembly does not exist in a zone
-        a = self.r.core.getAssemblyWithStringLocation(
-            daZones[daZones.names[0]].locList[0]
-        )  # get assem from first zone
-        daZones.removeZone(
-            daZones.names[0]
-        )  # remove a zone to ensure that our assem does not have a zone anymore
+        with cs._unlock():
+            cs["ringZones"] = [5, 7, 8]
+            daZones = zones.buildZones(self.r.core, cs)
+            for zone in daZones:
+                a = self.r.core.getAssemblyWithStringLocation(zone.locList[0])
+                aZone = daZones.findZoneAssemblyIsIn(a)
+                self.assertEqual(aZone, zone)
+            # lets test if we get a none and a warning if the assembly does not exist in a zone
+            a = self.r.core.getAssemblyWithStringLocation(
+                daZones[daZones.names[0]].locList[0]
+            )  # get assem from first zone
+            daZones.removeZone(
+                daZones.names[0]
+            )  # remove a zone to ensure that our assem does not have a zone anymore
+
         self.assertEqual(daZones.findZoneAssemblyIsIn(a), None)
 
 
@@ -222,30 +234,32 @@ class Zones_InRZReactor(unittest.TestCase):
 
         o, r = test_reactors.loadTestReactor()
         cs = o.cs
-        cs["splitZones"] = False
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
-        cs["ringZones"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        diverseZone = "ring-4"
-        r.core.buildZones(cs)
-        daZones = r.core.zones
-        # lets make one of the assemblies have an extra block
-        zoneLocations = daZones.getZoneLocations(diverseZone)
-        originalAssemblies = r.core.getLocationContents(
-            zoneLocations, assemblyLevel=True
-        )
-        fuel = [a for a in originalAssemblies if a.hasFlags(Flags.FUEL)][0]
-        newBlock = copy.deepcopy(fuel[-1])
-        fuel.add(newBlock)
+        with cs._unlock():
+            cs["splitZones"] = False
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
+            cs["ringZones"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+            diverseZone = "ring-4"
+            r.core.buildZones(cs)
+            daZones = r.core.zones
+            # lets make one of the assemblies have an extra block
+            zoneLocations = daZones.getZoneLocations(diverseZone)
+            originalAssemblies = r.core.getLocationContents(
+                zoneLocations, assemblyLevel=True
+            )
+            fuel = [a for a in originalAssemblies if a.hasFlags(Flags.FUEL)][0]
+            newBlock = copy.deepcopy(fuel[-1])
+            fuel.add(newBlock)
 
-        # should contain a zone for every ring zone
-        # we only want one ring zone for this test, containing assemblies of different types.
-        zoneTup = tuple(daZones.names)
-        for zoneName in zoneTup:
-            if zoneName != diverseZone:
-                daZones.removeZone(zoneName)
-        # this should split diverseZone into multiple zones by nodalization type.
-        cs["splitZones"] = True
-        zones.splitZones(r.core, cs, daZones)
+            # should contain a zone for every ring zone
+            # we only want one ring zone for this test, containing assemblies of different types.
+            zoneTup = tuple(daZones.names)
+            for zoneName in zoneTup:
+                if zoneName != diverseZone:
+                    daZones.removeZone(zoneName)
+            # this should split diverseZone into multiple zones by nodalization type.
+            cs["splitZones"] = True
+            zones.splitZones(r.core, cs, daZones)
+
         # test to make sure that we split the ring zone correctly
         self.assertEqual(len(daZones["ring-4-igniter-fuel-5"]), 4)
         self.assertEqual(len(daZones["ring-4-igniter-fuel-6"]), 1)
@@ -258,85 +272,87 @@ class Zones_InRZReactor(unittest.TestCase):
         # Test that if a hot zone can not be created from a single assembly zone.
         o, r = test_reactors.loadTestReactor()
         cs = o.cs
-        cs["splitZones"] = False
-        cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
-        cs["ringZones"] = [9]  # build one giant zone
-        r.core.buildZones(cs)
-        daZones = r.core.zones
+        with cs._unlock():
+            cs["splitZones"] = False
+            cs[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
+            cs["ringZones"] = [9]  # build one giant zone
+            r.core.buildZones(cs)
+            daZones = r.core.zones
 
-        originalassemblies = []
-        originalPower = 0.0
-        peakZonePFRatios = []
+            originalassemblies = []
+            originalPower = 0.0
+            peakZonePFRatios = []
 
-        # Create a single assembly zone to verify that it will not create a hot zone
-        single = zones.Zone("single")
-        daZones.add(single)
-        aLoc = next(
-            a
-            for a in r.core.getAssemblies(Flags.FUEL)
-            if a.spatialLocator.getRingPos() == (1, 1)
-        ).getLocation()
-        single.append(aLoc)
+            # Create a single assembly zone to verify that it will not create a hot zone
+            single = zones.Zone("single")
+            daZones.add(single)
+            aLoc = next(
+                a
+                for a in r.core.getAssemblies(Flags.FUEL)
+                if a.spatialLocator.getRingPos() == (1, 1)
+            ).getLocation()
+            single.append(aLoc)
 
-        # Set power and flow.
-        # Also gather channel peak P/F ratios, assemblies and power.
-        for zone in daZones:
-            powerToFlow = []
-            zoneLocations = daZones.getZoneLocations(zone.name)
-            assems = r.core.getLocationContents(zoneLocations, assemblyLevel=True)
-            power = 300.0
-            flow = 300.0
-            for a in assems:
-                a.getFirstBlock().p.power = power
-                assemblyPower = a.calcTotalParam("power")
-                a[-1].p.THmassFlowRate = flow
-                powerToFlow.append(assemblyPower / a[-1].p.THmassFlowRate)
-                originalPower += assemblyPower
-                originalassemblies.append(a)
-                power += 1
-                flow -= 1
-            peakZonePFRatios.append(max(powerToFlow))
+            # Set power and flow.
+            # Also gather channel peak P/F ratios, assemblies and power.
+            for zone in daZones:
+                powerToFlow = []
+                zoneLocations = daZones.getZoneLocations(zone.name)
+                assems = r.core.getLocationContents(zoneLocations, assemblyLevel=True)
+                power = 300.0
+                flow = 300.0
+                for a in assems:
+                    a.getFirstBlock().p.power = power
+                    assemblyPower = a.calcTotalParam("power")
+                    a[-1].p.THmassFlowRate = flow
+                    powerToFlow.append(assemblyPower / a[-1].p.THmassFlowRate)
+                    originalPower += assemblyPower
+                    originalassemblies.append(a)
+                    power += 1
+                    flow -= 1
+                peakZonePFRatios.append(max(powerToFlow))
 
-        daZones = zones.createHotZones(r.core, daZones)
-        # Test that the hot zones have the peak P/F from the host channels
-        i = 0
-        for zone in daZones:
-            if zone.hotZone:
-                hotAssemLocation = daZones.getZoneLocations(zone.name)
-                hotAssem = r.core.getLocationContents(
-                    hotAssemLocation, assemblyLevel=True
-                )[0]
-                self.assertEqual(
-                    peakZonePFRatios[i],
-                    hotAssem.calcTotalParam("power") / hotAssem[-1].p.THmassFlowRate,
-                )
-                i += 1
+            daZones = zones.createHotZones(r.core, daZones)
+            # Test that the hot zones have the peak P/F from the host channels
+            i = 0
+            for zone in daZones:
+                if zone.hotZone:
+                    hotAssemLocation = daZones.getZoneLocations(zone.name)
+                    hotAssem = r.core.getLocationContents(
+                        hotAssemLocation, assemblyLevel=True
+                    )[0]
+                    self.assertEqual(
+                        peakZonePFRatios[i],
+                        hotAssem.calcTotalParam("power")
+                        / hotAssem[-1].p.THmassFlowRate,
+                    )
+                    i += 1
 
-        powerAfterHotZoning = 0.0
-        assembliesAfterHotZoning = []
+            powerAfterHotZoning = 0.0
+            assembliesAfterHotZoning = []
 
-        # Check that power is conserved and that we did not lose any assemblies
-        for zone in daZones:
-            locs = daZones.getZoneLocations(zone.name)
-            assems = r.core.getLocationContents(locs, assemblyLevel=True)
-            for a in assems:
-                assembliesAfterHotZoning.append(a)
-                powerAfterHotZoning += a.calcTotalParam("power")
-        self.assertEqual(powerAfterHotZoning, originalPower)
-        self.assertEqual(len(assembliesAfterHotZoning), len(originalassemblies))
+            # Check that power is conserved and that we did not lose any assemblies
+            for zone in daZones:
+                locs = daZones.getZoneLocations(zone.name)
+                assems = r.core.getLocationContents(locs, assemblyLevel=True)
+                for a in assems:
+                    assembliesAfterHotZoning.append(a)
+                    powerAfterHotZoning += a.calcTotalParam("power")
+            self.assertEqual(powerAfterHotZoning, originalPower)
+            self.assertEqual(len(assembliesAfterHotZoning), len(originalassemblies))
 
-        # check that the original zone with 1 channel has False for hotzone
-        self.assertEqual(single.hotZone, False)
-        # check that we have the correct number of hot and normal zones.
-        hotCount = 0
-        normalCount = 0
-        for zone in daZones:
-            if zone.hotZone:
-                hotCount += 1
-            else:
-                normalCount += 1
-        self.assertEqual(hotCount, 1)
-        self.assertEqual(normalCount, 2)
+            # check that the original zone with 1 channel has False for hotzone
+            self.assertEqual(single.hotZone, False)
+            # check that we have the correct number of hot and normal zones.
+            hotCount = 0
+            normalCount = 0
+            for zone in daZones:
+                if zone.hotZone:
+                    hotCount += 1
+                else:
+                    normalCount += 1
+            self.assertEqual(hotCount, 1)
+            self.assertEqual(normalCount, 2)
 
 
 if __name__ == "__main__":

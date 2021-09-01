@@ -28,12 +28,15 @@ A master case settings is created as ``masterCs``
 import io
 import os
 import copy
+from contextlib import contextmanager
 
 import armi
 from armi import runLog
 from armi.settings import settingsIO
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
+
+DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
 
 
 class Settings:
@@ -72,6 +75,7 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
+        self._lock = False
         self.path = ""
 
         app = armi.getApp()
@@ -83,6 +87,26 @@ class Settings:
 
         if fName:
             self.loadFromInputFile(fName)
+        self._lock = True
+
+    def lock(self):
+        """Permanently make the settings immutable
+
+        NOTE: The immutable-lock functionality is not in place yet.
+              This is currently used only for DeprecationWarnings.
+        """
+        self._lock = True
+
+    @contextmanager
+    def _unlock(self):
+        """Temporarily make the settings mutable
+
+        NOTE: This is a termporary measure, which will only exist as long as the
+              DeprecationWarning and mutable settings.
+        """
+        self._lock = False
+        yield
+        self._lock = True
 
     @property
     def inputDirectory(self):
@@ -100,6 +124,8 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
+        if self._lock:
+            runLog.warning(DEP_WARNING.format("caseTitle"), single=True)
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
@@ -125,6 +151,8 @@ class Settings:
 
     def __setitem__(self, key, val):
         if key in self.settings:
+            if self._lock:
+                runLog.warning(DEP_WARNING.format(key), single=True)
             self.settings[key].setValue(val)
         else:
             raise NonexistentSetting(key)
@@ -146,6 +174,7 @@ class Settings:
         for key, val in state.items():
             if key != "settings":
                 setattr(self, key, val)
+
         # with schema restored, restore all setting values
         for name, settingState in state["settings"].items():
             # pylint: disable=protected-access
@@ -155,10 +184,16 @@ class Settings:
         return self.settings.keys()
 
     def update(self, values):
+        if self._lock:
+            runLog.warning(DEP_WARNING.format(sorted(values.keys())), single=True)
+
         for key, val in values.items():
             self[key] = val
 
     def clear(self):
+        if self._lock:
+            runLog.warning(DEP_WARNING.format("ALL"), single=True)
+
         self.settings.clear()
 
     def duplicate(self):
@@ -192,9 +227,11 @@ class Settings:
         Passes the reader back out in case you want to know something about how the reading went
         like for knowing if a file contained deprecated settings, etc.
         """
-        reader, path = self._prepToRead(fName)
-        reader.readFromFile(fName, handleInvalids)
-        self._applyReadSettings(path if setPath else None)
+        with self._unlock():
+            reader, path = self._prepToRead(fName)
+            reader.readFromFile(fName, handleInvalids)
+            self._applyReadSettings(path if setPath else None)
+
         return reader
 
     def _prepToRead(self, fName):
@@ -219,25 +256,26 @@ class Settings:
         Passes the reader back out in case you want to know something about how the
         reading went like for knowing if a file contained deprecated settings, etc.
         """
-        if self._failOnLoad:
-            raise RuntimeError(
-                "Cannot load settings after processing of command "
-                "line options begins.\nYou may be able to fix this by "
-                "reordering the command line arguments."
+        with self._unlock():
+            if self._failOnLoad:
+                raise RuntimeError(
+                    "Cannot load settings after processing of command "
+                    "line options begins.\nYou may be able to fix this by "
+                    "reordering the command line arguments."
+                )
+
+            reader = settingsIO.SettingsReader(self)
+            fmt = reader.SettingsInputFormat.YAML
+            if string.strip()[0] == "<":
+                fmt = reader.SettingsInputFormat.XML
+            reader.readFromStream(
+                io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
             )
 
-        reader = settingsIO.SettingsReader(self)
-        fmt = reader.SettingsInputFormat.YAML
-        if string.strip()[0] == "<":
-            fmt = reader.SettingsInputFormat.XML
-        reader.readFromStream(
-            io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
-        )
-
-        if armi.MPI_RANK == 0:
-            runLog.setVerbosity(self["verbosity"])
-        else:
-            runLog.setVerbosity(self["branchVerbosity"])
+            if armi.MPI_RANK == 0:
+                runLog.setVerbosity(self["verbosity"])
+            else:
+                runLog.setVerbosity(self["branchVerbosity"])
 
         return reader
 
@@ -366,19 +404,21 @@ class Settings:
         --------
         unsetTemporarySettings : reverts this
         """
-        runLog.debug(
-            "Temporarily changing {} from {} to {}".format(
-                settingName, self[settingName], temporaryValue
-            )
-        )
-        self._backedup[settingName] = self[settingName]
-        self[settingName] = temporaryValue
-
-    def unsetTemporarySettings(self):
-        for settingName, origValue in self._backedup.items():
+        with self._unlock():
             runLog.debug(
-                "Reverting {} from {} back to its original value of {}".format(
-                    settingName, self[settingName], origValue
+                "Temporarily changing {} from {} to {}".format(
+                    settingName, self[settingName], temporaryValue
                 )
             )
-            self[settingName] = origValue
+            self._backedup[settingName] = self[settingName]
+            self[settingName] = temporaryValue
+
+    def unsetTemporarySettings(self):
+        with self._unlock():
+            for settingName, origValue in self._backedup.items():
+                runLog.debug(
+                    "Reverting {} from {} back to its original value of {}".format(
+                        settingName, self[settingName], origValue
+                    )
+                )
+                self[settingName] = origValue

@@ -2277,7 +2277,9 @@ class Core(composites.Composite):
                     "Detected a grid plate {}.  Adding to stationary blocks".format(b)
                 )  # TODO: remove hard-coded assumption of grid plates (T3019)
 
-        cs["stationaryBlocks"] = stationaryBlocks
+        cs[
+            "stationaryBlocks"
+        ] = stationaryBlocks  # TODO: DeprecationWarning - changing settings
 
         # Perform initial zoning task
         self.buildZones(cs)

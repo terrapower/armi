@@ -684,24 +684,25 @@ class Case:
             # they are not yet initialized.
             self.bp  # pylint: disable=pointless-statement
             self.geom  # pylint: disable=pointless-statement
-            self.cs["loadingFile"] = self.title + "-blueprints.yaml"
-            if self.geom:
-                self.cs["geomFile"] = self.title + "-geom.yaml"
-                self.geom.writeGeom(self.cs["geomFile"])
-            if self.independentVariables:
-                self.cs["independentVariables"] = [
-                    "({}, {})".format(repr(varName), repr(val))
-                    for varName, val in self.independentVariables.items()
-                ]
+            with self.cs._unlock():
+                self.cs["loadingFile"] = self.title + "-blueprints.yaml"
+                if self.geom:
+                    self.cs["geomFile"] = self.title + "-geom.yaml"
+                    self.geom.writeGeom(self.cs["geomFile"])
+                if self.independentVariables:
+                    self.cs["independentVariables"] = [
+                        "({}, {})".format(repr(varName), repr(val))
+                        for varName, val in self.independentVariables.items()
+                    ]
 
-            with open(self.cs["loadingFile"], "w") as loadingFile:
-                blueprints.Blueprints.dump(self.bp, loadingFile)
+                with open(self.cs["loadingFile"], "w") as loadingFile:
+                    blueprints.Blueprints.dump(self.bp, loadingFile)
 
-            # copy input files from other modules/plugins
-            newSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
+                # copy input files from other modules/plugins
+                newSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
 
-            for settingName, value in newSettings.items():
-                self.cs[settingName] = value
+                for settingName, value in newSettings.items():
+                    self.cs[settingName] = value
 
             self.cs.writeToYamlFile(self.title + ".yaml")
 

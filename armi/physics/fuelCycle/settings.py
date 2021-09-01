@@ -184,7 +184,9 @@ def getFuelCycleSettingValidators(inspector):
             if regexContent != srcContent:
                 dest.write("from armi import runLog\n")
             dest.write(regexContent)
-        inspector.cs["shuffleLogic"] = destFile
+
+        with inspector.cs._unlock():
+            inspector.cs["shuffleLogic"] = destFile
 
     queries.append(
         settingsValidation.Query(

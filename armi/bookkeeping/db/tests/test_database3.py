@@ -307,6 +307,10 @@ class TestDatabase3(unittest.TestCase):
             attrs = database3._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
 
+            keys = sorted(db2.keys())
+            self.assertEqual(len(keys), 8)
+            self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c00n02"])
+
     def test_splitDatabase(self):
         self.makeHistory()
 

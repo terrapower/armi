@@ -58,4 +58,5 @@ def _modify_settings(cs):
             "Converting deprecated Rx. Coeffs ``runType` setting to Snapshots. "
             "You may need to manually disable modules you don't want to run"
         )
-        cs["runType"] = "Snapshots"
+        with cs._unlock():
+            cs["runType"] = "Snapshots"

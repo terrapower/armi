@@ -13,7 +13,9 @@ class TestMigration(unittest.TestCase):
     def testLocationLabelMigration(self):
         """Make a setting with an old value and make sure it migrates to expected new value."""
         cs = caseSettings.Settings()
-        cs["detailAssemLocationsBOL"] = ["B1012"]
+        with cs._unlock():
+            cs["detailAssemLocationsBOL"] = ["B1012"]
+
         writer = SettingsWriter(cs)
         stream = io.StringIO()
         writer.writeYaml(stream)

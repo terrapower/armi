@@ -54,7 +54,9 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    cs["db"] = False  # stop use of database
+    with cs._unlock():
+        cs["db"] = False  # stop use of database
+
     if customSettings is not None:
         cs.update(customSettings)
     r = tests.getEmptyHexReactor()
@@ -88,7 +90,9 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    cs["db"] = False  # stop use of database
+    with cs._unlock():
+        cs["db"] = False  # stop use of database
+
     if customSettings is not None:
         cs.update(customSettings)
     r = tests.getEmptyCartesianReactor()
@@ -158,14 +162,16 @@ def loadTestReactor(
 
     # Overwrite settings if desired
     if customSettings:
-        for settingKey, settingVal in customSettings.items():
-            cs[settingKey] = settingVal
+        with cs._unlock():
+            for settingKey, settingVal in customSettings.items():
+                cs[settingKey] = settingVal
 
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
     settings.setMasterCs(cs)
-    cs["stationaryBlocks"] = []
-    cs["nCycles"] = 3
+    with cs._unlock():
+        cs["stationaryBlocks"] = []
+        cs["nCycles"] = 3
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
@@ -182,6 +188,7 @@ def loadTestReactor(
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
+
     return o, o.r
 
 
