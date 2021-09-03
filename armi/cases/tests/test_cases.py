@@ -129,6 +129,11 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c2.cs.path = "c2.yaml"
         self.suite.add(self.c2)
 
+    def test_clone(self):
+        # if you pass an invalid path, the clone can't happen, but it won't do any damage either
+        with self.assertRaises(RuntimeError):
+            clone = self.suite.clone("test_clone")
+
     def test_dependenciesWithObscurePaths(self):
         """
         Test directory dependence.

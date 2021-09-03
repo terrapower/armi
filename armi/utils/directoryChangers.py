@@ -193,9 +193,22 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         DirectoryChanger.__init__(
             self, root, filesToMove, filesToRetrieve, dumpOnException
         )
-        root = root or armi.context.getFastPath()
+
+        # if no root dir is given, enforce that this tmp dir is in /.armi/
+        if not root:
+            root = armi.context.getFastPath()
+            if ".armi" not in os.path.normpath(root).split(os.path.sep):
+                raise ValueError("Temporary directory not found.")
+
+        # make the tmp dir, if necessary
         if not os.path.exists(root):
-            os.makedirs(root)
+            try:
+                os.makedirs(root)
+            except FileExistsError:
+                # ignore the obvious race condition
+                pass
+
+        # init the important path attributes
         self.initial = os.path.abspath(os.getcwd())
         self.destination = TemporaryDirectoryChanger.GetRandomDirectory(root)
         while os.path.exists(self.destination):
@@ -217,17 +230,12 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
     def __exit__(self, exc_type, exc_value, traceback):
         DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
-        shutil.rmtree(self.destination)
+        pathTools.cleanPath(self.destination)
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):
     """
     Creates the directory tree necessary to reach your desired destination
-
-    Attributes
-    ----------
-    clean : bool
-        if True and the directory exists, clear all contents on entry.
     """
 
     def __init__(
@@ -236,14 +244,12 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         filesToMove=None,
         filesToRetrieve=None,
         dumpOnException=True,
-        clean=False,
     ):
         if not destination:
             raise ValueError("A destination directory must be provided.")
         DirectoryChanger.__init__(
             self, destination, filesToMove, filesToRetrieve, dumpOnException
         )
-        self.clean = clean
 
     def __enter__(self):
         if not os.path.exists(self.destination):
@@ -261,8 +267,7 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         else:
             runLog.extra(f"Destination folder already exists: {self.destination}")
         DirectoryChanger.__enter__(self)
-        if self.clean:
-            shutil.rmtree(".", ignore_errors=True)
+
         return self
 
 

@@ -188,76 +188,6 @@ def findClosest(listToSearch, val, indx=False):
         return minVal
 
 
-# TODO: move into pathTools
-def cleanPath(path):
-    r"""
-    Recursively delete a path.
-
-    !!! careful with this !!! It can delete the entire cluster.
-
-    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything at the same time.
-    Always check filenames for some special flag when calling this, especially
-    with full permissions on the cluster. You could accidentally delete everyone's work
-    with one misplaced line! This doesn't ask questions.
-
-    Safety nets include a whitelist of paths.
-
-    This makes use of shutil.rmtree and os.remove
-
-    Returns
-    -------
-    success : bool
-        True if file was deleted. False if it was not.
-
-    """
-    valid = False
-    if os.path.exists(path):
-        runLog.extra("Clearing all files in {}".format(path))
-    else:
-        runLog.extra("Nothing to clean in {}. Doing nothing. ".format(path))
-        return True
-    for validPath in [
-        "users",
-        "shufflebranches",
-        "snapshot",
-        "failedruns",
-        "armiruns",
-        "mc2run",
-        "tests",
-        "mongoose",
-    ]:
-        if validPath in path.lower():
-            valid = True
-
-    if not valid:
-        raise Exception(
-            "Thou shalt not try to delete folders other than things in Users. Thou tried to delete {0}"
-            "".format(path)
-        )
-
-    for i in range(3):
-        try:
-            if os.path.exists(path) and os.path.isdir(path):
-                shutil.rmtree(path)
-            elif not os.path.isdir(path):
-                # it's just a file. Delete it.
-                os.remove(path)
-        except:
-            if i == 2:
-                pass
-            # in case the OS is behind or something
-            time.sleep(0.1)
-        time.sleep(0.3)
-        if not os.path.exists(path):
-            break
-        time.sleep(0.3)
-
-    if os.path.exists(path):
-        return False
-    else:
-        return True
-
-
 def copyWithoutBlocking(src, dest):
     """
     Copy a file in a separate thread to avoid blocking while IO completes.
@@ -792,7 +722,8 @@ def mkdir(dirname):
         try:
             os.mkdir(dirname)
             break
-
+        except FileExistsError:
+            break
         except Exception as err:
             numTimesTried += 1
             # Only ouput err every 10 times.
