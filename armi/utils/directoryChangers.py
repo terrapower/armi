@@ -194,9 +194,12 @@ class TemporaryDirectoryChanger(DirectoryChanger):
             self, root, filesToMove, filesToRetrieve, dumpOnException
         )
 
-        # if no root dir is given, enforce that this tmp dir is in /.armi/
+        # If no root dir is given, the default path to grab in context is cwd(), which
+        # can lead to deleting any directory on the hard drive. So this check is here
+        # to ensure that if we grab a path from context, it is a proper temp dir.
         if not root:
             root = armi.context.getFastPath()
+            # ARMIs temp dirs are in an /.armi/ directory: validate this is a temp dir.
             if ".armi" not in os.path.normpath(root).split(os.path.sep):
                 raise ValueError("Temporary directory not found.")
 
