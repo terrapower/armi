@@ -23,6 +23,7 @@ import importlib
 import pathlib
 from time import sleep
 
+from armi import context
 from armi import runLog
 
 
@@ -239,14 +240,10 @@ def cleanPath(path):
 
     """
     valid = False
-    if os.path.exists(path):
-        runLog.extra("Clearing all files in {}".format(path))
-    else:
-        runLog.extra("Nothing to clean in {}. Doing nothing. ".format(path))
+    if not os.path.exists(path):
         return True
 
     for validPath in [
-        ".armi",
         "armiruns",
         "failedruns",
         "mc2run",
@@ -257,6 +254,9 @@ def cleanPath(path):
     ]:
         if validPath in path.lower():
             valid = True
+
+    if pathlib.Path(context.APP_DATA) in pathlib.Path(path).parents:
+        valid = True
 
     if not valid:
         raise Exception(
