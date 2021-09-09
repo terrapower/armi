@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import pathlib
 import random
 import shutil
 import string
