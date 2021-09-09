@@ -238,6 +238,11 @@ class TestCaseSuiteDependencies(unittest.TestCase):
             self.c2.cs["explicitRepeatShuffles"] = "c1-SHUFFLES.txt"
         self.assertIn(self.c1, self.c2.dependencies)
 
+    def test_explicitDependency(self):
+        self.c1.addExplicitDependency(self.c2)
+
+        self.assertIn(self.c2, self.c1.dependencies)
+
 
 class TestExtraInputWriting(unittest.TestCase):
     """Make sure extra inputs from interfaces are written."""
