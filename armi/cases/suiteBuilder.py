@@ -167,11 +167,11 @@ class SuiteBuilder:
                     )
 
                 previousMods.append(type(mod))
-                mod(case.cs, case.bp, case.geom)
+                with case.cs._unlock():
+                    mod(case.cs, case.bp, case.geom)
                 case.independentVariables.update(mod.independentVariable)
 
             case.cs.path = namingFunc(index, case, modList)
-
             caseSuite.add(case)
 
         return caseSuite

@@ -47,6 +47,7 @@ import json
 import subprocess
 
 from armi import runLog
+from armi.utils.pathTools import cleanPath
 
 MANIFEST_NAME = "CRC-manifest.json"
 
@@ -165,7 +166,7 @@ def deleteCache(cachedFolder):
     """
     if "Output_Cache" not in cachedFolder:
         raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
-    shutil.rmtree(cachedFolder)
+    cleanPath(cachedFolder)
 
 
 def cacheCall(

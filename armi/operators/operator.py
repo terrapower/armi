@@ -918,7 +918,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         newFolder = "snapShot{0}_{1}".format(cycle, node)
         if os.path.exists(newFolder):
             runLog.important("Deleting existing snapshot data in {0}".format(newFolder))
-            utils.cleanPath(newFolder)  # careful with cleanPath!
+            utils.pathTools.cleanPath(newFolder)  # careful with cleanPath!
             # give it a minute.
             time.sleep(1)
 

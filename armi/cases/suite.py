@@ -16,7 +16,7 @@ r"""
 The ``CaseSuite`` object is responsible for running, and executing a set of user inputs.  Many
 entry points redirect into ``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``
 
-Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can 
+Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can
 be used to collect a series of cases
 and submit them to a cluster for execution. Furthermore, a ``CaseSuite`` can be used to gather
 executed cases for post-analysis.
@@ -183,7 +183,7 @@ class CaseSuite:
             else:
                 newDir = case.title
             with directoryChangers.ForcedCreationDirectoryChanger(
-                newDir, clean=True, dumpOnException=False
+                newDir, dumpOnException=False
             ):
                 clone.add(case.clone(modifiedSettings=modifiedSettings))
         return clone

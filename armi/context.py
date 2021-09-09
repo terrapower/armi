@@ -218,9 +218,9 @@ def cleanTempDirs(olderThanDays=None):
         If provided, deletes other ARMI directories if they are older than the requested
         time.
     """
-    from armi import (
-        runLog,
-    )  # pylint: disable=import-outside-toplevel # avoid cyclic import
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi import runLog
+    from armi.utils.pathTools import cleanPath
 
     disconnectAllHdfDBs()
     printMsg = runLog.getVerbosity() <= DEBUG
@@ -231,7 +231,7 @@ def cleanTempDirs(olderThanDays=None):
                 file=sys.stdout,
             )
         try:
-            shutil.rmtree(_FAST_PATH)
+            cleanPath(_FAST_PATH)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
@@ -254,6 +254,9 @@ def cleanAllArmiTempDirs(olderThanDays: int):
 
     This is a useful utility in HPC environments when some runs crash sometimes.
     """
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.utils.pathTools import cleanPath
+
     gracePeriod = datetime.timedelta(days=olderThanDays)
     now = datetime.datetime.now()
     thisRunFolder = os.path.basename(_FAST_PATH)
@@ -269,7 +272,7 @@ def cleanAllArmiTempDirs(olderThanDays: int):
             runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
-                shutil.rmtree(dirPath)
+                cleanPath(dirPath)
         except:  # pylint: disable=bare-except
             pass
 
