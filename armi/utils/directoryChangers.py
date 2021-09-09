@@ -20,6 +20,7 @@ import string
 import glob
 
 import armi
+from armi import context
 from armi import runLog
 from armi.utils import pathTools
 
