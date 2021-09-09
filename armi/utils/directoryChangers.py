@@ -194,14 +194,20 @@ class TemporaryDirectoryChanger(DirectoryChanger):
             self, root, filesToMove, filesToRetrieve, dumpOnException
         )
 
-        # If no root dir is given, the default path to grab in context is cwd(), which
-        # can lead to deleting any directory on the hard drive. So this check is here
-        # to ensure that if we grab a path from context, it is a proper temp dir.
-        if not root:
+        # If no root dir is given, the default path comes from context.getFastPath, which
+        # *might* be relative to the cwd, making it possible to delete unintended files.
+        # So this check is here to ensure that if we grab a path from context, it is a
+        # proper temp dir.
+        # That said, since the TemporaryDirectoryChanger *always* responsible for
+        # creating its destination directory, it may always be safe to delete it
+        # regardless of location.
+        if root is None:
             root = armi.context.getFastPath()
-            # ARMIs temp dirs are in an /.armi/ directory: validate this is a temp dir.
-            if ".armi" not in os.path.normpath(root).split(os.path.sep):
-                raise ValueError("Temporary directory not found.")
+            # ARMIs temp dirs are in an context.APP_DATA directory: validate this is a temp dir.
+            if pathlib.Path(context.APP_DATA) not in pathlib.Path(root).parents:
+                raise ValueError(
+                    "Temporary directory not in a safe location for deletion."
+                )
 
         # make the tmp dir, if necessary
         if not os.path.exists(root):
