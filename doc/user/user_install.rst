@@ -6,10 +6,10 @@ This section will guide you through installing the ARMI Framework on your machin
 Prerequisites
 -------------
 These instructions target users with some software development knowledge. In
-particular, we assume familiarity with `Python <https://www.python.org/>`_, 
-`virtual environments <https://docs.python.org/3/tutorial/venv.html>`_, and `Git <https://git-scm.com/>`_. 
+particular, we assume familiarity with `Python <https://www.python.org/>`_,
+`virtual environments <https://docs.python.org/3/tutorial/venv.html>`_, and `Git <https://git-scm.com/>`_.
 
-You must have the following before proceeding:
+You must have the following installed before proceeding:
 
 * `Python <https://www.python.org/downloads/>`_ version 3.6 or later (preferably 64-bit)
 
@@ -36,8 +36,8 @@ This prevents dependencies from various tools conflicting with one another. ARMI
 of requirements and may conflict with other libraries on your system unless you do this
 step.
 
-Start a terminal and navigate to the directory you'd like to install ARMI into. 
-To create a new virtual environment, use a command like:: 
+Start a terminal and navigate to the directory you'd like to install ARMI into.
+To create a new virtual environment, use a command like::
 
     $ python -m venv armi-venv
 
@@ -50,12 +50,12 @@ To activate the environment, invoke the appropriate script. On Windows::
 Or on Linux::
 
     $ source armi-venv/bin/activate
-    
-.. note:: You'll have to activate the venv every time you open a new command line. 
+
+.. note:: You'll have to activate the venv every time you open a new command line.
 	Many people set up scripts to activate this automatically.
-	
+
 If you will be running ARMI in parallel over MPI, you must also install the ``mpi4py`` Python
-library. On Linux, doing so will require some MPI development libraries 
+library. On Linux, doing so will require some MPI development libraries
 (e.g. ``sudo apt install libopenmpi-dev``).
 
 Getting the code
@@ -91,11 +91,11 @@ Then, install ARMI into your venv with::
 
 	(armi-venv) $ pip install -e .
 
-.. tip:: If you don't want to install ARMI into your venv, you will need to add the ARMI source 
+.. tip:: If you don't want to install ARMI into your venv, you will need to add the ARMI source
 	location to your system's ``PYTHONPATH`` environment variable so that
 	Python will be able to find the code when you import it from other directories.
-	
-	In Windows, click *Start* and type ``Edit Environmental Variable`` to adjust ``PYTHONPATH``. 
+
+	In Windows, click *Start* and type ``Edit Environmental Variable`` to adjust ``PYTHONPATH``.
 	In Linux, add ``export PYTHONPATH=/path/to/armi/source`` in a  user profile script (like ``.bashrc``).
 
 
@@ -105,8 +105,8 @@ Check the installation status by running::
 
     (armi-venv) $ armi
 
-or, equivalently:: 
-    
+or, equivalently::
+
     (armi-venv) $ python -m armi
 
 If it worked, you should see the ARMI splash screen and no errors::
@@ -137,13 +137,13 @@ In many cases, a ``pip install`` should suffice::
 
     (armi-venv) $ pip install wxpython
 
-.. warning:: On some platforms, ``pip`` may try to compile wxpython from 
+.. warning:: On some platforms, ``pip`` may try to compile wxpython from
     source which can take a long time and require additional dependencies.
 
 GUI output
 ^^^^^^^^^^
 ARMI can write VTK and XDMF output files which can be viewed in tools such as
-`ParaView <https://www.paraview.org/>`_ and 
+`ParaView <https://www.paraview.org/>`_ and
 `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_. Download and install those
 tools from their websites.
 
@@ -151,12 +151,12 @@ RIPL-3 Nuclide Decay Database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The RIPL-3 decay files (``levels.zip``) can be downloaded from `<https://www-nds.iaea.org/RIPL-3/levels/>`_.
 
-By default, nuclides within :py:mod:`armi.nucDirectory.nuclideBases` are initialized from 
-a subset of the RIPL-3 database, which ships with ARMI. The base data set contains 2339 
-nuclides and RIPL-3 decay data set increases this to 4379 nuclides. The RIPL-3 decay data 
-files mainly add metastable nuclides and other exotic nuclides that could be important for 
+By default, nuclides within :py:mod:`armi.nucDirectory.nuclideBases` are initialized from
+a subset of the RIPL-3 database, which ships with ARMI. The base data set contains 2339
+nuclides and RIPL-3 decay data set increases this to 4379 nuclides. The RIPL-3 decay data
+files mainly add metastable nuclides and other exotic nuclides that could be important for
 detailed depletion/decay models or activation analyses.
 
-Once the ``levels.zip`` file is downloaded and unzipped, an environment variable :envvar:`ARMI_RIPL_PATH` 
+Once the ``levels.zip`` file is downloaded and unzipped, an environment variable :envvar:`ARMI_RIPL_PATH`
 should be created and set to the directory containing the ``z*.dat`` files.
 

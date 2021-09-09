@@ -15,6 +15,7 @@ dist/
 dist-*/
 doc/*.png
 doc/_build
+doc/user/tutorials
 doc/tutorials/anl-afci-177*
 doc/tutorials/case-suite
 armi/tests/tutorials/case-suite
