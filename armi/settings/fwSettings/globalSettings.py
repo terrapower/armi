@@ -309,7 +309,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Burnup Groups",
             description="The range of burnups where cross-sections will be the same "
             "for a given assembly type",
-            schema=vol.Schema([int]),
+            schema=vol.Schema([vol.Any(int,float)]),
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,

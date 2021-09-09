@@ -123,7 +123,11 @@ class ReportInterface(interfaces.Interface):
 
         from armi.bookkeeping import plotting
 
-        plotting.plotReactorPerformance(self.r)
+        dbi = self.o.getInterface("database")
+        buGroups = self.cs["buGroups"]
+        plotting.plotReactorPerformance(
+            self.r, dbi, buGroups, extension=self.cs["outputFileExtension"]
+        )
 
         reportingUtils.setNeutronBalancesReport(self.r.core)
         self.writeRunSummary()
