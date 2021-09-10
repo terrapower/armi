@@ -49,7 +49,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
     buGroups : list of float
         The burnup groups in the problome
 
-    extension : str
+    extension : str, optional
         The file extention for saving plots
 
     """
