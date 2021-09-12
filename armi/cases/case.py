@@ -33,7 +33,7 @@ import trace
 import time
 import textwrap
 import ast
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Set
 import glob
 import tabulate
 import six
@@ -98,6 +98,7 @@ class Case:
         self._startTime = time.time()
         self._caseSuite = caseSuite
         self._tasks = []
+        self._dependencies: Set[Case] = set()
         self.enabled = True
 
         # NOTE: in order to prevent slow submission times for loading massively large
@@ -196,9 +197,27 @@ class Case:
                 )
             )
         # ensure that a case doesn't appear to be its own dependency
+        dependencies.update(self._dependencies)
         dependencies.discard(self)
 
         return dependencies
+
+    def addExplicitDependency(self, case):
+        """
+        Register an explicit dependency
+
+        When evaluating the ``dependency`` property, dynamic dependencies are probed
+        using the current case settings and plugin hooks. Sometimes, it is necessary to
+        impose dependencies that are not expressed through settings and hooks. This
+        method stores another case as an explicit dependency, which will be included
+        with the other, implicitly discovered, dependencies.
+        """
+        if case in self._dependencies:
+            runLog.warning(
+                "The case {} is already explicity specified as a dependency of "
+                "{}".format(case, self)
+            )
+        self._dependencies.add(case)
 
     def getPotentialParentFromSettingValue(self, settingValue, filePattern):
         """
