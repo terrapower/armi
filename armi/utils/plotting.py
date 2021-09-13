@@ -35,6 +35,7 @@ from armi.bookkeeping import report
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
 from armi.reactor.components import Helix, Circle, Rectangle, DerivedShape
 from armi.utils import hexagon
+from armi.materials import custom
 
 
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
@@ -1118,7 +1119,12 @@ def _makeBlockPinPatches(block, cold):
         derivedComponent = derivedComponents[0]
         sortedComps.remove(derivedComponent)
         cName = derivedComponent.name
-        material = derivedComponent.material.name
+
+        if isinstance(derivedComponent.material, custom.Custom):
+            material = derivedComponent.p.customIsotopicsName
+        else:
+            material = derivedComponent.material.name
+
         location = comp.spatialLocator
         if isinstance(location, grids.MultiIndexLocation):
             location = location[0]
@@ -1155,7 +1161,13 @@ def _makeBlockPinPatches(block, cold):
             blockPatches = _makeComponentPatch(component, (x, y), cold)
             for element in blockPatches:
                 patches.append(element)
-                data.append(component.material.name)
+
+                if isinstance(component.material, custom.Custom):
+                    material = component.p.customIsotopicsName
+                else:
+                    material = component.material.name
+
+                data.append(material)
                 names.append(component.name)
 
     return patches, data, names
@@ -1324,7 +1336,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
         a list of material names across all blocks to be plotted
         so that same material on all diagrams will have the same color.
     """
-    _, ax = plt.subplots(figsize=(50, 50), dpi=100)
+    _, ax = plt.subplots(figsize=(20, 20), dpi=200)
 
     if block.spatialGrid is None:
         return None
@@ -1332,8 +1344,12 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     if materialList is None:
         materialList = []
         for component in block:
-            if component.material.name not in materialList:
-                materialList.append(component.material.name)
+            if isinstance(component.material, custom.Custom):
+                materialName = component.p.customIsotopicsName
+            else:
+                materialName = component.material.name
+            if materialName not in materialList:
+                materialList.append(materialName)
 
     materialMap = {
         material: ai for ai, material in enumerate(numpy.unique(materialList))
@@ -1359,7 +1375,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
         )
         for materialName in numpy.unique(data)
     ]
-    legend = _createLegend(legendMap, collection, size=90, shape=Rectangle)
+    legend = _createLegend(legendMap, collection, size=50, shape=Rectangle)
     pltKwargs = {
         "bbox_extra_artists": (legend,),
         "bbox_inches": "tight",

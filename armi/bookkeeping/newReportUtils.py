@@ -337,8 +337,12 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
     for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
         for component in block:
-            if component.material.name not in materialList:
-                materialList.append(component.material.name)
+            if isinstance(component.material, custom.Custom):
+                materialName = component.p.customIsotopicsName
+            else:
+                materialName = component.material.name
+            if materialName not in materialList:
+                materialList.append(materialName)
 
     report[DESIGN]["Block Diagrams"] = newReports.Section("Block Diagrams")
     for bDesign in blueprint.blockDesigns:
