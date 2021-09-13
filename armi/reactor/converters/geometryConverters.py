@@ -1035,10 +1035,9 @@ class HexToRZThetaConverter(GeometryConverter):
                     return assignedMixtureBlockType
 
         assignedMixtureBlockType = "mixture structure"
-        runLog.extra(
-            "The mixture type for this homogenized block was not determined and is defaulting to {}".format(
-                assignedMixtureBlockType
-            )
+        runLog.debug(
+            f"The mixture type for this homogenized block {mostCommonHexBlockType} "
+            f"was not determined and is defaulting to {assignedMixtureBlockType}"
         )
 
         return assignedMixtureBlockType
