@@ -262,6 +262,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             startingNode = self.r.p.timeNode
         else:
             startingNode = 0
+            self.r.p.timeNode = startingNode
         halt = self.interactAllBOC(self.r.p.cycle)
         if halt:
             return False
