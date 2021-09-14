@@ -64,6 +64,7 @@ class TestDirectoryChangers(unittest.TestCase):
             with directoryChangers.ForcedCreationDirectoryChanger(self.temp_directory):
                 Path("file1.txt").touch()
                 Path("file2.txt").touch()
+                os.mkdir("subdir")
                 raise ExpectedException("Ooops")
         except ExpectedException:
             pass

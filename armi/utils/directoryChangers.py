@@ -126,11 +126,10 @@ class DirectoryChanger:
     def _retrieveEntireFolder(self):
         """Retrieve all files."""
         initialPath = self.destination
-        destinationPath = self.initial
         folderName = os.path.split(self.destination)[1]
-        destinationPath = os.path.join(destinationPath, f"dump-{folderName}")
+        recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
         fileList = os.listdir(self.destination)
-        self._transferFiles(initialPath, destinationPath, fileList)
+        shutil.copytree(self.destination, recoveryPath)
 
     @staticmethod
     def _transferFiles(initialPath, destinationPath, fileList):
