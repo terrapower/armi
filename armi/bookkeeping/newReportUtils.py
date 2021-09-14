@@ -11,6 +11,7 @@ from armi.utils import plotting
 from armi.utils import units
 from armi.utils import iterables
 from armi.cli.reportsEntryPoint import ReportStage
+from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
