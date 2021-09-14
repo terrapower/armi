@@ -53,6 +53,7 @@ The mesh mapping happens as described in the figure:
 
 """
 import copy
+import logging
 
 import numpy
 
@@ -67,6 +68,8 @@ from armi.reactor import parameters
 
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
+
+runLog = logging.getLogger(__name__)
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -152,71 +155,74 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
         for topMeshPoint in newMesh:
-            overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
-                bottom, topMeshPoint
-            )
-            if not overlappingBlockInfo:
-                # this could be handled by duplicating the block but with the current CR module
-                # this situation should just never happen.
-                raise RuntimeError(
-                    "No block found between {:.3f} and {:.3f} in assembly {}"
-                    "".format(bottom, topMeshPoint, sourceAssem)
-                )
-
-            sourceBlock = None
-            specialXSType = None
             runLog.debug(
                 f"From axial elevation {bottom:<6.2f} cm to {topMeshPoint:<6.2f} cm"
             )
-            for potentialBlock, heightOverlap in overlappingBlockInfo:
-                if sourceBlock is None:
-                    sourceBlock = potentialBlock
-                    sourceBlockHeightOverlap = heightOverlap
-                if (
-                    potentialBlock.hasFlags([Flags.FUEL, Flags.CONTROL])
-                    and potentialBlock != sourceBlock
-                ):
-                    totalHeight = topMeshPoint - bottom
-                    runLog.debug(
-                        f"  - {potentialBlock} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
-                    )
+            overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
+                bottom, topMeshPoint
+            )
+            # This is not expected to occur given that the assembly mesh is consistent with
+            # the blocks within it, but this is added for defensive programming and to
+            # highlight a developer issue.
+            if not overlappingBlockInfo:
+                raise ValueError(
+                    f"No blocks found between {bottom:.3f} and {topMeshPoint:.3f} in {sourceAssem}. "
+                    f"This is a major bug that should be reported to the developers."
+                )
 
-                    if specialXSType is None:
-                        sourceBlock = potentialBlock
-                        specialXSType = sourceBlock.p.xsType
-                    elif specialXSType == potentialBlock.p.xsType:
-                        pass
+            # Iterate over the blocks that are within this region and
+            # select one as a "source" for determining which cross section
+            # type to use. This uses the following rules:
+            #     1. Select the first block that has either FUEL or CONTROL flags
+            #     2. Fail if multiple blocks meet this criteria if they have different XS types
+            #     3. Default to the first block in the list if no blocks meet FUEL or CONTROL flags criteria.
+            blocks = [b for b, _h in overlappingBlockInfo]
+            sourceBlock = None
+            xsType = None
+            for b in blocks:
+                if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                    if sourceBlock is None:
+                        sourceBlock = b
+                        xsType = b.p.xsType
                     else:
-                        msg = (
-                            f"Both {sourceBlock} and {potentialBlock} have conflicting XS types "
-                            f"and have either {[Flags.FUEL, Flags.CONTROL]} flags. One or the other flags "
-                            f"from these blocks should be removed to produce a uniform axial mesh for {newAssem}"
-                        )
-                        runLog.error(msg)
-                        raise RuntimeError(msg)
-                elif potentialBlock == sourceBlock:
-                    totalHeight = topMeshPoint - bottom
-                    runLog.debug(
-                        f"  - {sourceBlock} accounts for {sourceBlockHeightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
-                    )
-                else:
-                    totalHeight = topMeshPoint - bottom
-                    runLog.debug(
-                        f"  - {potentialBlock} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
-                    )
+                        # If there is a duplicate source block candidate that has a different
+                        # cross section type then this is an error because the code cannot
+                        # decide which one is correct.
+                        if b.p.xsType != xsType:
+                            msg = (
+                                f"{sourceBlock} and {b} in {newAssem} have conflicting XS types and are "
+                                f"candidates for the source block. To fix this, either set their XS types "
+                                f"to be the same or remove these flags {[Flags.FUEL, Flags.CONTROL]} "
+                                f"from one of the blocks."
+                            )
+                            runLog.error(msg)
+                            raise ValueError(msg)
 
-            newXSType = sourceBlock.p.xsType if specialXSType is None else specialXSType
+            # If no blocks meet the criteria above just select the first block
+            # as the source block and use its cross section type.
+            if sourceBlock is None:
+                sourceBlock = blocks[0]
+                xsType = blocks[0].p.xsType
+
             runLog.debug(
-                f"  - The XS type of `{newXSType}` will be applied to the new homogenized region."
+                f"  - The source block for this region is {sourceBlock} with XS type {xsType}"
             )
 
+            # Report the homogenization fractions for debugging purposes
+            for b, heightOverlap in overlappingBlockInfo:
+                totalHeight = topMeshPoint - bottom
+                runLog.debug(
+                    f"  - {b} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
+                )
+
             block = copy.deepcopy(sourceBlock)
-            block.p.xsType = newXSType
+            block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
             _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo)
             newAssem.add(block)
             bottom = topMeshPoint
+
         newAssem.reestablishBlockOrder()
         newAssem.calculateZCoords()
         return newAssem
