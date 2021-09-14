@@ -941,8 +941,11 @@ class Assembly(composites.Composite):
         """
         EPS = 1e-10
         blocksHere = []
+        allMeshPoints = set()
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
+                allMeshPoints.add(b.p.zbottom)
+                allMeshPoints.add(b.p.ztop)
                 # at least some of this block overlaps the window of interest
                 top = min(b.p.ztop, zUpper)
                 bottom = max(b.p.zbottom, zLower)
@@ -951,6 +954,22 @@ class Assembly(composites.Composite):
                 # Filter out blocks that have an extremely small height fraction
                 if heightHere / b.getHeight() > EPS:
                     blocksHere.append((b, heightHere))
+
+        totalHeight = 0.0
+        # The expected height snaps to the minimum height that is requested
+        expectedHeight = min(
+            sorted(allMeshPoints)[-1] - sorted(allMeshPoints)[0], zUpper - zLower
+        )
+        for _b, height in blocksHere:
+            totalHeight += height
+
+        # Verify that the heights of all the blocks are equal to the expected
+        # height for the given zUpper and zLower.
+        if abs(totalHeight - expectedHeight) > 1e-5:
+            raise ValueError(
+                f"The cumulative height of {blocksHere} is {totalHeight} cm "
+                f"and does not equal the expected height of {expectedHeight} cm"
+            )
 
         return blocksHere
 
