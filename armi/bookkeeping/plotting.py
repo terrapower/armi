@@ -47,7 +47,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
         The DatabaseInterface object from which to pull historical data
 
     buGroups : list of float
-        The burnup groups in the problome
+        The burnup groups in the problem
 
     extension : str, optional
         The file extention for saving plots
@@ -286,7 +286,7 @@ def xsHistoryVsTime(reactor, buGroups, extension=None):
     ----------
     reactor : armi.reactor.reactors object
     buGroups : list of float
-        The burnup groups in the problome
+        The burnup groups in the problem
     extension : str, optional
         The file extention for saving the figure
 
