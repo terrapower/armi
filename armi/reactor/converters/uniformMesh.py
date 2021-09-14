@@ -149,6 +149,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         applyStateToOriginal : basically the reverse on the way out.
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
+        runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
@@ -162,37 +163,55 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     "".format(bottom, topMeshPoint, sourceAssem)
                 )
 
-            # If there are FUEL or CONTROL blocks that are overlapping with the other blocks then the first
-            # one is selected to ensure that the correct XS ID is applied to the new block during the deepcopy.
             sourceBlock = None
             specialXSType = None
-            for potentialBlock, _overlap in overlappingBlockInfo:
+            runLog.debug(
+                f"From axial elevation {bottom:<6.2f} cm to {topMeshPoint:<6.2f} cm"
+            )
+            for potentialBlock, heightOverlap in overlappingBlockInfo:
                 if sourceBlock is None:
                     sourceBlock = potentialBlock
+                    sourceBlockHeightOverlap = heightOverlap
                 if (
                     potentialBlock.hasFlags([Flags.FUEL, Flags.CONTROL])
                     and potentialBlock != sourceBlock
                 ):
-                    runLog.important(
-                        "There are multiple overlapping blocks.  Choosing {} for {} XS sets.".format(
-                            potentialBlock.getType(), sourceBlock.getType()
-                        )
+                    totalHeight = topMeshPoint - bottom
+                    runLog.debug(
+                        f"  - {potentialBlock} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
                     )
+
                     if specialXSType is None:
                         sourceBlock = potentialBlock
                         specialXSType = sourceBlock.p.xsType
                     elif specialXSType == potentialBlock.p.xsType:
                         pass
                     else:
-                        runLog.error(
-                            "There are two special block XS types.  Not sure which to choose {} {}"
-                            "".format(sourceBlock, potentialBlock)
+                        msg = (
+                            f"Both {sourceBlock} and {potentialBlock} have conflicting XS types "
+                            f"and have either {[Flags.FUEL, Flags.CONTROL]} flags. One or the other flags "
+                            f"from these blocks should be removed to produce a uniform axial mesh for {newAssem}"
                         )
-                        raise RuntimeError(
-                            "There are multiple special block XS types when there should only be one"
-                        )
+                        runLog.error(msg)
+                        raise RuntimeError(msg)
+                elif potentialBlock == sourceBlock:
+                    totalHeight = topMeshPoint - bottom
+                    runLog.debug(
+                        f"  - {sourceBlock} accounts for {sourceBlockHeightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
+                    )
+                else:
+                    totalHeight = topMeshPoint - bottom
+                    runLog.debug(
+                        f"  - {potentialBlock} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
+                    )
+
+            newXSType = sourceBlock.p.xsType if specialXSType is None else specialXSType
+            runLog.debug(
+                f"  - The XS type of `{newXSType}` will be applied to the new homogenized region."
+            )
 
             block = copy.deepcopy(sourceBlock)
+            block.p.xsType = newXSType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
             _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo)
@@ -210,6 +229,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         avoid unnecessarily diffusing small blocks into huge ones (e.g. control blocks
         into plenum).
         """
+        runLog.debug(
+            f"Creating new assemblies from {self._sourceReactor.core} "
+            f"with a uniform mesh of {self._uniformMesh}"
+        )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
             newAssem.r = self.convReactor

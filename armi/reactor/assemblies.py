@@ -952,6 +952,19 @@ class Assembly(composites.Composite):
                 if heightHere / b.getHeight() > EPS:
                     blocksHere.append((b, heightHere))
 
+        totalHeight = 0.0
+        expectedHeight = zUpper - zLower
+        for _b, height in blocksHere.items():
+            totalHeight += height
+
+        # Verify that the heights of all the blocks are equal to the expected
+        # height for the given zUpper and zLower.
+        msg = (
+            f"The cumulative height of {blocksHere} is {totalHeight} cm "
+            f"and does not equal the expected height of {expectedHeight} cm"
+        )
+        assert abs(totalHeight - expectedHeight) < EPS, msg
+
         return blocksHere
 
     def getBlockLengthAboveAndBelowHeight(self, height):
