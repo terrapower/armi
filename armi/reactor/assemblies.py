@@ -954,7 +954,7 @@ class Assembly(composites.Composite):
 
         totalHeight = 0.0
         expectedHeight = zUpper - zLower
-        for _b, height in blocksHere.items():
+        for _b, height in blocksHere:
             totalHeight += height
 
         # Verify that the heights of all the blocks are equal to the expected
