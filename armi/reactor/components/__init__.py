@@ -17,6 +17,15 @@ Components package contains components and shapes.
 
 These objects hold the dimensions, temperatures, composition, and shape of reactor primitives.
 
+.. _component-class-diagram:
+
+.. pyreverse:: armi.reactor.components -A -k --ignore=componentParameters.py
+    :align: center
+    :alt: Component class diagram
+    :width: 100%
+
+    Class inheritance diagram for :py:mod:`armi.reactor.components`.
+
 """
 
 import math
