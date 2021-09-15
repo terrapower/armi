@@ -112,30 +112,45 @@ class DirectoryChanger:
             _changeDirectory(self.initial)
 
     def moveFiles(self):
+        """
+        Copy ``filesToMove`` into the destination directory on entry.
+        """
         initialPath = self.initial
         destinationPath = self.destination
         self._transferFiles(initialPath, destinationPath, self._filesToMove)
 
     def retrieveFiles(self):
-        """Retrieve any desired files."""
+        """
+        Copy ``filesToRetrieve`` back into the initial directory on exit.
+        """
         initialPath = self.destination
         destinationPath = self.initial
         fileList = self._filesToRetrieve
         self._transferFiles(initialPath, destinationPath, fileList)
 
     def _retrieveEntireFolder(self):
-        """Retrieve all files."""
+        """
+        Retrieve all files to a dump directory.
+
+        This is used when an exception is caught by the DirectoryChanger to rescue the
+        entire directory to aid in debugging. Typically this is only called if
+        ``dumpOnException`` is True.
+        """
         initialPath = self.destination
-        destinationPath = self.initial
         folderName = os.path.split(self.destination)[1]
-        destinationPath = os.path.join(destinationPath, f"dump-{folderName}")
+        recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
         fileList = os.listdir(self.destination)
-        self._transferFiles(initialPath, destinationPath, fileList)
+        shutil.copytree(self.destination, recoveryPath)
 
     @staticmethod
     def _transferFiles(initialPath, destinationPath, fileList):
         """
         Transfer files into or out of the directory.
+
+        This is used in ``moveFiles`` and ``retrieveFiles`` to shuffle files about when
+        creating a target directory or when coming back, respectively. Beware that this
+        uses ``shutil.copy()`` under the hood, which doesn't play nicely with
+        directories. Future revisions should improve this.
 
         Parameters
         ----------
