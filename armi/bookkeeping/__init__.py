@@ -110,12 +110,13 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
         """
         from armi.cli import reportsEntryPoint
+        from armi.bookkeeping import newReports as reports
         from armi.bookkeeping import newReportUtils
 
-        if stage == reportsEntryPoint.ReportStage.Begin:
+        if stage == reports.ReportStage.Begin:
             newReportUtils.insertGeneralReportContent(cs, r, report, stage)
             if blueprint is not None:
                 newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
-        elif stage == reportsEntryPoint.ReportStage.End:
+        elif stage == reports.ReportStage.End:
             newReportUtils.insertEndOfLifeContent(r, report)
         return

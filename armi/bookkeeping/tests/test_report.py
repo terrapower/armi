@@ -26,7 +26,6 @@ from armi.bookkeeping import newReports
 from armi.utils import directoryChangers
 from armi.physics.neutronics.reports import neutronicsPlotting
 import armi.bookkeeping.newReports
-from armi.cli.reportsEntryPoint import ReportStage
 
 
 class TestReportContentCreation(unittest.TestCase):
@@ -75,7 +74,7 @@ class TestReportContentCreation(unittest.TestCase):
                 r=self.r,
                 cs=self.o.cs,
                 report=reportTest,
-                stage=ReportStage.Begin,
+                stage=newReports.ReportStage.Begin,
                 blueprint=self.r.blueprints,
             )
 

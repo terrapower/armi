@@ -1,3 +1,5 @@
+from enum import Enum
+from enum import auto
 import collections
 import shutil
 import os
@@ -564,6 +566,12 @@ class TimeSeries(ReportNode):
             img,
             htmltree.P(self.caption),
         )
+
+
+class ReportStage(Enum):
+    Begin = auto()
+    Standard = auto()
+    End = auto()
 
 
 def encode64(file_path):

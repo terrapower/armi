@@ -10,8 +10,6 @@ from armi.bookkeeping import newReports
 from armi.utils import plotting
 from armi.utils import units
 from armi.utils import iterables
-from armi.cli.reportsEntryPoint import ReportStage
-from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
@@ -37,7 +35,7 @@ def insertGeneralReportContent(cs, r, report, stage):
     """
     # These items only happen once at BOL
 
-    if stage == ReportStage.Begin:
+    if stage == newReports.ReportStage.Begin:
         comprehensiveBOLContent(cs, r, report)
         insertDesignContent(r, report)
 

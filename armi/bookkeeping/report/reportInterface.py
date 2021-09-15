@@ -117,7 +117,6 @@ class ReportInterface(interfaces.Interface):
 
     def interactEOL(self):
         """Adds the data to the report, and generates it"""
-        self.cs.setSettingsReport()
         b = self.o.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 

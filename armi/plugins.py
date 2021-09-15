@@ -539,21 +539,27 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def getReportContents(r, cs, report, stage, blueprint):  # ReportContent
+    def getReportContents(r, cs, report, stage, blueprint) -> None:
         """
         To generate a report.
 
+        For more information, see :doc:`/developer/reports`.
+
         Parameters
         ----------
-        r : a reactor
-        cs : case settings
-        report : current report object to add to
-        blueprint : blueprint for a reactor (if None, only partial contents created)
-        stage : begin/standard/or end (stage of the report for
-                when inserting BOL vs. EOL content)
+        r : Reactor
 
-        For more information, see the documentation at https://terrapower.github.io/armi/developer/reports.html
+        cs : Settings
 
+        report : ReportContent
+            Report object to add contents to
+
+        stage : ReportStage
+            begin/standard/or end (stage of the report for when inserting BOL vs. EOL
+            content)
+            
+        blueprint : Blueprint, optional
+            for a reactor (if None, only partial contents created)
         """
 
 
