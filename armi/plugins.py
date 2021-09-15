@@ -557,7 +557,7 @@ class ArmiPlugin:
         stage : ReportStage
             begin/standard/or end (stage of the report for when inserting BOL vs. EOL
             content)
-            
+
         blueprint : Blueprint, optional
             for a reactor (if None, only partial contents created)
         """

@@ -88,7 +88,7 @@ class ReportContent:
             ),
             "report.js",
         )
-        fileurl = doc.renderToFile("ReportContent.html", 0)
+        fileurl = doc.renderToFile("index.html", 0)
         return fileurl
 
     def get(self, section, default=None):

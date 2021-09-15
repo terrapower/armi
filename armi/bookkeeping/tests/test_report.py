@@ -107,7 +107,7 @@ class TestReportContentCreation(unittest.TestCase):
             reportTest.writeReports()
             # Want to check that two <tr> exists...
             times = 0
-            with open("ReportContent.html") as f:
+            with open("index.html") as f:
                 for line in f:
                     if "<tr>" in line:
                         times = times + 1

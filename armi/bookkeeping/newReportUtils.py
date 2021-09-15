@@ -10,6 +10,7 @@ from armi.bookkeeping import newReports
 from armi.utils import plotting
 from armi.utils import units
 from armi.utils import iterables
+from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):

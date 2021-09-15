@@ -164,7 +164,7 @@ def createReportFromSettings(cs):
     report.title = r.name
 
     with directoryChangers.ForcedCreationDirectoryChanger(
-        "{}-reports".format(r.name)
+        "{}-reports".format(cs.caseTitle)
     ):
         _ = pm.hook.getReportContents(
             r=r,
