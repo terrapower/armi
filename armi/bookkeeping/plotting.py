@@ -256,11 +256,13 @@ def buVsTime(reactor, scalars, extension=None):
     report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
-def distortionVsTime(reactor, scalars):
+def distortionVsTime(reactor, scalars, extension=None):
     r"""plots max distortion vs. time if the distortion interface is attached"""
     dd = reactor.o.getInterface("ductDistortion")
     if not dd or not "maxSwelling" in dd.__dict__:
         return  # skip plotting
+
+    extension = extension or settings.Settings()["outputFileExtension"]
 
     plt.figure()
     plt.plot(scalars["time"], dd.maxTotal, label="Total")
@@ -325,7 +327,7 @@ def xsHistoryVsTime(reactor, buGroups, extension=None):
     report.setData("Xs Plot", os.path.abspath(figName), report.XS_PLOT)
 
 
-def movesVsCycle(reactor, scalars):
+def movesVsCycle(reactor, scalars, extension=None):
     r"""
     make a bar chart showing the number of moves per cycle in the full core
 
