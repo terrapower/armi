@@ -29,9 +29,11 @@ their own ``Modifier``\ s that are design-specific.
 import copy
 import os
 import random
+from pyDOE import lhs
 from typing import List
 
 from armi.cases import suite
+from armi.cases.inputModifiers.inputModifiers import InputModifier
 
 
 def getInputModifiers(cls):
@@ -307,3 +309,49 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
         SuiteBuilder.addDegreeOfFreedom
         """
         self.modifierSets.extend((modifier,) for modifier in inputModifiers)
+
+
+class LatinHyperCubeSuiteBuilder(SuiteBuilder):
+    def __init__(self, baseCase, size):
+        SuiteBuilder.__init__(self, baseCase)
+        self.size = size
+        self.modifierSets.append(())
+
+    def addDegreeOfFreedom(self, inputModifier):
+        """
+        For example::
+
+            class SettingModifier(InputModifier):
+
+                def __init__(self, settingName, value, type, bounds):
+                    self.settingName = settingName
+                    self.value = value
+                    self.type = 'continuous'
+                    self.bounds = bounds
+
+                def __call__(self, cs, bp, geom):
+                    cs[settignName] = value
+        """
+        if not isinstance(inputModifier, InputModifier):
+            raise TypeError(
+                'Only a single InputModifier object should be added at a time since '
+                + 'non-parametric cases are added through Latin Hypercube Sampling.\n'
+                + 'Each inputModifier adds a dimension to the Latin Hypercube and '
+                + 'represents a single input variable. '
+            )
+
+        self.modifierSets.append(inputModifier)
+
+    def buildSuite(self, namingFunc=None):
+        original_modifiers = copy.deepcopy(self.modifierSets)
+        del self.modifierSets[:]
+
+        samples = lhs(len(original_modifiers), samples=self.size, criterion='maximin', iterations=100)
+
+        for i, samlple in enumerate(samples):
+            for j, mod in enumerate(original_modifiers):
+                if mod.type is 'continuous':
+                    
+                
+        return super().buildSuite(namingFunc=namingFunc)
+    
