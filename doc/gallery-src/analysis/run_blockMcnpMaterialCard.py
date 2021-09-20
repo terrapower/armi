@@ -9,6 +9,7 @@ Normally, code-specific utility code would belong in a code-specific ARMI
 plugin. But in this case, the need for MCNP materials cards is so pervasive
 that it made it into the framework.
 """
+# sphinx_gallery_thumbnail_path = '.static/armi-logo.png'
 import logging
 
 from armi.reactor.tests import test_reactors
