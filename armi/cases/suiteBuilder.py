@@ -312,18 +312,39 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 
 
 class LatinHyperCubeSuiteBuilder(SuiteBuilder):
+    """Implements a Latin Hypercube Sampling suite builder.
+
+    Attributes
+    ----------
+    modifierSets: An array of InputModifiers specifying input parameters.
+    """
     def __init__(self, baseCase, size):
         SuiteBuilder.__init__(self, baseCase)
         self.size = size
         self.modifierSets.append(())
 
-    def addDegreeOfFreedom(self, inputModifier):
+    def addDegreeOfFreedom(self, inputModifiers):
         """
+        Add a degree of freedom to the SuiteBuilder.
+
+        Unlike other types of suite builders, only one instance of a
+        modifier class should be added. This is because the Latin Hypercube
+        Sampling will automatically perturb the values and produce modifier
+        sets internally. A settings modfier class passed to this method
+        need include bounds by which the LHS algorithm can perturb the input
+        parameters.
+
         For example::
 
             class SettingModifier(InputModifier):
 
-                def __init__(self, settingName, value, type, bounds):
+                def __init__(
+                    self, 
+                    settingName: str, 
+                    value: float, 
+                    type: str, # either 'continuous' or 'discrete' 
+                    bounds: Optional[Tuple, List]
+                ):
                     self.settingName = settingName
                     self.value = value
                     self.type = 'continuous'
@@ -331,16 +352,23 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
 
                 def __call__(self, cs, bp, geom):
                     cs[settignName] = value
+
+        If the modifier is discrete then bounds specifies a list of options
+        the values can take. If continuous, then bounds specifies a range of values.
         """
-        if not isinstance(inputModifier, InputModifier):
-            raise TypeError(
-                'Only a single InputModifier object should be added at a time since '
+        types = [type(mod) for mod in self.modifierSets]
+
+        for modifier in inputModifiers:
+            if isinstance(modifier, tuple(types)):
+                raise TypeError(
+                 'Only a single instance of each type of SettingsModifier should be '
+                + 'added since '
                 + 'non-parametric cases are added through Latin Hypercube Sampling.\n'
                 + 'Each inputModifier adds a dimension to the Latin Hypercube and '
                 + 'represents a single input variable. '
-            )
+                )
 
-        self.modifierSets.append(inputModifier)
+        self.modifierSets.extend(inputModifiers)
 
     def buildSuite(self, namingFunc=None):
         original_modifiers = copy.deepcopy(self.modifierSets)
@@ -348,10 +376,21 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
 
         samples = lhs(len(original_modifiers), samples=self.size, criterion='maximin', iterations=100)
 
-        for i, samlple in enumerate(samples):
+        # Normalizing samples to modifier bounds and creating modifier objects.
+        for i in range(len(original_modifiers)):
+            modSet = []
             for j, mod in enumerate(original_modifiers):
+                new_mod = copy.deepcopy(mod)
                 if mod.type is 'continuous':
-                    
+                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][j] + mod.bounds[0]
+                    new_mod.value = value
+                elif mod.type is 'discrete':
+                    index = samples[i][j] * (len(mod.bounds) - 1)
+                    value = mod.bounds[index]
+                    new_mod.value = value
+
+                modSet.append(new_mod)
+            self.modifierSets.append(modSet)
                 
         return super().buildSuite(namingFunc=namingFunc)
     
