@@ -332,53 +332,6 @@ class Settings:
         writer.writeYaml(stream)
         return writer
 
-    def setSettingsReport(self):
-        """Puts settings into the report manager"""
-        from armi.bookkeeping import report
-
-        report.setData("caseTitle", self.caseTitle, report.RUN_META)
-        report.setData(
-            "outputFileExtension", self["outputFileExtension"], report.RUN_META
-        )
-
-        report.setData(
-            "Total Core Power", "%8.5E MWt" % (self["power"] / 1.0e6), report.RUN_META
-        )
-        if not self["cycleLengths"]:
-            report.setData(
-                "Cycle Length", "%8.5f days" % self["cycleLength"], report.RUN_META
-            )
-        report.setData(
-            "BU Groups", str(self["buGroups"]), report.RUN_META
-        )  # str to keep the list together in the report
-
-        for key in [
-            "nCycles",
-            "burnSteps",
-            "skipCycles",
-            "cycleLength",
-            "numProcessors",
-        ]:
-            report.setData(key, self[key], report.CASE_PARAMETERS)
-
-        for key in self.environmentSettings:
-            report.setData(key, self[key], report.RUN_META, [report.ENVIRONMENT])
-
-        for key in ["genXS", "neutronicsKernel"]:
-            report.setData(key, self[key], report.CASE_CONTROLS, [report.ENVIRONMENT])
-
-        for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
-            report.setData(key, self[key], report.RUN_META, [report.NEUTRONICS])
-
-        for key in ["reloadDBName", "startCycle", "startNode"]:
-            report.setData(key, self[key], report.SNAPSHOT)
-
-        for key in ["power", "Tin", "Tout"]:
-            report.setData(key, self[key], report.REACTOR_PARAMS)
-
-        for key in ["buGroups"]:
-            report.setData(key, self[key], report.BURNUP_GROUPS)
-
     def updateEnvironmentSettingsFrom(self, otherCs):
         r"""Updates the environment settings in this object based on some other cs
         (from the GUI, most likely)

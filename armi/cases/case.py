@@ -45,11 +45,10 @@ from armi import settings
 from armi import operators
 from armi import runLog
 from armi import interfaces
+from armi.cli import reportsEntryPoint
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
 from armi.reactor import reactors
-from armi.bookkeeping import report
-from armi.bookkeeping.report import reportInterface
 from armi.bookkeeping.db import compareDatabases
 from armi.utils import pathTools
 from armi.utils.directoryChangers import DirectoryChanger
@@ -491,21 +490,8 @@ class Case:
 
     def summarizeDesign(self, generateFullCoreMap=True, showBlockAxialMesh=True):
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
-        settings.setMasterCs(self.cs)
-        o = self.initializeOperator()
-        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
-            # There are global variables that are modified when a report is
-            # generated, so reset it all
-            six.moves.reload_module(report)  # pylint: disable=too-many-function-args
-            self.cs.setSettingsReport()
-            rpi = o.getInterface("report")
 
-            if rpi is None:
-                rpi = reportInterface.ReportInterface(o.r, o.cs)
-
-            rpi.generateDesignReport(generateFullCoreMap, showBlockAxialMesh)
-            report.DESIGN.writeHTML()
-            runLog.important("Design report summary was successfully generated")
+        _ = reportsEntryPoint.createReportFromSettings(self.cs)
 
     def buildCommand(self, python="python"):
         """

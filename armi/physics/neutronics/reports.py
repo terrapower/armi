@@ -1,8 +1,5 @@
 from collections import defaultdict
 
-# parts of report for neutronics
-from armi.cli.reportsEntryPoint import ReportStage
-
 from armi.bookkeeping import newReportUtils
 from armi.bookkeeping import newReports
 from armi.reactor.flags import Flags
@@ -22,10 +19,12 @@ def insertNeutronicsReport(r, cs, report, stage):
         collecting contents for.
     """
 
-    if stage == ReportStage.Begin:
+    if stage == newReports.ReportStage.Begin:
         insertNeutronicsBOLContent(r, cs, report)
 
-    elif stage == ReportStage.Standard or stage == ReportStage.End:
+    elif (
+        stage == newReports.ReportStage.Standard or stage == newReports.ReportStage.End
+    ):
         neutronicsPlotting(r, report, cs)
 
 

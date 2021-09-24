@@ -89,7 +89,11 @@ class TestArmiCase(unittest.TestCase):
             case = cases.Case(cs)
             c2 = case.clone()
             c2.summarizeDesign(True, True)
-            self.assertTrue(os.path.exists("Core Design Report.html"))
+            self.assertTrue(
+                os.path.exists(
+                    os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")
+                )
+            )
 
     def test_independentVariables(self):
         """Ensure that independentVariables added to a case move with it."""
