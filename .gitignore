@@ -21,6 +21,7 @@ doc/tutorials/case-suite
 armi/tests/tutorials/case-suite
 .apidocs/
 doc/gallery
+doc/gallery-src/framework/*.yaml
 htmlcov/
 
 # No workspace crumbs.
