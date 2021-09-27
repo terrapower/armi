@@ -44,8 +44,8 @@ class ThoriumOxide(Material):
         self.setMassFrac("O16", 0.1212)
 
     def density(self, Tk=None, Tc=None):
-        Tk = getTk(Tc, Tk)
         """g/cc from IAEA TE 1450"""
+        Tk = getTk(Tc, Tk)
         return 10.00
 
     def linearExpansion(self, Tk=None, Tc=None):
