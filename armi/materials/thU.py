@@ -38,7 +38,7 @@ class ThU(material.Material):
     def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
         runLog.warning("Material {} has not yet been tested for accuracy".format("ThU"))
 
-        if U233_wt_frac:
+        if U233_wt_frac is not None:
             self.adjustMassEnrichment(U233_wt_frac)
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 

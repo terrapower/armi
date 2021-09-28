@@ -46,16 +46,29 @@ class MOX(UraniumOxide):
     def applyInputParams(
         self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None, *args, **kwargs
     ):
-        if U235_wt_frac:
+        if U235_wt_frac is not None:
             self.adjustMassEnrichment(U235_wt_frac)
 
         td = TD_frac
-        if td:
+        if td is not None:
+            if td > 1.0:
+                runLog.warning(
+                    "Theoretical density frac for {0} is {1}, which is >1"
+                    "".format(self, td),
+                    single=True,
+                    label="Large theoretical density",
+                )
+            elif td == 0:
+                runLog.warning(
+                    "Theoretical density frac for {self} is zero!",
+                    single=True,
+                    label="Zero theoretical density",
+                )
             self.adjustTD(td)
         else:
             self.adjustTD(1.00)  # default to fully dense.
 
-        if mass_frac_PU02:
+        if mass_frac_PU02 is not None:
             self.setMassFracPuO2(mass_frac_PU02)
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 

@@ -29,7 +29,7 @@ class B4C(material.Material):
     def applyInputParams(
         self, B10_wt_frac=None, theoretical_density=None, *args, **kwargs
     ):
-        if B10_wt_frac:
+        if B10_wt_frac is not None:
             # we can't just use the generic enrichment adjustment here because the
             # carbon has to change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
