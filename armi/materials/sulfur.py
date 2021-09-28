@@ -25,7 +25,7 @@ class Sulfur(material.Fluid):
     name = "Sulfur"
 
     def applyInputParams(self, sulfur_density_frac=None):
-        if sulfur_density_frac:
+        if sulfur_density_frac is not None:
             self.fullDensFrac = float(sulfur_density_frac)
 
     def setDefaultMassFracs(self):

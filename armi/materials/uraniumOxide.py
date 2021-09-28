@@ -95,17 +95,23 @@ class UraniumOxide(material.FuelMaterial):
         return self.theoreticalDensityFrac
 
     def applyInputParams(self, U235_wt_frac=None, TD_frac=None, *args, **kwargs):
-        if U235_wt_frac:
+        if U235_wt_frac is not None:
             self.adjustMassEnrichment(U235_wt_frac)
 
         td = TD_frac
-        if td:
+        if td is not None:
             if td > 1.0:
                 runLog.warning(
                     "Theoretical density frac for {0} is {1}, which is >1"
                     "".format(self, td),
                     single=True,
                     label="Large theoretical density",
+                )
+            elif td == 0:
+                runLog.warning(
+                    "Theoretical density frac for {self} is zero!",
+                    single=True,
+                    label="Zero theoretical density",
                 )
             self.adjustTD(td)
         else:
