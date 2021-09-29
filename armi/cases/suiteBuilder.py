@@ -314,6 +314,8 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 class LatinHyperCubeSuiteBuilder(SuiteBuilder):
     """Implements a Latin Hypercube Sampling suite builder.
 
+    This method is used to provide
+
     Attributes
     ----------
     modifierSets: An array of InputModifiers specifying input parameters.
@@ -371,6 +373,37 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         self.modifierSets.extend(inputModifiers)
 
     def buildSuite(self, namingFunc=None):
+        """
+        Builds a ``CaseSuite`` based on the modifierSets contained in the SuiteBuilder.
+
+        For each sequence of modifications, this creates a new ``Case`` from the ``baseCase``, and
+        runs the sequence of modifications on the new ``Case``'s inputs. The modified ``Case`` is
+        then added to a ``CaseSuite``. The resulting ``CaseSuite`` is returned.
+
+        Parameters
+        ----------
+        namingFunc : callable(index, case, tuple(InputModifier)), (optional)
+            Function used to name each case. It is supplied with the index (int), the case (Case),
+            and a tuple of InputModifiers used to edit the case. This should be enough information
+            for someone to derive a meaningful name.
+
+            The function should return a string specifying the path of the ``CaseSettings``, this
+            allows the user to specify the directories where each case will be run.
+
+            If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
+            ``<0000>`` is the four-digit case index, and ``<title>`` is the ``baseCase.title``.
+
+
+        Raises
+        ------
+        RuntimeError
+            When order of modifications is deemed to be invalid.
+
+        Returns
+        -------
+        caseSuite : CaseSuite
+            Derived from the ``baseCase`` and modifications.
+        """
         original_modifiers = copy.deepcopy(self.modifierSets)
         del self.modifierSets[:]
 
