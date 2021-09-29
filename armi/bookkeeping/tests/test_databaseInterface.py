@@ -34,6 +34,7 @@ from armi.utils import directoryChangers
 from armi import runLog
 from armi.reactor.tests import test_reactors
 from armi.reactor import grids
+from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 
 
 def getSimpleDBOperator(cs):
@@ -52,6 +53,7 @@ def getSimpleDBOperator(cs):
         cs["runType"] = "Standard"
         cs["geomFile"] = "geom1Assem.xml"
         cs["nCycles"] = 2
+        cs[CONF_FORCE_DB_PARAMS] = ["baseBu",]
         genDBCase = case.Case(cs)
         settings.setMasterCs(cs)
         runLog.setVerbosity("info")
@@ -74,6 +76,7 @@ class MockInterface(interfaces.Interface):
         self.action = action
 
     def interactEveryNode(self, cycle, node):
+        self.r.core.getFirstBlock().p.baseBu = 5.0
         self.action(cycle, node)
 
 
@@ -113,6 +116,7 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
+            self.assertIn("baseBu", h5["c01n02/HexBlock"])
 
     def test_metaData_endFail(self):
         def failMethod(cycle, node):  # pylint: disable=unused-argument
