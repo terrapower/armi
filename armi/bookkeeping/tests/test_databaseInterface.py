@@ -53,7 +53,9 @@ def getSimpleDBOperator(cs):
         cs["runType"] = "Standard"
         cs["geomFile"] = "geom1Assem.xml"
         cs["nCycles"] = 2
-        cs[CONF_FORCE_DB_PARAMS] = ["baseBu",]
+        cs[CONF_FORCE_DB_PARAMS] = [
+            "baseBu",
+        ]
         genDBCase = case.Case(cs)
         settings.setMasterCs(cs)
         runLog.setVerbosity("info")
