@@ -92,7 +92,7 @@ class TestInspector(unittest.TestCase):
 
     def test_assignCS(self):
         keys = sorted(self.inspector.cs.keys())
-        self.assertIn(keys, "HCFcoretype")
+        self.assertIn("HCFcoretype", keys)
 
         self.assertEqual(self.inspector.cs["HCFcoretype"], "TWRC")
         self.inspector._assignCS(
