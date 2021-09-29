@@ -79,7 +79,7 @@ class TestCaseSettings(unittest.TestCase):
             # grab the keys, and make sure they make some sense
             keys = sorted(self.cs.keys())
             for key in {"HCFcoretype", "Tin", "Tout"}:
-                self.assertIn(key in keys)
+                self.assertIn(key, keys)
 
             # test an invalid update
             d = {"aaba": 1, "aardvark": 2}
