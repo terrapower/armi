@@ -314,7 +314,11 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 class LatinHyperCubeSuiteBuilder(SuiteBuilder):
     """Implements a Latin Hypercube Sampling suite builder.
 
-    This method is used to provide
+    This method is used to provide a more efficient sampling of the design space.
+    LHS more efficiently samples the space evenly across dimensions compared to
+    random sampling. It requires fewer points than a full factorial since it samples
+    quasi-randomly into nonoverlapping partitions. It is recommended to use a surrogate
+    model with the sampled data to get the full benefit.
 
     Attributes
     ----------
