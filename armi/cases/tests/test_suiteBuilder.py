@@ -54,6 +54,13 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
             assert 0 < mod[0].value < 1e6
             assert mod[1].value in [0.0, 0.2, 0.4, 0.6, 0.8]
 
+    def test_addDegreeOfFreedom(self):
+        builder = LatinHyperCubeSuiteBuilder(case, size=20)
+        powerMod = LatinHyperCubeModifier("power", "continuous", [0, 1e6])
+        morePowerMod = LatinHyperCubeModifier("power", "continuous", [1e3, 1e5])
+
+        with self.assertRaises(ValueError):
+            builder.addDegreeOfFreedom([powerMod, morePowerMod])
 
 if __name__ == "__main__":
     unittest.main()

@@ -31,6 +31,7 @@ import os
 import random
 from pyDOE import lhs
 from typing import List
+from collections import Counter
 
 from armi.cases import suite
 from armi.cases.inputModifiers.inputModifiers import InputModifier
@@ -343,19 +344,15 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
 
         For example::
 
-            class InputParameterModifier(InputModifier):
+            class InputParameterModifier(SamplingInputModifier):
 
                 def __init__(
                     self,
-                    Name: str,
-                    value: float,
+                    name: str,
                     pararmType: str, # either 'continuous' or 'discrete'
                     bounds: Optional[Tuple, List]
                 ):
-                    self.Name = Name
-                    self.value = value
-                    self.paramType = 'continuous'
-                    self.bounds = bounds
+                    super().__init__(name, paramType, bounds)
 
                 def __call__(self, cs, bp, geom):
                     ...
@@ -363,17 +360,22 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         If the modifier is discrete then bounds specifies a list of options
         the values can take. If continuous, then bounds specifies a range of values.
         """
-        types = [type(mod) for mod in self.modifierSets]
+        names = [mod.name for mod in self.modifierSets + inputModifiers]
 
-        for modifier in inputModifiers:
-            if isinstance(modifier, tuple(types)):
-                raise TypeError(
-                    "Only a single instance of each type of SettingsModifier should be "
-                    + "added since "
-                    + "non-parametric cases are added through Latin Hypercube Sampling.\n"
-                    + "Each inputModifier adds a dimension to the Latin Hypercube and "
-                    + "represents a single input variable. "
-                )
+        if len(names) != len(set(names)):
+            counts = Counter(names)
+            duplicateNames = []
+            for key in counts.keys():
+                if counts[key] > 1:
+                    duplicateNames.append(key)
+
+            raise ValueError(
+                "Only a single input parameter should be inserted as an input modifer "
+                + "since cases are added through Latin Hypercube Sampling.\n"
+                + "Each inputModifier adds a dimension to the Latin Hypercube and "
+                + "represents a single input variable.\n"
+                + f"{duplicateNames} have duplicates. "
+            )
 
         self.modifierSets.extend(inputModifiers)
 
