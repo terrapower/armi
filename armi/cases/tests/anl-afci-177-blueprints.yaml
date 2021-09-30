@@ -1,0 +1,345 @@
+# The comments in this file are important, as they are used
+# to bring in sections of this file into the tutorial in the docs.
+# start-block-clad
+blocks:
+    fuel: &block_fuel
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            id: 0.6962
+            od:  0.808
+            mult: 271
+# end-block-clad
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            axialPitch: 30.0
+            helixDiameter: 0.8888
+            id: 0.0
+            od: 0.0808
+            mult: 271
+# end-block-wire
+        fuel:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 500.0
+            id: 0.0
+            mult: 271
+            od: 0.6029
+# end-block-fuel
+        bond:
+            shape: Circle
+            material: Sodium
+            Tinput: 447.0
+            Thot: 447.0
+            id: fuel.od
+            mult: fuel.mult
+            od: clad.id
+# end-block-bond
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 14.922
+            op: 15.710
+            mult: 1.0
+# end-block-duct
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            ip: duct.op
+            op: 16.142
+            mult: 1.0
+# end-block-intercoolant
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+# end-block-coolant
+    radial shield: &block_shield
+        control:
+            shape: Circle
+            material: B4C
+            Tinput: 597.0
+            Thot: 597.0
+            id: 0.0
+            od: 0.6962
+            mult: 271
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 14.922
+            op: 15.710
+            mult: 1.0
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 447.0
+            Thot: 447.0
+            ip: duct.op
+            mult: 1.0
+            op: 16.142
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+# end-block-radialshield
+    reflector: &block_reflector
+        reflector:
+            shape: Circle
+            material: HT9
+            Tinput: 450.0
+            Thot: 450.0
+            id: 0.0
+            od: 0.6962
+            mult: 271
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            axialPitch: 30.0
+            helixDiameter: 0.777
+            id: 0.0
+            od: 0.0808
+            mult: 271
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 14.922
+            op: 15.710
+            mult: 1.0
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 447.0
+            Thot: 447.0
+            ip: duct.op
+            mult: 1.0
+            op: 16.142
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+# end-block-reflector
+    control: &block_control
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 14.922
+            op: 15.710
+            mult: 1.0
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 447.0
+            Thot: 447.0
+            ip: duct.op
+            op: 16.142
+            mult: 1.0
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+# end-block-control
+    plenum: &block_plenum
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            id: 0.6962
+            od:  0.808
+            mult: 271
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            axialPitch: 30.0
+            helixDiameter: 0.88888
+            id: 0.0
+            od: 0.0808
+            mult: 271
+        gap:
+            shape: Circle
+            material: Void
+            Tinput: 450.0
+            Thot: 450.0
+            id: 0.0
+            od: clad.id
+            mult: 271
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 14.922
+            op: 15.710
+            mult: 1.0
+        intercoolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 447.0
+            Thot: 447.0
+            ip: duct.op
+            mult: 1.0
+            op: 16.142
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+# end-block-plenum
+assemblies:
+    heights: &heights
+        - 15.0
+        - 20.32
+        - 20.32
+        - 20.32
+        - 20.32
+        - 20.32
+        - 191.14
+    axial mesh points: &mesh
+        - 1
+        - 2
+        - 2
+        - 2
+        - 2
+        - 2
+        - 8
+# end-assemblies-common
+    inner fuel:
+        specifier: IC
+        blocks: &fuel_blocks
+            - *block_reflector
+            - *block_fuel
+            - *block_fuel
+            - *block_fuel
+            - *block_fuel
+            - *block_fuel
+            - *block_plenum
+        height: *heights
+        axial mesh points: *mesh
+        material modifications:
+            U235_wt_frac:
+                - ''
+                - 0.127
+                - 0.127
+                - 0.127
+                - 0.127
+                - 0.127
+                - ''
+        xs types: &IC_xs
+            - A
+            - A
+            - A
+            - A
+            - A
+            - A
+            - A
+# end-assemblies-ic
+    middle core fuel:
+        specifier: MC
+        blocks: *fuel_blocks
+        height: *heights
+        axial mesh points: *mesh
+        material modifications:
+            U235_wt_frac:
+                - ''
+                - 0.153
+                - 0.153
+                - 0.153
+                - 0.153
+                - 0.153
+                - ''
+        xs types:
+            - B
+            - B
+            - B
+            - B
+            - B
+            - B
+            - B
+# end-assemblies-mc
+    outer core fuel:
+        specifier: OC
+        blocks: *fuel_blocks
+        height: *heights
+        axial mesh points: *mesh
+        material modifications:
+            U235_wt_frac:
+                - ''
+                - 0.180
+                - 0.180
+                - 0.180
+                - 0.180
+                - 0.180
+                - ''
+        xs types:
+            - C
+            - C
+            - C
+            - C
+            - C
+            - C
+            - C
+# end-assemblies-oc
+    radial reflector:
+        specifier: RR
+        blocks: [*block_reflector]
+        height: [307.74]
+        axial mesh points: [1]
+        xs types:  [A]
+# end-assemblies-rr
+    radial shield:
+        specifier: SH
+        blocks: [*block_shield]
+        height: [307.74]
+        axial mesh points: [1]
+        xs types:  [A]
+# end-assemblies-sh
+    control:
+        specifier: PC
+        blocks: [*block_control]
+        height: [307.74]
+        axial mesh points: [1]
+        xs types:  [A]
+    ultimate shutdown:
+        specifier: US
+        blocks: [*block_control]
+        height: [307.74]
+        axial mesh points: [1]
+        xs types:  [A]
+# end-assemblies-section
+systems:
+    core:
+      grid name: core
+      origin:
+          x: 0.0
+          y: 0.0
+          z: 0.0
+grids:
+    core:
+        !include anl-afci-177-coreMap.yaml
+
+# end-systems-section
+

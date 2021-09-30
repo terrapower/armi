@@ -16,6 +16,43 @@
 Unit tests for the SuiteBuilder
 """
 import unittest
+import yaml
+from armi.cases.inputModifiers.inputModifiers import SettingsModifier
+from armi import cases, settings
+from armi.cases.suiteBuilder import LatinHyperCubeSuiteBuilder
+
+
+cs = settings.Settings("armi/cases/tests/anl-afci-177.yaml")
+case = cases.Case(cs)
+
+
+class LatinHyperCubeModifier(SettingsModifier):
+    def __init__(self, settingName, paramType, bounds):
+        super().__init__(settingName, None)
+        self.paramType = paramType
+        self.bounds = bounds
+
+
+class TestLHSSuiteBuilder(unittest.TestCase):
+    """Class to test LatinHyperCubeSuiteBuilder."""
+
+    def testInitialize(self):
+        builder = LatinHyperCubeSuiteBuilder(case, size=20)
+        assert builder.modifierSets == []
+
+    def test_buildSuite(self):
+        builder = LatinHyperCubeSuiteBuilder(case, size=20)
+        powerMod = LatinHyperCubeModifier("power", "continuous", [0, 1e6])
+        availabilityMod = LatinHyperCubeModifier(
+            "availabilityFactor", "discrete", [0.0, 0.2, 0.4, 0.6, 0.8]
+        )
+        builder.addDegreeOfFreedom([powerMod, availabilityMod])
+        builder.buildSuite()
+        assert len(builder.modifierSets) == 20
+        for mod in builder.modifierSets:
+            assert 0 < mod[0].value < 1e6
+            assert mod[1].value in [0.0, 0.2, 0.4, 0.6, 0.8]
+
 
 if __name__ == "__main__":
     unittest.main()

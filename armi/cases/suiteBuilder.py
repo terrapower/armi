@@ -320,10 +320,11 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
     ----------
     modifierSets: An array of InputModifiers specifying input parameters.
     """
+
     def __init__(self, baseCase, size):
         SuiteBuilder.__init__(self, baseCase)
         self.size = size
-        self.modifierSets.append(())
+        self.modifierSets = []
 
     def addDegreeOfFreedom(self, inputModifiers):
         """
@@ -341,10 +342,10 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             class SettingModifier(InputModifier):
 
                 def __init__(
-                    self, 
-                    settingName: str, 
-                    value: float, 
-                    type: str, # either 'continuous' or 'discrete' 
+                    self,
+                    settingName: str,
+                    value: float,
+                    pararmType: str, # either 'continuous' or 'discrete'
                     bounds: Optional[Tuple, List]
                 ):
                     self.settingName = settingName
@@ -363,11 +364,11 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         for modifier in inputModifiers:
             if isinstance(modifier, tuple(types)):
                 raise TypeError(
-                 'Only a single instance of each type of SettingsModifier should be '
-                + 'added since '
-                + 'non-parametric cases are added through Latin Hypercube Sampling.\n'
-                + 'Each inputModifier adds a dimension to the Latin Hypercube and '
-                + 'represents a single input variable. '
+                    "Only a single instance of each type of SettingsModifier should be "
+                    + "added since "
+                    + "non-parametric cases are added through Latin Hypercube Sampling.\n"
+                    + "Each inputModifier adds a dimension to the Latin Hypercube and "
+                    + "represents a single input variable. "
                 )
 
         self.modifierSets.extend(inputModifiers)
@@ -407,23 +408,29 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         original_modifiers = copy.deepcopy(self.modifierSets)
         del self.modifierSets[:]
 
-        samples = lhs(len(original_modifiers), samples=self.size, criterion='maximin', iterations=100)
+        samples = lhs(
+            len(original_modifiers),
+            samples=self.size,
+            criterion="maximin",
+            iterations=100,
+        )
 
         # Normalizing samples to modifier bounds and creating modifier objects.
-        for i in range(len(original_modifiers)):
+        for i in range(len(samples)):
             modSet = []
             for j, mod in enumerate(original_modifiers):
                 new_mod = copy.deepcopy(mod)
-                if mod.type is 'continuous':
-                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][j] + mod.bounds[0]
+                if mod.paramType is "continuous":
+                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][
+                        j
+                    ] + mod.bounds[0]
                     new_mod.value = value
-                elif mod.type is 'discrete':
-                    index = samples[i][j] * (len(mod.bounds) - 1)
+                elif mod.paramType is "discrete":
+                    index = round(samples[i][j] * (len(mod.bounds) - 1))
                     value = mod.bounds[index]
                     new_mod.value = value
 
                 modSet.append(new_mod)
             self.modifierSets.append(modSet)
-                
+
         return super().buildSuite(namingFunc=namingFunc)
-    
