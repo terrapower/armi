@@ -34,7 +34,7 @@ class LatinHyperCubeModifier(SamplingInputModifier):
         cs[self.name] = self.value
 
 
-class TestLHSSuiteBuilder(unittest.TestCase):
+class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
     """Class to test LatinHyperCubeSuiteBuilder."""
 
     def testInitialize(self):
