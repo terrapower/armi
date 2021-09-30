@@ -339,7 +339,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
 
         For example::
 
-            class SettingModifier(InputModifier):
+            class InputParameterModifier(InputModifier):
 
                 def __init__(
                     self,
