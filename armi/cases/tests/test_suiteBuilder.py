@@ -16,8 +16,7 @@
 Unit tests for the SuiteBuilder
 """
 import unittest
-import yaml
-from armi.cases.inputModifiers.inputModifiers import SettingsModifier
+from armi.cases.inputModifiers.inputModifiers import SamplingInputModifier
 from armi import cases, settings
 from armi.cases.suiteBuilder import LatinHyperCubeSuiteBuilder
 
@@ -26,11 +25,13 @@ cs = settings.Settings("armi/cases/tests/anl-afci-177.yaml")
 case = cases.Case(cs)
 
 
-class LatinHyperCubeModifier(SettingsModifier):
-    def __init__(self, settingName, paramType, bounds):
-        super().__init__(settingName, None)
-        self.paramType = paramType
-        self.bounds = bounds
+class LatinHyperCubeModifier(SamplingInputModifier):
+    def __init__(self, name, paramType: str, bounds: list, independentVariable=None):
+        super().__init__(name, paramType, bounds, independentVariable=independentVariable)
+        self.value = None
+        
+    def __call__(self, cs, blueprints, geom):
+        cs[self.name] = self.value
 
 
 class TestLHSSuiteBuilder(unittest.TestCase):

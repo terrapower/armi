@@ -347,18 +347,18 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
 
                 def __init__(
                     self,
-                    settingName: str,
+                    Name: str,
                     value: float,
                     pararmType: str, # either 'continuous' or 'discrete'
                     bounds: Optional[Tuple, List]
                 ):
-                    self.settingName = settingName
+                    self.Name = Name
                     self.value = value
-                    self.type = 'continuous'
+                    self.paramType = 'continuous'
                     self.bounds = bounds
 
                 def __call__(self, cs, bp, geom):
-                    cs[settignName] = value
+                    ...
 
         If the modifier is discrete then bounds specifies a list of options
         the values can take. If continuous, then bounds specifies a range of values.
