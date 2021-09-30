@@ -78,8 +78,8 @@ class TestCaseSettings(unittest.TestCase):
         with self.cs._unlock():
             # grab the keys, and make sure they make some sense
             keys = sorted(self.cs.keys())
-            self.assertEqual(len(keys), 146)
-            self.assertEqual(keys[:3], ["HCFcoretype", "Tin", "Tout"])
+            for key in {"HCFcoretype", "Tin", "Tout"}:
+                self.assertIn(key, keys)
 
             # test an invalid update
             d = {"aaba": 1, "aardvark": 2}

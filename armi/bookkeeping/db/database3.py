@@ -90,10 +90,12 @@ from armi import runLog
 from armi import settings
 from armi.reactor import parameters
 from armi.reactor.parameters import parameterCollections
+from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor, Core
 from armi.reactor import assemblies
 from armi.reactor.assemblies import Assembly
+from armi.reactor import blocks
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
@@ -103,7 +105,10 @@ from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
-from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
+from armi.settings.fwSettings.databaseSettings import (
+    CONF_SYNC_AFTER_WRITE,
+    CONF_FORCE_DB_PARAMS,
+)
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 DB_MAJOR = 3
@@ -160,6 +165,20 @@ class DatabaseInterface(interfaces.Interface):
         interfaces.Interface.__init__(self, r, cs)
         self._db = None
         self._dbPath: Optional[pathlib.Path] = None
+
+        if cs[CONF_FORCE_DB_PARAMS]:
+            toSet = {paramName: set() for paramName in cs[CONF_FORCE_DB_PARAMS]}
+            for (name, _), pDef in parameterDefinitions.ALL_DEFINITIONS.items():
+                if name in toSet.keys():
+                    toSet[name].add(pDef)
+
+            for name, pDefs in toSet.items():
+                runLog.info(
+                    "Forcing parameter {} to be written to the database, per user "
+                    "input".format(name)
+                )
+                for pDef in pDefs:
+                    pDef.saveToDB = True
 
     def __repr__(self):
         return "<{} '{}' {} >".format(
