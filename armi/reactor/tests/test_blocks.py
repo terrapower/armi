@@ -13,7 +13,7 @@
 # limitations under the License.
 
 r"""Tests blocks.py"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
 import copy
 import math
 import os
@@ -2181,5 +2181,4 @@ class MassConservationTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', '-f']
     unittest.main()

@@ -15,6 +15,7 @@
 """
 Unit tests for pathTools.
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 import os
 import types

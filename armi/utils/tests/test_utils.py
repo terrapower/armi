@@ -14,15 +14,14 @@
 
 r""" Testing some utility functions
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
 import unittest
 import math
 
 import numpy as np
 
-from armi.utils import units
+from armi import utils
 from armi.utils import directoryChangers
-import armi.utils as utils
 
 
 class Utils_TestCase(unittest.TestCase):
