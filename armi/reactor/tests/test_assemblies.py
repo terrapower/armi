@@ -693,8 +693,8 @@ class Assembly_TestCase(unittest.TestCase):
         }
         # Set some params
         for b in self.Assembly:
-            for param in paramDict:
-                b.p[param] = paramDict[param]
+            for param, paramVal in paramDict.items():
+                b.p[param] = paramVal
 
         for param in paramDict:
             cur = list(self.Assembly.getChildParamValues(param))

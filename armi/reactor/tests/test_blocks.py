@@ -581,9 +581,9 @@ class Block_TestCase(unittest.TestCase):
 
         self.Block.setNumberDensities(refDict)
 
-        for nuc in refDict.keys():
-            cur = self.Block.getNumberDensity(nuc)
-            ref = refDict[nuc]
+        for nucKey, nucItem in refDict.items():
+            cur = self.Block.getNumberDensity(nucKey)
+            ref = nucItem
             places = 6
             self.assertAlmostEqual(ref, cur, places=places)
 
@@ -608,9 +608,9 @@ class Block_TestCase(unittest.TestCase):
 
         b.setNumberDensities(refDict)
 
-        for nuc in refDict.keys():
-            cur = self.Block.getNumberDensity(nuc)
-            ref = refDict[nuc]
+        for nucKey, nucItem in refDict.items():
+            cur = self.Block.getNumberDensity(nucKey)
+            ref = nucItem
             places = 6
             self.assertAlmostEqual(cur, ref, places=places)
 
@@ -660,7 +660,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getTotalMass(self):
-
         self.Block.setHeight(100.0)
 
         self.Block.clearNumberDensities()
@@ -678,8 +677,8 @@ class Block_TestCase(unittest.TestCase):
         cur = self.Block.getMass()
 
         tot = 0.0
-        for nucName in refDict.keys():
-            d = refDict[nucName]
+        for nucName, nucItem in refDict.items():
+            d = nucItem
             A = nucDir.getAtomicWeight(nucName)
             tot += d * A
 
