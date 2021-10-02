@@ -9,15 +9,24 @@ from armi.tests import ISOAA_PATH
 
 
 class TestCrossSectionTable(unittest.TestCase):
-    def testMakeTable(self):
+    def test_makeTable(self):
         obj = loadTestBlock()
         obj.p.mgFlux = range(33)
         core = obj.getAncestorWithFlags(Flags.CORE)
         core.lib = isotxs.readBinary(ISOAA_PATH)
         table = cst.makeReactionRateTable(obj)
-        self.assertEqual(len(table), len(obj.getNuclides()))
+
+        self.assertEqual(len(obj.getNuclides()), len(table))
+        self.assertEqual(obj.getName(), "B0001-000")
+
+        self.assertEqual(table.getName(), "B0001-000")
+        self.assertTrue(table.hasValues())
+
+        xSecTable = table.getXsecTable()
+        self.assertEqual(len(xSecTable), 11)
+        self.assertIn("xsecs", xSecTable[0])
+        self.assertIn("mcnpId", xSecTable[-1])
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
