@@ -24,12 +24,12 @@ import copy
 import os
 import unittest
 
-import armi.physics.fuelCycle.fuelHandlers as fuelHandlers
+from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import settings
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
-import armi.reactor.tests.test_reactors as testReactor
+from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.reactor import grids
@@ -58,8 +58,9 @@ class TestFuelHandler(ArmiTestHelper):
         Build a dummy reactor without using input files. There are some igniters and feeds
         but none of these have any number densities.
         """
-
-        self.o, self.r = testReactor.loadTestReactor(self.directoryChanger.destination)
+        self.o, self.r = test_reactors.loadTestReactor(
+            self.directoryChanger.destination
+        )
         blockList = self.r.core.getBlocks()
         for bi, b in enumerate(blockList):
             b.p.flux = 5e10
@@ -135,7 +136,6 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_Width(self):
         """Tests the width capability of findAssembly."""
-
         fh = fuelHandlers.FuelHandler(self.o)
         assemsByRing = collections.defaultdict(list)
         for a in self.r.core.getAssemblies():
@@ -229,7 +229,6 @@ class TestFuelHandler(ArmiTestHelper):
         r"""
         Tests the findMany and type aspects of the fuel handler
         """
-
         fh = fuelHandlers.FuelHandler(self.o)
 
         igniters = fh.findAssembly(typeSpec=Flags.IGNITER | Flags.FUEL, findMany=True)
@@ -341,7 +340,6 @@ class TestFuelHandler(ArmiTestHelper):
         fh.interactEOL()
 
     def test_buildEqRingScheduleHelper(self):
-
         fh = fuelHandlers.FuelHandler(self.o)
 
         ringList1 = [1, 5]
@@ -370,7 +368,6 @@ class TestFuelHandler(ArmiTestHelper):
         --------
         runShuffling : creates the shuffling file to be read in.
         """
-
         # check labels before shuffling:
         for a in self.r.core.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
@@ -536,5 +533,4 @@ def addSomeDetailAssemblies(hist, assems):
 
 
 if __name__ == "__main__":
-    # import sys; sys.argv = ['', 'TestFuelHandler.test_repeatShuffles']
     unittest.main()

@@ -23,8 +23,8 @@ from numpy.testing import assert_allclose
 
 from armi.reactor import blocks
 from armi.reactor import components
-import armi.runLog as runLog
-import armi.settings as settings
+from armi import runLog
+from armi import settings
 from armi import materials
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM

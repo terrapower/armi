@@ -17,9 +17,9 @@
 import unittest
 import os
 
-import armi.interfaces as interfaces
+from armi import interfaces
 from armi.utils import textProcessors
-import armi.settings as settings
+from armi import settings
 from armi.tests import TEST_ROOT
 
 
