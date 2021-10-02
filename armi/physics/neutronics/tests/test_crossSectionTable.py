@@ -6,6 +6,7 @@ from armi.physics.neutronics.isotopicDepletion import (
     crossSectionTable,
     isotopicDepletionInterface as idi,
 )
+from armi.physics.neutronics.latticePhysics import ORDER
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.reactor.tests.test_reactors import loadTestReactor
@@ -41,6 +42,7 @@ class TestCrossSectionTable(unittest.TestCase):
         self.assertEqual(len(aid._depleteByName), 0)
 
         self.assertEqual(len(aid.getToDeplete()), 0)
+        self.assertEqual(ORDER, 5.0)
 
 
 if __name__ == "__main__":
