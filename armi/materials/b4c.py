@@ -27,15 +27,31 @@ class B4C(material.Material):
     enrichedNuclide = "B10"
 
     def applyInputParams(
-        self, B10_wt_frac=None, theoretical_density=None, *args, **kwargs
+        self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs
     ):
         if B10_wt_frac is not None:
             # we can't just use the generic enrichment adjustment here because the
             # carbon has to change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
         if theoretical_density is not None:
-            self.p.theoreticalDensityFrac = theoretical_density
-            self.clearCache()
+            runLog.warning(
+                "The 'threoretical_density' material modification for B4C will be "
+                "deprecated. Update your inputs to use 'TD_frac' instead.",
+                single=True,
+            )
+            if TD_frac is not None:
+                runLog.warning(
+                    "Both 'theoretical_density' and 'TD_frac' are specified "
+                    f"for {self}. 'TD_frac' will be used."
+                )
+            else:
+                self.updateTD(theoretical_density)
+        if TD_frac is not None:
+            self.updateTD(TD_frac)
+
+    def updateTD(self, TD):
+        self.p.theoreticalDensityFrac = TD
+        self.clearCache()
 
     def setNewMassFracsFromMassEnrich(self, massEnrichment):
         r"""
