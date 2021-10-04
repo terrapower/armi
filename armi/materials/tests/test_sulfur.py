@@ -26,7 +26,7 @@ class Sulfur_TestCase(_Material_Test, unittest.TestCase):
 
     def test_sulfur_density_frac(self):
         ref = self.mat.density(500)
-        
+
         reduced = self.Sulfur_sulfur_density_frac.density(500)
         self.assertAlmostEqual(ref * 0.5, reduced)
 
