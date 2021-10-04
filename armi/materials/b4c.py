@@ -27,11 +27,7 @@ class B4C(material.Material):
     enrichedNuclide = "B10"
 
     def applyInputParams(
-        self,
-        B10_wt_frac=None,
-        theoretical_density=None,
-        TD_frac=None,
-        *args, **kwargs,
+        self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs
     ):
         if B10_wt_frac is not None:
             # we can't just use the generic enrichment adjustment here because the
@@ -41,11 +37,13 @@ class B4C(material.Material):
             runLog.warning(
                 "The 'threoretical_density' material modification for B4C will be "
                 "deprecated. Update your inputs to use 'TD_frac' instead.",
-                single=True)
+                single=True,
+            )
             if TD_frac is not None:
                 runLog.warning(
-                    f"Both 'theoretical_density' and 'TD_frac' are specified "
-                    f"for {self}. 'TD_frac' will be used.")
+                    "Both 'theoretical_density' and 'TD_frac' are specified "
+                    f"for {self}. 'TD_frac' will be used."
+                )
             else:
                 self.updateTD(theoretical_density)
         if TD_frac is not None:

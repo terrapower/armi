@@ -30,11 +30,13 @@ class Sulfur(material.Fluid):
             runLog.warning(
                 "The 'sulfur_density_frac' material modification for Sulfur "
                 "will be deprecated. Update your inputs to use 'TD_frac' instead.",
-                single=True)
+                single=True,
+            )
             if TD_frac is not None:
                 runLog.warning(
-                    f"Both 'sulfur_density_frac' and 'TD_frac' are specified "
-                    f"for {self}. 'TD_frac' will be used.")
+                    "Both 'sulfur_density_frac' and 'TD_frac' are specified "
+                    f"for {self}. 'TD_frac' will be used."
+                )
             else:
                 self.updateTD(sulfur_density_frac)
         if TD_frac is not None:

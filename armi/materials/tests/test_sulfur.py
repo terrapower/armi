@@ -14,7 +14,7 @@ class Sulfur_TestCase(_Material_Test, unittest.TestCase):
     def setUp(self):
         _Material_Test.setUp(self)
         self.mat = Sulfur()
-        
+
         self.Sulfur_sulfur_density_frac = Sulfur()
         self.Sulfur_sulfur_density_frac.applyInputParams(sulfur_density_frac=0.5)
 
