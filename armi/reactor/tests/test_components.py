@@ -15,7 +15,7 @@
 """
 Tests functionalities of components within ARMI
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,no-member,invalid-name
 import copy
 import math
 import unittest
@@ -324,9 +324,9 @@ class TestCircle(TestShapedComponent):
 
     def test_getArea(self):
         od = self.component.getDimension("od")
-        id = self.component.getDimension("id")
+        idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
-        ref = math.pi * ((od / 2) ** 2 - (id / 2) ** 2) * mult
+        ref = math.pi * ((od / 2) ** 2 - (idd / 2) ** 2) * mult
         cur = self.component.getArea()
         self.assertAlmostEqual(cur, ref)
 
@@ -348,8 +348,8 @@ class TestCircle(TestShapedComponent):
         gap = Circle("gap", "Void", **gapDims)
         mult = gap.getDimension("mult")
         od = gap.getDimension("od")
-        id = gap.getDimension("id")
-        ref = mult * math.pi * ((od / 2.0) ** 2 - (id / 2.0) ** 2)
+        idd = gap.getDimension("id")
+        ref = mult * math.pi * ((od / 2.0) ** 2 - (idd / 2.0) ** 2)
         cur = gap.getArea()
         self.assertAlmostEqual(cur, ref)
 
@@ -832,9 +832,9 @@ class TestSphere(TestShapedComponent):
 
     def test_getVolume(self):
         od = self.component.getDimension("od")
-        id = self.component.getDimension("id")
+        idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
-        ref = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (id / 2.0) ** 3)
+        ref = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (idd / 2.0) ** 3)
         cur = self.component.getVolume()
         self.assertAlmostEqual(cur, ref)
 

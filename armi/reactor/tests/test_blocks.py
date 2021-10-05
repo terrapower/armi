@@ -13,7 +13,7 @@
 # limitations under the License.
 
 r"""Tests blocks.py"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
 import copy
 import math
 import os
@@ -23,8 +23,8 @@ from numpy.testing import assert_allclose
 
 from armi.reactor import blocks
 from armi.reactor import components
-import armi.runLog as runLog
-import armi.settings as settings
+from armi import runLog
+from armi import settings
 from armi import materials
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
@@ -581,9 +581,9 @@ class Block_TestCase(unittest.TestCase):
 
         self.Block.setNumberDensities(refDict)
 
-        for nuc in refDict.keys():
-            cur = self.Block.getNumberDensity(nuc)
-            ref = refDict[nuc]
+        for nucKey, nucItem in refDict.items():
+            cur = self.Block.getNumberDensity(nucKey)
+            ref = nucItem
             places = 6
             self.assertAlmostEqual(ref, cur, places=places)
 
@@ -608,9 +608,9 @@ class Block_TestCase(unittest.TestCase):
 
         b.setNumberDensities(refDict)
 
-        for nuc in refDict.keys():
-            cur = self.Block.getNumberDensity(nuc)
-            ref = refDict[nuc]
+        for nucKey, nucItem in refDict.items():
+            cur = self.Block.getNumberDensity(nucKey)
+            ref = nucItem
             places = 6
             self.assertAlmostEqual(cur, ref, places=places)
 
@@ -660,7 +660,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getTotalMass(self):
-
         self.Block.setHeight(100.0)
 
         self.Block.clearNumberDensities()
@@ -678,8 +677,8 @@ class Block_TestCase(unittest.TestCase):
         cur = self.Block.getMass()
 
         tot = 0.0
-        for nucName in refDict.keys():
-            d = refDict[nucName]
+        for nucName, nucItem in refDict.items():
+            d = nucItem
             A = nucDir.getAtomicWeight(nucName)
             tot += d * A
 
@@ -2181,5 +2180,4 @@ class MassConservationTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', '-f']
     unittest.main()

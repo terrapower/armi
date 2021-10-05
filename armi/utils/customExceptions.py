@@ -15,7 +15,7 @@
 """
 Globally accessible exception definitions for better granularity on exception behavior and exception handling behavior
 """
-import armi.runLog as runLog
+from armi import runLog
 from inspect import stack, getframeinfo
 
 

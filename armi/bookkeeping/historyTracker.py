@@ -78,7 +78,7 @@ from matplotlib import pyplot
 import tabulate
 
 from armi import interfaces
-import armi.runLog as runLog
+from armi import runLog
 from armi import utils
 from armi import operators
 from armi.utils import textProcessors
