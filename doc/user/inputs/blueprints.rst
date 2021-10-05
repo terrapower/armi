@@ -130,7 +130,7 @@ material
     expansion coefficients, density, thermal conductivity, etc., which are used in the various physics kernels.
     Natural isotopic composition is determined from this material specification as well (unless custom isotopics are
     supplied). The entry here should either be a class name of a valid material (``UZr``) or a ``module:className`` pair
-    for specifying specific material (e.g. ``armi.materials.uZr:UZr``). 
+    for specifying specific material (e.g. ``armi.materials.uZr:UZr``).
     Materials are handled through the :py:mod:`material library <armi.materials>`.
 
     .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
@@ -385,9 +385,15 @@ material modifications
               modNames = m.applyInputParams.__code__.co_varnames[1:numArgs]
               data.append((m.__name__, ', '.join(modNames)))
 
-      return tabulate(headers=('Material Name', 'Available modifications'),
-                      tabular_data=data, tablefmt='rst')
+          for subM in m.__subclasses__():
+              num = subM.applyInputParams.__code__.co_argcount
+              if num > 1:
+                  mods = subM.applyInputParams.__code__.co_varnames[1:num]
+                  data.append((subM.__name__, ', '.join(mods)))
 
+      data.sort(key=lambda t: t[0])
+      return tabulate(headers=('Material Name', 'Available Modifications'),
+                      tabular_data=data, tablefmt='rst')
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of
   custom isotopics labels for input scenarios where a varying blend of a high-reactivity
