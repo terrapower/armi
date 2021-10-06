@@ -21,7 +21,7 @@ from armi import cases, settings
 from armi.cases.suiteBuilder import LatinHyperCubeSuiteBuilder
 
 
-cs = settings.Settings("armi/cases/tests/anl-afci-177.yaml")
+cs = settings.Settings("armi/tests/tutorials/anl-afci-177.yaml")
 case = cases.Case(cs)
 
 
