@@ -262,6 +262,54 @@ RTH_GEOM = """
 """
 
 
+SMALL_HEX = """core:
+  geom: hex
+  symmetry: third periodic
+  lattice map: |
+    F
+     F
+    F F
+     F
+    F F
+pins:
+  geom: hex
+  symmetry: full
+  lattice map: |
+    -   -   FP
+      -   FP  FP
+    -   CL  CL  CL
+      FP  FP  FP  FP
+    FP  FP  FP  FP  FP
+      CL  CL  CL  CL
+    FP  FP  FP  FP  FP
+      FP  FP  FP  FP
+    CL  CL  CL  CL  CL
+      FP  FP  FP  FP
+    FP  FP  FP  FP  FP
+      CL  CL  CL  CL
+    FP  FP  FP  FP  FP
+      FP  FP  FP  FP
+        CL  CL  CL
+          FP  FP
+            FP
+"""
+
+
+class TestRoundTrip(unittest.TestCase):
+    def setUp(self):
+        self.grids = Grids.load(SMALL_HEX)
+
+    def test_contents(self):
+        self.assertIn("core", self.grids)
+
+    def test_roundTrip(self):
+        stream = io.StringIO()
+        saveToStream(stream, self.grids, False, True)
+        stream.seek(0)
+        gridBp = Grids.load(stream)
+        self.assertIn("third", gridBp["core"].symmetry)
+
+
 class TestGridBlueprintsSection(unittest.TestCase):
     """Tests for lattice blueprint section."""
 
@@ -313,7 +361,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
         bp = Blueprints.load(FULL_BP)
         filePath = "TestGridBlueprintsSection__test_simpleReadLatticeMap.log"
         with open(filePath, "w") as stream:
-            saveToStream(stream, bp, grid, True)
+            saveToStream(stream, bp, True)
 
         # test that the output looks valid, and includes a lattice map
         with open(filePath, "r") as f:
@@ -348,7 +396,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
         bp = Blueprints.load(FULL_BP_GRID)
         filePath = "TestGridBlueprintsSection__test_simpleReadNoLatticeMap.log"
         with open(filePath, "w") as stream:
-            saveToStream(stream, bp, grid, True)
+            saveToStream(stream, bp, True)
 
         # test that the output looks valid, and includes a lattice map
         with open(filePath, "r") as f:

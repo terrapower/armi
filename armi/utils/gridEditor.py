@@ -1362,7 +1362,7 @@ class GridBlueprintControl(wx.Panel):
         if stream is None:
             self._saveNoStream(full)
         else:
-            saveToStream(stream, self.bp, self.grid, full)
+            saveToStream(stream, self.bp, full, tryMap=True)
 
     def _saveNoStream(self, full=False):
         """Prompt for a file to save to.
@@ -1428,7 +1428,7 @@ class GridBlueprintControl(wx.Panel):
         # way to don't destroy anything unless we know we have something with which
         # to replace it.
         bpStream = io.StringIO()
-        saveToStream(bpStream, self.bp, self.grid, full)
+        saveToStream(bpStream, self.bp, full, tryMap=True)
         with open(path, "w") as stream:
             stream.write(bpStream.getvalue())
 
