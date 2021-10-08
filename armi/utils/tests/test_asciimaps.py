@@ -297,8 +297,13 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             asciimap.readAscii(stream.read())
 
+        asciimap2 = asciimaps.AsciiMapHexFullTipsUp()
+        for ij, spec in asciimap.items():
+            asciimap2.asciiLabelByIndices[ij] = spec
+
         with io.StringIO() as stream:
-            asciimap.writeAscii(stream)
+            asciimap2.gridContentsToAscii()
+            asciimap2.writeAscii(stream)
             stream.seek(0)
             output = stream.read()
             self.assertEqual(output, HEX_FULL_MAP)
