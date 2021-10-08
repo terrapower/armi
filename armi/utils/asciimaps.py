@@ -114,6 +114,7 @@ class AsciiMap:
 
         Update placeholder size according to largest thing read."""
         text = text.strip().splitlines()
+
         self.asciiLines = []
         self._asciiMaxCol = 0
         for li, line in enumerate(text):
@@ -240,6 +241,9 @@ class AsciiMap:
     def __getitem__(self, ijKey):
         """Get ascii item by grid i,j index."""
         return self.asciiLabelByIndices[ijKey]
+
+    def __setitem__(self, ijKey, item):
+        self.asciiLabelByIndices[ijKey] = item
 
     def _makeOffsets(self):
         """Build offsets"""
@@ -505,13 +509,16 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         self._ijMax = (self._asciiMaxCol - 1) // 2
 
 
-def asciiMapFromGeomAndSym(
-    geomType: Union[str, geometry.GeomType], symmetry: Union[str, geometry.SymmetryType]
+def asciiMapFromGeomAndDomain(
+    geomType: Union[str, geometry.GeomType], domain: Union[str, geometry.DomainType]
 ) -> "AsciiMap":
-    """Get a ascii map class from a geometry and symmetry type."""
+    """Get a ascii map class from a geometry and domain type."""
     from armi.reactor import geometry
 
-    if str(geomType) == geometry.HEX_CORNERS_UP and geometry.FULL_CORE in str(symmetry):
+    if (
+        str(geomType) == geometry.HEX_CORNERS_UP
+        and geometry.DomainType.fromAny(domain) == geometry.DomainType.FULL_CORE
+    ):
         return AsciiMapHexFullTipsUp
 
     MAP_FROM_GEOM = {
@@ -531,6 +538,6 @@ def asciiMapFromGeomAndSym(
     return MAP_FROM_GEOM[
         (
             geometry.GeomType.fromAny(geomType),
-            geometry.SymmetryType.fromAny(symmetry).domain,
+            geometry.DomainType.fromAny(domain),
         )
     ]
