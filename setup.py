@@ -70,7 +70,7 @@ setup(
         "xlrd",
         "yamlize",
         "htmltree",
-        "pyDOE"
+        "pyDOE",
     ],
     extras_require={
         "mpi": ["mpi4py"],
