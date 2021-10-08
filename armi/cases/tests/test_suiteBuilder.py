@@ -27,9 +27,11 @@ case = cases.Case(cs)
 
 class LatinHyperCubeModifier(SamplingInputModifier):
     def __init__(self, name, paramType: str, bounds: list, independentVariable=None):
-        super().__init__(name, paramType, bounds, independentVariable=independentVariable)
+        super().__init__(
+            name, paramType, bounds, independentVariable=independentVariable
+        )
         self.value = None
-        
+
     def __call__(self, cs, blueprints, geom):
         cs[self.name] = self.value
 
@@ -61,6 +63,7 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             builder.addDegreeOfFreedom([powerMod, morePowerMod])
+
 
 if __name__ == "__main__":
     unittest.main()

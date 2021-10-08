@@ -57,7 +57,10 @@ class SamplingInputModifier(InputModifier):
     specified.
 
     """
-    def __init__(self, name: str, paramType: str, bounds: list, independentVariable=None):
+
+    def __init__(
+        self, name: str, paramType: str, bounds: list, independentVariable=None
+    ):
         """[summary]
 
         Parameters
