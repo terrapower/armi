@@ -38,21 +38,29 @@ Module-Level Logging
 In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
 This is a custom, global logging object provided by the import:
 
+.. code-block:: python
+
     from armi import runLog
 
 If you want a logger specific to a single module, say to provide debug logging for only
 one module, that functionality is provided by what might look like a bare Python logging
 import, but is actually calling the same underlying ``armi`` logging tooling:
 
+.. code-block:: python
+
     import logging
     runLog = logging.getLogger(__name__)
 
 In either case, you can then log using the same, easy interface:
 
+.. code-block:: python
+
     runLog.info('information here')
     runLog.error('extra error info here')
 
 Finally, you can change the logging level in either above scenario by doing:
+
+.. code-block:: python
 
     runLog.setVerbosity(logging.DEBUG)
     # or
