@@ -69,7 +69,7 @@ class AsciiMap:
 
     def __init__(self):
         self.asciiLines = []
-        """A list of lines from top to bottom, each containing a list of ascii labels for each column. No blanks."""
+        """A list of lines, each containing a list of ascii labels for each column. No blanks."""
 
         self.asciiOffsets = []
         """A list of offset integers for each line above that will be prepended before the contents of asciiLines"""
@@ -166,7 +166,11 @@ class AsciiMap:
         raise NotImplementedError
 
     def _getLineNumsToWrite(self):
-        """Most maps index out from bottom to top"""
+        """
+        Get order of lines to write.
+
+        Most maps index from bottom to top.
+        """
         return reversed(range(self._asciiMaxLine))
 
     def gridContentsToAscii(self):
@@ -522,7 +526,6 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
         self._asciiMaxLine = self._ijMax * 4 + 1 - self._asciiLinesOffCorner * 2
 
 
-
 class AsciiMapHexFullTipsUp(AsciiMap):
     """
     Full hex with tips up of the smaller cells.
@@ -594,7 +597,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         """
         # ijmax here can be inferred directly from the max number of columns
         # in the asciimap text
-        self._ijMax = (self._asciiMaxCol - 1)//2
+        self._ijMax = (self._asciiMaxCol - 1) // 2
 
     def _updateDimensionsFromData(self):
         """Update asciimap dimensions from data before writing ascii."""
@@ -603,8 +606,11 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         self._asciiMaxLine = self._ijMax * 2 + 1
 
     def _getLineNumsToWrite(self):
-        """Most maps index out from bottom to top but this one
-        writes from top to bottom"""
+        """
+        Get order of lines to write.
+
+        This map indexes lines from top to bottom.
+        """
         return range(self._asciiMaxLine)
 
     def _makeOffsets(self):
