@@ -36,7 +36,7 @@ from armi.utils import codeTiming
 from armi.utils import pathTools
 from armi import settings
 from armi.operators import settingsValidation
-from armi.operators import runTypes
+from armi.operators.runTypes import RunTypes
 from armi import interfaces
 from armi.bookkeeping.report import reportingUtils
 
@@ -975,8 +975,7 @@ class Operator:  # pylint: disable=too-many-public-methods
     @staticmethod
     def setStateToDefault(cs):
         """Update the state of ARMI to fit the kind of run this operator manages"""
-        with cs._unlock():
-            cs["runType"] = runTypes.RunTypes.STANDARD
+        return cs.modified(newSettings={"runType": RunTypes.STANDARD})
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""

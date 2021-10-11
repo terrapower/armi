@@ -28,7 +28,7 @@ class CloneArmiRunCommandBatch(EntryPoint):
     settingsArgument = "required"
 
     def addOptions(self):
-        for settingName in self.cs.settings.keys():
+        for settingName in self.cs.keys():
             # verbosity and branchVerbosity already have command line options in the default parser
             # adding them again would result in an error from argparse.
             if settingName not in ["verbosity", "branchVerbosity"]:

@@ -42,6 +42,7 @@ tags
 .externalToolBuilders/
 .cache/
 .pytest_cache/
+dump-temp-*
 .vim-bookmarks
 venv*/
 .mypy_cache/

@@ -84,7 +84,7 @@ def createTestXSLibraryFiles(cachePath):
     """
     cs = settings.Settings()
     cs["outputCacheLocation"] = cachePath
-    mc2v3 = cs.settings["mc2v3.path"].default
+    mc2v3 = cs.get("mc2v3.path").default
     with directoryChangers.DirectoryChanger(RUN_DIR):
         # the two lines below basically copy the inputs to be used for PMATRX and GAMISO generation.
         # Since they are inputs to secondary calculations, the inputs need to be created before any

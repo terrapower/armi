@@ -1354,17 +1354,11 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         )
 
     def restorePreviousGeometry(self, cs, reactor):
-        """
-        Undo the changes made by convert by going back to 1/3 core.
-        """
+        """Undo the changes made by convert by going back to 1/3 core."""
         # remove the assemblies that were added when the conversion happened.
         if bool(self.getNewAssembliesAdded()):
-
             for a in self.getNewAssembliesAdded():
                 reactor.core.removeAssembly(a, discharge=False)
-
-            # restore the settings of the core
-            cs.unsetTemporarySettings()
 
             reactor.core.symmetry = geometry.SymmetryType.fromAny(
                 self.EXPECTED_INPUT_SYMMETRY

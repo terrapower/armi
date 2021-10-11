@@ -566,8 +566,8 @@ class Assembly_TestCase(unittest.TestCase):
     def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            with self.cs._unlock():
-                self.cs["loadingFile"] = filename
+            newSettings = {"loadingFile": filename}
+            self.cs = self.cs.modified(newSettings=newSettings)
 
             with open(self.cs["loadingFile"], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
@@ -1385,8 +1385,8 @@ class AnnularFuelTestCase(unittest.TestCase):
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
-        with self.cs._unlock():
-            self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
+        newSettings = {"xsKernel": "MC2v2"}  # don't try to expand elementals
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()

@@ -1,24 +1,24 @@
 Entry Points
 ============
 
-**Entry Points** are like the verbs that your App can *do*. 
-The :py:mod:`built-in entry points <armi.cli>` 
+**Entry Points** are like the verbs that your App can *do*.
+The :py:mod:`built-in entry points <armi.cli>`
 offer basic functionality, like :py:class:`running a case <armi.cli.run.RunEntryPoint>`
 or :py:class:`opening up the GUI <armi.cli.gridGui.GridGuiEntryPoint>`, but
-the real joy of an application comes when you add your own project-specific 
+the real joy of an application comes when you add your own project-specific
 entry points that do the actions that you commonly need done.
 
-To make a new EntryPoint, first make a new module and subclass 
-:py:class:`~armi.cli.entryPoint.EntryPoint`. Set the 
+To make a new EntryPoint, first make a new module and subclass
+:py:class:`~armi.cli.entryPoint.EntryPoint`. Set the
 class attributes as follows:
 
 ``name``
-    What the user types on the CLI to invoke this entry point. 
+    What the user types on the CLI to invoke this entry point.
 
 ``settingsArgument``
 
     * ``"required"`` if a settings input file must be provided,
-    * ``"optional"`` if it may be provided but not required, 
+    * ``"optional"`` if it may be provided but not required,
     * ``None`` if no settings input is allowed
 
 
@@ -80,3 +80,7 @@ or (if ``myapp`` is not in your ``PYTHONPATH``)::
 
     python path/to/myapp do-my-thing --post-process settingsFile.yaml
 
+.. tip:: The settings file will be read into a ``Settings`` object. This ``Settings``
+    object will be passed widely around the code. Please do not edit these settings
+    during a run. The idea of "run settings" is a lot simpler to understand when they
+    don't change. And such changes tend to hide data from other developers.

@@ -67,37 +67,6 @@ class TestCaseSettings(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
 
-    def test_tempSet(self):
-        startVal = self.cs["nCycles"]
-        self.cs.temporarilySet("nCycles", 55)
-        self.assertEqual(self.cs["nCycles"], 55)
-        self.cs.unsetTemporarySettings()
-        self.assertEqual(self.cs["nCycles"], startVal)
-
-    def test_update(self):
-        with self.cs._unlock():
-            # grab the keys, and make sure they make some sense
-            keys = sorted(self.cs.keys())
-            for key in {"HCFcoretype", "Tin", "Tout"}:
-                self.assertIn(key, keys)
-
-            # test an invalid update
-            d = {"aaba": 1, "aardvark": 2}
-            with self.assertRaises(NonexistentSetting):
-                self.cs.update(d)
-
-            # test a valid udpate
-            d = {"Tin": 0, "Tout": 100}
-            self.cs.update(d)
-            keys_new = sorted(self.cs.keys())
-            self.assertEqual(keys_new, keys)
-            self.assertEqual(self.cs["Tin"], 0)
-            self.assertEqual(self.cs["Tout"], 100)
-
-            # clear all settings, and make sure it worked
-            self.cs.clear()
-            self.assertEqual(len(list(self.cs.keys())), 0)
-
     def test_updateEnvironmentSettingsFrom(self):
         envSettings = [
             "trace",
@@ -109,10 +78,9 @@ class TestCaseSettings(unittest.TestCase):
         ]
         self.assertEqual(self.cs.environmentSettings, envSettings)
 
-        with self.cs._unlock():
-            newEnv = {es: 9 for es in envSettings}
-            self.cs.updateEnvironmentSettingsFrom(newEnv)
-            self.assertEqual(self.cs["verbosity"], "9")
+        newEnv = {es: 9 for es in envSettings}
+        self.cs.updateEnvironmentSettingsFrom(newEnv)
+        self.assertEqual(self.cs["verbosity"], "9")
 
 
 class TestSettings2(unittest.TestCase):
@@ -205,8 +173,10 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()
-        with cs._unlock():
-            cs["shuffleLogic"] = "nothere"
+        cs = cs.modified(
+            caseTitle="test_pluginValidatorsAreDiscovered",
+            newSettings={"shuffleLogic": "nothere"},
+        )
 
         inspector = settingsValidation.Inspector(cs)
         self.assertTrue(
@@ -223,29 +193,30 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
-        with cs._unlock():
-            self.assertEqual(cs["extendableOption"], "DEFAULT")
-            # We shouldn't have any settings from the other plugin, so this should be an
-            # error.
-            with self.assertRaises(vol.error.MultipleInvalid):
-                cs["extendableOption"] = "PLUGIN"
 
-            pm.register(DummyPlugin2)
-            cs = caseSettings.Settings()
-            self.assertEqual(cs["extendableOption"], "PLUGIN")
-            # Now we should have the option from plugin 2; make sure that works
-            cs["extendableOption"] = "PLUGIN"
-            self.assertIn("extendableOption", cs.keys())
-            pm.unregister(DummyPlugin2)
-            pm.unregister(DummyPlugin1)
+        self.assertEqual(cs["extendableOption"], "DEFAULT")
+        # We shouldn't have any settings from the other plugin, so this should be an
+        # error.
+        with self.assertRaises(vol.error.MultipleInvalid):
+            newSettings = {"extendableOption": "PLUGIN"}
+            cs = cs.modified(newSettings=newSettings)
 
-            # Now try the same, but adding the plugins in a different order. This is to make
-            # sure that it doesnt matter if the Setting or its Options come first
-            pm.register(DummyPlugin2)
-            pm.register(DummyPlugin1)
-            cs = caseSettings.Settings()
-            self.assertEqual(cs["extendableOption"], "PLUGIN")
-            cs["extendableOption"] = "PLUGIN"
+        pm.register(DummyPlugin2)
+        cs = caseSettings.Settings()
+        self.assertEqual(cs["extendableOption"], "PLUGIN")
+        # Now we should have the option from plugin 2; make sure that works
+        cs = cs.modified(newSettings=newSettings)
+        cs["extendableOption"] = "PLUGIN"
+        self.assertIn("extendableOption", cs.keys())
+        pm.unregister(DummyPlugin2)
+        pm.unregister(DummyPlugin1)
+
+        # Now try the same, but adding the plugins in a different order. This is to make
+        # sure that it doesnt matter if the Setting or its Options come first
+        pm.register(DummyPlugin2)
+        pm.register(DummyPlugin1)
+        cs = caseSettings.Settings()
+        self.assertEqual(cs["extendableOption"], "PLUGIN")
 
     def test_default(self):
         """Make sure default updating mechanism works."""
@@ -253,6 +224,33 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
+
+    def test_getFailures(self):
+        """Make sure the correct error is thrown when getting a nonexistent setting"""
+        cs = caseSettings.Settings()
+
+        with self.assertRaises(NonexistentSetting):
+            cs.get_setting("missingFake")
+
+        with self.assertRaises(NonexistentSetting):
+            _ = cs["missingFake"]
+
+    def test_modified(self):
+        """prove that using the modified() method does not mutate the original object"""
+        # init settings
+        cs = caseSettings.Settings()
+
+        # prove this setting doesn't exist
+        with self.assertRaises(NonexistentSetting):
+            cs.get_setting("extendableOption")
+
+        # prove the new settings object has the new setting
+        cs2 = cs.modified(newSettings={"extendableOption": "PLUGIN"})
+        self.assertEqual(cs2["extendableOption"], "PLUGIN")
+
+        # prove modified() didn't alter the original object
+        with self.assertRaises(NonexistentSetting):
+            cs.get_setting("extendableOption")
 
 
 class TestSettingsConversion(unittest.TestCase):
@@ -265,14 +263,7 @@ class TestSettingsConversion(unittest.TestCase):
 
     def test_empty(self):
         cs = caseSettings.Settings()
-        self.assertTrue(cs._lock)
-        cs.lock()
-        self.assertTrue(cs._lock)
-        with cs._unlock():
-            self.assertFalse(cs._lock)
-            cs["buGroups"] = []
-
-        self.assertTrue(cs._lock)
+        cs = cs.modified(newSettings={"buGroups": []})
         self.assertEqual(cs["buGroups"], [])
 
 
