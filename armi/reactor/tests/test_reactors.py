@@ -54,11 +54,14 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    with cs._unlock():
-        cs["db"] = False  # stop use of database
 
-    if customSettings is not None:
-        cs.update(customSettings)
+    if customSettings is None:
+        customSettings = {}
+
+    customSettings["db"] = False  # stop use of database
+    cs = cs.modified(newSettings=customSettings)
+    settings.setMasterCs(cs)  # reset so everything matches master
+
     r = tests.getEmptyHexReactor()
     r.core.setOptionsFromCs(cs)
     o = operators.Operator(cs)
@@ -90,11 +93,14 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     """
     settings.setMasterCs(None)  # clear
     cs = settings.getMasterCs()  # fetch new
-    with cs._unlock():
-        cs["db"] = False  # stop use of database
 
-    if customSettings is not None:
-        cs.update(customSettings)
+    if customSettings is None:
+        customSettings = {}
+
+    customSettings["db"] = False  # stop use of database
+    cs = cs.modified(newSettings=customSettings)
+    settings.setMasterCs(cs)  # reset
+
     r = tests.getEmptyCartesianReactor()
     r.core.setOptionsFromCs(cs)
     o = operators.Operator(cs)
@@ -162,16 +168,20 @@ def loadTestReactor(
 
     # Overwrite settings if desired
     if customSettings:
-        with cs._unlock():
-            for settingKey, settingVal in customSettings.items():
-                cs[settingKey] = settingVal
+        newSettings = {}
+        for settingKey, settingVal in customSettings.items():
+            newSettings[settingKey] = settingVal
+
+        cs = cs.modified(newSettings=newSettings)
 
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
+
+    newSettings = {}
+    newSettings["stationaryBlocks"] = []
+    newSettings["nCycles"] = 3
+    cs = cs.modified(newSettings=newSettings)
     settings.setMasterCs(cs)
-    with cs._unlock():
-        cs["stationaryBlocks"] = []
-        cs["nCycles"] = 3
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)

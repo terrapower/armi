@@ -111,6 +111,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
 
     def test_SmearDensityFail(self):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
+
         builder.addDegreeOfFreedom(
             pinTypeInputModifiers.SmearDensityModifier(v) for v in (0.5, 0.6)
         )
@@ -155,12 +156,14 @@ class TestSettingsModifiers(unittest.TestCase):
         cs = settings.Settings()
 
         with self.assertRaises(ValueError):
-            neutronicsModifiers.NeutronicConvergenceModifier(0.0)
+            _ = neutronicsModifiers.NeutronicConvergenceModifier(0.0)
 
         with self.assertRaises(ValueError):
-            neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
+            _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
 
-        neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(cs, None, None)
+        cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
+            cs, None, None
+        )
         self.assertAlmostEqual(cs["epsEig"], 1e-2)
         self.assertAlmostEqual(cs["epsFSAvg"], 1.0)
         self.assertAlmostEqual(cs["epsFSPoint"], 1.0)
@@ -172,7 +175,8 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
         self.neutronicsKernelOpts = neutronicsKernelOpts
 
     def __call__(self, cs, bp, geom):
-        cs.update(self.neutronicsKernelOpts)
+        cs = cs.modified(self.neutronicsKernelOpts)
+        return cs, bp, geom
 
 
 class TestFullCoreModifier(unittest.TestCase):
@@ -183,7 +187,7 @@ class TestFullCoreModifier(unittest.TestCase):
         case = cases.Case(cs=cs)
         mod = inputModifiers.FullCoreModifier()
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
-        mod(case, case.bp, None)
+        case, case.bp, _ = mod(case, case.bp, None)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
 
 

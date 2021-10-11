@@ -46,28 +46,29 @@ def getSimpleDBOperator(cs):
     This reactor has only 1 assembly with 1 type of block.
     It's used to make the db unit tests run very quickly.
     """
-    with cs._unlock():
-        cs["loadingFile"] = "refOneBlockReactor.yaml"
-        cs["verbosity"] = "important"
-        cs["db"] = True
-        cs["runType"] = "Standard"
-        cs["geomFile"] = "geom1Assem.xml"
-        cs["nCycles"] = 2
-        cs[CONF_FORCE_DB_PARAMS] = [
-            "baseBu",
-        ]
-        genDBCase = case.Case(cs)
-        settings.setMasterCs(cs)
-        runLog.setVerbosity("info")
+    newSettings = {}
+    newSettings["loadingFile"] = "refOneBlockReactor.yaml"
+    newSettings["verbosity"] = "important"
+    newSettings["db"] = True
+    newSettings["runType"] = "Standard"
+    newSettings["geomFile"] = "geom1Assem.xml"
+    newSettings["nCycles"] = 2
+    newSettings[CONF_FORCE_DB_PARAMS] = [
+        "baseBu",
+    ]
+    cs = cs.modified(newSettings=newSettings)
+    genDBCase = case.Case(cs)
+    settings.setMasterCs(cs)
+    runLog.setVerbosity("info")
 
-        o = genDBCase.initializeOperator()
-        o.interfaces = [
-            interface
-            for interface in o.interfaces
-            if interface.name in ["database", "main"]
-        ]
+    o = genDBCase.initializeOperator()
+    o.interfaces = [
+        interface
+        for interface in o.interfaces
+        if interface.name in ["database", "main"]
+    ]
 
-    return o
+    return o, cs
 
 
 class MockInterface(interfaces.Interface):
@@ -88,7 +89,7 @@ class TestDatabaseWriter(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        self.o = getSimpleDBOperator(cs)
+        self.o, cs = getSimpleDBOperator(cs)
         self.r = self.o.r
 
     def tearDown(self):
@@ -216,38 +217,38 @@ class TestDatabaseReading(unittest.TestCase):
     def setUpClass(cls):
         cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
-        o, _r = test_reactors.loadTestReactor(customSettings={"verbosity": "extra"})
+
         # The database writes the settings object to the DB rather
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
-        with o.cs._unlock():
-            o.cs["nCycles"] = 2
-            o.cs["burnSteps"] = 3
-            settings.setMasterCs(o.cs)
+        newSettings = {"verbosity": "extra"}
+        newSettings["nCycles"] = 2
+        newSettings["burnSteps"] = 3
+        o, _r = test_reactors.loadTestReactor(customSettings=newSettings)
 
-            o.interfaces = [
-                i for i in o.interfaces if isinstance(i, (DatabaseInterface))
-            ]
-            dbi = o.getInterface("database")
-            dbi.enabled(True)
-            dbi.initDB()  # Main Interface normally does this
+        settings.setMasterCs(o.cs)
 
-            # update a few parameters
-            def writeFlux(cycle, node):
-                for bi, b in enumerate(o.r.core.getBlocks()):
-                    b.p.flux = 1e6 * bi + cycle * 100 + node
-                    b.p.mgFlux = numpy.repeat(b.p.flux / 33, 33)
+        o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
+        dbi = o.getInterface("database")
+        dbi.enabled(True)
+        dbi.initDB()  # Main Interface normally does this
 
-            o.interfaces.insert(0, MockInterface(o.r, o.cs, writeFlux))
-            with o:
-                o.operate()
+        # update a few parameters
+        def writeFlux(cycle, node):
+            for bi, b in enumerate(o.r.core.getBlocks()):
+                b.p.flux = 1e6 * bi + cycle * 100 + node
+                b.p.mgFlux = numpy.repeat(b.p.flux / 33, 33)
 
-            cls.cs = o.cs
-            cls.bp = o.r.blueprints
-            cls.dbName = o.cs.caseTitle + ".h5"
+        o.interfaces.insert(0, MockInterface(o.r, o.cs, writeFlux))
+        with o:
+            o.operate()
 
-            # needed for test_readWritten
-            cls.r = o.r
+        cls.cs = o.cs
+        cls.bp = o.r.blueprints
+        cls.dbName = o.cs.caseTitle + ".h5"
+
+        # needed for test_readWritten
+        cls.r = o.r
 
     @classmethod
     def tearDownClass(cls):
@@ -338,8 +339,8 @@ class TestDatabaseReading(unittest.TestCase):
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        with cs._unlock():
-            cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
+        cs = cs.modified(newSettings={"reloadDBName": "aRmIRuN.h5"})
+
         dbi = DatabaseInterface(None, cs)
         with self.assertRaises(ValueError):
             # an error should be raised when the database loaded from
@@ -358,7 +359,7 @@ class TestStandardFollowOn(unittest.TestCase):
         -----
         Ensures that parameters are consistant between Standard runs and restart runs.
         """
-        o = getSimpleDBOperator(cs)
+        o, cs = getSimpleDBOperator(cs)
 
         mock = MockInterface(o.r, o.cs, None)
 
@@ -392,11 +393,12 @@ class TestStandardFollowOn(unittest.TestCase):
             loadDB = "loadFrom.h5"
             os.rename("armiRun.h5", loadDB)
             cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            with cs._unlock():
-                cs["loadStyle"] = "fromDB"
-                cs["reloadDBName"] = loadDB
-                cs["startCycle"] = 1
-                cs["startNode"] = 1
+            newSettings = {}
+            newSettings["loadStyle"] = "fromDB"
+            newSettings["reloadDBName"] = loadDB
+            newSettings["startCycle"] = 1
+            newSettings["startNode"] = 1
+            cs = cs.modified(newSettings=newSettings)
             o = self._getOperatorThatChangesVariables(cs)
 
             # the interact BOL has historically failed due to trying to write inputs

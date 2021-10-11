@@ -545,7 +545,7 @@ class Case:
         cloneCS = self.cs.duplicate()
 
         if modifiedSettings is not None:
-            cloneCS.update(modifiedSettings)
+            cloneCS = cloneCS.modified(newSettings=modifiedSettings)
 
         clone = Case(cloneCS)
         clone.cs.path = pathTools.armiAbsPath(title or self.title) + ".yaml"
@@ -689,26 +689,28 @@ class Case:
             # they are not yet initialized.
             self.bp  # pylint: disable=pointless-statement
             self.geom  # pylint: disable=pointless-statement
-            with self.cs._unlock():
-                self.cs["loadingFile"] = self.title + "-blueprints.yaml"
-                if self.geom:
-                    self.cs["geomFile"] = self.title + "-geom.yaml"
-                    self.geom.writeGeom(self.cs["geomFile"])
-                if self.independentVariables:
-                    self.cs["independentVariables"] = [
-                        "({}, {})".format(repr(varName), repr(val))
-                        for varName, val in self.independentVariables.items()
-                    ]
 
-                with open(self.cs["loadingFile"], "w") as loadingFile:
-                    blueprints.Blueprints.dump(self.bp, loadingFile)
+            newSettings = {}
+            newSettings["loadingFile"] = self.title + "-blueprints.yaml"
+            if self.geom:
+                newSettings["geomFile"] = self.title + "-geom.yaml"
+                self.geom.writeGeom(newSettings["geomFile"])
 
-                # copy input files from other modules/plugins
-                newSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
+            if self.independentVariables:
+                newSettings["independentVariables"] = [
+                    "({}, {})".format(repr(varName), repr(val))
+                    for varName, val in self.independentVariables.items()
+                ]
 
-                for settingName, value in newSettings.items():
-                    self.cs[settingName] = value
+            with open(newSettings["loadingFile"], "w") as loadingFile:
+                blueprints.Blueprints.dump(self.bp, loadingFile)
 
+            # copy input files from other modules/plugins
+            interfaceSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
+            for settingName, value in interfaceSettings.items():
+                newSettings[settingName] = value
+
+            self.cs = self.cs.modified(newSettings=newSettings)
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 

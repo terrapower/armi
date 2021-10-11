@@ -746,9 +746,7 @@ class Database3(database.Database):
         from armi import settings
 
         cs = settings.Settings()
-        cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[
-            0
-        ]  # TODO: DeprecationWarning
+        cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
             cs.loadFromString(self.h5db["inputs/settings"].asstr()[()])
         except KeyError:

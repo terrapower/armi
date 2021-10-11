@@ -170,8 +170,7 @@ class SuiteBuilder:
                     )
 
                 previousMods.append(type(mod))
-                with case.cs._unlock():
-                    mod(case.cs, case.bp, case.geom)
+                case.cs, case.bp, case.geom = mod(case.cs, case.bp, case.geom)
                 case.independentVariables.update(mod.independentVariable)
 
             case.cs.path = namingFunc(index, case, modList)
@@ -203,7 +202,8 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs[settignName] = value
+                    cs = cs.modified(newSettings={settignName: value})
+                    return cs, bp, geom
 
             builder = FullFactorialSuiteBuilder(someCase)
             builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
@@ -289,7 +289,8 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs[settignName] = value
+                    cs = cs.modified(newSettings={settignName: value})
+                    return cs, bp, geom
 
             builder = SeparateEffectsSuiteBuilder(someCase)
             builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))

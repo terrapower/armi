@@ -66,8 +66,8 @@ class TestInspector(unittest.TestCase):
         self.assertFalse(query)
 
         newCS = settings.getMasterCs().duplicate()
-        with newCS._unlock():
-            newCS["runType"] = "banane"
+        newSettings = {"runType": "banane"}
+        newCS = newCS.modified(newSettings=newSettings)
 
         self.inspector.cs = newCS
         self.assertTrue(query)

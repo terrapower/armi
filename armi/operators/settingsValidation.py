@@ -243,13 +243,17 @@ class Inspector:
     def addQueryCurrentSettingMayNotSupportFeatures(self, settingName):
         """Add a query that the current value for ``settingName`` may not support certain features."""
         self.addQuery(
-            lambda: self.cs[settingName] != self.cs.settings[settingName].default,
+            lambda: self.cs[settingName] != self.cs.get_setting(settingName).default,
             "{} set as:\n{}\nUsing this location instead of the default location\n{}\n"
             "may not support certain functions.".format(
-                settingName, self.cs[settingName], self.cs.settings[settingName].default
+                settingName,
+                self.cs[settingName],
+                self.cs.get_setting(settingName).default,
             ),
             "Revert to default location?",
-            lambda: self._assignCS(settingName, self.cs.settings[settingName].default),
+            lambda: self._assignCS(
+                settingName, self.cs.get_setting(settingName).default
+            ),
         )
 
     def _assignCS(self, key, value):
@@ -495,9 +499,8 @@ class Inspector:
         )
 
         def _correctCycles():
-            with self.cs._unlock():
-                self.cs["nCycles"] = 1
-                self.cs["burnSteps"] = 0
+            newSettings = {"nCycles": 1, "burnSteps": 0}
+            self.cs = self.cs.modified(newSettings=newSettings)
 
         self.addQuery(
             lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,
@@ -637,7 +640,7 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     if initialLambda is None:
         initialLambda = lambda: (
             not os.path.exists(pathTools.armiAbsPath(inspector.cs[settingName]))
-            and inspector.cs.settings[settingName].offDefault
+            and inspector.cs.get_setting(settingName).offDefault
         )  # solution is to revert to default
 
     query = Query(
@@ -646,6 +649,6 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
             settingName, inspector.cs[settingName]
         ),
         "Revert to default location?",
-        inspector.cs.settings[settingName].revertToDefault,
+        inspector.cs.get_setting(settingName).revertToDefault,
     )
     return query

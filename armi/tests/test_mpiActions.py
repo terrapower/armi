@@ -99,10 +99,8 @@ if armi.MPI_SIZE > 1:
                 self.assertEqual(self.cs, self.action.o.cs)
             else:
                 self.assertNotEqual(self.cs, self.action.o.cs)
-                original = {ss.name: ss.value for ss in self.cs.settings.values()}
-                current = {
-                    ss.name: ss.value for ss in self.action.o.cs.settings.values()
-                }
+                original = {ss.name: ss.value for ss in self.cs.values()}
+                current = {ss.name: ss.value for ss in self.action.o.cs.values()}
                 # remove values that are *expected to be* different...
                 # crossSectionControl is removed because unittest is being mean about
                 # comparing dicts...

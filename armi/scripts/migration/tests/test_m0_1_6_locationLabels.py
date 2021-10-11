@@ -13,8 +13,8 @@ class TestMigration(unittest.TestCase):
     def testLocationLabelMigration(self):
         """Make a setting with an old value and make sure it migrates to expected new value."""
         cs = caseSettings.Settings()
-        with cs._unlock():
-            cs["detailAssemLocationsBOL"] = ["B1012"]
+        newSettings = {"detailAssemLocationsBOL": ["B1012"]}
+        cs = cs.modified(newSettings=newSettings)
 
         writer = SettingsWriter(cs)
         stream = io.StringIO()

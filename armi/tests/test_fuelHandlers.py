@@ -390,10 +390,11 @@ class TestFuelHandler(ArmiTestHelper):
         # reset core to BOL state
         # reset assembly counter to get the same assem nums.
         self.setUp()
-        with self.o.cs._unlock():
-            self.o.cs["plotShuffleArrows"] = True
-            # now repeat shuffles
-            self.o.cs["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
+
+        newSettings = {"plotShuffleArrows": True}
+        # now repeat shuffles
+        newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
         fh = self.r.o.getInterface("fuelHandler")
 
@@ -466,8 +467,8 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_simpleAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        with self.o.cs._unlock():
-            self.o.cs["assemblyRotationStationary"] = True
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
         hist = self.o.getInterface("history")
         assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
         addSomeDetailAssemblies(hist, assems)
@@ -480,8 +481,8 @@ class TestFuelHandler(ArmiTestHelper):
     def test_buReducingAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
         hist = self.o.getInterface("history")
-        with self.o.cs._unlock():
-            self.o.cs["assemblyRotationStationary"] = True
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
         # apply dummy pin-level data to allow intelligent rotation
         for b in assem.getBlocks(Flags.FUEL):
@@ -523,7 +524,7 @@ class TestFuelPlugin(unittest.TestCase):
         nm = settings.CONF_CIRCULAR_RING_ORDER
         self.assertEqual(cs[nm], "angle")
 
-        setting = cs.settings[nm]
+        setting = cs.get_setting(nm)
         self.assertIn("distance", setting.options)
 
 

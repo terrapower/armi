@@ -20,8 +20,8 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
         inputModifiers.InputModifier.__init__(self, {self.__class__.__name__: value})
         self.value = value
 
-    def __call__(self, cs, blueprints, geom):
-        for bDesign in blueprints.blockDesigns:
+    def __call__(self, cs, bp, geom):
+        for bDesign in bp.blockDesigns:
             # bDesign construct requires lots of arguments, many of which have no impact.
             # The following can safely be defaulted to meaningless inputs:
             # axialIndex: a block can be reused at any axial index, modifications made
@@ -40,7 +40,7 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
             #     basis, they should be edited directly
             b = bDesign.construct(
                 cs,
-                blueprints,
+                bp,
                 axialIndex=1,
                 axialMeshPoints=1,
                 height=1,
@@ -63,6 +63,8 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
                         newDim = str(link)
                     if inpDim != newDim:
                         setattr(cDesign, dimName, newDim)
+
+        return cs, bp, geom
 
     def _getBlockTypesToModify(self):
         """Hook method to determine blocks that should be modified."""
