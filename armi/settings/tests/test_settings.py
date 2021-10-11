@@ -14,10 +14,11 @@
 
 """Tests for new settings system with plugin import"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import unittest
-import io
 import copy
+import io
+import logging
 import os
+import unittest
 
 from ruamel.yaml import YAML
 import voluptuous as vol
@@ -30,8 +31,8 @@ from armi.settings import setting
 from armi.operators import settingsValidation
 from armi import plugins
 from armi.utils import directoryChangers
-from armi.utils.customExceptions import NonexistentSetting
 from armi.reactor.flags import Flags
+from armi.utils.customExceptions import NonexistentSetting
 
 THIS_DIR = os.path.dirname(__file__)
 TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
@@ -73,12 +74,14 @@ class TestCaseSettings(unittest.TestCase):
             "profile",
             "coverage",
             "branchVerbosity",
+            "moduleVerbosity",
             "verbosity",
             "outputCacheLocation",
         ]
         self.assertEqual(self.cs.environmentSettings, envSettings)
 
         newEnv = {es: 9 for es in envSettings}
+        newEnv["moduleVerbosity"] = {}
         self.cs.updateEnvironmentSettingsFrom(newEnv)
         self.assertEqual(self.cs["verbosity"], "9")
 
@@ -95,7 +98,7 @@ class TestSettings2(unittest.TestCase):
     def testSchemaChecksType(self):
         newSettings = FuelHandlerPlugin.defineSettings()
 
-        GOOD_INPUT = io.StringIO(
+        good_input = io.StringIO(
             """
 assemblyRotationAlgorithm: buReducingAssemblyRotation
 shuffleLogic: {}
@@ -104,7 +107,7 @@ shuffleLogic: {}
             )
         )
 
-        BAD_INPUT = io.StringIO(
+        bad_input = io.StringIO(
             """
 assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 """
@@ -112,20 +115,16 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         yaml = YAML()
 
-        inp = yaml.load(GOOD_INPUT)
+        inp = yaml.load(good_input)
         for inputSetting, inputVal in inp.items():
-            setting = [
-                setting for setting in newSettings if setting.name == inputSetting
-            ][0]
-            setting.schema(inputVal)
+            settin = [s for s in newSettings if s.name == inputSetting][0]
+            settin.schema(inputVal)
 
-        inp = yaml.load(BAD_INPUT)
+        inp = yaml.load(bad_input)
         for inputSetting, inputVal in inp.items():
             with self.assertRaises(vol.error.MultipleInvalid):
-                setting = [
-                    setting for setting in newSettings if setting.name == inputSetting
-                ][0]
-                setting.schema(inputVal)
+                settin = [s for s in newSettings if s.name == inputSetting][0]
+                settin.schema(inputVal)
 
     def test_listsMutable(self):
         listSetting = setting.Setting(
@@ -224,6 +223,27 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
+
+    def test_setModuleVerbs(self):
+        # init settings and use them to set module-level logging levels
+        cs = caseSettings.Settings()
+        newSettings = {"moduleVerbosity": {"test_setModuleVerbs": "debug"}}
+        cs = cs.modified(newSettings=newSettings)
+
+        # set the logger once, and check it is was set
+        cs.setModuleVerbs()
+        logger = logging.getLogger("test_setModuleVerbs")
+        self.assertEqual(logger.level, 10)
+
+        # try to set the logger again, without forcing it
+        newSettings = {"moduleVerbosity": {"test_setModuleVerbs": "error"}}
+        cs = cs.modified(newSettings=newSettings)
+        cs.setModuleVerbs()
+        self.assertEqual(logger.level, 10)
+
+        # try to set the logger again, with force=True
+        cs.setModuleVerbs(force=True)
+        self.assertEqual(logger.level, 40)
 
     def test_getFailures(self):
         """Make sure the correct error is thrown when getting a nonexistent setting"""

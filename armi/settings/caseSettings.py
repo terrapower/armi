@@ -26,9 +26,9 @@ A master case settings is created as ``masterCs``
 
 """
 import io
+import logging
 import os
 from copy import deepcopy
-from contextlib import contextmanager
 
 import armi
 from armi import runLog
@@ -91,13 +91,15 @@ class Settings:
 
     @property
     def inputDirectory(self):
-        if self.path is None:
+        """getter for settings file path"""
+        if not self.path:
             return os.getcwd()
         else:
             return os.path.dirname(self.path)
 
     @property
     def caseTitle(self):
+        """getter for settings cate title"""
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -105,10 +107,12 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
+        """setter for the case title"""
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
     def environmentSettings(self):
+        """getter for environment settings"""
         return [
             setting.name
             for setting in self.__settings.values()
@@ -172,7 +176,10 @@ class Settings:
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
             # pylint: disable=protected-access
-            self.__settings[name]._value = settingState.value
+            if name in self.__settings:
+                self.__settings[name]._value = settingState.value
+            else:
+                self.__settings[name] = Setting(name, settingState.value)
 
     def keys(self):
         return self.__settings.keys()
@@ -184,6 +191,7 @@ class Settings:
         return self.__settings.items()
 
     def duplicate(self):
+        """return a duplicate copy of this settings object"""
         cs = deepcopy(self)
         cs._failOnLoad = False  # pylint: disable=protected-access
         # it's not really protected access since it is a new Settings object.
@@ -191,7 +199,7 @@ class Settings:
         return cs
 
     def revertToDefaults(self):
-        r"""Sets every setting back to its default value"""
+        """Sets every setting back to its default value"""
         for setting in self.__settings.values():
             setting.revertToDefault()
 
@@ -257,21 +265,25 @@ class Settings:
             io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
         )
 
-        if armi.MPI_RANK == 0:
-            runLog.setVerbosity(self["verbosity"])
-        else:
-            runLog.setVerbosity(self["branchVerbosity"])
+        self.initLogVerb()
 
         return reader
 
     def _applyReadSettings(self, path=None):
+        self.initLogVerb()
+
+        if path:
+            self.path = path  # can't set this before a chance to fail occurs
+
+    # TODO: At some point, much of the logging init will be moved to context, including this.
+    def initLogVerb(self):
+        """Central location to init logging verbosity"""
         if armi.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
         else:
             runLog.setVerbosity(self["branchVerbosity"])
 
-        if path:
-            self.path = path  # can't set this before a chance to fail occurs
+        self.setModuleVerbs(force=True)
 
     def writeToXMLFile(self, fName, style="short"):
         """Write out settings to an xml file
@@ -333,6 +345,7 @@ class Settings:
 
     def modified(self, caseTitle=None, newSettings=None):
         """Return a new Settings object containing the provided modifications."""
+        # pylint: disable=protected-access
         settings = self.duplicate()
 
         if caseTitle:
@@ -348,3 +361,28 @@ class Settings:
                     settings.__settings[key] = Setting(key, val)
 
         return settings
+
+    def setModuleVerbs(self, force=False):
+        """Attempt to grab the module-level logger verbosities from the settings file,
+        and then set their log levels (verbosities).
+
+        NOTE: This method is only meant to be called once per run.
+        """
+        # try to get the setting dict
+        try:
+            verbs = self["moduleVerbosity"]
+        except NonexistentSetting:
+            for key in sorted(self.keys()):
+                print(key)
+            # if this key is not in the settings file, easy
+            return
+
+        # set, but don't use, the module-level loggers
+        for mName, mLvl in verbs.items():
+            # by default, we init module-level logging, not change it mid-run
+            if force or mName not in logging.Logger.manager.loggerDict:
+                # cast verbosity to integer
+                lvl = int(mLvl) if mLvl.isnumeric() else runLog.LOG.logLevels[mLvl][0]
+
+                log = logging.getLogger(mName)
+                log.setVerbosity(lvl)

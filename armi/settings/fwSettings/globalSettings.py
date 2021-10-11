@@ -76,6 +76,7 @@ CONF_START_NODE = "startNode"
 CONF_LOAD_STYLE = "loadStyle"
 CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MEM_PER_NODE = "memPerNode"
+CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_MPI_TASKS_PER_NODE = "mpiTasksPerNode"
 CONF_N_CYCLES = "nCycles"
 CONF_NUM_CONTROL_BLOCKS = "numControlBlocks"  # dif3d
@@ -301,6 +302,13 @@ def defineSettings() -> List[setting.Setting]:
                 "warning",
                 "error",
             ],
+            isEnvironment=True,
+        ),
+        setting.Setting(
+            CONF_MODULE_VERBOSITY,
+            default={},
+            label="Module-Level Verbosity",
+            description="Verbosity of any module-specific loggers that are set.",
             isEnvironment=True,
         ),
         setting.Setting(
