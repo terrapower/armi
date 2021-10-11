@@ -83,12 +83,14 @@ class AsciiMap:
         self._placeholder = PLACEHOLDER
         """Placeholder for blank data. Also holds the size of ascii window for each value"""
 
-        self._asciiMaxCol = 0  # max number of text columns in text representation
-        self._asciiMaxLine = 0  # max number of text lines in text representation
-        self._ijMax = (
-            0  # max num of i+j indices (max(i) + max(j)), needed mostly for hex
-        )
-        """Various dimensions of the ascii mesh and data"""
+        self._asciiMaxCol = 0
+        """max number of text columns in text representation"""
+
+        self._asciiMaxLine = 0
+        """max number of text lines in text representation"""
+
+        self._ijMax = 0
+        """max num of i+j indices (max(i) + max(j)), needed mostly for hex"""
 
         self._asciiLinesOffCorner = 0
         """Number of ascii lines chopped of corners"""
