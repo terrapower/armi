@@ -597,15 +597,6 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
 
             if aMap is not None:
                 gridDesign.gridContents = None
-                if not isinstance(aMap, asciimaps.AsciiMapHexFullTipsUp):
-                    # this specific implementation of asciimap is broken, so we only
-                    # attempt to use the other implementations. If hex, full, tips-up is
-                    # being used we just preserve whatever was in the blueprints
-                    # already. this is bad, but we can do away with it when #437 is
-                    # fixed.
-                    mapString = StringIO()
-                    aMap.writeAscii(mapString)
-                    gridDesign.latticeMap = mapString.getvalue()
                 gridDesign.latticeMap = scalarstring.LiteralScalarString(
                     gridDesign.latticeMap
                 )
