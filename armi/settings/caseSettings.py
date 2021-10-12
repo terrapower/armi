@@ -99,7 +99,7 @@ class Settings:
 
     @property
     def caseTitle(self):
-        """getter for settings cate title"""
+        """getter for settings case title"""
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -265,25 +265,25 @@ class Settings:
             io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
         )
 
-        self.initLogVerb()
+        self.initLogVerbosity()
 
         return reader
 
     def _applyReadSettings(self, path=None):
-        self.initLogVerb()
+        self.initLogVerbosity()
 
         if path:
             self.path = path  # can't set this before a chance to fail occurs
 
     # TODO: At some point, much of the logging init will be moved to context, including this.
-    def initLogVerb(self):
+    def initLogVerbosity(self):
         """Central location to init logging verbosity"""
         if armi.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
         else:
             runLog.setVerbosity(self["branchVerbosity"])
 
-        self.setModuleVerbs(force=True)
+        self.setModuleVerbosities(force=True)
 
     def writeToXMLFile(self, fName, style="short"):
         """Write out settings to an xml file
@@ -362,11 +362,17 @@ class Settings:
 
         return settings
 
-    def setModuleVerbs(self, force=False):
+    def setModuleVerbosities(self, force=False):
         """Attempt to grab the module-level logger verbosities from the settings file,
         and then set their log levels (verbosities).
 
         NOTE: This method is only meant to be called once per run.
+
+        Parameters
+        ----------
+        force : bool, optional
+            If force is False, don't overwrite the log verbosities if the logger already exists.
+            IF this needs to be used mid-run, force=False is safer.
         """
         # try to get the setting dict
         try:

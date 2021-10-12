@@ -224,25 +224,25 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
 
-    def test_setModuleVerbs(self):
+    def test_setModuleVerbosities(self):
         # init settings and use them to set module-level logging levels
         cs = caseSettings.Settings()
-        newSettings = {"moduleVerbosity": {"test_setModuleVerbs": "debug"}}
+        newSettings = {"moduleVerbosity": {"test_setModuleVerbosities": "debug"}}
         cs = cs.modified(newSettings=newSettings)
 
         # set the logger once, and check it is was set
-        cs.setModuleVerbs()
-        logger = logging.getLogger("test_setModuleVerbs")
+        cs.setModuleVerbosities()
+        logger = logging.getLogger("test_setModuleVerbosities")
         self.assertEqual(logger.level, 10)
 
         # try to set the logger again, without forcing it
-        newSettings = {"moduleVerbosity": {"test_setModuleVerbs": "error"}}
+        newSettings = {"moduleVerbosity": {"test_setModuleVerbosities": "error"}}
         cs = cs.modified(newSettings=newSettings)
-        cs.setModuleVerbs()
+        cs.setModuleVerbosities()
         self.assertEqual(logger.level, 10)
 
         # try to set the logger again, with force=True
-        cs.setModuleVerbs(force=True)
+        cs.setModuleVerbosities(force=True)
         self.assertEqual(logger.level, 40)
 
     def test_getFailures(self):
