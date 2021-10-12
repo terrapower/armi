@@ -176,10 +176,7 @@ class Settings:
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
             # pylint: disable=protected-access
-            if name in self.__settings:
-                self.__settings[name]._value = settingState.value
-            else:
-                self.__settings[name] = Setting(name, settingState.value)
+            self.__settings[name]._value = settingState.value
 
     def keys(self):
         return self.__settings.keys()
