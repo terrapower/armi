@@ -92,7 +92,7 @@ class Settings:
     @property
     def inputDirectory(self):
         """getter for settings file path"""
-        if not self.path:
+        if self.path is None:
             return os.getcwd()
         else:
             return os.path.dirname(self.path)
@@ -375,13 +375,7 @@ class Settings:
             IF this needs to be used mid-run, force=False is safer.
         """
         # try to get the setting dict
-        try:
-            verbs = self["moduleVerbosity"]
-        except NonexistentSetting:
-            for key in sorted(self.keys()):
-                print(key)
-            # if this key is not in the settings file, easy
-            return
+        verbs = self["moduleVerbosity"]
 
         # set, but don't use, the module-level loggers
         for mName, mLvl in verbs.items():
