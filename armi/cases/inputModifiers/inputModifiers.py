@@ -87,52 +87,6 @@ class SamplingInputModifier(InputModifier):
         raise NotImplementedError
 
 
-class SamplingInputModifier(InputModifier):
-    """
-    Object that modifies input definitions in some well-defined way.
-
-    (This class is abstract.)
-
-    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
-    ``Blueprints``, and ``SystemLayoutInput``.
-
-    This is a modified version of the InputModifier abstract class that imposes
-    structure for parameters in a design space that will be sampled by a
-    quasi-random sampling algorithm. These algorithms require input modifiers
-    to specify if the parameter is continuous or discrete and have the bounds
-    specified.
-
-    """
-
-    def __init__(
-        self, name: str, paramType: str, bounds: list, independentVariable=None
-    ):
-        """[summary]
-
-        Parameters
-        ----------
-        name: str
-            Name of input modifier.
-        paramType : str
-            specify if parameter is 'continuous' or 'discrete'
-        bounds : list
-            If continuous, provide floating points [a, b] specifing the inclusive bounds.
-            If discrete, provide a list of potential values [a, b, c, ...]
-        independentVariable : [type], optional
-            Name/value pairs to associate with the independent variable being modified
-            by this object.  Will be analyzed and plotted against other modifiers with
-            the same name, by default None
-        """
-        InputModifier.__init__(self, independentVariable=independentVariable)
-        self.name = name
-        self.paramType = paramType
-        self.bounds = bounds
-
-    def __call__(self, cs, blueprints, geom):
-        """Perform the desired modifications to input objects."""
-        raise NotImplementedError
-
-
 class FullCoreModifier(InputModifier):
     """
     Grow the SystemLayoutInput to from a symmetric core to a full core.
