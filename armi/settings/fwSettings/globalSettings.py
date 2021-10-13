@@ -107,7 +107,7 @@ CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 
-# Plugin or Unused settings
+# Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"  # mcnp & gui
 CONF_MEM_PER_NODE = "memPerNode"  # unused?
