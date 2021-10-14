@@ -91,7 +91,7 @@ def applyVerbosity(cs, name, value):
     # rather than erroring on poor inputs because these used to be integers, just go to the default
     # this isn't a high risk setting that terribly needs protection. 'value' should only be fed in after
     # a valid definition has been supplied so we can look at the existing options.
-    if name in cs and value not in cs.get_setting("verbosity").options:
+    if name in cs and value not in cs.getSetting("verbosity").options:
         value = cs["verbosity"]
 
     return {name: value}

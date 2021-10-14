@@ -524,7 +524,7 @@ class TestFuelPlugin(unittest.TestCase):
         nm = settings.CONF_CIRCULAR_RING_ORDER
         self.assertEqual(cs[nm], "angle")
 
-        setting = cs.get_setting(nm)
+        setting = cs.getSetting(nm)
         self.assertIn("distance", setting.options)
 
 

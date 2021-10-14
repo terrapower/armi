@@ -211,7 +211,7 @@ class EntryPoint:
             particularly beneficial when many options are being added as they can clutter the :code:`--help` to be
             almost unusable.
         """
-        settingsInstance = self.cs.get_setting(settingName)
+        settingsInstance = self.cs.getSetting(settingName)
 
         if settings.isBoolSetting(settingsInstance):
             helpMessage = (

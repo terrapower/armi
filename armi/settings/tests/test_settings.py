@@ -250,7 +250,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs = caseSettings.Settings()
 
         with self.assertRaises(NonexistentSetting):
-            cs.get_setting("missingFake")
+            cs.getSetting("missingFake")
 
         with self.assertRaises(NonexistentSetting):
             _ = cs["missingFake"]
@@ -262,7 +262,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         # prove this setting doesn't exist
         with self.assertRaises(NonexistentSetting):
-            cs.get_setting("extendableOption")
+            cs.getSetting("extendableOption")
 
         # prove the new settings object has the new setting
         cs2 = cs.modified(newSettings={"extendableOption": "PLUGIN"})
@@ -270,7 +270,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         # prove modified() didn't alter the original object
         with self.assertRaises(NonexistentSetting):
-            cs.get_setting("extendableOption")
+            cs.getSetting("extendableOption")
 
 
 class TestSettingsConversion(unittest.TestCase):

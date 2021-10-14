@@ -125,7 +125,7 @@ class CaseSuite:
         """
         for setting in self.cs.environmentSettings:
             runLog.important(
-                "{}: {}".format(self.cs.get_setting(setting).label, self.cs[setting])
+                "{}: {}".format(self.cs.getSetting(setting).label, self.cs[setting])
             )
 
         runLog.important(

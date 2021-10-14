@@ -137,7 +137,7 @@ class Settings:
         else:
             raise NonexistentSetting(key)
 
-    def get_setting(self, key):
+    def getSetting(self, key):
         """
         Return a copy of an actual Setting object, instead of just its value.
 
