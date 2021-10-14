@@ -243,16 +243,16 @@ class Inspector:
     def addQueryCurrentSettingMayNotSupportFeatures(self, settingName):
         """Add a query that the current value for ``settingName`` may not support certain features."""
         self.addQuery(
-            lambda: self.cs[settingName] != self.cs.get_setting(settingName).default,
+            lambda: self.cs[settingName] != self.cs.getSetting(settingName).default,
             "{} set as:\n{}\nUsing this location instead of the default location\n{}\n"
             "may not support certain functions.".format(
                 settingName,
                 self.cs[settingName],
-                self.cs.get_setting(settingName).default,
+                self.cs.getSetting(settingName).default,
             ),
             "Revert to default location?",
             lambda: self._assignCS(
-                settingName, self.cs.get_setting(settingName).default
+                settingName, self.cs.getSetting(settingName).default
             ),
         )
 
@@ -640,7 +640,7 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     if initialLambda is None:
         initialLambda = lambda: (
             not os.path.exists(pathTools.armiAbsPath(inspector.cs[settingName]))
-            and inspector.cs.get_setting(settingName).offDefault
+            and inspector.cs.getSetting(settingName).offDefault
         )  # solution is to revert to default
 
     query = Query(
@@ -649,6 +649,6 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
             settingName, inspector.cs[settingName]
         ),
         "Revert to default location?",
-        inspector.cs.get_setting(settingName).revertToDefault,
+        inspector.cs.getSetting(settingName).revertToDefault,
     )
     return query

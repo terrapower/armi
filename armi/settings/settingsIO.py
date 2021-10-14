@@ -341,7 +341,7 @@ class SettingsReader:
                 self.invalidSettings.add(settingName)
             else:
                 # apply validations
-                settingObj = self.cs.get_setting(settingName)
+                settingObj = self.cs.getSetting(settingName)
                 if value:
                     value = applyTypeConversions(settingObj, value)
 
