@@ -1,7 +1,7 @@
 name: Check License Lines
 on:
   push:
-    branches: [header_test]
+    branches: [master]
 jobs:
   check-license-lines:
     runs-on: ubuntu-latest
