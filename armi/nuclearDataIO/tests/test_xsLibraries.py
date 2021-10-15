@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for xsLibraries.IsotxsLibrary"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import copy
 import filecmp
 import os
@@ -84,7 +84,7 @@ def createTestXSLibraryFiles(cachePath):
     """
     cs = settings.Settings()
     cs["outputCacheLocation"] = cachePath
-    mc2v3 = cs.settings["mc2v3.path"].default
+    mc2v3 = cs.get("mc2v3.path").default
     with directoryChangers.DirectoryChanger(RUN_DIR):
         # the two lines below basically copy the inputs to be used for PMATRX and GAMISO generation.
         # Since they are inputs to secondary calculations, the inputs need to be created before any
@@ -586,6 +586,6 @@ class Gamiso_merge_Tests(TestXSlibraryMerging):
 # Remove the abstract class, so that it does not run (all tests would fail)
 del TestXSlibraryMerging
 
+
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Gamiso_merge_Tests.test_mergeTwoXSLibFiles']
     unittest.main()

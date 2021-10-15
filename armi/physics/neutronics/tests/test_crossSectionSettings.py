@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""XS Settings tests"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import unittest
 import io
 
@@ -327,5 +328,4 @@ class Test_XSSettings(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # sys.argv = ["", "TestCrossSectionSettings.test_badCrossSections"]
     unittest.main()

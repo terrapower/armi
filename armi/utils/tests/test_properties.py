@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ tests of the propereties class """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
 import unittest
 
 from armi.utils import properties

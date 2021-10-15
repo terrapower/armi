@@ -23,7 +23,7 @@ registration of new rules happens at import time of the rule itself, which is
 unreliable and difficult to control, and even sort of implicit and sneaky. They are
 also somewhat redundant with the
 :py:class:`armi.operators.settingsValidation.Query`/:py:class:`armi.operators.settingsValidation.Inspector`
-system and the ``scripts.migration`` package.. It is not recommended for plugins to define 
+system and the ``scripts.migration`` package.. It is not recommended for plugins to define
 settings rules using the mechanism
 in this module, which may be removed in the future.
 """
@@ -91,7 +91,7 @@ def applyVerbosity(cs, name, value):
     # rather than erroring on poor inputs because these used to be integers, just go to the default
     # this isn't a high risk setting that terribly needs protection. 'value' should only be fed in after
     # a valid definition has been supplied so we can look at the existing options.
-    if name in cs.settings and value not in cs.settings["verbosity"].options:
+    if name in cs and value not in cs.getSetting("verbosity").options:
         value = cs["verbosity"]
 
     return {name: value}
@@ -176,24 +176,3 @@ def PumpInertiaPercentChange(_cs, name, value):
         " of {}".format(newVal, value)
     )
     return {"pumpInertia": newVal}
-
-
-@include_as_rule
-def addToDumpSnapshots(cs, _name, _value):
-    from armi import operators
-
-    if cs["runType"] != operators.RunTypes.SNAPSHOTS:
-        return {}
-    if cs["startCycle"] or cs["startNode"]:
-        cccnnn = "{:03d}{:03d}".format(cs["startCycle"], cs["startNode"])
-        # Revert default since they are no longer valid settings for snapshots.
-        cs.settings["startCycle"].revertToDefault()
-        cs.settings["startNode"].revertToDefault()
-        cs["dumpSnapshot"].append(cccnnn)
-    if not cs["dumpSnapshot"]:
-        # Nothing was specified in standard cycle/node or dumpSnapshots.
-        # Give old default of 0, 0.
-        with cs._unlock():
-            cs["dumpSnapshot"] = ["000000"]
-
-    return {}

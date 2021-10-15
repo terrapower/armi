@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
 import pathlib
 import random
 import unittest
@@ -553,21 +553,21 @@ class Assembly_TestCase(unittest.TestCase):
         params["maxDpaPeak"] = 14.0
         params["kInf"] = 60.0
 
-        for param in params:
-            assembly2.p[param] = params[param]
+        for key, param in params.items():
+            assembly2.p[key] = param
 
         self.Assembly.updateParamsFrom(assembly2)
 
-        for param in params:
-            cur = self.Assembly.p[param]
-            ref = params[param]
+        for key, param in params.items():
+            cur = self.Assembly.p[key]
+            ref = param
             self.assertEqual(cur, ref)
 
     def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            with self.cs._unlock():
-                self.cs["loadingFile"] = filename
+            newSettings = {"loadingFile": filename}
+            self.cs = self.cs.modified(newSettings=newSettings)
 
             with open(self.cs["loadingFile"], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
@@ -693,8 +693,8 @@ class Assembly_TestCase(unittest.TestCase):
         }
         # Set some params
         for b in self.Assembly:
-            for param in paramDict:
-                b.p[param] = paramDict[param]
+            for param, paramVal in paramDict.items():
+                b.p[param] = paramVal
 
         for param in paramDict:
             cur = list(self.Assembly.getChildParamValues(param))
@@ -1385,8 +1385,8 @@ class AnnularFuelTestCase(unittest.TestCase):
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
-        with self.cs._unlock():
-            self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
+        newSettings = {"xsKernel": "MC2v2"}  # don't try to expand elementals
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
@@ -1474,6 +1474,4 @@ assemblies:
 
 
 if __name__ == "__main__":
-    # import sys
-    # sys.argv = ['', 'Assembly_TestCase.test_getPuFrac']
     unittest.main()

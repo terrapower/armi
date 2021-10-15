@@ -13,8 +13,7 @@
 # limitations under the License.
 r""" Testing flags.py
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 
 from armi.utils.flags import Flag, auto

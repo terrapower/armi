@@ -13,8 +13,7 @@
 # limitations under the License.
 
 r"""Tests materials.py"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name
 import unittest
 import pickle
 
@@ -1147,5 +1146,4 @@ class TZM_TestCase(_Material_Test, unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys; sys.argv = ["", "Sodium_TestCase"]
     unittest.main()

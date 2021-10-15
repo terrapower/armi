@@ -423,6 +423,6 @@ The ARMI system is licensed as follows:
 .. |Build Status| image:: https://github.com/terrapower/armi/actions/workflows/unittests.yaml/badge.svg?branch=master
     :target: https://github.com/terrapower/armi/actions/workflows/unittests.yaml
 
-.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master
+.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master&kill_cache=1
     :target: https://coveralls.io/github/terrapower/armi?branch=master
 

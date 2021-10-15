@@ -29,19 +29,27 @@ class TestSnapshotInterface(unittest.TestCase):
 
     def test_activeateDefaultSnapshots_30cycles2BurnSteps(self):
         self.assertEqual([], self.cs["dumpSnapshot"])
-        with self.cs._unlock():
-            self.cs["nCycles"] = 30
-            self.cs["burnSteps"] = 2
+
+        newSettings = {}
+        newSettings["nCycles"] = 30
+        newSettings["burnSteps"] = 2
+        self.si.cs = self.si.cs.modified(newSettings=newSettings)
+        self.cs = self.si.cs
+
         self.si.activateDefaultSnapshots()
-        self.assertEqual(["000000", "014000", "029002"], self.cs["dumpSnapshot"])
+        self.assertEqual(["000000", "014000", "029002"], self.si.cs["dumpSnapshot"])
 
     def test_activeateDefaultSnapshots_17cycles5BurnSteps(self):
         self.assertEqual([], self.cs["dumpSnapshot"])
-        with self.cs._unlock():
-            self.cs["nCycles"] = 17
-            self.cs["burnSteps"] = 5
+
+        newSettings = {}
+        newSettings["nCycles"] = 17
+        newSettings["burnSteps"] = 5
+        self.si.cs = self.si.cs.modified(newSettings=newSettings)
+        self.cs = self.si.cs
+
         self.si.activateDefaultSnapshots()
-        self.assertEqual(["000000", "008000", "016005"], self.cs["dumpSnapshot"])
+        self.assertEqual(["000000", "008000", "016005"], self.si.cs["dumpSnapshot"])
 
 
 if __name__ == "__main__":

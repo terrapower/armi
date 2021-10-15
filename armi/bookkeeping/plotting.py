@@ -24,8 +24,8 @@ import matplotlib.pyplot as plt
 import matplotlib.path
 import matplotlib.spines
 import matplotlib.projections.polar
-import matplotlib.cm as cm
-import matplotlib.colors as mpltcolors
+from matplotlib import cm
+from matplotlib import colors as mpltcolors
 
 from armi import runLog
 from armi.reactor.flags import Flags

@@ -12,22 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-
-"""
+"""Really basic tests of the report Utils"""
+import logging
 import unittest
 
-from armi import settings
+from armi import runLog, settings
 from armi.bookkeeping import report
-from armi.bookkeeping.report import data
+from armi.bookkeeping.report import data, reportInterface
+from armi.bookkeeping.report.reportingUtils import (
+    writeAssemblyMassSummary,
+    makeBlockDesignReport,
+    setNeutronBalancesReport,
+    summarizePinDesign,
+    summarizePowerPeaking,
+    summarizePower,
+)
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.tests import mockRunLogs
 
 
 class TestReport(unittest.TestCase):
     def setUp(self):
         self.test_group = data.Table(settings.getMasterCs(), "banana")
-
-    def tearDown(self):
-        pass
 
     def test_setData(self):
         report.setData("banana_1", ["sundae", "plain"])
@@ -57,17 +63,58 @@ class TestReport(unittest.TestCase):
 
         :ref:`REQ86d884bb-6133-4078-8804-5a334c935338`
         """
-        from armi.bookkeeping.report import reportInterface
-
         repInt = reportInterface.ReportInterface(None, None)
-        repInt.printReports()
+        rep = repInt.printReports()
+
+        self.assertIn("REPORTS BEGIN", rep)
+        self.assertIn("REPORTS END", rep)
 
     def test_writeReports(self):
         """Test writing html reports."""
-        from armi.bookkeeping.report import reportInterface
-
         repInt = reportInterface.ReportInterface(None, None)
         repInt.writeReports()
+
+    def test_reactorSpecificReporting(self):
+        """Test a number of reporting utils that require reactor/core information"""
+        o, r = loadTestReactor()
+
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock._outputStream)
+            runLog.LOG.startLog("test_reactorSpecificReporting")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            writeAssemblyMassSummary(r)
+            self.assertIn("BOL Assembly Mass Summary", mock._outputStream)
+            self.assertIn("igniter fuel", mock._outputStream)
+            self.assertIn("primary control", mock._outputStream)
+            self.assertIn("plenum", mock._outputStream)
+            mock._outputStream = ""
+
+            setNeutronBalancesReport(r.core)
+            self.assertIn("No rate information", mock._outputStream)
+            mock._outputStream = ""
+
+            summarizePinDesign(r.core)
+            self.assertIn("Assembly Design Summary", mock._outputStream)
+            self.assertIn("Design & component information", mock._outputStream)
+            self.assertIn("Multiplicity", mock._outputStream)
+            mock._outputStream = ""
+
+            summarizePower(r.core)
+            self.assertIn("Power in radial shield", mock._outputStream)
+            self.assertIn("Power in primary control", mock._outputStream)
+            self.assertIn("Power in feed fuel", mock._outputStream)
+            mock._outputStream = ""
+
+            # this report won't do much for the test reactor - improve test reactor
+            makeBlockDesignReport(r)
+            self.assertTrue(len(mock._outputStream) == 0)
+            mock._outputStream = ""
+
+            # this report won't do much for the test reactor - improve test reactor
+            summarizePowerPeaking(r.core)
+            self.assertTrue(len(mock._outputStream) == 0)
 
 
 if __name__ == "__main__":

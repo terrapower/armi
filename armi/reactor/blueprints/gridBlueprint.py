@@ -115,6 +115,7 @@ from ruamel.yaml import scalarstring
 from armi.utils.customExceptions import InputError
 from armi.utils import asciimaps
 from armi.reactor import geometry, grids
+from armi.reactor import blueprints
 from armi import runLog
 
 
@@ -180,8 +181,9 @@ class GridBlueprint(yamlize.Object):
         ),
     )
     # gridContents is the final form of grid contents information;
-    # it is set regardless of how the input is read. This is how all
-    # grid contents information is written out.
+    # it is set regardless of how the input is read. When writing, we attempt to
+    # preserve the input mode and write ascii map if that was what was originally
+    # provided.
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
     @gridContents.validator
@@ -222,10 +224,22 @@ class GridBlueprint(yamlize.Object):
         self.name = name
         self.geom = str(geom)
         self.latticeMap = latticeMap
-        self.readFromLatticeMap = False
+        self._readFromLatticeMap = False
         self.symmetry = str(symmetry)
         self.gridContents = gridContents
         self.gridBounds = gridBounds
+
+    @property
+    def readFromLatticeMap(self):
+        """
+        This is implemented as a property, since as a Yamlize object, __init__ is not
+        always called and we have to lazily evaluate its default value.
+        """
+        return getattr(self, "_readFromLatticeMap", False)
+
+    @readFromLatticeMap.setter
+    def readFromLatticeMap(self, value):
+        self._readFromLatticeMap = value
 
     def construct(self):
         """Build a Grid from a grid definition."""
@@ -389,7 +403,7 @@ class GridBlueprint(yamlize.Object):
         self.readFromLatticeMap = True
         symmetry = geometry.SymmetryType.fromStr(self.symmetry)
         geom = geometry.GeomType.fromStr(self.geom)
-        latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
+        latticeCls = asciimaps.asciiMapFromGeomAndDomain(self.geom, symmetry.domain)
         asciimap = latticeCls()
         asciimap.readAscii(self.latticeMap)
         self.gridContents = dict()
@@ -522,7 +536,7 @@ def _filterOutsideDomain(gridBp):
         del gridBp.gridContents[idx]
 
 
-def saveToStream(stream, bluep, grid, full=False):
+def saveToStream(stream, bluep, full=False, tryMap=False):
     """Save the blueprints to the passed stream.
 
     This can save either the entire blueprints, or just the `grids:` section of the
@@ -530,9 +544,10 @@ def saveToStream(stream, bluep, grid, full=False):
     blueprints can be useful when cobbling blueprints together with !include flags.
 
     stream: file output stream of some kind
-    bluep: armi.reactor.blueprints.Blueprints
-    grid: armi.reactor.grids.Grid
+    bluep: armi.reactor.blueprints.Blueprints, or Grids
     full: bool ~ Is this a full output file, or just a partial/grids?
+    tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
+    they're prettier.
     """
     # To save, we want to try our best to output our grid blueprints in the lattice
     # map style. However, we do not want to wreck the state that the current
@@ -540,7 +555,14 @@ def saveToStream(stream, bluep, grid, full=False):
     # canonicalize it and save that, leaving the original blueprints unmolested.
     bp = copy.deepcopy(bluep)
 
-    for gridDesignType, gridDesign in bp.gridDesigns.items():
+    if isinstance(bp, blueprints.Blueprints):
+        gridDesigns = bp.gridDesigns
+    elif isinstance(bp, blueprints.Grids):
+        gridDesigns = bp
+    else:
+        raise TypeError("Expected Blueprints or Grids, got {}".format(type(bp)))
+
+    for gridDesignType, gridDesign in gridDesigns.items():
         # The core equilibrium path should be put into the
         # grid contents rather than a lattice map until we write
         # a string-> tuple parser for reading it back in. Skip
@@ -553,42 +575,41 @@ def saveToStream(stream, bluep, grid, full=False):
             # there is no grid, so there must be lattice, and that goes to output
             continue
 
-        readFromLatticeMap = getattr(gridDesign, "readFromLatticeMap", False)
-        if not readFromLatticeMap:
-            # there is a grid, but we didn't read from latttice, so we block lattic output
-            gridDesign.latticeMap = None
-            continue
-
-        try:
-            aMap = asciimaps.asciiMapFromGeomAndSym(grid.geomType, grid.symmetry)()
-            # asciimaps can't handle negative indices, so we bump everything
-            # forward if needed
-            offset = (
-                min(key[0] for key in gridDesign.gridContents.keys()),
-                min(key[1] for key in gridDesign.gridContents.keys()),
-            )
-            aMap.asciiLabelByIndices = {
-                (key[0] - offset[0], key[1] - offset[1]): val
-                for key, val in gridDesign.gridContents.items()
-            }
-            aMap.gridContentsToAscii()
-        except Exception as e:
-            runLog.warning(
-                "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
-                    e
+        if gridDesign.readFromLatticeMap or tryMap:
+            geomType = geometry.GeomType.fromStr(gridDesign.geom)
+            symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
+            try:
+                aMap = asciimaps.asciiMapFromGeomAndDomain(
+                    gridDesign.geom, symmetry.domain
+                )()
+                aMap.asciiLabelByIndices = {
+                    (key[0], key[1]): val
+                    for key, val in gridDesign.gridContents.items()
+                }
+                aMap.gridContentsToAscii()
+            except Exception as e:
+                runLog.warning(
+                    "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
+                        e
+                    )
                 )
-            )
-            aMap = None
+                aMap = None
 
-        gridDesign.gridContents = None
-        if aMap is not None:
-            mapString = StringIO()
-            aMap.writeAscii(mapString)
-            # deep ruamel.yaml magic
-            fmtStr = scalarstring.LiteralScalarString(mapString.getvalue())
-            gridDesign.latticeMap = fmtStr
+            if aMap is not None:
+                gridDesign.gridContents = None
+                gridDesign.latticeMap = scalarstring.LiteralScalarString(
+                    gridDesign.latticeMap
+                )
+            else:
+                gridDesign.latticeMap = None
 
-    toSave = bp if full else bp.gridDesigns
+        else:
+            # grid contents were supplied as a dictionary, so we shouldnt even have a
+            # latticeMap, unless it was set explicitly in code somewhere. Discard if
+            # there is one.
+            gridDesign.latticeMap = None
+
+    toSave = bp if full else gridDesigns
 
     # NOTE: type(bp) here used because importing Blueprints causes a circular import
     type(toSave).dump(toSave, stream)

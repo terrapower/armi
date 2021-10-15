@@ -16,6 +16,7 @@
 Sulfur
 """
 
+from armi import runLog
 from armi import utils
 from armi.utils.units import getTk
 from armi.materials import material
@@ -24,9 +25,25 @@ from armi.materials import material
 class Sulfur(material.Fluid):
     name = "Sulfur"
 
-    def applyInputParams(self, sulfur_density_frac=None):
+    def applyInputParams(self, sulfur_density_frac=None, TD_frac=None):
         if sulfur_density_frac is not None:
-            self.fullDensFrac = float(sulfur_density_frac)
+            runLog.warning(
+                "The 'sulfur_density_frac' material modification for Sulfur "
+                "will be deprecated. Update your inputs to use 'TD_frac' instead.",
+                single=True,
+            )
+            if TD_frac is not None:
+                runLog.warning(
+                    "Both 'sulfur_density_frac' and 'TD_frac' are specified "
+                    f"for {self}. 'TD_frac' will be used."
+                )
+            else:
+                self.updateTD(sulfur_density_frac)
+        if TD_frac is not None:
+            self.updateTD(TD_frac)
+
+    def updateTD(self, TD):
+        self.fullDensFrac = float(TD)
 
     def setDefaultMassFracs(self):
         """Mass fractions"""
