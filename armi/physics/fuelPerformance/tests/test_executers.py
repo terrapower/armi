@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2021 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit test for Beryllium"""
+"""
+Tests for generic fuel performance executers
+"""
 import unittest
 
-from armi.materials.be9 import Be9
-from armi.materials.tests import test_materials
+from armi.physics.fuelPerformance.executers import (
+    CONF_BOND_REMOVAL,
+    FuelPerformanceOptions,
+)
+from armi.settings.caseSettings import Settings
 
 
-class Test_Be9(test_materials._Material_Test, unittest.TestCase):
-    """Be tests"""
+class TestFuelPerformanceOptions(unittest.TestCase):
+    def test_fuelPerformanceOptions(self):
+        fpo = FuelPerformanceOptions("test_fuelPerformanceOptions")
+        self.assertEqual(fpo.label, "test_fuelPerformanceOptions")
 
-    MAT_CLASS = Be9
-
-    def test_density(self):
-        cur = self.mat.density(Tc=25)
-        ref = 1.85
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
+        cs = Settings()
+        fpo.fromUserSettings(cs)
+        self.assertEqual(fpo.bondRemoval, cs[CONF_BOND_REMOVAL])
 
 
 if __name__ == "__main__":
