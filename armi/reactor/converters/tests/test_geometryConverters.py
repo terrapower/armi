@@ -29,6 +29,7 @@ from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.flags import Flags
+from armi.utils import directoryChangers
 
 
 THIS_DIR = os.path.dirname(__file__)
