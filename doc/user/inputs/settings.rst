@@ -45,7 +45,7 @@ The assembly dragger
 --------------------
 The assembly dragger (in the ``Geometry`` tab) allows users to define the 2-D layout of the assemblies defined in the
 :doc:`/user/inputs/blueprints`. It is currently limited to hexagons. The results of this arrangement get written to
-:doc:`/user/inputs/facemap_file`. Drag hexagons from the options on the right and place them into the core positions you
+grids in blueprints. Drag hexagons from the options on the right and place them into the core positions you
 want them to be in. By default, the input assumes a 1/3 core model, but you can create a full core model through the
 menu.
 

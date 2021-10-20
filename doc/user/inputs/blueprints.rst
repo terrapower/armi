@@ -439,8 +439,7 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 Grids
 =====
 The ``lattice files`` are different geometry files that define arrangements in Hex, Cartesian, or R-Z-Theta.
-See :doc:`/user/inputs/facemap_file` for details. The optional
-``lattice pitch`` entry allows you to specify spacing between objects that is different from
+The optional ``lattice pitch`` entry allows you to specify spacing between objects that is different from
 tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies
 are to be loaded into a Cartesian arrangement. The contents of a grid may defined using one
 of the following:
