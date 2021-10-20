@@ -131,24 +131,6 @@ class TestGeometryConverters(unittest.TestCase):
         self.assertAlmostEqual(5, len(oneLine))  # same here
 
 
-class TestBlockNumberModifier(unittest.TestCase):
-    def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-        self.cs = settings.getMasterCs()
-
-    def test_BlockNumberModifier(self):
-        r"""
-        Tests that the addRing method adds the correct number of fuel assemblies to the test reactor
-        """
-        converter = geometryConverters.BlockNumberModifier(self.cs)
-        converter.refinement = 2
-        refAssem = self.r.core.refAssem
-        numFuel = len(refAssem.getBlocks(Flags.FUEL))
-        converter.convert(self.r)
-        numBlocks = len(set(refAssem.getBlocks(Flags.FUEL)))
-        self.assertEqual(numFuel * converter.refinement, numBlocks)
-
-
 class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
