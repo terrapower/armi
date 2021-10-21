@@ -133,8 +133,6 @@ material
     for specifying specific material (e.g. ``armi.materials.uZr:UZr``).
     Materials are handled through the :py:mod:`material library <armi.materials>`.
 
-    .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
-
 |Tinput|
     The temperature (in C) that corresponds to the input dimensions given here. This facilitates automatic thermal
     expansion.
@@ -412,7 +410,7 @@ other structure.
 
 Systems
 =======
-Once assemblies are defined they can be grouped together into the Core, the spent fuel pool, etc.
+Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
 
