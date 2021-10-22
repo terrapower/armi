@@ -38,6 +38,5 @@ The core map input files can be graphically manipulated with the
 
    settings
    blueprints
-   facemap_file
    fuel_management
    settings_report

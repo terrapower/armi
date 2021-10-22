@@ -438,15 +438,12 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 
 Grids
 =====
-The ``lattice files`` are different geometry files that define arrangements in Hex, Cartesian, or R-Z-Theta.
-See :doc:`/user/inputs/facemap_file` for details. The optional
-``lattice pitch`` entry allows you to specify spacing between objects that is different from
-tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies
-are to be loaded into a Cartesian arrangement. The contents of a grid may defined using one
-of the following:
+Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields the
+define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
+you to specify spacing between objects that is different from tight packing. This input is required
+in mixed geometry cases, for example if Hexagonal assemblies are to be loaded into a Cartesian
+arrangement. The contents of a grid may defined using one of the following:
 
-``lattice file:``
-    A path to a file that contains the lattice arrangement in either YAML (preferred) or XML (historical) formats.
 ``lattice map:``
     A ASCII map representing the grid contents
 ``grid contents:``
@@ -455,15 +452,40 @@ of the following:
 Example grid definitions are shown below::
 
     grids:
-        core:
-            lattice file: geometry.xml
+        control:
             geom: hex
-            symmetry: third periodic
-    	sfp:
-    	    lattice file: sfp-geom.xml
-            lattice pitch:
-                x: 50.0
-                y: 50.0
+            symmetry: full
+            lattice map: |
+               - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
+                - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
+                 - - - - - - - 1 8 1 1 1 1 1 1 1 1 1 1
+                  - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1
+                   - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                    - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                     - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                      - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                       - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                        7 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1
+                         1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1
+                          1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                           1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                            1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                             1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                              1 1 1 1 1 1 1 1 1 3 1 1 1
+                               1 1 1 1 1 1 1 1 1 1 1 1
+                                1 6 1 1 1 1 1 1 1 1 1
+                                 1 1 1 1 1 1 1 1 1 1
+    sfp:
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 50.0
+            y: 50.0
+        grid contents:
+            [0,0]: MC
+            [1,0]: MC
+            [0,1]: MC
+            [1,1]: MC
 
 .. warning:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
