@@ -206,8 +206,8 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     return cs, bp, geom
 
             builder = FullFactorialSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingsModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
+            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
 
         would result in 6 cases:
 
@@ -293,8 +293,8 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     return cs, bp, geom
 
             builder = SeparateEffectsSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingsModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
+            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
 
         would result in 5 cases:
 
