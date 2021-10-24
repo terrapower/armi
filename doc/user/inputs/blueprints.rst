@@ -436,7 +436,7 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 
 Grids
 =====
-Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields the
+Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
 define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
 you to specify spacing between objects that is different from tight packing. This input is required
 in mixed geometry cases, for example if Hexagonal assemblies are to be loaded into a Cartesian
@@ -485,7 +485,7 @@ Example grid definitions are shown below::
             [0,1]: MC
             [1,1]: MC
 
-.. warning:: We have gone through some effort to allow both pin and core grid definitions to share this
+.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
 .. _custom-isotopics:
