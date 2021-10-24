@@ -133,8 +133,6 @@ material
     for specifying specific material (e.g. ``armi.materials.uZr:UZr``).
     Materials are handled through the :py:mod:`material library <armi.materials>`.
 
-    .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
-
 |Tinput|
     The temperature (in C) that corresponds to the input dimensions given here. This facilitates automatic thermal
     expansion.
@@ -412,7 +410,7 @@ other structure.
 
 Systems
 =======
-Once assemblies are defined they can be grouped together into the Core, the spent fuel pool, etc.
+Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
 
@@ -438,7 +436,7 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 
 Grids
 =====
-Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields the
+Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
 define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
 you to specify spacing between objects that is different from tight packing. This input is required
 in mixed geometry cases, for example if Hexagonal assemblies are to be loaded into a Cartesian
@@ -487,7 +485,7 @@ Example grid definitions are shown below::
             [0,1]: MC
             [1,1]: MC
 
-.. warning:: We have gone through some effort to allow both pin and core grid definitions to share this
+.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
 .. _custom-isotopics:

@@ -95,7 +95,6 @@ from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor, Core
 from armi.reactor import assemblies
 from armi.reactor.assemblies import Assembly
-from armi.reactor import blocks
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
@@ -199,7 +198,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available."""
+        """Initialize the database if the main interface was not available. (Begining of Life)"""
         if not self._db:
             self.initDB()
 
@@ -256,7 +255,7 @@ class DatabaseInterface(interfaces.Interface):
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB."""
+        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)"""
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
@@ -267,7 +266,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.writeToDB(self.r)
 
     def interactEOL(self):
-        """DB's should be closed at run's end."""
+        """DB's should be closed at run's end. (End of Life)"""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
@@ -622,10 +621,10 @@ class Database3(database.Database):
         str
             The commit hash if it exists, otherwise "unknown".
         """
-        UNKNOWN = "unknown"
+        unknown = "unknown"
         if not shutil.which("git"):
             # no git available. cannot check git info
-            return UNKNOWN
+            return unknown
         repo_exists = (
             subprocess.run(
                 "git rev-parse --git-dir".split(),
@@ -639,9 +638,9 @@ class Database3(database.Database):
                 commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
             except:
-                return UNKNOWN
+                return unknown
         else:
-            return UNKNOWN
+            return unknown
 
     def close(self, completedSuccessfully=False):
         """
@@ -685,7 +684,6 @@ class Database3(database.Database):
             An informative label for the backed-up database. Usually something like
             "-all-iterations". Will be interposed between the source name and the ".h5"
             extension.
-
 
         Returns
         -------
@@ -743,8 +741,14 @@ class Database3(database.Database):
         self._fileName = fName
 
     def loadCS(self):
-        from armi import settings
+        """Attempt to load settings from the database file
 
+        Notes
+        -----
+        There are no guarantees here. If the database was written from a different version of ARMI than you are using,
+        these results may not be usable. For instance, the database could have been written from a vastly old or future
+        version of ARMI from the code you are using.
+        """
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
@@ -762,7 +766,19 @@ class Database3(database.Database):
         return cs
 
     def loadBlueprints(self):
-        from armi.reactor import blueprints
+        """Attempt to load reactor blueprints from the database file
+
+        Notes
+        -----
+        There are no guarantees here. If the database was written from a different version of ARMI than you are using,
+        these results may not be usable. For instance, the database could have been written from a vastly old or future
+        version of ARMI from the code you are using.
+        """
+        # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior
+        # through metaclassing. Therefore, we need to be able to import all plugins *before* importing blueprints.
+        from armi.reactor.blueprints import (
+            Blueprints,
+        )  # pylint: disable=import-outside-toplevel
 
         bpString = None
 
@@ -777,12 +793,16 @@ class Database3(database.Database):
             return None
 
         stream = io.StringIO(bpString)
-        stream = blueprints.Blueprints.migrate(stream)
+        stream = Blueprints.migrate(stream)
 
-        bp = blueprints.Blueprints.load(stream)
+        bp = Blueprints.load(stream)
         return bp
 
     def loadGeometry(self):
+        """
+        This is primarily just used for migrations.
+        The "geometry files" were replaced by ``systems:`` and ``grids:`` sections of ``Blueprints``.
+        """
         geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"].asstr()[()]))
         return geom
@@ -1051,7 +1071,7 @@ class Database3(database.Database):
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 
         layout = Layout((self.versionMajor, self.versionMinor), h5group=h5group)
-        comps, groupedComps = layout._initComps(cs, bp)
+        comps, groupedComps = layout._initComps(cs.caseTitle, bp)
 
         # populate data onto initialized components
         for compType, compTypeList in groupedComps.items():
@@ -1092,10 +1112,7 @@ class Database3(database.Database):
                         comp.p[pName] = val
 
     def _compose(self, comps, cs, parent=None):
-        """
-        Given a flat collection of all of the ArmiObjects in the model, reconstitute the
-        hierarchy.
-        """
+        """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
         comp, _, numChildren, location = next(comps)
 
         # attach the parent early, if provided; some cases need the parent attached for
@@ -1115,6 +1132,7 @@ class Database3(database.Database):
             comp.name = comp.makeNameFromAssemNum(comp.p.assemNum)
             comp.lastLocationLabel = Assembly.DATABASE
 
+        # set the spatialLocators on each component
         if location is not None:
             if parent is not None and parent.spatialGrid is not None:
                 comp.spatialLocator = parent.spatialGrid[location]
@@ -1351,10 +1369,7 @@ class Database3(database.Database):
         params: Optional[List[str]] = None,
         timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
     ) -> History:
-        """
-        Get the parameter histories at a specific location.
-        """
-
+        """Get the parameter histories at a specific location."""
         return self.getHistoriesByLocation([comp], params=params, timeSteps=timeSteps)[
             comp
         ]
@@ -1889,12 +1904,12 @@ def _unpackLocationsV2(locationTypes, locData):
 
 class Layout:
     """
-    The Layout class describes the hierarchical layout of the composite structure in a flat representation.
+    The Layout class describes the hierarchical layout of the composite Reactor model in a flat representation.
 
     A Layout is built up by starting at the root of a composite tree and recursively
     appending each node in the tree to the list of data. So for a typical Reactor model,
-    the data will be ordered something like [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2,
-    a1b2c1, ..., a2, ...]
+    the data will be ordered by depth-first search: [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2,
+    a1b2c1, ..., a2, ...].
 
     The layout is also responsible for storing Component attributes, like location,
     material, and temperatures (from blueprints), which aren't stored as Parameters.
@@ -1958,6 +1973,7 @@ class Layout:
             Type[ArmiObject], List[ArmiObject]
         ] = collections.defaultdict(list)
 
+        # it should be noted, one of the two inputs must be non-None: comp/h5group
         if comp is not None:
             self._createLayout(comp)
             self.locationType, self.location = _packLocations(self._spatialLocators)
@@ -2002,6 +2018,8 @@ class Layout:
         self.serialNum.append(comp.p.serialNum)
         self.indexInData.append(len(compList) - 1)
         self.numChildren.append(len(comp))
+
+        # determine how many components have been read in, to set the grid index
         if comp.spatialGrid is not None:
             gridType = type(comp.spatialGrid).__name__
             gridParams = (gridType, comp.spatialGrid.reduce())
@@ -2014,6 +2032,7 @@ class Layout:
 
         self._spatialLocators.append(comp.spatialLocator)
 
+        # set the materials and temperatures
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
             self.material.append(comp.material.__class__.__name__)
@@ -2030,10 +2049,20 @@ class Layout:
             )
             raise
 
+        # depth-first search recursion of all components
         for c in comps:
             self._createLayout(c)
 
     def _readLayout(self, h5group):
+        """
+        Populate a hierarchical representation and group the reactor model items by type.
+
+        This is used when reading a reactor model from a database.
+
+        See Also
+        --------
+        _createLayout : does the opposite
+        """
         try:
             # location is either an index, or a point
             # iter over list is faster
@@ -2103,16 +2132,14 @@ class Layout:
             )
             raise e
 
-    def _initComps(self, cs, bp):
+    def _initComps(self, caseTitle, bp):
         comps = []
         groupedComps = collections.defaultdict(list)
 
-        # initialize
         for (
             compType,
             name,
             serialNum,
-            _,
             numChildren,
             location,
             material,
@@ -2122,7 +2149,6 @@ class Layout:
             self.type,
             self.name,
             self.serialNum,
-            self.indexInData,
             self.numChildren,
             self.location,
             self.material,
@@ -2132,7 +2158,7 @@ class Layout:
             Klass = ArmiObject.TYPES[compType]
 
             if issubclass(Klass, Reactor):
-                comp = Klass(cs.caseTitle, bp)
+                comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
                 comp = Klass(name)
             elif issubclass(Klass, Component):

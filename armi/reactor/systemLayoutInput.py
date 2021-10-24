@@ -26,19 +26,18 @@ reactor.blueprints.gridBlueprint
 """
 
 from collections import OrderedDict
+from copy import copy
 import os
 import sys
-from copy import copy
 import xml.etree.ElementTree as ET
 
-import voluptuous as vol
 from ruamel.yaml import YAML
-import ruamel.yaml.comments
+import voluptuous as vol
 
 from armi import runLog
 from armi.reactor import geometry
-from armi.utils import asciimaps
 from armi.reactor import grids
+from armi.utils import asciimaps
 from armi.utils import directoryChangers
 
 INP_SYSTEMS = "reactor"
@@ -550,9 +549,9 @@ class SystemLayoutInput:
     @classmethod
     def loadFromCs(cls, cs):
         """Function to load Geoemtry based on supplied ``CaseSettings``."""
-
         if not cs["geomFile"]:
             return None
+
         with directoryChangers.DirectoryChanger(cs.inputDirectory):
             geom = cls()
             geom.readGeomFromFile(cs["geomFile"])

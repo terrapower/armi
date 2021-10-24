@@ -18,9 +18,6 @@ Blueprints file
 	Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel 
   	pins to heat exchangers
  
-Core map file
-	Describes where various assemblies (defined in blueprints) exist in a core relative to one another
-
 Fuel management file
 	Describes how fuel moves around during a simulation
 
