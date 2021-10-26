@@ -166,9 +166,7 @@ class MultiSettingModifier(InputModifier):
 
 
 class BluePrintBlockModifier(InputModifier):
-    """
-    Adjust blueprint block->component->dimension to specified value.
-    """
+    """Adjust blueprint block->component->dimension to specified value."""
 
     def __init__(self, block, component, dimension, value):
         InputModifier.__init__(self, independentVariable={dimension: value})
@@ -186,9 +184,6 @@ class BluePrintBlockModifier(InputModifier):
                     if componentDesign.name == self.component:
                         # set new value
                         setattr(componentDesign, self.dimension, self.value)
-
-        # maybe this list of for and if could be replaced by
-        # one line like  setattr(bp , 'self.block'.'self.component'.'self.dimension' , self.values)
-        # but not sure python can do that or should do that..
+                        return cs, bp, geom
 
         return cs, bp, geom
