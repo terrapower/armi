@@ -15,6 +15,7 @@
 import unittest
 import os
 import io
+import yaml
 
 from armi.utils import directoryChangers
 from armi import cases
@@ -162,6 +163,49 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
                 c.writeInputs()
 
             self.assertTrue(os.path.exists("case-suite"))
+
+    def test_BluePrintBlockModifier(self):
+        """test BluePrintBlockModifier with build suite naming function argument"""
+
+        case_nbr = 1
+
+        builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
+
+        builder.addDegreeOfFreedom(
+            [
+                inputModifiers.BluePrintBlockModifier(
+                    "fuel 1", "clad", "od", float("{:.2f}".format(22 / 7))
+                )
+            ]
+        )
+        builder.addDegreeOfFreedom(
+            [inputModifiers.BluePrintBlockModifier("block 5", "clad", "od", 3.14159)]
+        )
+
+        def SuiteNaming(index, _case, _mods):
+            uniquePart = "{:0>4}".format(index + case_nbr)
+            return os.path.join(
+                ".",
+                "case-suite-testBPBM",
+                uniquePart,
+                self.baseCase.title + "-" + uniquePart,
+            )
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            suite = builder.buildSuite(namingFunc=SuiteNaming)
+            suite.writeInputs()
+
+            self.assertTrue(os.path.exists("case-suite-testBPBM"))
+
+            yamlfile = open(
+                f"case-suite-testBPBM/000{case_nbr}/armi-000{case_nbr}-blueprints.yaml",
+                "r",
+            )
+            bp_dict = yaml.safe_load(yamlfile)
+            yamlfile.close()
+
+            self.assertEqual(bp_dict["blocks"]["fuel 1"]["clad"]["od"], 3.14)
+            self.assertEqual(bp_dict["blocks"]["block 5"]["clad"]["od"], 3.14159)
 
 
 class TestSettingsModifiers(unittest.TestCase):

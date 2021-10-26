@@ -163,3 +163,32 @@ class MultiSettingModifier(InputModifier):
 
         cs = cs.modified(newSettings=newSettings)
         return cs, bp, geom
+
+
+class BluePrintBlockModifier(InputModifier):
+    """
+    Adjust blueprint block->component->dimension to specified value.
+    """
+
+    def __init__(self, block, component, dimension, value):
+        InputModifier.__init__(self, independentVariable={dimension: value})
+        self.block = block
+        self.component = component
+        self.dimension = dimension
+        self.value = value
+
+    def __call__(self, cs, bp, geom):
+        # parse block
+        for blockDesign in bp.blockDesigns:
+            if blockDesign.name == self.block:
+                # parse component
+                for componentDesign in blockDesign:
+                    if componentDesign.name == self.component:
+                        # set new value
+                        setattr(componentDesign, self.dimension, self.value)
+
+        # maybe this list of for and if could be replaced by
+        # one line like  setattr(bp , 'self.block'.'self.component'.'self.dimension' , self.values)
+        # but not sure python can do that or should do that..
+
+        return cs, bp, geom
