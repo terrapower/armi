@@ -132,7 +132,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.suite.add(self.c2)
 
     def test_clone(self):
-        # if you pass an invalid path, the clone can't happen, but it won't do any damage either
+        """if you pass an invalid path, the clone can't happen, but it won't do any damage either"""
         with self.assertRaises(RuntimeError):
             clone = self.suite.clone("test_clone")
 
@@ -248,6 +248,15 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c1.addExplicitDependency(self.c2)
 
         self.assertIn(self.c2, self.c1.dependencies)
+
+    def test_titleSetterGetter(self):
+        self.assertEqual(self.c1.title, "c1")
+        self.c1.title = "new_bob"
+        self.assertEqual(self.c1.title, "new_bob")
+
+    def test_buildCommand(self):
+        cmd = self.c1.buildCommand()
+        self.assertEqual(cmd, 'python -u  -m armi run "c1.yaml"')
 
 
 class TestExtraInputWriting(unittest.TestCase):
