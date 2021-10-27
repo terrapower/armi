@@ -100,6 +100,10 @@ class Case:
         self._dependencies: Set[Case] = set()
         self.enabled = True
 
+        # set the signal if the user passes in a blueprint object, instead of a file
+        if bp is not None:
+            cs.filelessBP = True
+
         # NOTE: in order to prevent slow submission times for loading massively large
         # blueprints (e.g. certain computer-generated input files),
         # self.bp and self.geom can be None.

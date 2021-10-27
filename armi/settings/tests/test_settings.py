@@ -174,7 +174,11 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs = caseSettings.Settings()
         cs = cs.modified(
             caseTitle="test_pluginValidatorsAreDiscovered",
-            newSettings={"shuffleLogic": "nothere"},
+            newSettings={
+                "shuffleLogic": "nothere",
+                "cycleLengths": [3, 4, 5, 6, 9],
+                "powerFractions": [0.2, 0.2, 0.2, 0.2, 0.2],
+            },
         )
 
         inspector = settingsValidation.Inspector(cs)

@@ -68,6 +68,8 @@ class Settings:
         fName : str, optional
             Path to a valid yaml settings file that will be loaded
         """
+        # if the "loadingFile" is not set, this better be True, or there are no blueprints at all
+        self.filelessBP = False
 
         self._failOnLoad = False
         """This is state information.

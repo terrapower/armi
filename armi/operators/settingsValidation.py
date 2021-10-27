@@ -269,6 +269,10 @@ class Inspector:
         """Blueprints early error detection and old format conversions."""
         from armi.reactor import blueprints
 
+        # if there is a blueprints object, we don't need to check for a file
+        if self.cs.filelessBP:
+            return
+
         self.addQuery(
             lambda: not self.cs["loadingFile"],
             "No blueprints file loaded. Run will probably fail.",
