@@ -63,7 +63,7 @@ class Material(composites.Leaf):
     """Constants that may be used in intepolation functions for property lookups"""
 
     thermalScatteringLaws = ()
-    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances 
+    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances
     with information about thermal scattering."""
 
     def __init__(self):
@@ -679,6 +679,7 @@ class FuelMaterial(Material):
         class2_custom_isotopics=None,
         class1_wt_frac=None,
         customIsotopics=None,
+        **kwargs,
     ):
         """Apply optional class 1/class 2 custom enrichment input.
 
@@ -692,6 +693,10 @@ class FuelMaterial(Material):
         kinds of parameters to coolants and structural material, which are often
         not parameterized with any kind of enrichment.
         """
+        # Users will want to be warned if some of their material modifications are not used.
+        if len(kwargs):
+            runLog.warning("Unusable material modifications: {0}".format(kwargs))
+
         # Save class data for future reconstructions (e.g. in closed cycles)
         self.p.class1_wt_frac = class1_wt_frac
         self.p.class1_custom_isotopics = class1_custom_isotopics
