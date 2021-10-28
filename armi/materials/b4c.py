@@ -29,10 +29,13 @@ class B4C(material.Material):
     def applyInputParams(
         self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs
     ):
+        self._warnIfUnusedModifications(kwargs)
+
         if B10_wt_frac is not None:
             # we can't just use the generic enrichment adjustment here because the
             # carbon has to change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
+
         if theoretical_density is not None:
             runLog.warning(
                 "The 'threoretical_density' material modification for B4C will be "
@@ -46,6 +49,7 @@ class B4C(material.Material):
                 )
             else:
                 self.updateTD(theoretical_density)
+
         if TD_frac is not None:
             self.updateTD(TD_frac)
 

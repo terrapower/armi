@@ -616,6 +616,15 @@ class Material(composites.Leaf):
             f"Material {type(self).__name__} does not implement heatCapacity"
         )
 
+    def _warnIfUnusedModifications(self, unused):
+        """Users will want to be warned if some of their material modifications are not used."""
+        if len(unused):
+            runLog.warning(
+                "{0} has unused material modifications: {1}".format(
+                    self.__class__.__name__, unused
+                )
+            )
+
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
@@ -694,8 +703,7 @@ class FuelMaterial(Material):
         not parameterized with any kind of enrichment.
         """
         # Users will want to be warned if some of their material modifications are not used.
-        if len(kwargs):
-            runLog.warning("Unusable material modifications: {0}".format(kwargs))
+        self._warnIfUnusedModifications(kwargs)
 
         # Save class data for future reconstructions (e.g. in closed cycles)
         self.p.class1_wt_frac = class1_wt_frac
