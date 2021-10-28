@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Boron carbide; a very typical reactor control material."""
-from armi.materials import material
+from armi.materials.material import Material
 from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.utils.units import getTc
@@ -22,7 +22,7 @@ DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
 DEFAULT_MASS_DENSITY = 2.52
 
 
-class B4C(material.Material):
+class B4C(Material):
     name = "B4C"
     enrichedNuclide = "B10"
 
@@ -163,7 +163,7 @@ class B4C(material.Material):
         """
         mass density
         """
-        density = material.Material.density(self, Tk, Tc)
+        density = Material.density(self, Tk, Tc)
         theoreticalDensityFrac = self.p.theoreticalDensityFrac
         if theoreticalDensityFrac is None:
             theoreticalDensityFrac = 1.0

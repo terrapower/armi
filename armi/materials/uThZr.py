@@ -21,7 +21,6 @@ from armi.materials.material import Material
 from armi import runLog
 
 
-# TODO: Why isn't this subclassing FuelMaterial?
 class UThZr(Material):
     """
     U-235 enriched uranium with Thorium 232 - Zirc fuel.
