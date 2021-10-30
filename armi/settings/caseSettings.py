@@ -137,7 +137,7 @@ class Settings:
         else:
             raise NonexistentSetting(key)
 
-    def getSetting(self, key):
+    def getSetting(self, key, default=None):
         """
         Return a copy of an actual Setting object, instead of just its value.
 
@@ -145,6 +145,8 @@ class Settings:
         """
         if key in self.__settings:
             return deepcopy(self.__settings[key])
+        elif default is not None:
+            return default
         else:
             raise NonexistentSetting(key)
 
@@ -176,7 +178,12 @@ class Settings:
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
             # pylint: disable=protected-access
-            self.__settings[name]._value = settingState.value
+            if name in self.__settings:
+                self.__settings[name]._value = settingState.value
+            elif isinstance(settingState, Setting):
+                self.__settings[name] = settingState
+            else:
+                raise NonexistentSetting(name)
 
     def keys(self):
         return self.__settings.keys()
