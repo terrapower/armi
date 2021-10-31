@@ -28,7 +28,7 @@ A master case settings is created as ``masterCs``
 import io
 import logging
 import os
-from copy import deepcopy
+from copy import copy, deepcopy
 
 import armi
 from armi import runLog
@@ -181,7 +181,7 @@ class Settings:
             if name in self.__settings:
                 self.__settings[name]._value = settingState.value
             elif isinstance(settingState, Setting):
-                self.__settings[name] = settingState
+                self.__settings[name] = copy(settingState)
             else:
                 raise NonexistentSetting(name)
 
@@ -358,7 +358,7 @@ class Settings:
         if newSettings:
             for key, val in newSettings.items():
                 if isinstance(val, Setting):
-                    settings.__settings[key] = val
+                    settings.__settings[key] = copy(val)
                 elif key in settings.__settings:
                     settings.__settings[key].setValue(val)
                 else:
