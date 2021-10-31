@@ -28,7 +28,7 @@ A master case settings is created as ``masterCs``
 import io
 import logging
 import os
-from copy import deepcopy
+from copy import copy, deepcopy
 
 import armi
 from armi import runLog
@@ -139,7 +139,7 @@ class Settings:
         else:
             raise NonexistentSetting(key)
 
-    def getSetting(self, key):
+    def getSetting(self, key, default=None):
         """
         Return a copy of an actual Setting object, instead of just its value.
 
@@ -147,6 +147,8 @@ class Settings:
         """
         if key in self.__settings:
             return deepcopy(self.__settings[key])
+        elif default is not None:
+            return default
         else:
             raise NonexistentSetting(key)
 
@@ -178,7 +180,12 @@ class Settings:
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
             # pylint: disable=protected-access
-            self.__settings[name]._value = settingState.value
+            if name in self.__settings:
+                self.__settings[name]._value = settingState.value
+            elif isinstance(settingState, Setting):
+                self.__settings[name] = copy(settingState)
+            else:
+                raise NonexistentSetting(name)
 
     def keys(self):
         return self.__settings.keys()
@@ -353,7 +360,7 @@ class Settings:
         if newSettings:
             for key, val in newSettings.items():
                 if isinstance(val, Setting):
-                    settings.__settings[key] = val
+                    settings.__settings[key] = copy(val)
                 elif key in settings.__settings:
                     settings.__settings[key].setValue(val)
                 else:
