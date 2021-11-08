@@ -80,7 +80,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
         self._uniformMesh = None
-        self.blockParamNames = []
+        self.blockDetailedAxialExpansionParamNames = []
         self.reactorParamNames = []
 
     def convert(self, r=None):
@@ -275,7 +275,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             reactor.core.p[rp] = 0.0
 
         for b in reactor.core.getBlocks():
-            for bp in self.blockParamNames:
+            for bp in self.blockDetailedAxialExpansionParamNames:
                 b.p[bp] = 0.0
 
     def applyStateToOriginal(self):
@@ -327,7 +327,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             not be calculated.
         """
         UniformMeshGeometryConverter.__init__(self, cs)
-        self.blockFluxParamNames = None
+        self.blockMultigroupParamNames = None
         self.calcReactionRates = calcReactionRates
 
     def _checkConversion(self):
@@ -358,37 +358,37 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     def _setParamsToUpdate(self):
         """Activate conversion of various neutronics paramters."""
         UniformMeshGeometryConverter._setParamsToUpdate(self)
-        b = self._sourceReactor.core.getFirstBlock()
-        
-        
-        self.blockFluxParamNames = b.p.paramDefs.inCategory(parameters.Category.multiGroupQuantities).names
-        self.blockParamNames = b.p.paramDefs.inCategory(
-            parameters.Category.detailedAxialExpansion
-        ).names
-        
+
         self.reactorParamNames = self._sourceReactor.core.p.paramDefs.inCategory(
             parameters.Category.neutronics
         ).names
 
         runLog.extra(
-            f"Block params that will be mapped are: {self.blockFluxParamNames + self.blockParamNames}".format(
-                self.blockParamNames
-            )
+            f"Reactor parameters that will be mapped are: {self.reactorParamNames}"
         )
+
+        b = self._sourceReactor.core.getFirstBlock()
+
+        self.blockMultigroupParamNames = b.p.paramDefs.inCategory(
+            parameters.Category.multiGroupQuantities
+        ).names
+        self.blockDetailedAxialExpansionParamNames = b.p.paramDefs.inCategory(
+            parameters.Category.detailedAxialExpansion
+        ).names
+
         runLog.extra(
-            f"Reactor parameters that will be mapped are: {self.reactorParamNames}".format(
-            )
+            f"Block params that will be mapped are: {self.blockMultigroupParamNames + self.blockDetailedAxialExpansionParamNames}"
         )
 
     def _clearStateOnReactor(self, reactor):
         """
-        Also clear mgFlux params.
+        Clear all multi-group block parameters.
         """
         UniformMeshGeometryConverter._clearStateOnReactor(self, reactor)
         for b in reactor.core.getBlocks():
-            for fluxParam in self.blockFluxParamNames:
+            for fluxParam in self.blockMultigroupParamNames:
                 b.p[fluxParam] = []
-            
+
     def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
         UniformMeshGeometryConverter._mapStateFromReactorToOther(
             self, sourceReactor, destReactor
@@ -408,30 +408,43 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                     paramVals.append(val)
             return numpy.array(paramVals)
 
-        def listParamSetter(block, fluxVals, paramNames):
-            for flux, paramName in zip(fluxVals, paramNames):
-                block.p[paramNames] = list(flux)
+        def multiGroupParamSetter(block, multiGroupVals, paramNames):
+            for paramName, val in zip(paramNames, multiGroupVals):
+                block.p[paramName] = numpy.array(val)
 
-        def listParamGetter(block, paramNames):
-            vals = []
+        def multiGroupParamGetter(block, paramNames):
+            paramVals = []
             for paramName in paramNames:
-                val = block.p[paramNames]
+                val = block.p[paramName]
                 if val is None or len(val) == 0:
-                    vals.append(None)
+                    paramVals.append(None)
                 else:
-                    vals.append(numpy.array(val))
+                    paramVals.append(numpy.array(val))
+            return numpy.array(paramVals)
 
         for paramName in self.reactorParamNames:
             destReactor.core.p[paramName] = sourceReactor.core.p[paramName]
 
         for aSource in sourceReactor.core:
             aDest = destReactor.core.getAssemblyByName(aSource.getName())
-            
+
             # Map the multi-group flux parameters
-            _setStateFromOverlaps(aSource, aDest, listParamSetter, listParamGetter, self.blockFluxParamNames)
-                
-            # Map all other parameters
-            _setStateFromOverlaps(aSource, aDest, paramSetter, paramGetter, self.blockParamNames)
+            _setStateFromOverlaps(
+                aSource,
+                aDest,
+                multiGroupParamSetter,
+                multiGroupParamGetter,
+                self.blockMultigroupParamNames,
+            )
+
+            # Map the detailed axial expansion parameters
+            _setStateFromOverlaps(
+                aSource,
+                aDest,
+                paramSetter,
+                paramGetter,
+                self.blockDetailedAxialExpansionParamNames,
+            )
 
             # If requested, the reaction rates will be calculated based on the
             # mapped neutron flux and the XS library.
@@ -508,17 +521,10 @@ def _setStateFromOverlaps(
     _setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
     """
     if not isinstance(paramNames, list):
-        raise TypeError(f"The parameters names are not provided "
-                        f"as a list. Value(s) given: {paramNames}")
-        
-    # Determine which parameters that are passed in are volume-integrated.
-    b = destinationAssembly[0]
-    volumeIntegratedFlags = [
-        b.p.paramDefs[paramName].atLocation(
-            parameters.ParamLocation.VOLUME_INTEGRATED
+        raise TypeError(
+            f"The parameters names are not provided "
+            f"as a list. Value(s) given: {paramNames}"
         )
-        for paramName in paramNames
-    ]
 
     # The mapping of data from the source assembly to the destination assembly assumes that
     # the parameter values returned from the given ``getter`` have been cleared. If any
@@ -527,79 +533,69 @@ def _setStateFromOverlaps(
     for destBlock in destinationAssembly:
         existingDestBlockParamVals = getter(destBlock, paramNames)
         if existingDestBlockParamVals is not None:
-            raise ValueError(f"The state of {destBlock} on {destinationAssembly} "
-                             f"was not cleared prior to calling ``_setStateFromOverlaps``. "
-                             f"This is an implementation bug in the mesh converter that should "
-                             "be reported to the developers.")
+            raise ValueError(
+                f"The state of {destBlock} on {destinationAssembly} "
+                f"was not cleared prior to calling ``_setStateFromOverlaps``. "
+                f"This is an implementation bug in the mesh converter that should "
+                "be reported to the developers."
+            )
 
     # The destination assembly is the assembly that the results are being mapped to
     # whereas the source assembly is the assembly that is from the uniform model. This
     # loop iterates over each block in the destination assembly and determines the mesh
-    # coordinates that the uniform mesh (source assembly) will be mapped to. 
+    # coordinates that the uniform mesh (source assembly) will be mapped to.
     for destBlock in destinationAssembly:
         zLower = destBlock.p.zbottom
         zUpper = zLower + destBlock.getHeight()
-        
-        # Determine which blocks in the uniform mesh source assembly are 
+
+        # Determine which blocks in the uniform mesh source assembly are
         # within the lower and upper bounds of the destination block.
-        sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(
-            zLower, zUpper
-        )
-        
+        sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
+
         if not sourceBlocksInfo:
-            raise ValueError(f"An error occurred when attempting to map to the "
-                             f"results from {sourceAssembly} to {destinationAssembly}. "
-                             f"No blocks in {sourceAssembly} exist between the axial "
-                             f"elevations of {zLower:<8.3e} cm and {zUpper:<8.3e} cm. "
-                             f"This a major bug in the uniform mesh converter that should "
-                             f"be reported to the developers.")
-        
+            raise ValueError(
+                f"An error occurred when attempting to map to the "
+                f"results from {sourceAssembly} to {destinationAssembly}. "
+                f"No blocks in {sourceAssembly} exist between the axial "
+                f"elevations of {zLower:<8.3e} cm and {zUpper:<8.3e} cm. "
+                f"This a major bug in the uniform mesh converter that should "
+                f"be reported to the developers."
+            )
+
         # Iterate over each of the blocks that were found in the uniform mesh
         # source assembly within the lower and upper bounds of the destination
         # block and perform the parameter mapping.
         for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
-            updatedSourceBlockParamVals = getter(sourceBlock, paramNames)
-            
-            # Skip the mapping of these parameter if there is no value to apply.
-            # This can occur if a parameter like `adjMgFlux` was not calculated
-            # on the uniform mesh reactor prior to converting back to the
-            # destination reactor.
-            if updatedSourceBlockParamVals is None:
-                continue
-            
-            # Determine the appropriate integration factors for the parameters
-            integrationFactors = []
-            for volIntFlag in volumeIntegratedFlags:
-                
-                # If the parameter is volume integrated (e.g., flux, linear power) 
+            destBlockVals = getter(destBlock, paramNames)
+            sourceBlockVals = getter(sourceBlock, paramNames)
+
+            for paramName, sourceBlockVal, destBlockVal in zip(
+                paramNames, sourceBlockVals, destBlockVals
+            ):
+
+                # Determine if the parameter is volumed integrated or not.
+                isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
+                    parameters.ParamLocation.VOLUME_INTEGRATED
+                )
+
+                # If the parameter is volume integrated (e.g., flux, linear power)
                 # then calculate the fractional contribution from the source block.
-                if volIntFlag:
-                    integrationFactors.append(
+                if isVolIntegrated:
+                    integrationFactor = (
                         sourceBlockOverlapHeight / sourceBlock.getHeight()
                     )
-                    
-                # If the parameter is not volume integrated (e.g., volumetric reaction rate) 
-                # then calculate the fraction contribution on the destination block. 
+
+                # If the parameter is not volume integrated (e.g., volumetric reaction rate)
+                # then calculate the fraction contribution on the destination block.
                 # This smears the parameter over the destination block.
                 else:
-                    integrationFactors.append(
-                        sourceBlockOverlapHeight / destBlock.getHeight()
+                    integrationFactor = sourceBlockOverlapHeight / destBlock.getHeight()
+
+                if destBlockVal is None:
+                    updatedDestVal = sourceBlockVal * integrationFactor
+                else:
+                    updatedDestVal = destBlockVals + (
+                        sourceBlockVal * integrationFactor
                     )
-            
-            if len(integrationFactors) == 1:
-                # hack for multigroup valued flux/adjoint
-                integrationFactors = integrationFactors[0]
-            else:
-                integrationFactors = numpy.array(integrationFactors)
 
-
-            # Update the destination block with the mapped values from the source block.
-            # Note that if the destination block has values already defined then this
-            # will sum up the new mapped values to the existing values.
-            existingDestBlockParamVals = getter(destBlock, paramNames)
-            if existingDestBlockParamVals is None:
-                updatedParamVals = updatedSourceBlockParamVals * integrationFactors
-            else:
-                updatedParamVals = existingDestBlockParamVals + (updatedSourceBlockParamVals * integrationFactors)
-            
-            setter(destBlock, updatedParamVals, paramNames)
+            setter(destBlock, [updatedDestVal], [paramName])
