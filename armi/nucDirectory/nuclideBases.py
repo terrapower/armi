@@ -489,9 +489,11 @@ def __readRiplDecayData():
     numRIPLDataFiles = 118
     numAvailableRIPLFiles = len(glob.glob(os.path.join(riplPath, "z???.dat")))
     if numAvailableRIPLFiles < numRIPLDataFiles:
-        runLog.warning(f"The number of RIPL files are expected to be {numRIPLDataFiles}, but "
-                       f"only {numAvailableRIPLFiles} exist. There may be missing nuclides that "
-                       f"are loaded into the `nuclideBases` directory.")
+        runLog.warning(
+            f"The number of RIPL files are expected to be {numRIPLDataFiles}, but "
+            f"only {numAvailableRIPLFiles} exist. There may be missing nuclides that "
+            f"are loaded into the `nuclideBases` directory."
+        )
 
     ripl.makeDecayConstantTable(directory=path)
     RIPL_PATH = path
