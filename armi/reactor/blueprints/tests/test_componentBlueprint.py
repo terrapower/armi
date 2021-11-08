@@ -17,11 +17,14 @@ Module for testing componentBlueprint
 """
 
 import inspect
+import io
+import logging
 import unittest
 
-from armi import settings
+from armi import runLog, settings
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
+from armi.tests import mockRunLogs
 
 
 class TestComponentBlueprint(unittest.TestCase):
@@ -337,6 +340,48 @@ assemblies:
         expectedNuclides = ["TH232"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
+
+    def test_componentBlueprintConstructorWithInvalidMatMods(self):
+        materialBlueprint = r"""
+        nuclide flags:
+            U: {burn: false, xs: true}
+            ZR: {burn: false, xs: true}
+        blocks:
+            fuel: &block_fuel
+                fuel: &component_fuel_fuel
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel]
+                height: [1.0]
+                axial mesh points: [1]
+                xs types: [A]
+                material modifications:
+                    fake_parameter1: [0.1]
+        """
+
+        self.cs = settings.Settings()
+
+        with mockRunLogs.BufferLog() as mockLog:
+            self.assertEqual("", mockLog._outputStream)
+            runLog.LOG.startLog("test_componentBlueprintConstructorWithInvalidMatMods")
+            runLog.LOG.setVerbosity(logging.WARNING)
+
+            with io.StringIO(materialBlueprint) as stream:
+                self.blueprints = blueprints.Blueprints.load(stream)
+                self.blueprints._prepConstruction(self.cs)
+
+            self.assertIn(
+                "[warn] Error constructing <Material: UZr>: applyInputParams() got an unexpected keyword argument 'fake_parameter1'",
+                mockLog._outputStream,
+            )
 
 
 if __name__ == "__main__":

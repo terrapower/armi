@@ -225,10 +225,10 @@ class ComponentBlueprint(yamlize.Object):
             try:
                 # update material with updated input params from blueprints file.
                 mat.applyInputParams(**matMods)
-            except TypeError:
+            except TypeError as te:
                 # This component does not accept material modification inputs of the names passed in
                 # Keep going since the modification could work for another component
-                pass
+                runLog.warning("Error constructing {}: {}".format(mat, te))
 
         expandElementals(mat, blueprint)
 
