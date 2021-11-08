@@ -484,6 +484,14 @@ def __readRiplDecayData():
     if not path.exists() or not path.is_dir():
         raise ValueError(f"`{_riplEnvironVariable}`: {path} is invalid.")
 
+    # Check that the number of expected (.dat) data files within the directory exist.
+    numRIPLDataFiles = 118
+    numAvailableRIPLFiles = len(glob.glob(os.path.join(riplPath, "z???.dat")))
+    if numAvailableRIPLFiles < numRIPLDataFiles:
+        runLog.warning(f"The number of RIPL files are expected to be {numRIPLDataFiles}, but "
+                       f"only {numAvailableRIPLFiles} exist. There may be missing nuclides that "
+                       f"are loaded into the `nuclideBases` directory.")
+
     ripl.makeDecayConstantTable(directory=path)
     RIPL_PATH = path
 
