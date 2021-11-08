@@ -452,8 +452,8 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getXsType(self):
         self.cs = settings.getMasterCs()
-        with self.cs._unlock():
-            self.cs["loadingFile"] = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+        newSettings = {"loadingFile": os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         self.Block.p.xsType = "B"
         cur = self.Block.p.xsType
@@ -461,15 +461,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
         oldBuGroups = self.cs["buGroups"]
-        with self.cs._unlock():
-            self.cs["buGroups"] = [100]
+        newSettings = {"buGroups": [100]}
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         self.Block.p.xsType = "BB"
         cur = self.Block.p.xsType
         ref = "BB"
         self.assertEqual(cur, ref)
-        with self.cs._unlock():
-            self.cs["buGroups"] = oldBuGroups
 
     def test27b_setBuGroup(self):
         type_ = "A"

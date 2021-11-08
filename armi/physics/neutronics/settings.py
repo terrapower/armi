@@ -454,10 +454,10 @@ def updateXSGroupStructure(cs, name, value):
         except KeyError:
             runLog.info(
                 "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
-                    value, cs.settings["groupStructure"].default
+                    value, cs.get("groupStructure").default
                 )
             )
-            return {name: cs.settings["groupStructure"].default}
+            return {name: cs.get("groupStructure").default}
 
 
 def _migrateDpa(_cs, name, value):

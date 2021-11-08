@@ -12,12 +12,12 @@ ARMI checks for two fuel management settings:
 
 ``fuelHandlerName``
 	The name of a FuelHandler class that ARMI will look for in the Fuel Management Input file
-	pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility	
+	pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility
 	to design and place that object in that file.
-	
+
 .. note:: We consider the limited syntax needed to express fuel management in Python
 	code itself	to be sufficiently expressive and simple for non-programmers to
-	actually use. Indeed, this has been our experience. 
+	actually use. Indeed, this has been our experience.
 
 The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
 search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
@@ -142,10 +142,10 @@ Fuel Management Tips
 ====================
 Some mistakes are common. Follow these tips.
 
-    * Always make sure your assembly-level types in the settings file are up to date with your geometry input file. Otherwise you'll be moving feeds when you want to move igniters, or something.
-    * Use the exclusions list! If you move a cascade and then the next cascade tries to run, it will choose your newly-moved assemblies if they fit your criteria in findAssemblies. This leads to very confusing results. Therefore, once you move assemblies, you should default to adding them to the exclusions list.
+    * Always make sure your assembly-level types in the settings file are up to date with the grids in your bluepints file. Otherwise you'll be moving feeds when you want to move igniters, or something.
+    * Use the exclusions list! If you move a cascade and then the next cascade tries to run, it will choose your newly-moved assemblies if they fit your criteria in ``findAssemblies``. This leads to very confusing results. Therefore, once you move assemblies, you should default to adding them to the exclusions list.
     * Print cascades during debugging. After you've built a cascade to swap, print it out and check the locations and types of each assembly in it. Is it what you want?
-    * Watch typeNum in the database. You can get good intuition about what is getting moved by viewing this parameter.
+    * Watch ``typeNum`` in the database. You can get good intuition about what is getting moved by viewing this parameter.
 
 Running a branch search
 =======================

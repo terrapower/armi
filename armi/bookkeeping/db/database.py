@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+""" Abstract class defining the common interface for all ARMI database implementations
+"""
 from typing import Generator, Tuple
 from armi.settings import caseSettings
 from armi.reactor import systemLayoutInput
@@ -24,7 +25,8 @@ class Database:
     -----
     This is a pretty anemic set of interfaces, since the different implementations can
     vary wildly. For now these are the bare minimum interfaces that should be needed to
-    convert one Database format to another, and serve as a common ancestor."""
+    convert one Database format to another, and serve as a common ancestor.
+    """
 
     def loadCS(self) -> caseSettings.Settings:
         raise NotImplementedError()
@@ -76,12 +78,14 @@ class Database:
         raise NotImplementedError()
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
+        """Write settings, blueprints, and/or geometry files to the DB"""
         raise NotImplementedError()
 
     def readInputsFromDB(self):
         raise NotImplementedError()
 
     def writeToDB(self, reactor, statePointName=None):
+        """Write reactor data to the DB"""
         raise NotImplementedError()
 
     def close(self):

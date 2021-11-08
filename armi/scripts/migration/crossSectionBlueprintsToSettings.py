@@ -95,7 +95,7 @@ def migrateCrossSectionsFromBlueprints(settingsObj):
 
     _finalize(fullBlueprintsPath, settingsPath)
     # update the existing cs with the new setting in memory so the GUI doesn't wipe it out!
-    settingsObj[CONF_CROSS_SECTION] = cs.settings[CONF_CROSS_SECTION].dump()
+    settingsObj[CONF_CROSS_SECTION] = cs.get(CONF_CROSS_SECTION).dump()
     return cs
 
 

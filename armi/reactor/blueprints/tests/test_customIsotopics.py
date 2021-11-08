@@ -188,8 +188,7 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        with cs._unlock():
-            cs["xsKernel"] = "MC2v2"
+        cs = cs.modified(newSettings={"xsKernel": "MC2v2"})
 
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
@@ -256,8 +255,7 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        with cs._unlock():
-            cs["xsKernel"] = "MC2v3"
+        cs = cs.modified(newSettings={"xsKernel": "MC2v3"})
 
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")
@@ -343,7 +341,7 @@ blocks:
             mult: 1.0
             od: 10.0
 assemblies:
-    fuel a: 
+    fuel a:
         specifier: IC
         blocks: [*block_0]
         height: [10]
@@ -353,8 +351,7 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        with cs._unlock():
-            cs["xsKernel"] = "MC2v3"
+        cs = cs.modified(newSettings={"xsKernel": "MC2v3"})
 
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")

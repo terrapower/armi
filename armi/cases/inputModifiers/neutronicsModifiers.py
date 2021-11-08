@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Modifies inputs related to neutronics controls
 
@@ -28,11 +41,14 @@ class NeutronicConvergenceModifier(inputModifiers.InputModifier):
                 "than 1e-2 (got {})".format(value)
             )
 
-    def __call__(self, cs, blueprints, geom):
-        with cs._unlock():
-            cs["epsFSAvg"] = self.value * 100
-            cs["epsFSPoint"] = self.value * 100
-            cs["epsEig"] = self.value
+    def __call__(self, cs, bp, geom):
+        newSettings = {}
+        newSettings["epsFSAvg"] = self.value * 100
+        newSettings["epsFSPoint"] = self.value * 100
+        newSettings["epsEig"] = self.value
+        cs = cs.modified(newSettings=newSettings)
+
+        return cs, bp, geom
 
 
 class NeutronicMeshsSizeModifier(inputModifiers.InputModifier):
@@ -58,8 +74,10 @@ class NeutronicMeshsSizeModifier(inputModifiers.InputModifier):
             )
         self.multFactor = multFactor
 
-    def __call__(self, cs, blueprints, geom):
-        for assemDesign in blueprints.assemDesigns:
+    def __call__(self, cs, bp, geom):
+        for assemDesign in bp.assemDesigns:
             assemDesign.axialMeshPoints = [
                 ax * self.multFactor for ax in assemDesign.axialMeshPoints
             ]
+
+        return cs, bp, geom
