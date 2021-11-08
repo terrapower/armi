@@ -16,6 +16,54 @@
 Unit tests for the SuiteBuilder
 """
 import unittest
+from armi.cases.inputModifiers.inputModifiers import SamplingInputModifier
+from armi import cases, settings
+from armi.cases.suiteBuilder import LatinHyperCubeSuiteBuilder
+
+
+cs = settings.Settings("armi/tests/tutorials/anl-afci-177.yaml")
+case = cases.Case(cs)
+
+
+class LatinHyperCubeModifier(SamplingInputModifier):
+    def __init__(self, name, paramType: str, bounds: list, independentVariable=None):
+        super().__init__(
+            name, paramType, bounds, independentVariable=independentVariable
+        )
+        self.value = None
+
+    def __call__(self, cs, blueprints, geom):
+        cs[self.name] = self.value
+
+
+class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
+    """Class to test LatinHyperCubeSuiteBuilder."""
+
+    def testInitialize(self):
+        builder = LatinHyperCubeSuiteBuilder(case, size=20)
+        assert builder.modifierSets == []
+
+    def test_buildSuite(self):
+        builder = LatinHyperCubeSuiteBuilder(case, size=20)
+        powerMod = LatinHyperCubeModifier("power", "continuous", [0, 1e6])
+        availabilityMod = LatinHyperCubeModifier(
+            "availabilityFactor", "discrete", [0.0, 0.2, 0.4, 0.6, 0.8]
+        )
+        builder.addDegreeOfFreedom([powerMod, availabilityMod])
+        builder.buildSuite()
+        assert len(builder.modifierSets) == 20
+        for mod in builder.modifierSets:
+            assert 0 < mod[0].value < 1e6
+            assert mod[1].value in [0.0, 0.2, 0.4, 0.6, 0.8]
+
+    def test_addDegreeOfFreedom(self):
+        builder = LatinHyperCubeSuiteBuilder(case, size=20)
+        powerMod = LatinHyperCubeModifier("power", "continuous", [0, 1e6])
+        morePowerMod = LatinHyperCubeModifier("power", "continuous", [1e3, 1e5])
+
+        with self.assertRaises(ValueError):
+            builder.addDegreeOfFreedom([powerMod, morePowerMod])
+
 
 if __name__ == "__main__":
     unittest.main()

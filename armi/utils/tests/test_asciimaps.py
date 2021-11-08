@@ -167,6 +167,13 @@ ORS     IRS     RR7     OC      OC      IC      OC      OC      RR7     IRS     
                                 ORS     ORS     ORS 
 """
 
+HEX_FULL_MAP_SMALL = """F
+ F F
+F
+F F
+ F
+"""
+
 
 class TestAsciiMaps(unittest.TestCase):
     """Test ascii maps."""
@@ -331,6 +338,19 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             output = stream.read()
             self.assertEqual(output, HEX_FULL_MAP_FLAT)
+
+    def test_hexSmallFlat(self):
+        asciimap = asciimaps.AsciiMapHexFullFlatsUp()
+        with io.StringIO() as stream:
+            stream.write(HEX_FULL_MAP_SMALL)
+            stream.seek(0)
+            asciimap.readAscii(stream.read())
+
+        with io.StringIO() as stream:
+            asciimap.writeAscii(stream)
+            stream.seek(0)
+            output = stream.read()
+            self.assertEqual(output, HEX_FULL_MAP_SMALL)
 
     def test_flatHexBases(self):
         """For the full core with 2 lines chopped, get the first 3 bases"""

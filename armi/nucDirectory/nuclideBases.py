@@ -484,22 +484,6 @@ def __readRiplDecayData():
     if not path.exists() or not path.is_dir():
         raise ValueError(f"`{_riplEnvironVariable}`: {path} is invalid.")
 
-    # Check for all (.dat) data files within the directory. These
-    # are ordered from z000.dat to z117.dat. If all files do not
-    # exist then an exception is thrown for the missing data files.
-    numRIPLDataFiles = 118
-    dataFileNames = ["z{:>03d}.dat".format(i) for i in range(0, numRIPLDataFiles)]
-    missingFileNames = []
-    for df in dataFileNames:
-        expectedDataFilePath = os.path.abspath(os.path.join(path, df))
-        if not os.path.exists(expectedDataFilePath):
-            missingFileNames.append(df)
-    if missingFileNames:
-        raise ValueError(
-            f"There are {len(missingFileNames)} missing RIPL data files in `{_riplEnvironVariable}`: {path}.\n"
-            f"The following data files were expected: {missingFileNames}"
-        )
-
     ripl.makeDecayConstantTable(directory=path)
     RIPL_PATH = path
 
