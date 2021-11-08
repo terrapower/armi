@@ -125,7 +125,7 @@ class CaseSuite:
         """
         for setting in self.cs.environmentSettings:
             runLog.important(
-                "{}: {}".format(self.cs.settings[setting].label, self.cs[setting])
+                "{}: {}".format(self.cs.getSetting(setting).label, self.cs[setting])
             )
 
         runLog.important(
@@ -175,7 +175,7 @@ class CaseSuite:
         clone = CaseSuite(self.cs.duplicate())
 
         modifiedSettings = {
-            ss.name: ss.value for ss in self.cs.settings.values() if ss.offDefault
+            ss.name: ss.value for ss in self.cs.values() if ss.offDefault
         }
         for case in self:
             if oldRoot:

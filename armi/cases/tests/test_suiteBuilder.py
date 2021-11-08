@@ -32,8 +32,9 @@ class LatinHyperCubeModifier(SamplingInputModifier):
         )
         self.value = None
 
-    def __call__(self, cs, blueprints, geom):
-        cs[self.name] = self.value
+    def __call__(self, cs, bp, geom):
+        cs = cs.modified(newSettings={self.name: self.value})
+        return cs, bp, geom
 
 
 class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):

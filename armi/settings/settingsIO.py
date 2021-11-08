@@ -166,7 +166,7 @@ class SettingsReader:
         self.liveVersion = version
         self.inputVersion = version
 
-        self._renamer = SettingRenamer(self.cs.settings)
+        self._renamer = SettingRenamer(dict(self.cs.items()))
 
         # the input version will be overwritten if explicitly stated in input file.
         # otherwise, it's assumed to precede the version inclusion change and should be
@@ -337,11 +337,11 @@ class SettingsReader:
         nameToSet, _wasRenamed = self._renamer.renameSetting(name)
         settingsToApply = self.applyConversions(nameToSet, val)
         for settingName, value in settingsToApply.items():
-            if settingName not in self.cs.settings:
+            if settingName not in self.cs:
                 self.invalidSettings.add(settingName)
             else:
                 # apply validations
-                settingObj = self.cs.settings[settingName]
+                settingObj = self.cs.getSetting(settingName)
                 if value:
                     value = applyTypeConversions(settingObj, value)
 
@@ -463,7 +463,7 @@ class SettingsWriter:
         """
         settingData = collections.OrderedDict()
         for _settingName, settingObject in iter(
-            sorted(self.cs.settings.items(), key=lambda name: name[0].lower())
+            sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
             if self.style == self.Styles.short and not settingObject.offDefault:
                 continue

@@ -1,6 +1,6 @@
 Branch Searching
 ----------------
-A powerful ARMI feature that exists in the Operator is the branch search.
+A powerful ARMI feature that exists in the :py:class:`Operator` is the branch search.
 This runs multiple possible fuel management options in parallel and then
 selects the one that is preferred by the user before going on to the
 next time step. A branch search involves several methods.
@@ -11,7 +11,7 @@ of all the interfaces to allow the master node to participate in the branch sear
 It then calls :py:meth:`spawnCritShuffleSearch <armi.operators.Operator.spawnCritShuffleSearch>`
 and restores the original reactor after the branch search is complete.
 
-The ``spawnCritShuffleSearch`` method orchestrates
+The :py:meth:`spawnCritShuffleSearch` method orchestrates
 the number of search passes requested by the user (via the factorSearchFlags
 mechanism), builds the distribution of control numbers for each case,
 calls :py:meth:`runCritShuffleSearch <armi.operators.OperatorMPI.runCritShuffleSearch>`

@@ -219,3 +219,18 @@ Bug fixes
 ---------
 
  * Fix bug in loading from databases when multi-index locations are used.
+
+
+ARMI v0.1.8
+===========
+Release Date: TBD
+
+API changes
+-----------
+
+* ``Settings`` are now immutable (or nearly so).
+
+Bug fixes
+---------
+
+ * TBD

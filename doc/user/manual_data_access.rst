@@ -37,6 +37,6 @@ Often times, you may be interested in the geometric dimensions of various blocks
     cladMat = clad.getProperties()  # get the cladding material (HT9 probably)
     k = cladMat.thermalConductivity(Tc=500)  # get the thermal conductivity of HT9 at 500C.
 
-The dimensions available depend on the shape of the component. Hexagons have op and ip for outer and inner pitch.
+The dimensions available depend on the shape of the component. Hexagons have `op` and `ip` for outer and inner pitch.
 Other options are seen at the source at :py:mod:`armi.reactor.components`.
 

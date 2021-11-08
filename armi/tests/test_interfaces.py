@@ -31,12 +31,11 @@ class TestCodeInterface(unittest.TestCase):
     """Test Code interface."""
 
     def test_isRequestedDetailPoint(self):
-        r"""
-        Tests notification of detail points.
-        """
+        """Tests notification of detail points."""
         cs = settings.Settings()
-        with cs._unlock():
-            cs["dumpSnapshot"] = ["000001", "995190"]
+        newSettings = {"dumpSnapshot": ["000001", "995190"]}
+        cs = cs.modified(newSettings=newSettings)
+
         i = DummyInterface(None, cs)
 
         self.assertEqual(i.isRequestedDetailPoint(0, 1), True)

@@ -42,6 +42,8 @@ settings:
   genReports: false
   maxFlowZones: 12
   maxRegionDensityIterations: 5
+  moduleVerbosity:
+    armi.reactor.reactors: info
   nCycles: 6
   nodeGroup: OnlineNodes,TP
   numCoupledIterations: 0
