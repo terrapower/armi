@@ -1943,8 +1943,15 @@ class Layout:
         self.type: List[str] = []
         self.name: List[str] = []
         self.serialNum: List[int] = []
+        # The index into the parameter datasets corresponding to each object's class.
+        # E.g., the 5th HexBlock object in the tree would get 5; to look up its
+        # "someParameter" value, you would extract cXXnYY/HexBlock/someParameter[5].
         self.indexInData: List[int] = []
+        # The number of direct children this object has.
         self.numChildren: List[int] = []
+        # The type of location that specifies the object's physical location; see the
+        # associated pack/unpackLocation functions for more information about how
+        # locations are handled.
         self.locationType: List[str] = []
         # There is a minor asymmetry here in that before writing to the DB, this is
         # truly a flat list of tuples. However when reading, this may contain lists of
@@ -1955,6 +1962,8 @@ class Layout:
         # changing the interface of the various pack/unpack functions, which have
         # multiple versions, so the update would need to be done with care.
         self.location: List[Tuple[int, int, int]] = []
+        # Which grid, as stored in the database, this object uses to arrange its
+        # children
         self.gridIndex: List[int] = []
         self.temperatures: List[float] = []
         self.material: List[str] = []
