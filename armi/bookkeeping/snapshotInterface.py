@@ -65,20 +65,12 @@ class SnapshotInterface(interfaces.Interface):
         snapText = ["{0:03d}{1:03d}".format(c, n) for c, n in snapTimeCycleNodePairs]
 
         # determine if there are new snapshots to add to the setings file
-        newSnaps = []
-        oldDumpSnapshot = self.cs["dumpSnapshot"]
         for snapT in snapText:
-            if snapT not in oldDumpSnapshot and snapT not in newSnaps:
+            if snapT not in self.cs["dumpSnapshot"]:
                 runLog.info(
                     "Adding default snapshot {0} to snapshot queue.".format(snapT)
                 )
-                newSnaps.append(snapT)
-
-        # add the new snapshots, if they were found
-        if len(newSnaps):
-            self.cs = self.cs.modified(
-                newSettings={"dumpSnapshot": self.cs["dumpSnapshot"] + newSnaps}
-            )
+                self.cs["dumpSnapshot"] = self.cs["dumpSnapshot"] + [snapT]
 
     def _getSnapTimesEquilibrium(self):
         """Set BOEC, MOEC, EOEC snapshots."""
