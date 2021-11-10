@@ -264,9 +264,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_BURN_STEPS,
             default=4,
             label="Burnup Steps per Cycle",
-            description="Number of depletion substeps in one cycle, n. Note: There "
-            "will be n+1 time nodes so the burnup step time will be computed as cycle "
-            "length/n+1.",
+            description="Number of depletion substeps, n, in one cycle. Note: There "
+            "will be n+1 time nodes and the burnup step time will be computed as cycle "
+            "length/n.",
         ),
         setting.Setting(
             CONF_BETA,
