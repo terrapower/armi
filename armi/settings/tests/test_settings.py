@@ -174,7 +174,11 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs = caseSettings.Settings()
         cs = cs.modified(
             caseTitle="test_pluginValidatorsAreDiscovered",
-            newSettings={"shuffleLogic": "nothere"},
+            newSettings={
+                "shuffleLogic": "nothere",
+                "cycleLengths": [3, 4, 5, 6, 9],
+                "powerFractions": [0.2, 0.2, 0.2, 0.2, 0.2],
+            },
         )
 
         inspector = settingsValidation.Inspector(cs)
@@ -264,6 +268,10 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         with self.assertRaises(NonexistentSetting):
             cs.getSetting("extendableOption")
 
+        # ensure that defaults in getSetting works
+        val = cs.getSetting("extendableOption", 789)
+        self.assertEqual(val, 789)
+
         # prove the new settings object has the new setting
         cs2 = cs.modified(newSettings={"extendableOption": "PLUGIN"})
         self.assertEqual(cs2["extendableOption"], "PLUGIN")
@@ -271,6 +279,10 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         # prove modified() didn't alter the original object
         with self.assertRaises(NonexistentSetting):
             cs.getSetting("extendableOption")
+
+        # prove that successive applications of "modified" don't fail
+        cs3 = cs2.modified(newSettings={"numberofGenericParams": 7})
+        cs4 = cs3.modified(newSettings={"somethingElse": 123})
 
 
 class TestSettingsConversion(unittest.TestCase):
@@ -356,5 +368,4 @@ class TestFlagListSetting(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

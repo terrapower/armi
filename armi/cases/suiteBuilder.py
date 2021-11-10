@@ -206,8 +206,8 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     return cs, bp, geom
 
             builder = FullFactorialSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingsModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
+            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
 
         would result in 6 cases:
 
@@ -293,8 +293,8 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     return cs, bp, geom
 
             builder = SeparateEffectsSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingsModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
+            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
 
         would result in 5 cases:
 
@@ -427,12 +427,12 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             modSet = []
             for j, mod in enumerate(original_modifiers):
                 new_mod = copy.deepcopy(mod)
-                if mod.paramType is "continuous":
+                if mod.paramType == "continuous":
                     value = (mod.bounds[1] - mod.bounds[0]) * samples[i][
                         j
                     ] + mod.bounds[0]
                     new_mod.value = value
-                elif mod.paramType is "discrete":
+                elif mod.paramType == "discrete":
                     index = round(samples[i][j] * (len(mod.bounds) - 1))
                     value = mod.bounds[index]
                     new_mod.value = value

@@ -1,10 +1,23 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Handle awareness of Thermal Scattering Laws.
 
-Scattering characteristics of thermal neutrons are often significantly different 
+Scattering characteristics of thermal neutrons are often significantly different
 between a free atom and one bound in a particular molecule. Nuclear data libraries
-often have special tables to account for the bound states. 
-These data are commonly represented as S(alpha, beta) tables. 
+often have special tables to account for the bound states.
+These data are commonly represented as S(alpha, beta) tables.
 
 Here we provide objects representing the thermal scattering law (TSL) information.
 We expect them to be most useful as class attributes on :py:class:`~armi.materials.material.Material` subclasses
@@ -14,7 +27,7 @@ to inform physics solvers that support thermal scattering of the TSLs. See
 We do not provide special versions of various NuclideBases like C12 because of
 potential errors in choosing one over the other
 
-The information contained in here is based on Parsons, LA-UR-18-25096, 
+The information contained in here is based on Parsons, LA-UR-18-25096,
 https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
 
 Scattering law data are currently available for a variety of classifications:
@@ -25,7 +38,7 @@ Scattering law data are currently available for a variety of classifications:
     * Can be separated as crystalline, 30% porous, 10% porous, etc.
 
 * Element in spin isomer (para H, ortho H, para D, ortho D, etc.)
-* Compound in phase (solid CH4, liquid CH4, SiO2-alpha, SiO2-beta). 
+* Compound in phase (solid CH4, liquid CH4, SiO2-alpha, SiO2-beta).
 * Just compound (benzene)
 * Just isotope (Fe56, Al27)
 

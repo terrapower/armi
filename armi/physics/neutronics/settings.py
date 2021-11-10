@@ -185,7 +185,7 @@ def defineSettings():
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
-            description="convergence criterion for calculating the eigenvalue",
+            description="Convergence criteria for calculating the eigenvalue in the global flux solver",
         ),
         setting.Setting(
             CONF_EPS_FSAVG,
@@ -311,7 +311,7 @@ def defineSettings():
             CONF_XS_BUCKLING_CONVERGENCE,
             default=1e-05,
             label="Buckling Convergence Criteria",
-            description="The convergence criteria for the buckling iteration if it is available in the lattice physics solver",
+            description="Convergence criteria for the buckling iteration if it is available in the lattice physics solver",
             oldNames=[
                 ("mc2BucklingConvergence", None),
                 ("bucklingConvergence", None),
@@ -321,7 +321,7 @@ def defineSettings():
             CONF_XS_EIGENVALUE_CONVERGENCE,
             default=1e-05,
             label="Eigenvalue Convergence Criteria",
-            description="The convergence criteria for the eigenvalue",
+            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
     ]
 

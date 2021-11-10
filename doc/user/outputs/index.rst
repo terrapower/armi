@@ -9,7 +9,7 @@ Framework outputs
     Files like the **stdout** and the **database** are produced in nearly all runs.
 
 Interface outputs
-    Certain plugins/interfaces produce intermediate output files
+    Certain plugins/interfaces produce intermediate output files.
 
 Physics kernel outputs
     If ARMI executes an external physics kernel during a run, its associated output files are often available in the

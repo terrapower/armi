@@ -313,6 +313,21 @@ class Setting:
             "default": self.default,
         }
 
+    def __copy__(self):
+        setting = Setting(
+            str(self.name),
+            copy.copy(self._default),
+            description=None if self.description is None else str(self.description),
+            label=None if self.label is None else str(self.label),
+            options=copy.copy(self.options),
+            schema=copy.copy(self.schema) if hasattr(self, "schema") else None,
+            enforcedOptions=bool(self.enforcedOptions),
+            subLabels=copy.copy(self.subLabels),
+            isEnvironment=bool(self.isEnvironment),
+            oldNames=None if self.oldNames is None else list(self.oldNames),
+        )
+        return setting
+
 
 class FlagListSetting(Setting):
     """Subclass of :py:class:`Setting <armi.settings.Setting>` convert settings between flags and strings."""

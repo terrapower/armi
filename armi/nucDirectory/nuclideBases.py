@@ -97,6 +97,7 @@ U235_7
 
 import os
 import pathlib
+import glob
 
 import yaml
 
@@ -484,20 +485,14 @@ def __readRiplDecayData():
     if not path.exists() or not path.is_dir():
         raise ValueError(f"`{_riplEnvironVariable}`: {path} is invalid.")
 
-    # Check for all (.dat) data files within the directory. These
-    # are ordered from z000.dat to z117.dat. If all files do not
-    # exist then an exception is thrown for the missing data files.
+    # Check that the number of expected (.dat) data files within the directory exist.
     numRIPLDataFiles = 118
-    dataFileNames = ["z{:>03d}.dat".format(i) for i in range(0, numRIPLDataFiles)]
-    missingFileNames = []
-    for df in dataFileNames:
-        expectedDataFilePath = os.path.abspath(os.path.join(path, df))
-        if not os.path.exists(expectedDataFilePath):
-            missingFileNames.append(df)
-    if missingFileNames:
-        raise ValueError(
-            f"There are {len(missingFileNames)} missing RIPL data files in `{_riplEnvironVariable}`: {path}.\n"
-            f"The following data files were expected: {missingFileNames}"
+    numAvailableRIPLFiles = len(glob.glob(os.path.join(riplPath, "z???.dat")))
+    if numAvailableRIPLFiles < numRIPLDataFiles:
+        runLog.warning(
+            f"The number of RIPL files are expected to be {numRIPLDataFiles}, but "
+            f"only {numAvailableRIPLFiles} exist. There may be missing nuclides that "
+            f"are loaded into the `nuclideBases` directory."
         )
 
     ripl.makeDecayConstantTable(directory=path)
