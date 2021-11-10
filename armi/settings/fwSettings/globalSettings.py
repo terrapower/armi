@@ -211,7 +211,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLE_LENGTH,
             default=365.242199,
             label="Cycle Length",
-            description="Duration of one single cycle. If availability factor is below "
+            description="Duration of one single cycle in days. If availability factor is below "
             "1, the reactor will be at power less than this. If variable, use "
             "cycleLengths setting.",
             oldNames=[
