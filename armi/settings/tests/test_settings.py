@@ -284,6 +284,29 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs3 = cs2.modified(newSettings={"numberofGenericParams": 7})
         cs4 = cs3.modified(newSettings={"somethingElse": 123})
 
+    def test_copyDeepcopySetting(self):
+        """Ensure that when we copy/deepcopy a Setting() object, the result is sound.
+        NOTE: In particuar, self.schema and self._customSchema on a Setting object are
+              removed by Setting.__getstate__, and that has been a problem in the past.
+        """
+        # get a baseline: show how the Setting object looks to start
+        s1 = setting.Setting("testCopy", 765)
+        self.assertEquals(s1._value, 765)
+        self.assertTrue(hasattr(s1, "schema"))
+        self.assertTrue(hasattr(s1, "_customSchema"))
+
+        # show that copy(Setting) is working correctly
+        s2 = copy.copy(s1)
+        self.assertEquals(s2._value, 765)
+        self.assertTrue(hasattr(s2, "schema"))
+        self.assertTrue(hasattr(s2, "_customSchema"))
+
+        # show that deepcopy(Setting) is working correctly
+        s3 = copy.deepcopy(s1)
+        self.assertEquals(s3._value, 765)
+        self.assertTrue(hasattr(s3, "schema"))
+        self.assertTrue(hasattr(s3, "_customSchema"))
+
 
 class TestSettingsConversion(unittest.TestCase):
     """Make sure we can convert from old XML type settings to new Yaml settings."""
