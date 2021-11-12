@@ -284,8 +284,8 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs3 = cs2.modified(newSettings={"numberofGenericParams": 7})
         cs4 = cs3.modified(newSettings={"somethingElse": 123})
 
-    def test_copyDeepcopySetting(self):
-        """Ensure that when we copy/deepcopy a Setting() object, the result is sound.
+    def test_copySetting(self):
+        """Ensure that when we copy a Setting() object, the result is sound.
         NOTE: In particuar, self.schema and self._customSchema on a Setting object are
               removed by Setting.__getstate__, and that has been a problem in the past.
         """
@@ -302,13 +302,6 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEquals(s2.name, "testCopy")
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
-
-        # show that deepcopy(Setting) is working correctly
-        s3 = copy.deepcopy(s1)
-        self.assertEquals(s3._value, 765)
-        self.assertEquals(s3.name, "testCopy")
-        self.assertTrue(hasattr(s3, "schema"))
-        self.assertTrue(hasattr(s3, "_customSchema"))
 
 
 class TestSettingsConversion(unittest.TestCase):
