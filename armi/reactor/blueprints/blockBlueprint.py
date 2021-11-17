@@ -168,6 +168,14 @@ class BlockBlueprint(yamlize.KeyedList):
                 b.autoCreateSpatialGrids()
             except (ValueError, NotImplementedError) as e:
                 runLog.warning(str(e), single=True)
+        # check if particle fuel exists and set particle mult
+        # Note: these changes occur here during block construction instead of during
+        # component contruction because component parent parameters (i.e., height)
+        # are needed for volume calculations
+        for component in b.getChildren():
+            if component.particleFuel:
+                component.setParticleMultiplicity()
+
         return b
 
     def _getGridDesign(self, blueprint):

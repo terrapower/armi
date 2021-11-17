@@ -103,6 +103,8 @@ class TestComponentFactory(unittest.TestCase):
             thisAttrs["name"] = "banana{}".format(i)
             if "modArea" in thisAttrs:
                 thisAttrs["modArea"] = None
+            if "particleFuelSpec" in thisAttrs:
+                thisAttrs["particleFuelSpec"] = None
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
@@ -840,6 +842,11 @@ class TestSphere(TestShapedComponent):
 
     def test_thermallyExpands(self):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
+
+    def test_getBoundingCircleOuterDiameter(self):
+        od = self.component.getDimension("od")
+        actual = self.component.getBoundingCircleOuterDiameter()
+        self.assertEqual(actual, od)
 
 
 class TestTorus(TestShapedComponent):

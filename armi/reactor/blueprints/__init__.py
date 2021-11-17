@@ -104,6 +104,7 @@ from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
+from armi.reactor.blueprints.componentBlueprint import ParticleFuelKeyedList
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -185,6 +186,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     )
     systemDesigns = yamlize.Attribute(key="systems", type=Systems, default=None)
     gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
+    particleFuelDesigns = yamlize.Attribute(
+        key="particle fuel", type=ParticleFuelKeyedList, default=None
+    )
 
     # These are used to set up new attributes that come from plugins. Defining its
     # initial state here to make pylint happy

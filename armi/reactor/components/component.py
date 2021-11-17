@@ -142,6 +142,8 @@ class ComponentType(composites.CompositeModelType):
         "name",
         "components",
         "area",
+        "particleFuelSpec",
+        "particleFuelPackingFraction",
     )
 
     def __new__(cls, name, bases, attrs):
@@ -181,6 +183,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         Temperature in C to which dimensions were thermally-expanded upon input.
     material : str or material.Material
         The material object that makes up this component and give it its thermo-mechanical properties.
+    particleFuel : armi.reactor.component.particleFuel.ParticleFuel or None
+        Particle fuel specification
     """
 
     DIMENSION_NAMES = tuple()  # will be assigned by ComponentType
@@ -216,6 +220,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         isotopics="",
         mergeWith="",
         components=None,
+        particleFuelSpec=None,
+        particleFuelPackingFraction: float = 0,
     ):
         if components and name in components:
             raise ValueError(
@@ -233,6 +239,38 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+        if particleFuelSpec is not None:
+            self.p.packingFractionBOL = particleFuelPackingFraction
+            self.add(particleFuelSpec)
+
+    @property
+    def particleFuel(self):
+        if self.p.packingFractionBOL == 0:
+            return None
+        # Import here to avoid circular logic of having
+        # Component -> ParticleFuel -> VolumetricShapes -> Component
+        from armi.reactor.particleFuel import ParticleFuel
+
+        # We can't store the particle fuel as an attribute because
+        # we have to support potentially dynamic addition and removal
+        # of children to this component. Something like
+        # self.particleFuel = spec
+        # that makes spec a child would also have to understand what
+        # happens if we remove the spec from the parent, e.g.,
+        # self.remove(self.particleFuel)
+        # self.particleFuel
+        specs = self.getChildren(
+            deep=False,
+            includeMaterials=False,
+            generationNum=1,
+            predicate=lambda child: isinstance(child, ParticleFuel),
+        )
+        if len(specs) == 1:
+            return specs[0]
+        raise ValueError(
+            f"{'Multiple' if specs else 'No'} particle fuel specifications "
+            f"found on {self} despite non-zero packing fraction"
+        )
 
     @property
     def temperatureInC(self):
@@ -1169,6 +1207,24 @@ class Component(composites.Composite, metaclass=ComponentType):
             f"Method not implemented on component {self}. "
             "Please implement if this component type can be a pitch defining component."
         )
+
+    def setParticleMultiplicity(self):
+        """Estimate and set the multiplicity for the child ParticleFuel components."""
+
+        targetVolumeFraction = self.p.packingFractionBOL
+
+        # Note: the matrix volume currently includes particle volume
+        matrixVolume = self.getVolume()
+
+        # calculate particle volume
+        singleParticleVolume = 0.0
+        for layer in self.particleFuel.layers:
+            singleParticleVolume += layer.getVolume()
+
+        mult = round(targetVolumeFraction * matrixVolume / singleParticleVolume)
+
+        for component in self.particleFuel.layers:
+            component.setDimension("mult", mult)
 
 
 class ShapedComponent(Component):

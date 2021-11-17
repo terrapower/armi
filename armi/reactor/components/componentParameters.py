@@ -121,6 +121,17 @@ def getComponentParameterDefinitions():
             description="Pin number of this component in some mesh. Starts at 1.",
             default=None,
         )
+
+        pb.defParam(
+            "packingFractionBOL",
+            default=0.0,
+            units=None,
+            description=(
+                "Packing fraction between zero and one for particle fuel on "
+                "this component. A value of zero indicates no packed particles"
+            ),
+        )
+
     return pDefs
 
 

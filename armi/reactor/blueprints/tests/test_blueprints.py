@@ -28,7 +28,11 @@ from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
-from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
+from armi.reactor.blueprints.componentBlueprint import (
+    ComponentBlueprint,
+    ParticleFuelKeyedList,
+    ComponentParticleFuel,
+)
 
 
 class TestBlueprints(unittest.TestCase):
@@ -468,6 +472,94 @@ assemblies:
         for a in (fa, fb):
             self.assertEqual(1, len(a))
             self.assertEqual(1, len(a[0]))
+
+    def test_loadComponentWithoutParticleFuel(self):
+        structure = "{material: UO2, Tinput: 700, Thot: 700, name: fuel, shape: circle}"
+        bp = ComponentBlueprint.load(structure)
+        self.assertIsNone(bp.particleFuelSpec)
+
+    def test_loadComponentWithParticleFuel(self):
+        structure = (
+            "{material: UO2, Tinput: 700, Thot: 700, name: fuel, "
+            "shape: circle, particleFuelSpec: triso, "
+            "particleFuelPackingFraction: 0.4}"
+        )
+        bp = ComponentBlueprint.load(structure)
+        self.assertEqual(bp.particleFuelSpec, "triso")
+        self.assertEqual(bp.particleFuelPackingFraction, 0.4)
+
+    def test_loadManyParticleFuelSpecs(self):
+        spec = """
+particle a:
+    kernel:
+        material: UO2
+        id: 0.6
+        od: 0.61
+        Tinput: 900
+        Thot: 900
+        flags: DEPLETABLE
+    buffer:
+        material: SiC
+        id: 0.61
+        od: 0.62
+        Tinput: 800
+        Thot: 800
+particle b:
+    ball:
+        material: Graphite
+        id: 0.7
+        od: 0.8
+        Tinput: 600.5
+        Thot: 600.5
+"""
+        particles = ParticleFuelKeyedList.load(spec)
+        self.assertIn("particle a", particles)
+        self.assertIn("particle b", particles)
+        self.assertEqual(len(particles), 2)
+
+        speca = particles["particle a"]
+        self.assertIn("kernel", speca)
+        self.assertIn("buffer", speca)
+        self.assertEqual(len(speca), 2)
+
+        kernel = speca["kernel"]
+        kExpected = (
+            ("material", "UO2"),
+            ("Thot", 900),
+            ("Tinput", 900),
+            ("od", 0.61),
+            # id stored as innerDiam on intermediate object
+            ("innerDiam", 0.6),
+            ("flags", "DEPLETABLE"),
+        )
+        for key, value in kExpected:
+            self.assertEqual(getattr(kernel, key), value, msg=key)
+
+        buffer = speca["buffer"]
+        bExpected = (
+            ("material", "SiC"),
+            ("innerDiam", 0.61),
+            ("od", 0.62),
+            ("Thot", 800),
+            ("Tinput", 800),
+        )
+        for key, value in bExpected:
+            self.assertEqual(getattr(buffer, key), value, msg=key)
+
+        specb = particles["particle b"]
+        self.assertIn("ball", specb)
+        self.assertEqual(len(specb), 1)
+
+        ball = specb["ball"]
+        expected = (
+            ("material", "Graphite"),
+            ("Thot", 600.5),
+            ("Tinput", 600.5),
+            ("innerDiam", 0.7),
+            ("od", 0.8),
+        )
+        for key, value in expected:
+            self.assertEqual(getattr(ball, key), value, msg=key)
 
 
 if __name__ == "__main__":

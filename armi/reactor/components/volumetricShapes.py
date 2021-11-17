@@ -67,8 +67,25 @@ class Sphere(ShapedComponent):
         od = self.getDimension("od")
         iD = self.getDimension("id")
         mult = self.getDimension("mult")
+        mult = mult if mult is not None else 1
         vol = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (iD / 2.0) ** 3)
         return vol
+
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        """Return outer diameter of the sphere given thermal conditions
+
+        Parameters
+        ----------
+        Tc : float, optional
+            Temperature in C
+        cold : bool, optional
+
+        Returns
+        -------
+        float
+            Outer diameter
+        """
+        return self.getDimension("od", Tc=Tc, cold=cold)
 
 
 class Cube(ShapedComponent):

@@ -25,6 +25,7 @@ import sys
 import time
 import tabulate
 from copy import copy
+from math import nan
 
 import numpy
 
@@ -56,6 +57,8 @@ Operator_ArmiCodebase = "ARMI Location:"
 Operator_MasterMachine = "Master Machine:"
 Operator_Date = "Date and Time:"
 Operator_CaseDescription = "Case Description:"
+# Convert a value in centimeters to micrometers
+CM_TO_MICRO_METER = 10000
 
 
 def writeWelcomeHeaders(o, cs):
@@ -1002,3 +1005,85 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
 
 
 COMPONENT_INFO = "Component Information"
+
+
+def makeParticleFuelDesignReport(r):
+    """Add reports for particle fuel specification and usage
+
+    Parameters
+    ----------
+    r : Reactor
+        Reactor containing particle fuel designs. If none are found, no
+        work is done.
+
+    """
+    if not r.blueprints.particleFuelDesigns:
+        return
+
+    descriptions = {}
+
+    for name, design in r.blueprints.particleFuelDesigns.items():
+        rows = _particleFuelSpecToTable(design)
+        descriptions[name] = {
+            "spec": rows,
+            "usage": [],
+        }
+
+    # Find all usages of each specification
+    for blockDesign in r.blueprints.blockDesigns.values():
+        for componentDesign in blockDesign.values():
+            thisParticleFuel = componentDesign.particleFuelSpec
+            if thisParticleFuel is None:
+                continue
+            descriptions[thisParticleFuel]["usage"].append(
+                (
+                    f"{blockDesign.name} {componentDesign.name}",
+                    f"{componentDesign.particleFuelPackingFraction}",
+                )
+            )
+
+    for name, subdata in descriptions.items():
+        grp = report.data.Table(f"{name} Specification")
+        report.setData(
+            "Layer",
+            "Material, Outer diameter (μm), Thickness (μm)",
+            group=grp,
+            reports=report.DESIGN,
+        )
+        for layerName, layerData in subdata["spec"]:
+            report.setData(layerName, layerData, grp, report.DESIGN)
+
+        grp = report.data.Table(f"{name} Usage")
+        if subdata["usage"]:
+            report.setData("Block and Component name", "Packing fraction")
+            for desc, pf in subdata["usage"]:
+                report.setData(desc, pf, grp, report.DESIGN)
+        else:
+            msg = f"Particle fuel specification {name} not used"
+            report.setData("WARNING", msg, grp, report.DESIGN)
+            runLog.warning(msg)
+
+    return
+
+
+def _particleFuelSpecToTable(spec) -> list:
+    rows = []
+    names = []
+    prevOD = None
+    for layer in sorted(spec.values(), key=lambda ring: ring.od):
+        od = layer.od
+        if prevOD is not None:
+            thickness = round(CM_TO_MICRO_METER * 0.5 * (od - prevOD))
+        else:
+            thickness = "-"
+        names.append(layer.name)
+        rows.append(
+            "{}, {}, {}".format(
+                layer.material,
+                round(od * CM_TO_MICRO_METER, 6),
+                thickness,
+            )
+        )
+        prevOD = od
+
+    return list(zip(names, rows))

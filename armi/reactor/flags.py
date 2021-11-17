@@ -276,6 +276,7 @@ class Flags(Flag):
 
     STRUCTURE = auto()
     DEPLETABLE = auto()
+    MATRIX = auto()
 
     @classmethod
     def fromStringIgnoreErrors(cls, typeSpec):

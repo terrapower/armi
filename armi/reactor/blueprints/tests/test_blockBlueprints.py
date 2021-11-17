@@ -14,6 +14,7 @@
 """Tests for block blueprints."""
 import unittest
 import io
+import math
 
 from armi.reactor import blueprints
 from armi import settings
@@ -316,6 +317,97 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertEqual(a1.p.flags, Flags.FUEL)
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
+
+
+FULL_BP_PARTICLES = """
+blocks:
+    block: &block
+        flags: fuel test
+        duct:
+            shape: Hexagon
+            material: Graphite
+            Tinput: 600
+            Thot: 600
+            ip: 20
+            op: 21
+        matrix:
+            flags: matrix
+            shape: Circle
+            material: Graphite
+            Tinput: 600.0
+            Thot: 600.0
+            id: 0.0
+            od: {matrix_od}
+            particleFuelSpec: dual
+            particleFuelPackingFraction: {pf}
+assemblies:
+    assembly: &assembly_a
+        specifier: IC
+        blocks: [*block]
+        height: [{height}]
+        axial mesh points: [1]
+        xs types: [A]
+particle fuel:
+    dual:
+        kernel:
+            material: UraniumOxide
+            Thot: 900
+            Tinput: 900
+            id: 0.0
+            od: {kernel_od}
+            flags: DEPLETABLE
+        shell:
+            material: SiC
+            Tinput: 800
+            Thot: 800
+            id: {kernel_od}
+            od: {shell_od}
+nuclide flags:
+    U235: &nuc_flags {{burn: false, xs: true}}
+    U238: *nuc_flags
+    C: *nuc_flags
+    SI: *nuc_flags
+    O: *nuc_flags
+"""
+
+
+class TestBlockWithParticles(unittest.TestCase):
+
+    PF = 0.4
+    HEIGHT = 10.0
+    MATRIX_OD = 1.0
+    KERNEL_OD = 0.1
+    SHELL_OD = 0.2
+    spec = FULL_BP_PARTICLES.format(
+        pf=PF,
+        height=HEIGHT,
+        matrix_od=MATRIX_OD,
+        kernel_od=KERNEL_OD,
+        shell_od=SHELL_OD,
+    )
+
+    def setUp(self):
+        self.cs = settings.Settings()
+
+        bp = blueprints.Blueprints.load(self.spec)
+        assem = bp.constructAssem(self.cs, "assembly")
+        fuelBlock = assem.getFirstBlock(Flags.FUEL)
+        self.matrix = fuelBlock.getComponent(Flags.MATRIX)
+
+    def test_particle_mult(self):
+
+        self.assertIsNotNone(self.matrix.particleFuel)
+
+        maxtrixRadius = self.MATRIX_OD / 2
+        particleRadius = self.SHELL_OD / 2
+
+        nominalMatrixVolume = math.pi * maxtrixRadius ** 2 * self.HEIGHT
+        singleParticleVolume = 4 * math.pi * particleRadius ** 3 / 3
+
+        expectedMult = round(nominalMatrixVolume * self.PF / singleParticleVolume)
+
+        for component in self.matrix.particleFuel.layers:
+            self.assertEqual(expectedMult, component.p.mult)
 
 
 if __name__ == "__main__":

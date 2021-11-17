@@ -47,6 +47,8 @@ class Circle(ShapedComponent):
         isotopics=None,
         mergeWith=None,
         components=None,
+        particleFuelSpec=None,
+        particleFuelPackingFraction: float = 0,
     ):
         ShapedComponent.__init__(
             self,
@@ -57,6 +59,8 @@ class Circle(ShapedComponent):
             isotopics=isotopics,
             mergeWith=mergeWith,
             components=components,
+            particleFuelSpec=particleFuelSpec,
+            particleFuelPackingFraction=particleFuelPackingFraction,
         )
         self._linkAndStoreDimensions(
             components, od=od, id=id, mult=mult, modArea=modArea

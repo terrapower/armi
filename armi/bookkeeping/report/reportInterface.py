@@ -56,6 +56,7 @@ class ReportInterface(interfaces.Interface):
         runLog.important("Beginning of BOL Reports")
         reportingUtils.makeCoreAndAssemblyMaps(self.r, self.cs)
         reportingUtils.writeAssemblyMassSummary(self.r)
+        reportingUtils.makeParticleFuelDesignReport(self.r)
 
         if self.cs["summarizeAssemDesign"]:
             reportingUtils.summarizePinDesign(self.r.core)
@@ -114,6 +115,8 @@ class ReportInterface(interfaces.Interface):
             self.r, self.cs, generateFullCoreMap, showBlockAxMesh
         )
         reportingUtils.makeBlockDesignReport(self.r)
+
+        reportingUtils.makeParticleFuelDesignReport(self.r)
 
     def interactEOL(self):
         """Adds the data to the report, and generates it"""
