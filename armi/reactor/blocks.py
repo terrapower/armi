@@ -1292,11 +1292,14 @@ class Block(composites.Composite):
             self.completeInitialLoading()
 
     def getMfp(self, gamma=False):
-        r"""calculates the mean free path for neutron or gammas in this block.
+        r"""
+        Calculate the mean free path for neutron or gammas in this block.
 
-                    Sum_E(flux_e*macro_e*dE)     Sum_E(flux_e*d*sum_type(micro_e) * dE)
-        <Macro> = --------------------------- =  -------------------------------------
-                     Sum_E (flux_e*dE)                Sum_E (flux_e*dE)
+        .. math::
+
+
+            <\Sigma> = \frac{\sum_E(\phi_e*\Sigma_e*dE)}{\sum_E (\phi_e*dE)}  =
+            \sum_E(\phi_e*N*\sum_{\text{type}}(\sigma_e)  dE}{\sum_E (\phi_e*dE))}
 
         Block macro is the sum of macros of all nuclides.
 
@@ -1627,8 +1630,8 @@ class HexBlock(Block):
         -----
         This handles rotations using the pinLocation parameters.
 
-        Outputs
-        -------
+        This sets:
+
         self.p.pinPowers : 1-D numpy array
             The block-level pin linear power densities. pinPowers[i] represents the average linear
             power density of pin i.

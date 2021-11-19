@@ -24,7 +24,7 @@ The given yaml file is expected to rigidly adhere to given key:value pairings.
 
 See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
 
-The file structure is expectation is:
+The file structure is expectation is::
 
     nuclide flags:
         AM241: {burn: true, xs: true}
