@@ -1,0 +1,28 @@
+=======================
+ARMI v0.2 Release Notes
+=======================
+
+ARMI v0.2.0
+===========
+Release Date: 2021-11-19
+
+The API has started to solidify, and the number of external-facing changes have started to slow down. This release is a stake in the ground on a stable API.
+
+ARMI v0.2.1
+===========
+Release Date: TBD
+
+API changes
+-----------
+
+* TBD
+
+Backend changes
+---------------
+
+* TBD
+
+Bug fixes
+---------
+
+ * TBD
