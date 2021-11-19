@@ -13,7 +13,7 @@
 # limitations under the License.
 """
 Hex reactor to RZ geometry conversion
-===================================
+=====================================
 This shows how an entire reactor specified in full hex detail can be
 automatically converted to a 2-D or 3-D RZ case with conserved mass.
 
