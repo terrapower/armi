@@ -28,7 +28,29 @@ testing.
 
 Releasing a New Version of ARMI
 -------------------------------
-TBD
+In ARMI, we use the common ``major.minor.bump`` version scheme. Where a version string
+might look like ``0.1.7``, ``1.0.0``, or ``1.2.123``, and each number has a meaning:
+
+* ``major`` - Revved for NRC-sanctioned release or at the end of a long design cycle.
+* ``minor`` - Revved when we decide the code or our API has reached a stable point,
+  this might happen once a year.
+* ``bump`` - To be revved every time we modify the API, or at will, any time we want.
+
+**Any change to a major or minor version is considered a release.**
+
+Only a core member of the ARMI team may release a new version, or add a tag of any kind to
+the repo. The rule is *the only tags in the ARMI repo are for official versions*. If you
+want to release a version of ARMI, you will need admin privileges to multiple TerraPower
+repos on GitHub. Every release should follow this process:
+
+1. Ensure all unit tests pass and the documentation is building correctly.
+2. Add release notes to the documentation:
+   `here <https://github.com/terrapower/armi/tree/master/doc/release>`_.
+3. Tag the commit after it goes into the repo: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+4. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`_.
+5. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
+   archive the new documentation.
+6. Tell everyone!
 
 Module-Level Logging
 --------------------
