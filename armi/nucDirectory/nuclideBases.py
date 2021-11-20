@@ -18,7 +18,7 @@ The nuclideBases module classes for providing *base* nuclide information, such a
 For details on how to setup the RIPL-3 data files to process extra nuclide data see:
 :doc:`/user/user_install`
 
-The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
+The nuclide class structure is outlined in :ref:`the figure <nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
 

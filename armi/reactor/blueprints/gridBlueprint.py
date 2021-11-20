@@ -36,6 +36,7 @@ armi.utils.asciimaps
 
 Examples
 --------
+
 ::
 
     grids:
@@ -101,6 +102,7 @@ Examples
                          IC   IC   MC   OC   RR   SH
                            IC   MC   MC   OC   RR
                          IC   IC   MC   PC   RR   SH
+
 
 """
 import copy
@@ -213,12 +215,12 @@ class GridBlueprint(yamlize.Object):
 
         Notes
         -----
-        yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        this is only needed for when you want to make this object from a non-YAML
+        yamlize does not call an ``__init__`` method, instead it uses ``__new__`` and
+        setattr this is only needed for when you want to make this object from a non-YAML
         source.
 
         .. warning:: This is a Yamlize object, so ``__init__`` never really gets called.
-        Only ``__new__`` does.
+               Only ``__new__`` does.
 
         """
         self.name = name

@@ -18,14 +18,16 @@ Visualization implementation for VTK files.
 Limitations
 -----------
 This version of the VTK file writer comes with a number of limitations and/or aspects
-that can be improved upon. For instance
- - Only the Block and Assembly meshes and related parameters are exported to the VTK
-   file. Adding Core data is totally doable, and will be the product of future work.
-   With more considerable effort, arbitrary components may be visualizable!
- - No efforts are made to de-duplicate the vertices in the mesh, so there are more
-   vertices than needed. Some fancy canned algorithms probably exist to do this, and it
-   wouldn't be too difficult to do here either. Also future work, but probably not super
-   important unless dealing with really big meshes.
+that can be improved upon. For instance:
+
+* Only the Block and Assembly meshes and related parameters are exported to the VTK
+  file. Adding Core data is totally doable, and will be the product of future work.
+  With more considerable effort, arbitrary components may be visualizable!
+* No efforts are made to de-duplicate the vertices in the mesh, so there are more
+  vertices than needed. Some fancy canned algorithms probably exist to do this, and it
+  wouldn't be too difficult to do here either. Also future work, but probably not super
+  important unless dealing with really big meshes.
+
 """
 
 from typing import Dict, Any, List, Optional, Set, Tuple
