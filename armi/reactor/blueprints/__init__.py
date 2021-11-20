@@ -528,9 +528,10 @@ def migrate(bp: Blueprints, cs):
     This is a good place to perform migrations that address changes to the system design
     description (settings, blueprints, geom file). We have access to all three here, so
     we can even move stuff between files. Namely, this:
-     - creates a grid blueprint to represent the core layout from the old ``geomFile``
+
+     * creates a grid blueprint to represent the core layout from the old ``geomFile``
        setting, and applies that grid to a ``core`` system.
-     - moves the radial and azimuthal submesh values from the ``geomFile`` to the
+     * moves the radial and azimuthal submesh values from the ``geomFile`` to the
        assembly designs, but only if they are uniform (this is limiting, but could be
        made more sophisticated in the future, if there is need)
 

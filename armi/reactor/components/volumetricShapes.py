@@ -141,43 +141,50 @@ class Cube(ShapedComponent):
 
 
 class Torus(ShapedComponent):
-    r"""Theta defines the extent the radial segment is rotated around the Z-axis
+    r"""
+    A torus.
+
+    Theta defines the extent the radial segment is rotated around the Z-axis
     phi defines the extent around the major radius (i.e. a half torus is from 0 to pi)
 
     Notes
     -----
-    p0 - inner minor radius
-    p1 - outer minor radius
-    p2 - major radius
-    p3 - multiplier
-    p4 - inner theta (optional) 0 (default)
-    p5 - outer theta (optional) 2pi (default)
-    p6 - inner phi (optional) 0 (default)
-    p7 - outer phi (optional) 2pi (default)
-    p8 - height (optional) <set as outer minor radius > (default)
-    p9 - reference volume (optional)
+    The dimensions are:
 
-    Z
-    |
-    |
-    |
-    |            - ^ -
-    |          /   | minor radius
-    |-----------------------> major radius, R
-    |          \      /
-    |           - - -
-    |
+    * p0 - inner minor radius
+    * p1 - outer minor radius
+    * p2 - major radius
+    * p3 - multiplier
+    * p4 - inner theta (optional) 0 (default)
+    * p5 - outer theta (optional) 2pi (default)
+    * p6 - inner phi (optional) 0 (default)
+    * p7 - outer phi (optional) 2pi (default)
+    * p8 - height (optional) <set as outer minor radius > (default)
+    * p9 - reference volume (optional)
 
-    Y
-    ^                      -
-    |                 -
-    |            -    \
-    |       -  \       \
-    |  theta   |       |
-   ZX-----------------------> major radius, X
-    |
-    |
-    |
+    Image::
+
+        Z
+        |
+        |
+        |
+        |            - ^ -
+        |          /   | minor radius
+        |-----------------------> major radius, R
+        |          \      /
+        |           - - -
+        |
+
+        Y
+        ^                      -
+        |                 -
+        |            -    \
+        |       -  \       \
+        |  theta   |       |
+       ZX-----------------------> major radius, X
+        |
+        |
+        |
     """
 
     is3D = True

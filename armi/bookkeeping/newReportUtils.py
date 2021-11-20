@@ -296,11 +296,14 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
 
 def insertEndOfLifeContent(r, report):
-    """Generate End of Life Content for the report
+    """
+    Generate End of Life Content for the report
 
-    Parameters:
-    r: Reactor
-    report: ReportContent
+    Parameters
+    ----------
+    r : Reactor
+        the reactor
+    report : ReportContent
         The report to be added to.
 
     """
@@ -492,13 +495,18 @@ def getPinDesignTable(core):
 
 
 def insertAreaFractionsReport(block, report):
-    """Adds to an Assembly Area Fractions table subsection of the Comprehensive Section
+    """
+    Adds to an Assembly Area Fractions
+
+    Adds to the table subsection of the Comprehensive Section
     of the report.
 
-        Parameters
-        ----------
-        block: Block
-        report: ReportContent
+    Parameters
+    ----------
+    block : Block
+        The block
+    report : ReportContent
+        The report
 
     """
     for c, frac in block.getVolumeFractions():
