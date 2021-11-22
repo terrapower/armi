@@ -43,20 +43,6 @@ system! The :py:mod:`armi.plugins` module contains all of the plugin "hook" defi
 and their associated documentation. It is recommended to peruse those docs before
 getting started to get an idea of what is available.
 
-.. admonition:: Setting expectations
-
-   The Plugin API is relatively new, and is expected to change and evolve. We hope at
-   some point to mark parts of the API as stable, but we simply are not there yet. A
-   stable Plugin API is a major goal for a v1.0 release.
-
-   It is important to mention that the original Plugin API was designed to enable the
-   separation of the Framework from TerraPower's internal code suite. Effort has been made
-   to design the Plugin API to be general, and to anticipate future needs.  However, we
-   expect that the API has plenty of room for improvement and extension. If you find
-   yourself needing additional means of customization, or if any of the semantics of the
-   Plugin API are causing you problems, please open an issue and we would be happy to work
-   with you to improve it.
-
 Some implementation details
 ---------------------------
 One can just monkey-see-monkey-do their own plugins without fully understanding the
