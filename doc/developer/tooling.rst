@@ -47,9 +47,9 @@ Every release should follow this process:
 
 1. Ensure all unit tests pass and the documentation is building correctly.
 2. Add release notes to the documentation:
-   `here <https://github.com/terrapower/armi/tree/master/doc/release>`_.
+   `here <https://github.com/terrapower/armi/tree/master/doc/release>`__.
 3. Tag the commit after it goes into the repo: ``git tag -a 1.0.0 -m "Release v1.0.0"``
-4. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`_.
+4. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
 5. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
    archive the new documentation.
 6. Tell everyone!
