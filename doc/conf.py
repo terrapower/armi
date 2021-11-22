@@ -34,6 +34,7 @@ import sys
 import os
 
 import sphinx_rtd_theme
+from sphinx.domains.python import PythonDomain
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
@@ -69,8 +70,19 @@ _TUTORIAL_FILES = [
 ]
 
 
+class PatchedPythonDomain(PythonDomain):
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+        if "refspecific" in node:
+            del node["refspecific"]
+        return super(PatchedPythonDomain, self).resolve_xref(
+            env, fromdocname, builder, typ, target, node, contnode
+        )
+
+
 def setup(app):
     """Method to make `python setup.py build_sphinx` generate api documentation"""
+    app.override_domain(PatchedPythonDomain)
+
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
 
@@ -117,7 +129,6 @@ autodoc_default_options = {
     "members": True,
     "undoc-members": True,
     "private-members": False,
-    "special-members": False,
 }
 autodoc_member_order = "bysource"
 autoclass_content = "both"
