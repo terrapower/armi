@@ -146,7 +146,7 @@ class Settings:
         NOTE: This is used very rarely, try to organize your code to only need a Setting value.
         """
         if key in self.__settings:
-            return deepcopy(self.__settings[key])
+            return copy(self.__settings[key])
         elif default is not None:
             return default
         else:

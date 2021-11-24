@@ -89,7 +89,7 @@ These files are:
   put it there.
 
 * :file:`doc/` is an optional folder where your application documentation source may go.
-  If you choose to use Sphinx you can run ``sphinx-quickstart` in that folder to begin
+  If you choose to use Sphinx you can run ``sphinx-quickstart`` in that folder to begin
   documentation.
 
 Registering the app with ARMI

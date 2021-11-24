@@ -2,39 +2,60 @@ Tooling and infrastructure
 ==========================
 
 Packaging and dependency management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The process of packaging and Python projects and managing their dependencies is
-somewhat challenging, nuanced, and in the opinion of the author, poorly-documented.
-We attempt to follow existing conventions, where they exist, and the contents of our
-``setup.py`` follow existing conventions as possible. Of particular note is the way that
-we express our dependencies. In this, we take inspiration from `this fantastic article
-<https://caremad.io/posts/2013/07/setup-vs-requirement/>`_
-about dependecy management in Python projects.
+-----------------------------------
+The process of packaging Python projects and managing their dependencies is somewhat
+challenging and nuanced. The contents of our ``setup.py`` follow existing conventions as
+much as possible. In particular, we follow `this fantastic article
+<https://caremad.io/posts/2013/07/setup-vs-requirement/>`_ about dependecy management in
+Python projects.
 
-The main points here are that the packages listed in the ``install_requires`` argument to
-``setup()`` are meant to express, as abstractly as possible, the packages that need to
-be installed **somehow** for the package to work. In addition, ``extras_require`` can be
-used to specify other packages that are not strictly required, but if installed enable
-extra functionality. On the other hand, ``requirements.txt`` exists to describe a
-complete environment more specifically, potentially including extra arguments to ``pip``
-to control its behavior. Dependencies specified in ``setup.py`` should include version
-bounds sparingly, only when needed to ensure compatibility, whereas ``requirements.txt``
-may sometimes point to an alternative package index, and include strict version bounds
-for all dependencies.
+setup.py
+^^^^^^^^
+The packages listed in the ``install_requires`` argument to ``setup()`` are meant to
+express, as abstractly as possible, the packages that need to be installed **somehow**
+for the package to work. In addition, ``extras_require`` are used to specify other
+packages that are not strictly required, but if installed enable extra functionality,
+like unit testing or building documentation.
 
-A common source of concern is that the list of dependencies would be duplicated between
-``setup.py`` and ``requirements.txt``. In our particular case, ARMI does not benefit
-from pointing to special package indices, and most version bounds are semantic. We
-therefore follow the recommendation in the above article of including in
-``requirements.txt`` a simple ``-e .``. This tells pip to install ``armi`` itself,
-deferring to ``setup.py`` for a list of requiremed dependencies. Non-semantic version
-bounds, such as those used to avoid bugs in the dependency, should be specified in
-``requirements.txt``, rather than ``setup.py``. ARMI itself has several requirements
-files, located at the root of the project, which can be used as jumping-off points for
-more complex scenarios.
+requirements.txt
+^^^^^^^^^^^^^^^^
+The ``requirements***.txt`` files exist to describe a complete environment more
+specifically. If specific versions of packages are required, they should be defined here.
+Any extra arguments to ``pip`` will also be placed here. For instance, there is a ``-e``
+that tells ``pip`` to install ARMI itself and defer to ``setup.py`` for a version-agnostic
+list of dependencies. We also have multiple requirements files for different needs, like
+testing.
+
+Releasing a New Version of ARMI
+-------------------------------
+In ARMI, we use the common ``major.minor.bump`` version scheme where a version string
+might look like ``0.1.7``, ``1.0.0``, or ``1.2.123``. Each number has a specific meaning:
+
+* ``major`` - Revved for NRC-sanctioned release or at the end of a long development cycle.
+* ``minor`` - Revved when we decide the code or our API has reached a stable point;
+  this might happen once a year.
+* ``bump`` - Revved every time we modify the API, or at will; any time we want.
+
+**Any change to a major or minor version is considered a release.**
+
+Only a core member of the ARMI team may release a new version, or add a tag of any kind to
+the repository. The rule is *the only tags in the ARMI repo are for official versions*. If
+you want to release a version of ARMI, you will need admin privileges to multiple TerraPower
+repos on GitHub.
+
+Every release should follow this process:
+
+1. Ensure all unit tests pass and the documentation is building correctly.
+2. Add release notes to the documentation:
+   `here <https://github.com/terrapower/armi/tree/master/doc/release>`__.
+3. Tag the commit after it goes into the repo: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+4. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
+5. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
+   archive the new documentation.
+6. Tell everyone!
 
 Module-Level Logging
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
 This is a custom, global logging object provided by the import:
 

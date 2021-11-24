@@ -400,17 +400,21 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Notes
         -----
         We're going to increase the Pu-239 density to make the ratio of fissile mass to heavy metal mass equal to the
-        target ``minimumFissileFraction``:
+        target ``minimumFissileFraction``::
+
             minFrac = (fiss - old + new) / (hm - old + new)
             minFrac * (hm - old + new) = fiss - old + new
             minFrac * (hm - old) + old - fiss = new * (1 - minFrac)
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
-        where,
+
+        where::
+
             minFrac = ``minimumFissileFraction`` setting
             fiss = fissile mass of block
             hm = heavy metal mass of block
             old = number density of Pu-239 before adjustment
             new = number density of Pu-239 after adjustment
+
         """
 
         minFrac = self.cs["minimumFissileFraction"]

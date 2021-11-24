@@ -44,23 +44,25 @@ to the related hierarchy of classes inheriting the root ``ArmiObject`` class. It
 be rare for an ARMI developer not engaged directly with Framework development to need to
 know exactly how this works, but a proficient ARMI developer must keep in mind the
 following rules about how this system behaves in practice:
-    - When defining subclasses of ``ArmiObject``, defining a class attribute called
-      ``pDefs`` of the ``ParameterDefinitionCollection`` type signals to the system that
-      this is a *Parameter Class*.
-    - When defining a *Parameter Class*, it will trigger the creation of a new
-      ``ParameterCollection`` class, which will be derived from the
-      ``ParameterCollection`` class of the most immediate *Parameter Class* ancestor
-      the new class's inheritance tree.
-    - All classes derived from ``ArmiObject`` will receive an associated subclass of
-      ``ParameterCollection``, which will ultimately include all of the relevant
-      Parameters for that class. The specific class is the ``ParameterCollection``
-      subclass defined for the most immediate *Parameter Class* in the classes
-      inheritance tree.
-    - Parameter definitions can be added to a *Parameter Class*'s ``pDefs`` until
-      Parameters have been "compiled" for it. After compiling parameters, the ``pDefs``
-      are locked, and any attempts at defining additional parameters will cause an
-      error.
-    - ``ArmiObject`` s cannot be instantiated until after parameters have been compiled.
+
+* When defining subclasses of ``ArmiObject``, defining a class attribute called
+  ``pDefs`` of the ``ParameterDefinitionCollection`` type signals to the system that
+  this is a *Parameter Class*.
+* When defining a *Parameter Class*, it will trigger the creation of a new
+  ``ParameterCollection`` class, which will be derived from the
+  ``ParameterCollection`` class of the most immediate *Parameter Class* ancestor
+  the new class's inheritance tree.
+* All classes derived from ``ArmiObject`` will receive an associated subclass of
+  ``ParameterCollection``, which will ultimately include all of the relevant
+  Parameters for that class. The specific class is the ``ParameterCollection``
+  subclass defined for the most immediate *Parameter Class* in the classes
+  inheritance tree.
+* Parameter definitions can be added to a *Parameter Class*'s ``pDefs`` until
+  Parameters have been "compiled" for it. After compiling parameters, the ``pDefs``
+  are locked, and any attempts at defining additional parameters will cause an
+  error.
+* ``ArmiObject`` s cannot be instantiated until after parameters have been compiled.
+
 """
 
 from armi.reactor.parameters.parameterCollections import ParameterCollection

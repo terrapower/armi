@@ -2407,6 +2407,7 @@ def packSpecialData(
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
+
     * Dict[str, float]: These are stored by finding the set of all keys for all
       instances, and storing those keys as a list in an attribute. The data themselves
       are stored as arrays indexed by object, then key index. Dictionaries lacking data

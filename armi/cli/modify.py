@@ -28,9 +28,10 @@ class ModifyCaseSettingsCommand(EntryPoint):
     Search through a directory tree and modify ARMI settings in existing input file(s).
     All valid settings may be used as keyword arguments.
 
-    Example
-    -------
-    $ python -m armi modify --numProcessors=3 *.xml
+    Run the entry point like this::
+
+        $ python -m armi modify --numProcessors=3 *.xml
+
     """
 
     name = "modify"

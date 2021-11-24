@@ -6,12 +6,12 @@ This section will guide you through installing the ARMI Framework on your machin
 Prerequisites
 -------------
 These instructions target users with some software development knowledge. In
-particular, we assume familiarity with `Python <https://www.python.org/>`_,
+particular, we assume familiarity with `Python <https://www.python.org/>`__,
 `virtual environments <https://docs.python.org/3/tutorial/venv.html>`_, and `Git <https://git-scm.com/>`_.
 
 You must have the following installed before proceeding:
 
-* `Python <https://www.python.org/downloads/>`_ version 3.6 or later (preferably 64-bit)
+* `Python <https://www.python.org/downloads/>`__ version 3.6 or later (preferably 64-bit)
 
   .. admonition:: The right Python command
 

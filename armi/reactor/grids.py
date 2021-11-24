@@ -39,10 +39,10 @@ a grid or in arbitrary, continuous space (using a :py:class:`CoordinateLocation`
 
 Below is a basic example of how to use a 2-D grid::
 
->>> grid = CartesianGrid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
->>> location = grid[1,2,0]
->>> location.getGlobalCoordinates()
-array([ 1.,  2.,  0.])
+    >>> grid = CartesianGrid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
+    >>> location = grid[1,2,0]
+    >>> location.getGlobalCoordinates()
+    array([ 1.,  2.,  0.])
 
 Grids can be chained together in a parent-child relationship. This is often used in ARMI
 where a 1-D axial grid (e.g. in an assembly) is being positioned in a core or spent-fuel
@@ -296,9 +296,11 @@ class IndexLocation(LocationBase):
         equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
 
         It is a numpy array for two reasons:
+
         1. It can be added and subtracted for the recursive computations
            through different coordinate systems
         2. It can be written/read from the database.
+
         """
         return numpy.array(self[:3])
 
@@ -533,7 +535,8 @@ class Grid:
             (dxi, dxj, jxk), (dyi, dyj, dyk), (dzi, dzj, dzk)
 
         where ``dmn`` is the distance (in cm) that dimension ``m`` will change as a
-                function of index ``n``.
+        function of index ``n``.
+
         Unit steps are used as a generic method for defining repetitive grids in a
         variety of geometries, including hexagonal and Cartesian.  The tuples are not
         vectors in the direction of the translation, but rather grouped by direction. If

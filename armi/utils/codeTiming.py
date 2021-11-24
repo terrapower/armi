@@ -21,17 +21,20 @@ import os
 
 
 def timed(*args):
-    """Decorate functions to time how long they take.
+    """
+    Decorate functions to measure how long they take.
 
     Examples
     --------
-    @timed # your timer will be called the module+method name
-    def mymethod(stuff):
-        do stuff
+    ::
 
-    @timed('call my timer this instead')
-    def mymethod2(stuff)
-       do even more stuff
+        @timed # your timer will be called the module+method name
+        def mymethod(stuff):
+            do stuff
+
+        @timed('call my timer this instead')
+        def mymethod2(stuff)
+           do even more stuff
 
     """
 

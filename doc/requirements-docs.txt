@@ -8,3 +8,4 @@ sphinxcontrib-apidoc==0.3.0
 sphinxext-opengraph==0.4.2
 pandoc==1.1.0
 ipykernel==6.0.1
+docutils<0.18

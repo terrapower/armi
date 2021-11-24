@@ -296,10 +296,11 @@ class DerivedShape(UnshapedComponent):
         -----
         This is used to sort components relative to one another.
 
-        There can only be one derived component per block, this is generally the coolant inside a
-        duct. Under most circumstances, the volume (or area) of coolant will be greater than any
-        other (single) component (i.e. a single pin) within the assembly. So, sorting based on the
-        Dh of the DerivedShape will result in somewhat expected results.
+        There can only be one derived component per block, this is generally the coolant
+        inside a duct. Under most circumstances, the volume (or area) of coolant will be
+        greater than any other (single) component (i.e. a single pin) within the assembly.
+        So, sorting based on the Dh of the DerivedShape will result in somewhat expected
+        results.
         """
         if self.parent is None:
             # since this is only used for comparison, and it must be smaller than at
@@ -315,7 +316,7 @@ class DerivedShape(UnshapedComponent):
 
     def _deriveVolumeAndArea(self):
         """
-        Derive the volume and area of ``DerivedShape``s.
+        Derive the volume and area of ``DerivedShape``\ s.
 
         Notes
         -----
@@ -370,11 +371,12 @@ class DerivedShape(UnshapedComponent):
         """
         Get volume of derived shape.
 
-        The DerivedShape must pay attention to all of the companion objects, because if they change, this changes.
-        However it's inefficient to always recompute the derived volume, so we have to rely on the parent to know
-        if anything has changed.
+        The DerivedShape must pay attention to all of the companion objects, because if
+        they change, this changes.  However it's inefficient to always recompute the
+        derived volume, so we have to rely on the parent to know if anything has changed.
 
-        Since each parent is only allowed one DerivedShape, we can reset the update flag here.
+        Since each parent is only allowed one DerivedShape, we can reset the update flag
+        here.
 
         Returns
         -------
