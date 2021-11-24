@@ -67,7 +67,7 @@ class Case:
 
     A Case is capable of loading inputs, checking that they are valid, and
     initializing a reactor model. Cases can also compare against
-    other cases and be collected into :py:class:`~armi.cases.suite.CaseSuite`s.
+    other cases and be collected into :py:class:`armi.cases.suite.CaseSuite`\ s.
     """
 
     def __init__(self, cs, caseSuite=None, bp=None, geom=None):
@@ -86,7 +86,7 @@ class Case:
             snapshot testing or more complex analysis sequences).
 
         bp : Blueprints, optional
-            :py:class:`~armi.reactor.blueprints.Blueprints` object containing the assembly
+            :py:class:`armi.reactor.blueprints.Blueprints` object containing the assembly
             definitions and other information. If not supplied, it will be loaded from the
             ``cs`` as needed.
 

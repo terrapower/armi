@@ -30,12 +30,13 @@ class GeomType(enum.Enum):
     and symmetry conditions. This makes interpretation of user input straightforward,
     but is less ergonomic, less efficient, and more error-prone within the code. For
     instance:
-     - is "quarter reflective" the same as "reflective quarter"? Should it be?
-     - code that needs to interpret these need to use string operations, which are
-       non-trivial compared to enum comparisons.
-     - rules about mutual exclusion (hex and Cartesian can't both be used in the same
-       context) and composability (geometry type + domain + symmetry type) are harder to
-       enforce.
+
+    * is "quarter reflective" the same as "reflective quarter"? Should it be?
+    * code that needs to interpret these need to use string operations, which are
+      non-trivial compared to enum comparisons.
+    * rules about mutual exclusion (hex and Cartesian can't both be used in the same
+      context) and composability (geometry type + domain + symmetry type) are harder to
+      enforce.
 
     Instead, we hope to parse user input into a collection of enumerations and use those
     internally throughout the code. Future work should expand this to satisfy all needs
@@ -56,10 +57,12 @@ class GeomType(enum.Enum):
         There will remain situations where a geomType may be provided in string or enum
         form, in which the consuming code would have to check the type before
         proceeding. This function serves two useful purposes:
-         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
-         - Provide a location to instrument these conversions for when we actually try
-           to deprecate the strings. E.g., produce a warning when this is called, or
-           eventually forbidding the conversion entirely.
+
+        * Relieve client code from having to if/elif/else on ``isinstance()`` checks
+        * Provide a location to instrument these conversions for when we actually try
+          to deprecate the strings. E.g., produce a warning when this is called, or
+          eventually forbidding the conversion entirely.
+
         """
         if isinstance(source, GeomType):
             return source
@@ -133,18 +136,6 @@ class DomainType(enum.Enum):
 
     @classmethod
     def fromAny(cls, source: Union[str, "DomainType"]) -> "DomainType":
-        """
-        Safely convert from string representation, no-op if already an enum instance.
-
-        This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a DomainType may be provided in string or enum
-        form, in which the consuming code would have to check the type before
-        proceeding. This function serves two useful purposes:
-         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
-         - Provide a location to instrument these conversions for when we actually try
-           to deprecate the strings. E.g., produce a warning when this is called, or
-           eventually forbidding the conversion entirely.
-        """
         if isinstance(source, DomainType):
             return source
         elif isinstance(source, str):
@@ -236,18 +227,6 @@ class BoundaryType(enum.Enum):
 
     @classmethod
     def fromAny(cls, source: Union[str, "BoundaryType"]) -> "BoundaryType":
-        """
-        Safely convert from string representation, no-op if already an enum instance.
-
-        This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a BoundaryType may be provided in string or enum
-        form, in which the consuming code would have to check the type before
-        proceeding. This function serves two useful purposes:
-         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
-         - Provide a location to instrument these conversions for when we actually try
-           to deprecate the strings. E.g., produce a warning when this is called, or
-           eventually forbidding the conversion entirely.
-        """
         if isinstance(source, BoundaryType):
             return source
         elif isinstance(source, str):
@@ -388,18 +367,6 @@ class SymmetryType:
 
     @classmethod
     def fromAny(cls, source: Union[str, "SymmetryType"]) -> "SymmetryType":
-        """
-        Safely convert from string representation, no-op if already an enum instance.
-
-        This is useful as we transition to using enumerations more throughout the code.
-        There will remain situations where a SymmetryType may be provided in string or enum
-        form, in which the consuming code would have to check the type before
-        proceeding. This function serves two useful purposes:
-         - Relieve client code from having to if/elif/else on ``isinstance()`` checks
-         - Provide a location to instrument these conversions for when we actually try
-           to deprecate the strings. E.g., produce a warning when this is called, or
-           eventually forbidding the conversion entirely.
-        """
         if isinstance(source, SymmetryType):
             return source
         elif isinstance(source, str):

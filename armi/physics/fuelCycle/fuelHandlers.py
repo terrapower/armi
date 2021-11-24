@@ -135,7 +135,7 @@ class FuelHandlerInterface(interfaces.Interface):
 
         This can be used to export shuffling to an external code or to
         perform explicit repeat shuffling in a restart.
-        It creates a *SHUFFLES.txt file based on the Reactor.moveList structure
+        It creates a ``*SHUFFLES.txt`` file based on the Reactor.moveList structure
 
         See Also
         --------

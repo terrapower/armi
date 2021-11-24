@@ -20,7 +20,9 @@ class ParameterDefinitionError(Exception):
 
     * Attempting to create two parameters with the same name.
     * Attempting to create a parameter outside of a :py:class:`ParameterFactory`
-    ``with`` statement."""
+      ``with`` statement.
+
+    """
 
     def __init__(self, message):
         Exception.__init__(
@@ -36,9 +38,10 @@ class ParameterError(Exception):
     Usage errors include:
 
     * Attempting to get the value of a parameter that has not been defined a value, and
-    has no default.
+      has no default.
     * Attempting to set the value of a parameter that cannot be set through
-    ``setParam``.
+      ``setParam``.
+
     """
 
 
@@ -48,4 +51,5 @@ class UnknownParameterError(ParameterError):
     Usage errors include:
 
     * Attempting to set the value of a parameter that has no definition and no rename
+
     """

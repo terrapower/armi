@@ -395,14 +395,18 @@ class Core(composites.Composite):
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
 
-        Originally, this held onto all assemblies in the spend fuel pool. However, having this sitting in memory
-        becomes constraining for large problems. It is more memory-efficient to only save the assemblies
-        that are required for detailed history tracking. In fact, there's no need to save the assembly object at all,
-        just have the history interface save the relevant parameters. This is an important cleanup.
+
+        Originally, this held onto all assemblies in the spend fuel pool. However, having
+        this sitting in memory becomes constraining for large problems. It is more
+        memory-efficient to only save the assemblies that are required for detailed
+        history tracking. In fact, there's no need to save the assembly object at all,
+        just have the history interface save the relevant parameters. This is an important
+        cleanup.
 
         See Also
         --------
         add : adds an assembly
+
         """
         paramDefs = set(parameters.ALL_DEFINITIONS)
         paramDefs.difference_update(set(parameters.forType(Core)))
@@ -1243,12 +1247,13 @@ class Core(composites.Composite):
         This is used to categorize nuclides for Doppler broadening. Control nuclides are treated as structure.
 
         The categories are defined in the following way:
+
         1. Add nuclides from coolant components to coolantNuclides
-        2. Add nuclides from fuel components to fuelNuclides (this may be incomplete, e.g. at BOL there are no fission
-           products)
+        2. Add nuclides from fuel components to fuelNuclides (this may be incomplete, e.g.
+           at BOL there are no fission products)
         3. Add nuclides from all other components to structureNuclides
-        4. Since fuelNuclides may be incomplete, add anything else the user wants to model that isn't already listed
-           in coolantNuclides or structureNuclides.
+        4. Since fuelNuclides may be incomplete, add anything else the user wants to model
+           that isn't already listed in coolantNuclides or structureNuclides.
 
         Returns
         -------
@@ -1260,6 +1265,7 @@ class Core(composites.Composite):
 
         structureNuclides : set
             set of nuclide names
+
         """
         if not self._nuclideCategories:
             coolantNuclides = set()
@@ -1529,7 +1535,8 @@ class Core(composites.Composite):
         """
         Find assemblies that are next this assembly.
 
-        Return a list of neighboring assemblies from the 30 degree point (point 1) then counterclockwise around.
+        Return a list of neighboring assemblies from the 30 degree point (point 1) then
+        counterclockwise around.
 
         Parameters
         ----------
@@ -1537,49 +1544,63 @@ class Core(composites.Composite):
             The assembly to find neighbors of.
 
         showBlanks : Boolean, optional
-            If True, the returned array of 6 neighbors will return "None" for neighbors that do not explicitly
-                exist in the 1/3 core model (including many that WOULD exist in a full core model).
-            If False, the returned array will not include the "None" neighbors. If one or more neighbors does
-                not explicitly exist in the 1/3 core model, the returned array will have a length of less than 6.
+            If True, the returned array of 6 neighbors will return "None" for neighbors
+            that do not explicitly exist in the 1/3 core model (including many that WOULD
+            exist in a full core model).
+
+            If False, the returned array will not include the "None" neighbors. If one or
+            more neighbors does not explicitly exist in the 1/3 core model, the returned
+            array will have a length of less than 6.
 
         duplicateAssembliesOnReflectiveBoundary : Boolean, optional
-            If True, findNeighbors duplicates neighbor assemblies into their "symmetric identicals" so that
-                even assemblies that border symmetry lines will have 6 neighbors. The only assemblies that
-                will have fewer than 6 neighbors are those that border the outer core boundary (usually vacuum).
-            If False, findNeighbors returns None for assemblies that do not exist in a 1/3 core model
-                (but WOULD exist in a full core model).
-            For example, applying findNeighbors for the central assembly (ring, pos) = (1, 1) in 1/3 core symmetry
-                (with duplicateAssembliesOnReflectiveBoundary = True) would return a list of 6 assemblies, but
-                those 6 would really only be assemblies (2, 1) and (2, 2) repeated 3 times each.
-            Note that the value of duplicateAssembliesOnReflectiveBoundary only really if showBlanks = True.
-            This will have no effect if the model is full core since asymmetric models could find many
-            duplicates in the other thirds
+            If True, findNeighbors duplicates neighbor assemblies into their "symmetric
+            identicals" so that even assemblies that border symmetry lines will have 6
+            neighbors. The only assemblies that will have fewer than 6 neighbors are those
+            that border the outer core boundary (usually vacuum).
+
+            If False, findNeighbors returns None for assemblies that do not exist in a 1/3
+            core model (but WOULD exist in a full core model).
+
+            For example, applying findNeighbors for the central assembly (ring, pos) = (1,
+            1) in 1/3 core symmetry (with duplicateAssembliesOnReflectiveBoundary = True)
+            would return a list of 6 assemblies, but those 6 would really only be
+            assemblies (2, 1) and (2, 2) repeated 3 times each.
+
+            Note that the value of duplicateAssembliesOnReflectiveBoundary only really if
+            showBlanks = True.  This will have no effect if the model is full core since
+            asymmetric models could find many duplicates in the other thirds
 
 
         Notes
         -----
         This only works for 1/3 or full core symmetry.
 
-        This uses the 'mcnp' index map (MCNP GEODST hex coordinates)
-        instead of the standard (ring, pos) map. because neighbors have consistent indices this way.
-        We then convert over to (ring, pos) using the lookup table that a reactor has.
+        This uses the 'mcnp' index map (MCNP GEODST hex coordinates) instead of the
+        standard (ring, pos) map. because neighbors have consistent indices this way.  We
+        then convert over to (ring, pos) using the lookup table that a reactor has.
 
 
         Returns
         -------
         neighbors : list of assembly objects
             This is a list of "nearest neighbors" to assembly a.
-            If showBlanks = False, it will return fewer than 6 neighbors if not all 6 neighbors explicitly exist in the core model.
-            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = False, it will have a "None" for assemblies
-                that do not exist in the 1/3 model.
-            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = True, it will return the existing "symmetric identical"
-                assembly of a non-existing assembly. It will only return "None" for an assembly when that assembly is non-existing AND
-                has no existing "symmetric identical".
+
+            If showBlanks = False, it will return fewer than 6 neighbors if not all 6
+            neighbors explicitly exist in the core model.
+
+            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = False, it
+            will have a "None" for assemblies that do not exist in the 1/3 model.
+
+            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = True, it
+            will return the existing "symmetric identical" assembly of a non-existing
+            assembly. It will only return "None" for an assembly when that assembly is
+            non-existing AND has no existing "symmetric identical".
 
 
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
+
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()
@@ -1942,20 +1963,19 @@ class Core(composites.Composite):
         return i
 
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
-        r"""
-        returns a list of all radial-mesh positions in the core.
+        """
+        Return a list of all radial-mesh positions in the core.
 
-        Notes
-        -----
 
         Parameters
         ----------
         extraAssems : list
-            additional assemblies to consider when determining the mesh points.
-            They may be useful in the MCPNXT models to represent the fuel management dummies.
+            additional assemblies to consider when determining the mesh points.  They may
+            be useful in the MCPNXT models to represent the fuel management dummies.
 
         applySubMesh : bool
-            (not implemented) generates submesh points to further discretize the radial reactor mesh
+            (not implemented) generates submesh points to further discretize the radial
+            reactor mesh
 
         """
         _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)

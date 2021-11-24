@@ -268,6 +268,7 @@ class ArmiObject(metaclass=CompositeModelType):
     The abstract base class for all composites and leaves.
 
     This:
+
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all
       classes
@@ -454,9 +455,10 @@ class ArmiObject(metaclass=CompositeModelType):
         Make a clean copy of this object.
 
         .. warning:: Be careful with inter-object dependencies. If one object contains a
-        reference to another object which contains links to the entire hierarchical
-        tree, memory can fill up rather rapidly. Weak references are designed to help
-        with this problem.
+            reference to another object which contains links to the entire hierarchical
+            tree, memory can fill up rather rapidly. Weak references are designed to help
+            with this problem.
+
         """
         raise NotImplementedError
 
@@ -1825,6 +1827,7 @@ class ArmiObject(metaclass=CompositeModelType):
         generationNum : int, optional
             Which generation to average over (1 for children, 2 for grandchildren)
 
+
         The weighted sum is:
 
         .. math::
@@ -1843,6 +1846,7 @@ class ArmiObject(metaclass=CompositeModelType):
         -------
         float
             The average parameter value.
+
         """
         total = 0.0
         weightSum = 0.0

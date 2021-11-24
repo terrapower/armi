@@ -64,9 +64,7 @@ class TestDatabase3(unittest.TestCase):
             self.db.writeToDB(self.r)
 
     def makeShuffleHistory(self):
-        """
-        Walk the reactor through a few time steps with some shuffling.
-        """
+        """Walk the reactor through a few time steps with some shuffling."""
         # Serial numbers *are not stable* (i.e., they can be different between test runs
         # due to parallelism and test run order). However, they are the simplest way to
         # check correctness of location-based history tracking. So we stash the serial
@@ -76,7 +74,8 @@ class TestDatabase3(unittest.TestCase):
         self.centralTopBlockSerialNums = []
 
         grid = self.r.core.spatialGrid
-        for cycle in range(3):
+
+        for cycle in range(2):
             a1 = self.r.core.childrenByLocator[grid[cycle, 0, 0]]
             a2 = self.r.core.childrenByLocator[grid[0, 0, 0]]
             olda1Loc = a1.spatialLocator
@@ -86,7 +85,7 @@ class TestDatabase3(unittest.TestCase):
             self.centralAssemSerialNums.append(c.p.serialNum)
             self.centralTopBlockSerialNums.append(c[-1].p.serialNum)
 
-            for node in range(3):
+            for node in range(2):
                 self.r.p.cycle = cycle
                 self.r.p.timeNode = node
                 # something that splitDatabase won't change, so that we can make sure
@@ -94,12 +93,13 @@ class TestDatabase3(unittest.TestCase):
                 self.r.p.cycleLength = cycle
 
                 self.db.writeToDB(self.r)
+
         # add some more data that isnt written to the database to test the
         # DatabaseInterface API
-        self.r.p.cycle = 3
+        self.r.p.cycle = 2
         self.r.p.timeNode = 0
         self.r.p.cycleLength = cycle
-        self.r.core[0].p.chargeTime = 3
+        self.r.core[0].p.chargeTime = 2
 
         # add some fake missing parameter data to test allowMissing
         self.db.h5db["c00n00/Reactor/missingParam"] = "i don't exist"
@@ -207,7 +207,7 @@ class TestDatabase3(unittest.TestCase):
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
-    def test_history(self) -> None:
+    def test_history(self):
         self.makeShuffleHistory()
 
         grid = self.r.core.spatialGrid
@@ -219,15 +219,15 @@ class TestDatabase3(unittest.TestCase):
             testAssem, params=["chargeTime", "serialNum"]
         )
         expectedSn = {
-            (c, n): self.centralAssemSerialNums[c] for c in range(3) for n in range(3)
+            (c, n): self.centralAssemSerialNums[c] for c in range(2) for n in range(2)
         }
         self.assertEqual(expectedSn, hist["serialNum"])
 
         # test block
         hists = self.db.getHistoriesByLocation(
-            [testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0), (2, 0)]
+            [testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)]
         )
-        expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(3)}
+        expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(2)}
         self.assertEqual(expectedSn, hists[testBlock]["serialNum"])
 
         # cant mix blocks and assems, since they are different distance from core
@@ -238,8 +238,8 @@ class TestDatabase3(unittest.TestCase):
         hist = self.dbi.getHistory(
             self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
         )
-        self.assertIn((3, 0), hist["chargeTime"].keys())
-        self.assertEqual(hist["chargeTime"][(3, 0)], 3)
+        self.assertIn((2, 0), hist["chargeTime"].keys())
+        self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
     def test_replaceNones(self):
         """

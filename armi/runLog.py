@@ -492,10 +492,15 @@ class RunLogger(logging.Logger):
         )
 
     def _log(self, *args, **kwargs):
-        """wrapper around the standard library Logger._log() method
+        """
+        Wrapper around the standard library Logger._log() method
+
         The primary goal here is to allow us to support the deduplication of warnings.
-        NOTE: All of the *args and **kwargs logic here are mandatory, as the standard library implementation of this
-        method has been changing the number of kwargs between Python v3.4 and v3.9.
+
+        .. note:: All of the ``*args`` and ``**kwargs`` logic here are mandatory, as the
+            standard library implementation of this method has been changing the number of
+            kwargs between Python v3.4 and v3.9.
+
         """
         # we need 'extra' as an output keyword, even if empty
         if "extra" not in kwargs:

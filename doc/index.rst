@@ -15,6 +15,7 @@ ARMI
    developer/index
    blog/index
    release/index
+   glossary
    API Docs <.apidocs/modules>
 
 

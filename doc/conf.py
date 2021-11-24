@@ -34,6 +34,7 @@ import sys
 import os
 
 import sphinx_rtd_theme
+from sphinx.domains.python import PythonDomain
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
@@ -69,8 +70,19 @@ _TUTORIAL_FILES = [
 ]
 
 
+class PatchedPythonDomain(PythonDomain):
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+        if "refspecific" in node:
+            del node["refspecific"]
+        return super(PatchedPythonDomain, self).resolve_xref(
+            env, fromdocname, builder, typ, target, node, contnode
+        )
+
+
 def setup(app):
     """Method to make `python setup.py build_sphinx` generate api documentation"""
+    app.override_domain(PatchedPythonDomain)
+
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
 
@@ -112,14 +124,11 @@ extensions = [
     "sphinx_gallery.gen_gallery",
 ]
 
-# private-member docs are generally not great to link to in high-level implementation
-# documentation because the implementation may change rapidly. Prefer putting info in
-# public entities. We  render docs with private-members shown, however, because there
-# are important implementation details in them in many cases.
+# Our API should make sense without documenting private/special members.
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
-    "private-members": True,
+    "private-members": False,
 }
 autodoc_member_order = "bysource"
 autoclass_content = "both"
@@ -135,11 +144,11 @@ napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True
+napoleon_include_special_with_doc = False
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = True
 napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
+napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
 
