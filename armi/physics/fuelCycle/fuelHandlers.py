@@ -705,7 +705,7 @@ class FuelHandler:
         mandatoryLocations : list, optional
             a list of string-representations of locations in the core for limiting the search to
             several places
-            
+
             Any locations also included in `excludedLocations` will be excluded.
 
         excludedLocations : list, optional
