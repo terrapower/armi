@@ -18,6 +18,7 @@ from armi.utils import asciimaps
 
 
 CARTESIAN_MAP = """2 2 2 2 2
+2 2 2 2 2
 2 1 1 1 2
 2 1 3 1 2
 2 3 1 1 2
@@ -166,6 +167,13 @@ ORS     IRS     RR7     OC      OC      IC      OC      OC      RR7     IRS     
                                 ORS     ORS     ORS 
 """
 
+HEX_FULL_MAP_SMALL = """F
+ F F
+F
+F F
+ F
+"""
+
 
 class TestAsciiMaps(unittest.TestCase):
     """Test ascii maps."""
@@ -178,18 +186,21 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             asciimap.readAscii(stream.read())
 
-        with io.StringIO() as stream:
-            asciimap.writeAscii(stream)
-            stream.seek(0)
-            output = stream.read()
-            self.assertEqual(output, CARTESIAN_MAP)
-
         self.assertEqual(asciimap[0, 0], "2")
         self.assertEqual(asciimap[1, 1], "3")
         self.assertEqual(asciimap[2, 2], "3")
         self.assertEqual(asciimap[3, 3], "1")
         with self.assertRaises(KeyError):
             asciimap[5, 2]  # pylint: disable=pointless-statement
+
+        outMap = asciimaps.AsciiMapCartesian()
+        outMap.asciiLabelByIndices = asciimap.asciiLabelByIndices
+        outMap.gridContentsToAscii()
+        with io.StringIO() as stream:
+            outMap.writeAscii(stream)
+            stream.seek(0)
+            output = stream.read()
+            self.assertEqual(output, CARTESIAN_MAP)
 
     def test_hexThird(self):
         """Read 1/3 core flats-up maps."""
@@ -286,8 +297,13 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             asciimap.readAscii(stream.read())
 
+        asciimap2 = asciimaps.AsciiMapHexFullTipsUp()
+        for ij, spec in asciimap.items():
+            asciimap2.asciiLabelByIndices[ij] = spec
+
         with io.StringIO() as stream:
-            asciimap.writeAscii(stream)
+            asciimap2.gridContentsToAscii()
+            asciimap2.writeAscii(stream)
             stream.seek(0)
             output = stream.read()
             self.assertEqual(output, HEX_FULL_MAP)
@@ -327,6 +343,19 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             output = stream.read()
             self.assertEqual(output, HEX_FULL_MAP_FLAT)
+
+    def test_hexSmallFlat(self):
+        asciimap = asciimaps.AsciiMapHexFullFlatsUp()
+        with io.StringIO() as stream:
+            stream.write(HEX_FULL_MAP_SMALL)
+            stream.seek(0)
+            asciimap.readAscii(stream.read())
+
+        with io.StringIO() as stream:
+            asciimap.writeAscii(stream)
+            stream.seek(0)
+            output = stream.read()
+            self.assertEqual(output, HEX_FULL_MAP_SMALL)
 
     def test_flatHexBases(self):
         """For the full core with 2 lines chopped, get the first 3 bases"""

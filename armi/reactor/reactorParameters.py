@@ -166,28 +166,7 @@ def defineCoreParameters():
             "maxAssemNum", units=None, description="maximum assembly number", default=0
         )
 
-        pb.defParam(
-            "numAssembliesFabricated",
-            units="",
-            description="numAssembliesFabricated",
-            default=0,
-        )
-
-        pb.defParam(
-            "numAssembliesInSFP", units="", description="numAssembliesInSFP", default=0
-        )
-
         pb.defParam("numMoves", units="", description="numMoves", default=0)
-
-        pb.defParam("timingDepletion", units="", description="timingDepletion")
-
-        pb.defParam("timingDif3d", units="", description="timingDif3d")
-
-        pb.defParam("timingDistribute", units="", description="timingDistribute")
-
-        pb.defParam("timingMc2", units="", description="timingMc2")
-
-        pb.defParam("timingSubchan", units="", description="timingSubchan")
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 

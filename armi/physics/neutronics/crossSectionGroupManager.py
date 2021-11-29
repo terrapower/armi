@@ -615,7 +615,11 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        self.cs[CONF_CROSS_SECTION].setDefaults(self.cs)
+
+        self.cs[CONF_CROSS_SECTION].setDefaults(
+            self.cs["xsBlockRepresentation"],
+            self.cs["disableBlockTypeExclusionInXsGeneration"],
+        )
 
     def interactBOC(self, cycle=None):
         """
@@ -732,16 +736,12 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         for xsFileLocation, xsFileName in self._getPregeneratedXsFileLocationData(xsID):
             dest = os.path.join(os.getcwd(), xsFileName)
-            # Optimization to reduce the number of times the files are copied over
-            if not os.path.exists(dest):
-                runLog.extra(
-                    "Copying pre-generated XS file {} from {} for XS ID {}".format(
-                        xsFileName, os.path.dirname(xsFileLocation), xsID
-                    )
+            runLog.extra(
+                "Copying pre-generated XS file {} from {} for XS ID {}".format(
+                    xsFileName, os.path.dirname(xsFileLocation), xsID
                 )
-                shutil.copy(xsFileLocation, dest)
-            else:
-                runLog.extra("Using existing pre-generated XS file: {}".format(dest))
+            )
+            shutil.copy(xsFileLocation, dest)
 
     def _getPregeneratedXsFileLocationData(self, xsID):
         """
@@ -1128,12 +1128,6 @@ BLOCK_COLLECTIONS = {
     "Median": MedianBlockCollection,
     "Average": AverageBlockCollection,
     "ComponentAverage1DSlab": SlabComponentsAverageBlockCollection,
-    "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
-}
-
-HOMOGENEOUS_BLOCK_COLLECTIONS = {
-    "Median": MedianBlockCollection,
-    "Average": AverageBlockCollection,
     "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
 }
 

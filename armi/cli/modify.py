@@ -17,12 +17,10 @@ Search through a directory tree and modify ARMI settings in existing input
 file(s). All valid settings may be used as keyword arguments.
 """
 
-import armi
 from armi import operators
 from armi import runLog
 from armi import settings
 from armi.cli.entryPoint import EntryPoint
-from armi.localization import exceptions
 
 
 class ModifyCaseSettingsCommand(EntryPoint):
@@ -30,9 +28,10 @@ class ModifyCaseSettingsCommand(EntryPoint):
     Search through a directory tree and modify ARMI settings in existing input file(s).
     All valid settings may be used as keyword arguments.
 
-    Example
-    -------
-    $ python -m armi modify --numProcessors=3 *.xml
+    Run the entry point like this::
+
+        $ python -m armi modify --numProcessors=3 *.xml
+
     """
 
     name = "modify"
@@ -63,7 +62,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
             default=["*.yaml"],
             help="Pattern(s) to use to find match file names (e.g. *.xml)",
         )
-        for settingName in self.cs.settings.keys():
+        for settingName in self.cs.keys():
             # verbosity and branchVerbosity already have command line options in the default parser
             # adding them again would result in an error from argparse.
             if settingName not in ["verbosity", "branchVerbosity"]:

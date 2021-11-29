@@ -39,7 +39,7 @@ class ConvertXmlSettingsToYaml(SettingsMigration):
                 "".format("\n  * ".join(list(reader.invalidSettings)))
             )
 
-        _modify_settings(cs)
+        cs = _modify_settings(cs)
         writer = settingsIO.SettingsWriter(cs)
         newStream = io.StringIO()
         writer.writeYaml(newStream)
@@ -58,4 +58,6 @@ def _modify_settings(cs):
             "Converting deprecated Rx. Coeffs ``runType` setting to Snapshots. "
             "You may need to manually disable modules you don't want to run"
         )
-        cs["runType"] = "Snapshots"
+        cs = cs.modified(newSettings={"runType": "Snapshots"})
+
+    return cs

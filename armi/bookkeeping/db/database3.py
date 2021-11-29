@@ -62,10 +62,12 @@ import io
 import itertools
 import os
 import pathlib
+from platform import uname
 import re
 import sys
 import time
 import shutil
+import subprocess
 from typing import (
     Optional,
     Tuple,
@@ -88,6 +90,7 @@ from armi import runLog
 from armi import settings
 from armi.reactor import parameters
 from armi.reactor.parameters import parameterCollections
+from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.flags import Flags
 from armi.reactor.reactors import Reactor, Core
 from armi.reactor import assemblies
@@ -96,13 +99,15 @@ from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
-from armi.bookkeeping.db.typedefs import History, Histories, LocationHistories
+from armi.bookkeeping.db.typedefs import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
-
-from armi.settings.fwSettings.databaseSettings import CONF_SYNC_AFTER_WRITE
+from armi.settings.fwSettings.databaseSettings import (
+    CONF_SYNC_AFTER_WRITE,
+    CONF_FORCE_DB_PARAMS,
+)
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 DB_MAJOR = 3
@@ -160,6 +165,20 @@ class DatabaseInterface(interfaces.Interface):
         self._db = None
         self._dbPath: Optional[pathlib.Path] = None
 
+        if cs[CONF_FORCE_DB_PARAMS]:
+            toSet = {paramName: set() for paramName in cs[CONF_FORCE_DB_PARAMS]}
+            for (name, _), pDef in parameterDefinitions.ALL_DEFINITIONS.items():
+                if name in toSet.keys():
+                    toSet[name].add(pDef)
+
+            for name, pDefs in toSet.items():
+                runLog.info(
+                    "Forcing parameter {} to be written to the database, per user "
+                    "input".format(name)
+                )
+                for pDef in pDefs:
+                    pDef.saveToDB = True
+
     def __repr__(self):
         return "<{} '{}' {} >".format(
             self.__class__.__name__, self.name, repr(self._db)
@@ -179,7 +198,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available."""
+        """Initialize the database if the main interface was not available. (Begining of Life)"""
         if not self._db:
             self.initDB()
 
@@ -236,7 +255,7 @@ class DatabaseInterface(interfaces.Interface):
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. """
+        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)"""
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
@@ -247,7 +266,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.writeToDB(self.r)
 
     def interactEOL(self):
-        """DB's should be closed at run's end. """
+        """DB's should be closed at run's end. (End of Life)"""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
@@ -357,6 +376,7 @@ class DatabaseInterface(interfaces.Interface):
                         statePointName=timeStepName,
                         cs=self.cs,
                         bp=self.r.blueprints,
+                        allowMissing=True,
                     )
                     break
         else:
@@ -568,6 +588,59 @@ class Database3(database.Database):
         self.h5db.attrs["armiLocation"] = os.path.dirname(armi.ROOT)
         self.h5db.attrs["startTime"] = armi.START_TIME
         self.h5db.attrs["machines"] = numpy.array(armi.MPI_NODENAMES).astype("S")
+        # store platform data
+        platform_data = uname()
+        self.h5db.attrs["platform"] = platform_data.system
+        self.h5db.attrs["hostname"] = platform_data.node
+        self.h5db.attrs["platformRelease"] = platform_data.release
+        self.h5db.attrs["platformVersion"] = platform_data.version
+        self.h5db.attrs["platformArch"] = platform_data.processor
+        # store app and plugin data
+        app = armi.getApp()
+        self.h5db.attrs["appName"] = app.name
+        plugins = app.pluginManager.list_name_plugin()
+        ps = [
+            (os.path.abspath(sys.modules[p[1].__module__].__file__), p[1].__name__)
+            for p in plugins
+        ]
+        ps = numpy.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
+        self.h5db.attrs["pluginPaths"] = ps
+        # store the commit hash of the local repo
+        self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
+
+    @staticmethod
+    def grabLocalCommitHash():
+        """
+        Try to determine the local Git commit.
+
+        We have to be sure to handle the errors where the code is run on a system that
+        doesn't have Git installed. Or if the code is simply not run from inside a repo.
+
+        Returns
+        -------
+        str
+            The commit hash if it exists, otherwise "unknown".
+        """
+        unknown = "unknown"
+        if not shutil.which("git"):
+            # no git available. cannot check git info
+            return unknown
+        repo_exists = (
+            subprocess.run(
+                "git rev-parse --git-dir".split(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
+        )
+        if repo_exists:
+            try:
+                commit_hash = subprocess.check_output(["git", "describe"])
+                return commit_hash.decode("utf-8").strip()
+            except:
+                return unknown
+        else:
+            return unknown
 
     def close(self, completedSuccessfully=False):
         """
@@ -612,7 +685,6 @@ class Database3(database.Database):
             "-all-iterations". Will be interposed between the source name and the ".h5"
             extension.
 
-
         Returns
         -------
         str
@@ -636,7 +708,7 @@ class Database3(database.Database):
 
             # Copy everything except time node data
             timeSteps = set()
-            for groupName, group in dbIn.items():
+            for groupName, _ in dbIn.items():
                 m = self.timeNodeGroupPattern.match(groupName)
                 if m:
                     timeSteps.add((int(m.group(1)), int(m.group(2))))
@@ -669,12 +741,18 @@ class Database3(database.Database):
         self._fileName = fName
 
     def loadCS(self):
-        from armi import settings
+        """Attempt to load settings from the database file
 
+        Notes
+        -----
+        There are no guarantees here. If the database was written from a different version of ARMI than you are using,
+        these results may not be usable. For instance, the database could have been written from a vastly old or future
+        version of ARMI from the code you are using.
+        """
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
-            cs.loadFromString(self.h5db["inputs/settings"][()])
+            cs.loadFromString(self.h5db["inputs/settings"].asstr()[()])
         except KeyError:
             # not all paths to writing a database require inputs to be written to the
             # database. Technically, settings do affect some of the behavior of database
@@ -688,12 +766,24 @@ class Database3(database.Database):
         return cs
 
     def loadBlueprints(self):
-        from armi.reactor import blueprints
+        """Attempt to load reactor blueprints from the database file
+
+        Notes
+        -----
+        There are no guarantees here. If the database was written from a different version of ARMI than you are using,
+        these results may not be usable. For instance, the database could have been written from a vastly old or future
+        version of ARMI from the code you are using.
+        """
+        # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior
+        # through metaclassing. Therefore, we need to be able to import all plugins *before* importing blueprints.
+        from armi.reactor.blueprints import (
+            Blueprints,
+        )  # pylint: disable=import-outside-toplevel
 
         bpString = None
 
         try:
-            bpString = self.h5db["inputs/blueprints"][()]
+            bpString = self.h5db["inputs/blueprints"].asstr()[()]
         except KeyError:
             # not all reactors need to be created from blueprints, so they may not exist
             pass
@@ -703,14 +793,18 @@ class Database3(database.Database):
             return None
 
         stream = io.StringIO(bpString)
-        stream = blueprints.Blueprints.migrate(stream)
+        stream = Blueprints.migrate(stream)
 
-        bp = blueprints.Blueprints.load(stream)
+        bp = Blueprints.load(stream)
         return bp
 
     def loadGeometry(self):
+        """
+        This is primarily just used for migrations.
+        The "geometry files" were replaced by ``systems:`` and ``grids:`` sections of ``Blueprints``.
+        """
         geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"][()]))
+        geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"].asstr()[()]))
         return geom
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
@@ -758,9 +852,9 @@ class Database3(database.Database):
 
     def readInputsFromDB(self):
         return (
-            self.h5db["inputs/settings"][()],
-            self.h5db["inputs/geomFile"][()],
-            self.h5db["inputs/blueprints"][()],
+            self.h5db["inputs/settings"].asstr()[()],
+            self.h5db["inputs/geomFile"].asstr()[()],
+            self.h5db["inputs/blueprints"].asstr()[()],
         )
 
     def mergeHistory(self, inputDB, startCycle, startNode):
@@ -935,7 +1029,9 @@ class Database3(database.Database):
         self.h5db.flush()
         shutil.copy(self._fullPath, self._fileName)
 
-    def load(self, cycle, node, cs=None, bp=None, statePointName=None):
+    def load(
+        self, cycle, node, cs=None, bp=None, statePointName=None, allowMissing=False
+    ):
         """Load a new reactor from (cycle, node).
 
         Case settings, blueprints, and geom can be provided by the client, or read from
@@ -954,6 +1050,11 @@ class Database3(database.Database):
             if not provided one is read from the database
         bp : armi.reactor.Blueprints (Optional)
             if not provided one is read from the database
+        statePointName : str
+            Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
+        allowMissing : bool
+            Whether to emit a warning, rather than crash if reading a database
+            with undefined parameters. Default False.
 
         Returns
         -------
@@ -970,11 +1071,11 @@ class Database3(database.Database):
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 
         layout = Layout((self.versionMajor, self.versionMinor), h5group=h5group)
-        comps, groupedComps = layout._initComps(cs, bp)
+        comps, groupedComps = layout._initComps(cs.caseTitle, bp)
 
         # populate data onto initialized components
         for compType, compTypeList in groupedComps.items():
-            self._readParams(h5group, compType, compTypeList)
+            self._readParams(h5group, compType, compTypeList, allowMissing=allowMissing)
 
         # assign params from blueprints
         if bp is not None:
@@ -1009,15 +1110,10 @@ class Database3(database.Database):
                     val = getattr(design, pName)
                     if val is not None:
                         comp.p[pName] = val
-        return
 
     def _compose(self, comps, cs, parent=None):
-        """
-        Given a flat collection of all of the ArmiObjects in the model, reconstitute the
-        hierarchy.
-        """
-
-        comp, serialNum, numChildren, location = next(comps)
+        """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
+        comp, _, numChildren, location = next(comps)
 
         # attach the parent early, if provided; some cases need the parent attached for
         # the rest of _compose to work properly.
@@ -1036,6 +1132,7 @@ class Database3(database.Database):
             comp.name = comp.makeNameFromAssemNum(comp.p.assemNum)
             comp.lastLocationLabel = Assembly.DATABASE
 
+        # set the spatialLocators on each component
         if location is not None:
             if parent is not None and parent.spatialGrid is not None:
                 comp.spatialLocator = parent.spatialGrid[location]
@@ -1084,16 +1181,14 @@ class Database3(database.Database):
         else:
             g = h5group[groupName]
 
-        for paramDef in c.p.paramDefs.toWriteToDB(
-            parameters.SINCE_LAST_DB_TRANSMISSION
-        ):
+        for paramDef in c.p.paramDefs.toWriteToDB():
             attrs = {}
 
             if hasattr(c, "DIMENSION_NAMES") and paramDef.name in c.DIMENSION_NAMES:
                 linkedDims = []
                 data = []
 
-                for i, c in enumerate(comps):
+                for _, c in enumerate(comps):
                     val = c.p[paramDef.name]
                     if isinstance(val, tuple):
                         linkedDims.append("{}.{}".format(val[0].name, val[1]))
@@ -1170,7 +1265,7 @@ class Database3(database.Database):
                 dataset = g.create_dataset(paramDef.name, data=data, compression="gzip")
                 if any(attrs):
                     _writeAttrs(dataset, h5group, attrs)
-            except Exception as e:
+            except Exception:
                 runLog.error(
                     "Failed to write {} to database. Data: "
                     "{}".format(paramDef.name, data)
@@ -1194,7 +1289,7 @@ class Database3(database.Database):
             h5group.create_dataset(nucName, data=numDens, compression="gzip")
 
     @staticmethod
-    def _readParams(h5group, compTypeName, comps):
+    def _readParams(h5group, compTypeName, comps, allowMissing=False):
         g = h5group[compTypeName]
 
         renames = armi.getApp().getParamRenames()
@@ -1212,11 +1307,21 @@ class Database3(database.Database):
                 pDef = pDefs[paramName]
             except KeyError:
                 if re.match(r"^n[A-Z][a-z]?\d*", paramName):
-                    # This is a temporary viz param made by _addHomogenizedNumberDensities
-                    # ignore it safely
+                    # This is a temporary viz param (number density) made by
+                    # _addHomogenizedNumberDensityParams ignore it safely
                     continue
                 else:
-                    raise
+                    # If a parameter exists in the database but not in the application
+                    # reading it, we can technically keep going. Since this may lead to
+                    # potential correctness issues, raise a warning
+                    if allowMissing:
+                        runLog.warning(
+                            "Found `{}` parameter `{}` in the database, which is not defined. "
+                            "Ignoring it.".format(compTypeName, paramName)
+                        )
+                        continue
+                    else:
+                        raise
 
             data = dataSet[:]
             attrs = _resolveAttrs(dataSet.attrs, h5group)
@@ -1264,10 +1369,7 @@ class Database3(database.Database):
         params: Optional[List[str]] = None,
         timeSteps: Optional[Sequence[Tuple[int, int]]] = None,
     ) -> History:
-        """
-        Get the parameter histories at a specific location.
-        """
-
+        """Get the parameter histories at a specific location."""
         return self.getHistoriesByLocation([comp], params=params, timeSteps=timeSteps)[
             comp
         ]
@@ -1788,10 +1890,12 @@ def _unpackLocationsV2(locationTypes, locData):
         elif lt.startswith(LOC_MULTI):
             # extract number of sublocations from e.g. "M:345" string.
             numSubLocs = int(lt.split(":")[1])
+            multiLocs = []
             for _ in range(numSubLocs):
                 subLoc = next(locsIter)
                 # All multiindexes sublocs are index locs
-                unpackedLocs.append(tuple(int(i) for i in subLoc))
+                multiLocs.append(tuple(int(i) for i in subLoc))
+            unpackedLocs.append(multiLocs)
         else:
             raise ValueError(f"Read unknown location type {lt}. Invalid DB.")
 
@@ -1800,12 +1904,12 @@ def _unpackLocationsV2(locationTypes, locData):
 
 class Layout:
     """
-    The Layout class describes the hierarchical layout of the composite structure in a flat representation.
+    The Layout class describes the hierarchical layout of the composite Reactor model in a flat representation.
 
     A Layout is built up by starting at the root of a composite tree and recursively
     appending each node in the tree to the list of data. So for a typical Reactor model,
-    the data will be ordered something like [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2,
-    a1b2c1, ..., a2, ...]
+    the data will be ordered by depth-first search: [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2,
+    a1b2c1, ..., a2, ...].
 
     The layout is also responsible for storing Component attributes, like location,
     material, and temperatures (from blueprints), which aren't stored as Parameters.
@@ -1839,10 +1943,27 @@ class Layout:
         self.type: List[str] = []
         self.name: List[str] = []
         self.serialNum: List[int] = []
+        # The index into the parameter datasets corresponding to each object's class.
+        # E.g., the 5th HexBlock object in the tree would get 5; to look up its
+        # "someParameter" value, you would extract cXXnYY/HexBlock/someParameter[5].
         self.indexInData: List[int] = []
+        # The number of direct children this object has.
         self.numChildren: List[int] = []
+        # The type of location that specifies the object's physical location; see the
+        # associated pack/unpackLocation functions for more information about how
+        # locations are handled.
         self.locationType: List[str] = []
+        # There is a minor asymmetry here in that before writing to the DB, this is
+        # truly a flat list of tuples. However when reading, this may contain lists of
+        # tuples, which represent MI locations. This comes from the fact that we map the
+        # tuples to Location objects in Database3._compose, but map from Locations to
+        # tuples in Layout._createLayout. Ideally we would handle both directions in the
+        # same place so this can be less surprising. Resolving this would require
+        # changing the interface of the various pack/unpack functions, which have
+        # multiple versions, so the update would need to be done with care.
         self.location: List[Tuple[int, int, int]] = []
+        # Which grid, as stored in the database, this object uses to arrange its
+        # children
         self.gridIndex: List[int] = []
         self.temperatures: List[float] = []
         self.material: List[str] = []
@@ -1861,6 +1982,7 @@ class Layout:
             Type[ArmiObject], List[ArmiObject]
         ] = collections.defaultdict(list)
 
+        # it should be noted, one of the two inputs must be non-None: comp/h5group
         if comp is not None:
             self._createLayout(comp)
             self.locationType, self.location = _packLocations(self._spatialLocators)
@@ -1905,6 +2027,8 @@ class Layout:
         self.serialNum.append(comp.p.serialNum)
         self.indexInData.append(len(compList) - 1)
         self.numChildren.append(len(comp))
+
+        # determine how many components have been read in, to set the grid index
         if comp.spatialGrid is not None:
             gridType = type(comp.spatialGrid).__name__
             gridParams = (gridType, comp.spatialGrid.reduce())
@@ -1917,6 +2041,7 @@ class Layout:
 
         self._spatialLocators.append(comp.spatialLocator)
 
+        # set the materials and temperatures
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
             self.material.append(comp.material.__class__.__name__)
@@ -1933,10 +2058,20 @@ class Layout:
             )
             raise
 
+        # depth-first search recursion of all components
         for c in comps:
             self._createLayout(c)
 
     def _readLayout(self, h5group):
+        """
+        Populate a hierarchical representation and group the reactor model items by type.
+
+        This is used when reading a reactor model from a database.
+
+        See Also
+        --------
+        _createLayout : does the opposite
+        """
         try:
             # location is either an index, or a point
             # iter over list is faster
@@ -1976,10 +2111,14 @@ class Layout:
                 unitStepLimits = thisGroup["unitStepLimits"][:]
                 offset = thisGroup["offset"][:] if thisGroup.attrs["offset"] else None
                 geomType = (
-                    thisGroup["geomType"][()] if "geomType" in thisGroup else None
+                    thisGroup["geomType"].asstr()[()]
+                    if "geomType" in thisGroup
+                    else None
                 )
                 symmetry = (
-                    thisGroup["symmetry"][()] if "symmetry" in thisGroup else None
+                    thisGroup["symmetry"].asstr()[()]
+                    if "symmetry" in thisGroup
+                    else None
                 )
 
                 self.gridParams.append(
@@ -2002,16 +2141,14 @@ class Layout:
             )
             raise e
 
-    def _initComps(self, cs, bp):
+    def _initComps(self, caseTitle, bp):
         comps = []
         groupedComps = collections.defaultdict(list)
 
-        # initialize
         for (
             compType,
             name,
             serialNum,
-            indexInData,
             numChildren,
             location,
             material,
@@ -2021,7 +2158,6 @@ class Layout:
             self.type,
             self.name,
             self.serialNum,
-            self.indexInData,
             self.numChildren,
             self.location,
             self.material,
@@ -2031,7 +2167,7 @@ class Layout:
             Klass = ArmiObject.TYPES[compType]
 
             if issubclass(Klass, Reactor):
-                comp = Klass(cs.caseTitle, bp)
+                comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
                 comp = Klass(name)
             elif issubclass(Klass, Component):
@@ -2194,7 +2330,7 @@ class Layout:
             # original ancestor array
             indexMap = {sn: i for i, sn in enumerate(serialNum)}
             origAncestors = ancestors
-            for generation in range(depth - 1):
+            for _ in range(depth - 1):
                 ancestors = [
                     origAncestors[indexMap[ia]] if ia is not None else None
                     for ia in ancestors
@@ -2271,6 +2407,7 @@ def packSpecialData(
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
+
     * Dict[str, float]: These are stored by finding the set of all keys for all
       instances, and storing those keys as a list in an attribute. The data themselves
       are stored as arrays indexed by object, then key index. Dictionaries lacking data
@@ -2468,7 +2605,7 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
         for i in attrs["noneLocations"]:
             unpackedJaggedData[i] = None
 
-        return numpy.array(unpackedJaggedData)
+        return numpy.array(unpackedJaggedData, dtype=object)
     if attrs.get("dict", False):
         keys = numpy.char.decode(attrs["keys"])
         unpackedData = []

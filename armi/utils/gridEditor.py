@@ -1,39 +1,48 @@
-# USE AND DISTRIBUTION OF THIS CODE IS GOVERNED BY EXPORT CONTROL LAWS AND THE LICENSE IN LICENSE.txt.
-# @LICENSE:
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 GUI elements for manipulating grid layout and contents.
 
 This provides a handful of classes which provide wxPython Controls for manipulating
 grids and grid Blueprints.
 
-Use
-===
 The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 
     $ python -m armi grids
 
 
-Known Issues
-============
+**Known Issues**
 
- * There is no action stack or undo functionality. Save frequently if you want to
- recover previous states
+* There is no action stack or undo functionality. Save frequently if you want to
+  recover previous states
 
- * Cartesian grids are supported, but not rendered as nicely as their Hex counterparts.
- The "through center assembly" case is not rendered properly with the half-assemblies
- that lie along the edges.
+* Cartesian grids are supported, but not rendered as nicely as their Hex counterparts.
+  The "through center assembly" case is not rendered properly with the half-assemblies
+  that lie along the edges.
 
- * The controls are optimized for manipulating a Core layout, displaying an "Assembly
- palette" that contains the Assembly designs found in the top-level blueprints. A little
- extra work and this could also be made to manipulate block grids or other things.
+* The controls are optimized for manipulating a Core layout, displaying an "Assembly
+  palette" that contains the Assembly designs found in the top-level blueprints. A little
+  extra work and this could also be made to manipulate block grids or other things.
 
- * Assembly colors are derived from the set of flags applied to them, but the mapping of
- colors to flags is not particularly rich, and there isn't anything to disambiguate
- between asemblies of different design, but the same flags.
+* Assembly colors are derived from the set of flags applied to them, but the mapping of
+  colors to flags is not particularly rich, and there isn't anything to disambiguate
+  between asemblies of different design, but the same flags.
 
- * No proper zoom support, and object sizes are fixed and don't accommodate long
- specifiers. Adding zoom would make for a fun first task to a new developer interested
- in computer graphics.
+* No proper zoom support, and object sizes are fixed and don't accommodate long
+  specifiers. Adding zoom would make for a fun first task to a new developer interested
+  in computer graphics.
+
 """
 
 import colorsys
@@ -50,9 +59,7 @@ import wx.adv
 from wx.lib import buttons
 import numpy
 import numpy.linalg
-from ruamel.yaml import scalarstring
 
-import armi
 from armi import runLog
 from armi.utils import hexagon
 from armi.utils import textProcessors
@@ -63,9 +70,8 @@ from armi.reactor import grids
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 import armi.reactor.blueprints
-from armi.reactor.blueprints import Blueprints
-from armi.reactor.blueprints import gridBlueprint
-from armi.reactor.blueprints.gridBlueprint import GridBlueprint
+from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
+from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
 from armi.settings.fwSettings import globalSettings
 
@@ -100,47 +106,6 @@ FLAG_STYLES = {
 # RGB weights for calculating luminance. We use this to decide whether we should put
 # white or black text on top of the color. These come from CCIR 601
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11])
-
-
-def _filterOutsideDomain(gridBp):
-    """
-    Remove grid contents that lie outside the represented domain.
-
-    This removes extra objects; ARMI allows the user input specifiers in regions outside
-    of the represented domain, which is fine as long as the contained specifier is
-    consistent with the corresponding region in the represented domain given the
-    symmetry condition. For instance, if we have a 1/3-core hex model, it is typically
-    okay for an assembly to be specified outside of the first 1/3rd of the core, as long
-    as it is the same assembly as would be there when expanding the first 1/3rd into a
-    full-core model.
-
-    However, we do not really want these hanging around, since editing the represented
-    1/Nth of the core will probably lead to consistency issues, so we remove them.
-    """
-    grid = gridBp.construct()
-
-    contentsToRemove = {
-        idx
-        for idx, _contents in gridBp.gridContents.items()
-        if not grid.locatorInDomain(grid[idx + (0,)], symmetryOverlap=False)
-    }
-    for idx in contentsToRemove:
-        symmetrics = grid.getSymmetricEquivalents(idx)
-        for symmetric in symmetrics:
-            if symmetric in gridBp.gridContents:
-                if gridBp.gridContents[symmetric] != gridBp.gridContents[idx]:
-                    raise ValueError(
-                        "The contents at `{}` (`{}`) in grid `{}` is not the "
-                        "same as it's symmetric equivalent at `{}` (`{}`). "
-                        "Check your grid blueprints for symmetry.".format(
-                            idx,
-                            gridBp.gridContents[idx],
-                            gridBp.name,
-                            symmetric,
-                            gridBp.gridContents[symmetric],
-                        )
-                    )
-        del gridBp.gridContents[idx]
 
 
 def _translationMatrix(x, y):
@@ -307,6 +272,8 @@ class _GridControls(wx.Panel):
         self.newButton = wx.Button(self, id=wx.ID_ANY, label="New grid blueprints...")
         self.newButton.SetToolTip("Create a new Grid blueptint.")
         self.helpButton = wx.Button(self, id=wx.ID_ANY, label="Help")
+        self.saveImgButton = wx.Button(self, id=wx.ID_ANY, label="Save image...")
+        self.saveImgButton.SetToolTip("Save the grid layout to an image file.")
 
         self.Bind(wx.EVT_BUTTON, self.onChangeRings, self.ringApply)
         self.Bind(wx.EVT_BUTTON, self.onExpand, self.expandButton)
@@ -314,6 +281,7 @@ class _GridControls(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onOpen, self.openButton)
         self.Bind(wx.EVT_BUTTON, self.onNew, self.newButton)
         self.Bind(wx.EVT_BUTTON, self.onHelp, self.helpButton)
+        self.Bind(wx.EVT_BUTTON, self.onSaveImage, self.saveImgButton)
         self.Bind(wx.EVT_CHOICE, self.onLabelMode, self.labelMode)
 
         self.help = HelpDialog(self)
@@ -339,6 +307,7 @@ class _GridControls(wx.Panel):
 
         sizer.Add(fileBox)
         sizer.Add(self.helpButton)
+        sizer.Add(self.saveImgButton)
 
         self.SetSizerAndFit(sizer)
 
@@ -360,6 +329,9 @@ class _GridControls(wx.Panel):
 
     def onSave(self, event):
         self.parent.save()
+
+    def onSaveImage(self, event):
+        self.parent.saveImage()
 
     def onOpen(self, event):
         self.parent.open(event)
@@ -656,9 +628,10 @@ class GridGui(wx.ScrolledWindow):
     This is the actual viewer that displays the grid and grid blueprints contents, and
     responds to mouse events. Under the hood, it uses a wx.PseudoDC to handle the
     drawing, which provides the following benefits over a regular DC:
-     - Drawn objects can be associated with an ID, allowing parts of the drawing to be
+
+     * Drawn objects can be associated with an ID, allowing parts of the drawing to be
        modified or cleared without having to re-draw everything.
-     - The IDs associated with the objects can be used to distinguish what was clicked
+     * The IDs associated with the objects can be used to distinguish what was clicked
        on in a mouse event (though the support for this isn't super great, so we do have
        to do some of our own object disambiguation).
 
@@ -694,7 +667,7 @@ class GridGui(wx.ScrolledWindow):
 
         @property
         def isPosition(self):
-            return self == self.POSITION_IJ or self == self.POSITION_RINGPOS
+            return self in (self.POSITION_IJ, self.POSITION_RINGPOS)
 
     def __init__(self, parent, bp=None, defaultGeom=geometry.CARTESIAN):
         """
@@ -705,7 +678,7 @@ class GridGui(wx.ScrolledWindow):
         parent : wx.Window
             The parent control
 
-        bp : Optional set of grid blueprints
+        bp : set of grid blueprints, optional
             This should be the ``gridDesigns`` section of a root Blueprints object. If
             not provided, a dictionary will be created with an empty "core" grid
             blueprint.
@@ -919,7 +892,7 @@ class GridGui(wx.ScrolledWindow):
         self.pdc.SetBrush(brush)
 
         for idx, loc in self.grid.items():
-            ring, pos = self.grid.getRingPos(idx)
+            ring, _ = self.grid.getRingPos(idx)
             if not self.grid.locatorInDomain(loc) or ring > self.numRings:
                 continue
 
@@ -1075,19 +1048,21 @@ class GridGui(wx.ScrolledWindow):
         self.drawGrid()
         self.Refresh()
 
-    def onPaint(self, event):
-        dc = wx.BufferedPaintDC(self)
+    def onPaint(self, event, dc=None):
+        selfPaint = dc is None
+        dc = dc or wx.BufferedPaintDC(self)
         dc.SetBackground(wx.Brush(wx.Colour(255, 255, 255, 255)))
         dc.Clear()
 
         self.DoPrepareDC(dc)
 
-        xv, yv = self.GetViewStart()
-        dx, dy = self.GetScrollPixelsPerUnit()
-        region = self.GetUpdateRegion()
-        region.Offset(dx * xv, dy * yv)
+        if selfPaint:
+            xv, yv = self.GetViewStart()
+            dx, dy = self.GetScrollPixelsPerUnit()
+            region = self.GetUpdateRegion()
+            region.Offset(dx * xv, dy * yv)
 
-        rect = region.GetBox()
+            _ = region.GetBox()
 
         self.pdc.DrawToDC(dc)
 
@@ -1097,8 +1072,8 @@ class GridGui(wx.ScrolledWindow):
             return
 
         if event.LeftDown():
-            x = event.GetX()
-            y = event.GetY()
+            _ = event.GetX()
+            _ = event.GetY()
 
             objId = self._getObjectFromEvent(event)
 
@@ -1227,7 +1202,7 @@ class GridGui(wx.ScrolledWindow):
             and self.grid.getRingPos(loc)[0] <= self.numRings
         }
 
-        coordScale = self._gridScale(self.grid)
+        _ = self._gridScale(self.grid)
 
         allCenters = numpy.array(
             [self.grid.getCoordinates(idx)[:2] for idx in inDomain]
@@ -1355,6 +1330,36 @@ class GridBlueprintControl(wx.Panel):
         """
         self.assemblyPalette.editorClicked()
 
+    def saveImage(self):
+        """
+        Save the core layout to an image.
+
+        Currently this only supports PNG images for simplicity. wxpython does not
+        attempt to infer the file type based on extension, so we would need to make a
+        file extension-to-format mapping.
+        """
+        dlg = wx.FileDialog(
+            self,
+            message="Save image to...",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+            wildcard="PNG images (.png)|*.png",
+        )
+
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        else:
+            return
+
+        size = self.clicker.GetVirtualSize()
+        image = wx.Bitmap(size)
+
+        dc = wx.MemoryDC()
+        dc.SelectObject(image)
+
+        self.clicker.onPaint(None, dc=dc)
+        dc.SelectObject(wx.NullBitmap)
+        image.SaveFile(path, wx.BITMAP_TYPE_PNG)
+
     def save(self, stream=None, full=False):
         """
         Save the blueprints to the passed stream, if provided. Otherwise prompt for a
@@ -1365,112 +1370,77 @@ class GridBlueprintControl(wx.Panel):
         blueprints can be useful when cobbling blueprints together with !include flags.
         """
         if stream is None:
-            # Prompt the user for a file name, open it, and call ourself again with that
-            # as the stream argument
-            if self._fName is None:
-                wd = os.getcwd()
-            else:
-                wd = os.path.split(self._fName)[0]
+            self._saveNoStream(full)
+        else:
+            saveToStream(stream, self.bp, full, tryMap=True)
 
-            # Don't use the blueprints filename as the default if we are only saving the
-            # grids section; doing so may encourage users to overwrite their main
-            # blueprints file.
-            if full:
-                fName = self._fName or ""
-            else:
-                fName = ""
+    def _saveNoStream(self, full=False):
+        """Prompt for a file to save to.
 
-            title = "Save blueprints to..." if full else "Save grid designs to..."
+        This can save either the entire blueprints, or just the `grids:` section of the
+        blueprints, based on the passed ``full`` argument. Saving just the grid
+        blueprints can be useful when cobbling blueprints together with !include flags.
+        """
+        # Prompt the user for a file name, open it, and call ourself again with that
+        # as the stream argument
+        if self._fName is None:
+            wd = os.getcwd()
+        else:
+            wd = os.path.split(self._fName)[0]
 
-            dlg = wx.FileDialog(
-                self,
-                message=title,
-                defaultDir=wd,
-                defaultFile=fName,
-                wildcard=self._wildcard,
-                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
-            )
+        # Don't use the blueprints filename as the default if we are only saving the
+        # grids section; doing so may encourage users to overwrite their main
+        # blueprints file.
+        if full:
+            fName = self._fName or ""
+        else:
+            fName = ""
 
-            if dlg.ShowModal() == wx.ID_OK:
-                path = dlg.GetPath()
-            else:
-                return
+        title = "Save blueprints to..." if full else "Save grid designs to..."
 
-            # Disallow overwriting the main blueprints with the grids section
-            if (
-                not full
-                and pathlib.Path(path).exists()
-                and pathlib.Path(path).samefile(self._fName)
-            ):
-                message = (
-                    "The chosen path, `{}` is the same as the main blueprints "
-                    'file. This tool only saves the "grids" section of the '
-                    "blueprints file, so saving over the original top-level blueprints "
-                    "will lead to data loss. Try again with a different name.".format(
-                        path
-                    )
-                )
+        dlg = wx.FileDialog(
+            self,
+            message=title,
+            defaultDir=wd,
+            defaultFile=fName,
+            wildcard=self._wildcard,
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+        )
 
-                with wx.MessageDialog(
-                    self,
-                    message,
-                    "Overwriting top-level blueprints!",
-                    style=wx.ICON_WARNING,
-                ) as dlg:
-                    dlg.ShowModal()
-                    return
-
-            # Try writing to an internal buffer before opening the file for write. This
-            # way to don't destroy anything unless we know we have something with which
-            # to replace it.
-            bpStream = io.StringIO()
-            self.save(bpStream)
-            with open(path, "w") as stream:
-                stream.write(bpStream.getvalue())
-
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        else:
             return
 
-        # To save, we want to try our best to output our grid blueprints in the lattice
-        # map style. However, we do not want to wreck the state that the current
-        # blueprints are in. So we make a copy and do some manipulations to try to
-        # canonicalize it and save that, leaving the original blueprints unmolested.
-        bp = copy.deepcopy(self.bp)
+        # Disallow overwriting the main blueprints with the grids section
+        if (
+            not full
+            and pathlib.Path(path).exists()
+            and pathlib.Path(path).samefile(self._fName)
+        ):
+            message = (
+                "The chosen path, `{}` is the same as the main blueprints "
+                'file. This tool only saves the "grids" section of the '
+                "blueprints file, so saving over the original top-level blueprints "
+                "will lead to data loss. Try again with a different name.".format(path)
+            )
 
-        for gridDesignType, gridDesign in bp.gridDesigns.items():
-            # The core equilibrium path should be put into the
-            # grid contents rather than a lattice map until we write
-            # a string-> tuple parser for reading it back in. Skip
-            # this type of grid.
-            if gridDesignType == "coreEqPath":
-                continue
-            _filterOutsideDomain(gridDesign)
-            if gridDesign.gridContents:
+            with wx.MessageDialog(
+                self,
+                message,
+                "Overwriting top-level blueprints!",
+                style=wx.ICON_WARNING,
+            ) as dlg:
+                dlg.ShowModal()
+                return
 
-                try:
-                    aMap = asciimaps.asciiMapFromGeomAndSym(
-                        self.grid.geomType, self.grid.symmetry
-                    )()
-                    aMap.asciiLabelByIndices = gridDesign.gridContents
-                    aMap.gridContentsToAscii()
-                except:
-                    runLog.warning(
-                        "Cannot write geometry with asciimap. Defaulting to dict."
-                    )
-                    aMap = None
-
-                if aMap is not None:
-                    mapString = io.StringIO()
-                    aMap.writeAscii(mapString)
-                    # deep ruamel.yaml magic
-                    formattedStr = scalarstring.LiteralScalarString(
-                        mapString.getvalue()
-                    )
-                    gridDesign.latticeMap = formattedStr
-                    gridDesign.gridContents = None
-
-        toSave = bp if full else bp.gridDesigns
-
-        type(toSave).dump(toSave, stream)
+        # Try writing to an internal buffer before opening the file for write. This
+        # way to don't destroy anything unless we know we have something with which
+        # to replace it.
+        bpStream = io.StringIO()
+        saveToStream(bpStream, self.bp, full, tryMap=True)
+        with open(path, "w") as stream:
+            stream.write(bpStream.getvalue())
 
     def open(self, _event):
         if self._fName is None:
@@ -1523,7 +1493,7 @@ class GridBlueprintControl(wx.Panel):
                     # blueprints. Give up.
                     return
 
-                armi.reactor.blueprints.migrate(bp, cs)
+                migrate(bp, cs)
 
         self.bp = bp
 
@@ -1767,31 +1737,26 @@ class NewGridBlueprintDialog(wx.Dialog):
         geom = self._geomFromIdx[self.geomType.GetSelection()]
 
         if self.domainFull.GetValue():
-            domain = geometry.FULL_CORE
+            domain = geometry.DomainType.FULL_CORE
         elif self.domain3.GetValue():
-            domain = geometry.THIRD_CORE
+            domain = geometry.DomainType.THIRD_CORE
         elif self.domain4.GetValue():
-            domain = geometry.QUARTER_CORE
+            domain = geometry.DomainType.QUARTER_CORE
         else:
             raise ValueError("Couldn't map selection to supported fractional domain")
 
         if self.periodic.GetValue():
-            bc = geometry.PERIODIC
+            bc = geometry.BoundaryType.PERIODIC
         elif self.reflective.GetValue():
-            bc = geometry.REFLECTIVE
+            bc = geometry.BoundaryType.REFLECTIVE
         else:
-            bc = ""
+            bc = geometry.BoundaryType.NO_SYMMETRY
 
-        if self.throughCenter.GetValue():
-            through = geometry.THROUGH_CENTER_ASSEMBLY
-        else:
-            through = ""
+        symmetry = geometry.SymmetryType(domain, bc, self.throughCenter.GetValue())
 
-        symmetry = domain + bc + through
+        assert symmetry.checkValidSymmetry()
 
-        assert symmetry in geometry.VALID_SYMMETRY, symmetry
-
-        bp = GridBlueprint(name=name, geom=str(geom), symmetry=symmetry)
+        bp = GridBlueprint(name=name, geom=str(geom), symmetry=str(symmetry))
 
         return bp
 
@@ -1800,7 +1765,6 @@ if __name__ == "__main__":
     import sys
 
     app = wx.App()
-
     frame = wx.Frame(None, wx.ID_ANY, title="Grid Blueprints GUI", size=(1000, 1000))
 
     gui = GridBlueprintControl(frame)

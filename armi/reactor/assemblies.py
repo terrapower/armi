@@ -30,7 +30,6 @@ from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 
@@ -79,20 +78,12 @@ class Assembly(composites.Composite):
 
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
-    CHARGED_FUEL_POOL = "CFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
     # of fuel management stuff doesn't treat its re-placement into the core as a new
     # move
     DATABASE = "database"
-    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL, CHARGED_FUEL_POOL]
-
-    # assemblies that overhang on top edge of 1/3 case.
-    ignoredRegions = [
-        (ringDum, int(1 + 3 * (ringDum - 1) / 2.0))
-        for ringDum in range(3, 50)
-        if ringDum % 2
-    ]
+    NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
     def __init__(self, typ, assemNum=None):
         """
@@ -131,12 +122,11 @@ class Assembly(composites.Composite):
         As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
         are more permissive in the grid consistency checks to accomodate situations
         where assemblies might be children of the same Core, but not in the same grid as
-        each other (as can be the case in the spent fuel or charge fuel pools). In these
-        situations, the operator returns ``False``.  This behavior may lead to some
-        strange sorting behavior when two or more Assemblies are being compared that do
-        not live in the same grid. It may be beneficial in the future to maintain the
-        more strict behavior of ArmiObject's ``__lt__`` implementation once the SFP/CFP
-        situation is cleared up.
+        each other (as can be the case in the spent fuel pool). In these situations,
+        the operator returns ``False``.  This behavior may lead to some strange sorting
+        behavior when two or more Assemblies are being compared that do not live in the
+        same grid. It may be beneficial in the future to maintain the more strict behavior
+        of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
 
         See also
         --------
@@ -161,7 +151,8 @@ class Assembly(composites.Composite):
             b.makeUnique()
             b.setName(b.makeName(self.p.assemNum, bi))
 
-    def makeNameFromAssemNum(self, assemNum):
+    @staticmethod
+    def makeNameFromAssemNum(assemNum):
         """
         Set the name of this assembly (and the containing blocks) based on an assemNum.
 
@@ -225,8 +216,6 @@ class Assembly(composites.Composite):
             return self.LOAD_QUEUE
         elif isinstance(self.parent, assemblyLists.SpentFuelPool):
             return self.SPENT_FUEL_POOL
-        elif isinstance(self.parent, assemblyLists.ChargedFuelPool):
-            return self.CHARGED_FUEL_POOL
         return self.parent.spatialGrid.getLabel(
             self.spatialLocator.getCompleteIndices()[:2]
         )
@@ -952,8 +941,11 @@ class Assembly(composites.Composite):
         """
         EPS = 1e-10
         blocksHere = []
+        allMeshPoints = set()
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
+                allMeshPoints.add(b.p.zbottom)
+                allMeshPoints.add(b.p.ztop)
                 # at least some of this block overlaps the window of interest
                 top = min(b.p.ztop, zUpper)
                 bottom = max(b.p.zbottom, zLower)
@@ -962,6 +954,22 @@ class Assembly(composites.Composite):
                 # Filter out blocks that have an extremely small height fraction
                 if heightHere / b.getHeight() > EPS:
                     blocksHere.append((b, heightHere))
+
+        totalHeight = 0.0
+        # The expected height snaps to the minimum height that is requested
+        expectedHeight = min(
+            sorted(allMeshPoints)[-1] - sorted(allMeshPoints)[0], zUpper - zLower
+        )
+        for _b, height in blocksHere:
+            totalHeight += height
+
+        # Verify that the heights of all the blocks are equal to the expected
+        # height for the given zUpper and zLower.
+        if abs(totalHeight - expectedHeight) > 1e-5:
+            raise ValueError(
+                f"The cumulative height of {blocksHere} is {totalHeight} cm "
+                f"and does not equal the expected height of {expectedHeight} cm"
+            )
 
         return blocksHere
 
@@ -1315,55 +1323,11 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-    def getPitch(self):
-        """returns hex pitch in cm."""
-        pList = []
-        for b in self:
-            pList.append(b.getPitch())
+    pass
 
-        if numpy.std(pList) > 0.01:
-            runLog.warning(
-                "There are multiple pitches in {0}. They are: {1}."
-                " Returning average".format(self, pList)
-            )
-            # print out the bottom two blocks for debugging
-            for b in self[:2]:
-                b.printContents()
-        return numpy.average(pList)
 
-    def convert2DPinValsTo1D(self, vals, imax, jmax):
-        """
-        This converts a 2-D list of vals as a function of (i,j) = (ring-1,pos-1)
-        to a 1-D list of the same vals indexed by n = sum(jmax[0:i]) + j
-
-        No hex surface index (k = 0 to 5) is used here.
-
-        Parameters
-        ----------
-        vals : 2-D list of floats
-            The arbitrary quantity that is to be re-indexed from 2-D to 1-D.
-
-        imax : int
-            The maximum number of hex assembly rings in the reactor (including
-            partially-filled rings).
-
-        jmax : list of ints
-            A list containing the total number of hex assembly "positions" in each hex
-            assembly "ring".  This includes "ghost" assemblies that do not exist in a
-            1/3 or 1/6 core.
-
-        Returns
-        -------
-        vals1D : list of floats
-            The arbitrary quantity that has been re-indexed from 2-D to 1-D.
-        """
-
-        vals1D = [0.0] * sum(jmax[0:imax])  # initialize 1-D list
-        for i in range(imax):  # loop through rings
-            for j in range(jmax[i]):  # loop through positions in ring i
-                vals1D[sum(jmax[0:i]) + j] = vals[i][j]  # convert 2-D (i,j) to 1-D!
-
-        return vals1D
+class CartesianAssembly(Assembly):
+    pass
 
 
 class RZAssembly(Assembly):
@@ -1436,9 +1400,3 @@ class ThRZAssembly(RZAssembly):
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)
         self.p.AziMesh = 1
-
-
-class CartesianAssembly(Assembly):
-
-    # Don't ignore things.
-    ignoredRegions = []

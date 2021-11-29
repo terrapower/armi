@@ -1,5 +1,25 @@
-[report]
 # Don't worry about coverage for the grid GUI (for now)
+[run]
 omit =
-    armi/utils/gridEditor.py
     armi/cli/gridGui.py
+    armi/utils/gridEditor.py
+    armi/utils/tests/test_gridGui.py
+
+[report]
+omit =
+    armi/cli/gridGui.py
+    armi/utils/gridEditor.py
+    */tests/*
+
+exclude_lines =
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise KeyboardInterrupt
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if __name__ == .__main__.:

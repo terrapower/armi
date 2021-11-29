@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
 import pathlib
 import random
 import unittest
@@ -24,10 +25,19 @@ from armi import tests
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import components
-from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor.assemblies import *
+from armi.reactor import geometry
+from armi.reactor.assemblies import (
+    blocks,
+    copy,
+    Flags,
+    grids,
+    HexAssembly,
+    math,
+    numpy,
+    runLog,
+)
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
@@ -123,7 +133,7 @@ def buildTestAssemblies():
         assembly = assemblies.HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numBlocks)
         assembly.spatialGrid.armiObject = assembly
-        for i in range(numBlocks):
+        for _i in range(numBlocks):
             newBlock = copy.deepcopy(blockTemplate)
             assembly.add(newBlock)
         assembly.calculateZCoords()
@@ -171,8 +181,10 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(uThZrFuel.getMassFrac("TH232"), 0.3)
 
 
-def makeTestAssembly(numBlocks, assemNum, pitch=1.0, r=None):
-    coreGrid = r.core.spatialGrid if r is not None else grids.HexGrid.fromPitch(pitch)
+def makeTestAssembly(
+    numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None
+):
+    coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
     a.spatialGrid = grids.axialUnitGrid(numBlocks)
     a.spatialGrid.armiObject = a
@@ -192,7 +204,9 @@ class Assembly_TestCase(unittest.TestCase):
         )  # Print nothing to the screen that would normally go to the log.
 
         self.r = tests.getEmptyHexReactor()
-        self.r.core.symmetry = "third periodic"
+        self.r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+        )
 
         self.Assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
         self.r.core.add(self.Assembly)
@@ -292,7 +306,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_extend(self):
         blockList = []
-        for i in range(2):
+        for _ in range(2):
             b = blocks.HexBlock("TestBlock", self.cs)
             self.blockList.append(b)
             blockList.append(b)
@@ -330,7 +344,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getLocation(self):
         cur = self.Assembly.getLocation()
-        ref = str("A5003")
+        ref = str("005-003")
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
@@ -366,7 +380,7 @@ class Assembly_TestCase(unittest.TestCase):
         assembly2 = makeTestAssembly(assemNum2, assemNum2)
 
         # add some blocks with a component
-        for i in range(assemNum2):
+        for _ in range(assemNum2):
             b = blocks.HexBlock("TestBlock", self.cs)
             b.setHeight(height2)
             assembly2.add(b)
@@ -488,7 +502,7 @@ class Assembly_TestCase(unittest.TestCase):
         assembly2 = makeTestAssembly(assemNum2, assemNum2)
 
         # add some blocks with a component
-        for i in range(assemNum2):
+        for _i in range(assemNum2):
 
             self.hexDims = {
                 "Tinput": 273.0,
@@ -539,20 +553,22 @@ class Assembly_TestCase(unittest.TestCase):
         params["maxDpaPeak"] = 14.0
         params["kInf"] = 60.0
 
-        for param in params:
-            assembly2.p[param] = params[param]
+        for key, param in params.items():
+            assembly2.p[key] = param
 
         self.Assembly.updateParamsFrom(assembly2)
 
-        for param in params:
-            cur = self.Assembly.p[param]
-            ref = params[param]
+        for key, param in params.items():
+            cur = self.Assembly.p[key]
+            ref = param
             self.assertEqual(cur, ref)
 
-    def _setup_blueprints(self):
+    def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            self.cs["loadingFile"] = "refSmallReactor.yaml"
+            newSettings = {"loadingFile": filename}
+            self.cs = self.cs.modified(newSettings=newSettings)
+
             with open(self.cs["loadingFile"], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
                     y, pathlib.Path(self.cs.inputDirectory)
@@ -677,8 +693,8 @@ class Assembly_TestCase(unittest.TestCase):
         }
         # Set some params
         for b in self.Assembly:
-            for param in paramDict:
-                b.p[param] = paramDict[param]
+            for param, paramVal in paramDict.items():
+                b.p[param] = paramVal
 
         for param in paramDict:
             cur = list(self.Assembly.getChildParamValues(param))
@@ -719,7 +735,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_calcTotalParam(self):
         # Remake original assembly
-        self.Assembly = self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -800,7 +816,8 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_reestablishBlockOrder(self):
         self.assertEqual(self.Assembly.spatialLocator.indices[0], 2)
-        self.assertEqual(self.Assembly[0].getLocation(), "A5003A")
+        self.assertEqual(self.Assembly[0].spatialLocator.getRingPos(), (5, 3))
+        self.assertEqual(self.Assembly[0].spatialLocator.indices[2], 0)
         axialIndices = [2, 1, 0]
         for ai, b in zip(axialIndices, self.Assembly):
             b.spatialLocator = self.Assembly.spatialGrid[0, 0, ai]
@@ -808,7 +825,7 @@ class Assembly_TestCase(unittest.TestCase):
         cur = []
         for b in self.Assembly:
             cur.append(b.getLocation())
-        ref = ["A5003A", "A5003B", "A5003C"]
+        ref = ["005-003-000", "005-003-001", "005-003-002"]
         self.assertEqual(cur, ref)
 
     def test_countBlocksOfType(self):
@@ -816,13 +833,16 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_axiallyExpandBlockHeights(self):
-        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closes to the grid plate.  Enrty n represents the top fuel block closes to the plenum
+        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closest to the grid plate.
+        Entry n represents the top fuel block closes to the plenum
         adjust list = list of nuclides to modify"""
 
         self.assemNum = 5
 
         # Remake original assembly
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.r.core.removeAssembly(self.Assembly)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
+        self.r.core.add(self.Assembly)
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -900,7 +920,10 @@ class Assembly_TestCase(unittest.TestCase):
         self.assemNum = 5
 
         # Remake original assembly
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum)
+        self.r.core.removeAssembly(self.Assembly)
+        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
+        self.r.core.add(self.Assembly)
+
         # add some blocks with a component
         for blockI in range(self.assemNum):
             b = blocks.HexBlock("TestBlock", self.cs)
@@ -1104,103 +1127,42 @@ class Assembly_TestCase(unittest.TestCase):
             b.add(h)
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
-
-class HexAssembly_TestCase(unittest.TestCase):
-    def setUp(self):
-        self.name = "A0015"
-        self.assemNum = 3
-        self.height = 10
-        self.cs = settings.Settings()
-        self.cs[
-            "verbosity"
-        ] = "error"  # Print nothing to the screen that would normally go to the log.
-        self.cs["stationaryBlocks"] = []
-        self.HexAssembly = makeTestAssembly(self.assemNum, self.assemNum, 0.76)
-        # add some blocks with a component
-        self.blockList = []
-        for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
-            b.setHeight(self.height)
-            self.hexDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "op": 0.76,
-                "ip": 0.0,
-                "mult": 1.0,
-            }
-
-            h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b.setType("defaultType")
-            b.add(h)
-            self.HexAssembly.add(b)
-            self.blockList.append(b)
-
-    def tearDown(self):
-        self.HexAssembly = None
-
-    def test_getPitch(self):
-        pList = []
-        for b in self.HexAssembly:
-            pList.append(b.getPitch())
-
-        cur = self.HexAssembly.getPitch()
-        ref = numpy.average(pList)
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-
-class CartesianAssembly_TestCase(unittest.TestCase):
-    def setUp(self):
-        self.name = "A0015"
-        self.assemNum = 3
-        self.height = 10
-        self.cs = settings.Settings()
-        self.cs[
-            "verbosity"
-        ] = "error"  # Print nothing to the screen that would normally go to the log.
-        self.cs["stationaryBlocks"] = []
-        reactorGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
-        a = self.CartesianAssembly = CartesianAssembly(
-            "defaultType", assemNum=self.assemNum
+    def test_carestianCoordinates(self):
+        """
+        Check the coordinates of the assembly within the core with a CarestianGrid.
+        """
+        a = makeTestAssembly(
+            numBlocks=1,
+            assemNum=1,
+            spatialGrid=grids.CartesianGrid.fromRectangle(1.0, 1.0),
         )
-        a.spatialGrid = grids.axialUnitGrid(self.assemNum)
-        a.spatialLocator = grids.IndexLocation(5, 3, 0, reactorGrid)
-        a.spatialGrid.armiObject = a
+        self.assertEqual(a.coords(), (2.0, 2.0))
 
-        # add some blocks with a component
-        self.blockList = []
-
-        for _i in range(self.assemNum):
-            b = blocks.CartesianBlock("TestCartesianBlock", self.cs)
-            b.setHeight(self.height)
-
-            self.cartesianDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "widthOuter": 1.0,
-                "widthInner": 0.0,
-                "mult": 1.0,
-            }
-
-            h = components.Square("fuel", "UZr", **self.cartesianDims)
-            b.setType("defaultType")
-            b.add(h)
-            self.CartesianAssembly.add(b)
-            self.blockList.append(b)
-
-    def tearDown(self):
-        self.CartesianAssembly = None
-
-    def test_coords(self):
+    def test_pinPlenumVolume(self):
         """
-        Check coordinates of a Cartesian grid.
-
-        A default Cartesian grid has the center square centered at 0,0.
-        So a square at index 5, 3  with indexing starting at 0
-        would be centered at 5.0. 3.0.
+        Test the volume of a pin in the assembly's plenum.
         """
-        cur = self.CartesianAssembly.coords()
-        self.assertEqual(cur, (5.0, 3.0))
+        pinPlenumVolume = 5.951978000285659e-05
+
+        self._setup_blueprints("refSmallReactorBase.yaml")
+        assembly = self.r.blueprints.assemblies.get("igniter fuel")
+        self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
+
+    def test_averagePlenumTemperature(self):
+        """
+        Test an assembly's average plenum temperature with a single block outlet.
+        """
+        averagePlenumTemp = 42.0
+        plenumBlock = makeTestAssembly(
+            1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0)
+        )
+
+        plenumBlock.setType("plenum", Flags.PLENUM)
+        plenumBlock.p.THcoolantOutletT = averagePlenumTemp
+        self.Assembly.setBlockMesh([10.0, 20.0, 30.0], conserveMassFlag="auto")
+        self.Assembly.append(plenumBlock)
+
+        self.assertEqual(averagePlenumTemp, self.Assembly.getAveragePlenumTemperature())
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
@@ -1215,14 +1177,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
-        igniterFuel = "A1001"
+        grid = self.r.core.spatialGrid
 
         ################################
         # examine mass change in igniterFuel
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
+        igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
@@ -1230,13 +1192,13 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterMassGrid = b.getMass() - coolMass
         igniterMassGridTotal = b.getMass()
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1 = b.getHMMass()
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMass = b.getMass() - coolMass
@@ -1248,21 +1210,20 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         #############################
         # check igniter mass after expansion
         #############################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterMassGridAfterExpand = b.getMass() - coolMass
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMassAfterExpand = b.getMass() - coolMass
@@ -1282,9 +1243,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         #############################
         # check igniter mass after shrink to original
         #############################
-        a = self.r.core.getAssemblyWithStringLocation(igniterFuel)
         # gridplate, fuel, fuel, fuel, plenum
-        b = a[0]
+        b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
         for nuc in coolantNucs:
@@ -1292,13 +1252,13 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterMassGridAfterShrink = b.getMass() - coolMass
         igniterMassGridTotalAfterShrink = b.getMass()
 
-        b = a[1]
+        b = igniterFuel[1]
         igniterHMMass1AfterShrink = b.getHMMass()
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
 
         coolMass = 0
-        b = a[4]
+        b = igniterFuel[4]
         for nuc in coolantNucs:
             coolMass += b.getMass(nuc)
         igniterPlenumMassAfterShrink = b.getMass() - coolMass
@@ -1314,12 +1274,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
-        shield = "A9002"
+        # access the shield in ring 9, pos 2
+        grid = self.r.core.spatialGrid
+        i, j = grid.getIndicesFromRingAndPos(9, 2)
 
         ################################
         # examine mass change in radial shield
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
+        a = self.r.core.childrenByLocator[grid[i, j, 0]]
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1349,7 +1311,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         ################################
         # examine mass change in radial shield after expansion
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1390,7 +1351,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         ################################
         # examine mass change in radial shield after shrink to original
         ################################
-        a = self.r.core.getAssemblyWithStringLocation(shield)
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1425,7 +1385,9 @@ class AnnularFuelTestCase(unittest.TestCase):
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
-        self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
+        newSettings = {"xsKernel": "MC2v2"}  # don't try to expand elementals
+        self.cs = self.cs.modified(newSettings=newSettings)
+
         settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
         self.r = reactors.Reactor("test", bp)
@@ -1512,6 +1474,4 @@ assemblies:
 
 
 if __name__ == "__main__":
-    # import sys
-    # sys.argv = ['', 'Assembly_TestCase.test_getPuFrac']
     unittest.main()

@@ -1,20 +1,31 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Computing Reaction Rates on a Block
 ===================================
 
-In this example, a set of 1-group reaction rates (in #/s) are evaluated 
-for a dummy fuel block containing UZr fuel, HT9 structure, and 
+In this example, a set of 1-group reaction rates (in #/s) are evaluated
+for a dummy fuel block containing UZr fuel, HT9 structure, and
 sodium coolant. A dummy multigroup flux is applied.
 
 This example also demonstrates how to build a reactor model from code alone
 rather than relying upon input files.
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 
-from armi import settings
-from armi import nuclideBases
+from armi import configure, nuclideBases, settings
 
 from armi.reactor.flags import Flags
 from armi.reactor import grids
@@ -34,9 +45,8 @@ from armi.reactor.components import DerivedShape
 from armi.materials import uZr
 from armi.materials import ht9
 from armi.materials import sodium
-import armi
 
-armi.configure(permissive=True)
+configure(permissive=True)
 
 
 def _addFlux(b):
@@ -65,8 +75,10 @@ def createDummyReactor():
     r = reactors.Reactor("Reactor", bp)
     r.add(reactors.Core("Core"))
     r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    r.core.spatialGrid.symmetry = geometry.THIRD_CORE + geometry.PERIODIC
-    r.core.spatialGrid.geomType = geometry.HEX
+    r.core.spatialGrid.symmetry = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
+    r.core.spatialGrid.geomType = geometry.GeomType.HEX
     r.core.spatialGrid.armiObject = r.core
     r.core.setOptionsFromCs(cs)
 

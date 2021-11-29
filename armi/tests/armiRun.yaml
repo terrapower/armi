@@ -19,17 +19,12 @@ settings:
       numInternalRings: 1
       numExternalRings: 1
     XA:
-      geometry: 0D
-      externalDriver: true
-      useHomogenizedBlockComposition: false
-      numInternalRings: 1
-      numExternalRings: 1
       fileLocation:
         - ISOXA
   cycleLength: 2000.0
   db: false
   detailAssemLocationsBOL:
-    - A2001
+    - 002-001
   economics: false
   epsBurnTime: 0.001
   epsFSAvg: 1e-06
@@ -47,6 +42,8 @@ settings:
   genReports: false
   maxFlowZones: 12
   maxRegionDensityIterations: 5
+  moduleVerbosity:
+    armi.reactor.reactors: info
   nCycles: 6
   nodeGroup: OnlineNodes,TP
   numCoupledIterations: 0

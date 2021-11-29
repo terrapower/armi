@@ -33,9 +33,8 @@ import trace
 import time
 import textwrap
 import ast
-from typing import Optional, Sequence
+from typing import Dict, Optional, Sequence, Set
 import glob
-
 import tabulate
 import six
 import coverage
@@ -46,12 +45,10 @@ from armi import settings
 from armi import operators
 from armi import runLog
 from armi import interfaces
+from armi.cli import reportsEntryPoint
 from armi.reactor import blueprints
-from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.reactor import reactors
-from armi.bookkeeping import report
-from armi.bookkeeping.report import reportInterface
 from armi.bookkeeping.db import compareDatabases
 from armi.utils import pathTools
 from armi.utils.directoryChangers import DirectoryChanger
@@ -70,7 +67,7 @@ class Case:
 
     A Case is capable of loading inputs, checking that they are valid, and
     initializing a reactor model. Cases can also compare against
-    other cases and be collected into :py:class:`~armi.cases.suite.CaseSuite`s.
+    other cases and be collected into :py:class:`armi.cases.suite.CaseSuite`\ s.
     """
 
     def __init__(self, cs, caseSuite=None, bp=None, geom=None):
@@ -89,7 +86,7 @@ class Case:
             snapshot testing or more complex analysis sequences).
 
         bp : Blueprints, optional
-            :py:class:`~armi.reactor.blueprints.Blueprints` object containing the assembly
+            :py:class:`armi.reactor.blueprints.Blueprints` object containing the assembly
             definitions and other information. If not supplied, it will be loaded from the
             ``cs`` as needed.
 
@@ -100,7 +97,12 @@ class Case:
         self._startTime = time.time()
         self._caseSuite = caseSuite
         self._tasks = []
+        self._dependencies: Set[Case] = set()
         self.enabled = True
+
+        # set the signal if the user passes in a blueprint object, instead of a file
+        if bp is not None:
+            cs.filelessBP = True
 
         # NOTE: in order to prevent slow submission times for loading massively large
         # blueprints (e.g. certain computer-generated input files),
@@ -143,7 +145,7 @@ class Case:
         This property allows lazy loading.
         """
         if self._bp is None:
-            self._bp = blueprints.loadFromCs(self.cs)
+            self._bp = blueprints.loadFromCs(self.cs, roundTrip=True)
         return self._bp
 
     @bp.setter
@@ -198,9 +200,27 @@ class Case:
                 )
             )
         # ensure that a case doesn't appear to be its own dependency
+        dependencies.update(self._dependencies)
         dependencies.discard(self)
 
         return dependencies
+
+    def addExplicitDependency(self, case):
+        """
+        Register an explicit dependency
+
+        When evaluating the ``dependency`` property, dynamic dependencies are probed
+        using the current case settings and plugin hooks. Sometimes, it is necessary to
+        impose dependencies that are not expressed through settings and hooks. This
+        method stores another case as an explicit dependency, which will be included
+        with the other, implicitly discovered, dependencies.
+        """
+        if case in self._dependencies:
+            runLog.warning(
+                "The case {} is already explicity specified as a dependency of "
+                "{}".format(case, self)
+            )
+        self._dependencies.add(case)
 
     def getPotentialParentFromSettingValue(self, settingValue, filePattern):
         """
@@ -319,6 +339,15 @@ class Case:
         Room for improvement: The coverage, profiling, etc. stuff can probably be moved
         out of here to a more elegant place (like a context manager?).
         """
+        # Start the log here so that the verbosities for the head and workers
+        # can be configured based on the user settings for the rest of the
+        # run.
+        runLog.LOG.startLog(self.cs.caseTitle)
+        if armi.MPI_RANK == 0:
+            runLog.setVerbosity(self.cs["verbosity"])
+        else:
+            runLog.setVerbosity(self.cs["branchVerbosity"])
+
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
@@ -451,7 +480,7 @@ class Case:
                         )
                     )
 
-                if queryData:
+                if queryData and armi.MPI_RANK == 0:
                     runLog.header("=========== Settings Input Queries ===========")
                     runLog.info(
                         tabulate.tabulate(
@@ -465,21 +494,8 @@ class Case:
 
     def summarizeDesign(self, generateFullCoreMap=True, showBlockAxialMesh=True):
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
-        settings.setMasterCs(self.cs)
-        o = self.initializeOperator()
-        with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
-            # There are global variables that are modified when a report is
-            # generated, so reset it all
-            six.moves.reload_module(report)  # pylint: disable=too-many-function-args
-            self.cs.setSettingsReport()
-            rpi = o.getInterface("report")
 
-            if rpi is None:
-                rpi = reportInterface.ReportInterface(o.r, o.cs)
-
-            rpi.generateDesignReport(generateFullCoreMap, showBlockAxialMesh)
-            report.DESIGN.writeHTML()
-            runLog.important("Design report summary was successfully generated")
+        _ = reportsEntryPoint.createReportFromSettings(self.cs)
 
     def buildCommand(self, python="python"):
         """
@@ -533,7 +549,7 @@ class Case:
         cloneCS = self.cs.duplicate()
 
         if modifiedSettings is not None:
-            cloneCS.update(modifiedSettings)
+            cloneCS = cloneCS.modified(newSettings=modifiedSettings)
 
         clone = Case(cloneCS)
         clone.cs.path = pathTools.armiAbsPath(title or self.title) + ".yaml"
@@ -545,6 +561,10 @@ class Case:
                     pathTools.armiAbsPath(clone.cs.path)
                 )
             )
+
+        newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
+        for settingName, value in newSettings.items():
+            clone.cs[settingName] = value
 
         runLog.important("writing settings file {}".format(clone.cs.path))
         clone.cs.writeToYamlFile(clone.cs.path)
@@ -564,8 +584,6 @@ class Case:
                 runLog.warning(
                     "skipping {}, there is no file specified".format(inputFileSetting)
                 )
-
-        copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
 
         with open(self.cs["loadingFile"], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the
@@ -673,50 +691,137 @@ class Case:
         ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
-            self.bp
-            self.geom
-            self.cs["loadingFile"] = self.title + "-blueprints.yaml"
+            self.bp  # pylint: disable=pointless-statement
+            self.geom  # pylint: disable=pointless-statement
+
+            newSettings = {}
+            newSettings["loadingFile"] = self.title + "-blueprints.yaml"
             if self.geom:
-                self.cs["geomFile"] = self.title + "-geom.yaml"
-                self.geom.writeGeom(self.cs["geomFile"])
+                newSettings["geomFile"] = self.title + "-geom.yaml"
+                self.geom.writeGeom(newSettings["geomFile"])
+
             if self.independentVariables:
-                self.cs["independentVariables"] = [
+                newSettings["independentVariables"] = [
                     "({}, {})".format(repr(varName), repr(val))
                     for varName, val in self.independentVariables.items()
                 ]
 
-            with open(self.cs["loadingFile"], "w") as loadingFile:
+            with open(newSettings["loadingFile"], "w") as loadingFile:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
-            # copy input files from other modules (e.g. fuel management, control logic, etc.)
-            copyInterfaceInputs(self.cs, ".", sourceDir)
+            # copy input files from other modules/plugins
+            interfaceSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
+            for settingName, value in interfaceSettings.items():
+                newSettings[settingName] = value
 
+            self.cs = self.cs.modified(newSettings=newSettings)
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
-def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None):
+def copyInterfaceInputs(
+    cs, destination: str, sourceDir: Optional[str] = None
+) -> Dict[str, str]:
     """
     Copy sets of files that are considered "input" from each active interface.
 
-    This enables developers to add new inputs in a plugin-dependent/
-    modular way.
+    This enables developers to add new inputs in a plugin-dependent/ modular way.
 
     In parameter sweeps, these often have a sourceDir associated with them that is
     different from the cs.inputDirectory.
+
+    Parameters
+    ----------
+    cs : CaseSettings
+        The source case settings to find input files
+
+    destination: str
+        The target directory to copy input files to
+
+    sourceDir: str, optional
+        The directory from which to copy files. Defaults to cs.inputDirectory
+
+    Notes
+    -----
+
+    This may seem a bit overly complex, but a lot of the behavior is important. Relative
+    paths are copied into the target directory, which in some cases requires updating
+    the setting that pointed to the file in the first place. This is necessary to avoid
+    case dependencies in relavive locations above the input directory, which can lead to
+    issues when cloneing case suites. In the future this could be simplified by adding a
+    concept for a suite root directory, below which it is safe to copy files without
+    needing to update settings that point with a relative path to files that are below
+    it.
+
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
-    for klass, kwargs in activeInterfaces:
-        if not kwargs.get("enabled", True):
-            # Don't consider disabled interfaces
-            continue
+    sourceDirPath = pathlib.Path(sourceDir)
+    destPath = pathlib.Path(destination)
+
+    newSettings = {}
+
+    assert destPath.is_dir()
+
+    for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
-        for label, relativeGlobs in interfaceFileNames.items():
-            for relativeGlob in relativeGlobs:
-                for sourceFullPath in glob.glob(os.path.join(sourceDir, relativeGlob)):
-                    if not sourceFullPath:
-                        continue
-                    _sourceDir, sourceName = os.path.split(sourceFullPath)
-                    pathTools.copyOrWarn(
-                        label, sourceFullPath, os.path.join(destination, sourceName)
-                    )
+        # returned files can be absolute paths, relative paths, or even glob patterns.
+        # Since we don't have an explicit way to signal about these, we sort of have to
+        # guess. In future, it might be nice to have interfaces specify which
+        # explicitly.
+        for key, files in interfaceFileNames.items():
+            if isinstance(key, settings.Setting):
+                label = key.name
+            else:
+                label = key
+
+            for f in files:
+                path = pathlib.Path(f)
+                if path.is_absolute() and path.exists() and path.is_file():
+                    # looks like an extant, absolute path; no need to do anything
+                    pass
+                else:
+                    # An OSError can occur if a wildcard is included in the file name so
+                    # this is wrapped in a try/except to circumvent instances where an
+                    # interface requests to copy multiple files based on some prefix/suffix.
+                    try:
+                        if not (path.exists() and path.is_file()):
+                            runLog.extra(
+                                f"Input file `{f}` not found. Checking for file at path `{sourceDirPath}`"
+                            )
+                    except OSError:
+                        pass
+
+                    # relative path/glob. Should be safe to just use glob resolution.
+                    # Note that `glob.glob` is being used here rather than `pathlib.glob` because
+                    # `pathlib.glob` for Python 3.7.2 does not handle case sensitivity for file and
+                    # path names. This is required for copying and using Python scripts (e.g., fuel management,
+                    # control logic, etc.).
+                    srcFiles = [
+                        pathlib.Path(os.path.join(sourceDirPath, g))
+                        for g in glob.glob(os.path.join(sourceDirPath, f))
+                    ]
+                    for sourceFullPath in srcFiles:
+                        if not sourceFullPath:
+                            continue
+                        _sourceDir, sourceName = os.path.split(sourceFullPath)
+                        sourceName = sourceFullPath.name
+                        destFile = (destPath / sourceName).relative_to(destPath)
+                        pathTools.copyOrWarn(
+                            label, sourceFullPath, destPath / sourceName
+                        )
+
+                    if len(srcFiles) == 0:
+                        runLog.warning(
+                            f"No input files for `{label}` could be resolved "
+                            f"with the following file path: `{f}`."
+                        )
+                    elif len(srcFiles) > 1:
+                        runLog.warning(
+                            f"Input files for `{label}` resolved to more "
+                            f"than one file; cannot update settings safely. "
+                            f"Discovered input files: {srcFiles}"
+                        )
+                    elif len(srcFiles) == 1 and isinstance(key, settings.Setting):
+                        newSettings[key.name] = str(destFile)
+
+    return newSettings

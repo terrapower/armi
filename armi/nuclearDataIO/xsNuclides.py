@@ -26,11 +26,17 @@ reconstructed.
     index (i.e. "PU39AA").
 """
 from armi.nucDirectory import nuclideBases
-from armi.localization import warnings
-from armi.localization import exceptions
 from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import nuclearFileMetadata
+from armi.utils.customExceptions import warn_when_root
+
+
+@warn_when_root
+def NuclideLabelDoesNotMatchNuclideLabel(nuclide, label, xsID):
+    return "The label {} (xsID:{}) for nuclide {}, does not match the nucDirectory label.".format(
+        label, xsID, nuclide
+    )
 
 
 class XSNuclide(nuclideBases.NuclideWrapper):
@@ -83,13 +89,11 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             # FP, DUMMY, DUMP
             nuclideBase = nuclideBases.byLabel.get(self.nucLabel, None)
             if nuclideBase is None:
-                raise exceptions.IsotxsError(
+                raise OSError(
                     "Could not determine NuclideBase for label {}".format(self.nucLabel)
                 )
         if self.nucLabel != nuclideBase.label:
-            warnings.nuclide_NuclideLabelDoesNotMatchNuclideLabel(
-                nuclideBase, self.nucLabel, self.xsId
-            )
+            NuclideLabelDoesNotMatchNuclideLabel(nuclideBase, self.nucLabel, self.xsId)
             nuclideBases.changeLabel(nuclideBase, self.nucLabel)
         self._base = nuclideBase
 
@@ -182,13 +186,13 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         are discarded after the merge.
         """
         self.isotxsMetadata = self.isotxsMetadata.merge(
-            other.isotxsMetadata, self, other, "ISOTXS", exceptions.XSLibraryError
+            other.isotxsMetadata, self, other, "ISOTXS", AttributeError
         )
         self.gamisoMetadata = self.gamisoMetadata.merge(
-            other.gamisoMetadata, self, other, "GAMISO", exceptions.XSLibraryError
+            other.gamisoMetadata, self, other, "GAMISO", AttributeError
         )
         self.pmatrxMetadata = self.pmatrxMetadata.merge(
-            other.pmatrxMetadata, self, other, "PMATRX", exceptions.XSLibraryError
+            other.pmatrxMetadata, self, other, "PMATRX", AttributeError
         )
         self.micros.merge(other.micros)
         self.gammaXS.merge(other.gammaXS)
@@ -220,7 +224,7 @@ def _mergeAttributes(this, other, attrName):
     attr1 = getattr(this, attrName)
     attr2 = getattr(other, attrName)
     if attr1 is not None and attr2 is not None:
-        raise exceptions.XSLibraryError(
+        raise AttributeError(
             "Cannot merge {} and {}, the attribute `{}` has been assigned on both"
             "instances.".format(this, other, attrName)
         )
@@ -228,7 +232,7 @@ def _mergeAttributes(this, other, attrName):
 
 
 def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
-    r"""plots a matrix to show scattering. """
+    r"""plots a matrix to show scattering."""
     from matplotlib import pyplot
 
     pyplot.imshow(scatterMatrix.todense(), interpolation="nearest")
@@ -244,7 +248,7 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
 
 
 def compareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
-    """Compares scatter matrices graphically between libraries. """
+    """Compares scatter matrices graphically between libraries."""
     from matplotlib import pyplot
 
     diff = scatterMatrix1 - scatterMatrix2

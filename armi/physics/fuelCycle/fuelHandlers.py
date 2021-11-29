@@ -34,7 +34,7 @@ import numpy
 
 from armi import interfaces
 from armi import runLog
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
 from armi.utils import directoryChangers, pathTools
@@ -66,12 +66,14 @@ class FuelHandlerInterface(interfaces.Interface):
 
     @staticmethod
     def specifyInputs(cs):
-        files = [
-            cs[label]
-            for label in ["shuffleLogic", "explicitRepeatShuffles"]
-            if cs[label]
-        ]
-        return {"fuel management": files}
+        files = {
+            cs.getSetting(settingName).label: [
+                cs[settingName],
+            ]
+            for settingName in ["shuffleLogic", "explicitRepeatShuffles"]
+            if cs[settingName]
+        }
+        return files
 
     def interactBOC(self, cycle=None):
         """
@@ -92,10 +94,6 @@ class FuelHandlerInterface(interfaces.Interface):
         if self.enabled():
             self.manageFuel(cycle)
 
-        self.r.core.p.numAssembliesInSFP = self.r.core.powerMultiplier * len(
-            self.r.core.sfp
-        )
-
     def interactEOC(self, cycle=None):
         timeYears = self.r.p.time
         # keep track of the EOC time in years.
@@ -103,11 +101,6 @@ class FuelHandlerInterface(interfaces.Interface):
         runLog.extra(
             "There are {} assemblies in the Spent Fuel Pool".format(
                 len(self.r.core.sfp)
-            )
-        )
-        runLog.extra(
-            "There are {} assemblies in the Fresh Fuel Pool".format(
-                len(self.r.core.cfp)
             )
         )
 
@@ -123,8 +116,7 @@ class FuelHandlerInterface(interfaces.Interface):
         # take note of where each assembly is located before the outage
         # for mapping after the outage
         self.r.core.locateAllAssemblies()
-        cycleDuration = self.r.p.cycleLength
-        shuffleFactors, factorSearchFlags = fh.getFactorList(cycle)
+        shuffleFactors, _ = fh.getFactorList(cycle)
         fh.outage(shuffleFactors)  # move the assemblies around
         if self.cs["plotShuffleArrows"]:
             arrows = fh.makeShuffleArrows()
@@ -143,7 +135,7 @@ class FuelHandlerInterface(interfaces.Interface):
 
         This can be used to export shuffling to an external code or to
         perform explicit repeat shuffling in a restart.
-        It creates a *SHUFFLES.txt file based on the Reactor.moveList structure
+        It creates a ``*SHUFFLES.txt`` file based on the Reactor.moveList structure
 
         See Also
         --------
@@ -496,7 +488,8 @@ class FuelHandler:
 
         runLog.info("Rotated {0} assemblies".format(numRotated))
 
-    def getOptimalAssemblyOrientation(self, a, aPrev):
+    @staticmethod
+    def getOptimalAssemblyOrientation(a, aPrev):
         """
         Get optimal assembly orientation/rotation to minimize peak burnup.
 
@@ -712,6 +705,8 @@ class FuelHandler:
         mandatoryLocations : list, optional
             a list of string-representations of locations in the core for limiting the search to
             several places
+
+            Any locations also included in `excludedLocations` will be excluded.
 
         excludedLocations : list, optional
             a list of string-representations of locations in the core that will be excluded from
@@ -1543,7 +1538,8 @@ class FuelHandler:
 
         return moved
 
-    def readMoves(self, fname):
+    @staticmethod
+    def readMoves(fname):
         r"""
         reads a shuffle output file and sets up the moves dictionary
 
@@ -1590,7 +1586,7 @@ class FuelHandler:
             elif "assembly" in line:
                 # this is the new load style where an actual assembly type is written to the shuffle logic
                 # due to legacy reasons, the assembly type will be put into group 4
-                pat = r"([A-Za-z0-9!]+) moved to ([A-Za-z0-9!]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                pat = r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
                 m = re.search(pat, line)
                 if not m:
                     raise InputError(

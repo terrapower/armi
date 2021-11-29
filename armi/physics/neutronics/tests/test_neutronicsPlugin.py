@@ -19,15 +19,13 @@ import os
 from ruamel.yaml import YAML
 import voluptuous as vol
 
-from armi.tests.test_plugins import TestPlugin
 from armi.physics import neutronics
-from armi.settings import caseSettings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.utils import directoryChangers
-from armi import tests
+from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
-from armi import settings
-import armi
+from armi.tests.test_plugins import TestPlugin
+from armi.utils import directoryChangers
+from armi import getPluginManagerOrFail, settings, tests
 
 XS_EXAMPLE = """AA:
     geometry: 0D
@@ -35,7 +33,6 @@ XS_EXAMPLE = """AA:
     blockRepresentation: Median
 BA:
     geometry: 1D slab
-    criticalBuckling: false
     blockRepresentation: Median
 """
 
@@ -83,9 +80,12 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         def _getModifiedSettings(customSettings):
             cs = settings.Settings()
+
+            newSettings = {}
             for key, val in customSettings.items():
-                cs[key] = val
-            return cs
+                newSettings[key] = val
+
+            return cs.modified(newSettings=newSettings)
 
         r = tests.getEmptyHexReactor()
         self.assertIsNone(r.core.p.beta)
@@ -101,7 +101,7 @@ class NeutronicsReactorTests(unittest.TestCase):
                 "decayConstants": [0.0] * 6,
             }
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         r.core.setOptionsFromCs(cs)
         self.assertEqual(r.core.p.beta, sum(cs["beta"]))
         self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
@@ -112,7 +112,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = _getModifiedSettings(
             customSettings={"beta": 0.00670},
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -125,7 +125,7 @@ class NeutronicsReactorTests(unittest.TestCase):
                 "beta": [0.0] * 6,
             },
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -137,7 +137,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = _getModifiedSettings(
             customSettings={"beta": [0.0], "decayConstants": [0.0]},
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertEqual(r.core.p.beta, sum(cs["beta"]))
         self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
         self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
@@ -148,7 +148,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = _getModifiedSettings(
             customSettings={"decayConstants": [0.0] * 6},
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -160,7 +160,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = _getModifiedSettings(
             customSettings={"decayConstants": [0.0] * 6, "beta": 0.0},
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -171,7 +171,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = _getModifiedSettings(
             customSettings={"decayConstants": None, "beta": None},
         )
-        armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -183,7 +183,7 @@ class NeutronicsReactorTests(unittest.TestCase):
             cs = _getModifiedSettings(
                 customSettings={"decayConstants": [0.0] * 6, "beta": [0.0]},
             )
-            armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         # Test that an error is raised if the decay constants
         # and group-wise beta are inconsistent sizes
@@ -192,7 +192,7 @@ class NeutronicsReactorTests(unittest.TestCase):
             cs = _getModifiedSettings(
                 customSettings={"decayConstants": [0.0] * 6, "beta": [0.0] * 5},
             )
-            armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         # The following tests check the voluptuous schema definition. This
         # ensures that anything except NoneType, [float], float are not valid
@@ -202,28 +202,28 @@ class NeutronicsReactorTests(unittest.TestCase):
             cs = _getModifiedSettings(
                 customSettings={"decayConstants": [1]},
             )
-            armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
             cs = _getModifiedSettings(
                 customSettings={"beta": [1]},
             )
-            armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
             cs = _getModifiedSettings(
                 customSettings={"beta": 1},
             )
-            armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
         with self.assertRaises(vol.AnyInvalid):
             r = tests.getEmptyHexReactor()
             cs = _getModifiedSettings(
                 customSettings={"beta": (1, 2, 3)},
             )
-            armi.getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs)
 
 
 if __name__ == "__main__":

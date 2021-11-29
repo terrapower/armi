@@ -31,6 +31,14 @@ import matplotlib.colors as mcolors
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor import grids
+from armi.bookkeeping import report
+from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
+from armi.reactor.components import Helix, Circle, Rectangle, DerivedShape
+from armi.utils import hexagon
+from armi.materials import custom
+
+
+LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
 
 
 def colorGenerator(skippedColors=10):
@@ -202,12 +210,13 @@ def plotFaceMap(
     param : str, optional
         The block-parameter to plot. Default: pdens
 
-    vals : ['peak', 'average', 'sum'], optional
-        the type of vals to produce. Will find peak, average, or sum of block values
-        in an assembly. Default: peak
+    vals : str, optional
+        Can be 'peak', 'average', or 'sum'. The type of vals to produce. Will find peak,
+        average, or sum of block values in an assembly. Default: peak
 
-    data : list(numeric)
-        rather than using param and vals, use the data supplied as is. It must be in the same order as iter(r).
+    data : list, optional
+        rather than using param and vals, use the data supplied as is. It must be in the
+        same order as iter(r).
 
     fName : str, optional
         File name to create. If none, will show on screen.
@@ -219,7 +228,7 @@ def plotFaceMap(
         The name of the matplotlib colormap to use. Default: jet
         Other possibilities: http://matplotlib.org/examples/pylab_examples/show_colormaps.html
 
-    labels : iterable(str), optional
+    labels : list of str, optional
         Data labels corresponding to data values.
 
     labelFmt : str, optional
@@ -239,11 +248,13 @@ def plotFaceMap(
 
     axisEqual : Boolean, optional
         If True, horizontal and vertical axes are scaled equally such that a circle
-            appears as a circle rather than an ellipse.
+        appears as a circle rather than an ellipse.
+
         If False, this scaling constraint is not imposed.
 
     makeColorBar : Boolean, optional
         If True, a vertical color bar is added on the right-hand side of the plot.
+
         If False, no color bar is added.
 
     cBarLabel : String, optional
@@ -264,8 +275,9 @@ def plotFaceMap(
 
     Examples
     --------
-    Plotting a BOL assembly type facemap with a legend:
-    >>> plotFaceMap(core, param='typeNumAssem', cmapName='RdYlBu')
+    Plotting a BOL assembly type facemap with a legend::
+
+        >>> plotFaceMap(core, param='typeNumAssem', cmapName='RdYlBu')
 
     """
     if referencesToKeep:
@@ -313,7 +325,8 @@ def plotFaceMap(
     collection.norm.autoscale(numpy.array(data))
 
     # Makes text in the center of each shape displaying the values.
-    _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize)
+    # (The text is either black or white depending on the background color it is written on)
+    _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collection)
 
     if makeColorBar:  # allow a color bar option
         collection2 = matplotlib.collections.PatchCollection(
@@ -322,17 +335,18 @@ def plotFaceMap(
         collection2.set_array(numpy.array(data))
 
         if "radial" in cBarLabel:
-            colbar = ax.colorbar(collection2, ticks=[x + 1 for x in range(max(data))])
+            colbar = fig.colorbar(
+                collection2, ticks=[x + 1 for x in range(max(data))], shrink=0.43
+            )
         else:
-            colbar = ax.colorbar(collection2)
+            colbar = fig.colorbar(collection2, ax=ax, shrink=0.43)
 
         colbar.set_label(cBarLabel, size=20)
         colbar.ax.tick_params(labelsize=16)
 
     if legendMap is not None:
-        legend = _createFaceMapLegend(
-            legendMap, matplotlib.cm.get_cmap(cmapName), collection.norm
-        )
+        legend = _createLegend(legendMap, collection)
+
     else:
         legend = None
 
@@ -406,7 +420,7 @@ def _makeAssemPatches(core):
     if isinstance(core.spatialGrid, grids.HexGrid):
         nSides = 6
     elif isinstance(core.spatialGrid, grids.ThetaRZGrid):
-        raise ValueError(
+        raise TypeError(
             "This plot function is not currently supported for ThetaRZGrid grids."
         )
     else:
@@ -430,22 +444,43 @@ def _makeAssemPatches(core):
     return patches
 
 
-def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
+def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collection):
     """Write param values down, and return text so it can be edited later."""
-    pitch = core.getAssemblyPitch()
+    _ = core.getAssemblyPitch()
     for a, val, label in zip(core, data, labels):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
-
+        cmap = collection.get_cmap()
+        patchColor = numpy.asarray(cmap(collection.norm(val)))
+        luminance = patchColor.dot(LUMINANCE_WEIGHTS)
+        dark = luminance < 0.5
+        if dark:
+            color = "white"
+        else:
+            color = "black"
         # Write text on top of patch locations.
         if label is None and labelFmt is not None:
             # Write the value
             labelText = labelFmt.format(val)
             text = ax.text(
-                x, y, labelText, zorder=1, ha="center", va="center", fontsize=fontSize
+                x,
+                y,
+                labelText,
+                zorder=1,
+                ha="center",
+                va="center",
+                fontsize=fontSize,
+                color=color,
             )
         elif label is not None:
             text = ax.text(
-                x, y, label, zorder=1, ha="center", va="center", fontsize=fontSize
+                x,
+                y,
+                label,
+                zorder=1,
+                ha="center",
+                va="center",
+                fontsize=fontSize,
+                color=color,
             )
         else:
             # labelFmt was none, so they don't want any text plotted
@@ -453,10 +488,10 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize):
         texts.append(text)
 
 
-def _createFaceMapLegend(legendMap, cmap, norm):
-    """Make special assembly-legend for the assembly face map plot with assembly counts."""
+def _createLegend(legendMap, collection, size=9, shape=Hexagon):
+    """Make special legend for the assembly face map plot with assembly counts, and Block Diagrams."""
 
-    class AssemblyLegend(object):
+    class AssemblyLegend:
         """
         Custom Legend artist handler.
 
@@ -474,25 +509,50 @@ def _createFaceMapLegend(legendMap, cmap, norm):
             width, height = handlebox.width, handlebox.height
             x = x0 + width / 2.0
             y = y0 + height / 2.0
-            normVal = norm(index)
+            normVal = collection.norm(index)
+            cmap = collection.get_cmap()
             colorRgb = cmap(normVal)
-            patch = matplotlib.patches.RegularPolygon(
-                (x, y),
-                6,
-                height,
-                orientation=math.pi / 2.0,
-                facecolor=colorRgb,
-                transform=handlebox.get_transform(),
-            )
+            if shape == Hexagon:
+                patch = matplotlib.patches.RegularPolygon(
+                    (x, y),
+                    6,
+                    height,
+                    orientation=math.pi / 2.0,
+                    facecolor=colorRgb,
+                    transform=handlebox.get_transform(),
+                )
+            elif shape == Rectangle:
+                patch = matplotlib.patches.Rectangle(
+                    (x - height / 2, y - height / 2),
+                    height * 2,
+                    height,
+                    facecolor=colorRgb,
+                    transform=handlebox.get_transform(),
+                )
+            else:
+                patch = matplotlib.patches.Circle(
+                    (x, y),
+                    height,
+                    facecolor=colorRgb,
+                    transform=handlebox.get_transform(),
+                )
+
+            luminance = numpy.array(colorRgb).dot(LUMINANCE_WEIGHTS)
+            dark = luminance < 0.5
+            if dark:
+                color = "white"
+            else:
+                color = "black"
             handlebox.add_artist(patch)
-            txt = mpl_text.Text(x=x, y=y, text=letter, ha="center", va="center", size=7)
+            txt = mpl_text.Text(
+                x=x, y=y, text=letter, ha="center", va="center", size=7, color=color
+            )
             handlebox.add_artist(txt)
             return (patch, txt)
 
     ax = plt.gca()
     keys = []
     labels = []
-
     for value, label, description in legendMap:
         keys.append((label, value))
         labels.append(description)
@@ -504,7 +564,7 @@ def _createFaceMapLegend(legendMap, cmap, norm):
         loc="center left",
         bbox_to_anchor=(1.0, 0.5),
         frameon=False,
-        prop={"size": 9},
+        prop={"size": size},
     )
     return legend
 
@@ -831,3 +891,508 @@ def _plotBlocksInAssembly(
             )
 
     return xBlockLoc, yBlockHeights, yBlockAxMesh
+
+
+def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
+    """
+    Produce energy spectrum plot of real and/or adjoint flux in one or more blocks.
+
+    Parameters
+    ----------
+    core : Core
+        Core object
+    fName : str, optional
+        the name of the plot file to produce. If none, plot will be shown. A text file with
+        the flux values will also be generated if this is non-empty.
+    bList : iterable, optional
+        is a single block or a list of blocks to average over. If no bList, full core is assumed.
+    peak : bool, optional
+        a flag that will produce the peak as well as the average on the plot.
+    adjoint : bool, optional
+        plot the adjoint as well.
+    bList2 :
+        a separate list of blocks that will also be plotted on a separate axis on the same plot.
+        This is useful for comparing flux in some blocks with flux in some other blocks.
+
+    Notes
+    -----
+    This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
+    """
+
+    class BlockListFlux:
+        def __init__(
+            self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
+        ):
+            if blockList:
+                self.blockList = blockList
+                self.nGroup = nGroup
+                self.avgFlux = numpy.zeros(self.nGroup)
+                self.peakFlux = numpy.zeros(self.nGroup)
+                self.peak = peak
+                self.adjoint = adjoint
+                if self.adjoint:
+                    self.labelAvg = "Average Adjoint Flux"
+                    self.labelPeak = "Peak Adjoint Flux"
+                else:
+                    self.labelAvg = "Average Flux"
+                    self.labelPeak = "Peak Flux"
+                if primary:
+                    self.lineAvg = "-"
+                    self.linePeak = "-"
+                else:
+                    self.lineAvg = "r--"
+                    self.linePeak = "k--"
+
+        def calcAverage(self):
+            for b in self.blockList:
+                thisFlux = numpy.array(b.getMgFlux(adjoint=self.adjoint))
+                self.avgFlux += numpy.array(thisFlux)
+                if sum(thisFlux) > sum(self.peakFlux):
+                    self.peakFlux = thisFlux
+            self.avgFlux = self.avgFlux / len(bList)
+
+        def setEnergyStructure(self, upperEnergyBounds):
+            self.E = [eMax / 1e6 for eMax in upperEnergyBounds]
+
+        def makePlotHistograms(self):
+            self.eHistogram, self.avgHistogram = makeHistogram(self.E, self.avgFlux)
+            if self.peak:
+                _, self.peakHistogram = makeHistogram(self.E, self.peakFlux)
+
+        def checkSize(self):
+            if not len(self.E) == len(self.avgFlux):
+                runLog.error(self.avgFlux)
+                raise
+
+        def getTable(self):
+            return enumerate(zip(self.E, self.avgFlux, self.peakFlux))
+
+    if bList is None:
+        bList = core.getBlocks()
+    bList = list(bList)
+    if adjoint and bList2:
+        runLog.warning("Cannot plot adjoint flux with bList2 argument")
+        return
+    elif adjoint:
+        bList2 = bList
+    try:
+        G = len(core.lib.neutronEnergyUpperBounds)
+    except:
+        runLog.warning("No ISOTXS library attached so no flux plots.")
+        return
+
+    BlockListFluxes = set()
+    bf1 = BlockListFlux(G, blockList=bList, peak=peak, primary=True)
+    BlockListFluxes.add(bf1)
+    if bList2:
+        bf2 = BlockListFlux(G, blockList=bList2, adjoint=adjoint, peak=peak)
+        BlockListFluxes.add(bf2)
+
+    for bf in BlockListFluxes:
+        bf.calcAverage()
+        bf.setEnergyStructure(core.lib.neutronEnergyUpperBounds)
+        bf.checkSize()
+        bf.makePlotHistograms()
+
+    if fName:
+        # write a little flux text file.
+        txtFileName = os.path.splitext(fName)[0] + ".txt"
+        with open(txtFileName, "w") as f:
+            f.write(
+                "{0:16s} {1:16s} {2:16s}\n".format(
+                    "Energy_Group", "Average_Flux", "Peak_Flux"
+                )
+            )
+            for _, (eMax, avgFlux, peakFlux) in bf1.getTable():
+                f.write("{0:12E} {1:12E} {2:12E}\n".format(eMax, avgFlux, peakFlux))
+
+    if max(bf1.avgFlux) <= 0.0:
+        runLog.warning(
+            "Cannot plot flux with maxval=={0} in {1}".format(maxVal, bList[0])
+        )
+        return
+
+    plt.figure()
+    plt.plot(bf1.eHistogram, bf1.avgHistogram, bf1.lineAvg, label=bf1.labelAvg)
+    if peak:
+        plt.plot(bf1.eHistogram, bf1.peakHistogram, bf1.linePeak, label=bf1.labelPeak)
+    ax = plt.gca()
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    plt.xlabel("Energy (MeV)")
+    plt.ylabel("Flux (n/cm$^2$/s)")
+    if peak or bList2:
+        plt.legend(loc="lower right")
+    plt.grid(color="0.70")
+    if bList2:
+        if adjoint:
+            plt.twinx()
+            plt.ylabel("Adjoint Flux (n/cm$^2$/s)", rotation=270)
+            ax2 = plt.gca()
+            ax2.set_yscale("log")
+        plt.plot(bf2.eHistogram, bf2.avgHistogram, bf2.lineAvg, label=bf2.labelAvg)
+        if peak and not adjoint:
+            plt.plot(
+                bf2.eHistogram, bf2.peakHistogram, bf2.linePeak, label=bf2.labelPeak
+            )
+        plt.legend(loc="lower left")
+    plt.title("Group flux")
+
+    if fName:
+        plt.savefig(fName)
+        report.setData(
+            "Flux Plot {}".format(os.path.split(fName)[1]),
+            os.path.abspath(fName),
+            report.FLUX_PLOT,
+        )
+    else:
+        plt.show()
+
+
+def makeHistogram(x, y):
+    """
+    Take a list of x and y values, and return a histogram-ified version
+    Good for plotting multigroup flux spectrum or cross sections
+    """
+    if not len(x) == len(y):
+        raise ValueError(
+            "Cannot make a histogram unless the x and y lists are the same size."
+            + "len(x) == {} and len(y) == {}".format(len(x), len(y))
+        )
+    n = len(x)
+    xHistogram = numpy.zeros(2 * n)
+    yHistogram = numpy.zeros(2 * n)
+    for i in range(n):
+        lower = 2 * i
+        upper = 2 * i + 1
+        xHistogram[lower] = x[i - 1]
+        xHistogram[upper] = x[i]
+        yHistogram[lower] = y[i]
+        yHistogram[upper] = y[i]
+    xHistogram[0] = x[0] / 2.0
+    return xHistogram, yHistogram
+
+
+def _makeBlockPinPatches(block, cold):
+    """Return lists of block component patches and corresponding data and names (which relates to material
+    of the component for later plot-coloring/legend) for a single block.
+
+
+    Takes in a block that must have a spatialGrid attached as well as a variable
+    which signifies whether the dimensions of the components are at hot or cold temps.
+    When cold is set to true, you would get the BOL cold temp dimensions.
+
+    Parameters
+    ----------
+    block : Block
+
+    cold : boolean
+        true for cold temps, hot = false
+
+    Return
+    ------
+    patches : list
+        list of patches for block components
+
+    data : list
+        list of the materials these components are made of
+
+    name : list
+        list of the names of these components
+    """
+
+    patches = []
+    data = []
+    names = []
+    if isinstance(block.spatialGrid, grids.HexGrid):
+        largestPitch, comp = block.getPitch(returnComp=True)
+
+    elif isinstance(block.spatialGrid, grids.ThetaRZGrid):
+        raise TypeError(
+            "This plot function is not currently supported for ThetaRZGrid grids."
+        )
+    else:
+        largestPitch, comp = block.getPitch(returnComp=True)
+        if block.getPitch()[0] != block.getPitch()[1]:
+            raise ValueError("Only works for blocks with equal length and width.")
+
+    sortedComps = sorted(block, reverse=True)
+
+    derivedComponents = block.getComponentsOfShape(DerivedShape)
+    if len(derivedComponents) == 1:
+        derivedComponent = derivedComponents[0]
+        sortedComps.remove(derivedComponent)
+        cName = derivedComponent.name
+
+        if isinstance(derivedComponent.material, custom.Custom):
+            material = derivedComponent.p.customIsotopicsName
+        else:
+            material = derivedComponent.material.name
+
+        location = comp.spatialLocator
+        if isinstance(location, grids.MultiIndexLocation):
+            location = location[0]
+        x, y, _ = location.getLocalCoordinates()
+        if isinstance(comp, Hexagon):
+            derivedPatch = matplotlib.patches.RegularPolygon(
+                (x, y), 6, largestPitch / math.sqrt(3)
+            )
+        elif isinstance(comp, Square):
+            derivedPatch = matplotlib.patches.Rectangle(
+                (x - largestPitch[0] / 2, y - largestPitch[0] / 2),
+                largestPitch[0],
+                largestPitch[0],
+            )
+        else:
+            raise TypeError(
+                "Shape of the pitch-defining element is not a Square or Hex it is {}, cannot plot for this type of block".format(
+                    comp.shape
+                )
+            )
+        patches.append(derivedPatch)
+        data.append(material)
+        names.append(cName)
+    for component in sortedComps:
+        locs = component.spatialLocator
+        if not isinstance(locs, grids.MultiIndexLocation):
+            # make a single location a list to iterate.
+            locs = [locs]
+        for loc in locs:
+            x, y, _ = loc.getLocalCoordinates()
+
+            # goes through each location
+            # want to place a patch at that location
+            blockPatches = _makeComponentPatch(component, (x, y), cold)
+            for element in blockPatches:
+                patches.append(element)
+
+                if isinstance(component.material, custom.Custom):
+                    material = component.p.customIsotopicsName
+                else:
+                    material = component.material.name
+
+                data.append(material)
+                names.append(component.name)
+
+    return patches, data, names
+
+
+def _makeComponentPatch(component, position, cold):
+    """Makes a component shaped patch to later be used for making block diagrams.
+
+    Parameters
+    ----------
+        component: a component of a block
+
+        position: tuple
+            (x, y) position
+
+        cold: boolean
+            True if looking for dimension at cold temps
+
+    Return
+    ------
+        blockPatch: List
+            A list of Patch objects that together represent a component in the diagram.
+
+    Notes
+    -----
+    Currently accepts components of shape DerivedShape, Helix, Circle, or Square
+    """
+
+    x = position[0]
+    y = position[1]
+
+    if isinstance(component, Helix):
+        blockPatch = matplotlib.patches.Wedge(
+            (
+                x
+                + component.getDimension("helixDiameter", cold=cold)
+                / 2
+                * math.cos(math.pi / 6),
+                y
+                + component.getDimension("helixDiameter", cold=cold)
+                / 2
+                * math.sin(math.pi / 6),
+            ),
+            component.getDimension("od", cold=cold) / 2,
+            0,
+            360,
+            width=(component.getDimension("od", cold=cold) / 2)
+            - (component.getDimension("id", cold=cold) / 2),
+        )
+    elif isinstance(component, Circle):
+
+        blockPatch = matplotlib.patches.Wedge(
+            (x, y),
+            component.getDimension("od", cold=cold) / 2,
+            0,
+            360,
+            width=(component.getDimension("od", cold=cold) / 2)
+            - (component.getDimension("id", cold=cold) / 2),
+        )
+    elif isinstance(component, Hexagon):
+        if component.getDimension("ip", cold=cold) != 0:
+            innerPoints = numpy.array(
+                hexagon.corners(30) * component.getDimension("ip", cold=cold)
+            )
+            outerPoints = numpy.array(
+                hexagon.corners(30) * component.getDimension("op", cold=cold)
+            )
+            blockPatch = []
+            for n in range(6):
+                corners = [
+                    innerPoints[n],
+                    innerPoints[(n + 1) % 6],
+                    outerPoints[(n + 1) % 6],
+                    outerPoints[n],
+                ]
+                patch = matplotlib.patches.Polygon(corners, fill=True)
+                blockPatch.append(patch)
+        else:
+            # Just make it a hexagon...
+            blockPatch = matplotlib.patches.RegularPolygon(
+                (x, y), 6, component.getDimension("op", cold=cold) / math.sqrt(3)
+            )
+
+    elif isinstance(component, Rectangle):
+        if component.getDimension("widthInner", cold=cold) != 0:
+            innerPoints = numpy.array(
+                [
+                    [
+                        x + component.getDimension("widthInner", cold=cold) / 2,
+                        y + component.getDimension("lengthInner", cold=cold) / 2,
+                    ],
+                    [
+                        x + component.getDimension("widthInner", cold=cold) / 2,
+                        y - component.getDimension("lengthInner", cold=cold) / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthInner", cold=cold) / 2,
+                        y - component.getDimension("lengthInner", cold=cold) / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthInner", cold=cold) / 2,
+                        y + component.getDimension("lengthInner", cold=cold) / 2,
+                    ],
+                ]
+            )
+
+            outerPoints = numpy.array(
+                [
+                    [
+                        x + component.getDimension("widthOuter", cold=cold) / 2,
+                        y + component.getDimension("lengthOuter", cold=cold) / 2,
+                    ],
+                    [
+                        x + component.getDimension("widthOuter", cold=cold) / 2,
+                        y - component.getDimension("lengthOuter", cold=cold) / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthOuter", cold=cold) / 2,
+                        y - component.getDimension("lengthOuter", cold=cold) / 2,
+                    ],
+                    [
+                        x - component.getDimension("widthOuter", cold=cold) / 2,
+                        y + component.getDimension("lengthOuter", cold=cold) / 2,
+                    ],
+                ]
+            )
+            blockPatch = []
+            for n in range(4):
+                corners = [
+                    innerPoints[n],
+                    innerPoints[(n + 1) % 4],
+                    outerPoints[(n + 1) % 4],
+                    outerPoints[n],
+                ]
+                patch = matplotlib.patches.Polygon(corners, fill=True)
+                blockPatch.append(patch)
+        else:
+            # Just make it a rectangle...
+            blockPatch = matplotlib.patches.Rectangle(
+                (
+                    x - component.getDimension("widthOuter", cold=cold) / 2,
+                    y - component.getDimension("lengthOuter", cold=cold) / 2,
+                ),
+                component.getDimension("widthOuter", cold=cold),
+                component.getDimension("lengthOuter", cold=cold),
+            )
+    if isinstance(blockPatch, list):
+        return blockPatch
+    return [blockPatch]
+
+
+def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
+    """Given a Block with a spatial Grid, plot the diagram of
+    it with all of its components. (wire, duct, coolant, etc...)
+
+    Parameters
+    ----------
+    block : block object
+    fName : String
+        name of the file to save to
+    cold : boolean
+        true is for cold temps, hot is false.
+    cmapName : String
+        name of a colorMap to use for block colors
+    materialList: List
+        a list of material names across all blocks to be plotted
+        so that same material on all diagrams will have the same color.
+    """
+    _, ax = plt.subplots(figsize=(20, 20), dpi=200)
+
+    if block.spatialGrid is None:
+        return None
+
+    if materialList is None:
+        materialList = []
+        for component in block:
+            if isinstance(component.material, custom.Custom):
+                materialName = component.p.customIsotopicsName
+            else:
+                materialName = component.material.name
+            if materialName not in materialList:
+                materialList.append(materialName)
+
+    materialMap = {
+        material: ai for ai, material in enumerate(numpy.unique(materialList))
+    }
+    patches, data, _ = _makeBlockPinPatches(block, cold)
+
+    collection = matplotlib.collections.PatchCollection(
+        patches, cmap=cmapName, alpha=1.0
+    )
+
+    allColors = numpy.array(list(materialMap.values()))
+    ourColors = numpy.array([materialMap[materialName] for materialName in data])
+
+    collection.set_array(ourColors)
+    ax.add_collection(collection)
+    collection.norm.autoscale(allColors)
+
+    legendMap = [
+        (
+            materialMap[materialName],
+            "",
+            "{}".format(materialName),
+        )
+        for materialName in numpy.unique(data)
+    ]
+    legend = _createLegend(legendMap, collection, size=50, shape=Rectangle)
+    pltKwargs = {
+        "bbox_extra_artists": (legend,),
+        "bbox_inches": "tight",
+    }
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    ax.spines["bottom"].set_visible(False)
+    ax.margins(0)
+    plt.savefig(fName, format="svg", **pltKwargs)
+
+    return os.path.abspath(fName)

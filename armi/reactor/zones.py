@@ -15,21 +15,16 @@
 """
 Zones are collections of locations.
 """
-
-import math
-
 import tabulate
 
 from armi import runLog
 from armi import utils
 from armi.reactor import grids
-from armi.reactor import locations
 from armi.reactor.flags import Flags
-from armi.utils import hexagon
 from armi.settings.fwSettings import globalSettings
 
 
-class Zone(object):
+class Zone:
     """
     A group of locations labels useful for choosing where to shuffle from or where to compute
     reactivity coefficients.
@@ -108,7 +103,7 @@ class Zone(object):
             if self.symmetry == 3:
                 posList = grid.allPositionsInThird(ring)
             elif self.symmetry == 1:
-                posList = range(1, hexagon.numPositionsInRing(ring) + 1)
+                posList = range(1, grid.getPositionsInRing(ring) + 1)
             else:
                 raise RuntimeError(
                     "Zones are not written to handle {0}-fold symmetry yet"
@@ -125,7 +120,7 @@ class Zone(object):
                 self.append(newLoc)
 
 
-class Zones(object):
+class Zones:
     """Collection of Zone objects."""
 
     def __init__(self, core, cs):
@@ -599,7 +594,7 @@ def _buildAssemTypeZones(core, cs, typeSpec=None):
         try:
             zone = zones[zoneName]
         except KeyError:
-            zone = Zone(a.name)
+            zone = Zone(zoneName)
             zones.add(zone)
         zone.append(a.getLocation())
     return zones

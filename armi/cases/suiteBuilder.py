@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+r"""
 Contains classes that build case suites from perturbing inputs.
 
 The general use case is to create a :py:class:`~SuiteBuilder` with a base
@@ -29,9 +29,12 @@ their own ``Modifier``\ s that are design-specific.
 import copy
 import os
 import random
+from pyDOE import lhs
 from typing import List
+from collections import Counter
 
 from armi.cases import suite
+from armi.cases.inputModifiers.inputModifiers import InputModifier
 
 
 def getInputModifiers(cls):
@@ -40,7 +43,7 @@ def getInputModifiers(cls):
     ]
 
 
-class SuiteBuilder(object):
+class SuiteBuilder:
     """
     Class for constructing a CaseSuite from combinations of modifications on base inputs.
 
@@ -167,11 +170,10 @@ class SuiteBuilder(object):
                     )
 
                 previousMods.append(type(mod))
-                mod(case.cs, case.bp, case.geom)
+                case.cs, case.bp, case.geom = mod(case.cs, case.bp, case.geom)
                 case.independentVariables.update(mod.independentVariable)
 
             case.cs.path = namingFunc(index, case, modList)
-
             caseSuite.add(case)
 
         return caseSuite
@@ -200,11 +202,12 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs[settignName] = value
+                    cs = cs.modified(newSettings={settignName: value})
+                    return cs, bp, geom
 
             builder = FullFactorialSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingsModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
+            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
 
         would result in 6 cases:
 
@@ -286,11 +289,12 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs[settignName] = value
+                    cs = cs.modified(newSettings={settignName: value})
+                    return cs, bp, geom
 
             builder = SeparateEffectsSuiteBuilder(someCase)
-            builder.addDegreeOfFreedom(SettingsModifier('settingName1', value) for value in (1,2))
-            builder.addDegreeOfFreedom(SettingsModifier('settingName2', value) for value in (3,4,5))
+            builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
+            builder.addDegreeOfFreedom(SettingModifier('settingName2', value) for value in (3,4,5))
 
         would result in 5 cases:
 
@@ -307,3 +311,133 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
         SuiteBuilder.addDegreeOfFreedom
         """
         self.modifierSets.extend((modifier,) for modifier in inputModifiers)
+
+
+class LatinHyperCubeSuiteBuilder(SuiteBuilder):
+    """Implements a Latin Hypercube Sampling suite builder.
+
+    This method is used to provide a more efficient sampling of the design space.
+    LHS more efficiently samples the space evenly across dimensions compared to
+    random sampling. It requires fewer points than a full factorial since it samples
+    quasi-randomly into nonoverlapping partitions. It is recommended to use a surrogate
+    model with the sampled data to get the full benefit.
+
+    Attributes
+    ----------
+    modifierSets: An array of InputModifiers specifying input parameters.
+    """
+
+    def __init__(self, baseCase, size):
+        SuiteBuilder.__init__(self, baseCase)
+        self.size = size
+        self.modifierSets = []
+
+    def addDegreeOfFreedom(self, inputModifiers):
+        """
+        Add a degree of freedom to the SuiteBuilder.
+
+        Unlike other types of suite builders, only one instance of a
+        modifier class should be added. This is because the Latin Hypercube
+        Sampling will automatically perturb the values and produce modifier
+        sets internally. A settings modfier class passed to this method
+        need include bounds by which the LHS algorithm can perturb the input
+        parameters.
+
+        For example::
+
+            class InputParameterModifier(SamplingInputModifier):
+
+                def __init__(
+                    self,
+                    name: str,
+                    pararmType: str, # either 'continuous' or 'discrete'
+                    bounds: Optional[Tuple, List]
+                ):
+                    super().__init__(name, paramType, bounds)
+
+                def __call__(self, cs, bp, geom):
+                    ...
+
+        If the modifier is discrete then bounds specifies a list of options
+        the values can take. If continuous, then bounds specifies a range of values.
+        """
+        names = [mod.name for mod in self.modifierSets + inputModifiers]
+
+        if len(names) != len(set(names)):
+            counts = Counter(names)
+            duplicateNames = []
+            for key in counts.keys():
+                if counts[key] > 1:
+                    duplicateNames.append(key)
+
+            raise ValueError(
+                "Only a single input parameter should be inserted as an input modifer "
+                + "since cases are added through Latin Hypercube Sampling.\n"
+                + "Each inputModifier adds a dimension to the Latin Hypercube and "
+                + "represents a single input variable.\n"
+                + f"{duplicateNames} have duplicates. "
+            )
+
+        self.modifierSets.extend(inputModifiers)
+
+    def buildSuite(self, namingFunc=None):
+        """
+        Builds a ``CaseSuite`` based on the modifierSets contained in the SuiteBuilder.
+
+        For each sequence of modifications, this creates a new ``Case`` from the ``baseCase``, and
+        runs the sequence of modifications on the new ``Case``'s inputs. The modified ``Case`` is
+        then added to a ``CaseSuite``. The resulting ``CaseSuite`` is returned.
+
+        Parameters
+        ----------
+        namingFunc : callable(index, case, tuple(InputModifier)), (optional)
+            Function used to name each case. It is supplied with the index (int), the case (Case),
+            and a tuple of InputModifiers used to edit the case. This should be enough information
+            for someone to derive a meaningful name.
+
+            The function should return a string specifying the path of the ``CaseSettings``, this
+            allows the user to specify the directories where each case will be run.
+
+            If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
+            ``<0000>`` is the four-digit case index, and ``<title>`` is the ``baseCase.title``.
+
+
+        Raises
+        ------
+        RuntimeError
+            When order of modifications is deemed to be invalid.
+
+        Returns
+        -------
+        caseSuite : CaseSuite
+            Derived from the ``baseCase`` and modifications.
+        """
+        original_modifiers = copy.deepcopy(self.modifierSets)
+        del self.modifierSets[:]
+
+        samples = lhs(
+            len(original_modifiers),
+            samples=self.size,
+            criterion="maximin",
+            iterations=100,
+        )
+
+        # Normalizing samples to modifier bounds and creating modifier objects.
+        for i in range(len(samples)):
+            modSet = []
+            for j, mod in enumerate(original_modifiers):
+                new_mod = copy.deepcopy(mod)
+                if mod.paramType == "continuous":
+                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][
+                        j
+                    ] + mod.bounds[0]
+                    new_mod.value = value
+                elif mod.paramType == "discrete":
+                    index = round(samples[i][j] * (len(mod.bounds) - 1))
+                    value = mod.bounds[index]
+                    new_mod.value = value
+
+                modSet.append(new_mod)
+            self.modifierSets.append(modSet)
+
+        return super().buildSuite(namingFunc=namingFunc)

@@ -21,17 +21,20 @@ import os
 
 
 def timed(*args):
-    """Decorate functions to time how long they take.
+    """
+    Decorate functions to measure how long they take.
 
     Examples
     --------
-    @timed # your timer will be called the module+method name
-    def mymethod(stuff):
-        do stuff
+    ::
 
-    @timed('call my timer this instead')
-    def mymethod2(stuff)
-       do even more stuff
+        @timed # your timer will be called the module+method name
+        def mymethod(stuff):
+            do stuff
+
+        @timed('call my timer this instead')
+        def mymethod2(stuff)
+           do even more stuff
 
     """
 
@@ -77,7 +80,7 @@ def getMasterTimer():
     return MasterTimer.getMasterTimer()
 
 
-class MasterTimer(object):
+class MasterTimer:
 
     _instance = None
 
@@ -313,7 +316,7 @@ class MasterTimer(object):
         return os.path.join(os.getcwd(), filename)
 
 
-class _Timer(object):
+class _Timer:
     r"""Code timer to call at various points to measure performance
 
     see MasterTimer.getTimer() for construction

@@ -15,7 +15,6 @@
 import os
 import sys
 
-import armi
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 

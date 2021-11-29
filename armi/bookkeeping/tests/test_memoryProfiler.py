@@ -15,8 +15,8 @@
 """
 Tests for memoryProfiler
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
-import math
 
 from armi.bookkeeping import memoryProfiler
 from armi.reactor.tests import test_reactors
@@ -40,7 +40,7 @@ class MemoryProfilerTests(unittest.TestCase):
         results = self.memPro._printFullMemoryBreakdown(
             startsWith="armi.physics", reportSize=False
         )
-        objects, count, size = results["Dif3dInterface"]
+        _objects, count, _size = results["Dif3dInterface"]
         self.assertGreater(count, 0)
 
 

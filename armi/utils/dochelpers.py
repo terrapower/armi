@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Helpers for sphinx documentation.
 
@@ -6,7 +19,6 @@ can import armi.
 """
 import sys
 import inspect
-from io import StringIO
 import datetime
 import os
 import subprocess
@@ -44,26 +56,28 @@ def create_table(rst_table, caption=None, align=None, widths=None, width=None):
 
     The ``rst_table``
     """
-    try:
-        rst = [".. table:: {}".format(caption or "")]
-        if align:
-            rst += ["    :align: {}".format(align)]
-        if width:
-            rst += ["    :width: {}".format(width)]
-        if widths:
-            rst += ["    :widths: {}".format(widths)]
-        rst += [""]
-        rst += ["    " + line for line in rst_table.split("\n")]
-        return "\n".join(rst)
-    except:
-        raise Exception("crap, crap crap!")
+    rst = [".. table:: {}".format(caption or "")]
+    if align:
+        rst += ["    :align: {}".format(align)]
+    if width:
+        rst += ["    :width: {}".format(width)]
+    if widths:
+        rst += ["    :widths: {}".format(widths)]
+    rst += [""]
+    rst += ["    " + line for line in rst_table.split("\n")]
+    return "\n".join(rst)
 
 
 class ExecDirective(Directive):
-    """Execute the specified python code and insert the output into the document.
+    """
+    Execute the specified python code and insert the output into the document.
 
     The code is used as the body of a method, and must return a ``str``. The string result is
     interpreted as reStructuredText.
+
+    Error handling informed by https://docutils.sourceforge.io/docs/howto/rst-directives.html#error-handling
+    The self.error function should both inform the documentation builder of the error and also
+    insert an error into the built documentation.
 
     .. warning:: This only works on a single node in the doctree, so the rendered code
         may not contain any new section names or labels. They will result in
@@ -84,7 +98,8 @@ class ExecDirective(Directive):
             result = locals()["usermethod"]()
 
             if result is None:
-                raise Exception(
+
+                raise self.error(
                     "Return value needed! The body of your `.. exec::` is used as a "
                     "function call that must return a value."
                 )
@@ -96,18 +111,11 @@ class ExecDirective(Directive):
             return [para]
         except Exception as e:
             docname = self.state.document.settings.env.docname
-            return [
-                nodes.error(
-                    None,
-                    nodes.paragraph(
-                        text="Unable to execute python code at {}:{} ... {}".format(
-                            docname, self.lineno, datetime.datetime.now()
-                        )
-                    ),
-                    nodes.paragraph(text=str(e)),
-                    nodes.literal_block(text=str(code)),
+            raise self.error(
+                "Unable to execute embedded doc code at {}:{} ... {}\n{}".format(
+                    docname, self.lineno, datetime.datetime.now(), str(e)
                 )
-            ]
+            )
 
 
 class PyReverse(Directive):
@@ -133,8 +141,6 @@ class PyReverse(Directive):
     }
 
     def run(self):
-        stdStreams = sys.stdout, sys.stderr
-        sys.stdout, sys.stderr = StringIO(), StringIO()
         try:
             args = list(self.arguments)
             args.append("--project")
@@ -188,21 +194,13 @@ class PyReverse(Directive):
             return [para]
         except Exception as e:
             docname = self.state.document.settings.env.docname
-            return [
-                nodes.error(
-                    None,
-                    nodes.paragraph(
-                        text="Unable to generate figure from {}:{} with command {} ... {}".format(
-                            docname, self.lineno, command, datetime.datetime.now()
-                        )
-                    ),
-                    nodes.paragraph(text=str(e)),
-                    nodes.literal_block(text=str(sys.stdout.getvalue())),
-                    nodes.literal_block(text=str(sys.stderr.getvalue())),
+            # add the error message directly to the built documentation and also tell the
+            # builder
+            raise self.error(
+                "Unable to execute embedded doc code at {}:{} ... {}\n{}".format(
+                    docname, self.lineno, datetime.datetime.now(), str(e)
                 )
-            ]
-        finally:
-            sys.stdout, sys.stderr = stdStreams
+            )
 
 
 def generateParamTable(klass, fwParams, app=None):

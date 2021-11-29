@@ -24,16 +24,18 @@ is impossible. Would you like to switch to ___?"
 import os
 
 import armi
-from armi import runLog
-from armi.localization import exceptions
-from armi import utils
+from armi import runLog, settings, utils
 from armi.utils import pathTools
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
-from armi import settings
 from armi.utils import directoryChangers
 from armi.settings.fwSettings import globalSettings
+from armi.settings.settingsIO import (
+    prompt,
+    RunLogPromptCancel,
+    RunLogPromptUnresolvable,
+)
 
 
 class Query:
@@ -94,7 +96,7 @@ class Query:
             try:
                 if self.isCorrective():
                     try:
-                        make_correction = runLog.prompt(
+                        make_correction = prompt(
                             "INSPECTOR: " + self.statement,
                             self.question,
                             "YES_NO",
@@ -106,11 +108,11 @@ class Query:
                             self._corrected = True
                         else:
                             self._passed = True
-                    except exceptions.RunLogPromptCancel:
-                        raise exceptions.InputInspectionDiscontinued()
+                    except RunLogPromptCancel as ki:
+                        raise KeyboardInterrupt from ki
                 else:
                     try:
-                        continue_submission = runLog.prompt(
+                        continue_submission = prompt(
                             "INSPECTOR: " + self.statement,
                             "Continue?",
                             "YES_NO",
@@ -118,11 +120,11 @@ class Query:
                             "CANCEL",
                         )
                         if not continue_submission:
-                            raise exceptions.InputInspectionDiscontinued()
-                    except exceptions.RunLogPromptCancel:
-                        raise exceptions.InputInspectionDiscontinued()
+                            raise KeyboardInterrupt
+                    except RunLogPromptCancel as ki:
+                        raise KeyboardInterrupt from ki
 
-            except exceptions.RunLogPromptUnresolvable:
+            except RunLogPromptUnresolvable:
                 self.autoResolved = False
                 self._passed = True
 
@@ -180,7 +182,7 @@ class Inspector:
 
         Raises
         ------
-        exceptions.InputInspectionMalformed
+        RuntimeError
             When a programming error causes queries to loop.
         """
         if armi.MPI_RANK != 0:
@@ -212,7 +214,7 @@ class Inspector:
             ]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
-                raise exceptions.InputInspectionMalformed(
+                raise RuntimeError(
                     "The input inspection did not resolve all queries, "
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
@@ -241,13 +243,17 @@ class Inspector:
     def addQueryCurrentSettingMayNotSupportFeatures(self, settingName):
         """Add a query that the current value for ``settingName`` may not support certain features."""
         self.addQuery(
-            lambda: self.cs[settingName] != self.cs.settings[settingName].default,
+            lambda: self.cs[settingName] != self.cs.getSetting(settingName).default,
             "{} set as:\n{}\nUsing this location instead of the default location\n{}\n"
             "may not support certain functions.".format(
-                settingName, self.cs[settingName], self.cs.settings[settingName].default
+                settingName,
+                self.cs[settingName],
+                self.cs.getSetting(settingName).default,
             ),
             "Revert to default location?",
-            lambda: self._assignCS(settingName, self.cs.settings[settingName].default),
+            lambda: self._assignCS(
+                settingName, self.cs.getSetting(settingName).default
+            ),
         )
 
     def _assignCS(self, key, value):
@@ -257,13 +263,15 @@ class Inspector:
         self.cs[key] = value
 
     def _raise(self):  # pylint: disable=no-self-use
-        raise exceptions.InputInspectionDiscontinued(
-            "Input inspection has been interrupted."
-        )
+        raise KeyboardInterrupt("Input inspection has been interrupted.")
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
         from armi.reactor import blueprints
+
+        # if there is a blueprints object, we don't need to check for a file
+        if self.cs.filelessBP:
+            return
 
         self.addQuery(
             lambda: not self.cs["loadingFile"],
@@ -495,8 +503,8 @@ class Inspector:
         )
 
         def _correctCycles():
-            self.cs["nCycles"] = 1
-            self.cs["burnSteps"] = 0
+            newSettings = {"nCycles": 1, "burnSteps": 0}
+            self.cs = self.cs.modified(newSettings=newSettings)
 
         self.addQuery(
             lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,
@@ -595,7 +603,7 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and self.geomType not in geometry.VALID_GEOMETRY_TYPE,
+            and str(self.geomType) not in geometry.VALID_GEOMETRY_TYPE,
             "{} is not a valid geometry Please update geom type on the geom file. "
             "Valid (case insensitive) geom types are: {}".format(
                 self.geomType, geometry.VALID_GEOMETRY_TYPE
@@ -606,10 +614,12 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["geomFile"]
-            and self.coreSymmetry not in geometry.VALID_SYMMETRY,
-            "{} is not a valid symmetry Please update symmetry on the geom file. "
-            "Valid (case insensitive) symmetries are: {}".format(
-                self.coreSymmetry, geometry.VALID_SYMMETRY
+            and not geometry.checkValidGeomSymmetryCombo(
+                self.geomType, self.coreSymmetry
+            ),
+            "{}, {} is not a valid geometry and symmetry combination. Please update "
+            "either geometry or symmetry on the geom file.".format(
+                str(self.geomType), str(self.coreSymmetry)
             ),
             "",
             self.NO_ACTION,
@@ -634,7 +644,7 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     if initialLambda is None:
         initialLambda = lambda: (
             not os.path.exists(pathTools.armiAbsPath(inspector.cs[settingName]))
-            and inspector.cs.settings[settingName].offDefault
+            and inspector.cs.getSetting(settingName).offDefault
         )  # solution is to revert to default
 
     query = Query(
@@ -643,6 +653,6 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
             settingName, inspector.cs[settingName]
         ),
         "Revert to default location?",
-        inspector.cs.settings[settingName].revertToDefault,
+        inspector.cs.getSetting(settingName).revertToDefault,
     )
     return query

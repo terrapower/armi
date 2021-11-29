@@ -36,6 +36,7 @@ armi.utils.asciimaps
 
 Examples
 --------
+
 ::
 
     grids:
@@ -102,18 +103,21 @@ Examples
                            IC   MC   MC   OC   RR
                          IC   IC   MC   PC   RR   SH
 
+
 """
 import copy
+from io import StringIO
 import itertools
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Tuple
 
 import numpy
 import yamlize
+from ruamel.yaml import scalarstring
 
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.utils import asciimaps
-from armi.reactor import geometry
-from armi.reactor import grids
+from armi.reactor import geometry, grids
+from armi.reactor import blueprints
 from armi import runLog
 
 
@@ -170,11 +174,18 @@ class GridBlueprint(yamlize.Object):
     )
     gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
     symmetry = yamlize.Attribute(
-        key="symmetry", type=str, default=geometry.THIRD_CORE + geometry.PERIODIC
+        key="symmetry",
+        type=str,
+        default=str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        ),
     )
     # gridContents is the final form of grid contents information;
-    # it is set regardless of how the input is read. This is how all
-    # grid contents information is written out.
+    # it is set regardless of how the input is read. When writing, we attempt to
+    # preserve the input mode and write ascii map if that was what was originally
+    # provided.
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
     @gridContents.validator
@@ -191,7 +202,11 @@ class GridBlueprint(yamlize.Object):
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        symmetry=geometry.THIRD_CORE + geometry.PERIODIC,
+        symmetry=str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        ),
         gridContents=None,
         gridBounds=None,
     ):
@@ -200,20 +215,33 @@ class GridBlueprint(yamlize.Object):
 
         Notes
         -----
-        yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        this is only needed for when you want to make this object from a non-YAML
+        yamlize does not call an ``__init__`` method, instead it uses ``__new__`` and
+        setattr this is only needed for when you want to make this object from a non-YAML
         source.
 
         .. warning:: This is a Yamlize object, so ``__init__`` never really gets called.
-        Only ``__new__`` does.
+               Only ``__new__`` does.
 
         """
         self.name = name
-        self.geom = geom
+        self.geom = str(geom)
         self.latticeMap = latticeMap
-        self.symmetry = symmetry
+        self._readFromLatticeMap = False
+        self.symmetry = str(symmetry)
         self.gridContents = gridContents
         self.gridBounds = gridBounds
+
+    @property
+    def readFromLatticeMap(self):
+        """
+        This is implemented as a property, since as a Yamlize object, __init__ is not
+        always called and we have to lazily evaluate its default value.
+        """
+        return getattr(self, "_readFromLatticeMap", False)
+
+    @readFromLatticeMap.setter
+    def readFromLatticeMap(self, value):
+        self._readFromLatticeMap = value
 
     def construct(self):
         """Build a Grid from a grid definition."""
@@ -229,6 +257,9 @@ class GridBlueprint(yamlize.Object):
         be adjusted to the proper dimensions (often by inspection of children) at a
         later time.
         """
+        symmetry = (
+            geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
+        )
         geom = self.geom
         maxIndex = self._getMaxIndex()
         runLog.extra("Creating the spatial grid")
@@ -274,9 +305,18 @@ class GridBlueprint(yamlize.Object):
                 if self.latticeDimensions
                 else (1.0, 1.0)
             )
-            isOffset = (
-                self.symmetry and geometry.THROUGH_CENTER_ASSEMBLY not in self.symmetry
-            )
+
+            # Specifically in the case of grid blueprints, where we have grid contents
+            # available, we can also infer "through center" based on the contents.
+            # Note that the "through center" symmetry check cannot be performed when
+            # the grid contents has not been provided (i.e., None or empty).
+            if self.gridContents and symmetry.domain == geometry.DomainType.FULL_CORE:
+                nx, ny = _getGridSize(self.gridContents.keys())
+                if nx == ny and nx % 2 == 1:
+                    symmetry.isThroughCenterAssembly = True
+
+            isOffset = symmetry is not None and not symmetry.isThroughCenterAssembly
+
             spatialGrid = grids.CartesianGrid.fromRectangle(
                 xw, yw, numRings=maxIndex + 1, isOffset=isOffset
             )
@@ -284,8 +324,9 @@ class GridBlueprint(yamlize.Object):
         # set geometric metadata on spatialGrid. This information is needed in various
         # parts of the code and is best encapsulated on the grid itself rather than on
         # the container state.
-        spatialGrid.geomType = self.geom
-        spatialGrid.symmetry = self.symmetry
+        spatialGrid._geomType: str = str(self.geom)
+        self.symmetry = str(symmetry)
+        spatialGrid._symmetry: str = self.symmetry
         return spatialGrid
 
     def _getMaxIndex(self):
@@ -310,7 +351,10 @@ class GridBlueprint(yamlize.Object):
             such as when expanding fuel shuffling paths or the like. Future work may
             make this more sophisticated.
         """
-        if geometry.FULL_CORE in self.symmetry:
+        if (
+            geometry.SymmetryType.fromAny(self.symmetry).domain
+            == geometry.DomainType.FULL_CORE
+        ):
             # No need!
             return
 
@@ -322,12 +366,14 @@ class GridBlueprint(yamlize.Object):
             for idx2 in equivs:
                 newContents[idx2] = contents
         self.gridContents = newContents
-        split = (
-            geometry.THROUGH_CENTER_ASSEMBLY
-            if geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
-            else ""
+        split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
+        self.symmetry = str(
+            geometry.SymmetryType(
+                geometry.DomainType.FULL_CORE,
+                geometry.BoundaryType.NO_SYMMETRY,
+                throughCenterAssembly=split,
+            )
         )
-        self.symmetry = geometry.FULL_CORE + split
 
     def _readGridContents(self):
         """
@@ -356,16 +402,34 @@ class GridBlueprint(yamlize.Object):
         This update the gridContents attribute, which is a dict mapping grid i,j,k
         indices to textual specifiers (e.g. ``IC``))
         """
-        latticeCls = asciimaps.asciiMapFromGeomAndSym(self.geom, self.symmetry)
+        self.readFromLatticeMap = True
+        symmetry = geometry.SymmetryType.fromStr(self.symmetry)
+        geom = geometry.GeomType.fromStr(self.geom)
+        latticeCls = asciimaps.asciiMapFromGeomAndDomain(self.geom, symmetry.domain)
         asciimap = latticeCls()
         asciimap.readAscii(self.latticeMap)
         self.gridContents = dict()
+
+        iOffset = 0
+        jOffset = 0
+        if (
+            geom == geometry.GeomType.CARTESIAN
+            and symmetry.domain == geometry.DomainType.FULL_CORE
+        ):
+            # asciimaps is not smart about where the center should be, so we need to
+            # offset appropriately to get (0,0) in the middle
+            nx, ny = _getGridSize(asciimap.keys())
+
+            # turns out this works great for even and odd cases. love it when integer
+            # math works in your favor
+            iOffset = int(-nx / 2)
+            jOffset = int(-ny / 2)
 
         for (i, j), spec in asciimap.items():
             if spec == "-":
                 # skip placeholders
                 continue
-            self.gridContents[i, j] = spec
+            self.gridContents[i + iOffset, j + jOffset] = spec
 
     def getLocators(self, spatialGrid: grids.Grid, latticeIDs: list):
         """
@@ -417,3 +481,137 @@ def _isMonotonicUnique(l: Sequence[float]) -> bool:
         return False
 
     return True
+
+
+def _getGridSize(idx) -> Tuple[int, int]:
+    """
+    Return the number of spaces between the min and max of a collection of (int, int)
+    tuples, inclusive.
+
+    This essentially returns the number of grid locations along the i, and j dimesions,
+    given the (i,j) indices of each occupied location. This is useful for determining
+    certain grid offset behavior.
+    """
+    nx = max(key[0] for key in idx) - min(key[0] for key in idx) + 1
+    ny = max(key[1] for key in idx) - min(key[1] for key in idx) + 1
+
+    return nx, ny
+
+
+def _filterOutsideDomain(gridBp):
+    """Remove grid contents that lie outside the represented domain.
+
+    This removes extra objects; ARMI allows the user input specifiers in regions outside
+    of the represented domain, which is fine as long as the contained specifier is
+    consistent with the corresponding region in the represented domain given the
+    symmetry condition. For instance, if we have a 1/3-core hex model, it is typically
+    okay for an assembly to be specified outside of the first 1/3rd of the core, as long
+    as it is the same assembly as would be there when expanding the first 1/3rd into a
+    full-core model.
+
+    However, we do not really want these hanging around, since editing the represented
+    1/Nth of the core will probably lead to consistency issues, so we remove them.
+    """
+    grid = gridBp.construct()
+
+    contentsToRemove = {
+        idx
+        for idx, _contents in gridBp.gridContents.items()
+        if not grid.locatorInDomain(grid[idx + (0,)], symmetryOverlap=False)
+    }
+    for idx in contentsToRemove:
+        symmetrics = grid.getSymmetricEquivalents(idx)
+        for symmetric in symmetrics:
+            if symmetric in gridBp.gridContents:
+                if gridBp.gridContents[symmetric] != gridBp.gridContents[idx]:
+                    raise ValueError(
+                        "The contents at `{}` (`{}`) in grid `{}` is not the "
+                        "same as it's symmetric equivalent at `{}` (`{}`). "
+                        "Check your grid blueprints for symmetry.".format(
+                            idx,
+                            gridBp.gridContents[idx],
+                            gridBp.name,
+                            symmetric,
+                            gridBp.gridContents[symmetric],
+                        )
+                    )
+        del gridBp.gridContents[idx]
+
+
+def saveToStream(stream, bluep, full=False, tryMap=False):
+    """Save the blueprints to the passed stream.
+
+    This can save either the entire blueprints, or just the `grids:` section of the
+    blueprints, based on the passed ``full`` argument. Saving just the grid
+    blueprints can be useful when cobbling blueprints together with !include flags.
+
+    stream: file output stream of some kind
+    bluep: armi.reactor.blueprints.Blueprints, or Grids
+    full: bool ~ Is this a full output file, or just a partial/grids?
+    tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
+    they're prettier.
+    """
+    # To save, we want to try our best to output our grid blueprints in the lattice
+    # map style. However, we do not want to wreck the state that the current
+    # blueprints are in. So we make a copy and do some manipulations to try to
+    # canonicalize it and save that, leaving the original blueprints unmolested.
+    bp = copy.deepcopy(bluep)
+
+    if isinstance(bp, blueprints.Blueprints):
+        gridDesigns = bp.gridDesigns
+    elif isinstance(bp, blueprints.Grids):
+        gridDesigns = bp
+    else:
+        raise TypeError("Expected Blueprints or Grids, got {}".format(type(bp)))
+
+    for gridDesignType, gridDesign in gridDesigns.items():
+        # The core equilibrium path should be put into the
+        # grid contents rather than a lattice map until we write
+        # a string-> tuple parser for reading it back in. Skip
+        # this type of grid.
+        if gridDesignType == "coreEqPath":
+            continue
+        _filterOutsideDomain(gridDesign)
+
+        if not gridDesign.gridContents:
+            # there is no grid, so there must be lattice, and that goes to output
+            continue
+
+        if gridDesign.readFromLatticeMap or tryMap:
+            geomType = geometry.GeomType.fromStr(gridDesign.geom)
+            symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
+            try:
+                aMap = asciimaps.asciiMapFromGeomAndDomain(
+                    gridDesign.geom, symmetry.domain
+                )()
+                aMap.asciiLabelByIndices = {
+                    (key[0], key[1]): val
+                    for key, val in gridDesign.gridContents.items()
+                }
+                aMap.gridContentsToAscii()
+            except Exception as e:
+                runLog.warning(
+                    "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
+                        e
+                    )
+                )
+                aMap = None
+
+            if aMap is not None:
+                gridDesign.gridContents = None
+                gridDesign.latticeMap = scalarstring.LiteralScalarString(
+                    gridDesign.latticeMap
+                )
+            else:
+                gridDesign.latticeMap = None
+
+        else:
+            # grid contents were supplied as a dictionary, so we shouldnt even have a
+            # latticeMap, unless it was set explicitly in code somewhere. Discard if
+            # there is one.
+            gridDesign.latticeMap = None
+
+    toSave = bp if full else gridDesigns
+
+    # NOTE: type(bp) here used because importing Blueprints causes a circular import
+    type(toSave).dump(toSave, stream)

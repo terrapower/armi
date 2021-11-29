@@ -12,12 +12,12 @@ ARMI checks for two fuel management settings:
 
 ``fuelHandlerName``
 	The name of a FuelHandler class that ARMI will look for in the Fuel Management Input file
-	pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility	
+	pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility
 	to design and place that object in that file.
-	
+
 .. note:: We consider the limited syntax needed to express fuel management in Python
 	code itself	to be sufficiently expressive and simple for non-programmers to
-	actually use. Indeed, this has been our experience. 
+	actually use. Indeed, this has been our experience.
 
 The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
 search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
@@ -96,25 +96,9 @@ To use it, just say::
     a = self.findAssembly(param='maxPercentBu',compareTo=20)
 
 This will return the assembly in the reactor that has a maximum burnup closest to 20%. Other
-inputs to findAssembly include:
+inputs to findAssembly are summarized in the API docs of
+:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`.
 
-================== ====================== ==============================
-Argument             Example               Description
-================== ====================== ==============================
-targetRing          6                     Assemblies returned will be close to this ring. How close is determined by the width argument.
-width              (4,1)                  First number is how many rings away from the targetRing are acceptable. Second number is direction. -1 will return rings lower than the targetRing, 1 will return rings higher than the targetRing, and 0 will return rings on either side of the targetRing.
-param              'maxPercentBu'         An assembly-level parameter that will be searched for and compared with the compareTo argument.
-compareTo           (aRef,0.6) or 20.5    A value to compare param to. If a single floating point number is given, it will be used a expected. If an (refAssembly, multiplier) tuple is given, the code will search for a value that is multiplier times the refAssembly's param. For instance, if you want to find an assembly that has a burnup near 50% of another assemblies burnup, you would give (anotherAssembly,0.5).
-forceSide           -1,0, or 1            Requires the returned assembly to have either 1: higher, 1: lower, or None: either param than what's in compareTo.
-exclusions          [a1,a2,a3]            Won't return any assembly in this list
-minParam            'kInf'                A parameter to compare to minVal for setting lower bounds
-minVal              0.99                  Sets the lower limit for minParam. The example values show will result in now assemblies with kInf<0.99 will be returned.
-maxParam            'maxPercentBu'        A parameter to compare to minVal for setting upper bounds
-maxVal              20                    Sets the lower limit for maxParam. The example values show will result in now assemblies with burnup>20% will be returned.
-mandatoryLocations  ['A1010','B2001']     Will only return assemblies if they are in a location in this list.
-excludedLocations   ['A1010','B2001']     Will only return assemblies that are not in these locations.
-coords              (24.34,23.65)         Return assembly that is closest to this point in the x-y plane (in cm).
-================== ====================== ==============================
 
 Fuel Management Examples
 ========================
@@ -142,10 +126,10 @@ Fuel Management Tips
 ====================
 Some mistakes are common. Follow these tips.
 
-    * Always make sure your assembly-level types in the settings file are up to date with your geometry input file. Otherwise you'll be moving feeds when you want to move igniters, or something.
-    * Use the exclusions list! If you move a cascade and then the next cascade tries to run, it will choose your newly-moved assemblies if they fit your criteria in findAssemblies. This leads to very confusing results. Therefore, once you move assemblies, you should default to adding them to the exclusions list.
+    * Always make sure your assembly-level types in the settings file are up to date with the grids in your bluepints file. Otherwise you'll be moving feeds when you want to move igniters, or something.
+    * Use the exclusions list! If you move a cascade and then the next cascade tries to run, it will choose your newly-moved assemblies if they fit your criteria in ``findAssemblies``. This leads to very confusing results. Therefore, once you move assemblies, you should default to adding them to the exclusions list.
     * Print cascades during debugging. After you've built a cascade to swap, print it out and check the locations and types of each assembly in it. Is it what you want?
-    * Watch typeNum in the database. You can get good intuition about what is getting moved by viewing this parameter.
+    * Watch ``typeNum`` in the database. You can get good intuition about what is getting moved by viewing this parameter.
 
 Running a branch search
 =======================

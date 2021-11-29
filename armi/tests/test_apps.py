@@ -21,7 +21,6 @@ import unittest
 
 import armi
 from armi import plugins
-from armi.localization import exceptions
 from armi.__main__ import main
 
 
@@ -101,7 +100,7 @@ class TestApps(unittest.TestCase):
         app.pluginManager.unregister(TestPlugin2)
 
         app.pluginManager.register(TestPlugin3)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             plugins.PluginError, ".*currently-defined parameters.*"
         ):
             app.getParamRenames()
@@ -122,7 +121,7 @@ class TestArmi(unittest.TestCase):
         self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
 
     def test_overConfigured(self):
-        with self.assertRaises(exceptions.OverConfiguredError):
+        with self.assertRaises(RuntimeError):
             armi.configure()
 
     def test_main(self):

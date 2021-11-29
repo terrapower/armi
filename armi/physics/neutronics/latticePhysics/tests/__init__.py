@@ -11,14 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""Tests locations.py"""
-import unittest
-import numpy as np
-
-from armi.reactor.locations import *
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv=['','CartesianLocation_TestCase']
-    unittest.main()

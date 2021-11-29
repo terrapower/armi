@@ -135,6 +135,123 @@ grids:
 
 """
 
+FULL_BP_GRID = (
+    FULL_BP.split("lattice map:")[0]
+    + """grid contents:
+         ? - -3
+           - 3
+         : '1'
+         ? - -2
+           - 3
+         : '1'
+         ? - -1
+           - 3
+         : '1'
+         ? - 0
+           - 3
+         : '1'
+         ? - -3
+           - 2
+         : '1'
+         ? - -2
+           - 2
+         : '1'
+         ? - -1
+           - 2
+         : '2'
+         ? - 0
+           - 2
+         : '1'
+         ? - 1
+           - 2
+         : '1'
+         ? - -3
+           - 1
+         : '1'
+         ? - -2
+           - 1
+         : '1'
+         ? - -1
+           - 1
+         : '1'
+         ? - 0
+           - 1
+         : '1'
+         ? - 1
+           - 1
+         : '1'
+         ? - 2
+           - 1
+         : '1'
+         ? - -3
+           - 0
+         : '1'
+         ? - -2
+           - 0
+         : '3'
+         ? - -1
+           - 0
+         : '1'
+         ? - 0
+           - 0
+         : '2'
+         ? - 1
+           - 0
+         : '1'
+         ? - 2
+           - 0
+         : '3'
+         ? - 3
+           - 0
+         : '1'
+         ? - -2
+           - -1
+         : '1'
+         ? - -1
+           - -1
+         : '1'
+         ? - 0
+           - -1
+         : '1'
+         ? - 1
+           - -1
+         : '1'
+         ? - 2
+           - -1
+         : '1'
+         ? - 3
+           - -1
+         : '1'
+         ? - -1
+           - -2
+         : '1'
+         ? - 0
+           - -2
+         : '1'
+         ? - 1
+           - -2
+         : '2'
+         ? - 2
+           - -2
+         : '1'
+         ? - 3
+           - -2
+         : '1'
+         ? - 0
+           - -3
+         : '1'
+         ? - 1
+           - -3
+         : '1'
+         ? - 2
+           - -3
+         : '1'
+         ? - 3
+           - -3
+         : '1'
+"""
+)
+
 
 class TestGriddedBlock(unittest.TestCase):
     """Tests for a block that has components in a lattice."""
@@ -173,6 +290,14 @@ class TestGriddedBlock(unittest.TestCase):
             if locator == (1, 0, 0):
                 seen = True
         self.assertTrue(seen)
+
+    def test_nonLatticeComponentHasRightMult(self):
+        """Make sure non-grid components in blocks with grids get the right multiplicity"""
+        aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
+        a = aDesign.construct(self.cs, self.blueprints)
+        fuelBlock = a.getFirstBlock(Flags.FUEL)
+        duct = fuelBlock.getComponent(Flags.DUCT)
+        self.assertEqual(duct.getDimension("mult"), 1.0)
 
     def test_explicitFlags(self):
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(

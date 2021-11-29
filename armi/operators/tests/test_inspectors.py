@@ -19,9 +19,10 @@ import unittest
 
 from armi import settings
 from armi import operators
+from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
 
 
-class Test(unittest.TestCase):
+class TestInspector(unittest.TestCase):
     """Test case"""
 
     def setUp(self):
@@ -52,6 +53,8 @@ class Test(unittest.TestCase):
         self.assertEqual(buh[1], 10)
         self.assertFalse(query)
 
+        self.assertEqual(str(query), "<Query: beepbopboopbeep>")
+
     def test_changeOfCS(self):
         self.inspector.addQuery(
             lambda: self.inspector.cs["runType"] == "banane",  # german for banana
@@ -63,9 +66,12 @@ class Test(unittest.TestCase):
         self.assertFalse(query)
 
         newCS = settings.getMasterCs().duplicate()
-        newCS["runType"] = "banane"
+        newSettings = {"runType": "banane"}
+        newCS = newCS.modified(newSettings=newSettings)
+
         self.inspector.cs = newCS
         self.assertTrue(query)
+        self.assertIsNone(self.inspector.NO_ACTION())
 
     def test_nonCorrectiveQuery(self):
         self.inspector.addQuery(
@@ -83,6 +89,23 @@ class Test(unittest.TestCase):
         for correction in failures:
             with self.assertRaises(ValueError):
                 self.inspector.addQuery(lambda: True, "", "", correction)
+
+    def test_assignCS(self):
+        keys = sorted(self.inspector.cs.keys())
+        self.assertIn("HCFcoretype", keys)
+
+        self.assertEqual(self.inspector.cs["HCFcoretype"], "TWRC")
+        self.inspector._assignCS(
+            "HCFcoretype", "FAKE"
+        )  # pylint: disable=protected-access
+        self.assertEqual(self.inspector.cs["HCFcoretype"], "FAKE")
+
+    def test_createQueryRevertBadPathToDefault(self):
+        query = createQueryRevertBadPathToDefault(self.inspector, "numProcessors")
+        self.assertEqual(
+            str(query),
+            "<Query: Setting numProcessors points to a nonexistent location:\n1>",
+        )
 
 
 if __name__ == "__main__":

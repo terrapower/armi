@@ -25,7 +25,6 @@ See  [GAMSOR]_ and [MC23]_.
 import traceback
 
 from armi import runLog
-from armi.localization import exceptions
 from armi.nuclearDataIO import cccc
 from armi.nuclearDataIO import xsNuclides
 from armi.nuclearDataIO import xsLibraries
@@ -194,7 +193,7 @@ class _PmatrxIO(cccc.Stream):
             self._rwIsotopes(numNucs)
         except:
             runLog.error(traceback.format_exc())
-            raise exceptions.PmatrxError("Failed to read/write {}".format(self))
+            raise OSError("Failed to read/write {}".format(self))
         finally:
             properties.lockImmutableProperties(self._lib)
 
@@ -278,7 +277,7 @@ class _PmatrxIO(cccc.Stream):
             raise NotImplementedError()
 
 
-class _PmatrxNuclideIO(object):
+class _PmatrxNuclideIO:
     def __init__(self, nuclide, pmatrixIO, numNeutronGroups, numGammaGroups):
         self._nuclide = nuclide
         self._metadata = nuclide.pmatrxMetadata

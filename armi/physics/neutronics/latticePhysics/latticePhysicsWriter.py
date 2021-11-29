@@ -30,16 +30,21 @@ from armi import runLog
 from armi import interfaces
 from armi.physics import neutronics
 from armi.reactor import components
-from armi.localization import warnings
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils.customExceptions import warn_when_root
 
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
 _NUM_DIGITS_ROUND_TEMPERATURE = 3
 # index of the temperature in the nuclide dictionary: {nuc: (density, temp, category)}
 _NUCLIDE_VALUES_TEMPERATURE_INDEX = 1
+
+
+@warn_when_root
+def NuclideNameFoundMultipleTimes(nuclideName):
+    return "Nuclide `{}' was found multiple times.".format(nuclideName)
 
 
 class LatticePhysicsWriter(interfaces.InputWriter):
@@ -229,7 +234,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
             density = max(dens, self.minimumNuclideDensity)
             if nuc in nucDensities:
-                warnings.LatticePhysicsWriter_Nuclide_name_FoundMultipleTimes(nucName)
+                NuclideNameFoundMultipleTimes(nucName)
                 dens, nucTemperatureInC, nucCategory = nucDensities[nuc]
                 density = dens + density
                 nucDensities[nuc] = (density, nucTemperatureInC, nucCategory)
@@ -395,17 +400,21 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Notes
         -----
         We're going to increase the Pu-239 density to make the ratio of fissile mass to heavy metal mass equal to the
-        target ``minimumFissileFraction``:
+        target ``minimumFissileFraction``::
+
             minFrac = (fiss - old + new) / (hm - old + new)
             minFrac * (hm - old + new) = fiss - old + new
             minFrac * (hm - old) + old - fiss = new * (1 - minFrac)
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
-        where,
+
+        where::
+
             minFrac = ``minimumFissileFraction`` setting
             fiss = fissile mass of block
             hm = heavy metal mass of block
             old = number density of Pu-239 before adjustment
             new = number density of Pu-239 after adjustment
+
         """
 
         minFrac = self.cs["minimumFissileFraction"]
@@ -418,11 +427,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             new = (minFrac * (hm - old) + old - fiss) / (1 - minFrac)
             nucDensities[pu239] = (new, temp, msg)
             runLog.warning(
-                "Adjusting Pu-239 number densities in {} from {} to {} to meet minimum fissile fraction "
-                "of {}.\nNote: This modeling approximation will be deprecated soon so it is recommended to "
-                "drive this composition with an external source.".format(
-                    self.block, old, new, minFrac
-                )
+                f"Adjusting Pu-239 number densities in {self.block} from {old} to {new} "
+                f"to meet minimum fissile fraction of {minFrac}."
             )
         return nucDensities
 

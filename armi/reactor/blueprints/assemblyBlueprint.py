@@ -24,7 +24,7 @@ geometry type as a surrogate).
 """
 import yamlize
 
-import armi
+from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor import assemblies
 from armi.reactor.flags import Flags
@@ -35,7 +35,7 @@ from armi.reactor import grids
 
 def _configureAssemblyTypes():
     assemTypes = dict()
-    pm = armi.getPluginManagerOrFail()
+    pm = getPluginManagerOrFail()
     for pluginAssemTypes in pm.hook.defineAssemblyTypes():
         for blockType, assemType in pluginAssemTypes:
             assemTypes[blockType] = assemType

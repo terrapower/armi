@@ -22,12 +22,20 @@ import shutil
 
 from armi import nuclearDataIO
 from armi import interfaces, runLog
-from armi.localization import messages
 from armi.utils import codeTiming
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils.customExceptions import important
+
 
 LATTICE_PHYSICS = "latticePhysics"
+
+
+@important
+def SkippingXsGen_BuChangedLessThanTolerance(tolerance):
+    return "Skipping XS Generation this cycle because median block burnups changes less than {}%".format(
+        tolerance
+    )
 
 
 def setBlockNeutronVelocities(r, neutronVelocities):
@@ -152,7 +160,8 @@ class LatticePhysicsInterface(interfaces.Interface):
     def makeCycleXSFilesAsBaseFiles(self, cycle):
         raise NotImplementedError
 
-    def _copyLibraryFilesForCycle(self, cycle, libFiles):
+    @staticmethod
+    def _copyLibraryFilesForCycle(cycle, libFiles):
         runLog.extra("Current library files: {}".format(libFiles))
         for baseName, cycleName in libFiles.items():
             if not os.path.exists(cycleName):
@@ -349,11 +358,11 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Criteria include:
 
-            #. genXS setting is turned on
-            #. We are beyond any requested skipCycles (restart cycles)
-            #. The blocks have changed burnup beyond the burnup threshold
-            #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
-            (possible if it runs during fuel handling)
+        #. genXS setting is turned on
+        #. We are beyond any requested skipCycles (restart cycles)
+        #. The blocks have changed burnup beyond the burnup threshold
+        #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
+           (possible if it runs during fuel handling)
 
         """
         executeXSGen = bool(self.cs["genXS"] and cycle >= self.cs["skipCycles"])
@@ -368,21 +377,38 @@ class LatticePhysicsInterface(interfaces.Interface):
             # changes that occurred during fuel management?
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)
             if missing and not executeXSGen:
-                runLog.warning(
-                    "Even though XS generation is not activated, new XS {0} are needed. "
-                    "Perhaps a booster came in.".format(missing)
+                runLog.info(
+                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
+                    f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
+                    f"is not enabled, but will be run to generate these missing cross sections."
                 )
+                executeXSGen = True
             elif missing:
-                runLog.important(
-                    "New XS sets {0} will be generated for this cycle".format(missing)
+                runLog.info(
+                    f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
+                    f"there are missing XS IDs {missing} required. These will be generated "
+                    f"on cycle {cycle}."
                 )
+                executeXSGen = True
             else:
-                runLog.important(
-                    "No new XS needed for this cycle. {0} exist. Skipping".format(
-                        self.r.core.lib.xsIDs
-                    )
+                runLog.info(
+                    f"A XS library {self.r.core._lib} exists on {self.r.core} and contains "
+                    f"the required XS data for XS IDs {self.r.core.lib.xsIDs}. The generation "
+                    "of XS will be skipped."
                 )
-                executeXSGen = False  # no newXs
+                executeXSGen = False
+
+        if executeXSGen:
+            runLog.info(
+                f"Cross sections will be generated on cycle {cycle} for the "
+                f"following XS IDs: {xsIDs}"
+            )
+        else:
+            runLog.info(
+                f"Cross sections will not be generated on cycle {cycle}. The "
+                f"setting `genXS` is {self.cs['genXS']} and `skipCycles` "
+                f"is {self.cs['skipCycles']}"
+            )
 
         return executeXSGen
 
@@ -435,9 +461,8 @@ class LatticePhysicsInterface(interfaces.Interface):
                         )
 
             if not idsChangedBurnup:
-                messages.latticePhysics_SkippingXsGen_BuChangedLessThanTolerance(
-                    self._burnupTolerance
-                )
+                SkippingXsGen_BuChangedLessThanTolerance(self._burnupTolerance)
+
         return idsChangedBurnup
 
     def _getProcessesPerNode(self):

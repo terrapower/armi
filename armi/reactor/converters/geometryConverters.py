@@ -38,7 +38,6 @@ from armi import runLog
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
-from armi.reactor import locations
 from armi.reactor import reactors
 from armi.reactor import parameters
 from armi.reactor.parameters import Category
@@ -60,7 +59,7 @@ BLOCK_AXIAL_MESH_SPACING = (
 STR_SPACE = " "
 
 
-class GeometryChanger(object):
+class GeometryChanger:
     """Geometry changer class that updates the geometry (number of assems or blocks per assem) of a given reactor."""
 
     def __init__(self, cs=None, quiet=False):
@@ -124,122 +123,6 @@ class GeometryConverter(GeometryChanger):
     def __init__(self, cs=None, quiet=False):
         GeometryChanger.__init__(self, cs=cs, quiet=quiet)
         self.convReactor = None
-
-
-class BlockNumberModifier(GeometryChanger):
-    """
-    Change the fueled region to have a certain number of blocks with uniform height.
-
-    Notes
-    -----
-    Makes some assumptions about how control and fuel blocks are laid out.
-    """
-
-    def __init__(self, cs):
-        GeometryChanger.__init__(self, cs)
-        self.numToAdd = None
-
-    def convert(self, r=None):
-        """
-        Changes the fueled region to have a certain number of blocks with uniform height
-
-        Makes some assumptions about how control and fuel blocks
-        are laid out.
-        """
-        refAssem = r.core.refAssem
-        fuelI = refAssem.getBlocks().index(refAssem.getFirstBlock(Flags.FUEL))
-        # store this b/c the ref assem length will change.
-        origRefBlocks = len(refAssem)
-
-        for a in r.core.getAssemblies(includeBolAssems=True):
-            if len(a) == origRefBlocks:
-                # modify the number of blocks. Otherwise, it might be a shield
-                # and snapping should accomplish its goal
-                if a.hasFlags(Flags.FUEL):
-                    self.setNumberOfBlocks(a)
-                else:
-                    # non-fuel. Control?
-                    self.setNumberOfBlocks(a, blockType=a[fuelI].getType())
-            else:
-                # radial shields, etc. go here.
-                pass
-
-        # update inert assemblies to snap to the proper block sizes.
-        axMesh = refAssem.getAxialMesh()
-        for a in r.core.getAssemblies(includeBolAssems=True):
-            a.makeAxialSnapList(refAssem)
-            a.setBlockMesh(axMesh)
-        r.core.updateAxialMesh()
-        # update bookkeeping.
-        r.core.regenAssemblyLists()
-
-    def setNumberOfBlocks(self, assem, blockType=Flags.FUEL):
-        r"""
-        Change the region to have a certain number of blocks with uniform height
-
-        Useful for parameter studies varying the block resolution.
-
-        Parameters
-        ----------
-        assem : Assembly
-            The assembly to modify
-
-        blockType : str, optional
-            Type of block to change. Default: Fuel. Allows control
-            assemblies, etc. to modified just like fuel assemblies.
-
-        Notes
-        -----
-        This also snaps the non-fuel blocks to the fuel mesh after calling this function
-        on all assemblies. You will need to manually do this to all inert assems
-        in the reactor.
-
-        This renames blocks according to their axial position. Rerun history tracker
-        if you're tracking history.
-
-        """
-        fuelHeight = assem.getTotalHeight(blockType)
-        blockHeight = fuelHeight / self.numToAdd
-        fuelBlocks = set(assem.getBlocks(blockType))
-        newBlockStack = []
-        numFuelBlocksAdded = 0
-        # make a tracker flag that tells us if we're below or above fuel.
-        # This model requires that there are no inert blocks interspersed in the fuel.
-        fuelEncountered = False
-        # add lower blocks, and as much fuel as possible.
-        for bi, b in enumerate(assem.getBlocks()):
-            if b not in fuelBlocks:
-                if fuelEncountered:
-                    # we're above fuel and assem[bi] is the first above-fuel block.
-                    break
-                else:
-                    # add lower inert blocks as they are
-                    newBlockStack.append(b)
-            else:
-                # fuel block.
-                fuelEncountered = True
-                if numFuelBlocksAdded < self.numToAdd:
-                    numFuelBlocksAdded += 1
-                    newBlockStack.append(b)
-                    b.setHeight(blockHeight)
-                    b.completeInitialLoading()
-
-        # potentially add extra fuel blocks to fill up the assembly.
-        # this will happen if we increased the number of fuel blocks
-        # by a lot.
-        for _extraBlock in range(self.numToAdd - numFuelBlocksAdded):
-            newB = newBlockStack[-1].duplicate()  # copy the last fuel block.
-            newBlockStack.append(newB)
-
-        # add in the upper inert blocks, starting with the bi-th
-        for b in assem.getBlocks()[bi:]:
-            newBlockStack.append(b)
-
-        # apply the new blocks to this assembly.
-        assem.removeAll()
-        for b in newBlockStack:
-            assem.add(b)
-        assem.reestablishBlockOrder()
 
 
 class FuelAssemNumModifier(GeometryChanger):
@@ -455,6 +338,10 @@ class HexToRZThetaConverter(GeometryConverter):
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZT
+    _SYMMETRY_TYPE = geometry.SymmetryType(
+        domainType=geometry.DomainType.FULL_CORE,
+        boundaryType=geometry.BoundaryType.NO_SYMMETRY,
+    )
     _BLOCK_MIXTURE_TYPE_MAP = {
         "mixture control": ["control"],
         "mixture fuel": ["fuel"],
@@ -669,7 +556,7 @@ class HexToRZThetaConverter(GeometryConverter):
             core.setOptionsFromCs(self._cs)
         self.convReactor.add(core)
         self.convReactor.core.spatialGrid = grid
-        grid.symmetry = geometry.FULL_CORE
+        grid.symmetry = self._SYMMETRY_TYPE
         grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
@@ -793,21 +680,21 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         Add a new stack of circles to the TRZ reactor by homogenizing assems
 
-        Inputs
-        ------
-        innerDiameter:
+        Parameters
+        ----------
+        innerDiameter : float
             The current innerDiameter of the radial-theta zone
 
-        thetaIndex:
+        thetaIndex : float
             The theta index of the radial-theta zone
 
-        radialIndex:
+        radialIndex : float
             The radial index of the radial-theta zone
 
-        lowerTheta:
+        lowerTheta : float
             The lower theta bound for the radial-theta zone
 
-        upperTheta:
+        upperTheta : float
             The upper theta bound for the radial-theta zone
 
         Returns
@@ -1032,10 +919,9 @@ class HexToRZThetaConverter(GeometryConverter):
                     return assignedMixtureBlockType
 
         assignedMixtureBlockType = "mixture structure"
-        runLog.extra(
-            "The mixture type for this homogenized block was not determined and is defaulting to {}".format(
-                assignedMixtureBlockType
-            )
+        runLog.debug(
+            f"The mixture type for this homogenized block {mostCommonHexBlockType} "
+            f"was not determined and is defaulting to {assignedMixtureBlockType}"
         )
 
         return assignedMixtureBlockType
@@ -1245,7 +1131,8 @@ class HexToRZThetaConverter(GeometryConverter):
             )
         )
 
-    def _getBlockColor(self, colConverter, colGenerator, blockColors, blockType):
+    @staticmethod
+    def _getBlockColor(colConverter, colGenerator, blockColors, blockType):
         nextColor = None
         if blockType not in blockColors:
             if "fuel" in blockType:
@@ -1291,7 +1178,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     """
 
-    EXPECTED_INPUT_SYMMETRY = "third periodic"
+    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
+        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+    )
 
     def convert(self, r=None):
         """
@@ -1314,8 +1203,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             and r.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
-                "ThirdCoreHexToFullCoreChanger requires the input to have be third core hex geometry."
-                "Geometry received was {} {}".format(r.core.symmetry, r.core.geomType)
+                "ThirdCoreHexToFullCoreChanger requires the input to have third core hex geometry. "
+                "Geometry received was {} {} {}".format(
+                    r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
+                )
             )
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(r.core)
@@ -1327,7 +1218,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         grid = copy.deepcopy(r.core.spatialGrid)
 
         # Set the core grid's symmetry early, since the core uses it for error checks
-        r.core.spatialGrid.symmetry = geometry.FULL_CORE
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
@@ -1338,24 +1231,22 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 
-        # set symmetry after expanding, because it isnt actually full core until it's
-        # full core; setting the symmetry causes the core to clear its caches.
-        r.core.symmetry = geometry.FULL_CORE
+        # set domain after expanding, because it isnt actually full core until it's
+        # full core; setting the domain causes the core to clear its caches.
+        r.core.symmetry = geometry.SymmetryType(
+            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+        )
 
     def restorePreviousGeometry(self, cs, reactor):
-        """
-        Undo the changes made by convert by going back to 1/3 core.
-        """
+        """Undo the changes made by convert by going back to 1/3 core."""
         # remove the assemblies that were added when the conversion happened.
         if bool(self.getNewAssembliesAdded()):
-
             for a in self.getNewAssembliesAdded():
                 reactor.core.removeAssembly(a, discharge=False)
 
-            # restore the settings of the core
-            cs.unsetTemporarySettings()
-
-            reactor.core.symmetry = self.EXPECTED_INPUT_SYMMETRY
+            reactor.core.symmetry = geometry.SymmetryType.fromAny(
+                self.EXPECTED_INPUT_SYMMETRY
+            )
 
 
 class EdgeAssemblyChanger(GeometryChanger):
@@ -1476,7 +1367,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         else:
             runLog.extra("No edge assemblies to remove")
 
-    def scaleParamsRelatedToSymmetry(self, reactor, paramsToScaleSubset=None):
+    @staticmethod
+    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges
 

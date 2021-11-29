@@ -53,6 +53,7 @@ The mesh mapping happens as described in the figure:
 
 """
 import copy
+import logging
 
 import numpy
 
@@ -67,6 +68,8 @@ from armi.reactor import parameters
 
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
+
+runLog = logging.getLogger(__name__)
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -149,55 +152,77 @@ class UniformMeshGeometryConverter(GeometryConverter):
         applyStateToOriginal : basically the reverse on the way out.
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
+        runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
         for topMeshPoint in newMesh:
+            runLog.debug(
+                f"From axial elevation {bottom:<6.2f} cm to {topMeshPoint:<6.2f} cm"
+            )
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
             )
+            # This is not expected to occur given that the assembly mesh is consistent with
+            # the blocks within it, but this is added for defensive programming and to
+            # highlight a developer issue.
             if not overlappingBlockInfo:
-                # this could be handled by duplicating the block but with the current CR module
-                # this situation should just never happen.
-                raise RuntimeError(
-                    "No block found between {:.3f} and {:.3f} in assembly {}"
-                    "".format(bottom, topMeshPoint, sourceAssem)
+                raise ValueError(
+                    f"No blocks found between {bottom:.3f} and {topMeshPoint:.3f} in {sourceAssem}. "
+                    f"This is a major bug that should be reported to the developers."
                 )
 
-            # If there are FUEL or CONTROL blocks that are overlapping with the other blocks then the first
-            # one is selected to ensure that the correct XS ID is applied to the new block during the deepcopy.
+            # Iterate over the blocks that are within this region and
+            # select one as a "source" for determining which cross section
+            # type to use. This uses the following rules:
+            #     1. Select the first block that has either FUEL or CONTROL flags
+            #     2. Fail if multiple blocks meet this criteria if they have different XS types
+            #     3. Default to the first block in the list if no blocks meet FUEL or CONTROL flags criteria.
+            blocks = [b for b, _h in overlappingBlockInfo]
             sourceBlock = None
-            specialXSType = None
-            for potentialBlock, _overlap in overlappingBlockInfo:
-                if sourceBlock is None:
-                    sourceBlock = potentialBlock
-                if (
-                    potentialBlock.hasFlags([Flags.FUEL, Flags.CONTROL])
-                    and potentialBlock != sourceBlock
-                ):
-                    runLog.important(
-                        "There are multiple overlapping blocks.  Choosing {} for {} XS sets.".format(
-                            potentialBlock.getType(), sourceBlock.getType()
-                        )
-                    )
-                    if specialXSType is None:
-                        sourceBlock = potentialBlock
-                        specialXSType = sourceBlock.p.xsType
-                    elif specialXSType == potentialBlock.p.xsType:
-                        pass
+            xsType = None
+            for b in blocks:
+                if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                    if sourceBlock is None:
+                        sourceBlock = b
+                        xsType = b.p.xsType
                     else:
-                        runLog.error(
-                            "There are two special block XS types.  Not sure which to choose {} {}"
-                            "".format(sourceBlock, potentialBlock)
-                        )
-                        raise RuntimeError(
-                            "There are multiple special block XS types when there should only be one"
-                        )
+                        # If there is a duplicate source block candidate that has a different
+                        # cross section type then this is an error because the code cannot
+                        # decide which one is correct.
+                        if b.p.xsType != xsType:
+                            msg = (
+                                f"{sourceBlock} and {b} in {newAssem} have conflicting XS types and are "
+                                f"candidates for the source block. To fix this, either set their XS types "
+                                f"to be the same or remove these flags {[Flags.FUEL, Flags.CONTROL]} "
+                                f"from one of the blocks."
+                            )
+                            runLog.error(msg)
+                            raise ValueError(msg)
+
+            # If no blocks meet the criteria above just select the first block
+            # as the source block and use its cross section type.
+            if sourceBlock is None:
+                sourceBlock = blocks[0]
+                xsType = blocks[0].p.xsType
+
+            runLog.debug(
+                f"  - The source block for this region is {sourceBlock} with XS type {xsType}"
+            )
+
+            # Report the homogenization fractions for debugging purposes
+            for b, heightOverlap in overlappingBlockInfo:
+                totalHeight = topMeshPoint - bottom
+                runLog.debug(
+                    f"  - {b} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
+                )
 
             block = copy.deepcopy(sourceBlock)
+            block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
             _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo)
             newAssem.add(block)
             bottom = topMeshPoint
+
         newAssem.reestablishBlockOrder()
         newAssem.calculateZCoords()
         return newAssem
@@ -210,6 +235,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         avoid unnecessarily diffusing small blocks into huge ones (e.g. control blocks
         into plenum).
         """
+        runLog.debug(
+            f"Creating new assemblies from {self._sourceReactor.core} "
+            f"with a uniform mesh of {self._uniformMesh}"
+        )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
             newAssem.r = self.convReactor
@@ -309,19 +338,24 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         UniformMeshGeometryConverter._checkConversion(self)
         sourcePow = self._sourceReactor.core.getTotalBlockParam("power")
         convPow = self.convReactor.core.getTotalBlockParam("power")
-        expectedPow = (
-            self._sourceReactor.core.p.power / self._sourceReactor.core.powerMultiplier
-        )
-        if abs(sourcePow - convPow) / sourcePow > 1e-5:
-            runLog.info(
-                f"Source reactor power ({sourcePow}) is too different from "
-                f"converted power ({convPow})."
-            )
-        if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
-            raise ValueError(
-                f"Source reactor power ({sourcePow}) is too different from "
-                f"user-input power ({expectedPow})."
-            )
+        if sourcePow > 0.0 and convPow > 0.0:
+            if abs(sourcePow - convPow) / sourcePow > 1e-5:
+                runLog.info(
+                    f"Source reactor power ({sourcePow}) is too different from "
+                    f"converted power ({convPow})."
+                )
+
+            if self._sourceReactor.p.timeNode != 0:
+                # only check on nodes other than BOC
+                expectedPow = (
+                    self._sourceReactor.core.p.power
+                    / self._sourceReactor.core.powerMultiplier
+                )
+                if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
+                    raise ValueError(
+                        f"Source reactor power ({sourcePow}) is too different from "
+                        f"user-input power ({expectedPow})."
+                    )
 
     def _setParamsToUpdate(self):
         """Activate conversion of various neutronics paramters."""

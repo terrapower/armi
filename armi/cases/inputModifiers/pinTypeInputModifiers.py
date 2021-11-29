@@ -1,7 +1,19 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from armi.cases.inputModifiers import inputModifiers
 from armi.reactor import flags
 from armi.reactor.components import component
-from armi.cases.inputModifiers import inputModifiers
-
 from armi.reactor.converters import pinTypeBlockConverters
 
 
@@ -20,8 +32,8 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
         inputModifiers.InputModifier.__init__(self, {self.__class__.__name__: value})
         self.value = value
 
-    def __call__(self, cs, blueprints, geom):
-        for bDesign in blueprints.blockDesigns:
+    def __call__(self, cs, bp, geom):
+        for bDesign in bp.blockDesigns:
             # bDesign construct requires lots of arguments, many of which have no impact.
             # The following can safely be defaulted to meaningless inputs:
             # axialIndex: a block can be reused at any axial index, modifications made
@@ -40,7 +52,7 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
             #     basis, they should be edited directly
             b = bDesign.construct(
                 cs,
-                blueprints,
+                bp,
                 axialIndex=1,
                 axialMeshPoints=1,
                 height=1,
@@ -63,6 +75,8 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
                         newDim = str(link)
                     if inpDim != newDim:
                         setattr(cDesign, dimName, newDim)
+
+        return cs, bp, geom
 
     def _getBlockTypesToModify(self):
         """Hook method to determine blocks that should be modified."""

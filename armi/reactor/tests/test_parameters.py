@@ -11,19 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from __future__ import print_function
+""" tests of the Parameters class """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 import traceback
 
 import armi
 from armi.reactor import parameters
-from armi.reactor.tests import test_reactors
-from armi.localization import exceptions
 from armi.reactor import composites
 
 
-class MockComposite(object):
+class MockComposite:
     def __init__(self, name):
         self.name = name
         self.p = {}
@@ -194,7 +192,7 @@ class ParameterTests(unittest.TestCase):
                     pb.defParam("sameName", "units", "description 1", "location")
                     pb.defParam("sameName", "units", "description 2", "location")
 
-            p = MockParamCollection()
+            _ = MockParamCollection()
 
     def test_paramDefinitionsCompose(self):
         class MockBaseParamCollection(parameters.ParameterCollection):
@@ -243,7 +241,7 @@ class ParameterTests(unittest.TestCase):
                 with pDefs.createBuilder() as pb:
                     pb.defParam("sameName", "units", "description 4", "location")
 
-            p = MockPCChild()
+            _ = MockPCChild()
 
         # same name along a different branch from the base ParameterCollection should be fine
         class MockPCUncle(parameters.ParameterCollection):
@@ -257,15 +255,15 @@ class ParameterTests(unittest.TestCase):
             with pDefs.createBuilder() as pb:
                 pb.defParam("someParam", "units", "description", "location")
 
-        mockPC = MockPC()
+        _ = MockPC()
 
     def test_cannotCreateInstanceOf_NoDefault(self):
         with self.assertRaises(NotImplementedError):
-            thing = parameters.NoDefault()
+            _ = parameters.NoDefault()
 
     def test_cannotCreateInstanceOf_Undefined(self):
         with self.assertRaises(NotImplementedError):
-            _thing = parameters.parameterDefinitions._Undefined()
+            _ = parameters.parameterDefinitions._Undefined()
 
     def test_defaultLocation(self):
         class MockPC(parameters.ParameterCollection):
@@ -382,7 +380,7 @@ def makeComp(name):
     return c
 
 
-class SynchronizationTests(object):
+class SynchronizationTests:
     """Some unit tests that must be run with mpirun instead of the standard unittest system."""
 
     def setUp(self):
@@ -409,7 +407,7 @@ class SynchronizationTests(object):
                     try:
                         self.setUp()
                         getattr(self, methodName)()
-                    except Exception as ex:
+                    except Exception:
                         self.write("failed, big time")
                         traceback.print_exc(file=self.l)
                         self.write("*** printed exception")
@@ -424,7 +422,7 @@ class SynchronizationTests(object):
         self.l.flush()
 
     def assertRaises(self, exceptionType):
-        class ExceptionCatcher(object):
+        class ExceptionCatcher:
             def __enter__(self):
                 pass
 
@@ -478,7 +476,7 @@ class SynchronizationTests(object):
 
     def mpitest_withConflicts(self):
         self.r.core.p.param1 = (armi.MPI_RANK + 1) * 99.0
-        with self.assertRaises(exceptions.SynchronizationError):
+        with self.assertRaises(ValueError):
             self.r.syncMpiState()
 
     def mpitest_withConflictsButSameValue(self):
@@ -514,10 +512,10 @@ class SynchronizationTests(object):
 
     def mpitest_conflictsMaintainWithStateRetainer(self):
         with self.r.retainState(parameters.inCategory("cat2")):
-            for ci, comp in enumerate(self.comps):
+            for _, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * armi.MPI_RANK
 
-        with self.assertRaises(exceptions.SynchronizationError):
+        with self.assertRaises(ValueError):
             self.r.syncMpiState()
 
     def mpitest_rxCoeffsProcess(self):

@@ -18,7 +18,7 @@ The nuclideBases module classes for providing *base* nuclide information, such a
 For details on how to setup the RIPL-3 data files to process extra nuclide data see:
 :doc:`/user/user_install`
 
-The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
+The nuclide class structure is outlined in :ref:`the figure <nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
 
@@ -31,7 +31,7 @@ The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
 See Also
 --------
 armi.nucDirectory.nuclideBases._addNuclideToIndices : builds this object
-    
+
 Examples
 --------
 >>> nuclideBases.byName['U235']
@@ -97,14 +97,13 @@ U235_7
 
 import os
 import pathlib
-import zlib
+import glob
 
 import yaml
 
 import armi
 from armi.nucDirectory import elements
 from armi.nucDirectory import transmutations
-from armi.localization import errors
 from armi import runLog
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
@@ -169,8 +168,8 @@ def fromName(name):
     r"""Get a nuclide from its name."""
     matches = [nn for nn in instances if nn.name == name]
     if len(matches) != 1:
-        raise errors.nuclides_TooManyOrTooFew_number_MatchesForNuclide_name(
-            len(matches), name
+        raise Exception(
+            "Too many or too few ({}) matches for {}" "".format(len(matches), name)
         )
     return matches[0]
 
@@ -249,7 +248,11 @@ def single(predicate):
     """
     matches = [nuc for nuc in instances if predicate(nuc)]
     if len(matches) != 1:
-        raise errors.general_single_TooManyOrTooFewMatchesFor(matches)
+        raise IndexError(
+            "Expected single match, but got {} matches:\n  {}".format(
+                len(matches), "\n  ".join(str(mo) for mo in matches)
+            )
+        )
     return matches[0]
 
 
@@ -482,20 +485,14 @@ def __readRiplDecayData():
     if not path.exists() or not path.is_dir():
         raise ValueError(f"`{_riplEnvironVariable}`: {path} is invalid.")
 
-    # Check for all (.dat) data files within the directory. These
-    # are ordered from z000.dat to z117.dat. If all files do not
-    # exist then an exception is thrown for the missing data files.
+    # Check that the number of expected (.dat) data files within the directory exist.
     numRIPLDataFiles = 118
-    dataFileNames = ["z{:>03d}.dat".format(i) for i in range(0, numRIPLDataFiles)]
-    missingFileNames = []
-    for df in dataFileNames:
-        expectedDataFilePath = os.path.abspath(os.path.join(path, df))
-        if not os.path.exists(expectedDataFilePath):
-            missingFileNames.append(df)
-    if missingFileNames:
-        raise ValueError(
-            f"There are {len(missingFileNames)} missing RIPL data files in `{_riplEnvironVariable}`: {path}.\n"
-            f"The following data files were expected: {missingFileNames}"
+    numAvailableRIPLFiles = len(glob.glob(os.path.join(riplPath, "z???.dat")))
+    if numAvailableRIPLFiles < numRIPLDataFiles:
+        runLog.warning(
+            f"The number of RIPL files are expected to be {numRIPLDataFiles}, but "
+            f"only {numAvailableRIPLFiles} exist. There may be missing nuclides that "
+            f"are loaded into the `nuclideBases` directory."
         )
 
     ripl.makeDecayConstantTable(directory=path)
@@ -543,7 +540,7 @@ def _addNuclideToIndices(nuc):
             pass
 
 
-class IMcnpNuclide(object):
+class IMcnpNuclide:
     """Interface which defines the contract for getMcnpId."""
 
     def getMcnpId(self):
@@ -559,7 +556,7 @@ class IMcnpNuclide(object):
         raise NotImplementedError
 
 
-class NuclideInterface(object):
+class NuclideInterface:
     """An abstract nuclide implementation which defining various methods required for a nuclide object."""
 
     def getDatabaseName(self):

@@ -287,7 +287,6 @@ class XdmfDumper(dumper.VisFileDumper):
         node = r.p.timeNode
 
         timeGroupName = database3.getH5GroupName(cycle, node)
-        dbVersion = self._inputDb.version
 
         # careful here! we are trying to use the database datasets as the source of hard
         # data without copying, so the order that we make the mesh needs to be the same

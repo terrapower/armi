@@ -15,13 +15,10 @@
 """Run multiple ARMI cases one after the other on the local machine."""
 import os
 
-import tabulate
-
 from armi.cli.run import RunEntryPoint
 from armi import cases
 from armi.utils import directoryChangers
 from armi import runLog
-from armi import settings
 
 
 class RunSuiteCommand(RunEntryPoint):

@@ -13,9 +13,12 @@
 # limitations under the License.
 
 """Module to test geometry converters."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import math
 import os
 import unittest
+
+from numpy.testing import assert_allclose
 
 from armi import runLog
 from armi import settings
@@ -26,7 +29,7 @@ from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.flags import Flags
-from armi.reactor import locations
+from armi.utils import directoryChangers
 
 
 THIS_DIR = os.path.dirname(__file__)
@@ -50,7 +53,8 @@ class TestGeometryConverters(unittest.TestCase):
         self.assertEqual(
             numAssems, 13
         )  # should wind up with 6 reflector assemblies per 1/3rd core
-        shieldtype = self.r.core.getAssemblyWithStringLocation("A4001").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(4, 1)
+        shieldtype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(
             shieldtype, "radial shield"
         )  # check that the right thing was added
@@ -79,20 +83,24 @@ class TestGeometryConverters(unittest.TestCase):
         self.assertEqual(numFuelAssems, 60)
 
         # checks that existing fuel assemblies are preserved
-        fueltype = self.r.core.getAssemblyWithStringLocation("A1001").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
+        fueltype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(fueltype, "igniter fuel")
 
         # checks that existing control rods are preserved
-        controltype = self.r.core.getAssemblyWithStringLocation("A5001").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 1)
+        controltype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(controltype, "primary control")
 
         # checks that existing reflectors are overwritten with feed fuel
-        oldshieldtype = self.r.core.getAssemblyWithStringLocation("A9005").getType()
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(9, 5)
+        oldshieldtype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(oldshieldtype, "feed fuel")
 
         # checks that outer assemblies are removed
-        outerassem = self.r.core.getAssemblyWithStringLocation("A9001")
-        self.assertEqual(outerassem, None)
+        locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(9, 1)
+        with self.assertRaises(KeyError):
+            _ = self.r.core.childrenByLocator[locator]
 
         # tests ability to remove fuel assemblies
         converter.numFuelAssems = 20
@@ -144,7 +152,7 @@ class TestHexToRZConverter(unittest.TestCase):
             "axialConversionType": "Axial Coordinates",
             "uniformThetaMesh": True,
             "thetaBins": 1,
-            "axialMesh": [50, 100, 150, 175],
+            "axialMesh": [25, 50, 75, 100, 150, 175],
             "thetaMesh": [2 * math.pi],
         }
 
@@ -158,6 +166,39 @@ class TestHexToRZConverter(unittest.TestCase):
         self._checkBlockComponents(newR)
         self._checkNuclidesMatch(expectedNuclideList, newR)
         self._checkNuclideMasses(expectedMassDict, newR)
+        self._checkBlockAtMeshPoint(geomConv)
+        self._checkReactorMeshCoordinates(geomConv)
+        figs = geomConv.plotConvertedReactor()
+        with directoryChangers.TemporaryDirectoryChanger():
+            geomConv.plotConvertedReactor("fname")
+
+    def _checkBlockAtMeshPoint(self, geomConv):
+        b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
+        self.assertTrue(b.hasFlags(Flags.FUEL))
+
+    def _checkReactorMeshCoordinates(self, geomConv):
+        thetaMesh, radialMesh, axialMesh = geomConv._getReactorMeshCoordinates()
+        expectedThetaMesh = [math.pi * 2.0]
+        expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 150.0, 175.0]
+        expectedRadialMesh = [
+            8.794379,
+            23.26774,
+            35.177517,
+            38.33381,
+            51.279602,
+            53.494121,
+            63.417171,
+            66.975997,
+            68.686298,
+            83.893031,
+            96.738172,
+            99.107621,
+            114.32693,
+            129.549296,
+        ]
+        assert_allclose(expectedThetaMesh, thetaMesh)
+        assert_allclose(expectedRadialMesh, radialMesh)
+        assert_allclose(expectedAxialMesh, axialMesh)
 
     def _getExpectedData(self):
         """Retrieve the mass of all nuclides in the reactor prior to converting."""
@@ -277,42 +318,56 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         """Test that a hex core can be converted from a third core to a full core geometry."""
         # Check the initialization of the third core model
         self.assertFalse(self.r.core.isFullCore)
-        self.assertEqual(self.r.core.symmetry, geometry.THIRD_CORE + geometry.PERIODIC)
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
         initialNumBlocks = len(self.r.core.getBlocks())
         # Perform reactor conversion
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
         # Check the full core conversion is successful
         self.assertGreater(len(self.r.core.getBlocks()), initialNumBlocks)
-        self.assertEqual(self.r.core.symmetry, geometry.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         # Check that the geometry can be restored to a third core
         changer.restorePreviousGeometry(self.o.cs, self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        self.assertEqual(self.r.core.symmetry, geometry.THIRD_CORE + geometry.PERIODIC)
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
         """Test that hex core is not modified when third core to full core changer is called on an already full core geometry."""
         # Check the initialization of the third core model and convert to a full core
         self.assertFalse(self.r.core.isFullCore)
-        self.assertEqual(self.r.core.symmetry, geometry.THIRD_CORE + geometry.PERIODIC)
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
         # Check that the changer does not affect the full core model on converting and restoring
         initialNumBlocks = len(self.r.core.getBlocks())
-        self.assertEqual(self.r.core.symmetry, geometry.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
-        self.assertEqual(self.r.core.symmetry, geometry.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         changer.restorePreviousGeometry(self.o.cs, self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        self.assertEqual(self.r.core.symmetry, geometry.FULL_CORE)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 
 
 if __name__ == "__main__":
-    import sys
-    import armi
-
-    armi.configure()
+    # import sys
+    # import armi
+    # armi.configure()
     # sys.argv = ["", "TestEdgeAssemblyChanger"]
     unittest.main()

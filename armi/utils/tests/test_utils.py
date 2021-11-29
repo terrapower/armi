@@ -12,29 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-
+r""" Testing some utility functions
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
 import unittest
 import math
 
-from armi.utils import units
-import armi.utils as utils
+import numpy as np
+
+from armi import utils
+from armi.utils import directoryChangers
 
 
 class Utils_TestCase(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def test_parabola(self):
         # test the parabola function
         a, b, c = utils.parabolaFromPoints((0, 1), (1, 2), (-1, 2))
         self.assertEqual(a, 1.0)
         self.assertEqual(b, 0.0)
         self.assertEqual(c, 1.0)
+
+        with self.assertRaises(Exception):
+            a, b, c = utils.parabolaFromPoints((0, 1), (0, 1), (-1, 2))
 
     def test_findClosest(self):
         l1 = range(10)
@@ -53,6 +52,22 @@ class Utils_TestCase(unittest.TestCase):
 
         self.assertEqual(x, 20.0)
         self.assertEqual(x2, 50.0)
+
+        with self.assertRaises(ZeroDivisionError):
+            _ = utils.linearInterpolation(1.0, 1.0, 1.0, 2.0)
+
+    def test_parabolicInterpolation(self):
+        realRoots = utils.parabolicInterpolation(2.0e-6, -5.0e-4, 1.02, 1.0)
+        self.assertAlmostEqual(realRoots[0][0], 200.0)
+        self.assertAlmostEqual(realRoots[0][1], 3.0e-4)
+        self.assertAlmostEqual(realRoots[1][0], 50.0)
+        self.assertAlmostEqual(realRoots[1][1], -3.0e-4)
+        noRoots = utils.parabolicInterpolation(2.0e-6, -4.0e-4, 1.03, 1.0)
+        self.assertAlmostEqual(noRoots[0][0], -100.0)
+        self.assertAlmostEqual(noRoots[0][1], 0.0)
+        # 3. run time error
+        with self.assertRaises(RuntimeError):
+            _ = utils.parabolicInterpolation(2.0e-6, 4.0e-4, 1.02, 1.0)
 
     def test_rotateXY(self):
         x = [1.0, -1.0]
@@ -110,6 +125,13 @@ class Utils_TestCase(unittest.TestCase):
         )
         self.assertEqual(outputStr, "hello, world, 1,\n2, 3,\n4, 5\n")
 
+        outputStr = utils.createFormattedStrWithDelimiter(
+            dataList=dataList,
+            maxNumberOfValuesBeforeDelimiter=0,
+            delimiter=delimiter,
+        )
+        self.assertEqual(outputStr, "hello, world, 1, 2, 3, 4, 5\n")
+
         # test with an empty list
         dataList = []
         outputStr = utils.createFormattedStrWithDelimiter(
@@ -137,6 +159,8 @@ class Utils_TestCase(unittest.TestCase):
         self.assertEqual("pot...", str1)
         str1 = utils.capStrLen("rubidium", 7)
         self.assertEqual("rubi...", str1)
+        with self.assertRaises(Exception):
+            str1 = utils.capStrLen("sodium", 2)
 
     def test_list2str(self):
         # Test with list of strings
@@ -160,6 +184,82 @@ class Utils_TestCase(unittest.TestCase):
         str1 = "OneTwoThreeFourT...FourThreeFour T... Four "
         str2 = utils.list2str(list2, 4, list1, 5)
         self.assertEqual(str1, str2)
+
+    def test_getFloat(self):
+        self.assertEqual(utils.getFloat(1.0), 1.0)
+        self.assertEqual(utils.getFloat("1.0"), 1.0)
+        self.assertIsNone(utils.getFloat("word"))
+
+    def test_relErr(self):
+        self.assertAlmostEqual(utils.relErr(1.00, 1.01), 0.01)
+        self.assertAlmostEqual(utils.relErr(100.0, 97.0), -0.03)
+        self.assertAlmostEqual(utils.relErr(0.00, 1.00), -1e99)
+
+    def test_efmt(self):
+        self.assertAlmostEqual(utils.efmt("1.0e+001"), "1.0E+01")
+        self.assertAlmostEqual(utils.efmt("1.0E+01"), "1.0E+01")
+
+    def test_slantSplit(self):
+        x1 = utils.slantSplit(10.0, 4.0, 4)
+        x2 = utils.slantSplit(10.0, 4.0, 4, order="high first")
+        self.assertListEqual(x1, [1.0, 2.0, 3.0, 4.0])
+        self.assertListEqual(x2, [4.0, 3.0, 2.0, 1.0])
+
+    def test_newtonsMethod(self):
+        f = lambda x: (x + 2) * (x - 1)
+        root = utils.newtonsMethod(f, 0.0, 5.0, maxIterations=10, positiveGuesses=True)
+        self.assertAlmostEqual(root, 1.0, places=3)
+        root = utils.newtonsMethod(f, 0.0, -10.0, maxIterations=10)
+        self.assertAlmostEqual(root, -2.0, places=3)
+
+    def test_minimizeScalarFunc(self):
+        f = lambda x: (x + 1) ** 2
+        minimum = utils.minimizeScalarFunc(f, -3.0, 10.0, maxIterations=10)
+        self.assertAlmostEqual(minimum, -1.0, places=3)
+        minimum = utils.minimizeScalarFunc(
+            f, -3.0, 10.0, maxIterations=10, positiveGuesses=True
+        )
+        self.assertAlmostEqual(minimum, 0.0, places=3)
+
+    def test_prependToList(self):
+        a = ["hello", "world"]
+        b = [1, 2, 3]
+        utils.prependToList(a, b)
+        self.assertListEqual(a, [1, 2, 3, "hello", "world"])
+
+    def test_convertToSlice(self):
+        slice1 = utils.convertToSlice(2)
+        self.assertEqual(slice1, slice(2, 3, None))
+        slice1 = utils.convertToSlice(2.0, increment=-1)
+        self.assertEqual(slice1, slice(1, 2, None))
+        slice1 = utils.convertToSlice(None)
+        self.assertEqual(slice1, slice(None, None, None))
+        slice1 = utils.convertToSlice([1, 2, 3])
+        self.assertTrue(np.allclose(slice1, np.array([1, 2, 3])))
+        slice1 = utils.convertToSlice(slice(2, 3, None))
+        self.assertEqual(slice1, slice(2, 3, None))
+        slice1 = utils.convertToSlice(np.array([1, 2, 3]))
+        self.assertTrue(np.allclose(slice1, np.array([1, 2, 3])))
+        with self.assertRaises(Exception):
+            slice1 = utils.convertToSlice("slice")
+
+    def test_plotMatrix(self):
+        matrix = np.zeros([2, 2], dtype=float)
+        matrix[0, 0] = 1
+        matrix[0, 1] = 2
+        matrix[1, 0] = 3
+        matrix[1, 1] = 4
+        xtick = ([0, 1], ["1", "2"])
+        ytick = ([0, 1], ["1", "2"])
+        fname = "test_plotMatrix_testfile"
+        with directoryChangers.TemporaryDirectoryChanger():
+            utils.plotMatrix(matrix, fname, show=True, title="plot")
+            utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
+            utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
+
+    def test_getStepsFromValues(self):
+        steps = utils.getStepsFromValues([1.0, 3.0, 6.0, 10.0], prevValue=0.0)
+        self.assertListEqual(steps, [1.0, 2.0, 3.0, 4.0])
 
 
 if __name__ == "__main__":

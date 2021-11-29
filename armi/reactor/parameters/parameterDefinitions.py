@@ -45,13 +45,11 @@ from .exceptions import ParameterError, ParameterDefinitionError
 # In order for that to happen, the flags need to be cleared when the <time-description>
 # begins.
 SINCE_INITIALIZATION = 1
-SINCE_LAST_DB_TRANSMISSION = 2
 SINCE_LAST_DISTRIBUTE_STATE = 4
 SINCE_LAST_GEOMETRY_TRANSFORMATION = 8
 SINCE_BACKUP = 16
 SINCE_ANYTHING = (
     SINCE_LAST_DISTRIBUTE_STATE
-    | SINCE_LAST_DB_TRANSMISSION
     | SINCE_INITIALIZATION
     | SINCE_LAST_GEOMETRY_TRANSFORMATION
     | SINCE_BACKUP
@@ -108,7 +106,7 @@ class _Undefined:
 
 
 class Serializer:
-    """
+    r"""
     Abstract class describing serialize/deserialize operations for Parameter data.
 
     Parameters need to be stored to and read from database files. This currently
@@ -122,7 +120,7 @@ class Serializer:
     The ``Database3`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
-      - There are ``None`` s.
+      - There are ``None``\ s.
 
       - The dimensions of the values stored on each object are inconsistent (e.g.,
         "jagged" arrays)
@@ -364,7 +362,7 @@ class Parameter:
         return self.location and self.location & loc
 
 
-class ParameterDefinitionCollection(object):
+class ParameterDefinitionCollection:
     r"""
     A very specialized container for managing parameter definitions.
 
@@ -428,6 +426,9 @@ class ParameterDefinitionCollection(object):
         pdc = ParameterDefinitionCollection()
         pdc.extend(filter(filterFunc, self._paramDefs))
         return pdc
+
+    def items(self):
+        return self._paramDefDict.items()
 
     def extend(self, other):
         """
@@ -531,7 +532,7 @@ class ParameterDefinitionCollection(object):
     def locked(self):
         return self._locked
 
-    def toWriteToDB(self, assignedMask):
+    def toWriteToDB(self, assignedMask: Optional[int] = None):
         """
         Get a list of acceptable parameters to store to the database for a level of the data model.
 
@@ -540,7 +541,8 @@ class ParameterDefinitionCollection(object):
         assignedMask : int
             a bitmask to down-filter which params to use based on how "stale" they are.
         """
-        return [p for p in self if p.saveToDB and p.assigned & assignedMask]
+        mask = assignedMask or SINCE_ANYTHING
+        return [p for p in self if p.saveToDB and p.assigned & mask]
 
     def createBuilder(self, *args, **kwargs):
         """
@@ -555,7 +557,7 @@ class ParameterDefinitionCollection(object):
         return paramBuilder
 
 
-class ParameterBuilder(object):
+class ParameterBuilder:
     r"""Factory for creating Parameter and parameter properties"""
 
     def __init__(
@@ -584,7 +586,8 @@ class ParameterBuilder(object):
             return
         self._entered = False
 
-    def _assertDefaultIsProperType(self, default):
+    @staticmethod
+    def _assertDefaultIsProperType(default):
         if default in (NoDefault, None) or isinstance(
             default, (int, str, float, bool, Flags)
         ):

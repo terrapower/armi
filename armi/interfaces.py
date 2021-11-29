@@ -30,16 +30,13 @@ from typing import Union
 from typing import NamedTuple
 from typing import List
 from typing import Dict
-from abc import ABCMeta, abstractmethod
 
-import armi
-from armi import settings
-from armi import utils
+from armi import getPluginManagerOrFail, settings, utils
 from armi.utils import textProcessors
 from armi.reactor import parameters
 
 
-class STACK_ORDER(object):  # pylint: disable=invalid-name, too-few-public-methods
+class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
     """
     Constants that help determine the order of modules in the interface stack.
 
@@ -81,7 +78,7 @@ class STACK_ORDER(object):  # pylint: disable=invalid-name, too-few-public-metho
     POSTPROCESSING = BOOKKEEPING + 1
 
 
-class Interface(object):
+class Interface:
     """
     The eponymous Interface between the ARMI Reactor model and modules that operate upon it.
 
@@ -119,7 +116,7 @@ class Interface(object):
     interfaces.
     """
 
-    class Distribute(object):  # pylint: disable=too-few-public-methods
+    class Distribute:  # pylint: disable=too-few-public-methods
         """Enum-like return flag for behavior on interface broadcasting with MPI."""
 
         DUPLICATE = 1
@@ -422,7 +419,7 @@ class Interface(object):
         raise NotImplementedError()
 
     @staticmethod
-    def specifyInputs(cs) -> Dict[str, List[str]]:  # pylint: disable=unused-argument
+    def specifyInputs(cs) -> Dict[Union[str, settings.Setting], List[str]]:
         """
         Return a collection of file names that are considered input files.
 
@@ -430,20 +427,30 @@ class Interface(object):
         class), since it should not require an Interface to actually be constructed.
         This would require constructing a reactor object, which is expensive.
 
-        The files returned by an implementation of this method are those that one would
-        want copied to a remote location when cloning a Case or CaseSuite to a remote
-        location.
+        The files returned by an implementation should be those that one would want
+        copied to a target location when cloning a Case or CaseSuite. These can be
+        absolute paths, relative paths, or glob patterns that will be interpolated
+        relative to the input directory. Aboslute paths will not be copied anywhere.
+
+        The returned dictionary should be keyed off of a descriptive string, or an
+        actual Setting object. If a Setting is used, then the source CaseSettings object
+        will be updated to the new file location.
 
         Note
         ----
         This existed before the advent of ARMI plugins. Perhaps it can be better served
         as a plugin hook. Potential future work.
 
+        See also
+        --------
+        armi.cases.Case.clone() : Main user of this interface.
+
         Parameters
         ----------
         cs : CaseSettings
             The case settings for a particular Case
         """
+        # pylint: disable=unused-argument
         return {}
 
     def updatePhysicsCouplingControl(self):
@@ -451,7 +458,7 @@ class Interface(object):
         pass
 
 
-class InputWriter(object):
+class InputWriter:
     """Use to write input files of external codes."""
 
     def __init__(self, r=None, externalCodeInterface=None, cs=None):
@@ -471,7 +478,7 @@ class InputWriter(object):
         raise NotImplementedError
 
 
-class OutputReader(object):
+class OutputReader:
     """
     A generic representation of a particular module's output.
 
@@ -540,7 +547,7 @@ def getActiveInterfaceInfo(cs):
     """
     interfaceInfo = []
     # pylint: disable = no-member
-    for info in armi.getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
+    for info in getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
         interfaceInfo += info
 
     interfaceInfo = [

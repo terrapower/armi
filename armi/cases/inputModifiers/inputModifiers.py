@@ -1,7 +1,20 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Modifies inputs."""
 
 
-class InputModifier(object):
+class InputModifier:
     """
     Object that modifies input definitions in some well-defined way.
 
@@ -36,6 +49,52 @@ class InputModifier(object):
             independentVariable = {}
         self.independentVariable = independentVariable
 
+    def __call__(self, cs, bp, geom):
+        """Perform the desired modifications to input objects."""
+        raise NotImplementedError
+
+
+class SamplingInputModifier(InputModifier):
+    """
+    Object that modifies input definitions in some well-defined way.
+
+    (This class is abstract.)
+
+    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
+    ``Blueprints``, and ``SystemLayoutInput``.
+
+    This is a modified version of the InputModifier abstract class that imposes
+    structure for parameters in a design space that will be sampled by a
+    quasi-random sampling algorithm. These algorithms require input modifiers
+    to specify if the parameter is continuous or discrete and have the bounds
+    specified.
+
+    """
+
+    def __init__(
+        self, name: str, paramType: str, bounds: list, independentVariable=None
+    ):
+        """[summary]
+
+        Parameters
+        ----------
+        name: str
+            Name of input modifier.
+        paramType : str
+            specify if parameter is 'continuous' or 'discrete'
+        bounds : list
+            If continuous, provide floating points [a, b] specifing the inclusive bounds.
+            If discrete, provide a list of potential values [a, b, c, ...]
+        independentVariable : [type], optional
+            Name/value pairs to associate with the independent variable being modified
+            by this object.  Will be analyzed and plotted against other modifiers with
+            the same name, by default None
+        """
+        InputModifier.__init__(self, independentVariable=independentVariable)
+        self.name = name
+        self.paramType = paramType
+        self.bounds = bounds
+
     def __call__(self, cs, blueprints, geom):
         """Perform the desired modifications to input objects."""
         raise NotImplementedError
@@ -56,13 +115,15 @@ class FullCoreModifier(InputModifier):
     grids to full core themself.
     """
 
-    def __call__(self, cs, blueprints, geom):
+    def __call__(self, cs, bp, geom):
         """Core might be on a geom object or a grid blueprint"""
         if geom:
             geom.growToFullCore()
         else:
-            coreBp = blueprints.gridDesigns["core"]
+            coreBp = bp.gridDesigns["core"]
             coreBp.expandToFull()
+
+        return cs, bp, geom
 
 
 class SettingsModifier(InputModifier):
@@ -75,8 +136,9 @@ class SettingsModifier(InputModifier):
         self.settingName = settingName
         self.value = value
 
-    def __call__(self, cs, blueprints, geom):
-        cs[self.settingName] = self.value
+    def __call__(self, cs, bp, geom):
+        cs = cs.modified(newSettings={self.settingName: self.value})
+        return cs, bp, geom
 
 
 class MultiSettingModifier(InputModifier):
@@ -85,15 +147,45 @@ class MultiSettingModifier(InputModifier):
 
     Examples
     --------
-    inputModifiers.MultiSettingModifier(
-        {CONF_NEUTRONICS_TYPE: "both", CONF_COARSE_MESH_REBALANCE: -1}
-    )
+
+    >>> inputModifiers.MultiSettingModifier(
+    ...    {CONF_NEUTRONICS_TYPE: "both", CONF_COARSE_MESH_REBALANCE: -1}
+    ... )
+
     """
 
     def __init__(self, settingVals: dict):
         InputModifier.__init__(self, independentVariable=settingVals)
         self.settings = settingVals
 
-    def __call__(self, cs, blueprints, geom):
+    def __call__(self, cs, bp, geom):
+        newSettings = {}
         for name, val in self.settings.items():
-            cs[name] = val
+            newSettings[name] = val
+
+        cs = cs.modified(newSettings=newSettings)
+        return cs, bp, geom
+
+
+class BluePrintBlockModifier(InputModifier):
+    """Adjust blueprint block->component->dimension to specified value."""
+
+    def __init__(self, block, component, dimension, value):
+        InputModifier.__init__(self, independentVariable={dimension: value})
+        self.block = block
+        self.component = component
+        self.dimension = dimension
+        self.value = value
+
+    def __call__(self, cs, bp, geom):
+        # parse block
+        for blockDesign in bp.blockDesigns:
+            if blockDesign.name == self.block:
+                # parse component
+                for componentDesign in blockDesign:
+                    if componentDesign.name == self.component:
+                        # set new value
+                        setattr(componentDesign, self.dimension, self.value)
+                        return cs, bp, geom
+
+        return cs, bp, geom

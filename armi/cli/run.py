@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Run an ARMI case."""
-import armi
 from armi.cli.entryPoint import EntryPoint
 
 

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import unittest
 
@@ -71,7 +72,6 @@ assemblies:
         """
         )
         fuelComponent = a[0][0]
-        nd = fuelComponent.p.numberDensities
         u235 = fuelComponent.getMass("U235")
         u = fuelComponent.getMass("U")
         assert_allclose(0.20, u235 / u)

@@ -29,7 +29,6 @@ Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defau
 """
 from armi import interfaces
 from armi import runLog
-from armi.reactor import locations
 from armi import operators
 
 
@@ -65,6 +64,7 @@ class SnapshotInterface(interfaces.Interface):
 
         snapText = ["{0:03d}{1:03d}".format(c, n) for c, n in snapTimeCycleNodePairs]
 
+        # determine if there are new snapshots to add to the setings file
         for snapT in snapText:
             if snapT not in self.cs["dumpSnapshot"]:
                 runLog.info(

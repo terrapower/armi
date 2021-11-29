@@ -26,18 +26,18 @@ A master case settings is created as ``masterCs``
 
 """
 import io
+import logging
 import os
-import sys
-import copy
-import collections
+from copy import copy, deepcopy
 
 import armi
 from armi import runLog
-from armi.localization import exceptions
-from armi.settings import fwSettings
 from armi.settings import settingsIO
+from armi.settings.setting import Setting
 from armi.utils import pathTools
-from armi.settings import setting
+from armi.utils.customExceptions import NonexistentSetting
+
+DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
 
 
 class Settings:
@@ -49,6 +49,8 @@ class Settings:
 
     The settings object has a 1-to-1 correspondence with the ARMI settings input file.
     This file may be created by hand or by the GUI in submitter.py.
+
+    NOTE: The actual settings in any instance of this class are immutable.
     """
 
     # Settings is not a singleton, but there is a globally
@@ -66,6 +68,8 @@ class Settings:
         fName : str, optional
             Path to a valid yaml settings file that will be loaded
         """
+        # if the "loadingFile" is not set, this better be True, or there are no blueprints at all
+        self.filelessBP = False
 
         self._failOnLoad = False
         """This is state information.
@@ -80,16 +84,16 @@ class Settings:
 
         app = armi.getApp()
         assert app is not None
-        self.settings = app.getSettings()
+        self.__settings = app.getSettings()
         if not Settings.instance:
             Settings.instance = self
-        self._backedup = {}
 
         if fName:
             self.loadFromInputFile(fName)
 
     @property
     def inputDirectory(self):
+        """getter for settings file path"""
         if self.path is None:
             return os.getcwd()
         else:
@@ -97,6 +101,7 @@ class Settings:
 
     @property
     def caseTitle(self):
+        """getter for settings case title"""
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -104,34 +109,55 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
+        """setter for the case title"""
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
     def environmentSettings(self):
+        """getter for environment settings"""
         return [
-            setting.name for setting in self.settings.values() if setting.isEnvironment
+            setting.name
+            for setting in self.__settings.values()
+            if setting.isEnvironment
         ]
 
+    def __contains__(self, key):
+        return key in self.__settings
+
     def __repr__(self):
-        total = len(self.settings.keys())
+        total = len(self.__settings.keys())
         isAltered = lambda setting: 1 if setting.value != setting.default else 0
-        altered = sum([isAltered(setting) for setting in self.settings.values()])
+        altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
         return "<{} name:{} total:{} altered:{}>".format(
             self.__class__.__name__, self.caseTitle, total, altered
         )
 
     def __getitem__(self, key):
-        if key in self.settings:
-            return self.settings[key].value
+        if key in self.__settings:
+            return self.__settings[key].value
         else:
-            raise exceptions.NonexistentSetting(key)
+            raise NonexistentSetting(key)
+
+    def getSetting(self, key, default=None):
+        """
+        Return a copy of an actual Setting object, instead of just its value.
+
+        NOTE: This is used very rarely, try to organize your code to only need a Setting value.
+        """
+        if key in self.__settings:
+            return copy(self.__settings[key])
+        elif default is not None:
+            return default
+        else:
+            raise NonexistentSetting(key)
 
     def __setitem__(self, key, val):
-        if key in self.settings:
-            self.settings[key].setValue(val)
+        # TODO: This potentially allows for invisible settings mutations and should be removed.
+        if key in self.__settings:
+            self.__settings[key].setValue(val)
         else:
-            raise exceptions.NonexistentSetting(key)
+            raise NonexistentSetting(key)
 
     def __setstate__(self, state):
         """
@@ -144,37 +170,43 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        self.settings = armi.getApp().getSettings()
+        self.__settings = armi.getApp().getSettings()
 
         # restore non-setting instance attrs
         for key, val in state.items():
-            if key != "settings":
+            if key != "_Settings__settings":
                 setattr(self, key, val)
+
         # with schema restored, restore all setting values
-        for name, settingState in state["settings"].items():
+        for name, settingState in state["_Settings__settings"].items():
             # pylint: disable=protected-access
-            self.settings[name]._value = settingState.value
+            if name in self.__settings:
+                self.__settings[name]._value = settingState.value
+            elif isinstance(settingState, Setting):
+                self.__settings[name] = copy(settingState)
+            else:
+                raise NonexistentSetting(name)
 
     def keys(self):
-        return self.settings.keys()
+        return self.__settings.keys()
 
-    def update(self, values):
-        for key, val in values.items():
-            self[key] = val
+    def values(self):
+        return self.__settings.values()
 
-    def clear(self):
-        self.settings.clear()
+    def items(self):
+        return self.__settings.items()
 
     def duplicate(self):
-        cs = copy.deepcopy(self)
+        """return a duplicate copy of this settings object"""
+        cs = deepcopy(self)
         cs._failOnLoad = False  # pylint: disable=protected-access
         # it's not really protected access since it is a new Settings object.
         # _failOnLoad is set to false, because this new settings object should be independent of the command line
         return cs
 
     def revertToDefaults(self):
-        r"""Sets every setting back to its default value"""
-        for setting in self.settings.values():
+        """Sets every setting back to its default value"""
+        for setting in self.__settings.values():
             setting.revertToDefault()
 
     def failOnLoad(self):
@@ -199,11 +231,12 @@ class Settings:
         reader, path = self._prepToRead(fName)
         reader.readFromFile(fName, handleInvalids)
         self._applyReadSettings(path if setPath else None)
+
         return reader
 
     def _prepToRead(self, fName):
         if self._failOnLoad:
-            raise exceptions.StateError(
+            raise RuntimeError(
                 "Cannot load settings file after processing of command "
                 "line options begins.\nYou may be able to fix this by "
                 "reordering the command line arguments, and making sure "
@@ -224,7 +257,7 @@ class Settings:
         reading went like for knowing if a file contained deprecated settings, etc.
         """
         if self._failOnLoad:
-            raise exceptions.StateError(
+            raise RuntimeError(
                 "Cannot load settings after processing of command "
                 "line options begins.\nYou may be able to fix this by "
                 "reordering the command line arguments."
@@ -238,21 +271,25 @@ class Settings:
             io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
         )
 
-        if armi.MPI_RANK == 0:
-            runLog.setVerbosity(self["verbosity"])
-        else:
-            runLog.setVerbosity(self["branchVerbosity"])
+        self.initLogVerbosity()
 
         return reader
 
     def _applyReadSettings(self, path=None):
+        self.initLogVerbosity()
+
+        if path:
+            self.path = path  # can't set this before a chance to fail occurs
+
+    # TODO: At some point, much of the logging init will be moved to context, including this.
+    def initLogVerbosity(self):
+        """Central location to init logging verbosity"""
         if armi.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
         else:
             runLog.setVerbosity(self["branchVerbosity"])
 
-        if path:
-            self.path = path  # can't set this before a chance to fail occurs
+        self.setModuleVerbosities(force=True)
 
     def writeToXMLFile(self, fName, style="short"):
         """Write out settings to an xml file
@@ -298,53 +335,6 @@ class Settings:
         writer.writeYaml(stream)
         return writer
 
-    def setSettingsReport(self):
-        """Puts settings into the report manager"""
-        from armi.bookkeeping import report
-
-        report.setData("caseTitle", self.caseTitle, report.RUN_META)
-        report.setData(
-            "outputFileExtension", self["outputFileExtension"], report.RUN_META
-        )
-
-        report.setData(
-            "Total Core Power", "%8.5E MWt" % (self["power"] / 1.0e6), report.RUN_META
-        )
-        if not self["cycleLengths"]:
-            report.setData(
-                "Cycle Length", "%8.5f days" % self["cycleLength"], report.RUN_META
-            )
-        report.setData(
-            "BU Groups", str(self["buGroups"]), report.RUN_META
-        )  # str to keep the list together in the report
-
-        for key in [
-            "nCycles",
-            "burnSteps",
-            "skipCycles",
-            "cycleLength",
-            "numProcessors",
-        ]:
-            report.setData(key, self[key], report.CASE_PARAMETERS)
-
-        for key in self.environmentSettings:
-            report.setData(key, self[key], report.RUN_META, [report.ENVIRONMENT])
-
-        for key in ["genXS", "neutronicsKernel"]:
-            report.setData(key, self[key], report.CASE_CONTROLS, [report.ENVIRONMENT])
-
-        for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
-            report.setData(key, self[key], report.RUN_META, [report.NEUTRONICS])
-
-        for key in ["reloadDBName", "startCycle", "startNode"]:
-            report.setData(key, self[key], report.SNAPSHOT)
-
-        for key in ["power", "Tin", "Tout"]:
-            report.setData(key, self[key], report.REACTOR_PARAMS)
-
-        for key in ["buGroups"]:
-            report.setData(key, self[key], report.BURNUP_GROUPS)
-
     def updateEnvironmentSettingsFrom(self, otherCs):
         r"""Updates the environment settings in this object based on some other cs
         (from the GUI, most likely)
@@ -354,35 +344,51 @@ class Settings:
         otherCs : Settings object
             A cs object that environment settings will be inherited from.
 
-
         This enables users to run tests with their environment rather than the reference environment
         """
         for replacement in self.environmentSettings:
             self[replacement] = otherCs[replacement]
 
-    def temporarilySet(self, settingName, temporaryValue):
+    def modified(self, caseTitle=None, newSettings=None):
+        """Return a new Settings object containing the provided modifications."""
+        # pylint: disable=protected-access
+        settings = self.duplicate()
+
+        if caseTitle:
+            settings.caseTitle = caseTitle
+
+        if newSettings:
+            for key, val in newSettings.items():
+                if isinstance(val, Setting):
+                    settings.__settings[key] = copy(val)
+                elif key in settings.__settings:
+                    settings.__settings[key].setValue(val)
+                else:
+                    settings.__settings[key] = Setting(key, val)
+
+        return settings
+
+    def setModuleVerbosities(self, force=False):
+        """Attempt to grab the module-level logger verbosities from the settings file,
+        and then set their log levels (verbosities).
+
+        NOTE: This method is only meant to be called once per run.
+
+        Parameters
+        ----------
+        force : bool, optional
+            If force is False, don't overwrite the log verbosities if the logger already exists.
+            IF this needs to be used mid-run, force=False is safer.
         """
-        Change a setting that you will restore later.
+        # try to get the setting dict
+        verbs = self["moduleVerbosity"]
 
-        Useful to change settings before doing a certain run and then reverting them
+        # set, but don't use, the module-level loggers
+        for mName, mLvl in verbs.items():
+            # by default, we init module-level logging, not change it mid-run
+            if force or mName not in logging.Logger.manager.loggerDict:
+                # cast verbosity to integer
+                lvl = int(mLvl) if mLvl.isnumeric() else runLog.LOG.logLevels[mLvl][0]
 
-        See Also
-        --------
-        unsetTemporarySettings : reverts this
-        """
-        runLog.debug(
-            "Temporarily changing {} from {} to {}".format(
-                settingName, self[settingName], temporaryValue
-            )
-        )
-        self._backedup[settingName] = self[settingName]
-        self[settingName] = temporaryValue
-
-    def unsetTemporarySettings(self):
-        for settingName, origValue in self._backedup.items():
-            runLog.debug(
-                "Reverting {} from {} back to its original value of {}".format(
-                    settingName, self[settingName], origValue
-                )
-            )
-            self[settingName] = origValue
+                log = logging.getLogger(mName)
+                log.setVerbosity(lvl)

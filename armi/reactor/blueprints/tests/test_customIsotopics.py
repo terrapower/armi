@@ -188,7 +188,8 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        cs["xsKernel"] = "MC2v2"
+        cs = cs.modified(newSettings={"xsKernel": "MC2v2"})
+
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
         cls.numUZrNuclides = 29  # Number of nuclides defined `nuclide flags`
@@ -254,7 +255,8 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        cs["xsKernel"] = "MC2v3"
+        cs = cs.modified(newSettings={"xsKernel": "MC2v3"})
+
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")
         b = a[-1]
@@ -272,7 +274,7 @@ assemblies:
 class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
     def test_densityMustBePositive(self):
         with self.assertRaises(yamlize.YamlizingError):
-            ci = isotopicOptions.CustomIsotopic.load(
+            _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: atom repellent
             input format: mass fractions
@@ -285,7 +287,7 @@ class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
 
     def test_nonConformantElementName(self):
         with self.assertRaises(yamlize.YamlizingError):
-            ci = isotopicOptions.CustomIsotopic.load(
+            _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: non-upper case
             input format: number densities
@@ -295,7 +297,7 @@ class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
 
     def test_numberDensitiesCannotSpecifyDensity(self):
         with self.assertRaises(yamlize.YamlizingError):
-            ci = isotopicOptions.CustomIsotopic.load(
+            _ = isotopicOptions.CustomIsotopic.load(
                 r"""
             name: over-specified isotopics
             input format: number densities
@@ -339,7 +341,7 @@ blocks:
             mult: 1.0
             od: 10.0
 assemblies:
-    fuel a: 
+    fuel a:
         specifier: IC
         blocks: [*block_0]
         height: [10]
@@ -349,7 +351,8 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        cs["xsKernel"] = "MC2v3"
+        cs = cs.modified(newSettings={"xsKernel": "MC2v3"})
+
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")
         b = a[-1]

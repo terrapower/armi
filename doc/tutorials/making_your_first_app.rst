@@ -85,11 +85,11 @@ These files are:
   application.
 
 * :file:`README.md` and :file:`LICENSE.md` are an optional description and license of your
-  application that would be prominently featured, e.g. in a github repo, if you were to
+  application that would be prominently featured, e.g. in a GitHub repo, if you were to
   put it there.
 
 * :file:`doc/` is an optional folder where your application documentation source may go.
-  If you choose to use Sphinx you can run ``sphinx-quickstart` in that folder to begin
+  If you choose to use Sphinx you can run ``sphinx-quickstart`` in that folder to begin
   documentation.
 
 Registering the app with ARMI
@@ -148,7 +148,7 @@ Plugin code can exist in any directory structure in an app. In this app we
 put it in the :file:`myapp/plugin.py` file.
 
 .. note:: For "serious" plugins, we recommend mirroring the ``armi/physics/[subphysics]``
-    structure of the ARMI framework :py:mod:`physics plugin subpackage <armi.physics>`.
+    structure of the ARMI Framework :py:mod:`physics plugin subpackage <armi.physics>`.
 
 We will start the plugin by pointing to the two physics kernels we wish to register. We
 hook them in and tell ARMI the ``ORDER`` they should be run in based on the built-in
@@ -209,7 +209,7 @@ block-level temperature (and flow velocity) distribution as we go.
 
 .. math::
 
-    q''' = \dot{m} C_p \Delta T
+    \dot{Q} = \dot{m} C_p \Delta T
 
 .. literalinclude:: armi-example-app/myapp/thermalSolver.py
     :caption: ``myapp/thermalSolver.py``
@@ -262,7 +262,7 @@ the directory that contains our app. For testing, an example value for this migh
 
 Make a run directory with some input files in it. You can use the same SFR input files
 we've used in previous tutorials for starters (but quickly transition to your own inputs
-for your own interests!)
+for your own interests!).
 
 Here are the files you can download into the run directory.
 

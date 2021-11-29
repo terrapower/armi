@@ -77,16 +77,17 @@ from armi.context import (
 )
 from armi.context import Mode
 
+from armi import cli
 from armi.meta import __version__
 from armi import apps
 from armi import pluginManager
 from armi import plugins
 from armi import runLog
-from armi.localization import exceptions
 from armi.reactor import flags
 from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
 
+import __main__ as main
 
 # ARMI does not configure its own application by default. This is mostly to catch issues
 # involving calling code that requires the framework to be configured before that has
@@ -103,7 +104,7 @@ _ignoreConfigures = False
 def isStableReleaseVersion(version=None):
     """Determine if the version should be considered a stable release"""
     version = version or __version__
-    return not "-" in version
+    return "-" not in version
 
 
 def _registerUserPlugin(plugManager, userPluginName):
@@ -167,7 +168,7 @@ def init(choice=None, fName=None, cs=None):
         return armiCase.initializeOperator()
     except:  # Catch any and all errors. Naked exception on purpose.
         # Concatenate errors to the master log file.
-        runLog.LOG.close()
+        runLog.close()
         raise
 
 
@@ -260,6 +261,13 @@ def _cleanupOnCancel(signum, _frame):
     sys.exit(1)  # since we're handling the signal we have to cancel
 
 
+def _liveInterpreter():
+    """
+    Return whether we are running within a live/interactive python interpreter.
+    """
+    return not hasattr(main, "__file__")
+
+
 def configure(app: Optional[apps.App] = None, permissive=False):
     """
     Set the plugin manager for the Framework and configure internals to those plugins.
@@ -279,7 +287,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     ---------
     Since this affects the behavior of several modules at their import time, it is
     generally not safe to re-configure the ARMI framework once it has been configured.
-    Therefore this will raise an ``OverConfiguredError`` if such a re-configuration is
+    Therefore this will raise an ``RuntimeError`` if such a re-configuration is
     attempted, unless ``permissive`` is set to ``True``.
 
     Notes
@@ -301,7 +309,10 @@ def configure(app: Optional[apps.App] = None, permissive=False):
         if permissive and type(_app) is type(app):
             return
         else:
-            raise exceptions.OverConfiguredError(_ARMI_CONFIGURE_CONTEXT)
+            raise RuntimeError(
+                "Multiple calls to armi.configure() are not allowed. "
+                "Previous call from:\n{}".format(_ARMI_CONFIGURE_CONTEXT)
+            )
 
     assert not context.BLUEPRINTS_IMPORTED, (
         "ARMI can no longer be configured after blueprints have been imported. "
@@ -312,13 +323,15 @@ def configure(app: Optional[apps.App] = None, permissive=False):
 
     _app = app
 
+    if _liveInterpreter():
+        runLog.LOG.startLog(name=f"interactive-{app.name}")
+        cli.splash()
+
     pm = app.pluginManager
     context.APP_NAME = app.name
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
     flags.registerPluginFlags(pm)
-    if MPI_RANK == 0:
-        runLog.raw(app.splashText)
 
 
 def applyAsyncioWindowsWorkaround():
@@ -342,7 +355,7 @@ def applyAsyncioWindowsWorkaround():
 applyAsyncioWindowsWorkaround()
 
 # The ``atexit`` handler is like putting it in a finally after everything.
-atexit.register(context.cleanTempDirs, olderThanDays=14)
+atexit.register(context.cleanTempDirs)
 
 # register cleanups upon HPC cancellations. Linux clusters will send a different signal.
 # SIGBREAK doesn't exist on non-windows

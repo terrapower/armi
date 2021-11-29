@@ -39,7 +39,7 @@ EXTRA_FILES = collectExtraFiles()
 setup(
     name="armi",
     # duplicating with meta.py for now. See comments there for rationale.
-    version="0.1.6",
+    version="0.2.0",
     description="The Advanced Reactor Modeling Interface",
     author="TerraPower, LLC",
     author_email="armi-devs@terrapower.com",
@@ -55,9 +55,7 @@ setup(
         "configparser",
         "coverage",
         "future",
-        # This is a semantic version bound, because newer h5py versions handle strings
-        # differently, and we would need to do some work to support it
-        "h5py<3.0",
+        "h5py>=3.0",
         "matplotlib",
         "numpy",
         "ordered-set",
@@ -71,6 +69,8 @@ setup(
         "voluptuous",
         "xlrd",
         "yamlize",
+        "htmltree",
+        "pyDOE",
     ],
     extras_require={
         "mpi": ["mpi4py"],
@@ -84,7 +84,7 @@ setup(
             "pytest-html",
             "pylint",
             "docutils",
-            "sphinx>=2.2",
+            "sphinx==2.2",
             "sphinx-rtd-theme",
             "black",
             # for running jupyter dynamically in docs

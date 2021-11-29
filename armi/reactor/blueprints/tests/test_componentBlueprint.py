@@ -97,7 +97,7 @@ assemblies:
             )
         )
         cs = settings.Settings()
-        a = bp.constructAssem(cs, "assembly")
+        _ = bp.constructAssem(cs, "assembly")
 
     def test_autoDepletable(self):
         nuclideFlags = (

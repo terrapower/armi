@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Energy group structures for multigroup neutronics calculations.
 """
@@ -194,7 +207,7 @@ GROUP_STRUCTURE["CINDER63"] = [
 ]
 
 # fmt: off
-# Group structures below here are derived from Appendix E in 
+# Group structures below here are derived from Appendix E in
 # https://www.osti.gov/biblio/1483949-mc2-multigroup-cross-section-generation-code-fast-reactor-analysis-nuclear
 GROUP_STRUCTURE["ANL9"] = _create_anl_energies_with_group_lethargies(
     222, 120, itertools.repeat(180, 5), 540, 300
@@ -206,6 +219,13 @@ GROUP_STRUCTURE["ANL33"] = _create_anl_energies_with_group_lethargies(
 
 GROUP_STRUCTURE["ANL70"] = _create_anl_energies_with_group_lethargies(
     42, itertools.repeat(30, 67), 29, 1
+)
+
+GROUP_STRUCTURE["ANL116"] = _create_anl_energies_with_group_lethargies(
+    15*[6] + [3] + 2*[6] + [3] + [12] + 3*[6] + 3*[12] + 2*[6] + 2*[12] + [4] + [6] + [2] +
+    [12] + 2*[6] + [12] + 2*[6] +2*[12] + [6] + [12] + 2*[6] + 6*[12] + [6] + 4*[12] + 4*[6] +
+    5*[12] + [6] + 3*[12] + [6] + 2*[30] + 2*[15] + [30] + 4*[15] + [18] + [12] + 5*[30] +
+    [24] + [12] + [24] + [19] + [11] + [18] + [24] + 3*[18] + 2*[12] + 14*[60] + 2*[30] + [29] + [1]
 )
 
 GROUP_STRUCTURE["ANL230"] = _create_anl_energies_with_group_lethargies(
@@ -298,7 +318,7 @@ def _create_anl_energies_with_group_energies(group_energy_bounds):
 
 
 """
-Taken from Section A3.1 SHEM-361 in 
+Taken from Section A3.1 SHEM-361 in
 Ngeleka, Tholakele Prisca. "Examination and improvement of the SHEM energy
 group structure for HTR and deep burn HTR design and analysis." (2012).
 """

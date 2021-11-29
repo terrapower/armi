@@ -20,18 +20,40 @@ running. Things like the MPI environment, executing user, etc. live here. These 
 re-exported by the `armi` package, but live here so that import loops won't lead to
 as many issues.
 """
+from logging import DEBUG
 import datetime
+import enum
+import gc
 import getpass
 import os
-import time
-import sys
-import enum
 import shutil
-import gc
+import sys
+import time
+
+# h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
+# to atexit below doesn't lead to a segfault on python exit. The Database3 module is
+# imported at call time, since it itself needs stuff that is initialized in this module
+# to import properly.  However, if that import leads to the first time that h5py is
+# imported in this process, doing so will cause a segfault. The theory here is that this
+# happens because the h5py extension module is not safe to import (for whatever reason)
+# when the python interpreter is in whatever state it's in when the atexit callbacks are
+# being invoked.  Importing early avoids this.
+#
+# Minimal code to reproduce the issue:
+#
+# >>> import atexit
+#
+# >>> def willSegFault():
+# >>>     import h5py
+#
+# >>> atexit.register(willSegFault)
+
+import h5py
+
 
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
-
+LOG_DIR = os.path.join(os.getcwd(), "logs")
 
 # App name is used when spawning new tasks that should invoke a specific ARMI
 # application. For instance, the framework provides some features to help with
@@ -128,7 +150,7 @@ MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
 
 _FAST_PATH = os.path.join(os.getcwd())
 """
-A directory available for high-performance I/O  
+A directory available for high-performance I/O
 
 .. warning:: This is not a constant and can change at runtime.
 """
@@ -196,49 +218,63 @@ def cleanTempDirs(olderThanDays=None):
         If provided, deletes other ARMI directories if they are older than the requested
         time.
     """
-    from armi import (
-        runLog,
-    )  # pylint: disable=import-outside-toplevel # avoid cyclic import
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi import runLog
+    from armi.utils.pathTools import cleanPath
 
     disconnectAllHdfDBs()
-
+    printMsg = runLog.getVerbosity() <= DEBUG
     if _FAST_PATH_IS_TEMPORARY and os.path.exists(_FAST_PATH):
-        if runLog.getVerbosity() <= runLog.getLogVerbosityRank("extra"):
+        if printMsg:
             print(
                 "Cleaning up temporary files in: {}".format(_FAST_PATH),
                 file=sys.stdout,
             )
         try:
-            shutil.rmtree(_FAST_PATH)
+            cleanPath(_FAST_PATH)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
-                print(
-                    "Failed to delete temporary files in: {}\n"
-                    "    error: {}".format(_FAST_PATH, error),
-                    file=outputStream,
-                )
+                if printMsg:
+                    print(
+                        "Failed to delete temporary files in: {}\n"
+                        "    error: {}".format(_FAST_PATH, error),
+                        file=outputStream,
+                    )
 
-    # Also delete anything still here after `olderThanDays` days (in case this failed on
-    # earlier runs)
     if olderThanDays is not None:
-        gracePeriod = datetime.timedelta(days=olderThanDays)
-        now = datetime.datetime.now()
-        thisRunFolder = os.path.basename(_FAST_PATH)
+        cleanAllArmiTempDirs(olderThanDays)
 
-        for dirname in os.listdir(APP_DATA):
-            dirPath = os.path.join(APP_DATA, dirname)
-            if not os.path.isdir(dirPath):
-                continue
-            try:
-                fromThisRun = dirname == thisRunFolder  # second chance to delete
-                _rank, dateString = dirname.split("-")
-                dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
-                runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
-                if runIsOldAndLikleyComplete or fromThisRun:
-                    # Delete old files
-                    shutil.rmtree(dirPath)
-            except:  # pylint: disable=bare-except
-                pass
+
+def cleanAllArmiTempDirs(olderThanDays: int):
+    """
+    Delete all ARMI-related files from other unrelated runs after `olderThanDays` days (in
+    case this failed on earlier runs).
+
+    .. warning:: This will break any concurrent runs that are still running.
+
+    This is a useful utility in HPC environments when some runs crash sometimes.
+    """
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.utils.pathTools import cleanPath
+
+    gracePeriod = datetime.timedelta(days=olderThanDays)
+    now = datetime.datetime.now()
+    thisRunFolder = os.path.basename(_FAST_PATH)
+
+    for dirname in os.listdir(APP_DATA):
+        dirPath = os.path.join(APP_DATA, dirname)
+        if not os.path.isdir(dirPath):
+            continue
+        try:
+            fromThisRun = dirname == thisRunFolder  # second chance to delete
+            _rank, dateString = dirname.split("-")
+            dateOfFolder = datetime.datetime.strptime(dateString, "%Y%m%d%H%M%S%f")
+            runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
+            if runIsOldAndLikleyComplete or fromThisRun:
+                # Delete old files
+                cleanPath(dirPath)
+        except:  # pylint: disable=bare-except
+            pass
 
 
 def disconnectAllHdfDBs():
@@ -262,3 +298,36 @@ def disconnectAllHdfDBs():
     h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
     for db in h5dbs:
         db.close()
+
+
+# ============ begin logging support ============
+
+OS_SECONDS_TIMEOUT = 5 * 60
+
+
+def createLogDir(mpiRank=1, logDir=None):
+    """A helper method to create the log directory"""
+    # the usual case is the user does not pass in a log dir path, so we use the global one
+    if logDir is None:
+        logDir = LOG_DIR
+
+    # let only do this from one thread
+    if mpiRank == 0:
+        if not os.path.exists(logDir):
+            os.makedirs(logDir)
+
+    # now all ranks should spin until they see the log directory
+    secondsWait = 0.5
+    loopCounter = 0
+    while not os.path.exists(logDir):
+        time.sleep(secondsWait)
+        loopCounter += 1
+        if loopCounter > (OS_SECONDS_TIMEOUT / secondsWait):
+            raise OSError("Was unable to create the log directory: {}".format(logDir))
+
+    # wait until all execution paths can see the log dir
+    if MPI_COMM is not None:
+        MPI_COMM.barrier()
+
+
+createLogDir(MPI_RANK)

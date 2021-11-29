@@ -82,7 +82,6 @@ import numpy
 from armi import runLog
 from armi.nuclearDataIO import cccc
 from armi.utils.properties import unlockImmutableProperties, lockImmutableProperties
-from armi.localization.exceptions import CompxsError
 from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.nuclearDataIO.nuclearFileMetadata import (
     RegionXSMetadata,
@@ -244,7 +243,7 @@ class _CompxsIO(cccc.Stream):
                 regionIO.rwRegionData()
             self._rw5DRecord()
         except:
-            raise CompxsError(
+            raise OSError(
                 "Failed to {} {} \n\n\n{}".format(
                     "read" if self._isReading else "write", self, format_exc()
                 )
@@ -321,7 +320,7 @@ writeBinary = _CompxsIO.writeBinary  # pylint: disable=invalid-name
 writeAscii = _CompxsIO.writeAscii  # pylint: disable=invalid-name
 
 
-class _CompxsRegionIO(object):
+class _CompxsRegionIO:
     """
     Specific object assigned a single region to read/write composition information.
 
@@ -441,7 +440,7 @@ class _CompxsRegionIO(object):
             sparseMat.addColumnData(dataj, indicesj)
 
 
-class _CompxsScatterMatrix(object):
+class _CompxsScatterMatrix:
     """When reading COMPXS scattering blocks, store the data here and then reconstruct after."""
 
     def __init__(self, shape):
@@ -462,7 +461,7 @@ class _CompxsScatterMatrix(object):
         return sparseFunc((self.data, self.indices, self.indptr), shape=self.shape)
 
 
-class CompxsRegion(object):
+class CompxsRegion:
     """
     Class for creating/tracking homogenized region information.
 
@@ -639,6 +638,6 @@ class CompxsRegion(object):
     def merge(self, other):
         """Merge attributes of two homogenized Regions."""
         self.metadata = self.metadata.merge(
-            other.metadata, self, other, "COMPXS", CompxsError
+            other.metadata, self, other, "COMPXS", OSError
         )
         self.macros.merge(other.macros)

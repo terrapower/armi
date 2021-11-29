@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """
-Standard interface files for reactor physics codes.
+Defines containers for the reading and writing standard interface files 
+for reactor physics codes.
 """
 import io
 import itertools
@@ -24,7 +25,6 @@ from typing import List
 
 import numpy
 
-from armi.localization import exceptions
 from armi import runLog
 
 from .. import nuclearFileMetadata
@@ -33,7 +33,7 @@ IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
 
 
-class IORecord(object):
+class IORecord:
     """
     A single CCCC record.
 
@@ -97,7 +97,7 @@ class IORecord(object):
         except Exception as ee:
             runLog.error("Failed to close CCCC record.")
             runLog.error(ee)
-            raise exceptions.CcccRecordError(
+            raise BufferError(
                 "Failed to close record, {}.\n{}\n"
                 "It is possible too much data was read from the "
                 "record, and the end of the stream was reached.\n"
@@ -306,7 +306,7 @@ class BinaryRecordReader(IORecord):
         numBytes2 = self.rwInt(None)
         self.byteCount -= 4
         if numBytes2 != self.numBytes:
-            raise exceptions.CcccRecordError(
+            raise BufferError(
                 "Number of bytes specified at end the of record, {}, "
                 "does not match the originally specified number, {}.\n"
                 "Read {} bytes.".format(numBytes2, self.numBytes, self.byteCount)
@@ -500,7 +500,7 @@ class DataContainer:
         self.metadata = nuclearFileMetadata._Metadata()
 
 
-class Stream(object):
+class Stream:
     """
     An abstract CCCC IO stream.
 
@@ -536,8 +536,8 @@ class Stream(object):
         self._stream = None
 
         if fileMode not in self._fileModes:
-            raise exceptions.InvalidSelectionError(
-                "fileMode", fileMode, self._fileModes.keys()
+            raise KeyError(
+                "{} not in {}".format("fileMode", list(self._fileModes.keys()))
             )
 
     def __deepcopy__(self, memo):
@@ -555,7 +555,7 @@ class Stream(object):
         return "<{} {}>".format(self.__class__.__name__, self._fileName)
 
     def __enter__(self):
-        """At the inception of a with command, navigate to a new directory if one is supplied"""
+        """At the inception of a with command, open up the file for a read/write."""
         try:
             self._stream = open(self._fileName, self._fileMode)
         except IOError:
@@ -564,7 +564,7 @@ class Stream(object):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """At the termination of a with command, navigate back to the original directory"""
+        """At the termination of a with command, close the file."""
         self._stream.close()
 
     def readWrite(self):

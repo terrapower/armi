@@ -22,20 +22,24 @@ import datetime
 import enum
 import os
 import re
-from typing import Dict, Tuple, List, Set, Optional
+from typing import Dict, Tuple, Set
+import sys
 import warnings
 import xml.etree.ElementTree as ET
 
 from ruamel.yaml import YAML
 import ruamel.yaml.comments
 
-import armi
 from armi import runLog
-from armi.localization import exceptions
+from armi.meta import __version__ as version
+from armi import context
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
-from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
+from armi.utils.customExceptions import (
+    InvalidSettingsFileError,
+    SettingException,
+)
 
 
 class Roots:
@@ -73,7 +77,7 @@ class SettingRenamer:
                     self._expiredRenames.add((oldName, name, expiry))
                 else:
                     if oldName in self._activeRenames:
-                        raise exceptions.SettingException(
+                        raise SettingException(
                             "The setting rename from {0}->{1} collides with another "
                             "rename {0}->{2}".format(
                                 oldName, name, self._activeRenames[oldName]
@@ -159,10 +163,10 @@ class SettingsReader:
 
         self.invalidSettings = set()
         self.settingsAlreadyRead = set()
-        self.liveVersion = armi.__version__
-        self.inputVersion = armi.__version__
+        self.liveVersion = version
+        self.inputVersion = version
 
-        self._renamer = SettingRenamer(self.cs.settings)
+        self._renamer = SettingRenamer(dict(self.cs.items()))
 
         # the input version will be overwritten if explicitly stated in input file.
         # otherwise, it's assumed to precede the version inclusion change and should be
@@ -194,7 +198,7 @@ class SettingsReader:
             try:
                 self.readFromStream(f, handleInvalids, self.format)
             except Exception as ee:
-                raise exceptions.InvalidSettingsFileError(path, str(ee))
+                raise InvalidSettingsFileError(path, str(ee))
 
     def readFromStream(self, stream, handleInvalids=True, fmt=SettingsInputFormat.YAML):
         """Read from a file-like stream."""
@@ -237,9 +241,7 @@ class SettingsReader:
                 customMsg = '\nRoot tag "{}" does not match expected value "{}"'.format(
                     settingRoot.tag, self.rootTag
                 )
-            raise exceptions.InvalidSettingsFileError(
-                self.inputPath, customMsgEnd=customMsg
-            )
+            raise InvalidSettingsFileError(self.inputPath, customMsgEnd=customMsg)
 
         for settingElement in list(settingRoot):
             self._interpretXmlSetting(settingElement)
@@ -260,12 +262,12 @@ class SettingsReader:
         yaml = YAML()
         tree = yaml.load(stream)
         if "settings" not in tree:
-            raise exceptions.InvalidSettingsFileError(
+            raise InvalidSettingsFileError(
                 self.inputPath,
                 "Missing the `settings:` header required in YAML settings",
             )
         if const.ORIFICE_SETTING_ZONE_MAP in tree:
-            raise exceptions.InvalidSettingsFileError(
+            raise InvalidSettingsFileError(
                 self.inputPath, "Appears to be an orifice_settings file"
             )
         caseSettings = tree[Roots.CUSTOM]
@@ -278,18 +280,18 @@ class SettingsReader:
             return
         try:
             invalidNames = "\n\t".join(self.invalidSettings)
-            proceed = runLog.prompt(
+            proceed = prompt(
                 "Found {} invalid settings in {}.\n\n {} \n\t".format(
                     len(self.invalidSettings), self.inputPath, invalidNames
                 ),
                 "Invalid settings will be ignored. Continue running the case?",
                 "YES_NO",
             )
-        except exceptions.RunLogPromptUnresolvable:
+        except RunLogPromptUnresolvable:
             # proceed with invalid settings (they'll be ignored).
             proceed = True
         if not proceed:
-            raise exceptions.InvalidSettingsStopProcess(self)
+            raise InvalidSettingsStopProcess(self)
         else:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
@@ -297,7 +299,7 @@ class SettingsReader:
         settingName = settingElement.tag
         attributes = settingElement.attrib
         if settingName in self.settingsAlreadyRead:
-            raise exceptions.SettingException(
+            raise SettingException(
                 "The setting {} has been specified more than once in {}. Adjust input."
                 "".format(settingName, self.inputPath)
             )
@@ -323,7 +325,7 @@ class SettingsReader:
                 ]
 
         elif "value" not in attributes:
-            raise exceptions.SettingException(
+            raise SettingException(
                 "No value supplied for the setting {} in {}".format(
                     settingName, self.inputPath
                 )
@@ -335,11 +337,11 @@ class SettingsReader:
         nameToSet, _wasRenamed = self._renamer.renameSetting(name)
         settingsToApply = self.applyConversions(nameToSet, val)
         for settingName, value in settingsToApply.items():
-            if settingName not in self.cs.settings:
+            if settingName not in self.cs:
                 self.invalidSettings.add(settingName)
             else:
                 # apply validations
-                settingObj = self.cs.settings[settingName]
+                settingObj = self.cs.getSetting(settingName)
                 if value:
                     value = applyTypeConversions(settingObj, value)
 
@@ -404,8 +406,9 @@ class SettingsWriter:
         if style not in {self.Styles.short, self.Styles.full}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
 
-    def _getVersion(self):
-        tag, attrib = Roots.CUSTOM, {Roots.VERSION: armi.__version__}
+    @staticmethod
+    def _getVersion():
+        tag, attrib = Roots.CUSTOM, {Roots.VERSION: version}
         return tag, attrib
 
     def writeXml(self, stream):
@@ -460,7 +463,7 @@ class SettingsWriter:
         """
         settingData = collections.OrderedDict()
         for _settingName, settingObject in iter(
-            sorted(self.cs.settings.items(), key=lambda name: name[0].lower())
+            sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
             if self.style == self.Styles.short and not settingObject.offDefault:
                 continue
@@ -573,3 +576,79 @@ class SettingsWriter:
             "&(?!quot;|lt;|gt;|amp;|apos;)", "&amp;", s
         )  # protects against chaining &amp
         return s
+
+
+def prompt(statement, question, *options):
+    """Prompt the user for some information."""
+    if context.CURRENT_MODE == context.Mode.GUI:
+        # avoid hard dependency on wx
+        import wx  # pylint: disable=import-error
+
+        msg = statement + "\n\n\n" + question
+        if len(msg) < 300:
+            style = wx.CENTER
+            for opt in options:
+                style |= getattr(wx, opt)
+            dlg = wx.MessageDialog(None, msg, style=style)
+        else:
+            # for shame. Might make sense to move the styles stuff back into the
+            # Framework
+            from tparmi.gui.styles import dialogues
+
+            dlg = dialogues.ScrolledMessageDialog(None, msg, "Prompt")
+        response = dlg.ShowModal()
+        dlg.Destroy()
+        if response == wx.ID_CANCEL:
+            raise RunLogPromptCancel("Manual cancellation of GUI prompt")
+        return response in [wx.ID_OK, wx.ID_YES]
+
+    elif context.CURRENT_MODE == context.Mode.INTERACTIVE:
+        response = ""
+        responses = [
+            opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]
+        ]
+
+        if "YES_NO" in responses:
+            index = responses.index("YES_NO")
+            responses[index] = "NO"
+            responses.insert(index, "YES")
+
+        if not any(responses):
+            raise RuntimeError("No suitable responses in {}".format(responses))
+
+        # highly requested shorthand responses
+        if "YES" in responses:
+            responses.append("Y")
+        if "NO" in responses:
+            responses.append("N")
+
+        # TODO: Using the logger is strange. Perhaps this is a rare use-case for bare print? Or something bespoke.
+        while response not in responses:
+            runLog.LOG.log("prompt", statement)
+            runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))
+            response = sys.stdin.readline().strip().upper()
+
+        if response == "CANCEL":
+            raise RunLogPromptCancel("Manual cancellation of interactive prompt")
+
+        return response in ["YES", "Y", "OK"]
+
+    else:
+        raise RunLogPromptUnresolvable(
+            "Incorrect CURRENT_MODE for prompting user: {}".format(context.CURRENT_MODE)
+        )
+
+
+class RunLogPromptCancel(Exception):
+    """An error that occurs when the user submits a cancel on a runLog prompt which allows for cancellation"""
+
+    pass
+
+
+class RunLogPromptUnresolvable(Exception):
+    """
+    An error that occurs when the current mode enum in armi.__init__ suggests the user cannot be communicated with from
+    the current process.
+    """
+
+    pass

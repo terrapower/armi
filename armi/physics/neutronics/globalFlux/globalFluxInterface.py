@@ -16,14 +16,11 @@
 The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
 """
 import math
-import os
 from typing import Dict, Optional
-
 
 import numpy
 import scipy.integrate
 
-import armi
 from armi import runLog
 from armi import interfaces
 from armi.utils import units
@@ -33,7 +30,6 @@ from armi.reactor import reactors
 from armi.reactor.converters import uniformMesh
 from armi.reactor.converters import geometryConverters
 from armi.reactor import assemblies
-from armi.localization import exceptions
 from armi.reactor.flags import Flags
 from armi.physics import neutronics
 from armi.physics import executers
@@ -225,7 +221,8 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
         GlobalFluxInterface.interactCoupled(self, iteration)
 
-    def getOptionsCls(self):
+    @staticmethod
+    def getOptionsCls():
         """
         Get a blank options object.
 
@@ -233,7 +230,8 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         return GlobalFluxOptions
 
-    def getExecuterCls(self):
+    @staticmethod
+    def getExecuterCls():
         return GlobalFluxExecuter
 
     def getExecuterOptions(self, label=None):
@@ -401,7 +399,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         _undoGeometryTransformations
         """
         if any(self.geomConverters):
-            raise exceptions.StateError(
+            raise RuntimeError(
                 "The reactor has been transformed, but not restored to the original.\n"
                 + "Geometry converter is set to {} \n.".format(self.geomConverters)
                 + "This is a programming error and requires further investigation."
@@ -474,7 +472,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         """
         return (
             "FD" in self.options.kernelName
-            and self.options.symmetry == geometry.THIRD_CORE + geometry.PERIODIC
+            and self.options.symmetry.domain == geometry.DomainType.THIRD_CORE
+            and self.options.symmetry.boundary == geometry.BoundaryType.PERIODIC
             and self.options.geomType == geometry.GeomType.HEX
         )
 
@@ -745,6 +744,9 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                     peakDoseAssem = a
             self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
 
+            if peakDoseAssem is None:
+                return
+
             doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
                 "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
             )
@@ -915,21 +917,28 @@ def computeDpaRate(mgFlux, dpaXs):
     Notes
     -----
     Displacements calculated by displacement XS
-    Displacement rate = flux * nHT9 * barn  [in #/cm^3/s]
-                      = [#/cm^2/s] * [1/cm^3] * [barn]
-                      = [#/cm^5/s] * [barn] * 1e-24 [cm^2/barn]
-                      = [#/cm^3/s]
 
-    DPA rate = displacement density rate / (number of atoms/cc)
-             = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-             = flux * barn * 1e-24 ::
+    .. math::
+
+          \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
+          &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
+          &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
+          &= \#/\text{cm}^3/s
 
 
-                flux * N * xs
-    DPA / s=  -----------------  = flux * xs
-                     N
+    ::
 
-    nHT9 cancels out. It's in the macroscopic XS and in the original number of atoms.
+        DPA rate = displacement density rate / (number of atoms/cc)
+                 = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
+                 = flux * barn * 1e-24 
+
+
+    .. math::
+
+        \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
+
+    the Number density of the structural material cancels out. It's in the macroscopic 
+    XS and in the original number of atoms.
 
     Raises
     ------
@@ -997,13 +1006,22 @@ def calcReactionRates(obj, keff, lib):
     Scatter could be added as well. This function is quite slow so it is
     skipped for now as it is uncommonly needed.
 
-    Rxn rates are Sigma*Flux = Sum_Nuclides(Sum_E(Sigma*Flux*dE))
-    S*phi
-    n*s*phiV/V [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+    Reaction rates are:
 
-                  (Integral_E in g(phi(E)*sigma(e) dE)
-     sigma_g =   ---------------------------------
-                      Int_E in g (phi(E) dE)
+    .. math::
+
+        \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma \phi
+
+    The units of :math:`N \sigma \phi` are::
+
+        [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+
+    The group-averaged microscopic cross section is:
+
+    .. math::
+
+        \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E) dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

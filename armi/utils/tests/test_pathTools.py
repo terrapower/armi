@@ -15,13 +15,12 @@
 """
 Unit tests for pathTools.
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 import os
 import types
 
 from armi.utils import pathTools
-from armi.utils import directoryChangers
-from armi import ROOT
 
 THIS_DIR = os.path.dirname(__file__)
 

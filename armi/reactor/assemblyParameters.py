@@ -247,7 +247,6 @@ def getAssemblyParameterDefinitions():
             "crRodLength",
             units="cm",
             description="length of the control material within the control rod",
-            saveToDB=False,
         )
 
         pb.defParam(

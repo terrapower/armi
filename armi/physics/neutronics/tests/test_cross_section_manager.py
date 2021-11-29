@@ -17,6 +17,7 @@ Test the cross section manager
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import unittest
 import copy
@@ -168,7 +169,19 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         1D cases the order of the components matters.
         """
         xsgm = self.o.getInterface("xsGroups")
+
+        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+            self.assertEqual(xsOpt.blockRepresentation, None)
+
         xsgm.interactBOL()
+
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
+        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+            self.assertEqual(
+                xsOpt.blockRepresentation, self.o.cs["xsBlockRepresentation"]
+            )
+
         xsgm.createRepresentativeBlocks()
         representativeBlockList = list(xsgm.representativeBlocks.values())
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
@@ -355,13 +368,13 @@ class TestXSNumberConverters(unittest.TestCase):
         self.assertEqual(num, 9090)
 
 
-class MockReactor(object):
+class MockReactor:
     def __init__(self):
         self.blueprints = MockBlueprints()
         self.spatialGrid = None
 
 
-class MockBlueprints(object):
+class MockBlueprints:
     # this is only needed for allNuclidesInProblem and attributes were acting funky, so this was made.
     def __getattribute__(self, *args, **kwargs):
         return ["U235", "U235", "FE", "NA23"]

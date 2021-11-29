@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+r""" Tests of the Database Interface
+"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
-import collections
 import os
 import unittest
 import types
@@ -21,17 +23,18 @@ import h5py
 import numpy
 from numpy.testing import assert_allclose, assert_equal
 
-import armi
 from armi.reactor.flags import Flags
 from armi import interfaces
 from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
-from armi.bookkeeping.db import convertDatabase
 from armi import settings
 from armi.tests import TEST_ROOT
+from armi import __version__ as version
 from armi.cases import case
 from armi.utils import directoryChangers
 from armi import runLog
 from armi.reactor.tests import test_reactors
+from armi.reactor import grids
+from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 
 
 def getSimpleDBOperator(cs):
@@ -43,12 +46,17 @@ def getSimpleDBOperator(cs):
     This reactor has only 1 assembly with 1 type of block.
     It's used to make the db unit tests run very quickly.
     """
-    cs["loadingFile"] = "refOneBlockReactor.yaml"
-    cs["verbosity"] = "important"
-    cs["db"] = True
-    cs["runType"] = "Standard"
-    cs["geomFile"] = "geom1Assem.xml"
-    cs["nCycles"] = 2
+    newSettings = {}
+    newSettings["loadingFile"] = "refOneBlockReactor.yaml"
+    newSettings["verbosity"] = "important"
+    newSettings["db"] = True
+    newSettings["runType"] = "Standard"
+    newSettings["geomFile"] = "geom1Assem.xml"
+    newSettings["nCycles"] = 2
+    newSettings[CONF_FORCE_DB_PARAMS] = [
+        "baseBu",
+    ]
+    cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
     settings.setMasterCs(cs)
     runLog.setVerbosity("info")
@@ -59,7 +67,8 @@ def getSimpleDBOperator(cs):
         for interface in o.interfaces
         if interface.name in ["database", "main"]
     ]
-    return o
+
+    return o, cs
 
 
 class MockInterface(interfaces.Interface):
@@ -70,6 +79,7 @@ class MockInterface(interfaces.Interface):
         self.action = action
 
     def interactEveryNode(self, cycle, node):
+        self.r.core.getFirstBlock().p.baseBu = 5.0
         self.action(cycle, node)
 
 
@@ -79,7 +89,7 @@ class TestDatabaseWriter(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        self.o = getSimpleDBOperator(cs)
+        self.o, cs = getSimpleDBOperator(cs)
         self.r = self.o.r
 
     def tearDown(self):
@@ -98,7 +108,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertTrue(h5.attrs["successfulCompletion"])
-            self.assertEqual(h5.attrs["version"], armi.__version__)
+            self.assertEqual(h5.attrs["version"], version)
             self.assertIn("user", h5.attrs)
             self.assertIn("python", h5.attrs)
             self.assertIn("armiLocation", h5.attrs)
@@ -109,6 +119,7 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
+            self.assertIn("baseBu", h5["c01n02/HexBlock"])
 
     def test_metaData_endFail(self):
         def failMethod(cycle, node):  # pylint: disable=unused-argument
@@ -126,7 +137,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertFalse(h5.attrs["successfulCompletion"])
-            self.assertEqual(h5.attrs["version"], armi.__version__)
+            self.assertEqual(h5.attrs["version"], version)
             self.assertIn("caseTitle", h5.attrs)
 
     @unittest.skip(
@@ -188,7 +199,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
             # we are now in cycle 2, node 3 ... AFTER setFluxAwesome
             # lets get the 3rd block ... whatever that is
-            fluxes = db.getHistory(b, params=["flux"])
+            _fluxes = db.getHistory(b, params=["flux"])
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, setFluxAwesome))
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, getFluxAwesome))
@@ -198,7 +209,7 @@ class TestDatabaseWriter(unittest.TestCase):
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertFalse(h5.attrs["successfulCompletion"])
-            self.assertEqual(h5.attrs["version"], armi.__version__)
+            self.assertEqual(h5.attrs["version"], version)
 
 
 class TestDatabaseReading(unittest.TestCase):
@@ -206,14 +217,16 @@ class TestDatabaseReading(unittest.TestCase):
     def setUpClass(cls):
         cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
-        o, _r = test_reactors.loadTestReactor(customSettings={"verbosity": "extra"})
+
         # The database writes the settings object to the DB rather
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
-        o.cs["nCycles"] = 2
-        o.cs["burnSteps"] = 3
+        newSettings = {"verbosity": "extra"}
+        newSettings["nCycles"] = 2
+        newSettings["burnSteps"] = 3
+        o, _r = test_reactors.loadTestReactor(customSettings=newSettings)
+
         settings.setMasterCs(o.cs)
-        o.cs["db"] = True
 
         o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
         dbi = o.getInterface("database")
@@ -244,7 +257,6 @@ class TestDatabaseReading(unittest.TestCase):
         cls.r = None
 
     def test_readWritten(self):
-
         with Database3(self.dbName, "r") as db:
             r2 = db.load(0, 0, self.cs, self.bp)
 
@@ -263,7 +275,15 @@ class TestDatabaseReading(unittest.TestCase):
 
                 for c1, c2 in zip(sorted(b1), sorted(b2)):
                     self.assertEqual(c1.name, c2.name)
-                    assert_equal(c1.spatialLocator.indices, c2.spatialLocator.indices)
+                    if isinstance(c1.spatialLocator, grids.MultiIndexLocation):
+                        assert_equal(
+                            numpy.array(c1.spatialLocator.indices),
+                            numpy.array(c2.spatialLocator.indices),
+                        )
+                    else:
+                        assert_equal(
+                            c1.spatialLocator.indices, c2.spatialLocator.indices
+                        )
                     self.assertEqual(c1.p.serialNum, c2.p.serialNum)
 
                 # volume is pretty difficult to get right. it relies upon linked dimensions
@@ -278,7 +298,6 @@ class TestDatabaseReading(unittest.TestCase):
             )
 
     def test_readWithoutInputs(self):
-
         with Database3(self.dbName, "r") as db:
             r2 = db.load(0, 0)
 
@@ -320,7 +339,8 @@ class TestDatabaseReading(unittest.TestCase):
 class TestBadName(unittest.TestCase):
     def test_badDBName(self):
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-        cs["reloadDBName"] = "aRmIRuN.h5"  # weird casing to confirm robust checking
+        cs = cs.modified(newSettings={"reloadDBName": "aRmIRuN.h5"})
+
         dbi = DatabaseInterface(None, cs)
         with self.assertRaises(ValueError):
             # an error should be raised when the database loaded from
@@ -339,7 +359,7 @@ class TestStandardFollowOn(unittest.TestCase):
         -----
         Ensures that parameters are consistant between Standard runs and restart runs.
         """
-        o = getSimpleDBOperator(cs)
+        o, cs = getSimpleDBOperator(cs)
 
         mock = MockInterface(o.r, o.cs, None)
 
@@ -373,10 +393,12 @@ class TestStandardFollowOn(unittest.TestCase):
             loadDB = "loadFrom.h5"
             os.rename("armiRun.h5", loadDB)
             cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            cs["loadStyle"] = "fromDB"
-            cs["reloadDBName"] = loadDB
-            cs["startCycle"] = 1
-            cs["startNode"] = 1
+            newSettings = {}
+            newSettings["loadStyle"] = "fromDB"
+            newSettings["reloadDBName"] = loadDB
+            newSettings["startCycle"] = 1
+            newSettings["startNode"] = 1
+            cs = cs.modified(newSettings=newSettings)
             o = self._getOperatorThatChangesVariables(cs)
 
             # the interact BOL has historically failed due to trying to write inputs
@@ -394,7 +416,5 @@ class TestStandardFollowOn(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
+    # import sys;sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
     unittest.main()

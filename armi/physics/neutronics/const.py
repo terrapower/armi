@@ -15,7 +15,7 @@
 """
 Constants and Enums
 
-In independent file to minimize circular imports.
+In an independent file to minimize circular imports.
 """
 
 from enum import Enum

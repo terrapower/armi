@@ -11,23 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import os
 import unittest
 import doctest
-import armi
+from armi import DOC
 
 
 class TestDocs(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     @unittest.skip("Doc code examples need some love before this is going to work.")
     def test_docsHaveWorkingCodeExamples(self):
-        for root, _dirs, files in os.walk(armi.DOC):
+        for root, _dirs, files in os.walk(DOC):
             for f in files:
                 fullpath = os.path.join(root, f)
 
@@ -39,7 +34,7 @@ class TestDocs(unittest.TestCase):
 
                 try:
                     doctest.testfile(fullpath)
-                except Exception as ee:
+                except Exception:
                     pass
 
 

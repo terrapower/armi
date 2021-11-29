@@ -13,12 +13,14 @@
 # limitations under the License.
 
 import os
+import pathlib
 import random
 import shutil
 import string
 import glob
 
 import armi
+from armi import context
 from armi import runLog
 from armi.utils import pathTools
 
@@ -110,30 +112,45 @@ class DirectoryChanger:
             _changeDirectory(self.initial)
 
     def moveFiles(self):
+        """
+        Copy ``filesToMove`` into the destination directory on entry.
+        """
         initialPath = self.initial
         destinationPath = self.destination
         self._transferFiles(initialPath, destinationPath, self._filesToMove)
 
     def retrieveFiles(self):
-        """Retrieve any desired files."""
+        """
+        Copy ``filesToRetrieve`` back into the initial directory on exit.
+        """
         initialPath = self.destination
         destinationPath = self.initial
         fileList = self._filesToRetrieve
         self._transferFiles(initialPath, destinationPath, fileList)
 
     def _retrieveEntireFolder(self):
-        """Retrieve all files."""
+        """
+        Retrieve all files to a dump directory.
+
+        This is used when an exception is caught by the DirectoryChanger to rescue the
+        entire directory to aid in debugging. Typically this is only called if
+        ``dumpOnException`` is True.
+        """
         initialPath = self.destination
-        destinationPath = self.initial
         folderName = os.path.split(self.destination)[1]
-        destinationPath = os.path.join(destinationPath, f"dump-{folderName}")
+        recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
         fileList = os.listdir(self.destination)
-        self._transferFiles(initialPath, destinationPath, fileList)
+        shutil.copytree(self.destination, recoveryPath)
 
     @staticmethod
     def _transferFiles(initialPath, destinationPath, fileList):
         """
         Transfer files into or out of the directory.
+
+        This is used in ``moveFiles`` and ``retrieveFiles`` to shuffle files about when
+        creating a target directory or when coming back, respectively. Beware that this
+        uses ``shutil.copy()`` under the hood, which doesn't play nicely with
+        directories. Future revisions should improve this.
 
         Parameters
         ----------
@@ -187,17 +204,37 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     temporary directory will be deleted.
     """
 
-    _home = armi.context.getFastPath()
-
     def __init__(
         self, root=None, filesToMove=None, filesToRetrieve=None, dumpOnException=True
     ):
         DirectoryChanger.__init__(
             self, root, filesToMove, filesToRetrieve, dumpOnException
         )
-        root = root or TemporaryDirectoryChanger._home
+
+        # If no root dir is given, the default path comes from context.getFastPath, which
+        # *might* be relative to the cwd, making it possible to delete unintended files.
+        # So this check is here to ensure that if we grab a path from context, it is a
+        # proper temp dir.
+        # That said, since the TemporaryDirectoryChanger *always* responsible for
+        # creating its destination directory, it may always be safe to delete it
+        # regardless of location.
+        if root is None:
+            root = armi.context.getFastPath()
+            # ARMIs temp dirs are in an context.APP_DATA directory: validate this is a temp dir.
+            if pathlib.Path(context.APP_DATA) not in pathlib.Path(root).parents:
+                raise ValueError(
+                    "Temporary directory not in a safe location for deletion."
+                )
+
+        # make the tmp dir, if necessary
         if not os.path.exists(root):
-            os.makedirs(root)
+            try:
+                os.makedirs(root)
+            except FileExistsError:
+                # ignore the obvious race condition
+                pass
+
+        # init the important path attributes
         self.initial = os.path.abspath(os.getcwd())
         self.destination = TemporaryDirectoryChanger.GetRandomDirectory(root)
         while os.path.exists(self.destination):
@@ -219,17 +256,12 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
     def __exit__(self, exc_type, exc_value, traceback):
         DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
-        shutil.rmtree(self.destination)
+        pathTools.cleanPath(self.destination)
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):
     """
     Creates the directory tree necessary to reach your desired destination
-
-    Attributes
-    ----------
-    clean : bool
-        if True and the directory exists, clear all contents on entry.
     """
 
     def __init__(
@@ -238,30 +270,30 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         filesToMove=None,
         filesToRetrieve=None,
         dumpOnException=True,
-        clean=False,
     ):
         if not destination:
             raise ValueError("A destination directory must be provided.")
         DirectoryChanger.__init__(
             self, destination, filesToMove, filesToRetrieve, dumpOnException
         )
-        self.clean = clean
 
     def __enter__(self):
         if not os.path.exists(self.destination):
-            runLog.debug(f"Creating destination folder {self.destination}")
+            runLog.extra(f"Creating destination folder: {self.destination}")
             try:
                 os.makedirs(self.destination)
-            except OSError:
+            except OSError as ee:
                 # even though we checked exists, this still fails
                 # sometimes when multiple MPI nodes try
                 # to make the dirs due to I/O delays
-                runLog.debug(f"Failed to make destination folder")
+                runLog.error(
+                    f"Failed to make destination folder: {self.destination}. "
+                    f"Exception: {ee}"
+                )
         else:
-            runLog.debug(f"Destination folder already exists: {self.destination}")
+            runLog.extra(f"Destination folder already exists: {self.destination}")
         DirectoryChanger.__enter__(self)
-        if self.clean:
-            shutil.rmtree(".", ignore_errors=True)
+
         return self
 
 

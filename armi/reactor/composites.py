@@ -48,7 +48,6 @@ from armi.utils import units
 from armi.utils import densityTools
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nucDirectory import elements
-from armi.localization import exceptions
 from armi.reactor import grids
 
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
@@ -269,6 +268,7 @@ class ArmiObject(metaclass=CompositeModelType):
     The abstract base class for all composites and leaves.
 
     This:
+
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all
       classes
@@ -414,6 +414,10 @@ class ArmiObject(metaclass=CompositeModelType):
 
         if self.spatialGrid is not None:
             self.spatialGrid.armiObject = self
+            # Spatial locators also get disassociated with their grids when detached;
+            # make sure they get hooked back up
+            for c in self:
+                c.spatialLocator.associate(self.spatialGrid)
 
         # now "reattach" children
         for c in self:
@@ -451,9 +455,10 @@ class ArmiObject(metaclass=CompositeModelType):
         Make a clean copy of this object.
 
         .. warning:: Be careful with inter-object dependencies. If one object contains a
-        reference to another object which contains links to the entire hierarchical
-        tree, memory can fill up rather rapidly. Weak references are designed to help
-        with this problem.
+            reference to another object which contains links to the entire hierarchical
+            tree, memory can fill up rather rapidly. Weak references are designed to help
+            with this problem.
+
         """
         raise NotImplementedError
 
@@ -1679,7 +1684,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
-        r"""returns the fissile mass enrichment. """
+        r"""returns the fissile mass enrichment."""
         hm = self.getHMMass()
         if hm > 0:
             return self.getFissileMass() / hm
@@ -1822,6 +1827,7 @@ class ArmiObject(metaclass=CompositeModelType):
         generationNum : int, optional
             Which generation to average over (1 for children, 2 for grandchildren)
 
+
         The weighted sum is:
 
         .. math::
@@ -1840,6 +1846,7 @@ class ArmiObject(metaclass=CompositeModelType):
         -------
         float
             The average parameter value.
+
         """
         total = 0.0
         weightSum = 0.0
@@ -1980,7 +1987,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return numpy.array([child.p[param] for child in self])
 
     def isFuel(self):
-        """True if this is a fuel block. """
+        """True if this is a fuel block."""
         return self.hasFlags(Flags.FUEL)
 
     def containsHeavyMetal(self):
@@ -2004,18 +2011,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for child in self.getChildren():
             nucs.update(child.getNuclides())
         return nucs
-
-    def isDepletable(self):
-        """
-        Return True if itself or any child is depletable.
-
-        See Also
-        --------
-        armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys: sets this flag
-        """
-        return self.hasFlags(Flags.DEPLETABLE) or self.containsAtLeastOneChildWithFlags(
-            Flags.DEPLETABLE
-        )
 
     def getFissileMass(self):
         """Returns fissile mass in grams."""
@@ -2125,7 +2120,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams. """
+        """returns mass of fuel in grams."""
         return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
 
     def constituentReport(self):
@@ -2863,7 +2858,7 @@ class Composite(ArmiObject):
             number of parameters synchronized over all components
         """
         if armi.MPI_SIZE == 1:
-            return
+            return 0
 
         startTime = timeit.default_timer()
         # sync parameters...
@@ -2891,7 +2886,7 @@ class Composite(ArmiObject):
         compsPerNode = {len(nodeSyncData) for nodeSyncData in allSyncData}
 
         if len(compsPerNode) != 1:
-            raise exceptions.SynchronizationError(
+            raise ValueError(
                 "The workers have different reactor sizes! comp lengths: {}".format(
                     compsPerNode
                 )
@@ -2923,7 +2918,7 @@ class Composite(ArmiObject):
                     )
                 )
             )
-            raise exceptions.SynchronizationError(message)
+            raise ValueError(message)
 
         self._markSynchronized()
         runLog.extra(

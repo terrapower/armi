@@ -11,22 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for xsLibraries.IsotxsLibrary"""
-from __future__ import print_function
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
+import copy
 import filecmp
 import os
-import unittest
 import shutil
-import copy
 import subprocess
 import traceback
+import unittest
 
 from six.moves import cPickle
 
 from armi import settings
 from armi.tests import mockRunLogs
-from armi.localization import exceptions
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO.cccc import pmatrx
@@ -86,7 +84,7 @@ def createTestXSLibraryFiles(cachePath):
     """
     cs = settings.Settings()
     cs["outputCacheLocation"] = cachePath
-    mc2v3 = cs.settings["mc2v3.path"].default
+    mc2v3 = cs.get("mc2v3.path").default
     with directoryChangers.DirectoryChanger(RUN_DIR):
         # the two lines below basically copy the inputs to be used for PMATRX and GAMISO generation.
         # Since they are inputs to secondary calculations, the inputs need to be created before any
@@ -177,7 +175,7 @@ def createTestXSLibraryFiles(cachePath):
         shutil.move("ISOTXS.merged", GAMISO_LUMPED)
 
 
-class TempFileMixin(object):  # really a test case...
+class TempFileMixin:  # really a test case...
     @property
     def testFileName(self):
         return os.path.join(
@@ -237,10 +235,11 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         dummyFileName = "ISOSOMEFILE"
         with open(dummyFileName, "w") as someFile:
             someFile.write("hi")
+
         try:
             with mockRunLogs.BufferLog() as log:
                 lib = xsLibraries.IsotxsLibrary()
-                with self.assertRaises(exceptions.IsotxsError):
+                with self.assertRaises(OSError):
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
                 self.assertTrue(dummyFileName in log.getStdoutValue())
         finally:
@@ -439,13 +438,13 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         raise NotImplementedError()
 
     def test_cannotMergeXSLibWithSameNuclideNames(self):
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libAA.merge(self.libAA)
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libAA.merge(self.libCombined)
-        with self.assertRaises(exceptions.XSLibraryError):
+        with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
     def test_cannotMergeXSLibxWithDifferentGroupStructure(self):
@@ -506,7 +505,7 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
 
 class Pmatrx_merge_Tests(TestXSlibraryMerging):
     def getErrorType(self):
-        return exceptions.IsotxsError
+        return OSError
 
     def getReadFunc(self):
         return pmatrx.readBinary
@@ -540,7 +539,7 @@ class Pmatrx_merge_Tests(TestXSlibraryMerging):
 
 class Isotxs_merge_Tests(TestXSlibraryMerging):
     def getErrorType(self):
-        return exceptions.PmatrxError
+        return OSError
 
     def getReadFunc(self):
         return isotxs.readBinary
@@ -563,7 +562,7 @@ class Isotxs_merge_Tests(TestXSlibraryMerging):
 
 class Gamiso_merge_Tests(TestXSlibraryMerging):
     def getErrorType(self):
-        return exceptions.GamisoError
+        return OSError
 
     def getReadFunc(self):
         return gamiso.readBinary
@@ -587,6 +586,6 @@ class Gamiso_merge_Tests(TestXSlibraryMerging):
 # Remove the abstract class, so that it does not run (all tests would fail)
 del TestXSlibraryMerging
 
+
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Gamiso_merge_Tests.test_mergeTwoXSLibFiles']
     unittest.main()

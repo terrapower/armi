@@ -61,7 +61,6 @@ CONF_OPT_DPA = [
 
 # moved from xsSettings
 CONF_CLEAR_XS = "clearXS"
-CONF_DPA_XS_DIRECTORY_PATH = "DPAXSDirectoryPath"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
@@ -87,6 +86,7 @@ def defineSettings():
                 "ANL9",
                 "ANL33",
                 "ANL70",
+                "ANL116",
                 "ANL230",
                 "ANL703",
                 "ANL1041",
@@ -185,7 +185,7 @@ def defineSettings():
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
-            description="convergence criterion for calculating the eigenvalue",
+            description="Convergence criteria for calculating the eigenvalue in the global flux solver",
         ),
         setting.Setting(
             CONF_EPS_FSAVG,
@@ -252,15 +252,6 @@ def defineSettings():
             description="Delete all cross section libraries before regenerating them.",
         ),
         setting.Setting(
-            CONF_DPA_XS_DIRECTORY_PATH,
-            default="\\\\albert\\apps\\dev\\mc2\\3.2.2\\libraries\\endfb-vii.0\\damage_xs",
-            label="DPA XS Directory Path",
-            description="DPA XS Directory Path",
-            options=[
-                "\\\\albert\\apps\\dev\\mc2\\3.2.2\\libraries\\endfb-vii.0\\damage_xs"
-            ],
-        ),
-        setting.Setting(
             CONF_MINIMUM_FISSILE_FRACTION,
             default=0.045,
             label="Minimum Fissile Fraction",
@@ -320,7 +311,7 @@ def defineSettings():
             CONF_XS_BUCKLING_CONVERGENCE,
             default=1e-05,
             label="Buckling Convergence Criteria",
-            description="The convergence criteria for the buckling iteration if it is available in the lattice physics solver",
+            description="Convergence criteria for the buckling iteration if it is available in the lattice physics solver",
             oldNames=[
                 ("mc2BucklingConvergence", None),
                 ("bucklingConvergence", None),
@@ -330,7 +321,7 @@ def defineSettings():
             CONF_XS_EIGENVALUE_CONVERGENCE,
             default=1e-05,
             label="Eigenvalue Convergence Criteria",
-            description="The convergence criteria for the eigenvalue",
+            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
     ]
 
@@ -463,10 +454,10 @@ def updateXSGroupStructure(cs, name, value):
         except KeyError:
             runLog.info(
                 "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
-                    value, cs.settings["groupStructure"].default
+                    value, cs.get("groupStructure").default
                 )
             )
-            return {name: cs.settings["groupStructure"].default}
+            return {name: cs.get("groupStructure").default}
 
 
 def _migrateDpa(_cs, name, value):

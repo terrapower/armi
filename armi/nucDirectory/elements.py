@@ -46,7 +46,7 @@ LANTHANIDE_ELEMENTS = [
 GASEOUS_ELEMENTS = ["XE", "KR"]
 
 
-class Element(object):
+class Element:
     r"""
     Represents an element, defined by its atomic number.
 
@@ -234,7 +234,7 @@ def clearNuclideBases():
 
     Necessary when initializing nuclide base information multiple times (often in testing).
     """
-    for name, element in byName.items():
+    for _, element in byName.items():
         element.nuclideBases = []
 
 

@@ -19,6 +19,7 @@
 #     popular idiom
 # useless-object-inheritance: New-style classes in python 2
 # no-else-return: multiple return statements are not considered bad practice
+# duplicate-code: The duplicate code pylint founds is just not interesting.
 disable =
     bad-whitespace,
     trailing-whitespace,
@@ -39,7 +40,8 @@ disable =
     missing-return-doc,
     too-few-public-methods,
     useless-object-inheritance,
-    no-else-return
+    no-else-return,
+    duplicate-code
 
 [BASIC]
 dummy-variables-rgx=_[a-zA-Z_]*

@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Generic ARMI utilities"""
-from __future__ import print_function
-
 import os
 import sys
 import time
@@ -40,9 +38,6 @@ import scipy.optimize as sciopt
 import armi
 from armi import runLog
 from armi.utils import iterables
-from armi.localization import strings
-from armi.localization import warnings
-from armi.localization import exceptions
 from armi.utils.flags import Flag
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
@@ -75,16 +70,13 @@ def coverageReportHelper(config, dataPaths):
             cov.load()
         cov.html_report()
         cov.xml_report()
-    except PermissionError:
-        # Albert has some issues with filename that start with a '.', such as the
+    except PermissionError as e:
+        # Some file systems have some issues with filenames that start with a '.', such as the
         # .coverage files. If a permissions error is raised, it likely has something to
         # do with that. We changed the COVERAGE_RESULTS_FILE in cases.py for this reason.
-        #
-        # We print here, since this is used to run a one-off command, so runLog isn't
-        # really appropriate.
-        print(
-            "There was an issue in generating coverage reports. Probably related to "
-            "Albert hidden file issues."
+        runLog.error(
+            f"There was an issue in generating coverage reports due "
+            f"to the following permissions error: {e}"
         )
         # disabled until we figure out the problem.
         # raise
@@ -95,7 +87,7 @@ def coverageReportHelper(config, dataPaths):
         # simply be that we dont want a coverage report generated for the TestFixture.
         # Something to think about. Either way, we do not want to fail the job just
         # because of this
-        print(
+        runLog.error(
             "There was an issue generating coverage reports "
             "({}):\n{}".format(type(e), e.args)
         )
@@ -194,76 +186,6 @@ def findClosest(listToSearch, val, indx=False):
     else:
         # backwards compatibility
         return minVal
-
-
-# TODO: move into pathTools
-def cleanPath(path):
-    r"""
-    Recursively delete a path.
-
-    !!! careful with this !!! It can delete the entire cluster.
-
-    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything at the same time.
-    Always check filenames for some special flag when calling this, especially
-    with full permissions on the cluster. You could accidentally delete everyone's work
-    with one misplaced line! This doesn't ask questions.
-
-    Safety nets include a whitelist of paths.
-
-    This makes use of shutil.rmtree and os.remove
-
-    Returns
-    -------
-    success : bool
-        True if file was deleted. False if it was not.
-
-    """
-    valid = False
-    if os.path.exists(path):
-        runLog.extra("Clearing all files in {}".format(path))
-    else:
-        runLog.extra("Nothing to clean in {}. Doing nothing. ".format(path))
-        return True
-    for validPath in [
-        "users",
-        "shufflebranches",
-        "snapshot",
-        "failedruns",
-        "armiruns",
-        "mc2run",
-        "tests",
-        "mongoose",
-    ]:
-        if validPath in path.lower():
-            valid = True
-
-    if not valid:
-        raise Exception(
-            "Thou shalt not try to delete folders other than things in Users. Thou tried to delete {0}"
-            "".format(path)
-        )
-
-    for i in range(3):
-        try:
-            if os.path.exists(path) and os.path.isdir(path):
-                shutil.rmtree(path)
-            elif not os.path.isdir(path):
-                # it's just a file. Delete it.
-                os.remove(path)
-        except:
-            if i == 2:
-                pass
-            # in case the OS is behind or something
-            time.sleep(0.1)
-        time.sleep(0.3)
-        if not os.path.exists(path):
-            break
-        time.sleep(0.3)
-
-    if os.path.exists(path):
-        return False
-    else:
-        return True
 
 
 def copyWithoutBlocking(src, dest):
@@ -612,7 +534,7 @@ def classesInHierarchy(obj, classCounts, visited=None):
 def slantSplit(val, ratio, nodes, order="low first"):
 
     r"""
-    Returns a list of values who's sum is equal to the value specified.
+    Returns a list of values whose sum is equal to the value specified.
     The ratio between the highest and lowest value is equal to the specified ratio,
     and the middle values trend linearly between them.
 
@@ -800,7 +722,8 @@ def mkdir(dirname):
         try:
             os.mkdir(dirname)
             break
-
+        except FileExistsError:
+            break
         except Exception as err:
             numTimesTried += 1
             # Only ouput err every 10 times.

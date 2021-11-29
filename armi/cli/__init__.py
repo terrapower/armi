@@ -49,6 +49,7 @@ from typing import Optional
 
 import armi
 from armi import plugins
+from armi import runLog
 
 
 class EntryPointsPlugin(plugins.ArmiPlugin):
@@ -65,13 +66,13 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
             gridGui,
             # testing
             cleanTemps,
-            database,
             runSuite,
-            copyDB,
+            reportsEntryPoint,
         )
 
         entryPoints = []
         entryPoints.append(checkInputs.CheckInputEntryPoint)
+        entryPoints.append(checkInputs.ExpandBlueprints)
         entryPoints.append(clone.CloneArmiRunCommandBatch)
         entryPoints.append(clone.CloneArmiRunCommandInteractive)
         entryPoints.append(clone.CloneSuiteCommand)
@@ -85,8 +86,19 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
 
         # testing
         entryPoints.append(cleanTemps.CleanTemps)
+        entryPoints.append(reportsEntryPoint.ReportsEntryPoint)
 
         return entryPoints
+
+
+class ArmiParser(argparse.ArgumentParser):
+    """
+    Subclass of default ArgumentParser to better handle application splash text.
+    """
+
+    def print_help(self, file=None):
+        splash()
+        argparse.ArgumentParser.print_help(self, file)
 
 
 class ArmiCLI:
@@ -111,7 +123,7 @@ class ArmiCLI:
                     )
                 self._entryPoints[entryPoint.name] = entryPoint
 
-        parser = argparse.ArgumentParser(
+        parser = ArmiParser(
             prog=armi.context.APP_NAME,
             description=self.__doc__,
             usage="%(prog)s [-h] [-l | command [args]]",
@@ -133,6 +145,7 @@ class ArmiCLI:
 
     def listCommands(self):
         """List commands with a short description."""
+        splash()
 
         indent = 22
         initial_indent = "  "
@@ -188,6 +201,8 @@ class ArmiCLI:
 
         commandClass = self._entryPoints[command]
         cmd = commandClass()
+        if cmd.splash:
+            splash()
 
         # parse the arguments... command can have their own
         cmd.parse(args)
@@ -199,3 +214,13 @@ class ArmiCLI:
 
         # do whatever there is to be done!
         return cmd.invoke()
+
+
+def splash():
+    """
+    Emit a the active App's splash text to the runLog for the master node.
+    """
+    app = armi.getApp()
+    assert app is not None
+    if armi.context.MPI_RANK == 0:
+        runLog.raw(app.splashText)

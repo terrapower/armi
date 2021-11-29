@@ -18,14 +18,11 @@ See :doc:`/developer/entrypoints`.
 # limitations under the License.
 
 import argparse
-import textwrap
 from typing import Optional, Union
 
 import six
 
-import armi
-from armi import settings
-from armi import runLog
+from armi import context, runLog, settings
 
 
 class _EntryPointEnforcer(type):
@@ -78,6 +75,14 @@ class EntryPoint:
     then it is an optional positional argument. Finally, if settingsArgument is
     None, then no settings file argument is added."""
 
+    splash = True
+    """
+    Whether running the entry point should produce a splash text upon executing.
+
+    Setting this to ``False`` is useful for utility commands that produce standard
+    output that would be needlessly cluttered by the splash text.
+    """
+
     #: One of {armi.Mode.BATCH, armi.Mode.INTERACTIVE, armi.Mode.GUI}, optional.
     #: Specifies the ARMI mode in which the command is run. Default is armi.Mode.BATCH.
     mode: Optional[int] = None
@@ -89,7 +94,7 @@ class EntryPoint:
             )
 
         self.parser = argparse.ArgumentParser(
-            prog="{} {}".format(armi.context.APP_NAME, self.name),
+            prog="{} {}".format(context.APP_NAME, self.name),
             description=self.description or self.__doc__,
         )
 
@@ -206,7 +211,7 @@ class EntryPoint:
             particularly beneficial when many options are being added as they can clutter the :code:`--help` to be
             almost unusable.
         """
-        settingsInstance = self.cs.settings[settingName]
+        settingsInstance = self.cs.getSetting(settingName)
 
         if settings.isBoolSetting(settingsInstance):
             helpMessage = (
@@ -290,7 +295,8 @@ def setSetting(ep):
         """
 
         def __call__(self, parser, namespace, values, option_string=None):
-            ep.cs[self.dest] = values  # correctly converts type
+            # correctly converts type
+            ep.cs[self.dest] = values
             ep.settingsProvidedOnCommandLine.append(self.dest)
             ep.cs.failOnLoad()
 

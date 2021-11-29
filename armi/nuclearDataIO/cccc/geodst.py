@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Read/write a CCCC GEODST geometry definition file.
 
@@ -164,16 +177,32 @@ class GeodstStream(cccc.StreamWithDataContainer):
                 self._metadata[key] = record.rwInt(self._metadata[key])
 
     def _rw2DRecord(self):
-        """Read/write info for 1-D meshes."""
-        raise NotImplementedError(
-            "1-D geometry not yet implemented in GEODST reader/writer"
-        )
+        """Read/write 1-D coarse mesh boundaries and fine mesh intervals."""
+        with self.createRecord() as record:
+
+            self._data.xmesh = record.rwList(
+                self._data.xmesh, "double", self._metadata["NCINTI"] + 1
+            )
+            self._data.iintervals = record.rwList(
+                self._data.iintervals, "int", self._metadata["NCINTI"]
+            )
 
     def _rw3DRecord(self):
-        """Read/write info for 2-D meshes."""
-        raise NotImplementedError(
-            "2-D geometry not yet implemented in GEODST reader/writer"
-        )
+        """Read/write 2-D coarse mesh boundaries and fine mesh intervals."""
+        with self.createRecord() as record:
+
+            self._data.xmesh = record.rwList(
+                self._data.xmesh, "double", self._metadata["NCINTI"] + 1
+            )
+            self._data.ymesh = record.rwList(
+                self._data.ymesh, "double", self._metadata["NCINTJ"] + 1
+            )
+            self._data.iintervals = record.rwList(
+                self._data.iintervals, "int", self._metadata["NCINTI"]
+            )
+            self._data.jintervals = record.rwList(
+                self._data.jintervals, "int", self._metadata["NCINTJ"]
+            )
 
     def _rw4DRecord(self):
         """Read/write 3-D coarse mesh boundaries and fine mesh intervals."""

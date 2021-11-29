@@ -24,7 +24,8 @@ import os
 import pathlib
 import shutil
 
-import armi
+from armi.context import ROOT
+from armi import init as armi_init
 from armi import utils
 from armi.bookkeeping import historyTracker
 from armi.reactor import blocks
@@ -37,7 +38,7 @@ from armi.tests import ArmiTestHelper
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
 
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
-TUTORIAL_DIR = os.path.join(armi.context.ROOT, "tests", "tutorials")
+TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 CASE_TITLE = "anl-afci-177"
 
 
@@ -71,13 +72,18 @@ class TestHistoryTracker(ArmiTestHelper):
         runTutorialNotebook()
 
         reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
+
+        newSettings = {}
+        newSettings["db"] = True
+        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+        newSettings["runType"] = "Snapshots"
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["detailAssemLocationsBOL"] = ["001-001"]
+
+        reloadCs = reloadCs.modified(newSettings=newSettings)
         reloadCs.caseTitle = "armiRun"
-        reloadCs["db"] = True
-        reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        reloadCs["runType"] = "Snapshots"
-        reloadCs["loadStyle"] = "fromDB"
-        reloadCs["detailAssemLocationsBOL"] = ["A1001"]
-        o = armi.init(cs=reloadCs)
+
+        o = armi_init(cs=reloadCs)
         cls.o = o
 
     @classmethod
@@ -86,11 +92,13 @@ class TestHistoryTracker(ArmiTestHelper):
 
     def setUp(self):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
-        cs["db"] = True
-        cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        cs["loadStyle"] = "fromDB"
-        cs["detailAssemLocationsBOL"] = ["A1001"]
-        cs["startNode"] = 1
+        newSettings = {}
+        newSettings["db"] = True
+        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["detailAssemLocationsBOL"] = ["001-001"]
+        newSettings["startNode"] = 1
+        cs = cs.modified(newSettings=newSettings)
 
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
@@ -142,6 +150,9 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNode(ts, self.o.cs)
+            # get coverage for getTimeStepNum by checking against getcycleNode
+            testTS = utils.getTimeStepNum(cycle, node, self.o.cs)
+            self.assertEqual(ts, testTS)
             mgFlux = (
                 hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             )  #  b.p.mgFlux is vol integrated
@@ -193,7 +204,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFiltering(self):
         times = range(30)
-        self.history.cs["burnSteps"] = 2
+        self.history.cs = self.history.cs.modified(newSettings={"burnSteps": 2})
+
         inputs = [
             {"boc": True},
             {"moc": True},
@@ -212,7 +224,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFilteringWithGap(self):
         times = list(range(10)) + list(range(15, 20))
-        self.history.cs["burnSteps"] = 2
+        self.history.cs = self.history.cs.modified(newSettings={"burnSteps": 2})
+
         runResults = self.history.filterTimeIndices(times, boc=True)
         self.assertEqual(runResults, [0, 3, 6, 9, 15, 18])
 
@@ -228,7 +241,5 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
+    # import sys;sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
     unittest.main()

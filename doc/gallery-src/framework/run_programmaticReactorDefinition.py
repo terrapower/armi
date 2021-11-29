@@ -1,26 +1,47 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Build Reactor Inputs Programmatically
 =====================================
 
 Sometimes it's desirable to build input definitions for ARMI using
-code rather than by writing the textual input files directly. 
+code rather than by writing the textual input files directly.
 In ARMI you can either make the ARMI reactor objects directly,
 or you can define Blueprints objects. The benefit of making Blueprints
 objects is that they can in turn be used to create both ARMI reactor
 objects as well as textual input itself. This is nice when you want to
 have traceable input files associated with a run that was developed
-programmatically (e.g. for parameter sweeps). 
+programmatically (e.g. for parameter sweeps).
 
 This example shows how to make Blueprints objects programmatically completely
 from scratch.
 
 """
-import matplotlib.pyplot as plt
-import armi
+import logging
 
-armi.configure(permissive=True)
+import matplotlib.pyplot as plt
+from armi import configure, runLog
+
+# init ARMI logging tools
+logging.setLoggerClass(runLog.RunLogger)
+
+# configure ARMI
+configure(permissive=True)
+
 # pylint: disable=wrong-import-position
 from armi.reactor import blueprints
+from armi import settings
 from armi.settings import caseSettings
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints import assemblyBlueprint
@@ -45,6 +66,7 @@ def buildCase():
     bp.systemDesigns = buildSystems()
 
     cs = caseSettings.Settings()
+    settings.setMasterCs(cs)  # remove once we eliminate masterCs
     cs.path = None
     cs.caseTitle = "scripted-case"
     case = cases.Case(cs=cs, bp=bp)

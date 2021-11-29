@@ -17,9 +17,7 @@ Collection of code that needs to be executed before most ARMI components are saf
 import.
 """
 
-import os
 import sys
-
 import tabulate
 
 # This needs to happen pretty darn early, as one of it's purposes is to provide a better

@@ -24,6 +24,7 @@ CONF_LOAD_FROM_DB_EVERY_NODE = "loadFromDBEveryNode"
 CONF_DB_STORAGE_AFTER_CYCLE = "dbStorageAfterCycle"
 CONF_ZERO_OUT_NUCLIDES_NOT_IN_DB = "zeroOutNuclidesNotInDB"
 CONF_SYNC_AFTER_WRITE = "syncDbAfterWrite"
+CONF_FORCE_DB_PARAMS = "forceDbParams"
 
 
 def defineSettings():
@@ -67,6 +68,16 @@ def defineSettings():
             description=(
                 "Copy the output DB from the fast scratch space to the shared network drive "
                 "after each write."
+            ),
+        ),
+        setting.Setting(
+            CONF_FORCE_DB_PARAMS,
+            default=[],
+            label="Force database write of parameters",
+            description=(
+                "A list of parameter names that should always be written to the "
+                "database, regardless of their Parameter Definition's typical saveToDB "
+                "status. This is only honored if the DatabaseInterface is used."
             ),
         ),
     ]

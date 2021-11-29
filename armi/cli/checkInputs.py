@@ -16,12 +16,13 @@
 Entry point into ARMI to check inputs of a case or a whole folder of cases.
 """
 
+import pathlib
 import sys
 import traceback
 
-import armi
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
+from armi.utils.textProcessors import resolveMarkupInclusions
 
 
 def _runInspectorOnSettings(cs):
@@ -35,6 +36,33 @@ def _runInspectorOnSettings(cs):
         if query and query.correction is not None and query._passed != True
     ]  # pylint: disable=protected-access
     return issues
+
+
+class ExpandBlueprints(EntryPoint):
+    """
+    Perform expansion of !include directives in a blueprint file.
+
+    This is useful for testing inputs that make heavy use of !include directives.
+    """
+
+    name = "expand-bp"
+
+    splash = False
+
+    def addOptions(self):
+        self.parser.add_argument(
+            "blueprints", type=str, help="Path to root blueprints file"
+        )
+
+    def invoke(self):
+        p = pathlib.Path(self.args.blueprints)
+        if not p.exists():
+            runLog.error("Blueprints file `{}` does not exist".format(str(p)))
+            return 1
+        stream = resolveMarkupInclusions(p)
+        sys.stdout.write(stream.read())
+
+        return None
 
 
 class CheckInputEntryPoint(EntryPoint):
@@ -110,7 +138,7 @@ class CheckInputEntryPoint(EntryPoint):
                     canStart = "PASSED"
                 else:
                     canStart = "UNKNOWN"
-            except Exception as ee:
+            except Exception:
                 runLog.error("Failed to initialize/summarize {}".format(case))
                 runLog.error(traceback.format_exc())
                 canStart = "FAILED"

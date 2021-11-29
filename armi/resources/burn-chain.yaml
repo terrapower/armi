@@ -1,4 +1,5 @@
 AM241:
+- nuSF: 2.5
 - transmutation:
     branch: 1.0
     products:
@@ -39,6 +40,12 @@ AM241:
     products:
     - NP237
     type: ad
+- decay:
+    branch: 4.120055e-12
+    halfLifeInSeconds: 13652000000.0
+    products:
+    - LFP41
+    type: sf
 AM242G:
 - transmutation:
     branch: 1.0
@@ -225,7 +232,7 @@ BK249:
     - CF249
     type: bmd
 - decay:
-    branch: 4.70000e-10
+    branch: 4.755215e-10
     halfLifeInSeconds: 2.8512000000e+07
     products:
     - LFP41
@@ -334,7 +341,7 @@ CF252:
     - CM248
     type: ad
 - decay:
-    branch: 3.09200e-02
+    branch: 3.093567e-02
     halfLifeInSeconds: 8.3469852000e+07
     products:
     - LFP41
@@ -368,7 +375,7 @@ CM242:
     - PU238
     type: ad
 - decay:
-    branch: 6.20000e-08
+    branch: 6.794544e-08
     halfLifeInSeconds: 1.4065920000e+07
     products:
     - LFP41
@@ -433,7 +440,7 @@ CM244:
     - PU240
     type: ad
 - decay:
-    branch: 1.37000e-06
+    branch: 1.340741e-06
     halfLifeInSeconds: 5.7119256000e+08
     products:
     - LFP41
@@ -622,6 +629,7 @@ LI7:
     - LI6
     type: n2n
 NP237:
+- nuSF: 2.05
 - transmutation:
     branch: 1.0
     products:
@@ -662,6 +670,12 @@ NP237:
     - PA233
     - DUMP2
     type: ad
+- decay:
+    branch: 2.139954e-12
+    halfLifeInSeconds: 67531821640000.0
+    products:
+    - DUMP1
+    type: sf
 NP238:
 - transmutation:
     branch: 1.0
@@ -772,7 +786,7 @@ PU238:
     - U234
     type: ad
 - decay:
-    branch: 1.90000e-09
+    branch: 1.838574e-09
     halfLifeInSeconds: 2.7676015200e+09
     products:
     - LFP38
@@ -808,7 +822,7 @@ PU239:
     - U235
     type: ad
 - decay:
-    branch: 3.10000e-12
+    branch: 4.399635e-12
     halfLifeInSeconds: 7.6085373600e+11
     products:
     - LFP39
@@ -844,12 +858,13 @@ PU240:
     - U236
     type: ad
 - decay:
-    branch: 5.70000e-08
+    branch: 5.656034e-08
     halfLifeInSeconds: 2.0704941360e+11
     products:
     - LFP40
     type: sf
 PU241:
+- nuSF: 2.25
 - transmutation:
     branch: 1.0
     products:
@@ -878,6 +893,12 @@ PU241:
     products:
     - AM241
     type: bmd
+- decay:
+    branch: 5.729878e-15
+    halfLifeInSeconds: 452052964.95
+    products:
+    - LFP41
+    type: sf
 PU242:
 - nuSF: 2.1410
 - transmutation:
@@ -909,12 +930,13 @@ PU242:
     - U238
     type: ad
 - decay:
-    branch: 5.50000e-06
+    branch: 5.482456e-06
     halfLifeInSeconds: 1.1834100000e+13
     products:
     - LFP41
     type: sf
 TH232:
+- nuSF: 1.5
 - transmutation:
     branch: 1.0
     products:
@@ -936,7 +958,14 @@ TH232:
     products:
     - DUMP2
     type: ad
+- decay:
+    branch: 1.410000e-11
+    halfLifeInSeconds: 4.433748103e+17
+    products:
+    - LFP35
+    type: sf
 U232:
+- nuSF: 1.71
 - transmutation:
     branch: 1.0
     products:
@@ -958,7 +987,14 @@ U232:
     products:
     - DUMP2
     type: ad
+- decay:
+    branch: 8.612316e-13
+    halfLifeInSeconds: 2174272201.4
+    products:
+    - LFP35
+    type: sf
 U233:
+- nuSF: 1.76
 - transmutation:
     branch: 1.0
     products:
@@ -987,8 +1023,14 @@ U233:
     products:
     - DUMP2
     type: ad
+- decay:
+    branch: 1.326638e-12
+    halfLifeInSeconds: 5023862619200.0
+    products:
+    - LFP35
+    type: sf
 U234:
-- nuSF: 1.8000
+- nuSF: 1.8
 - transmutation:
     branch: 1.0
     products:
@@ -1019,13 +1061,13 @@ U234:
     - DUMP2
     type: ad
 - decay:
-    branch: 1.64000e-11
+    branch: 1.169048e-11
     halfLifeInSeconds: 7.7473908000e+12
     products:
     - LFP35
     type: sf
 U235:
-- nuSF: 1.8700
+- nuSF: 1.87
 - transmutation:
     branch: 1.0
     products:
@@ -1056,13 +1098,13 @@ U235:
     - DUMP2
     type: ad
 - decay:
-    branch: 7.00000e-11
+    branch: 2.011429e-09
     halfLifeInSeconds: 2.2216550400e+16
     products:
     - LFP35
     type: sf
 U236:
-- nuSF: 1.9000
+- nuSF: 1.90
 - transmutation:
     branch: 1.0
     products:
@@ -1091,13 +1133,13 @@ U236:
     - DUMP2
     type: ad
 - decay:
-    branch: 9.40000e-10
+    branch: 1.201026e-09
     halfLifeInSeconds: 7.3907899200e+14
     products:
     - LFP35
     type: sf
 U238:
-- nuSF: 2.0000
+- nuSF: 2.00
 - transmutation:
     branch: 1.0
     products:
@@ -1122,7 +1164,7 @@ U238:
     - PU239
     type: nGamma
 - decay:
-    branch: 5.45000e-07
+    branch: 5.448780e-07
     halfLifeInSeconds: 1.4099935680e+17
     products:
     - LFP38

@@ -160,7 +160,6 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} assemblies".format(attrName, len(attrObj))
                 )
         runLog.important("SFP has {:4d} assemblies".format(len(self.r.core.sfp)))
-        runLog.important("CFP has {:4d} assemblies".format(len(self.r.core.cfp)))
 
     def _checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
         """
@@ -187,7 +186,7 @@ class MemoryProfiler(interfaces.Interface):
         for i in self.o.getInterfaces():
             checkAttr(i)
             if i.name == "xsGroups":
-                for xsid, block in i.representativeBlocks.items():
+                for _, block in i.representativeBlocks.items():
                     checkAttr(block)
 
         if len(uniqueIds) == 0:
@@ -267,7 +266,8 @@ class MemoryProfiler(interfaces.Interface):
         if reportSize:
             operator.reattach(reactor, cs)
 
-    def _getSpecificReferrers(self, klass, ancestorKlass):
+    @staticmethod
+    def _getSpecificReferrers(klass, ancestorKlass):
         """Try to determine some useful information about the structure of ArmiObjects and potential
         orphans.
 
@@ -328,7 +328,8 @@ class MemoryProfiler(interfaces.Interface):
         for item in info:
             runLog.important("{}".format(item))
 
-    def _getReferrers(self, obj):
+    @staticmethod
+    def _getReferrers(obj):
         """
         Print referrers in a useful way (as opposed to gigabytes of text
         """
@@ -336,7 +337,8 @@ class MemoryProfiler(interfaces.Interface):
         for ref in gc.get_referrers(obj)[:100]:
             print("ref for {}: {}".format(obj, repr(ref)[:100]))
 
-    def _discussSkipped(self, skipped, errors):
+    @staticmethod
+    def _discussSkipped(skipped, errors):
         runLog.warning("Skipped {} objects".format(skipped))
         runLog.warning(
             "errored out on {0} objects:\n {1}".format(
@@ -345,7 +347,7 @@ class MemoryProfiler(interfaces.Interface):
         )
 
 
-class KlassCounter(object):
+class KlassCounter:
     def __init__(self, reportSize):
         self.counters = dict()
         self.reportSize = reportSize
@@ -387,7 +389,7 @@ class KlassCounter(object):
                     self.countObjects(v)
 
 
-class InstanceCounter(object):
+class InstanceCounter:
     def __init__(self, classType, reportSize):
         self.classType = classType
         self.count = 0
@@ -435,7 +437,7 @@ def _getModName(obj):
         return None
 
 
-class ObjectSizeBreakdown(object):
+class ObjectSizeBreakdown:
     def __init__(
         self,
         name,
@@ -511,7 +513,7 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
         mem.displayMemoryUsage(self.timeDescription)
 
 
-class SystemAndProcessMemoryUsage(object):
+class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = armi.MPI_NODENAME
         # no psutil, no memory diagnostics. TODO: Ideally, we could just cut
@@ -621,7 +623,6 @@ def _getFunctionObject():
     caller = currentframe().f_back
     func_name = getframeinfo(caller)[2]
     caller = caller.f_back
-    from pprint import pprint
 
     func = caller.f_locals.get(func_name, caller.f_globals.get(func_name))
 
@@ -650,7 +651,7 @@ def _walkReferrers(o, maxLevel=0, level=0, memo=None, whitelist=None):
         if referrer.__class__.__name__ != "frame" and id(referrer) in whitelist
     ]
     memo.update({oid for (_obj, oid, _seen) in referrers})
-    for (obj, oid, seen) in referrers:
+    for (obj, _, seen) in referrers:
         runLog.important(
             "{}{}    {} at {:x} seen: {}".format(
                 "-" * level, type(obj), "{}".format(obj)[:100], id(obj), seen

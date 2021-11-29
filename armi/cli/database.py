@@ -124,11 +124,13 @@ class ExtractInputs(EntryPoint):
         if settings.lstrip()[0] == "<":
             settingsExt = ".xml"
 
-        geomExt = ".xml" if geom.lstrip()[0] == "<" else ".yaml"
-
         settingsPath = self.args.output_base + "_settings" + settingsExt
         bpPath = self.args.output_base + "_blueprints.yaml"
-        geomPath = self.args.output_base + "_geom" + geomExt
+
+        geomPath = None
+        if geom:
+            geomExt = ".xml" if geom.lstrip()[0] == "<" else ".yaml"
+            geomPath = self.args.output_base + "_geom" + geomExt
 
         bail = False
         for path in [settingsPath, bpPath, geomPath]:
@@ -143,6 +145,8 @@ class ExtractInputs(EntryPoint):
             (bpPath, bp, "blueprints"),
             (geomPath, geom, "geometry"),
         ]:
+            if path is None:
+                continue
             runLog.info("Writing {} to `{}`".format(inp, path))
             if isinstance(data, bytes):
                 data = data.decode()

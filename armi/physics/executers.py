@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Executors are useful for having a standard way to run physics calculations.
 
@@ -6,6 +19,7 @@ data pathways.
 """
 
 import os
+import hashlib
 
 from armi.utils import directoryChangers
 from armi import runLog
@@ -79,9 +93,12 @@ class ExecutionOptions:
         use this, you will get a relatively consistent naming convention
         for your fast-past folders.
         """
-        self.runDir = os.path.join(
-            getFastPath(), f"{caseTitle}-{self.label}-{MPI_RANK}"
-        )
+        # This creates a hash of the case title plus the label
+        # to shorten the running directory and to avoid path length
+        # limitations on the OS.
+        caseString = f"{caseTitle}-{str(self.label)}".encode("utf-8")
+        caseTitleHash = str(hashlib.sha1(caseString).hexdigest())[:8]
+        self.runDir = os.path.join(getFastPath(), f"{caseTitleHash}-{MPI_RANK}")
 
     def describe(self):
         """Make a string summary of all options."""

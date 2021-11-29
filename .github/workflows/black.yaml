@@ -2,10 +2,11 @@ name: black
 
 on: [push, pull_request]
 
+# use workaround due to: https://github.com/psf/black/issues/2079#issuecomment-812359146
 jobs:
     check-formatting:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-python@v2
-            - uses: psf/black@stable
+            - uses: psf/black@20.8b1

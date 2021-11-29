@@ -26,11 +26,9 @@ import glob
 from matplotlib import pyplot
 
 from armi import runLog
-from armi.localization.exceptions import CompxsError
 from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
 from armi.utils import properties
 from armi.nucDirectory import nuclideBases
-from armi.localization import exceptions
 
 _ISOTXS_EXT = "ISO"
 
@@ -260,7 +258,7 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
     return neutronVelocities
 
 
-class _XSLibrary(object):
+class _XSLibrary:
     """Parent class for Isotxs and Compxs library objects."""
 
     neutronEnergyUpperBounds = properties.createImmutableProperty(
@@ -280,7 +278,7 @@ class _XSLibrary(object):
 
     def __setitem__(self, key, value):
         if key in self._orderedNuclideLabels:
-            raise exceptions.XSLibraryError("{} already contains {}".format(self, key))
+            raise AttributeError("{} already contains {}".format(self, key))
         value.container = self
         self._orderedNuclideLabels.append(key)
 
@@ -476,13 +474,13 @@ class IsotxsLibrary(_XSLibrary):
 
     def _mergeMetadata(self, other):
         isotxsMeta = self.isotxsMetadata.merge(
-            other.isotxsMetadata, self, other, "ISOTXS", exceptions.IsotxsError
+            other.isotxsMetadata, self, other, "ISOTXS", OSError
         )
         pmatrxMeta = self.pmatrxMetadata.merge(
-            other.pmatrxMetadata, self, other, "PMATRX", exceptions.PmatrxError
+            other.pmatrxMetadata, self, other, "PMATRX", OSError
         )
         gamisoMeta = self.gamisoMetadata.merge(
-            other.gamisoMetadata, self, other, "GAMISO", exceptions.GamisoError
+            other.gamisoMetadata, self, other, "GAMISO", OSError
         )
         return isotxsMeta, pmatrxMeta, gamisoMeta
 
@@ -669,7 +667,7 @@ class CompxsLibrary(_XSLibrary):
         """Merge two ``COMPXS`` libraries."""
         self._mergeProperties(other)
         self.compxsMetadata = self.compxsMetadata.merge(
-            other.compxsMetadata, self, other, "COMPXS", CompxsError
+            other.compxsMetadata, self, other, "COMPXS", OSError
         )
         self._appendRegions(other)
 

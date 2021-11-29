@@ -24,7 +24,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags, TypeSpec
 
 
-class MeshConverter(object):
+class MeshConverter:
     """
     Base class for the reactor mesh conversions.
 
@@ -273,7 +273,9 @@ class _RZThetaReactorMeshConverterByRingComposition(RZThetaReactorMeshConverter)
         ringCompositions = []
         numRings = [r for r in range(1, self._numRingsInCore + 1)]
         for _i, ring in enumerate(numRings):
-            assemsInRing = core.getAssembliesInRing(ring)
+            # Note that this needs to be in a HEX ring - Circular ring mode
+            # is not supported.
+            assemsInRing = core.getAssembliesInSquareOrHexRing(ring)
             compsInRing = []
             for a in assemsInRing:
                 assemType = a.getType().lower()

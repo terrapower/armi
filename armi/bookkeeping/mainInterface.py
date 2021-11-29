@@ -28,7 +28,7 @@ from armi import runLog
 from armi import utils
 from armi.utils import pathTools
 from armi import operators
-from armi.localization.exceptions import InputError
+from armi.utils.customExceptions import InputError
 from armi.bookkeeping.db.database3 import Database3
 
 
@@ -134,7 +134,7 @@ class MainInterface(interfaces.Interface):
             raise InputError("Failed to process copyFilesTo/copyFilesFrom")
 
     def interactBOC(self, cycle=None):
-        r"""typically the first interface to interact beginning of cycle. """
+        r"""typically the first interface to interact beginning of cycle."""
 
         runLog.important("Beginning of Cycle {0}".format(cycle))
         runLog.LOG.clearSingleWarnings()
@@ -184,16 +184,16 @@ class MainInterface(interfaces.Interface):
             cycle = int(snapText[0:3])
             node = int(snapText[3:])
             newFolder = "snapShot{0}_{1}".format(cycle, node)
-            utils.cleanPath(newFolder)
+            utils.pathTools.cleanPath(newFolder)
 
         # delete database if it's SQLlite
         # no need to delete because the database won't have copied it back if using fastpath.
 
         # clean temp directories.
         if os.path.exists("shuffleBranches"):
-            utils.cleanPath("shuffleBranches")
+            utils.pathTools.cleanPath("shuffleBranches")
         if os.path.exists("failedRuns"):
-            utils.cleanPath("failedRuns")
+            utils.pathTools.cleanPath("failedRuns")
 
     # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):

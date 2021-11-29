@@ -15,7 +15,6 @@
 """
 This script is used to compare ISOTXS files.
 """
-import armi
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 
@@ -72,7 +71,7 @@ class CompareIsotxsLibraries(EntryPoint):
 #     flux = []
 #     try:
 #         flux_pattern = re.compile(r'^\s*\d+ +(?P<energy>{0}) +{0} +(?P<flux>{0})'
-#                                   .format(strings.SCIENTIFIC_PATTERN))
+#                                   .format(SCIENTIFIC_PATTERN))
 #         energy_iter = iter(energy_groups)
 #         with open(args.flux_file) as flux_bg:
 #             for line in flux_bg:

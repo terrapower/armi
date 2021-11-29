@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+r"""
 Plugins allow various built-in or external functionality to be brought into the ARMI ecosystem.
 
 This module defines the hooks that may be defined within plugins. Plugins are ultimately
@@ -126,6 +126,7 @@ import pluggy
 
 from armi import pluginManager
 from armi.utils import flags
+
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
 HOOKIMPL = pluggy.HookimplMarker("armi")
@@ -401,7 +402,7 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def defineCaseDependencies(case, suite):
-        """
+        r"""
         Function for defining case dependencies.
 
         Some Cases depend on the results of other ``Case``\ s in the same ``CaseSuite``.
@@ -534,6 +535,31 @@ class ArmiPlugin:
         See Also
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate : Handles these flags
+        """
+
+    @staticmethod
+    @HOOKSPEC
+    def getReportContents(r, cs, report, stage, blueprint) -> None:
+        """
+        To generate a report.
+
+        For more information, see :doc:`/developer/reports`.
+
+        Parameters
+        ----------
+        r : Reactor
+
+        cs : Settings
+
+        report : ReportContent
+            Report object to add contents to
+
+        stage : ReportStage
+            begin/standard/or end (stage of the report for when inserting BOL vs. EOL
+            content)
+
+        blueprint : Blueprint, optional
+            for a reactor (if None, only partial contents created)
         """
 
 

@@ -15,6 +15,7 @@
 """
 Tests functionalities of components within ARMI
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,no-member,invalid-name
 import copy
 import math
 import unittest
@@ -44,7 +45,6 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.localization import exceptions
 from armi.utils import units
 
 
@@ -135,7 +135,7 @@ class TestGeneralComponents(unittest.TestCase):
     componentDims = {"Tinput": 25.0, "Thot": 25.0}
 
     def setUp(self):
-        class _Parent(object):
+        class _Parent:
             def getSymmetryFactor(self):
                 return 1.0
 
@@ -324,9 +324,9 @@ class TestCircle(TestShapedComponent):
 
     def test_getArea(self):
         od = self.component.getDimension("od")
-        id = self.component.getDimension("id")
+        idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
-        ref = math.pi * ((od / 2) ** 2 - (id / 2) ** 2) * mult
+        ref = math.pi * ((od / 2) ** 2 - (idd / 2) ** 2) * mult
         cur = self.component.getArea()
         self.assertAlmostEqual(cur, ref)
 
@@ -348,8 +348,8 @@ class TestCircle(TestShapedComponent):
         gap = Circle("gap", "Void", **gapDims)
         mult = gap.getDimension("mult")
         od = gap.getDimension("od")
-        id = gap.getDimension("id")
-        ref = mult * math.pi * ((od / 2.0) ** 2 - (id / 2.0) ** 2)
+        idd = gap.getDimension("id")
+        ref = mult * math.pi * ((od / 2.0) ** 2 - (idd / 2.0) ** 2)
         cur = gap.getArea()
         self.assertAlmostEqual(cur, ref)
 
@@ -465,7 +465,7 @@ class TestRectangle(TestShapedComponent):
         )
         negativeRectangle = Rectangle("test", "Void", **dims)
         self.assertAlmostEqual(negativeRectangle.getArea(), refArea)
-        with self.assertRaises(exceptions.NegativeComponentArea):
+        with self.assertRaises(ArithmeticError):
             negativeRectangle = Rectangle("test", "UZr", **dims)
             negativeRectangle.getArea()
 
@@ -559,7 +559,7 @@ class TestSquare(TestShapedComponent):
         )
         negativeRectangle = Square("test", "Void", **dims)
         self.assertAlmostEqual(negativeRectangle.getArea(), refArea)
-        with self.assertRaises(exceptions.NegativeComponentArea):
+        with self.assertRaises(ArithmeticError):
             negativeRectangle = Square("test", "UZr", **dims)
             negativeRectangle.getArea()
 
@@ -619,7 +619,7 @@ class TestCube(TestShapedComponent):
         )
         negativeCube = Cube("test", "Void", **dims)
         self.assertAlmostEqual(negativeCube.getVolume(), refVolume)
-        with self.assertRaises(exceptions.NegativeComponentVolume):
+        with self.assertRaises(ArithmeticError):
             negativeCube = Cube("test", "UZr", **dims)
             negativeCube.getVolume()
 
@@ -832,9 +832,9 @@ class TestSphere(TestShapedComponent):
 
     def test_getVolume(self):
         od = self.component.getDimension("od")
-        id = self.component.getDimension("id")
+        idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
-        ref = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (id / 2.0) ** 3)
+        ref = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (idd / 2.0) ** 3)
         cur = self.component.getVolume()
         self.assertAlmostEqual(cur, ref)
 
@@ -939,7 +939,7 @@ class TestMaterialAdjustments(unittest.TestCase):
         dims = {"Tinput": 25.0, "Thot": 600.0, "od": 10.0, "id": 5.0, "mult": 1.0}
         self.fuel = Circle("fuel", "UZr", **dims)
 
-        class fakeBlock(object):
+        class fakeBlock:
             def getHeight(self):  # unit height
                 return 1.0
 

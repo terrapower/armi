@@ -19,7 +19,6 @@ import numpy
 import six
 
 from armi import runLog
-from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
 from armi.utils import units

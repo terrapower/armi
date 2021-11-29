@@ -36,7 +36,7 @@ from armi.utils import codeTiming
 from armi.utils import pathTools
 from armi import settings
 from armi.operators import settingsValidation
-from armi.operators import runTypes
+from armi.operators.runTypes import RunTypes
 from armi import interfaces
 from armi.bookkeeping.report import reportingUtils
 
@@ -96,6 +96,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         self.r = None
         self.cs = cs
+        runLog.LOG.startLog(self.cs.caseTitle)
         self.timer = codeTiming.getMasterTimer()
         self.interfaces = []
         self.restartData = []
@@ -110,7 +111,8 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         self._initFastPath()
 
-    def _initFastPath(self):
+    @staticmethod
+    def _initFastPath():
         """
         Create the FAST_PATH directory for fast local operations
 
@@ -260,6 +262,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             startingNode = self.r.p.timeNode
         else:
             startingNode = 0
+            self.r.p.timeNode = startingNode
         halt = self.interactAllBOC(self.r.p.cycle)
         if halt:
             return False
@@ -547,7 +550,12 @@ class Operator:  # pylint: disable=too-many-public-methods
             self.addInterface(klass(self.r, self.cs), **kwargs)
 
     def addInterface(
-        self, interface, index=None, reverseAtEOL=False, enabled=True, bolForce=False
+        self,
+        interface,
+        index=None,
+        reverseAtEOL=False,
+        enabled=True,
+        bolForce=False,
     ):
         """
         Attach an interface to this operator.
@@ -589,21 +597,34 @@ class Operator:  # pylint: disable=too-many-public-methods
             )
 
         iFunc = self.getInterface(function=interface.function)
+
         if iFunc:
-            raise RuntimeError(
-                "Cannot add {0}; the {1} already is designated "
-                "as the {2} interface. Multiple interfaces of the same "
-                "function is not supported.".format(
-                    interface, iFunc, interface.function
+            if issubclass(type(iFunc), type(interface)):
+                runLog.info(
+                    "Ignoring Interface {newFunc} because existing interface {old} already "
+                    " more specific".format(newFunc=interface, old=iFunc)
                 )
-            )
+                return
+            elif issubclass(type(interface), type(iFunc)):
+                self.removeInterface(iFunc)
+                runLog.info(
+                    "Will Insert Interface {newFunc} because it is a subclass of {old} interface and "
+                    " more derived".format(newFunc=interface, old=iFunc)
+                )
+            else:
+                raise RuntimeError(
+                    "Cannot add {0}; the {1} already is designated "
+                    "as the {2} interface. Multiple interfaces of the same "
+                    "function is not supported.".format(
+                        interface, iFunc, interface.function
+                    )
+                )
 
         runLog.debug("Adding {0}".format(interface))
         if index is None:
             self.interfaces.append(interface)
         else:
             self.interfaces.insert(index, interface)
-
         if reverseAtEOL:
             interface.reverseAtEOL = True
 
@@ -898,7 +919,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         newFolder = "snapShot{0}_{1}".format(cycle, node)
         if os.path.exists(newFolder):
             runLog.important("Deleting existing snapshot data in {0}".format(newFolder))
-            utils.cleanPath(newFolder)  # careful with cleanPath!
+            utils.pathTools.cleanPath(newFolder)  # careful with cleanPath!
             # give it a minute.
             time.sleep(1)
 
@@ -954,8 +975,7 @@ class Operator:  # pylint: disable=too-many-public-methods
     @staticmethod
     def setStateToDefault(cs):
         """Update the state of ARMI to fit the kind of run this operator manages"""
-
-        cs["runType"] = runTypes.RunTypes.STANDARD
+        return cs.modified(newSettings={"runType": RunTypes.STANDARD})
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""

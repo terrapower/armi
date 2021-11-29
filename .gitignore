@@ -15,11 +15,14 @@ dist/
 dist-*/
 doc/*.png
 doc/_build
+doc/user/tutorials
 doc/tutorials/anl-afci-177*
 doc/tutorials/case-suite
 armi/tests/tutorials/case-suite
 .apidocs/
 doc/gallery
+doc/gallery-src/framework/*.yaml
+htmlcov/
 
 # No workspace crumbs.
 *~
@@ -39,11 +42,13 @@ tags
 .externalToolBuilders/
 .cache/
 .pytest_cache/
+dump-temp-*
 .vim-bookmarks
-.venv*/
+venv*/
 .mypy_cache/
 **/__pycache__
 **/.coverage*
+**/logs/*
 
 # Misc. exclusions
 *.html

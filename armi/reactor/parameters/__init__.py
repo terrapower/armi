@@ -200,7 +200,6 @@ from armi.reactor.parameters.parameterDefinitions import (
 
 from armi.reactor.parameters.parameterDefinitions import (
     SINCE_INITIALIZATION,
-    SINCE_LAST_DB_TRANSMISSION,
     SINCE_LAST_DISTRIBUTE_STATE,
     SINCE_LAST_GEOMETRY_TRANSFORMATION,
     SINCE_BACKUP,

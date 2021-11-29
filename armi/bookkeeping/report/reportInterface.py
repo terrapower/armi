@@ -18,7 +18,6 @@ to show in PDF form to others this is the place to do it.
 """
 import re
 
-import armi
 from armi import runLog
 from armi import interfaces
 from armi.utils import directoryChangers
@@ -118,13 +117,16 @@ class ReportInterface(interfaces.Interface):
 
     def interactEOL(self):
         """Adds the data to the report, and generates it"""
-        self.cs.setSettingsReport()
         b = self.o.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
         from armi.bookkeeping import plotting
 
-        plotting.plotReactorPerformance(self.r)
+        dbi = self.o.getInterface("database")
+        buGroups = self.cs["buGroups"]
+        plotting.plotReactorPerformance(
+            self.r, dbi, buGroups, extension=self.cs["outputFileExtension"]
+        )
 
         reportingUtils.setNeutronBalancesReport(self.r.core)
         self.writeRunSummary()
@@ -183,4 +185,3 @@ class ReportInterface(interfaces.Interface):
 
         self.r.core.sfp.report()  # spent fuel pool report
         self.r.core.sfp.count()
-        self.r.core.cfp.report()  # charged fuel pool report

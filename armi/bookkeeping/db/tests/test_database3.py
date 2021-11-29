@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+r""" Tests for the Database3 class
+"""
+
 import unittest
 
 import numpy
@@ -20,12 +23,16 @@ import h5py
 from armi.bookkeeping.db import database3
 from armi.reactor import grids
 from armi.reactor.tests import test_reactors
-
 from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestDatabase3(unittest.TestCase):
+    r"""Tests for the Database3 class"""
+
     def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
         cs = self.o.cs
 
@@ -41,6 +48,7 @@ class TestDatabase3(unittest.TestCase):
     def tearDown(self):
         self.db.close()
         self.stateRetainer.__exit__()
+        self.td.__exit__(None, None, None)
 
     def makeHistory(self):
         """
@@ -56,9 +64,7 @@ class TestDatabase3(unittest.TestCase):
             self.db.writeToDB(self.r)
 
     def makeShuffleHistory(self):
-        """
-        Walk the reactor through a few time steps with some shuffling.
-        """
+        """Walk the reactor through a few time steps with some shuffling."""
         # Serial numbers *are not stable* (i.e., they can be different between test runs
         # due to parallelism and test run order). However, they are the simplest way to
         # check correctness of location-based history tracking. So we stash the serial
@@ -68,7 +74,8 @@ class TestDatabase3(unittest.TestCase):
         self.centralTopBlockSerialNums = []
 
         grid = self.r.core.spatialGrid
-        for cycle in range(3):
+
+        for cycle in range(2):
             a1 = self.r.core.childrenByLocator[grid[cycle, 0, 0]]
             a2 = self.r.core.childrenByLocator[grid[0, 0, 0]]
             olda1Loc = a1.spatialLocator
@@ -78,7 +85,7 @@ class TestDatabase3(unittest.TestCase):
             self.centralAssemSerialNums.append(c.p.serialNum)
             self.centralTopBlockSerialNums.append(c[-1].p.serialNum)
 
-            for node in range(3):
+            for node in range(2):
                 self.r.p.cycle = cycle
                 self.r.p.timeNode = node
                 # something that splitDatabase won't change, so that we can make sure
@@ -86,12 +93,16 @@ class TestDatabase3(unittest.TestCase):
                 self.r.p.cycleLength = cycle
 
                 self.db.writeToDB(self.r)
+
         # add some more data that isnt written to the database to test the
         # DatabaseInterface API
-        self.r.p.cycle = 3
+        self.r.p.cycle = 2
         self.r.p.timeNode = 0
         self.r.p.cycleLength = cycle
-        self.r.core[0].p.chargeTime = 3
+        self.r.core[0].p.chargeTime = 2
+
+        # add some fake missing parameter data to test allowMissing
+        self.db.h5db["c00n00/Reactor/missingParam"] = "i don't exist"
 
     def _compareArrays(self, ref, src):
         """
@@ -186,7 +197,17 @@ class TestDatabase3(unittest.TestCase):
             database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
 
-    def test_history(self) -> None:
+    def test_load(self) -> None:
+        self.makeShuffleHistory()
+        with self.assertRaises(KeyError):
+            _r = self.db.load(0, 0)
+
+        _r = self.db.load(0, 0, allowMissing=True)
+
+        del self.db.h5db["c00n00/Reactor/missingParam"]
+        _r = self.db.load(0, 0, allowMissing=False)
+
+    def test_history(self):
         self.makeShuffleHistory()
 
         grid = self.r.core.spatialGrid
@@ -198,15 +219,15 @@ class TestDatabase3(unittest.TestCase):
             testAssem, params=["chargeTime", "serialNum"]
         )
         expectedSn = {
-            (c, n): self.centralAssemSerialNums[c] for c in range(3) for n in range(3)
+            (c, n): self.centralAssemSerialNums[c] for c in range(2) for n in range(2)
         }
         self.assertEqual(expectedSn, hist["serialNum"])
 
         # test block
         hists = self.db.getHistoriesByLocation(
-            [testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0), (2, 0)]
+            [testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)]
         )
-        expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(3)}
+        expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(2)}
         self.assertEqual(expectedSn, hists[testBlock]["serialNum"])
 
         # cant mix blocks and assems, since they are different distance from core
@@ -217,8 +238,8 @@ class TestDatabase3(unittest.TestCase):
         hist = self.dbi.getHistory(
             self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
         )
-        self.assertIn((3, 0), hist["chargeTime"].keys())
-        self.assertEqual(hist["chargeTime"][(3, 0)], 3)
+        self.assertIn((2, 0), hist["chargeTime"].keys())
+        self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
     def test_replaceNones(self):
         """
@@ -228,10 +249,15 @@ class TestDatabase3(unittest.TestCase):
         data1 = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
         data1iNones = numpy.array([1, 2, None, 5, 6])
         data1fNones = numpy.array([None, 2.0, None, 5.0, 6.0])
-        data2fNones = numpy.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]])
-        dataJag = numpy.array([[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
+        data2fNones = numpy.array(
+            [None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object
+        )
+        dataJag = numpy.array(
+            [[[1, 2], [3, 4]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]], dtype=object
+        )
         dataJagNones = numpy.array(
-            [[[1, 2], [3, 4]], [[1], [1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
+            [[[1, 2], [3, 4]], [[1], [1]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+            dtype=object,
         )
         dataDict = numpy.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
@@ -246,6 +272,7 @@ class TestDatabase3(unittest.TestCase):
         self._compareRoundTrip(dataDict)
 
     def test_mergeHistory(self):
+        # pylint: disable=protected-access
         self.makeHistory()
 
         # put some big data in an HDF5 attribute. This will exercise the code that pulls
@@ -262,7 +289,8 @@ class TestDatabase3(unittest.TestCase):
             },
         )
 
-        db2 = database3.Database3("restartDB.h5", "w")
+        db_path = "restartDB.h5"
+        db2 = database3.Database3(db_path, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -278,6 +306,10 @@ class TestDatabase3(unittest.TestCase):
             # actually exercise the _resolveAttrs function
             attrs = database3._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
+
+            keys = sorted(db2.keys())
+            self.assertEqual(len(keys), 8)
+            self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c00n02"])
 
     def test_splitDatabase(self):
         self.makeHistory()
@@ -295,8 +327,33 @@ class TestDatabase3(unittest.TestCase):
             self.assertTrue("c02n00" not in newDb)
             self.assertTrue(newDb.attrs["databaseVersion"] == database3.DB_VERSION)
 
+            # validate that the min set of meta data keys exists
+            meta_data_keys = [
+                "appName",
+                "armiLocation",
+                "databaseVersion",
+                "hostname",
+                "localCommitHash",
+                "machines",
+                "platform",
+                "platformArch",
+                "platformRelease",
+                "platformVersion",
+                "pluginPaths",
+                "python",
+                "startTime",
+                "successfulCompletion",
+                "user",
+                "version",
+            ]
+            for meta_key in meta_data_keys:
+                self.assertIn(meta_key, newDb.attrs)
+                self.assertTrue(newDb.attrs[meta_key] is not None)
+
 
 class Test_LocationPacking(unittest.TestCase):
+    r"""Tests for database location"""
+
     def test_locationPacking(self):
         # pylint: disable=protected-access
         loc1 = grids.IndexLocation(1, 2, 3, None)
@@ -316,11 +373,32 @@ class Test_LocationPacking(unittest.TestCase):
 
         self.assertEqual(unpackedData[0], (1, 2, 3))
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-        self.assertEqual(unpackedData[2], (7, 8, 9))
+        self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
+
+    def test_locationPackingOlderVerions(self):
+        # pylint: disable=protected-access
+        for version in [1, 2]:
+            loc1 = grids.IndexLocation(1, 2, 3, None)
+            loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
+            loc3 = grids.MultiIndexLocation(None)
+            loc3.append(grids.IndexLocation(7, 8, 9, None))
+            loc3.append(grids.IndexLocation(10, 11, 12, None))
+
+            locs = [loc1, loc2, loc3]
+            tp, data = database3._packLocations(locs, minorVersion=version)
+
+            self.assertEqual(tp[0], "IndexLocation")
+            self.assertEqual(tp[1], "CoordinateLocation")
+            self.assertEqual(tp[2], "MultiIndexLocation")
+
+            unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
+
+            self.assertEqual(unpackedData[0], (1, 2, 3))
+            self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
+            self.assertEqual(unpackedData[2][0].tolist(), [7, 8, 9])
+            self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
 
 
 if __name__ == "__main__":
-    import sys
-
-    # sys.argv = ["", "TestDatabase3.test_splitDatabase"]
+    # import sys;sys.argv = ["", "TestDatabase3.test_splitDatabase"]
     unittest.main()

@@ -24,7 +24,7 @@ The given yaml file is expected to rigidly adhere to given key:value pairings.
 
 See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
 
-The file structure is expectation is:
+The file structure is expectation is::
 
     nuclide flags:
         AM241: {burn: true, xs: true}
@@ -68,32 +68,33 @@ text representations of input and objects in the code.
 
 
 """
-import copy
-import collections
 from collections import OrderedDict
+import collections
+import copy
 import os
 import pathlib
 import traceback
 import typing
 
+from ruamel.yaml import CLoader, RoundTripLoader
+import ordered_set
 import tabulate
 import yamlize
 import yamlize.objects
-import ordered_set
 
-import armi
 from armi import context
+from armi import getPluginManager, getPluginManagerOrFail
+from armi import plugins
 from armi import runLog
 from armi import settings
-from armi import plugins
-from armi.localization.exceptions import InputError
-from armi.nucDirectory import nuclideBases
+from armi.utils.customExceptions import InputError
 from armi.nucDirectory import elements
-from armi.scripts import migration
-from armi.utils import textProcessors
+from armi.nucDirectory import nuclideBases
+from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.reactor import assemblies
+from armi.scripts import migration
+from armi.utils import textProcessors
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -108,7 +109,7 @@ context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
-def loadFromCs(cs):
+def loadFromCs(cs, roundTrip=False):
     """
     Function to load Blueprints based on supplied ``CaseSettings``.
     """
@@ -120,7 +121,7 @@ def loadFromCs(cs):
             root = pathlib.Path(cs["loadingFile"]).parent.absolute()
             bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
             try:
-                bp = Blueprints.load(bpYaml)
+                bp = Blueprints.load(bpYaml, roundTrip=roundTrip)
             except yamlize.yamlizing_error.YamlizingError as err:
                 if "cross sections" in err.args[0]:
                     runLog.error(
@@ -144,7 +145,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
     def __new__(mcs, name, bases, attrs):
         # pylint: disable=no-member
-        pm = armi.getPluginManager()
+        pm = getPluginManager()
         if pm is None:
             runLog.warning(
                 "Blueprints were instantiated before the framework was "
@@ -304,7 +305,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             runLog.header("=========== Verifying Assembly Configurations ===========")
 
             # pylint: disable=no-member
-            armi.getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
+            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs
             )
 
@@ -357,8 +358,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             expansions,
         ) = isotopicOptions.autoSelectElementsToKeepFromSettings(cs)
 
-        nucsFromInput = actives | inerts  # join
-
         # Flag all elementals for expansion unless they've been flagged otherwise by
         # user input or automatic lattice/datalib rules.
         for elemental in nuclideBases.instances:
@@ -403,7 +402,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 newNuclides = expansions[elemental]
                 # overlay code details onto nuclideFlags for other parts of the code
                 # that will use them.
-                # CRAP: would be better if nuclideFlags did this upon reading s.t.
+                # TODO: would be better if nuclideFlags did this upon reading s.t.
                 # order didn't matter. On the other hand, this is the only place in
                 # the code where NuclideFlags get built and have user settings around
                 # (hence "resolve").
@@ -510,6 +509,17 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 inp = mig.apply()
         return inp
 
+    @classmethod
+    def load(cls, stream, roundTrip=False):
+        """This class method is a wrapper around the `yamlize.Object.load()` method.
+
+        The reason for the wrapper is to allow us to default to `Cloader`. Essentially,
+        the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
+        write) access to YAMLs; for that we have the `RoundTripLoader`.
+        """
+        loader = RoundTripLoader if roundTrip else CLoader
+        return super().load(stream, Loader=loader)
+
 
 def migrate(bp: Blueprints, cs):
     """
@@ -518,9 +528,10 @@ def migrate(bp: Blueprints, cs):
     This is a good place to perform migrations that address changes to the system design
     description (settings, blueprints, geom file). We have access to all three here, so
     we can even move stuff between files. Namely, this:
-     - creates a grid blueprint to represent the core layout from the old ``geomFile``
+
+     * creates a grid blueprint to represent the core layout from the old ``geomFile``
        setting, and applies that grid to a ``core`` system.
-     - moves the radial and azimuthal submesh values from the ``geomFile`` to the
+     * moves the radial and azimuthal submesh values from the ``geomFile`` to the
        assembly designs, but only if they are uniform (this is limiting, but could be
        made more sophisticated in the future, if there is need)
 
@@ -529,7 +540,6 @@ def migrate(bp: Blueprints, cs):
     dedicated migration portion of the code, and not perform the migration so
     implicitly.
     """
-    from armi.reactor import blueprints
     from armi.reactor.blueprints import gridBlueprint
 
     if bp.systemDesigns is None:
@@ -554,7 +564,7 @@ def migrate(bp: Blueprints, cs):
         )
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
 
-    if geom.geomType in (geometry.RZT, geometry.RZ):
+    if geom.geomType in (geometry.GeomType.RZT, geometry.GeomType.RZ):
         aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
         radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
 

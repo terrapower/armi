@@ -24,7 +24,10 @@ For example::
        core: !include path/to/core_grid.yaml
 
 would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into
-the main blueprints file.
+the main blueprints file. The rules that ARMI uses to handle things like indentation of
+the included text are usually rather intuitive, but sometimes it can be useful to
+witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run
+for testing inputs with !includes.
 
 ARMI models are built hierarchically, first by defining components, and then by larger and larger
 collections of the levels of the reactor.
@@ -127,10 +130,8 @@ material
     expansion coefficients, density, thermal conductivity, etc., which are used in the various physics kernels.
     Natural isotopic composition is determined from this material specification as well (unless custom isotopics are
     supplied). The entry here should either be a class name of a valid material (``UZr``) or a ``module:className`` pair
-    for specifying specific material (e.g. ``armi.materials.uZr:UZr``). 
+    for specifying specific material (e.g. ``armi.materials.uZr:UZr``).
     Materials are handled through the :py:mod:`material library <armi.materials>`.
-
-    .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
 
 |Tinput|
     The temperature (in C) that corresponds to the input dimensions given here. This facilitates automatic thermal
@@ -153,6 +154,7 @@ id
 od
     Outer diameter (in cm).
 
+.. _componentTypes:
 
 Component Types
 ---------------
@@ -381,9 +383,15 @@ material modifications
               modNames = m.applyInputParams.__code__.co_varnames[1:numArgs]
               data.append((m.__name__, ', '.join(modNames)))
 
-      return tabulate(headers=('Material Name', 'Available modifications'),
-                      tabular_data=data, tablefmt='rst')
+          for subM in m.__subclasses__():
+              num = subM.applyInputParams.__code__.co_argcount
+              if num > 1:
+                  mods = subM.applyInputParams.__code__.co_varnames[1:num]
+                  data.append((subM.__name__, ', '.join(mods)))
 
+      data.sort(key=lambda t: t[0])
+      return tabulate(headers=('Material Name', 'Available Modifications'),
+                      tabular_data=data, tablefmt='rst')
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of
   custom isotopics labels for input scenarios where a varying blend of a high-reactivity
@@ -402,7 +410,7 @@ other structure.
 
 Systems
 =======
-Once assemblies are defined they can be grouped together into the Core, the spent fuel pool, etc.
+Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
 
@@ -428,15 +436,12 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 
 Grids
 =====
-The ``lattice files`` are different geometry files that define arrangements in Hex, Cartesian, or R-Z-Theta.
-See :doc:`/user/inputs/facemap_file` for details. The optional
-``lattice pitch`` entry allows you to specify spacing between objects that is different from
-tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies
-are to be loaded into a Cartesian arrangement. The contents of a grid may defined using one
-of the following:
+Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
+define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
+you to specify spacing between objects that is different from tight packing. This input is required
+in mixed geometry cases, for example if Hexagonal assemblies are to be loaded into a Cartesian
+arrangement. The contents of a grid may defined using one of the following:
 
-``lattice file:``
-    A path to a file that contains the lattice arrangement in either YAML (preferred) or XML (historical) formats.
 ``lattice map:``
     A ASCII map representing the grid contents
 ``grid contents:``
@@ -445,17 +450,42 @@ of the following:
 Example grid definitions are shown below::
 
     grids:
-        core:
-            lattice file: geometry.xml
+        control:
             geom: hex
-            symmetry: third periodic
-    	sfp:
-    	    lattice file: sfp-geom.xml
-            lattice pitch:
-                x: 50.0
-                y: 50.0
+            symmetry: full
+            lattice map: |
+               - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
+                - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
+                 - - - - - - - 1 8 1 1 1 1 1 1 1 1 1 1
+                  - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1
+                   - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                    - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                     - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                      - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                       - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                        7 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1
+                         1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1
+                          1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                           1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                            1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                             1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                              1 1 1 1 1 1 1 1 1 3 1 1 1
+                               1 1 1 1 1 1 1 1 1 1 1 1
+                                1 6 1 1 1 1 1 1 1 1 1
+                                 1 1 1 1 1 1 1 1 1 1
+    sfp:
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 50.0
+            y: 50.0
+        grid contents:
+            [0,0]: MC
+            [1,0]: MC
+            [0,1]: MC
+            [1,1]: MC
 
-.. warning:: We have gone through some effort to allow both pin and core grid definitions to share this
+.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
 .. _custom-isotopics:

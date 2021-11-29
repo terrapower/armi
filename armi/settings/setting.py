@@ -209,7 +209,7 @@ class Setting:
         """
         try:
             val = self.schema(val)
-        except vol.error.MultipleInvalid:
+        except vol.error.Invalid:
             runLog.error(f"Error in setting {self.name}, val: {val}.")
             raise
 
@@ -222,18 +222,15 @@ class Setting:
 
     def addOption(self, option: Option):
         """Extend this Setting's options with an extra option."""
-        self.addOptions(
-            [
-                option,
-            ]
-        )
+        self.addOptions([option])
 
     def changeDefault(self, newDefault: Default):
         """Change the default of a setting, and also the current value."""
         self._default = newDefault.value
         self.value = newDefault.value
 
-    def _load(self, inputVal):
+    @staticmethod
+    def _load(inputVal):
         """
         Create setting value from input value.
 
@@ -315,6 +312,21 @@ class Setting:
             "type": type(self.default),
             "default": self.default,
         }
+
+    def __copy__(self):
+        setting = Setting(
+            str(self.name),
+            copy.copy(self._default),
+            description=None if self.description is None else str(self.description),
+            label=None if self.label is None else str(self.label),
+            options=copy.copy(self.options),
+            schema=copy.copy(self.schema) if hasattr(self, "schema") else None,
+            enforcedOptions=bool(self.enforcedOptions),
+            subLabels=copy.copy(self.subLabels),
+            isEnvironment=bool(self.isEnvironment),
+            oldNames=None if self.oldNames is None else list(self.oldNames),
+        )
+        return setting
 
 
 class FlagListSetting(Setting):

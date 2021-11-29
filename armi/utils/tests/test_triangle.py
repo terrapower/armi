@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+r""" Test the basic triangle math
+"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import unittest
 from armi.utils import triangle
 
@@ -19,7 +21,6 @@ from armi.utils import triangle
 class triangleTests(unittest.TestCase):
     def test_getTriangleArea(self):
         """Test that getTriangleArea correctly calculates the area of a right triangle."""
-
         x1 = 0.0
         y1 = 0.0
         x2 = 1.0
@@ -32,7 +33,6 @@ class triangleTests(unittest.TestCase):
 
     def test_checkIfPointIsInTriangle(self):
         """Test that checkIfPointIsInTrinagle can correctly identify if a point is inside or outside of a triangle."""
-
         # First check the right triangle case
         xT1 = 0.0
         yT1 = 0.0
@@ -88,11 +88,11 @@ class triangleTests(unittest.TestCase):
         y3 = 0.376
         xP = 0.0
         yP = 0.17
-        # generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
+        # FIXME: generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(generalTriangleInOrOut)
 
     def test_checkIfPointIsInTriangle2(self):
-        """Test that barycentricCheckIfPointIsInTriangle can  identify if a point is inside or outside of a triangle."""
+        """Test that barycentricCheckIfPointIsInTriangle can identify if a point is inside or outside of a triangle."""
 
         # First check the right triangle case
         xT1 = 0.0
@@ -118,7 +118,7 @@ class triangleTests(unittest.TestCase):
         xP = 0.0
         yP = 0.17
         generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
+            x1, y1, x2, y2, x3, y3, xP, yP
         )
         self.assertTrue(generalTriangleInOrOut)
 

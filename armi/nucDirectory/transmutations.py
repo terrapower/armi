@@ -76,7 +76,6 @@ fission. This is used for intrinsic source term calculations.
 """
 import math
 
-from armi.localization import errors
 from armi.utils import iterables
 
 LN2 = math.log(2)
@@ -94,7 +93,7 @@ DECAY_MODES = [
 PRODUCT_PARTICLES = {"nalph": "HE4", "np": "H1", "nd": "H2", "nt": "H3", "ad": "HE4"}
 
 
-class Transmutable(object):
+class Transmutable:
     """
     Transmutable base class.
 
@@ -184,9 +183,7 @@ class Transmutation(Transmutable):
     def __init__(self, parent, dataDict):
         Transmutable.__init__(self, parent, dataDict)
         if self.type not in TRANSMUTATION_TYPES:
-            raise errors.Transmutation_InvalidReactionTypeUse(
-                self.type, TRANSMUTATION_TYPES
-            )
+            raise KeyError("{} not in {}".format(self.type, TRANSMUTATION_TYPES))
 
     def __repr__(self):
         return "<Transmutation by {} from {:7s} to {} with branching ratio of {:12.5E}>".format(
@@ -221,7 +218,7 @@ class DecayMode(Transmutable):
         )  # decay constant, reduced by branch to make it accurate
 
         if self.type not in DECAY_MODES:
-            raise errors.DecayMode_InvalidDecayModeUse(self.type, DECAY_MODES)
+            raise KeyError("{} is not in {}".format(self.type, DECAY_MODES))
 
     def __repr__(self):
         return (

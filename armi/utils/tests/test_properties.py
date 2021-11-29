@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from __future__ import print_function
+""" tests of the propereties class """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
 import unittest
 
 from armi.utils import properties
 
 
-class ImmutableClass(object):
+class ImmutableClass:
     myNum = properties.createImmutableProperty(
         "myNum", "You must invoke the initialize() method", "My random number"
     )
