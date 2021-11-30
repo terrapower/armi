@@ -46,7 +46,7 @@ setup(
     url="https://github.com/terrapower/armi/",
     license="Apache 2.0",
     long_description=README,
-    python_requres=">=3.7",
+    python_requires=">=3.7",
     packages=find_packages(),
     package_data={"armi": ["resources/*", "resources/**/*"] + EXTRA_FILES},
     entry_points={"console_scripts": ["armi = armi.__main__:main"]},
