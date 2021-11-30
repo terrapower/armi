@@ -580,27 +580,32 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
         if gridDesign.readFromLatticeMap or tryMap:
             geomType = geometry.GeomType.fromStr(gridDesign.geom)
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
+
+            aMap = asciimaps.asciiMapFromGeomAndDomain(
+                gridDesign.geom, symmetry.domain
+            )()
+            aMap.asciiLabelByIndices = {
+                (key[0], key[1]): val for key, val in gridDesign.gridContents.items()
+            }
             try:
-                aMap = asciimaps.asciiMapFromGeomAndDomain(
-                    gridDesign.geom, symmetry.domain
-                )()
-                aMap.asciiLabelByIndices = {
-                    (key[0], key[1]): val
-                    for key, val in gridDesign.gridContents.items()
-                }
                 aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
-                    "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
-                        e
-                    )
+                    f"The `lattice map` for the current assembly arrangement cannot be written. "
+                    f"Defaulting to using the `grid contents` dictionary instead. Exception: {e}"
                 )
                 aMap = None
 
             if aMap is not None:
+                # If there is an ascii map available then use it to fill out
+                # the contents of the lattice map section of the grid design.
+                # This also clears out the grid contents so there is not duplicate
+                # data.
                 gridDesign.gridContents = None
+                mapString = StringIO()
+                aMap.writeAscii(mapString)
                 gridDesign.latticeMap = scalarstring.LiteralScalarString(
-                    gridDesign.latticeMap
+                    mapString.getvalue()
                 )
             else:
                 gridDesign.latticeMap = None
