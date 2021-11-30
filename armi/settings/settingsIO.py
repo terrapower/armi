@@ -275,6 +275,9 @@ class SettingsReader:
         for settingName, settingVal in caseSettings.items():
             self._applySettings(settingName, settingVal)
 
+        if handleInvalids:
+            self._checkInvalidSettings()
+
     def _checkInvalidSettings(self):
         if not self.invalidSettings:
             return
