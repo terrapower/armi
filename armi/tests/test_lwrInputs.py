@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for C5G7 input files."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from logging import WARNING
 import os
 import unittest
 
 import numpy
 
+from armi import Mode
 from armi import runLog
 from armi import init as armi_init
 from armi.bookkeeping import db
@@ -45,7 +47,7 @@ class C5G7ReactorTests(unittest.TestCase):
     def test_loadC5G7(self):
         """
         Load the C5G7 case from input and check basic counts.
-        (Also, check that we are getting material warnings.)
+        (Also, check that we are getting warnings when reading the YAML.)
         """
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
@@ -54,16 +56,18 @@ class C5G7ReactorTests(unittest.TestCase):
             runLog.LOG.setVerbosity(WARNING)
 
             # ingest the settings file
+            Mode.setMode(Mode.BATCH)
             o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
             b = o.r.core.getFirstBlock(Flags.MOX)
 
             # test warnings are being logged for malformed isotopics info in the settings file
-            # streamVal = stream.getvalue()
             streamVal = mock._outputStream
             self.assertGreater(streamVal.count("[warn]"), 32, msg=streamVal)
             self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
             self.assertIn("Uranium Oxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
+            self.assertIn("fakeBad", streamVal, msg=streamVal)
+            self.assertIn("invalid setting", streamVal, msg=streamVal)
 
             # test that there are 100 of each high, medium, and low MOX pins
             fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)

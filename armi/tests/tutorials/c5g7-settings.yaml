@@ -2,6 +2,7 @@ metadata:
   version: uncontrolled
 settings:
   availabilityFactor: 0.9
+  fakeBad: 123456
   power: 1000000000.0
   cycleLength: 411.11
   loadingFile: c5g7-blueprints.yaml
