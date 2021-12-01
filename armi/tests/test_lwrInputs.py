@@ -66,8 +66,7 @@ class C5G7ReactorTests(unittest.TestCase):
             self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
             self.assertIn("Uranium Oxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
-            self.assertIn("fakeBad", streamVal, msg=streamVal)
-            self.assertIn("invalid setting", streamVal, msg=streamVal)
+            self.assertIn("invalid settings: fakeBad", streamVal, msg=streamVal)
 
             # test that there are 100 of each high, medium, and low MOX pins
             fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)
