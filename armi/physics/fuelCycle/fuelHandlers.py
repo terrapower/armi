@@ -1181,9 +1181,9 @@ class FuelHandler:
         if chargeRing is None:
             chargeRing = self.r.core.getNumRings()
 
-        if chargeRing > dischargeRing and not jumpRingTo:
+        if chargeRing > dischargeRing and jumpRingTo is None:
             jumpRingTo = 1
-        elif not jumpRingTo:
+        elif jumpRingTo is None:
             if self.r:
                 jumpRingTo = self.r.core.getNumRings()
             else:
