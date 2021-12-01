@@ -506,9 +506,9 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         # test 2
-        schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=0)
+        schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=5)
         self.assertEqual(
-            schedule, [17, 16, 15, 14, 13, 12, 11, 10, 2, 3, 4, 5, 6, 7, 8, 9, 1]
+            schedule, [17, 16, 15, 14, 13, 12, 11, 10, 6, 7, 8, 9, 5, 4, 3, 2, 1]
         )
         self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
