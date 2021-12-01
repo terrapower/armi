@@ -435,13 +435,13 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         # assume symmetry with the other corner.
         # The cap is basically the distance from the (I, 0) or (0, J) loc to self._ijMax
         iWithData = [i for i, j in self.asciiLabelByIndices if j == 0]
-        maxIWithData = max(iWithData) if len(iWithData) else -1
+        maxIWithData = max(iWithData) if iWithData else -1
         self._asciiLinesOffCorner = (self._ijMax - maxIWithData) * 2 - 1
 
         # in jagged systems we have to also check the neighbor.
         # TODO: maybe even more corner positions could be left out in very large maps.
         nextIWithData = [i for i, j in self.asciiLabelByIndices if j == 1]
-        nextMaxIWithData = max( nextIWithData ) if len(nextIWithData) else -1
+        nextMaxIWithData = max(nextIWithData) if nextIWithData else -1
         if nextMaxIWithData == maxIWithData - 1:
             # the jagged edge is lopped off too.
             self._asciiLinesOffCorner += 1
