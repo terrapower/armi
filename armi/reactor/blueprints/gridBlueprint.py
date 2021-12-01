@@ -265,7 +265,7 @@ class GridBlueprint(yamlize.Object):
         runLog.extra("Creating the spatial grid")
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
-                # This check is regrattably late. It would be nice if we could validate
+                # This check is regrettably late. It would be nice if we could validate
                 # that bounds are provided if R-Theta mesh is being used.
                 raise InputError(
                     "Grid bounds must be provided for `{}` to specify a grid with "
