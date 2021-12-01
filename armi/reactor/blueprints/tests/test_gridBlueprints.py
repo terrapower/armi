@@ -323,7 +323,6 @@ class TestRoundTrip(unittest.TestCase):
     def test_tiny_map(self):
         grid = Grids.load(TINY_GRID)
         stream = io.StringIO()
-        # import pdb; pdb.set_trace()
         saveToStream(stream, grid, full=True, tryMap=True)
         stream.seek(0)
         text = stream.read()
