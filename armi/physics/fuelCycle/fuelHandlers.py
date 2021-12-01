@@ -29,11 +29,11 @@ import math
 import os
 import re
 import warnings
+import logging
 
 import numpy
 
 from armi import interfaces
-from armi import runLog
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
@@ -41,6 +41,7 @@ from armi.utils import directoryChangers, pathTools
 from armi import utils
 from armi.utils import plotting
 
+runLog = logging.getLogger(__name__)
 
 class FuelHandlerInterface(interfaces.Interface):
     """
@@ -1174,18 +1175,24 @@ class FuelHandler:
         findAssembly
 
         """
+        maxRingInCore = self.r.core.getNumRings()
+        if dischargeRing > maxRingInCore:
+            runLog.warning(f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}).")
+        if chargeRing > maxRingInCore:
+            runLog.warning(f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}).")
+
         # process arguments
         if dischargeRing is None:
             # default to convergent
             dischargeRing = 1
         if chargeRing is None:
-            chargeRing = self.r.core.getNumRings()
+            chargeRing = maxRingInCore
 
         if chargeRing > dischargeRing and jumpRingTo is None:
             jumpRingTo = 1
         elif jumpRingTo is None:
             if self.r:
-                jumpRingTo = self.r.core.getNumRings()
+                jumpRingTo = maxRingInCore
             else:
                 jumpRingTo = 18
 

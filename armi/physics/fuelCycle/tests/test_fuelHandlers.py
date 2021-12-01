@@ -512,10 +512,6 @@ class TestFuelHandler(ArmiTestHelper):
         )
         self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-        # test 3
-        schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=0)
-        self.assertEqual(schedule, [17, 16, 15, 14, 13, 12, 11, 10, 2, 3, 4, 5, 6, 7, 8, 9, 1])
-
     def test_buildConvergentRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
         schedule, widths = fh.buildConvergentRingSchedule(17, 1)
