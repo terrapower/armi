@@ -305,6 +305,7 @@ TINY_GRID = """core:
        : IF
 """
 
+
 class TestRoundTrip(unittest.TestCase):
     def setUp(self):
         self.grids = Grids.load(SMALL_HEX)
@@ -322,7 +323,7 @@ class TestRoundTrip(unittest.TestCase):
     def test_tiny_map(self):
         grid = Grids.load(TINY_GRID)
         stream = io.StringIO()
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         saveToStream(stream, grid, full=True, tryMap=True)
         stream.seek(0)
         text = stream.read()
@@ -331,7 +332,6 @@ class TestRoundTrip(unittest.TestCase):
         gridBp = Grids.load(stream)
         self.assertIn("full", gridBp["core"].symmetry)
         self.assertIn("IF", gridBp["core"].latticeMap)
-
 
 
 class TestGridBlueprintsSection(unittest.TestCase):
