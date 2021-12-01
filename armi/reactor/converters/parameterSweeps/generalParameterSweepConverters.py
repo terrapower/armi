@@ -40,7 +40,7 @@ class SettingsModifier(ParameterSweepConverter):
 
     def convert(self, r=None):
         ParameterSweepConverter.convert(self, r)
-        sType = self._cs.get(self.modifier).underlyingType
+        sType = self._cs.getSetting(self.modifier).underlyingType
         if sType is not type(None):
             # NOTE: this won't work with "new-style" settings related to the plugin system.
             # Using the type of the setting._default may be more appropriate if there are issues.
