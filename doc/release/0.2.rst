@@ -3,6 +3,15 @@ ARMI v0.2 Release Notes
 =======================
 
 
+ARMI v0.2.1
+===========
+Release Date: TBD
+
+
+Bug fixes
+---------
+* Fixed issue where grid GUI was not saving lattice maps (`#490 <https://github.com/terrapower/armi/issues/490>`_)
+
 
 ARMI v0.2.0
 ===========
