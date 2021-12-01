@@ -2364,7 +2364,6 @@ NONE_MAP.update(
         intType: numpy.iinfo(intType).min + 2
         for intType in (
             int,
-            numpy.int,
             numpy.int8,
             numpy.int16,
             numpy.int32,
@@ -2385,7 +2384,7 @@ NONE_MAP.update(
     }
 )
 NONE_MAP.update(
-    {floatType: floatType("nan") for floatType in (numpy.float, numpy.float64)}
+    {floatType: floatType("nan") for floatType in (float, numpy.float64)}
 )
 
 
