@@ -215,7 +215,7 @@ class AsciiMap:
                 # doing pure rows from data is made programmatically.
                 # newLines.append(line)
                 raise ValueError(
-                    "Cannot write asciimaps with blank rows from pure data yet."
+                    f"Cannot write asciimaps with blank rows from pure data yet."
                 )
         if not newLines:
             raise ValueError("No data found")
@@ -434,12 +434,14 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         # Check the j=0 ray to see how many peripheral locations are blank.
         # assume symmetry with the other corner.
         # The cap is basically the distance from the (I, 0) or (0, J) loc to self._ijMax
-        maxIWithData = max(i for i, j in self.asciiLabelByIndices if j == 0)
+        iWithData = [i for i, j in self.asciiLabelByIndices if j == 0]
+        maxIWithData = max(iWithData) if len(iWithData) else -1
         self._asciiLinesOffCorner = (self._ijMax - maxIWithData) * 2 - 1
 
         # in jagged systems we have to also check the neighbor.
         # TODO: maybe even more corner positions could be left out in very large maps.
-        nextMaxIWithData = max(i for i, j in self.asciiLabelByIndices if j == 1)
+        nextIWithData = [i for i, j in self.asciiLabelByIndices if j == 1]
+        nextMaxIWithData = max( nextIWithData ) if len(nextIWithData) else -1
         if nextMaxIWithData == maxIWithData - 1:
             # the jagged edge is lopped off too.
             self._asciiLinesOffCorner += 1
