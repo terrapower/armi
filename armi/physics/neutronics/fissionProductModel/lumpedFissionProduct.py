@@ -493,7 +493,7 @@ class FissionProductDefinitionFile:
     The path to this file name is specified by the
     """
 
-    fpPat = re.compile(r"13\s+([A-Z]+\d+)\s+(......)\s+(" + SCIENTIFIC_PATTERN + ")")
+    fpPat = re.compile(r"13\s+([A-Z]+\d+)[_]{0,1}[0-9]{0,1}\s+(......)\s+(" + SCIENTIFIC_PATTERN + ")")
 
     def __init__(self, stream):
         self.stream = stream
