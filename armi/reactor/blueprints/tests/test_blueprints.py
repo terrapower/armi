@@ -119,6 +119,17 @@ class TestBlueprintsSchema(unittest.TestCase):
             ip: 0.0
             mult: 1.0
             op: 10.0
+
+components:
+    freefuel:
+        shape: Sphere
+        material: UZr
+        Tinput: 25.0
+        Thot: 600.0
+        id: 0.0
+        mult: 1.0
+        od: 11.0
+
 assemblies:
     fuel a: &assembly_a
         specifier: IC
@@ -468,6 +479,29 @@ assemblies:
         for a in (fa, fb):
             self.assertEqual(1, len(a))
             self.assertEqual(1, len(a[0]))
+
+    def test_topLevelComponent(self):
+        """
+        Make sure components defined at the top level are loaded.
+
+        Components can be loaded either within the block blueprint
+        or on their own outside of blocks. This checks the latter
+        form.
+
+        We specified a 3D component in the test input (sphere)
+        so that it has a height and therefore a volume
+        without requiring a parent.
+        """
+        cs = settings.Settings()
+        design = blueprints.Blueprints.load(self.yamlString)
+        # The following is needed to prep customisotopics
+        # which is required during construction of a component
+        design._resolveNuclides(cs)
+        componentDesign = design.componentDesigns["freefuel"]
+        topComponent = componentDesign.construct(design, matMods=dict())
+        self.assertEqual(topComponent.getDimension("od", cold=True), 11.0)
+        self.assertGreater(topComponent.getVolume(), 0.0)
+        self.assertGreater(topComponent.getMass("U235"), 0.0)
 
 
 if __name__ == "__main__":

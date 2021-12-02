@@ -211,8 +211,8 @@ class ComponentBlueprint(yamlize.Object):
             # the input mods have the final word
             blueprint.customIsotopics.apply(mat, self.isotopics)
 
-        # add mass fraction custom isotopics info, since some material modifications need to see them
-        # e.g. in the base Material.applyInputParams
+        # add mass fraction custom isotopics info, since some material modifications need
+        # to see them e.g. in the base Material.applyInputParams
         matMods.update(
             {
                 "customIsotopics": {
@@ -291,6 +291,20 @@ def _insertDepletableNuclideKeys(c, blueprint):
     nuclideBases.initReachableActiveNuclidesThroughBurnChain(
         c.p.numberDensities, blueprint.activeNuclides
     )
+
+
+class ComponentKeyedList(yamlize.KeyedList):
+    """
+    An OrderedDict of CompnentBlueprints keyed on the name.
+
+    This is used within the ``components:`` main entry of the blueprints.
+
+    This is *not* (yet) used when components are defined within a block blueprint.
+    That is handled in the blockBlueprint construct method.
+    """
+
+    item_type = ComponentBlueprint
+    key_attr = ComponentBlueprint.name
 
 
 # This import-time magic requires all possible components
