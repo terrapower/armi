@@ -2383,9 +2383,7 @@ NONE_MAP.update(
         )
     }
 )
-NONE_MAP.update(
-    {floatType: floatType("nan") for floatType in (float, numpy.float64)}
-)
+NONE_MAP.update({floatType: floatType("nan") for floatType in (float, numpy.float64)})
 
 
 def packSpecialData(
