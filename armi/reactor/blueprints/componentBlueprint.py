@@ -295,7 +295,7 @@ def _insertDepletableNuclideKeys(c, blueprint):
 
 class ComponentKeyedList(yamlize.KeyedList):
     """
-    An OrderedDict of CompnentBlueprints keyed on the name.
+    An OrderedDict of ComponentBlueprints keyed on the name.
 
     This is used within the ``components:`` main entry of the blueprints.
 
