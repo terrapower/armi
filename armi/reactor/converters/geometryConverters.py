@@ -90,9 +90,7 @@ class GeometryChanger:
 
         Parameters
         ----------
-        cs : CaseSettings object
-            CaseSettings associated with a specific reactor
-        sourceReactor : Reactor object
+        r : Reactor object
             The reactor to convert.
 
         Returns
