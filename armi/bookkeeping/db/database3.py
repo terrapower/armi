@@ -632,6 +632,12 @@ class Database3(database.Database):
                 stderr=subprocess.DEVNULL,
             ).returncode
             == 0
+            and subprocess.run(
+                ["git", "describe"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
         )
         if repo_exists:
             try:
