@@ -237,6 +237,13 @@ class TestDatabase3(unittest.TestCase):
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
+    def test_auxData(self):
+        path = self.db.getAuxiliaryDataPath((2, 0), "test_stuff")
+        self.assertEqual(path, "c02n00/test_stuff")
+
+        with self.assertRaises(KeyError):
+            self.db.genAuxiliaryData((-1, -1))
+
     # TODO: This definitely needs some work
     def test_replaceNones(self):
         """Super basic test that we handle Nones correctly in database read/writes"""
