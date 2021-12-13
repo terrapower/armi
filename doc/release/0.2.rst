@@ -7,10 +7,14 @@ ARMI v0.2.1
 ===========
 Release Date: TBD
 
+What's new in ARMI v0.2.1
+-------------------------
+#. Added new reference data for lumped fission products (`#507 <https://github.com/terrapower/armi/issues/507>`_)
 
 Bug fixes
 ---------
-* Fixed issue where grid GUI was not saving lattice maps (`#490 <https://github.com/terrapower/armi/issues/490>`_)
+#. Fixed issue where grid GUI was not saving lattice maps (`#490 <https://github.com/terrapower/armi/issues/490>`_)
+#. Fixed issue where SettingsModifier was using old Settings API (`#500 <https://github.com/terrapower/armi/issues/500>`_)
 
 
 ARMI v0.2.0
@@ -22,26 +26,26 @@ slow down. This release is a stake in the ground on a stable API.
 
 What's new in ARMI v0.2.0
 -------------------------
-* Made user settings immutable to avoid confusing runtime behavior
-* Removed the concept of 'facemaps' (now replaced with more general grids)
-* Added ability to use module-level logging for more precise debugging
-* Added ability to write full tips-up hex asciimaps
-* Fixed ability to serialize grid blueprints
-* Improved code coverage and linting
-* Added a latin hypercube suite builder for parameter sweeps
-* Added several clarifications, fixes, and updates to documentation
-* Updated units labels on several parameters
-* Added protections against deleting directories
-* Updated spontaneous fission data
-* Removed confusing Charge Fuel Pool from core
-* Sped up YAML reading
-* Removed localization module
-* Added ANL116 energy group structure
-* Added setting to control auto-creation of within-block grids
-* Added new plot/summarizing capabilities
-* Added ability for GUI to save map as image
-* Added C5G7 compositions and dimensions to LWR tutorial
-* Added 1d/2d mesh reading/writing to GEODST
+#. Made user settings immutable to avoid confusing runtime behavior
+#. Removed the concept of 'facemaps' (now replaced with more general grids)
+#. Added ability to use module-level logging for more precise debugging
+#. Added ability to write full tips-up hex asciimaps
+#. Fixed ability to serialize grid blueprints
+#. Improved code coverage and linting
+#. Added a latin hypercube suite builder for parameter sweeps
+#. Added several clarifications, fixes, and updates to documentation
+#. Updated units labels on several parameters
+#. Added protections against deleting directories
+#. Updated spontaneous fission data
+#. Removed confusing Charge Fuel Pool from core
+#. Sped up YAML reading
+#. Removed localization module
+#. Added ANL116 energy group structure
+#. Added setting to control auto-creation of within-block grids
+#. Added new plot/summarizing capabilities
+#. Added ability for GUI to save map as image
+#. Added C5G7 compositions and dimensions to LWR tutorial
+#. Added 1d/2d mesh reading/writing to GEODST
 
 Backwards incompatible changes
 ------------------------------
@@ -50,9 +54,10 @@ There may be some new errors based on updated input checking.
 
 Bug fixes
 ---------
-* Fixed centering of full-symmetry Cartesian lattice maps
-* Fixed issues with grids that had multii-index locations
-* Removed test files from coverage check
-* Fixed order of operations issue in rotatePins
-* Fixed incorrect multiplicity for non-grid block components
-* Many additional bugfixes and cleanups (see PR list)
+#. Fixed centering of full-symmetry Cartesian lattice maps
+#. Fixed issues with grids that had multii-index locations
+#. Removed test files from coverage check
+#. Fixed order of operations issue in rotatePins
+#. Fixed incorrect multiplicity for non-grid block components
+#. Many additional bugfixes and cleanups (see PR list)
+
