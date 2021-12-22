@@ -20,12 +20,14 @@ from armi import runLog, settings
 from armi.bookkeeping import report
 from armi.bookkeeping.report import data, reportInterface
 from armi.bookkeeping.report.reportingUtils import (
-    writeAssemblyMassSummary,
     makeBlockDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
-    summarizePowerPeaking,
     summarizePower,
+    summarizePowerPeaking,
+    summarizeZones,
+    writeAssemblyMassSummary,
+    writeCycleSummary,
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import mockRunLogs
@@ -107,6 +109,17 @@ class TestReport(unittest.TestCase):
             self.assertIn("Power in feed fuel", mock._outputStream)
             mock._outputStream = ""
 
+            writeCycleSummary(r.core)
+            self.assertIn("Core Average", mock._outputStream)
+            self.assertIn("Outlet Temp", mock._outputStream)
+            self.assertIn("End of Cycle", mock._outputStream)
+            mock._outputStream = ""
+
+            # this report won't do much for the test reactor - improve test reactor
+            summarizeZones(r.core, o.cs)
+            self.assertTrue(len(mock._outputStream) == 0)
+            mock._outputStream = ""
+
             # this report won't do much for the test reactor - improve test reactor
             makeBlockDesignReport(r)
             self.assertTrue(len(mock._outputStream) == 0)
@@ -118,5 +131,4 @@ class TestReport(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

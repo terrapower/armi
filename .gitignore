@@ -23,6 +23,7 @@ armi/tests/tutorials/case-suite
 doc/gallery
 doc/gallery-src/framework/*.yaml
 htmlcov/
+monkeytype.*
 
 # No workspace crumbs.
 *~
