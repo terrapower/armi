@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Tests some capabilities of the fuel handling machine.
 
@@ -499,8 +498,17 @@ class TestFuelHandler(ArmiTestHelper):
     def test_buildRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
         schedule, widths = fh.buildRingSchedule(17, 1, jumpRingFrom=14)
+
+        # test 1
         self.assertEqual(
             schedule, [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17]
+        )
+        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # test 2
+        schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=5)
+        self.assertEqual(
+            schedule, [17, 16, 15, 14, 13, 12, 11, 10, 6, 7, 8, 9, 5, 4, 3, 2, 1]
         )
         self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 

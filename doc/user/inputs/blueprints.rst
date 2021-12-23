@@ -96,6 +96,11 @@ input. The structure will be something like::
             component name 2:
                 ...
 
+.. note:: You can also define components at the top level of the blueprints file under
+    the ``components:`` top level section, but bringing anything defined there into
+    the reactor model must currently be done programatically. We are currently
+    developing additional input capabilities to use these more flexibly.
+
 Defining a Component
 --------------------
 The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane

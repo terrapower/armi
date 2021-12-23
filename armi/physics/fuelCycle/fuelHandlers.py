@@ -706,6 +706,8 @@ class FuelHandler:
             a list of string-representations of locations in the core for limiting the search to
             several places
 
+            Any locations also included in `excludedLocations` will be excluded.
+
         excludedLocations : list, optional
             a list of string-representations of locations in the core that will be excluded from
             the search

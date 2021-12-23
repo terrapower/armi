@@ -632,6 +632,12 @@ class Database3(database.Database):
                 stderr=subprocess.DEVNULL,
             ).returncode
             == 0
+            and subprocess.run(
+                ["git", "describe"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
         )
         if repo_exists:
             try:
@@ -2364,7 +2370,6 @@ NONE_MAP.update(
         intType: numpy.iinfo(intType).min + 2
         for intType in (
             int,
-            numpy.int,
             numpy.int8,
             numpy.int16,
             numpy.int32,
@@ -2384,9 +2389,7 @@ NONE_MAP.update(
         )
     }
 )
-NONE_MAP.update(
-    {floatType: floatType("nan") for floatType in (numpy.float, numpy.float64)}
-)
+NONE_MAP.update({floatType: floatType("nan") for floatType in (float, numpy.float64)})
 
 
 def packSpecialData(

@@ -15,7 +15,7 @@
 """Settings related to the fission product model."""
 
 from armi.settings import setting
-
+from armi.physics.neutronics import fissionProductModel
 
 CONF_FP_MODEL = "fpModel"
 CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT = "makeAllBlockLFPsIndependent"
@@ -45,7 +45,7 @@ def defineSettings():
         ),
         setting.Setting(
             CONF_LFP_COMPOSITION_FILE_PATH,
-            default="",
+            default=fissionProductModel.REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
             label="LFP Definition File",
             description=(
                 "Path to the file that contains lumped fission product composition "

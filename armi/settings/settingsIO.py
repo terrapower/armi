@@ -205,7 +205,7 @@ class SettingsReader:
         self.format = fmt
         if self.format == self.SettingsInputFormat.YAML:
             try:
-                self._readYaml(stream, handleInvalids=handleInvalids)
+                self._readYaml(stream)
             except ruamel.yaml.scanner.ScannerError:
                 # mediocre way to detect xml vs. yaml at the stream level
                 runLog.info(
@@ -213,10 +213,14 @@ class SettingsReader:
                 )
                 self.format = self.SettingsInputFormat.XML
                 stream.seek(0)
-        if self.format == self.SettingsInputFormat.XML:
-            self._readXml(stream, handleInvalids=handleInvalids)
 
-    def _readXml(self, stream, handleInvalids=True):
+        if self.format == self.SettingsInputFormat.XML:
+            self._readXml(stream)
+
+        if handleInvalids:
+            self._checkInvalidSettings()
+
+    def _readXml(self, stream):
         """
         Read user settings from XML stream.
         """
@@ -246,10 +250,7 @@ class SettingsReader:
         for settingElement in list(settingRoot):
             self._interpretXmlSetting(settingElement)
 
-        if handleInvalids:
-            self._checkInvalidSettings()
-
-    def _readYaml(self, stream, handleInvalids=True):
+    def _readYaml(self, stream):
         """
         Read settings from a YAML stream.
 
