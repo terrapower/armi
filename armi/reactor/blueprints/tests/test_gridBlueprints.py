@@ -294,6 +294,17 @@ pins:
             FP
 """
 
+TINY_GRID = """core:
+    geom: hex
+    lattice map:
+    grid bounds:
+    symmetry: full
+    grid contents:
+       ? - 0
+         - 0
+       : IF
+"""
+
 
 class TestRoundTrip(unittest.TestCase):
     def setUp(self):
@@ -308,6 +319,18 @@ class TestRoundTrip(unittest.TestCase):
         stream.seek(0)
         gridBp = Grids.load(stream)
         self.assertIn("third", gridBp["core"].symmetry)
+
+    def test_tiny_map(self):
+        grid = Grids.load(TINY_GRID)
+        stream = io.StringIO()
+        saveToStream(stream, grid, full=True, tryMap=True)
+        stream.seek(0)
+        text = stream.read()
+        self.assertIn("IF", text)
+        stream.seek(0)
+        gridBp = Grids.load(stream)
+        self.assertIn("full", gridBp["core"].symmetry)
+        self.assertIn("IF", gridBp["core"].latticeMap)
 
 
 class TestGridBlueprintsSection(unittest.TestCase):

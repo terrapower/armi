@@ -21,11 +21,11 @@ from armi.reactor.tests import test_reactors
 from armi.reactor import components
 from armi.reactor import blocks
 from armi import settings
-from armi.utils import directoryChangers
 from armi.bookkeeping.db import Database3
 from armi.bookkeeping.visualization import vtk
 from armi.bookkeeping.visualization import xdmf
 from armi.bookkeeping.visualization import utils
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestVtkMesh(unittest.TestCase):
@@ -93,13 +93,14 @@ class TestVisDump(unittest.TestCase):
 
     def test_dumpReactorVtk(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
-        dumper = vtk.VtkDumper("testVtk", inputName=None)
-        with dumper:
-            dumper.dumpState(self.r)
+        with TemporaryDirectoryChanger(dumpOnException=False):
+            dumper = vtk.VtkDumper("testVtk", inputName=None)
+            with dumper:
+                dumper.dumpState(self.r)
 
     def test_dumpReactorXdmf(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
-        with directoryChangers.TemporaryDirectoryChanger(dumpOnException=False):
+        with TemporaryDirectoryChanger(dumpOnException=False):
             db = Database3("testDatabase.h5", "w")
             with db:
                 db.writeToDB(self.r)

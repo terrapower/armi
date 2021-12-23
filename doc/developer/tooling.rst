@@ -26,6 +26,17 @@ that tells ``pip`` to install ARMI itself and defer to ``setup.py`` for a versio
 list of dependencies. We also have multiple requirements files for different needs, like
 testing.
 
+Third-Party Licensing
+^^^^^^^^^^^^^^^^^^^^^
+Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+to include anything with a license that superceeds our Apache license. For instance,
+any third-party Python library included in ARMI with a GPL license will make the whole
+project fall under the GPL license. But a lot of potential users of ARMI will want to
+keep some of their work private, so we can't allow any GPL tools.
+
+For that reason, it is generally considered best-practice in the ARMI ecosystem to
+only use third-party Python libraries that have MIT or BSD licenses.
+
 Releasing a New Version of ARMI
 -------------------------------
 In ARMI, we use the common ``major.minor.bump`` version scheme where a version string
