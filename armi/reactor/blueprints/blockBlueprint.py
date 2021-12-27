@@ -95,7 +95,10 @@ class BlockBlueprint(yamlize.KeyedList):
             String representing the xsType of this block.
 
         materialInput : dict
-            dict containing material modification names and values
+            Double-layered dict.
+            Top layer groups the blockwise material modifications under the `''` key
+            and the componentwise material modifications under the component's name.
+            The inner dict under each key contains material modification names and values.
         """
         runLog.debug("Constructing block {}".format(self.name))
         components = collections.OrderedDict()
@@ -106,8 +109,14 @@ class BlockBlueprint(yamlize.KeyedList):
             spatialGrid = gridDesign.construct()
         else:
             spatialGrid = None
+
+        self._checkComponentwiseMaterialInput(materialInput)
+
         for componentDesign in self:
-            c = componentDesign.construct(blueprint, materialInput)
+            filteredMaterialInput = self._filterMaterialInput(
+                materialInput, componentDesign
+            )
+            c = componentDesign.construct(blueprint, filteredMaterialInput)
             components[c.name] = c
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
@@ -169,6 +178,46 @@ class BlockBlueprint(yamlize.KeyedList):
             except (ValueError, NotImplementedError) as e:
                 runLog.warning(str(e), single=True)
         return b
+
+    def _checkComponentwiseMaterialInput(self, materialInput):
+        for component in materialInput.keys():
+            if component != '':
+                if component not in [componentDesign.name for componentDesign in self]:
+                    if materialInput[component]:  # ensure it is not empty
+                        raise ValueError(
+                            f"The component '{component}' used to specify a componentwise"
+                            f" material modification is not in block '{self.name}'."
+                        )
+
+    @staticmethod
+    def _filterMaterialInput(materialInput, componentDesign):
+        """
+        Get the blockwise material modifications and those specifically for this
+        component.
+
+        If a material modification is specified both blockwise and componentwise
+        for a given component, the componentwise value will be used.
+        """
+        filteredMaterialInput = {}
+
+        # first add the blockwise modifications without question
+        if '' in materialInput.keys():
+            for modName, modVal in materialInput[''].items():
+                filteredMaterialInput[modName] = modVal
+
+        # then get the componentwise modifications as appropriate
+        for component, mod in materialInput.items():
+            if component == '':
+                pass  # we already added these
+            else:
+                # these are componentwise mods, first test if the component matches
+                # before adding. if component matches, add the modifications,
+                # overwriting any blockwise modifications of the same type
+                if component == componentDesign.name:
+                    for modName, modVal in mod.items():
+                        filteredMaterialInput[modName] = modVal
+
+        return filteredMaterialInput
 
     def _getGridDesign(self, blueprint):
         """

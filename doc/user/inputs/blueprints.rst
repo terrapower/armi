@@ -404,9 +404,98 @@ material modifications
   you can define any fuel material as being made of LWR-derived TRU plus depleted uranium
   at various weight fractions. Note that this input style only adjusts the heavy metal.
 
-  .. warning:: The input processing system will try to apply the extra input parameters to all components in
-        the block, so there should typically only be one component per block that understands each input
-        parameter.
+  To enable the application of different values for the same material modification type
+  on different components within a block, the user may specify componentwise material
+  modifications. This is useful, for instance, when two pins within an assembly
+  made of the same base material have different fuel enrichments. This is done
+  using the `componentwise` attribute to the material modifications as in::
+
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel]
+                height: [1.0]
+                axial mesh points: [1]
+                xs types: [A]
+                material modifications:
+                    componentwise:
+                        fuel1:
+                            U235_wt_frac: [0.20]
+                        fuel2:
+                            Zr_wt_frac: [0.02]
+                    U235_wt_frac: [0.30]
+
+  This example would apply an enrichment of 20% to the `fuel1` component and an
+  enrichment of 30% to all other components in the block that accept the `U235_wt_frac`
+  material modification. The user may alternatively use the `blockwise` attribute
+  to more clearly indicate that the material modification type is being applied to
+  all applicable components in the block::
+
+                material modifications:
+                    componentwise:
+                        fuel1:
+                            U235_wt_frac: [0.20]
+                        fuel2:
+                            Zr_wt_frac: [0.02]
+                    blockwise:
+                        U235_wt_frac: [0.30]
+
+  All componentwise material modifications override any blockwise material modifications
+  of the same type. In addition, any componentwise entries omitted for a given axial block
+  will default to the blockwise (or default, if no blockwise value is provided and a
+  default exists) value::
+
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel, *block_fuel]
+                height: [0.5, 0.5]
+                axial mesh points: [1, 1]
+                xs types: [A, A]
+                material modifications:
+                    componentwise:
+                        fuel1:
+                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the blockwise value
+                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the blockwise value
+                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will default because there is no blockwise value
+                    blockwise:
+                        U235_wt_frac: [0.30, 0.30]
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some
 other structure.
