@@ -96,7 +96,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
         materialInput : dict
             Double-layered dict.
-            Top layer groups the blockwise material modifications under the `''` key
+            Top layer groups the blockwise material modifications under the `""` key
             and the componentwise material modifications under the component's name.
             The inner dict under each key contains material modification names and values.
         """
@@ -181,7 +181,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
     def _checkComponentwiseMaterialInput(self, materialInput):
         for component in materialInput.keys():
-            if component != '':
+            if component != "":
                 if component not in [componentDesign.name for componentDesign in self]:
                     if materialInput[component]:  # ensure it is not empty
                         raise ValueError(
@@ -201,13 +201,13 @@ class BlockBlueprint(yamlize.KeyedList):
         filteredMaterialInput = {}
 
         # first add the blockwise modifications without question
-        if '' in materialInput.keys():
-            for modName, modVal in materialInput[''].items():
+        if "" in materialInput.keys():
+            for modName, modVal in materialInput[""].items():
                 filteredMaterialInput[modName] = modVal
 
         # then get the componentwise modifications as appropriate
         for component, mod in materialInput.items():
-            if component == '':
+            if component == "":
                 pass  # we already added these
             else:
                 # these are componentwise mods, first test if the component matches

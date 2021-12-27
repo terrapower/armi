@@ -198,7 +198,7 @@ class AssemblyBlueprint(yamlize.Object):
         assembly into a single dict `assemblyMaterialInput`. The combined dict
         has the structure:
         ```
-        {'': {blockwise_mod_name1: blockwise_mod_list1}, ..., {blockwise_mod_nameN: blockwise_mod_listN},
+        {"": {blockwise_mod_name1: blockwise_mod_list1}, ..., {blockwise_mod_nameN: blockwise_mod_listN},
          comp_name1: {componentwise_mod_name1: componentwise_mod_list1}, ..., {componentwise_mod_nameN: componentwise_mod_listN},
          .
          .
@@ -217,18 +217,18 @@ class AssemblyBlueprint(yamlize.Object):
         assemblyMaterialInput = {}
 
         if self.materialModifications != None:
-            assemblyMaterialInput[''] = {}
+            assemblyMaterialInput[""] = {}
             for modName, modList in self.materialModifications.items():
-                assemblyMaterialInput[''][modName] = modList
+                assemblyMaterialInput[""][modName] = modList
 
             if self.materialModifications.blockwise:
                 for modName, modList in self.materialModifications.blockwise.items():
-                    if modName in assemblyMaterialInput[''].keys():
+                    if modName in assemblyMaterialInput[""].keys():
                         raise KeyError(
                             f"{modName} material modification is being specified blockwise"
                             f" twice in the {self.name} assembly."
                         )
-                    assemblyMaterialInput[''][modName] = modList
+                    assemblyMaterialInput[""][modName] = modList
 
             if self.materialModifications.componentwise:
                 for component, mods in self.materialModifications.componentwise.items():
@@ -250,7 +250,7 @@ class AssemblyBlueprint(yamlize.Object):
             materialInput[key] = {
                 modName: modList[axialIndex]
                 for modName, modList in mod.items()
-                if modList[axialIndex] != ''
+                if modList[axialIndex] != ""
             }
 
         b = bDesign.construct(
