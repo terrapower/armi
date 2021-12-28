@@ -67,11 +67,9 @@ class MaterialModifications(yamlize.Map):
     """
     A yamlize map for reading and holding material modifications.
 
-    For backwards compatibility, a user may specify material modifications directly
+    A user may specify material modifications directly
     as keys/values on this class, in which case these material modifications will
-    be blanket applied to the entire block. In the future, this should be done
-    with keys/values under the `blockwise` attribute to make it clear that the
-    material modifications will be applied to the whole block.
+    be blanket applied to the entire block.
 
     If the user wishes to specify material modifications specific to a component
     within the block, they should use the `componentwise` attribute, specifying
@@ -80,8 +78,9 @@ class MaterialModifications(yamlize.Map):
 
     key_type = yamlize.Typed(str)
     value_type = yamlize.Sequence
-    componentwise = yamlize.Attribute(type=ComponentwiseModifications, default=None)
-    blockwise = yamlize.Attribute(type=Modifications, default=None)
+    componentwise = yamlize.Attribute(
+        type=ComponentwiseModifications, default=ComponentwiseModifications()
+    )
 
 
 class AssemblyBlueprint(yamlize.Object):
@@ -105,7 +104,9 @@ class AssemblyBlueprint(yamlize.Object):
         key="azimuthal mesh points", type=int, default=None
     )
     materialModifications = yamlize.Attribute(
-        key="material modifications", type=MaterialModifications, default=None
+        key="material modifications",
+        type=MaterialModifications,
+        default=MaterialModifications(),
     )
     xsTypes = yamlize.Attribute(key="xs types", type=yamlize.StrList)
     # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
@@ -149,12 +150,9 @@ class AssemblyBlueprint(yamlize.Object):
 
     def _constructAssembly(self, cs, blueprint):
         """Construct the current assembly."""
-        assemblyMaterialInput = self._compileAssemblyMaterialInput()
         blocks = []
         for axialIndex, bDesign in enumerate(self.blocks):
-            b = self._createBlock(
-                cs, blueprint, bDesign, axialIndex, assemblyMaterialInput
-            )
+            b = self._createBlock(cs, blueprint, bDesign, axialIndex)
             blocks.append(b)
 
         assemblyClass = self.getAssemClass(blocks)
@@ -192,53 +190,7 @@ class AssemblyBlueprint(yamlize.Object):
 
         return a
 
-    def _compileAssemblyMaterialInput(self):
-        """
-        Combine the blockwise and componentwise material inputs for the entire
-        assembly into a single dict `assemblyMaterialInput`. The combined dict
-        has the structure:
-        ```
-        {"": {blockwise_mod_name1: blockwise_mod_list1}, ..., {blockwise_mod_nameN: blockwise_mod_listN},
-         comp_name1: {componentwise_mod_name1: componentwise_mod_list1}, ..., {componentwise_mod_nameN: componentwise_mod_listN},
-         .
-         .
-         .
-         comp_nameN: {componentwise_mod_name1: componentwise_mod_list1}, ..., {componentwise_mod_nameN: componentwise_mod_listN}}
-         ```
-
-        For each `mod_list`, there are expected to be as many entries as there are
-        blocks in the assembly. This may be relaxed in the future by allowing a
-        single value to apply to all blocks without needing to write out a whole list.
-
-        To maintain backwards compatibility, we first assumed that there might be
-        blockwise matMods on the base object, then we add in any blockwise matMods
-        that are explicitly denoted using the `blockwise` attribute.
-        """
-        assemblyMaterialInput = {}
-
-        if self.materialModifications != None:
-            assemblyMaterialInput[""] = {}
-            for modName, modList in self.materialModifications.items():
-                assemblyMaterialInput[""][modName] = modList
-
-            if self.materialModifications.blockwise:
-                for modName, modList in self.materialModifications.blockwise.items():
-                    if modName in assemblyMaterialInput[""]:
-                        raise KeyError(
-                            f"{modName} material modification is being specified blockwise"
-                            f" twice in the {self.name} assembly."
-                        )
-                    assemblyMaterialInput[""][modName] = modList
-
-            if self.materialModifications.componentwise:
-                for component, mods in self.materialModifications.componentwise.items():
-                    assemblyMaterialInput[component] = {}
-                    for modName, modList in mods.items():
-                        assemblyMaterialInput[component][modName] = modList
-
-        return assemblyMaterialInput
-
-    def _createBlock(self, cs, blueprint, bDesign, axialIndex, assemblyMaterialInput):
+    def _createBlock(self, cs, blueprint, bDesign, axialIndex):
         """Create a block based on the block design and the axial index."""
         meshPoints = self.axialMeshPoints[axialIndex]
         height = self.height[axialIndex]
@@ -246,7 +198,10 @@ class AssemblyBlueprint(yamlize.Object):
 
         materialInput = {}
 
-        for key, mod in assemblyMaterialInput.items():
+        for key, mod in {
+            'blockwise': {**self.materialModifications},
+            **self.materialModifications.componentwise,
+        }.items():
             materialInput[key] = {
                 modName: modList[axialIndex]
                 for modName, modList in mod.items()
@@ -263,14 +218,17 @@ class AssemblyBlueprint(yamlize.Object):
 
     def _checkParamConsistency(self, a):
         """Check that the number of block params specified is equal to the number of blocks specified."""
-        materialInputs = self._compileAssemblyMaterialInput()
         paramsToCheck = {
             "mesh points": self.axialMeshPoints,
             "heights": self.height,
             "xs types": self.xsTypes,
         }
-        for component in materialInputs.values():
-            for modName, modList in component.items():
+
+        for mod in [self.materialModifications] + [
+            self.materialModifications.componentwise[key]
+            for key in self.materialModifications.componentwise.keys()
+        ]:
+            for modName, modList in mod.items():
                 paramName = "material modifications for {}".format(modName)
                 paramsToCheck[paramName] = modList
 

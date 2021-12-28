@@ -89,24 +89,6 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.20, u235 / u)
 
-    def test_u235_wt_frac_blockwise_modification(self):
-        a = self.loadUZrAssembly(
-            """
-        material modifications:
-            blockwise:
-                U235_wt_frac: [0.20]
-        """
-        )
-        fuelComponent = a[0][0]
-        u235 = fuelComponent.getMass("U235")
-        u = fuelComponent.getMass("U")
-        assert_allclose(0.20, u235 / u)
-
-        fuelComponent = a[0][1]
-        u235 = fuelComponent.getMass("U235")
-        u = fuelComponent.getMass("U")
-        assert_allclose(0.20, u235 / u)
-
     def test_u235_wt_frac_componentwise_modification1(self):
         a = self.loadUZrAssembly(
             """
@@ -148,17 +130,6 @@ assemblies:
         u235 = fuelComponent.getMass("U235")
         u = fuelComponent.getMass("U")
         assert_allclose(0.50, u235 / u)
-
-    def test_duplicate_blockwise_modifications(self):
-        with self.assertRaises(KeyError):
-            a = self.loadUZrAssembly(
-                """
-        material modifications:
-            U235_wt_frac: [0.5]
-            blockwise:
-                U235_wt_frac: [0.20]
-        """
-            )
 
     def test_invalid_component_modification(self):
         with self.assertRaises(ValueError):

@@ -181,7 +181,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
     def _checkComponentwiseMaterialInput(self, materialInput):
         for component in materialInput:
-            if component != "":
+            if component != "blockwise":
                 if component not in [componentDesign.name for componentDesign in self]:
                     if materialInput[component]:  # ensure it is not empty
                         raise ValueError(
@@ -201,13 +201,13 @@ class BlockBlueprint(yamlize.KeyedList):
         filteredMaterialInput = {}
 
         # first add the blockwise modifications without question
-        if "" in materialInput:
-            for modName, modVal in materialInput[""].items():
+        if "blockwise" in materialInput:
+            for modName, modVal in materialInput["blockwise"].items():
                 filteredMaterialInput[modName] = modVal
 
         # then get the componentwise modifications as appropriate
         for component, mod in materialInput.items():
-            if component == "":
+            if component == "blockwise":
                 pass  # we already added these
             else:
                 # these are componentwise mods, first test if the component matches
