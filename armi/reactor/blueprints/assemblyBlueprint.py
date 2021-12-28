@@ -79,7 +79,7 @@ class MaterialModifications(yamlize.Map):
     key_type = yamlize.Typed(str)
     value_type = yamlize.Sequence
     byComponent = yamlize.Attribute(
-        key='by component',
+        key="by component",
         type=ByComponentModifications,
         default=ByComponentModifications(),
     )
@@ -201,7 +201,7 @@ class AssemblyBlueprint(yamlize.Object):
         materialInput = {}
 
         for key, mod in {
-            'byBlock': {**self.materialModifications},
+            "byBlock": {**self.materialModifications},
             **self.materialModifications.byComponent,
         }.items():
             materialInput[key] = {
