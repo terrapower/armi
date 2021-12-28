@@ -408,7 +408,7 @@ material modifications
   on different components within a block, the user may specify componentwise material
   modifications. This is useful, for instance, when two pins within an assembly
   made of the same base material have different fuel enrichments. This is done
-  using the `componentwise` attribute to the material modifications as in::
+  using the ``componentwise`` attribute to the material modifications as in::
 
         blocks:
             fuel: &block_fuel
@@ -443,9 +443,9 @@ material modifications
                             Zr_wt_frac: [0.02]
                     U235_wt_frac: [0.30]
 
-  This example would apply an enrichment of 20% to the `fuel1` component and an
-  enrichment of 30% to all other components in the block that accept the `U235_wt_frac`
-  material modification. The user may alternatively use the `blockwise` attribute
+  This example would apply an enrichment of 20% to the ``fuel1`` component and an
+  enrichment of 30% to all other components in the block that accept the ``U235_wt_frac``
+  material modification. The user may alternatively use the ``blockwise`` attribute
   to more clearly indicate that the material modification type is being applied to
   all applicable components in the block::
 
