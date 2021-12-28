@@ -223,7 +223,7 @@ class AssemblyBlueprint(yamlize.Object):
 
             if self.materialModifications.blockwise:
                 for modName, modList in self.materialModifications.blockwise.items():
-                    if modName in assemblyMaterialInput[""].keys():
+                    if modName in assemblyMaterialInput[""]:
                         raise KeyError(
                             f"{modName} material modification is being specified blockwise"
                             f" twice in the {self.name} assembly."
