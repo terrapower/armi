@@ -405,10 +405,10 @@ material modifications
   at various weight fractions. Note that this input style only adjusts the heavy metal.
 
   To enable the application of different values for the same material modification type
-  on different components within a block, the user may specify componentwise material
-  modifications. This is useful, for instance, when two pins within an assembly
+  on different components within a block, the user may specify material modifications
+  by component. This is useful, for instance, when two pins within an assembly
   made of the same base material have different fuel enrichments. This is done
-  using the ``componentwise`` attribute to the material modifications as in::
+  using the ``by component`` attribute to the material modifications as in::
 
         blocks:
             fuel: &block_fuel
@@ -436,31 +436,23 @@ material modifications
                 axial mesh points: [1]
                 xs types: [A]
                 material modifications:
-                    componentwise:
+                    by component:
                         fuel1:
                             U235_wt_frac: [0.20]
                         fuel2:
                             Zr_wt_frac: [0.02]
                     U235_wt_frac: [0.30]
 
+  Material modifications specified on the ``material modifications`` level are
+  referred to as "block default" values and apply to all components on the block not
+  associated with a by-component value.
   This example would apply an enrichment of 20% to the ``fuel1`` component and an
   enrichment of 30% to all other components in the block that accept the ``U235_wt_frac``
-  material modification. The user may alternatively use the ``blockwise`` attribute
-  to more clearly indicate that the material modification type is being applied to
-  all applicable components in the block::
+  material modification.
 
-                material modifications:
-                    componentwise:
-                        fuel1:
-                            U235_wt_frac: [0.20]
-                        fuel2:
-                            Zr_wt_frac: [0.02]
-                    blockwise:
-                        U235_wt_frac: [0.30]
-
-  All componentwise material modifications override any blockwise material modifications
-  of the same type. In addition, any componentwise entries omitted for a given axial block
-  will default to the blockwise (or default, if no blockwise value is provided and a
+  All by-component material modifications override any block default material modifications
+  of the same type. In addition, any by-component entries omitted for a given axial block
+  will revert to the block default (or material class default, if no block default value is provided and a material class
   default exists) value::
 
         blocks:
@@ -489,13 +481,12 @@ material modifications
                 axial mesh points: [1, 1]
                 xs types: [A, A]
                 material modifications:
-                    componentwise:
+                    by component:
                         fuel1:
-                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the blockwise value
-                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the blockwise value
-                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will default because there is no blockwise value
-                    blockwise:
-                        U235_wt_frac: [0.30, 0.30]
+                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block defaul value
+                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
+                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
+                    U235_wt_frac: [0.30, 0.30]
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some
 other structure.
