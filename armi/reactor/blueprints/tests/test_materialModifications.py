@@ -89,11 +89,11 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.20, u235 / u)
 
-    def test_u235_wt_frac_componentwise_modification1(self):
+    def test_u235_wt_frac_byComponent_modification1(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
-            componentwise:
+            by component:
                 fuel1:
                     U235_wt_frac: [0.20]
             U235_wt_frac: [0.30]
@@ -109,11 +109,11 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.30, u235 / u)
 
-    def test_u235_wt_frac_componentwise_modification2(self):
+    def test_u235_wt_frac_byComponent_modification2(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
-            componentwise:
+            by component:
                 fuel1:
                     U235_wt_frac: [0.20]
                 fuel2:
@@ -136,7 +136,7 @@ assemblies:
             a = self.loadUZrAssembly(
                 """
         material modifications:
-            componentwise:
+            by component:
                 invalid component:
                     U235_wt_frac: [0.2]
         """

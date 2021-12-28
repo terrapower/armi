@@ -53,7 +53,7 @@ class Modifications(yamlize.Map):
     value_type = yamlize.Sequence
 
 
-class ComponentwiseModifications(yamlize.Map):
+class ByComponentModifications(yamlize.Map):
     """
     The name of a component within the block and an associated Modifications
     object.
@@ -72,14 +72,16 @@ class MaterialModifications(yamlize.Map):
     be blanket applied to the entire block.
 
     If the user wishes to specify material modifications specific to a component
-    within the block, they should use the `componentwise` attribute, specifying
+    within the block, they should use the `by component` attribute, specifying
     the keys/values underneath the name of a specific component in the block.
     """
 
     key_type = yamlize.Typed(str)
     value_type = yamlize.Sequence
-    componentwise = yamlize.Attribute(
-        type=ComponentwiseModifications, default=ComponentwiseModifications()
+    byComponent = yamlize.Attribute(
+        key='by component',
+        type=ByComponentModifications,
+        default=ByComponentModifications(),
     )
 
 
@@ -199,8 +201,8 @@ class AssemblyBlueprint(yamlize.Object):
         materialInput = {}
 
         for key, mod in {
-            'blockwise': {**self.materialModifications},
-            **self.materialModifications.componentwise,
+            'byBlock': {**self.materialModifications},
+            **self.materialModifications.byComponent,
         }.items():
             materialInput[key] = {
                 modName: modList[axialIndex]
@@ -225,8 +227,8 @@ class AssemblyBlueprint(yamlize.Object):
         }
 
         for mod in [self.materialModifications] + [
-            self.materialModifications.componentwise[key]
-            for key in self.materialModifications.componentwise.keys()
+            self.materialModifications.byComponent[key]
+            for key in self.materialModifications.byComponent.keys()
         ]:
             for modName, modList in mod.items():
                 paramName = "material modifications for {}".format(modName)

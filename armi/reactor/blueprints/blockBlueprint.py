@@ -96,8 +96,8 @@ class BlockBlueprint(yamlize.KeyedList):
 
         materialInput : dict
             Double-layered dict.
-            Top layer groups the blockwise material modifications under the `""` key
-            and the componentwise material modifications under the component's name.
+            Top layer groups the by-block material modifications under the `byBlock` key
+            and the by-component material modifications under the component's name.
             The inner dict under each key contains material modification names and values.
         """
         runLog.debug("Constructing block {}".format(self.name))
@@ -110,7 +110,7 @@ class BlockBlueprint(yamlize.KeyedList):
         else:
             spatialGrid = None
 
-        self._checkComponentwiseMaterialInput(materialInput)
+        self._checkByComponentMaterialInput(materialInput)
 
         for componentDesign in self:
             filteredMaterialInput = self._filterMaterialInput(
@@ -179,40 +179,40 @@ class BlockBlueprint(yamlize.KeyedList):
                 runLog.warning(str(e), single=True)
         return b
 
-    def _checkComponentwiseMaterialInput(self, materialInput):
+    def _checkByComponentMaterialInput(self, materialInput):
         for component in materialInput:
-            if component != "blockwise":
+            if component != "byBlock":
                 if component not in [componentDesign.name for componentDesign in self]:
                     if materialInput[component]:  # ensure it is not empty
                         raise ValueError(
-                            f"The component '{component}' used to specify a componentwise"
+                            f"The component '{component}' used to specify a by-component"
                             f" material modification is not in block '{self.name}'."
                         )
 
     @staticmethod
     def _filterMaterialInput(materialInput, componentDesign):
         """
-        Get the blockwise material modifications and those specifically for this
+        Get the by-block material modifications and those specifically for this
         component.
 
-        If a material modification is specified both blockwise and componentwise
-        for a given component, the componentwise value will be used.
+        If a material modification is specified both by-block and by-component
+        for a given component, the by-component value will be used.
         """
         filteredMaterialInput = {}
 
-        # first add the blockwise modifications without question
-        if "blockwise" in materialInput:
-            for modName, modVal in materialInput["blockwise"].items():
+        # first add the by-block modifications without question
+        if "byBlock" in materialInput:
+            for modName, modVal in materialInput["byBlock"].items():
                 filteredMaterialInput[modName] = modVal
 
-        # then get the componentwise modifications as appropriate
+        # then get the by-component modifications as appropriate
         for component, mod in materialInput.items():
-            if component == "blockwise":
+            if component == "byBlock":
                 pass  # we already added these
             else:
-                # these are componentwise mods, first test if the component matches
+                # these are by-component mods, first test if the component matches
                 # before adding. if component matches, add the modifications,
-                # overwriting any blockwise modifications of the same type
+                # overwriting any by-block modifications of the same type
                 if component == componentDesign.name:
                     for modName, modVal in mod.items():
                         filteredMaterialInput[modName] = modVal
