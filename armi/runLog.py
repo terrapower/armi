@@ -145,7 +145,7 @@ class _RunLog:
             except AttributeError:
                 exec(_ADD_LOG_METHOD_STR.format(longLogString, logValue))
 
-    def log(self, msgType, msg, single=False, label=None):
+    def log(self, msgType, msg, single=False, label=None, extra=None):
         """
         This is a wrapper around logger.log() that does most of the work and is
         used by all message passers (e.g. info, warning, etc.).
@@ -160,7 +160,7 @@ class _RunLog:
         msg = str(msg)
 
         # Do the actual logging
-        self.logger.log(msgLevel, msg, single=single, label=label)
+        self.logger.log(msgLevel, msg, single=single, label=label, extra=extra)
 
     def getDuplicatesFilter(self):
         """
@@ -356,32 +356,32 @@ def raw(msg):
     LOG.log("header", msg, single=False, label=msg)
 
 
-def extra(msg, single=False, label=None):
-    LOG.log("extra", msg, single=single, label=label)
+def extra(msg, single=False, label=None, extra=None):
+    LOG.log("extra", msg, single=single, label=label, extra=extra)
 
 
-def debug(msg, single=False, label=None):
-    LOG.log("debug", msg, single=single, label=label)
+def debug(msg, single=False, label=None, extra=None):
+    LOG.log("debug", msg, single=single, label=label, extra=extra)
 
 
-def info(msg, single=False, label=None):
-    LOG.log("info", msg, single=single, label=label)
+def info(msg, single=False, label=None, extra=None):
+    LOG.log("info", msg, single=single, label=label, extra=extra)
 
 
-def important(msg, single=False, label=None):
-    LOG.log("important", msg, single=single, label=label)
+def important(msg, single=False, label=None, extra=None):
+    LOG.log("important", msg, single=single, label=label, extra=extra)
 
 
-def warning(msg, single=False, label=None):
-    LOG.log("warning", msg, single=single, label=label)
+def warning(msg, single=False, label=None, extra=None):
+    LOG.log("warning", msg, single=single, label=label, extra=extra)
 
 
-def error(msg, single=False, label=None):
-    LOG.log("error", msg, single=single, label=label)
+def error(msg, single=False, label=None, extra=None):
+    LOG.log("error", msg, single=single, label=label, extra=extra)
 
 
-def header(msg, single=False, label=None):
-    LOG.log("header", msg, single=single, label=label)
+def header(msg, single=False, label=None, extra=None):
+    LOG.log("header", msg, single=single, label=label, extra=extra)
 
 
 def warningReport():
@@ -475,7 +475,7 @@ class RunLogger(logging.Logger):
         handler.setFormatter(form)
         self.addHandler(handler)
 
-    def log(self, msgType, msg, single=False, label=None):
+    def log(self, msgType, msg, single=False, label=None, extra=None):
         """
         This is a wrapper around logger.log() that does most of the work and is
         used by all message passers (e.g. info, warning, etc.).
@@ -487,9 +487,12 @@ class RunLogger(logging.Logger):
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
         # Do the actual logging
-        logging.Logger.log(
-            self, msgLevel, str(msg), extra={"single": single, "label": label}
-        )
+        if extra is not None:
+            extra.update({"single": single, "label": label})
+        else:
+            extra = {"single": single, "label": label}
+
+        logging.Logger.log(self, msgLevel, str(msg), extra=extra)
 
     def _log(self, *args, **kwargs):
         """
