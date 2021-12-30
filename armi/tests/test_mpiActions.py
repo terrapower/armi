@@ -16,7 +16,14 @@
 import unittest
 
 import armi
-from armi import mpiActions
+from armi.mpiActions import (
+    DistributeStateAction,
+    DistributionAction,
+    MpiAction,
+    runActions,
+)
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
 from armi.utils import iterables
 
 
@@ -25,7 +32,7 @@ class MpiIterTests(unittest.TestCase):
     def setUp(self):
         """save MPI size on entry"""
         self._mpiSize = armi.MPI_SIZE
-        self.action = mpiActions.MpiAction()
+        self.action = MpiAction()
 
     def tearDown(self):
         """restore MPI rank and size on exit"""
@@ -99,6 +106,37 @@ class MpiIterTests(unittest.TestCase):
         imbalance = max(counts) - min(counts)
         self.assertLessEqual(imbalance, 1)
         self.assertEqual(iterables.flatten(objs), allObjs)
+
+    def test_runActionsDistributionAction(self):
+        numObjs, numProcs = 25, 5
+        allObjs = list(range(numObjs))
+        objs = self._distributeObjects(allObjs, numProcs)
+
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        act = DistributionAction([self.action])
+        act.invokeHook = passer
+        results = runActions(objs, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    def test_runActionsDistributeStateAction(self):
+        numObjs, numProcs = 25, 5
+        allObjs = list(range(numObjs))
+        objs = self._distributeObjects(allObjs, numProcs)
+
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        act = DistributeStateAction([self.action])
+
+        act.invokeHook = passer
+        results = runActions(objs, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+
+def passer():
+    """helper function, to do nothing, for unit tests"""
+    pass
 
 
 if __name__ == "__main__":
