@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test that the code examples in the docs are valid"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import os
@@ -27,9 +28,8 @@ class TestDocs(unittest.TestCase):
                 fullpath = os.path.join(root, f)
 
                 base, xtn = os.path.splitext(fullpath)
-                if (
-                    xtn != ".rst" or ".armidocs" in base
-                ):  # skip non rst and auto-generated rst
+                if xtn != ".rst" or ".armidocs" in base:
+                    # skip non rst and auto-generated rst
                     continue
 
                 try:
@@ -39,5 +39,4 @@ class TestDocs(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
