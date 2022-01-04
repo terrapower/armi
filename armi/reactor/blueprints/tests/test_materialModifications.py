@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose
 from armi import materials
 from armi import settings
 from armi.reactor import blueprints
+from armi.reactor.blueprints.blockBlueprint import BlockBlueprint
 
 
 class TestMaterialModifications(unittest.TestCase):
@@ -173,6 +174,12 @@ assemblies:
         totalMass = fuelComponent.getMass()
         zr = fuelComponent.getMass("ZR")
         assert_allclose(0.077, zr / totalMass)
+
+    def test_checkByComponentMaterialInput(self):
+        a = self.loadUZrAssembly("")
+        materialInput = {'fake_material': {'ZR_wt_frac': 0.5}}
+        with self.assertRaises(ValueError):
+            BlockBlueprint._checkByComponentMaterialInput(a, materialInput)
 
 
 if __name__ == "__main__":
