@@ -226,10 +226,9 @@ class AssemblyBlueprint(yamlize.Object):
             "xs types": self.xsTypes,
         }
 
-        for mod in [self.materialModifications] + [
-            self.materialModifications.byComponent[key]
-            for key in self.materialModifications.byComponent.keys()
-        ]:
+        for mod in [self.materialModifications] + list(
+            self.materialModifications.byComponent.values()
+        ):
             for modName, modList in mod.items():
                 paramName = "material modifications for {}".format(modName)
                 paramsToCheck[paramName] = modList
