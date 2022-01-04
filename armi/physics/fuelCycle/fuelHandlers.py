@@ -43,6 +43,7 @@ from armi.utils import plotting
 
 runLog = logging.getLogger(__name__)
 
+
 class FuelHandlerInterface(interfaces.Interface):
     """
     Moves and/or processes fuel in a Standard Operator.
@@ -1177,9 +1178,13 @@ class FuelHandler:
         """
         maxRingInCore = self.r.core.getNumRings()
         if dischargeRing > maxRingInCore:
-            runLog.warning(f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}).")
+            runLog.warning(
+                f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore})."
+            )
         if chargeRing > maxRingInCore:
-            runLog.warning(f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}).")
+            runLog.warning(
+                f"Charge ring {chargeRing} is outside the core (max {maxRingInCore})."
+            )
 
         # process arguments
         if dischargeRing is None:
