@@ -261,24 +261,24 @@ class TestRunLog(unittest.TestCase):
             if os.path.exists(logDir):
                 rmtree(logDir)
             context.createLogDir(0, logDir)
-         
+
             # create as stdout file
             stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
             with open(stdoutFile, "w") as f:
                 f.write("hello world\n")
-         
+
             self.assertTrue(os.path.exists(stdoutFile))
-         
+
             # create a stderr file
             stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
             with open(stderrFile, "w") as f:
                 f.write("goodbye cruel world\n")
-         
+
             self.assertTrue(os.path.exists(stderrFile))
-         
+
             # concat logs
             runLog.concatenateLogs(logDir=logDir)
-         
+
             # verify output
             self.assertFalse(os.path.exists(stdoutFile))
             self.assertFalse(os.path.exists(stderrFile))
