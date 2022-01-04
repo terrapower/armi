@@ -1179,23 +1179,33 @@ class FuelHandler:
         maxRingInCore = self.r.core.getNumRings()
         if dischargeRing > maxRingInCore:
             runLog.warning(
-                f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore})."
+                f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). "
+                "Consider updating the ring bounds used to build a ring schedule for shuffling."
             )
         if chargeRing > maxRingInCore:
             runLog.warning(
                 f"Charge ring {chargeRing} is outside the core (max {maxRingInCore})."
+                "Consider updating the ring bounds used to build a ring schedule for shuffling."
             )
 
         # process arguments
         if dischargeRing is None:
-            # default to convergent
+            # No discharge ring given, so we default to converging from outside to inside
+            # and therefore discharging from the center
             dischargeRing = 1
         if chargeRing is None:
+            # Charge ring not specified. Since we default to convergent shuffling, we
+            # must insert the fuel at the periphery.
             chargeRing = maxRingInCore
 
         if chargeRing > dischargeRing and jumpRingTo is None:
+            # a convergent shuffle with no jumping. By setting
+            # jumpRingTo to be 1, no jumping will be activated
+            # in the later logic.
             jumpRingTo = 1
         elif jumpRingTo is None:
+            # divergent case. Disable jumping by putting jumpring
+            # at periphery.
             if self.r:
                 jumpRingTo = maxRingInCore
             else:
