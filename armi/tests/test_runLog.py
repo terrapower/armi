@@ -21,6 +21,7 @@ import unittest
 
 from armi import context, runLog
 from armi.tests import mockRunLogs
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestRunLog(unittest.TestCase):
@@ -254,32 +255,33 @@ class TestRunLog(unittest.TestCase):
 
     def test_concatenateLogs(self):
         """simple test of the concat logs function"""
-        # create the log dir
-        logDir = "test_concatenateLogs"
-        if os.path.exists(logDir):
-            rmtree(logDir)
-        context.createLogDir(0, logDir)
-
-        # create as stdout file
-        stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
-        with open(stdoutFile, "w") as f:
-            f.write("hello world\n")
-
-        self.assertTrue(os.path.exists(stdoutFile))
-
-        # create a stderr file
-        stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
-        with open(stderrFile, "w") as f:
-            f.write("goodbye cruel world\n")
-
-        self.assertTrue(os.path.exists(stderrFile))
-
-        # concat logs
-        runLog.concatenateLogs(logDir=logDir)
-
-        # verify output
-        self.assertFalse(os.path.exists(stdoutFile))
-        self.assertFalse(os.path.exists(stderrFile))
+        with TemporaryDirectoryChanger():
+            # create the log dir
+            logDir = "test_concatenateLogs"
+            if os.path.exists(logDir):
+                rmtree(logDir)
+            context.createLogDir(0, logDir)
+         
+            # create as stdout file
+            stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
+            with open(stdoutFile, "w") as f:
+                f.write("hello world\n")
+         
+            self.assertTrue(os.path.exists(stdoutFile))
+         
+            # create a stderr file
+            stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
+            with open(stderrFile, "w") as f:
+                f.write("goodbye cruel world\n")
+         
+            self.assertTrue(os.path.exists(stderrFile))
+         
+            # concat logs
+            runLog.concatenateLogs(logDir=logDir)
+         
+            # verify output
+            self.assertFalse(os.path.exists(stdoutFile))
+            self.assertFalse(os.path.exists(stderrFile))
 
 
 if __name__ == "__main__":
