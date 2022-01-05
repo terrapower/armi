@@ -1180,13 +1180,15 @@ class FuelHandler:
         if dischargeRing > maxRingInCore:
             runLog.warning(
                 f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). "
-                "Consider updating the ring bounds used to build a ring schedule for shuffling."
+                "Changing it to be the max ring"
             )
+            dischargeRing = maxRingInCore
         if chargeRing > maxRingInCore:
             runLog.warning(
-                f"Charge ring {chargeRing} is outside the core (max {maxRingInCore})."
-                "Consider updating the ring bounds used to build a ring schedule for shuffling."
+                f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). "
+                "Changing it to be the max ring."
             )
+            chargeRing = maxRingInCore
 
         # process arguments
         if dischargeRing is None:
@@ -1197,6 +1199,10 @@ class FuelHandler:
             # Charge ring not specified. Since we default to convergent shuffling, we
             # must insert the fuel at the periphery.
             chargeRing = maxRingInCore
+        if jumpRingFrom is not None and not (1 < jumpRingFrom < maxRingInCore):
+            raise ValueError(f"JumpRingFrom {jumpRingFrom} is not in the core.")
+        if jumpRingTo is not None and not (1 < jumpRingTo < maxRingInCore):
+            raise ValueError(f"JumpRingTo {jumpRingTo} is not in the core.")
 
         if chargeRing > dischargeRing and jumpRingTo is None:
             # a convergent shuffle with no jumping. By setting
