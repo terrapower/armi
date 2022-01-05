@@ -703,11 +703,11 @@ class FuelMaterial(Material):
             errMsg = "{} '{}' not found in the defined custom isotopics."
             if class1_custom_isotopics not in validIsotopics:
                 raise KeyError(
-                    errMsg.format('class1_custom_isotopics', class1_custom_isotopics)
+                    errMsg.format("class1_custom_isotopics", class1_custom_isotopics)
                 )
             if class2_custom_isotopics not in validIsotopics:
                 raise KeyError(
-                    errMsg.format('class2_custom_isotopics', class2_custom_isotopics)
+                    errMsg.format("class2_custom_isotopics", class2_custom_isotopics)
                 )
             if class1_custom_isotopics == class2_custom_isotopics:
                 runLog.warning(
