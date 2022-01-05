@@ -310,20 +310,30 @@ def concatenateLogs(logDir=None):
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
 
+    dirName = os.path.dirname(stdoutFiles[0])
+    combinedLogName = os.path.join(dirName, "armi-mpi-workers.log")
+    with open(combinedLogName, "w") as workerLog:
+        workerLog.write(
+            "\n{0} CONCATENATED WORKER LOG FILES {2}\n".format("-" * 10, "-" * 10)
+        )
+
     for stdoutName in stdoutFiles:
         # NOTE: If the log file name format changes, this will need to change.
         rank = int(stdoutName.split(".")[-2])
-
-        # first, print the log messages for a child process
         with open(stdoutName, "r") as logFile:
             data = logFile.read()
+            # only write if there's something to write
             if data:
-                # only write if there's something to write
                 rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
                     "-" * 10, rank, "-" * 60
                 )
-                print(rankId, file=sys.stdout)
-                print(data, file=sys.stdout)
+                if rank == 0:
+                    print(rankId, file=sys.stdout)
+                    print(data, file=sys.stdout)
+                else:
+                    with open(combinedLogName, "a") as workerLog:
+                        workerLog.write(rankId)
+                        workerLog.write(data)
         try:
             os.remove(stdoutName)
         except OSError:
