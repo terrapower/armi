@@ -19,9 +19,10 @@ import pickle
 
 from numpy import testing
 
-from armi import materials
+from armi import materials, settings
 from armi.utils import units
 from armi.nucDirectory import nuclideBases
+from armi.reactor import blueprints
 
 
 class _Material_Test:
@@ -1143,6 +1144,89 @@ class TZM_TestCase(_Material_Test, unittest.TestCase):
                 cur, ref
             )
             self.assertAlmostEqual(cur, ref, delta=10e-3, msg=errorMsg)
+
+
+class FuelMaterial_TestCase(unittest.TestCase):
+    baseInput = r"""
+nuclide flags:
+    U: {burn: false, xs: true}
+    ZR: {burn: false, xs: true}
+custom isotopics:
+    customIsotopic1:
+        input format: mass fractions
+        density: 1
+        U: 1
+    customIsotopic2:
+        input format: mass fractions
+        density: 1
+        ZR: 1
+blocks:
+    fuel: &block_fuel
+        fuel1: &component_fuel_fuel1
+            shape: Hexagon
+            material: UZr
+            Tinput: 600.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1
+            op: 10.0
+        fuel2: &component_fuel_fuel2
+            shape: Hexagon
+            material: UZr
+            Tinput: 600.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1
+            op: 10.0
+assemblies:
+    fuel a: &assembly_a
+        specifier: IC
+        blocks: [*block_fuel]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
+"""
+
+    def loadAssembly(self, materialModifications):
+        yamlString = self.baseInput + "\n" + materialModifications
+        design = blueprints.Blueprints.load(yamlString)
+        design._prepConstruction(settings.getMasterCs())
+        return design.assemblies["fuel a"]
+
+    def test_class1Class2_class1_wt_frac(self):
+        # should error because class1_wt_frac not in (0,1)
+        with self.assertRaises(ValueError):
+            a = self.loadAssembly(
+                """
+        material modifications:
+            class1_wt_frac: [2.0]
+            class1_custom_isotopics: [customIsotopic1]
+            class2_custom_isotopics: [customIsotopic2]
+        """
+            )
+
+    def test_class1Class2_classX_custom_isotopics(self):
+        # should error because class1_custom_isotopics doesn't exist
+        with self.assertRaises(KeyError):
+            a = self.loadAssembly(
+                """
+        material modifications:
+            class1_wt_frac: [0.5]
+            class1_custom_isotopics: [fakeIsotopic]
+            class2_custom_isotopics: [customIsotopic2]
+        """
+            )
+
+        # should error because class2_custom_isotopics doesn't exist
+        with self.assertRaises(KeyError):
+            a = self.loadAssembly(
+                """
+        material modifications:
+            class1_wt_frac: [0.5]
+            class1_custom_isotopics: [customIsotopic1]
+            class2_custom_isotopics: [fakeIsotopic]
+        """
+            )
 
 
 if __name__ == "__main__":

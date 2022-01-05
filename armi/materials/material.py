@@ -692,11 +692,33 @@ class FuelMaterial(Material):
         kinds of parameters to coolants and structural material, which are often
         not parameterized with any kind of enrichment.
         """
-        # Save class data for future reconstructions (e.g. in closed cycles)
-        self.p.class1_wt_frac = class1_wt_frac
-        self.p.class1_custom_isotopics = class1_custom_isotopics
-        self.p.class2_custom_isotopics = class2_custom_isotopics
         if class1_wt_frac:
+            if not 0 <= class1_wt_frac <= 1:
+                raise ValueError(
+                    "class1_wt_frac must be between 0 and 1 (inclusive)."
+                    f" Right now it is {class1_wt_frac}."
+                )
+
+            validIsotopics = customIsotopics.keys()
+            errMsg = "{} '{}' not found in the defined custom isotopics."
+            if class1_custom_isotopics not in validIsotopics:
+                raise KeyError(
+                    errMsg.format('class1_custom_isotopics', class1_custom_isotopics)
+                )
+            if class2_custom_isotopics not in validIsotopics:
+                raise KeyError(
+                    errMsg.format('class2_custom_isotopics', class2_custom_isotopics)
+                )
+            if class1_custom_isotopics == class2_custom_isotopics:
+                runLog.warning(
+                    "The custom isotopics specified for the class1/class2 materials"
+                    f" are both '{class1_custom_isotopics}'. You are not actually blending anything!"
+                )
+
+            self.p.class1_wt_frac = class1_wt_frac
+            self.p.class1_custom_isotopics = class1_custom_isotopics
+            self.p.class2_custom_isotopics = class2_custom_isotopics
+
             self._applyIsotopicsMixFromCustomIsotopicsInput(customIsotopics)
 
     def _applyIsotopicsMixFromCustomIsotopicsInput(self, customIsotopics):
