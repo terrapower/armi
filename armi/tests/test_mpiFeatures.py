@@ -255,4 +255,3 @@ if __name__ == "__main__":
     # or
     # mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
     pass
-
