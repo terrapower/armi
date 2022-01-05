@@ -81,7 +81,7 @@ class PatchedPythonDomain(PythonDomain):
 
 def setup(app):
     """Method to make `python setup.py build_sphinx` generate api documentation"""
-    app.override_domain(PatchedPythonDomain)
+    app.add_domain(PatchedPythonDomain, override=True)
 
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)

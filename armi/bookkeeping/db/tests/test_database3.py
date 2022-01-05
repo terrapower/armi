@@ -14,7 +14,7 @@
 
 r""" Tests for the Database3 class
 """
-
+import subprocess
 import unittest
 
 import numpy
@@ -51,9 +51,7 @@ class TestDatabase3(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def makeHistory(self):
-        """
-        Walk the reactor through a few time steps and write them to the db.
-        """
+        """Walk the reactor through a few time steps and write them to the db."""
         for cycle, node in ((cycle, node) for cycle in range(3) for node in range(3)):
             self.r.p.cycle = cycle
             self.r.p.timeNode = node
@@ -126,9 +124,7 @@ class TestDatabase3(unittest.TestCase):
             self.assertEqual(v1, v2)
 
     def _compareRoundTrip(self, data):
-        """
-        Make sure that data is unchanged by packing/unpacking.
-        """
+        """Make sure that data is unchanged by packing/unpacking."""
         packed, attrs = database3.packSpecialData(data, "testing")
         roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
@@ -241,10 +237,16 @@ class TestDatabase3(unittest.TestCase):
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
+    def test_auxData(self):
+        path = self.db.getAuxiliaryDataPath((2, 0), "test_stuff")
+        self.assertEqual(path, "c02n00/test_stuff")
+
+        with self.assertRaises(KeyError):
+            self.db.genAuxiliaryData((-1, -1))
+
+    # TODO: This definitely needs some work
     def test_replaceNones(self):
-        """
-        This definitely needs some work.
-        """
+        """Super basic test that we handle Nones correctly in database read/writes"""
         data3 = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         data1 = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
         data1iNones = numpy.array([1, 2, None, 5, 6])
@@ -349,6 +351,45 @@ class TestDatabase3(unittest.TestCase):
             for meta_key in meta_data_keys:
                 self.assertIn(meta_key, newDb.attrs)
                 self.assertTrue(newDb.attrs[meta_key] is not None)
+
+    def test_grabLocalCommitHash(self):
+        """test of static method to grab a local commit hash with ARMI version"""
+        # 1. test outside a Git repo
+        localHash = database3.Database3.grabLocalCommitHash()
+        self.assertEqual(localHash, "unknown")
+
+        # 2. test inside an empty git repo
+        code = subprocess.run(
+            ["git", "init", "."],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        self.assertEqual(code, 0)
+        localHash = database3.Database3.grabLocalCommitHash()
+        self.assertEqual(localHash, "unknown")
+
+        # 3. test inside a git repo with one tag
+        # commit the empty repo
+        code = subprocess.run(
+            ["git", "commit", "--allow-empty", "-m", '"init"', "--author", '"sam <>"'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        if code == 128:
+            # GitHub Actions blocks certain kinds of Git commands
+            return
+
+        # create a tag off our new commit
+        code = subprocess.run(
+            ["git", "tag", "thanks", "-m", '"you_rock"'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        self.assertEqual(code, 0)
+
+        # test that we recover the correct commit hash
+        localHash = database3.Database3.grabLocalCommitHash()
+        self.assertEqual(localHash, "thanks")
 
 
 class Test_LocationPacking(unittest.TestCase):

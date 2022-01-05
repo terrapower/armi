@@ -9,80 +9,75 @@ Release Date: 2021-08-09
 API changes
 -----------
 
-* ``geomType`` arguments in most places has been changed to accept a ``GeomType``
-  enumeration, instead of a string. Some places will still attempt to implicitly convert
-  strings into enum values, but this will eventually be deprecated.
-
-* The ``SystemLayoutInput`` class has been moved into its own module. Instances of the
-  ``SystemLayoutInput`` (usually named ``geom``) often participate in various function
-  signatures. These will be removed soon, as grids now serve this purpose, and ``geom``
-  objects are largely vestigial. ``SystemLayoutInput`` will be retained to facilitate
-  input migrations.
-
-* Changed block default names so that they are no longer constrained by axial characters.
-  They now are named ``B{assemNum}-{axialIndex}`` to allow arbitrary numbers of blocks. This
-  will invalidate any user setting that includes a block name (e.g. detail assemblies)
-
-* Changed location string labels to be numerical (``001-002-005``) rather than alphanumeric
-  to eliminate a limitation on how many i-indices and k-indices were allowed. This will
-  invalidate any user setting value that includes a location label (e.g. in
-  ``detailAssemsByBOLLocation``). A migration script may be used to assist in migration.
-
-* Removed the ``localization`` module, and shifted most of that exception handling to less
-  custom exception types. Though, there were also some functions moved to:
-  ``armi.utils.customExceptions.py``.
-
-* ``Settings`` are now immutable (or nearly so).
+#. ``geomType`` arguments in most places has been changed to accept a ``GeomType``
+   enumeration, instead of a string. Some places will still attempt to implicitly convert
+   strings into enum values, but this will eventually be deprecated.
+#. The ``SystemLayoutInput`` class has been moved into its own module. Instances of the
+   ``SystemLayoutInput`` (usually named ``geom``) often participate in various function
+   signatures. These will be removed soon, as grids now serve this purpose, and ``geom``
+   objects are largely vestigial. ``SystemLayoutInput`` will be retained to facilitate
+   input migrations.
+#. Changed block default names so that they are no longer constrained by axial characters.
+   They now are named ``B{assemNum}-{axialIndex}`` to allow arbitrary numbers of blocks. This
+   will invalidate any user setting that includes a block name (e.g. detail assemblies)
+#. Changed location string labels to be numerical (``001-002-005``) rather than alphanumeric
+   to eliminate a limitation on how many i-indices and k-indices were allowed. This will
+   invalidate any user setting value that includes a location label (e.g. in
+   ``detailAssemsByBOLLocation``). A migration script may be used to assist in migration.
+#. Removed the ``localization`` module, and shifted most of that exception handling to less
+   custom exception types. Though, there were also some functions moved to:
+   ``armi.utils.customExceptions.py``.
+#. ``Settings`` are now immutable (or nearly so).
 
 Bug fixes
 ---------
 
- * Fix bug in loading from databases when multi-index locations are used.
+#. Fix bug in loading from databases when multi-index locations are used.
 
 
 ARMI v0.1.6
 ===========
 Release Date: 2020-12-17
 
-* Add capability to map flags to current meaning when loading from database.
-  Previously, loading would fail if the meanings of written and current flags did not
-  match exactly.
-* Numerous documentation improvements.
-* Add support for XDMF visualization file output.
-* Add optional flag to ``armi.configure()`` to permit repeated configuration. This aids
-  in certain testing and demonstration contexts.
-* Allow for fully-qualified material names in blueprints. Materials take the form of
-  ``module.import.path:MaterialClassName``.
-* Disable the use of the fast path in interactive sessions.
-* Define ``ARMITESTBASE`` environment variable when configuring ``pytest``. This allows
-  tests to spawn new processes and still find the ARMI test suite.
-* Enable full-core expansion of core grid blueprints.
+#. Add capability to map flags to current meaning when loading from database.
+   Previously, loading would fail if the meanings of written and current flags did not
+   match exactly.
+#. Numerous documentation improvements.
+#. Add support for XDMF visualization file output.
+#. Add optional flag to ``armi.configure()`` to permit repeated configuration. This aids
+   in certain testing and demonstration contexts.
+#. Allow for fully-qualified material names in blueprints. Materials take the form of
+   ``module.import.path:MaterialClassName``.
+#. Disable the use of the fast path in interactive sessions.
+#. Define ``ARMITESTBASE`` environment variable when configuring ``pytest``. This allows
+   tests to spawn new processes and still find the ARMI test suite.
+#. Enable full-core expansion of core grid blueprints.
 
 Deprecations
 ------------
 
-* Removed ``dumpLocationSnapshot`` setting and related functionality. This is replaced
-  by features of Database, version 3. Database 3 supports history tracking from the
-  database file, and whole reactor models can be loaded for any stored time step,
-  obviating the need for special logic in snapshots.
-* Removed ``None`` option to XS ``"geometry"`` setting.
-* Removed ``Location`` classes. These were made redundant with grids/spatial locators.
-* Removed ``Block.isAnnular()``.
-* Remove old "XTView" database format support. Migrating older databases will require
-  checking out an older version of the code.
+#. Removed ``dumpLocationSnapshot`` setting and related functionality. This is replaced
+   by features of Database, version 3. Database 3 supports history tracking from the
+   database file, and whole reactor models can be loaded for any stored time step,
+   obviating the need for special logic in snapshots.
+#. Removed ``None`` option to XS ``"geometry"`` setting.
+#. Removed ``Location`` classes. These were made redundant with grids/spatial locators.
+#. Removed ``Block.isAnnular()``.
+#. Remove old "XTView" database format support. Migrating older databases will require
+   checking out an older version of the code.
 
 Bugfixes
 --------
 
-* Apply YAML ``!input`` resolution before writing blueprints to database.
-* Change default App ``name`` to "armi" instead of "ARMI". This allows ARMI to re-invoke
-  itself, and produce accurate help messages.
-* Conform R-Z-Theta grid ring/position indices to be 1-based like other grid types.
-* Add a check that an ISOTXS library exists before attempting to calculate flux-based
-  reaction rates on mesh conversions. Prior to this, performing mesh conversions without
-  an ISOTXS would lead to a crash.
-* Hide ``FAST_PATH`` behind ``context.getFastPath()`` function, allowing it to change.
-  The avoids bugs where code is sensitive to changes to the fast path at runtime.
+#. Apply YAML ``!input`` resolution before writing blueprints to database.
+#. Change default App ``name`` to "armi" instead of "ARMI". This allows ARMI to re-invoke
+   itself, and produce accurate help messages.
+#. Conform R-Z-Theta grid ring/position indices to be 1-based like other grid types.
+#. Add a check that an ISOTXS library exists before attempting to calculate flux-based
+   reaction rates on mesh conversions. Prior to this, performing mesh conversions without
+   an ISOTXS would lead to a crash.
+#. Hide ``FAST_PATH`` behind ``context.getFastPath()`` function, allowing it to change.
+   The avoids bugs where code is sensitive to changes to the fast path at runtime.
 
 
 
@@ -92,61 +87,61 @@ Release Date: 2020-10-15
 
 User-facing enhancements
 ------------------------
-* Add location-based history tracking to Database3.
-* Add grid-editor GUI (``grids`` entry point).
-* Add support for converting Database files to general-purpose visualization formats
-  (currently supported are VTK and XDMF).
-* Add generic fuel-performance plugin.
-* Update Hastelloy N and Incoloy 800 materials.
-* Add holed rectangle, square component types.
-* Add ``syncDbAfterWrite`` setting.
-* Add support for explicit Flags input in Blueprints.
-* Add glob option to directory changer file retrieval.
-* Add Cartesian plotting capabilities.
-* Add support for importing unstable nuclides from the RIPL-3 database.
-* Numerous documentation and tutorial enhancements.
-* Add ``run-suite`` entry point.
-* Improve/generalize and make extensible from Plugins the setting rename capability.
-* Improve merging behavior of GAMISO and PMATRX files.
-* Add ``doTH`` setting.
-* Add ``mpiActionRequiresReset`` plugin hook.
-* Remove unused entry points (``back-up-db``, ``copy-db``).
-* Add thermal-scattering metadata to materials.
-* Improve ASCII map capabilities.
-* Add the ability to define ex-core Core-like structures in blueprints. This is good for
-  things like spent-fuel pools.
-* Minor improvements to ``SuiteBuilder``.
+#. Add location-based history tracking to Database3.
+#. Add grid-editor GUI (``grids`` entry point).
+#. Add support for converting Database files to general-purpose visualization formats
+   (currently supported are VTK and XDMF).
+#. Add generic fuel-performance plugin.
+#. Update Hastelloy N and Incoloy 800 materials.
+#. Add holed rectangle, square component types.
+#. Add ``syncDbAfterWrite`` setting.
+#. Add support for explicit Flags input in Blueprints.
+#. Add glob option to directory changer file retrieval.
+#. Add Cartesian plotting capabilities.
+#. Add support for importing unstable nuclides from the RIPL-3 database.
+#. Numerous documentation and tutorial enhancements.
+#. Add ``run-suite`` entry point.
+#. Improve/generalize and make extensible from Plugins the setting rename capability.
+#. Improve merging behavior of GAMISO and PMATRX files.
+#. Add ``doTH`` setting.
+#. Add ``mpiActionRequiresReset`` plugin hook.
+#. Remove unused entry points (``back-up-db``, ``copy-db``).
+#. Add thermal-scattering metadata to materials.
+#. Improve ASCII map capabilities.
+#. Add the ability to define ex-core Core-like structures in blueprints. This is good for
+   things like spent-fuel pools.
+#. Minor improvements to ``SuiteBuilder``.
 
 Bugfixes
 --------
-* Fix issues in uniform mesh conversion.
-* Fix order-of-operations issues with string-to-Flags conversions.
-* Fix issues with circular ring hex-to-RZ mesh conversion.
-* Fix bug in HT9 material, which was not properly converting between C and K.
+#. Fix issues in uniform mesh conversion.
+#. Fix order-of-operations issues with string-to-Flags conversions.
+#. Fix issues with circular ring hex-to-RZ mesh conversion.
+#. Fix bug in HT9 material, which was not properly converting between C and K.
 
 Backend changes
 ---------------
-* Better-formalize Executer classes.
-* Improve consistency global flux code.
-* Various performance enhancements.
-* Add packing/unpacking of Multi-Index Locations in the database.
-* Remove deprecated old Settings.
-* Remove armiAbsDirFromName.
-* Reduce numerical diffusion in mesh mapping operations.
-* No longer auto-apply DEPLETABLE Flag when flags explicitly specified.
-* Improve behavior of delated neutron fraction settings and parameter values.
-* Change assembly ordering to be based on (i, j) indices rather than (ring, pos).
-* Remove ``Block.getEnrichment()``, since it is redundant with the ``Composite``
-  version.
-* Remove old block-homogenized number density params. These are still whipped up on the
-  fly when writing to DB.
-* Add explicit ``CartesianGrid`` class.
-* Remove some unused or design- and physics-related functions from ``Block``.
-* Merge ``addComponent()`` with base ``add()``.
-* Fix issues with Be material properties.
-* Allow setting ``Block`` heights to zero.
-* Add a Setting class for handling lists of Flags.
-* Greatly improve support for CCCC file reading/writing.
+#. Better-formalize Executer classes.
+#. Improve consistency global flux code.
+#. Various performance enhancements.
+#. Add packing/unpacking of Multi-Index Locations in the database.
+#. Remove deprecated old Settings.
+#. Remove armiAbsDirFromName.
+#. Reduce numerical diffusion in mesh mapping operations.
+#. No longer auto-apply DEPLETABLE Flag when flags explicitly specified.
+#. Improve behavior of delated neutron fraction settings and parameter values.
+#. Change assembly ordering to be based on (i, j) indices rather than (ring, pos).
+#. Remove ``Block.getEnrichment()``, since it is redundant with the ``Composite``
+   version.
+#. Remove old block-homogenized number density params. These are still whipped up on the
+   fly when writing to DB.
+#. Add explicit ``CartesianGrid`` class.
+#. Remove some unused or design- and physics-related functions from ``Block``.
+#. Merge ``addComponent()`` with base ``add()``.
+#. Fix issues with Be material properties.
+#. Allow setting ``Block`` heights to zero.
+#. Add a Setting class for handling lists of Flags.
+#. Greatly improve support for CCCC file reading/writing.
 
 ARMI v0.1.4
 ===========
@@ -154,8 +149,8 @@ Release Date: 2020-02-27
 
 Bugfixes
 --------
-* Fix minor output date/time bug.
-* Copy Interface inputs in a manner constistent with standard inputs when cloning Cases.
+#. Fix minor output date/time bug.
+#. Copy Interface inputs in a manner constistent with standard inputs when cloning Cases.
 
 ARMI v0.1.3
 ===========
@@ -163,30 +158,30 @@ Release Date: 2020-02-25
 
 User-facing enhancements
 ------------------------
-* Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
-  users can control precisely which isotopes the elements get expanded into.
-* Improved migration system, accessible with ``python -m armi migrate-inputs``
-* Added new material modifications for inputting fuels made of mixtures of two custom
-  isotopic vectors.
-* Add YAML ``!include`` support to blueprints files.
-* Remove ``latticeFile`` section to grid blueprints.
-* Allow modification of linked dimentions in ``SuiteBuilder``.
+#. Improved flexibility of nuclide flags input by adding an ``expandTo`` section so
+   users can control precisely which isotopes the elements get expanded into.
+#. Improved migration system, accessible with ``python -m armi migrate-inputs``
+#. Added new material modifications for inputting fuels made of mixtures of two custom
+   isotopic vectors.
+#. Add YAML ``!include`` support to blueprints files.
+#. Remove ``latticeFile`` section to grid blueprints.
+#. Allow modification of linked dimentions in ``SuiteBuilder``.
 
 Bugfixes
 --------
-* SuiteBuilder handles smear density dimension changes for parameter sweeps again
-* Fixed broken documentation printout of Flags.
-* Ensure that Cases do not think of themselves as their own dependencies.
+#. SuiteBuilder handles smear density dimension changes for parameter sweeps again
+#. Fixed broken documentation printout of Flags.
+#. Ensure that Cases do not think of themselves as their own dependencies.
 
 Backend changes
 ---------------
-* Number fractions are now maintained across elemental expansion subsets. This slightly
-  changes the isotopic composition when, for example, Tungsten is expanded to 4 out of
-  the 5 natural isotopes.
-* Add BOL HM mass block parameter.
-* Add support for custom parameter serializers for database interaction.
-* Formalize Flag reading and writing from/to the database.
-* Improve handling of large HDF5 attributes in Database3.
+#. Number fractions are now maintained across elemental expansion subsets. This slightly
+   changes the isotopic composition when, for example, Tungsten is expanded to 4 out of
+   the 5 natural isotopes.
+#. Add BOL HM mass block parameter.
+#. Add support for custom parameter serializers for database interaction.
+#. Formalize Flag reading and writing from/to the database.
+#. Improve handling of large HDF5 attributes in Database3.
 
 ARMI v0.1.2
 ===========
@@ -194,7 +189,7 @@ Release Date: 2019-11-16
 
 Hotfixes
 --------
-* Fixed dependency issue with pympler
+#. Fixed dependency issue with pympler
 
 
 ARMI v0.1.1
@@ -203,29 +198,22 @@ Release Date: 2019-11-15
 
 User-facing enhancements
 ------------------------
-* Added C5G7 sample LWR inputs
-* Slightly improved installation documentation
-* Improved ability to input subassembly geometric details by adding
-  grid definitions to blueprints files
-* Demoted ``mpi4py`` to an optional requirement to ease installation
-  process.
+#. Added C5G7 sample LWR inputs
+#. Slightly improved installation documentation
+#. Improved ability to input subassembly geometric details by adding
+   grid definitions to blueprints files
+#. Demoted ``mpi4py`` to an optional requirement to ease installation
+   process.
 
 Backend changes
 ---------------
-* Removed need for geometry object for Reactor construction
-* Pushed symmetry and geomType metadata onto spatialGrids
-* Turned off auto-conversion of HDF5 DBs to a previous format
+#. Removed need for geometry object for Reactor construction
+#. Pushed symmetry and geomType metadata onto spatialGrids
+#. Turned off auto-conversion of HDF5 DBs to a previous format
 
 ARMI v0.1.0
 ===========
 Release Date: 2019-10-31
 
 Initial public release.
-
-
-
-
-
-
-
 
