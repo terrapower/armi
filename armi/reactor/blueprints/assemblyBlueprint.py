@@ -145,8 +145,8 @@ class AssemblyBlueprint(yamlize.Object):
             Root blueprint object containing relevant modeling options.
         """
         runLog.info("Constructing assembly `{}`".format(self.name))
+        self._checkParamConsistency()
         a = self._constructAssembly(cs, blueprint)
-        self._checkParamConsistency(a)
         a.calculateZCoords()
         return a
 
@@ -218,7 +218,7 @@ class AssemblyBlueprint(yamlize.Object):
         b.completeInitialLoading()
         return b
 
-    def _checkParamConsistency(self, a):
+    def _checkParamConsistency(self):
         """Check that the number of block params specified is equal to the number of blocks specified."""
         paramsToCheck = {
             "mesh points": self.axialMeshPoints,
@@ -238,7 +238,7 @@ class AssemblyBlueprint(yamlize.Object):
                 raise ValueError(
                     "Assembly {} had {} blocks, but {} {}. These numbers should be equal. "
                     "Check input for errors.".format(
-                        a, len(self.blocks), len(blockVals), paramName
+                        self.name, len(self.blocks), len(blockVals), paramName
                     )
                 )
 
