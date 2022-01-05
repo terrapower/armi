@@ -18,6 +18,7 @@ Unit tests for pathTools.
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 import os
+import tempfile
 import types
 
 from armi.utils import pathTools
@@ -69,6 +70,51 @@ class PathToolsTests(unittest.TestCase):
         self.assertFalse(pathTools.moduleAndAttributeExist(thisFile + ":doesntExist"))
         self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":THIS_DIR"))
         self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":PathToolsTests"))
+
+    def test_cleanPathOnValidPaths(self):
+        """Test cleanPaths by cleaning a path for a file, an empty folder, and a file containing a folder."""
+        testParentFolderPath = tempfile.mkdtemp(
+            dir=str(os.path.join(THIS_DIR)), prefix="testCleanPath"
+        )
+
+        testFolderPath = tempfile.mkdtemp(
+            dir=testParentFolderPath, prefix="testCleanPath", suffix="testFolder"
+        )
+        fileFd, testFilePath = tempfile.mkstemp(
+            dir=testParentFolderPath, prefix="testCleanPath", suffix="testFile"
+        )
+        folderWithFileInside = tempfile.mkdtemp(
+            dir=testParentFolderPath,
+            prefix="testCleanPath",
+            suffix="testFolderWithFile",
+        )
+        _, tempFileInTestFolder = tempfile.mkstemp(
+            dir=folderWithFileInside, prefix="testCleanPath", suffix="testFileInFolder"
+        )
+
+        self.assertTrue(os.path.exists(testFilePath))
+        self.assertTrue(os.path.exists(tempFileInTestFolder))
+        self.assertTrue(os.path.exists(folderWithFileInside))
+        self.assertTrue(os.path.exists(testFolderPath))
+
+        testResults = [
+            pathTools.cleanPath(test)
+            for test in [folderWithFileInside, testFilePath, testFolderPath]
+        ]
+
+        self.assertEqual([True, True, True], testResults)
+        self.assertFalse(os.path.exists(testFilePath))
+        self.assertFalse(os.path.exists(tempFileInTestFolder))
+        self.assertFalse(os.path.exists(folderWithFileInside))
+        self.assertFalse(os.path.exists(testFolderPath))
+
+        os.close(fileFd)
+        os.rmdir(testParentFolderPath)
+
+    def test_cleanPathOnInvalidPath(self):
+        """Test cleanPath when passed an 'invalid' path not present in the list of valid paths inside cleanPath."""
+        with tempfile.TemporaryDirectory() as invalidFolderPath:
+            self.assertRaises(Exception, pathTools.cleanPath, invalidFolderPath)
 
 
 if __name__ == "__main__":
