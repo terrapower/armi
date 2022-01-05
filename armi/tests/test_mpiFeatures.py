@@ -23,7 +23,6 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-
 # pylint: disable=abstract-method,no-self-use,unused-argument
 from distutils.spawn import find_executable
 import os
@@ -256,3 +255,4 @@ if __name__ == "__main__":
     # or
     # mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
     pass
+
