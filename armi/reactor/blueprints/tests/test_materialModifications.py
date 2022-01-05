@@ -177,23 +177,23 @@ assemblies:
 
     def test_checkByComponentMaterialInput(self):
         a = self.loadUZrAssembly("")
-        materialInput = {'fake_material': {'ZR_wt_frac': 0.5}}
+        materialInput = {"fake_material": {"ZR_wt_frac": 0.5}}
         with self.assertRaises(ValueError):
             BlockBlueprint._checkByComponentMaterialInput(a, materialInput)
 
     def test_filterMaterialInput(self):
         a = self.loadUZrAssembly("")
         materialInput = {
-            'byBlock': {'ZR_wt_frac': 0.1, 'U235_wt_frac': 0.1},
-            'fuel1': {'U235_wt_frac': 0.2},
-            'fuel2': {'ZR_wt_frac': 0.3, 'U235_wt_frac': 0.3},
+            "byBlock": {"ZR_wt_frac": 0.1, "U235_wt_frac": 0.1},
+            "fuel1": {"U235_wt_frac": 0.2},
+            "fuel2": {"ZR_wt_frac": 0.3, "U235_wt_frac": 0.3},
         }
         componentDesign = a[0][0]
         filteredMaterialInput = BlockBlueprint._filterMaterialInput(
             materialInput, componentDesign
         )
 
-        filteredMaterialInput_reference = {'ZR_wt_frac': 0.1, 'U235_wt_frac': 0.2}
+        filteredMaterialInput_reference = {"ZR_wt_frac": 0.1, "U235_wt_frac": 0.2}
 
         self.assertEqual(filteredMaterialInput, filteredMaterialInput_reference)
 
