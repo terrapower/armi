@@ -680,7 +680,6 @@ def summarizeZones(core, cs):
     runLog.important(summary)
 
 
-## Core Design Report
 def makeCoreDesignReport(core, cs):
     r"""Builds report to summarize core design inputs
 
@@ -689,7 +688,6 @@ def makeCoreDesignReport(core, cs):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-
     coreDesignTable = report.data.Table(
         "SUMMARY OF CORE: {}".format(cs.caseTitle.upper())
     )
