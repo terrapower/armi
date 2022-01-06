@@ -29,6 +29,7 @@ analogy of the model to the physical nature of nuclear reactors.
 
 See Also: :doc:`/developer/index`.
 """
+import math
 import collections
 import itertools
 import timeit
@@ -786,6 +787,9 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolume(self):
         return sum(child.getVolume() for child in self)
+
+    def getArea(self, cold=False):
+        return sum(child.getArea(cold) for child in self)
 
     def _updateVolume(self):
         """Recompute and store volume."""
@@ -2571,6 +2575,11 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return tempNumerator / totalVol
 
+    def resolveLinkedDims(self, components):
+        """Resolve link strings to links on all child components."""
+        for component in self.iterComponents():
+            component.resolveLinkedDims(components)
+
     def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return the first sample of the most dominant material (by volume) in this object.
@@ -3141,6 +3150,19 @@ class Composite(ArmiObject):
         self.childrenByLocator = {}
         for child in self:
             self.childrenByLocator[child.spatialLocator] = child
+
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        """
+        Get sum circle bound.
+
+        Used to roughly approximate relative size vs. other objects
+        """
+        return sum(
+            [
+                comp.getBoundingCircleOuterDiameter(Tc, cold)
+                for comp in self.iterComponents()
+            ]
+        )
 
 
 class Leaf(Composite):

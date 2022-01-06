@@ -119,6 +119,22 @@ class TestBlueprintsSchema(unittest.TestCase):
             ip: 0.0
             mult: 1.0
             op: 10.0
+    fuel2: &block_fuel2
+        group1: 
+            shape: Group
+        duct: 
+            shape: Hexagon
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 9.0
+            mult: 1.0
+            op: 10.0
+        matrix: 
+            shape: DerivedShape
+            material: Graphite
+            Tinput: 25.0
+            Thot: 600.0
 
 components:
     freefuel:
@@ -128,7 +144,22 @@ components:
         Thot: 600.0
         id: 0.0
         mult: 1.0
-        od: 11.0
+        od: 4.0
+    freeclad:
+        shape: Sphere
+        material: HT9
+        Tinput: 25.0
+        Thot: 600.0
+        id: 4.0
+        mult: 1.0
+        od: 4.1
+
+component groups:
+    group1:
+      freefuel:
+        mult: 1.0
+      freeclad:
+        mult: 1.0
 
 assemblies:
     fuel a: &assembly_a
@@ -141,6 +172,12 @@ assemblies:
         <<: *assembly_a
         fuelVent: True
         hotChannelFactors: Reactor
+    fuel c: &assembly_c
+        specifier: OC
+        blocks: [*block_fuel2]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
 grids:
     pins:
         geom: cartesian
@@ -363,6 +400,7 @@ assemblies:
 
     def test_components(self):
         bads = [
+            # bad shape
             {
                 "shape": "potato",
                 "name": "name",
@@ -370,9 +408,7 @@ assemblies:
                 "Tinput": 1.0,
                 "Thot": 1.0,
             },
-            {"shape": "Circle", "name": "name", "Tinput": 1.0, "Thot": 1.0},
-            {"shape": "circle", "name": "name", "material": "HT9", "Thot": 1.0},
-            {"shape": "circle", "name": "name", "material": "HT9", "Tinput": 1.0},
+            # bad merge
             {
                 "shape": "circle",
                 "name": "name",
@@ -381,6 +417,7 @@ assemblies:
                 "Thot": 1.0,
                 "mergeWith": 6,
             },
+            # bad isotopics
             {
                 "shape": "circle",
                 "name": "name",
@@ -389,6 +426,7 @@ assemblies:
                 "Thot": 1.0,
                 "isotopics": 4,
             },
+            # bad key
             {
                 "shape": "circle",
                 "name": "name",
@@ -397,6 +435,7 @@ assemblies:
                 "Thot": 1.0,
                 5: "od",
             },
+            # bad linked dimension
             {
                 "shape": "circle",
                 "name": "name",
@@ -480,7 +519,7 @@ assemblies:
             self.assertEqual(1, len(a))
             self.assertEqual(1, len(a[0]))
 
-    def test_topLevelComponent(self):
+    def test_topLevelComponentInput(self):
         """
         Make sure components defined at the top level are loaded.
 
@@ -499,9 +538,18 @@ assemblies:
         design._resolveNuclides(cs)
         componentDesign = design.componentDesigns["freefuel"]
         topComponent = componentDesign.construct(design, matMods=dict())
-        self.assertEqual(topComponent.getDimension("od", cold=True), 11.0)
+        self.assertEqual(topComponent.getDimension("od", cold=True), 4.0)
         self.assertGreater(topComponent.getVolume(), 0.0)
         self.assertGreater(topComponent.getMass("U235"), 0.0)
+
+    def test_componentGroupInput(self):
+        """
+        Make sure component groups can be input in blueprints.
+        """
+        design = blueprints.Blueprints.load(self.yamlString)
+        componentGroup = design.componentGroups["group1"]
+        self.assertEqual(componentGroup["freefuel"].name, "freefuel")
+        self.assertEqual(componentGroup["freefuel"].mult, 1.0)
 
 
 if __name__ == "__main__":
