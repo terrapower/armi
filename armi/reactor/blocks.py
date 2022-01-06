@@ -834,7 +834,7 @@ class Block(composites.Composite):
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
-        for child in self:
+        for child in self.iterComponents():
             child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
             massHmBOL += child.p.massHmBOL
         self.p.massHmBOL = massHmBOL
@@ -910,10 +910,14 @@ class Block(composites.Composite):
 
         self.derivedMustUpdate = True
         self.clearCache()
-        mult = int(c.getDimension("mult"))
-        if self.p.percentBuByPin is None or len(self.p.percentBuByPin) < mult:
-            # this may be a little wasteful, but we can fix it later...
-            self.p.percentBuByPin = [0.0] * mult
+        try:
+            mult = int(c.getDimension("mult"))
+            if self.p.percentBuByPin is None or len(self.p.percentBuByPin) < mult:
+                # this may be a little wasteful, but we can fix it later...
+                self.p.percentBuByPin = [0.0] * mult
+        except AttributeError:
+            # maybe adding a Composite of components rather than a single
+            pass
         self._updatePitchComponent(c)
 
     def removeAll(self, recomputeAreaFractions=True):
@@ -1972,7 +1976,7 @@ class HexBlock(Block):
         """
 
         # Check multiplicities...
-        mults = {c.getDimension("mult") for c in self}
+        mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
             raise ValueError(

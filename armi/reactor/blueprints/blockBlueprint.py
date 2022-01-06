@@ -139,8 +139,9 @@ class BlockBlueprint(yamlize.KeyedList):
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
 
+        # Resolve linked dims after all components in the block are created
         for c in components.values():
-            c._resolveLinkedDims(components)
+            c.resolveLinkedDims(components)
 
         boundingComp = sorted(components.values())[-1]
         # give a temporary name (will be updated by b.makeName as real blocks populate systems)
@@ -237,7 +238,9 @@ class BlockBlueprint(yamlize.KeyedList):
 
     @staticmethod
     def _mergeComponents(b):
-        solventNamesToMergeInto = set(c.p.mergeWith for c in b if c.p.mergeWith)
+        solventNamesToMergeInto = set(
+            c.p.mergeWith for c in b.iterComponents() if c.p.mergeWith
+        )
 
         if solventNamesToMergeInto:
             runLog.warning(
