@@ -164,7 +164,7 @@ class TestHistoryTracker(ArmiTestHelper):
 
         self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
 
-    def testHistoryReport(self):
+    def test_historyReport(self):
         """
         Test generation of history report.
 
@@ -241,5 +241,5 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
+    # import sys;sys.argv = ["", "TestHistoryTracker.test_historyReport"]
     unittest.main()

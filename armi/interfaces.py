@@ -109,6 +109,7 @@ class Interface:
     overridden by any concrete class that extends this one.
     """
 
+    # TODO: This is a terrible variable name.
     function = None
     """
     The function performed by an Interface. This is not required be be defined

@@ -25,6 +25,7 @@ doc/gallery-src/framework/*.yaml
 .coverage
 coverage.xml
 htmlcov/
+monkeytype.*
 
 # No workspace crumbs.
 *~

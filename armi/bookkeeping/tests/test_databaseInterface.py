@@ -85,7 +85,6 @@ class MockInterface(interfaces.Interface):
 
 class TestDatabaseWriter(unittest.TestCase):
     def setUp(self):
-
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
@@ -140,11 +139,7 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertEqual(h5.attrs["version"], version)
             self.assertIn("caseTitle", h5.attrs)
 
-    @unittest.skip(
-        "This test needs to be rewritten to support the new Database implementation."
-    )
     def test_getHistory(self):
-
         expectedFluxes0 = {}
         expectedFluxes7 = {}
 
@@ -160,21 +155,17 @@ class TestDatabaseWriter(unittest.TestCase):
         self.called = False
 
         def getFluxAwesome(cycle, node):  # pylint: disable=unused-argument
-            if cycle != 2 or node != 3:
+            if cycle != 1 or node != 2:
                 return
 
             blocks = self.r.core.getBlocks()
             b0 = blocks[0]
-            b7 = blocks[7]  # lucky number 7
 
-            db = self.o.getInterface("database").db
+            db = self.o.getInterface("database")._db
 
-            # we are now in cycle 2, node 3 ... AFTER setFluxAwesome, but BEFORE writeToDB
-            # lets get the 3rd block ... whatever that is
+            # we are now in cycle 1, node 2 ... AFTER setFluxAwesome, but BEFORE writeToDB
             actualFluxes0 = db.getHistory(b0)["flux"]
-            actualFluxes7 = db.getHistory(b7)["flux"]
             self.assertEqual(expectedFluxes0, actualFluxes0)
-            self.assertEqual(expectedFluxes7, actualFluxes7)
             self.called = True
 
         self.o.interfaces.insert(0, MockInterface(self.o.r, self.o.cs, setFluxAwesome))
@@ -185,20 +176,21 @@ class TestDatabaseWriter(unittest.TestCase):
 
         self.assertTrue(self.called)
 
-    @unittest.skip("TBD")
     def test_getHistoryByLocation(self):
         def setFluxAwesome(cycle, node):  # pylint: disable=unused-argument
             for bi, b in enumerate(self.r.core.getBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
 
         def getFluxAwesome(cycle, node):  # pylint: disable=unused-argument
-            if cycle != 2 or node != 3:
+            if cycle != 1 or node != 2:
                 return
+
+            blocks = self.r.core.getBlocks()
+            b = blocks[0]
 
             db = self.o.getInterface("database").database
 
-            # we are now in cycle 2, node 3 ... AFTER setFluxAwesome
-            # lets get the 3rd block ... whatever that is
+            # we are now in cycle 1, node 2 ... AFTER setFluxAwesome
             _fluxes = db.getHistory(b, params=["flux"])
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, setFluxAwesome))
@@ -208,7 +200,6 @@ class TestDatabaseWriter(unittest.TestCase):
             self.o.operate()
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
-            self.assertFalse(h5.attrs["successfulCompletion"])
             self.assertEqual(h5.attrs["version"], version)
 
 
