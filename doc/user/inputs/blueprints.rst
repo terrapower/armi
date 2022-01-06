@@ -101,6 +101,10 @@ input. The structure will be something like::
     the reactor model must currently be done programatically. We are currently
     developing additional input capabilities to use these more flexibly.
 
+    Associated with this is a ``component groups:`` section which can collect
+    different free components with different volume fractions. This also
+    is not fully implemented yet.
+
 Defining a Component
 --------------------
 The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane

@@ -103,6 +103,7 @@ from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
 from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
+from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
 
@@ -188,6 +189,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
     componentDesigns = yamlize.Attribute(
         key="components", type=ComponentKeyedList, default=None
+    )
+    componentGroups = yamlize.Attribute(
+        key="component groups", type=ComponentGroups, default=None
     )
 
     # These are used to set up new attributes that come from plugins. Defining its
