@@ -114,7 +114,7 @@ def getFileSHA1Hash(filePath, digits=40):
     return sha1.hexdigest()[:digits]
 
 
-def efmt(a):
+def efmt(a: str) -> str:
     r"""Converts string exponential number to another string with just 2 digits in the exponent."""
     # this assumes that none of our numbers will be more than 1e100 or less than 1e-100...
     if len(a.split("E")) != 2:
@@ -130,7 +130,7 @@ def efmt(a):
     return two[0] + "E" + exp
 
 
-def fixThreeDigitExp(strToFloat):
+def fixThreeDigitExp(strToFloat: str) -> float:
     """
     Convert FORTRAN numbers that cannot be converted into floats.
 
@@ -347,7 +347,7 @@ def getFloat(val):
         return None
 
 
-def relErr(v1, v2):
+def relErr(v1: float, v2: float) -> float:
     if v1:
         return (v2 - v1) / v1
     else:
@@ -759,7 +759,7 @@ def prependToList(originalList, listToPrepend):
     return originalList
 
 
-def capStrLen(string, length):
+def capStrLen(s: str, length: int) -> str:
     """
     Truncates a string to a certain length.
 
@@ -767,7 +767,7 @@ def capStrLen(string, length):
 
     Parameters
     ----------
-    string : str
+    s : str
         The string to cap at length l.
     length : int
         The maximum length of the string s.
@@ -775,10 +775,10 @@ def capStrLen(string, length):
     if length <= 2:
         raise Exception("l must be at least 3 in utils.capStrLen")
 
-    if len(string) <= length:
-        return string
+    if len(s) <= length:
+        return s
 
-    return string[0 : length - 3] + "..."
+    return s[0 : length - 3] + "..."
 
 
 def list2str(strings, width=None, preStrings=None, fmt=None):
@@ -1063,7 +1063,7 @@ def plotMatrix(
     plt.close()
 
 
-def userName():
+def userName() -> str:
     """
     Return a database-friendly username.
 
@@ -1171,7 +1171,7 @@ class MergeableDict(dict):
     Allows multiple dictionaries to be combined in a single line
     """
 
-    def merge(self, *otherDictionaries):
+    def merge(self, *otherDictionaries) -> None:
         for dictionary in otherDictionaries:
             self.update(dictionary)
 
@@ -1179,7 +1179,7 @@ class MergeableDict(dict):
 shutil_copy = shutil.copy
 
 
-def safeCopy(src, dst):
+def safeCopy(src: str, dst: str) -> None:
     """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
     waitTime = 0.01  # 10 ms
     if os.path.isdir(dst):
