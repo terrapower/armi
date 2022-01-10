@@ -145,12 +145,12 @@ class XSSettings(dict):
     section settings are dependent on user settings.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         dict.__init__(self, *args, **kwargs)
         self._blockRepresentation = None
         self._validBlockTypes = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} with XS IDs {self.keys()}>"
 
     def __getitem__(self, xsID):
