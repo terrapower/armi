@@ -13,9 +13,14 @@
 # limitations under the License.
 
 """Setup.py script for the Advanced Reactor Modeling Interface (ARMI)"""
-import re
 from setuptools import setup, find_packages
+import os
+import pathlib
+import re
 
+# grab __version__ from meta.py, without calling __init__.py
+this_file = pathlib.Path(__file__).parent.absolute()
+exec(open(os.path.join(this_file, "armi", "meta.py"), "r").read())
 
 with open("README.rst") as f:
     README = f.read()
@@ -38,8 +43,7 @@ EXTRA_FILES = collectExtraFiles()
 
 setup(
     name="armi",
-    # duplicating with meta.py for now. See comments there for rationale.
-    version="0.2.0",
+    version=__version__,
     description="The Advanced Reactor Modeling Interface",
     author="TerraPower, LLC",
     author_email="armi-devs@terrapower.com",
@@ -50,7 +54,6 @@ setup(
     packages=find_packages(),
     package_data={"armi": ["resources/*", "resources/**/*"] + EXTRA_FILES},
     entry_points={"console_scripts": ["armi = armi.__main__:main"]},
-    # note that these are duplicated in requirements.txt
     install_requires=[
         "configparser",
         "coverage",
