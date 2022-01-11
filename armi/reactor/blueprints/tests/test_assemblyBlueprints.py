@@ -189,7 +189,7 @@ assemblies:
         blockAxialMesh = a.getAxialMesh()
         blockXSTypes = [a[0].p.xsType, a[1].p.xsType]
         self.assertAlmostEqual(blockAxialMesh, [1.0, 2.0])
-        self.assertEqual(blockXSTypes, ['A', 'A'])
+        self.assertEqual(blockXSTypes, ["A", "A"])
 
         with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMeshPoints)
