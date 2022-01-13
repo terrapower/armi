@@ -3,9 +3,22 @@ ARMI v0.2 Release Notes
 =======================
 
 
-ARMI v0.2.1
+ARMI v0.2.2
 ===========
 Release Date: TBD
+
+What's new in ARMI v0.2.2
+-------------------------
+#. TBD
+
+Bug fixes
+---------
+#. TBD
+
+
+ARMI v0.2.1
+===========
+Release Date: 2022-01-13
 
 What's new in ARMI v0.2.1
 -------------------------
@@ -15,6 +28,7 @@ Bug fixes
 ---------
 #. Fixed issue where grid GUI was not saving lattice maps (`#490 <https://github.com/terrapower/armi/issues/490>`_)
 #. Fixed issue where SettingsModifier was using old Settings API (`#500 <https://github.com/terrapower/armi/issues/500>`_)
+#. Fixed issue where copying a Setting only copied the default value (`PR#534 <https://github.com/terrapower/armi/pull/534>`_)
 
 
 ARMI v0.2.0
