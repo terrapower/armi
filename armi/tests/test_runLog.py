@@ -280,6 +280,8 @@ class TestRunLog(unittest.TestCase):
             runLog.concatenateLogs(logDir=logDir)
 
             # verify output
+            combinedLogFile = os.path.join(logDir, "armi-mpi-workers.log")
+            self.assertTrue(os.path.exists(combinedLogFile))
             self.assertFalse(os.path.exists(stdoutFile))
             self.assertFalse(os.path.exists(stderrFile))
 

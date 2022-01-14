@@ -310,8 +310,7 @@ def concatenateLogs(logDir=None):
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
 
-    dirName = os.path.dirname(stdoutFiles[0])
-    combinedLogName = os.path.join(dirName, "armi-mpi-workers.log")
+    combinedLogName = os.path.join(logDir, "armi-mpi-workers.log")
     with open(combinedLogName, "w") as workerLog:
         workerLog.write(
             "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
