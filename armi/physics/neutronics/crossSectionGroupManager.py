@@ -134,7 +134,7 @@ class BlockCollection(list):
             for t in validBlockTypes:
                 self._validRepresentativeBlockTypes.append(Flags.fromString(t))
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "<{} with {} blocks>".format(self.__class__.__name__, len(self))
 
     def _getNewBlock(self):

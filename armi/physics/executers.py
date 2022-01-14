@@ -71,7 +71,7 @@ class ExecutionOptions:
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"<{self.__class__.__name__}: {self.label}>"
 
     def fromUserSettings(self, cs):

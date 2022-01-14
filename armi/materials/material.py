@@ -66,7 +66,7 @@ class Material(composites.Leaf):
     """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances 
     with information about thermal scattering."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         composites.Leaf.__init__(self, self.__class__.name)
         self.p.massFrac = {}
 
@@ -82,7 +82,7 @@ class Material(composites.Leaf):
         self.setDefaultMassFracs()
         self.propertyRangeUpdated = False
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "<Material: {0}>".format(self.getName())
 
     def duplicate(self):
