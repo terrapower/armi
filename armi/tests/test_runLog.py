@@ -263,14 +263,19 @@ class TestRunLog(unittest.TestCase):
             context.createLogDir(0, logDir)
 
             # create as stdout file
-            stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
-            with open(stdoutFile, "w") as f:
+            stdoutFile1 = os.path.join(logDir, logDir + ".0.0000.stdout")
+            with open(stdoutFile1, "w") as f:
                 f.write("hello world\n")
 
-            self.assertTrue(os.path.exists(stdoutFile))
+            stdoutFile2 = os.path.join(logDir, logDir + ".0.0001.stdout")
+            with open(stdoutFile2, "w") as f:
+                f.write("hello other world\n")
+
+            self.assertTrue(os.path.exists(stdoutFile1))
+            self.assertTrue(os.path.exists(stdoutFile2))
 
             # create a stderr file
-            stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
+            stderrFile = os.path.join(logDir, logDir + ".0.0000.stderr")
             with open(stderrFile, "w") as f:
                 f.write("goodbye cruel world\n")
 
@@ -282,7 +287,8 @@ class TestRunLog(unittest.TestCase):
             # verify output
             combinedLogFile = os.path.join(logDir, "armi-mpi-workers.log")
             self.assertTrue(os.path.exists(combinedLogFile))
-            self.assertFalse(os.path.exists(stdoutFile))
+            self.assertFalse(os.path.exists(stdoutFile1))
+            self.assertFalse(os.path.exists(stdoutFile2))
             self.assertFalse(os.path.exists(stderrFile))
 
 
