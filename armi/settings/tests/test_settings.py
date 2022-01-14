@@ -303,6 +303,25 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
 
+    def test_copySettingNotDefault(self):
+        """Ensure that when we copy a Setting() object, the result is sound
+        when the Setting value is set to a non-default value.
+        """
+        # get a baseline: show how the Setting object looks to start
+        s1 = setting.Setting("testCopy", 765)
+        s1.value = 999
+        self.assertEquals(s1.name, "testCopy")
+        self.assertEquals(s1._value, 999)
+        self.assertTrue(hasattr(s1, "schema"))
+        self.assertTrue(hasattr(s1, "_customSchema"))
+
+        # show that copy(Setting) is working correctly
+        s2 = copy.copy(s1)
+        self.assertEquals(s2._value, 999)
+        self.assertEquals(s2.name, "testCopy")
+        self.assertTrue(hasattr(s2, "schema"))
+        self.assertTrue(hasattr(s2, "_customSchema"))
+
 
 class TestSettingsConversion(unittest.TestCase):
     """Make sure we can convert from old XML type settings to new Yaml settings."""
