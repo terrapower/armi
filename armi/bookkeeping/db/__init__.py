@@ -75,7 +75,7 @@ __all__ = [
 ]
 
 
-def loadOperator(pathToDb, loadCycle, loadNode):
+def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
     """
     Return an operator given the path to a database.
 
@@ -87,6 +87,9 @@ def loadOperator(pathToDb, loadCycle, loadNode):
         The cycle to load the reactor state from.
     loadNode : int
         The time node to load the reactor from.
+    allowMissing : bool
+        Whether to emit a warning, rather than crash if reading a database
+        with undefined parameters. Default False.
 
     See Also
     --------
@@ -132,7 +135,7 @@ def loadOperator(pathToDb, loadCycle, loadNode):
         cs = db.loadCS()
         thisCase = cases.Case(cs)
 
-        r = db.load(loadCycle, loadNode)
+        r = db.load(loadCycle, loadNode, allowMissing=allowMissing)
     settings.setMasterCs(cs)
 
     # Update the global assembly number because, if the user is loading a reactor from
