@@ -1132,14 +1132,14 @@ class CartesianGrid(Grid):
 
     These concepts are illustrated in the example drawings below.
 
-    .. figure:: ../.static/through-center.svg
+    .. figure:: ../.static/through-center.png
         :width: 400px
         :align: center
 
         Grid example where the axes pass through the "center assembly" (odd-by-odd).
         Note that ring 1 only has one location in it.
 
-    .. figure:: ../.static/not-through-center.svg
+    .. figure:: ../.static/not-through-center.png
         :width: 400px
         :align: center
 
