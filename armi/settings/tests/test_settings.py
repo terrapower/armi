@@ -25,10 +25,12 @@ import voluptuous as vol
 
 import armi
 from armi.physics.fuelCycle import FuelHandlerPlugin
+from armi.physics.neutronics import settings as neutronicsSettings
 from armi import settings
 from armi.settings import caseSettings
 from armi.settings import setting
 from armi.operators import settingsValidation
+from armi.tests import TEST_ROOT
 from armi import plugins
 from armi.utils import directoryChangers
 from armi.reactor.flags import Flags
@@ -64,6 +66,16 @@ class DummyPlugin2(plugins.ArmiPlugin):
         ]
 
 
+class PluginAddsOptions(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineSettings():
+        return [
+            setting.Option("MCNP", "neutronicsKernel"),
+            setting.Option("MCNP_Slab", "neutronicsKernel"),
+        ]
+
+
 class TestCaseSettings(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
@@ -84,6 +96,32 @@ class TestCaseSettings(unittest.TestCase):
         newEnv["moduleVerbosity"] = {}
         self.cs.updateEnvironmentSettingsFrom(newEnv)
         self.assertEqual(self.cs["verbosity"], "9")
+
+
+class TestAddingOptions(unittest.TestCase):
+    def setUp(self):
+        self.dc = directoryChangers.TemporaryDirectoryChanger()
+        self.dc.__enter__()
+
+    def tearDown(self):
+        self.dc.__exit__(None, None, None)
+
+    def test_addingOptions(self):
+        # load in the plugin with extra, added options
+        pm = armi.getPluginManagerOrFail()
+        pm.register(PluginAddsOptions)
+
+        # modify the default/text settings YAML file to include neutronicsKernel
+        fin = os.path.join(TEST_ROOT, "armiRun.yaml")
+        txt = open(fin, "r").read()
+        txt = txt.replace("\n  nodeGroup:", "\n  neutronicsKernel: MCNP\n  nodeGroup:")
+        fout = "test_addingOptions.yaml"
+        open(fout, "w").write(txt)
+
+        # this settings file should load fine, and test some basics
+        cs = settings.Settings(fout)
+        self.assertEqual(cs["burnSteps"], 2)
+        self.assertEqual(cs["neutronicsKernel"], "MCNP")
 
 
 class TestSettings2(unittest.TestCase):
