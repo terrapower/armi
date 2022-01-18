@@ -1297,9 +1297,8 @@ class Block(composites.Composite):
 
         .. math::
 
-
-            <\Sigma> = \frac{\sum_E(\phi_e*\Sigma_e*dE)}{\sum_E (\phi_e*dE)}  =
-            \sum_E(\phi_e*N*\sum_{\text{type}}(\sigma_e)  dE}{\sum_E (\phi_e*dE))}
+            <\Sigma> = \frac{\sum_E(\phi_e \Sigma_e dE)}{\sum_E (\phi_e dE)}  =
+            \frac{\sum_E(\phi_e N \sum_{\text{type}}(\sigma_e)  dE}{\sum_E (\phi_e dE))}
 
         Block macro is the sum of macros of all nuclides.
 
