@@ -1,0 +1,142 @@
+# A full blueprint file that contains assems made with ComponentGroups
+blocks:
+    fuel: &block_fuel
+        fuel: &component_fuel_fuel
+            shape: Hexagon
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1.0
+            op: 10.0
+    fuel2: &block_fuel2
+        triso compact: 
+            shape: Circle
+            blend: triso particle
+            blend frac: 0.350
+            material: Graphite
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 1.2446
+        duct: 
+            shape: Hexagon
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 9.0
+            mult: 1.0
+            op: 10.0
+        coolant: 
+            shape: DerivedShape
+            material: Graphite
+            Tinput: 25.0
+            Thot: 600.0
+
+components:
+    # triso dims from Table 4 in TRISO benchmark
+    kernel:
+        shape: Sphere
+        material: UZr
+        Tinput: 25.0
+        Thot: 600.0
+        id: 0.0
+        mult: 1.0
+        od: 0.010625
+    buffer:
+        shape: Sphere
+        material: Graphite
+        Tinput: 25.0
+        Thot: 600.0
+        id: kernel.od
+        mult: 1.0
+        od: 0.015625
+    ipyc:
+        shape: Sphere
+        material: Graphite
+        Tinput: 25.0
+        Thot: 600.0
+        id: buffer.od
+        mult: 1.0
+        od: 0.017375
+    sic:
+        shape: Sphere
+        material: SiC
+        Tinput: 25.0
+        Thot: 600.0
+        id: ipyc.od
+        mult: 1.0
+        od: 0.019125
+    opyc:
+        shape: Sphere
+        material: Graphite
+        Tinput: 25.0
+        Thot: 600.0
+        id: sic.od
+        mult: 1.0
+        od: 0.021125
+
+component groups:
+    triso particle:
+      kernel:
+        mult: 1
+      buffer:
+        mult: 1
+      ipyc:
+        mult: 1
+      sic:
+        mult: 1
+      opyc:
+        mult: 1
+        
+
+assemblies:
+    fuel a: &assembly_a
+        specifier: IC
+        blocks: [*block_fuel]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
+    fuel c: &assembly_c
+        specifier: OC
+        blocks: [*block_fuel2]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+grids:
+    pins:
+        geom: cartesian
+        lattice map: |
+            2 2 2 2 2
+            2 1 1 1 2
+            2 1 3 1 2
+            2 3 1 1 2
+            2 2 2 2 2
+    core:
+        geom: hex
+        lattice map: |
+          -   -   OC
+            -   OC  OC
+          -   OC  OC  OC
+            OC  OC  OC  OC
+              OC  IC  OC  OC
+            OC  IC  IC  OC  OC
+              IC  IC  IC  OC  OC
+                IC  IC  IC  OC  OC
+              IC  IC  IC  IC  OC  OC
+                IC  IC  IC  IC  OC
+                  IC  IC  IC  IC  OC
+                IC  IC  IC  IC  OC
+                  IC  IC  IC  IC  OC
+                    IC  IC  IC  OC
+                  IC  IC  IC  IC  OC
+                    IC  IC  IC  OC
+                  IC  IC  IC  IC  OC
+        symmetry: third periodic
