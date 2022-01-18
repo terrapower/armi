@@ -1,0 +1,18 @@
+metadata:
+  version: uncontrolled
+settings:
+  buGroups:
+    - 100
+  burnSteps: 2
+  comment: Test input with TRISO fuel. UNDER DEVELOPMENT!
+  cycleLength: 2000.0
+  db: true
+  loadingFile: refTriso-bp.yaml
+  genReports: false
+  moduleVerbosity:
+    armi.reactor.reactors: info
+  nCycles: 6
+  numCoupledIterations: 0
+  power: 350.0e6
+  summarizeAssemDesign: false
+  verbosity: extra
