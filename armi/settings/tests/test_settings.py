@@ -444,5 +444,4 @@ class TestFlagListSetting(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # armi.configure()import sys;sys.argv = ["", "TestAddingOptions.test_addingOptions"]
     unittest.main()
