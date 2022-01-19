@@ -319,17 +319,13 @@ class Setting:
             copy.copy(self._default),
             description=None if self.description is None else str(self.description),
             label=None if self.label is None else str(self.label),
-            # options=copy.copy(self.options),
-            options=[],
-            # schema=copy.copy(self.schema) if hasattr(self, "schema") else None,
-            schema=None,
+            options=copy.copy(self.options),
+            schema=copy.copy(self.schema) if hasattr(self, "schema") else None,
             enforcedOptions=bool(self.enforcedOptions),
             subLabels=copy.copy(self.subLabels),
             isEnvironment=bool(self.isEnvironment),
             oldNames=None if self.oldNames is None else list(self.oldNames),
         )
-        setting.schema = copy.copy(self.schema) if hasattr(self, "schema") else None
-        setting.options = copy.copy(self.options)
         setting._value = copy.copy(self._value)
         return setting
 
