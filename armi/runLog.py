@@ -249,7 +249,7 @@ class _RunLog:
     def startLog(self, name):
         """Initialize the streams when parallel processing"""
         # open the main logger
-        self.logger = logging.getLogger(STDOUT_LOGGER_NAME + SEP + str(self._mpiRank))
+        self.logger = logging.getLogger(name + SEP + str(self._mpiRank))
 
         # if there was a pre-existing _verbosity, use it now
         if self._verbosity != logging.INFO:
@@ -313,6 +313,8 @@ def concatenateLogs(logDir=None):
 
     caseTitle = settings.getMasterCs().caseTitle
     combinedLogName = os.path.join(logDir, "{}-workers.log".format(caseTitle))
+    print(caseTitle)
+    print(combinedLogName)
     with open(combinedLogName, "w") as workerLog:
         workerLog.write(
             "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
