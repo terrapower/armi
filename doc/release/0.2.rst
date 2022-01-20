@@ -3,17 +3,33 @@ ARMI v0.2 Release Notes
 =======================
 
 
-ARMI v0.2.2
+ARMI v0.2.3
 ===========
 Release Date: TBD
 
-What's new in ARMI v0.2.2
+What's new in ARMI v0.2.3
 -------------------------
 #. TBD
 
 Bug fixes
 ---------
 #. TBD
+
+
+ARMI v0.2.2
+===========
+Release Date: 2022-01-19
+
+What's new in ARMI v0.2.2
+-------------------------
+#. Improved type hinting
+#. Flushed out the ability to build the docs as PDF
+#. Material modifications can now be made per-component
+#. The ``loadOperator`` method now has the optional ``allowMissing`` argument
+
+Bug fixes
+---------
+#. Fixed issue where copying a Setting with a defined list of options would throw an error (`PR#540 <https://github.com/terrapower/armi/pull/540>`_)
 
 
 ARMI v0.2.1
