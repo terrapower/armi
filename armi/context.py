@@ -159,7 +159,7 @@ _FAST_PATH_IS_TEMPORARY = False
 """Flag indicating whether or not the FAST_PATH should be cleaned up on exit."""
 
 
-def activateLocalFastPath():
+def activateLocalFastPath() -> None:
     """
     Specify a local temp directory to be the fast path.
 
@@ -187,7 +187,7 @@ def activateLocalFastPath():
     _FAST_PATH_IS_TEMPORARY = True
 
 
-def getFastPath():
+def getFastPath() -> str:
     """
     Callable to get the current FAST_PATH.
 
@@ -245,7 +245,7 @@ def cleanTempDirs(olderThanDays=None):
         cleanAllArmiTempDirs(olderThanDays)
 
 
-def cleanAllArmiTempDirs(olderThanDays: int):
+def cleanAllArmiTempDirs(olderThanDays: int) -> None:
     """
     Delete all ARMI-related files from other unrelated runs after `olderThanDays` days (in
     case this failed on earlier runs).
@@ -277,7 +277,7 @@ def cleanAllArmiTempDirs(olderThanDays: int):
             pass
 
 
-def disconnectAllHdfDBs():
+def disconnectAllHdfDBs() -> None:
     """
     Forcibly disconnect all instances of HdfDB objects
 
@@ -305,7 +305,7 @@ def disconnectAllHdfDBs():
 OS_SECONDS_TIMEOUT = 5 * 60
 
 
-def createLogDir(mpiRank=1, logDir=None):
+def createLogDir(mpiRank: int = 1, logDir: str = None) -> None:
     """A helper method to create the log directory"""
     # the usual case is the user does not pass in a log dir path, so we use the global one
     if logDir is None:
