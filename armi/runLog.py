@@ -55,6 +55,7 @@ import os
 import sys
 
 from armi import context
+from armi import settings
 
 
 # global constants
@@ -310,50 +311,50 @@ def concatenateLogs(logDir=None):
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
 
-    combinedLogName = os.path.join(logDir, "armi-mpi-workers.log")
+    caseTitle = settings.getMasterCs().caseTitle
+    combinedLogName = os.path.join(logDir, "{}-workers.log".format(caseTitle))
     with open(combinedLogName, "w") as workerLog:
         workerLog.write(
             "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
         )
 
-    for stdoutName in stdoutFiles:
-        # NOTE: If the log file name format changes, this will need to change.
-        rank = int(stdoutName.split(".")[-2])
-        with open(stdoutName, "r") as logFile:
-            data = logFile.read()
-            # only write if there's something to write
-            if data:
-                rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
-                    "-" * 10, rank, "-" * 60
-                )
-                if rank == 0:
-                    print(rankId, file=sys.stdout)
-                    print(data, file=sys.stdout)
-                else:
-                    with open(combinedLogName, "a") as workerLog:
-                        workerLog.write(rankId)
-                        workerLog.write(data)
-        try:
-            os.remove(stdoutName)
-        except OSError:
-            warning("Could not delete {0}".format(stdoutName))
-
-        # then print the stderr messages for that child process
-        stderrName = stdoutName[:-3] + "err"
-        if os.path.exists(stderrName):
-            with open(stderrName) as logFile:
+        for stdoutName in stdoutFiles:
+            # NOTE: If the log file name format changes, this will need to change.
+            rank = int(stdoutName.split(".")[-2])
+            with open(stdoutName, "r") as logFile:
                 data = logFile.read()
+                # only write if there's something to write
                 if data:
-                    # only write if there's something to write.
-                    rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format(
+                    rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
                         "-" * 10, rank, "-" * 60
                     )
-                    print(rankId, file=sys.stderr)
-                    print(data, file=sys.stderr)
+                    if rank == 0:
+                        print(rankId, file=sys.stdout)
+                        print(data, file=sys.stdout)
+                    else:
+                        workerLog.write(rankId)
+                        workerLog.write(data)
             try:
-                os.remove(stderrName)
+                os.remove(stdoutName)
             except OSError:
-                warning("Could not delete {0}".format(stderrName))
+                warning("Could not delete {0}".format(stdoutName))
+
+            # then print the stderr messages for that child process
+            stderrName = stdoutName[:-3] + "err"
+            if os.path.exists(stderrName):
+                with open(stderrName) as logFile:
+                    data = logFile.read()
+                    if data:
+                        # only write if there's something to write.
+                        rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format(
+                            "-" * 10, rank, "-" * 60
+                        )
+                        print(rankId, file=sys.stderr)
+                        print(data, file=sys.stderr)
+                try:
+                    os.remove(stderrName)
+                except OSError:
+                    warning("Could not delete {0}".format(stderrName))
 
 
 # Here are all the module-level functions that should be used for most outputs.
