@@ -334,7 +334,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     flags.registerPluginFlags(pm)
 
 
-def applyAsyncioWindowsWorkaround():
+def applyAsyncioWindowsWorkaround() -> None:
     """
     Apply Asyncio workaround for Windows and Python 3.8.
 
