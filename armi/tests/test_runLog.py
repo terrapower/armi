@@ -285,7 +285,9 @@ class TestRunLog(unittest.TestCase):
             runLog.concatenateLogs(logDir=logDir)
 
             # verify output
-            combinedLogFile = os.path.join(logDir, "armi-workers.log")
+            logFile = glob(os.path.join(logDir, "*-workers.log")))
+            for f in logFile:
+                combinedLogFile = os.path.join(logDir, f)
             self.assertTrue(os.path.exists(combinedLogFile))
             self.assertFalse(os.path.exists(stdoutFile1))
             self.assertFalse(os.path.exists(stdoutFile2))
