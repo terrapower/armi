@@ -1,9 +1,7 @@
 
-.. The LaTeX builder doesn't support SVGs, and these badges are SVGs
 
-.. only:: html
 
-  |Build Status| |Code Coverage|
+|Build Status| |Code Coverage|
 
 The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) is an open-source tool that
 streamlines your nuclear reactor design/analysis needs by providing a
