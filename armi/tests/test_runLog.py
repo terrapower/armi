@@ -285,10 +285,8 @@ class TestRunLog(unittest.TestCase):
             runLog.concatenateLogs(logDir=logDir)
 
             # verify output
-            #logFile = glob(os.path.join(logDir, "*-mpi.log"))
-            #for f in logFile:
-            #    combinedLogFile = os.path.join(logDir, f)
-            #self.assertTrue(os.path.exists(combinedLogFile))
+            combinedLogFile = os.path.join(logDir, "runLogTest-mpi.log")
+            self.assertTrue(os.path.exists(combinedLogFile))
             self.assertFalse(os.path.exists(stdoutFile1))
             self.assertFalse(os.path.exists(stdoutFile2))
             self.assertFalse(os.path.exists(stderrFile))
