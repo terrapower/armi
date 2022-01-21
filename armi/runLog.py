@@ -55,7 +55,6 @@ import os
 import sys
 
 from armi import context
-from armi import settings
 
 
 # global constants
@@ -249,7 +248,9 @@ class _RunLog:
     def startLog(self, name):
         """Initialize the streams when parallel processing"""
         # open the main logger
-        self.logger = logging.getLogger(name + SEP + str(self._mpiRank))
+        self.logger = logging.getLogger(
+            STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank)
+        )
 
         # if there was a pre-existing _verbosity, use it now
         if self._verbosity != logging.INFO:
@@ -311,10 +312,8 @@ def concatenateLogs(logDir=None):
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
 
-    caseTitle = settings.getMasterCs().caseTitle
-    combinedLogName = os.path.join(logDir, "{}-workers.log".format(caseTitle))
-    print(caseTitle)
-    print(combinedLogName)
+    caseTitle = stdoutFiles[0].split(".")[-3]
+    combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
     with open(combinedLogName, "w") as workerLog:
         workerLog.write(
             "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
