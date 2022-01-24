@@ -21,6 +21,7 @@ Lithium.
 
 from armi import utils
 from armi.materials import material
+from armi.nucDirectory import nuclideBases as nb
 
 
 class Lithium(material.Fluid):
@@ -43,8 +44,8 @@ class Lithium(material.Fluid):
         return 0.512  # g/cc
 
     def setDefaultMassFracs(self):
-        self.setMassFrac("LI6", 0.075)
-        self.setMassFrac("LI7", 0.925)
+        self.setMassFrac("LI6", nb.byName["LI6"].abundance)
+        self.setMassFrac("LI7", nb.byName["LI7"].abundance)
 
     def meltingPoint(self):
         return 453.69  # K
