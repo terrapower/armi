@@ -47,12 +47,12 @@ Or change the log level the same way:
 
 """
 from __future__ import print_function
+from glob import glob
 import collections
 import logging
 import operator
 import os
 import sys
-from glob import glob
 
 from armi import context
 
