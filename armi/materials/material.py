@@ -97,7 +97,7 @@ class Material(composites.Leaf):
 
         return m
 
-    def linearExpansion(self, Tk=None, Tc=None):
+    def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         r"""
         the instantaneous linear expansion coefficient (dL/L)/dT
 
@@ -112,7 +112,7 @@ class Material(composites.Leaf):
             f"{self} does not have a linear expansion property defined"
         )
 
-    def linearExpansionPercent(self, Tk=None, Tc=None):
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
         Average thermal expansion dL/L. Used for computing hot dimensions and density.
 
@@ -136,7 +136,7 @@ class Material(composites.Leaf):
         """
         return 0.0
 
-    def linearExpansionFactor(self, Tc, T0):
+    def linearExpansionFactor(self, Tc: float, T0: float) -> float:
         """
         Return a dL/L factor relative to T0 instead of to the material-dependent reference
         temperature. This factor dL/Lc is a ratio and will be used in dimensions through the
@@ -174,7 +174,9 @@ class Material(composites.Leaf):
 
         return (dLLhot - dLLcold) / (100.0 + dLLcold)
 
-    def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
+    def getThermalExpansionDensityReduction(
+        self, prevTempInC: float, newTempInC: float
+    ) -> float:
         """
         Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew.
         """
@@ -185,14 +187,14 @@ class Material(composites.Leaf):
         r"""mass fractions"""
         pass
 
-    def setMassFrac(self, nucName, massFrac):
+    def setMassFrac(self, nucName: str, massFrac: float) -> None:
         self.p.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
         """Apply material-specific material input parameters."""
         pass
 
-    def adjustMassEnrichment(self, massEnrichment):
+    def adjustMassEnrichment(self, massEnrichment: float) -> None:
         """
         Adjust the enrichment of the material.
 
@@ -202,7 +204,7 @@ class Material(composites.Leaf):
         """
         self.adjustMassFrac(self.enrichedNuclide, massEnrichment)
 
-    def adjustMassFrac(self, nuclideName, massFraction):
+    def adjustMassFrac(self, nuclideName: str, massFraction: float) -> None:
         """
         Change the mass fraction of the specified nuclide.
 
@@ -312,7 +314,9 @@ class Material(composites.Leaf):
     def volumetricExpansion(self, Tk=None, Tc=None):
         pass
 
-    def getTemperatureAtDensity(self, targetDensity, temperatureGuessInC):
+    def getTemperatureAtDensity(
+        self, targetDensity: float, temperatureGuessInC: float
+    ) -> float:
         """Get the temperature at which the perturbed density occurs."""
         densFunc = (
             lambda temp: self.density(Tc=temp) - targetDensity
@@ -323,14 +327,14 @@ class Material(composites.Leaf):
         return tAtTargetDensity
 
     @property
-    def liquidPorosity(self):
+    def liquidPorosity(self) -> float:
         return 0.0 if self.parent is None else self.parent.liquidPorosity
 
     @property
-    def gasPorosity(self):
+    def gasPorosity(self) -> float:
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
-    def density(self, Tk=None, Tc=None):
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D.
 
@@ -365,7 +369,7 @@ class Material(composites.Leaf):
         # rho = rho + dRho = (1 + dRho/rho) * rho
         return self.p.refDens / f  # g/cm^3
 
-    def densityKgM3(self, Tk=None, Tc=None):
+    def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D in units of kg/m^3
 
@@ -376,7 +380,7 @@ class Material(composites.Leaf):
         """
         return self.density(Tk, Tc) * 1000.0
 
-    def density3(self, Tk=None, Tc=None):
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.
 
@@ -402,7 +406,7 @@ class Material(composites.Leaf):
         dRhoOverRho = (1.0 - f) / f
         return refD * (dRhoOverRho + 1)
 
-    def density3KgM3(self, Tk=None, Tc=None):
+    def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
 
         See Also
@@ -412,45 +416,49 @@ class Material(composites.Leaf):
         """
         return self.density3(Tk, Tc) * 1000.0
 
-    def getCorrosionRate(self, Tk=None, Tc=None):
+    def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
         r"""
         given a temperature, get the corrosion rate of the material
         """
         return 0.0
 
-    def getLifeMetalCorrelation(self, days, Tk):
+    def getLifeMetalCorrelation(self, days: float, Tk: float) -> float:
         r"""
         life-metal correlation calculates the wastage of the material due to fission products.
         """
         return 0.0
 
-    def getReverseLifeMetalCorrelation(self, thicknessFCCIWastageMicrons, Tk):
+    def getReverseLifeMetalCorrelation(
+        self, thicknessFCCIWastageMicrons: float, Tk: float
+    ) -> float:
         r"""
         Life metal correlation reverse lookup.  Knowing wastage and Temperature
         determine the effective time at that temperature.
         """
         return 0.0
 
-    def getLifeMetalConservativeFcciCoeff(self, Tk):
+    def getLifeMetalConservativeFcciCoeff(self, Tk: float) -> float:
         """
         Return the coefficient to be used in the LIFE-METAL correlation
         """
 
         return 0.0
 
-    def yieldStrength(self, Tk=None, Tc=None):
+    def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         r"""
         returns yield strength at given T in MPa
         """
         return self.p.yieldStrength
 
-    def thermalConductivity(self, Tk=None, Tc=None):
+    def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         r"""
         thermal conductivity in given T in K
         """
         return self.p.thermalConductivity
 
-    def getProperty(self, propName, Tk=None, Tc=None, **kwargs):
+    def getProperty(
+        self, propName: str, Tk: float = None, Tc: float = None, **kwargs
+    ) -> float:
         r"""gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
 
@@ -511,12 +519,12 @@ class Material(composites.Leaf):
         """
         return self.p.massFrac.get(nucName, 0.0)
 
-    def clearMassFrac(self):
+    def clearMassFrac(self) -> None:
         r"""zero out all nuclide mass fractions."""
         self.p.massFrac.clear()
         self.p.massFracNorm = 0.0
 
-    def removeNucMassFrac(self, nuc):
+    def removeNucMassFrac(self, nuc: str) -> None:
         self.setMassFrac(nuc, 0)
         try:
             del self.p.massFrac[nuc]
@@ -524,7 +532,7 @@ class Material(composites.Leaf):
             # the nuc isn't in the mass Frac vector
             pass
 
-    def removeLumpedFissionProducts(self):
+    def removeLumpedFissionProducts(self) -> None:
         for nuc in self.getNuclides():
             if "LF" in nuc:
                 # this component has a lumped fission product to remove
@@ -565,7 +573,7 @@ class Material(composites.Leaf):
                     label="T out of bounds for {} {}".format(self.name, label),
                 )
 
-    def densityTimesHeatCapacity(self, Tk=None, Tc=None):
+    def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:
         r"""
         Return heat capacity * density at a temperature
         Parameters
@@ -592,7 +600,9 @@ class Material(composites.Leaf):
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
         return self.parent.getNuclides()
 
-    def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):
+    def getTempChangeForDensityChange(
+        self, Tc: float, densityFrac: float, quiet: bool = True
+    ) -> float:
         """Return a temperature difference for a given density perturbation."""
         linearExpansion = self.linearExpansion(Tc=Tc)
         linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
@@ -637,7 +647,9 @@ class Fluid(Material):
         since it is a liquid it will fill its space."""
         return 0.0
 
-    def getTempChangeForDensityChange(self, Tc, densityFrac, quiet=True):
+    def getTempChangeForDensityChange(
+        self, Tc: float, densityFrac: float, quiet: bool = True
+    ) -> float:
         """Return a temperature difference for a given density perturbation."""
         currentDensity = self.density(Tc=Tc)
         perturbedDensity = currentDensity * densityFrac

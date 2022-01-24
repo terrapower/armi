@@ -92,7 +92,9 @@ class BlockConverter:
         # merged component due to void gaps between components
         oldArea = solvent.getArea()
         runLog.debug("removing {}".format(solute))
-        newBlock.remove(solute)
+        # skip recomputation of area fractions because the blocks still have 0 height at this stage and derived
+        # shape volume computations will fail
+        newBlock.remove(solute, recomputeAreaFractions=False)
         self._sourceBlock = newBlock
 
         # adjust new shape area.

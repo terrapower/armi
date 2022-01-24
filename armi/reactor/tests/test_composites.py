@@ -65,6 +65,13 @@ class DummyLeaf(composites.Leaf):
         composites.Leaf.__init__(self, name)
         self.p.type = name
 
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        return 1.0
+
+    def iterComponents(self, typeSpec=None, exact=False):
+        if self.hasFlags(typeSpec, exact):
+            yield self
+
 
 class TestCompositePattern(unittest.TestCase):
     def setUp(self):
@@ -93,6 +100,9 @@ class TestCompositePattern(unittest.TestCase):
 
         allChildren = container.getChildren(deep=True)
         self.assertEqual(len(allChildren), 8)
+
+    def testIterComponents(self):
+        self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
     def testGetChildren(self):
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
@@ -185,6 +195,10 @@ class TestCompositePattern(unittest.TestCase):
         for t in types:
             self.assertTrue(self.container.hasFlags(t))
             self.assertFalse(self.container.hasFlags(t, exact=True))
+
+    def test_getBoundingCirlceOuterDiameter(self):
+        od = self.container.getBoundingCircleOuterDiameter()
+        self.assertAlmostEqual(od, len(list(self.container.iterComponents())))
 
 
 class TestCompositeTree(unittest.TestCase):

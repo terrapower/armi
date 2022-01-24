@@ -43,9 +43,46 @@ def _configureAssemblyTypes():
     return assemTypes
 
 
-class MaterialModifications(yamlize.Map):
+class Modifications(yamlize.Map):
+    """
+    The names of material modifications and lists of the modification values for
+    each block in the assembly.
+    """
+
     key_type = yamlize.Typed(str)
     value_type = yamlize.Sequence
+
+
+class ByComponentModifications(yamlize.Map):
+    """
+    The name of a component within the block and an associated Modifications
+    object.
+    """
+
+    key_type = yamlize.Typed(str)
+    value_type = Modifications
+
+
+class MaterialModifications(yamlize.Map):
+    """
+    A yamlize map for reading and holding material modifications.
+
+    A user may specify material modifications directly
+    as keys/values on this class, in which case these material modifications will
+    be blanket applied to the entire block.
+
+    If the user wishes to specify material modifications specific to a component
+    within the block, they should use the `by component` attribute, specifying
+    the keys/values underneath the name of a specific component in the block.
+    """
+
+    key_type = yamlize.Typed(str)
+    value_type = yamlize.Sequence
+    byComponent = yamlize.Attribute(
+        key="by component",
+        type=ByComponentModifications,
+        default=ByComponentModifications(),
+    )
 
 
 class AssemblyBlueprint(yamlize.Object):
@@ -69,7 +106,9 @@ class AssemblyBlueprint(yamlize.Object):
         key="azimuthal mesh points", type=int, default=None
     )
     materialModifications = yamlize.Attribute(
-        key="material modifications", type=MaterialModifications, default=None
+        key="material modifications",
+        type=MaterialModifications,
+        default=MaterialModifications(),
     )
     xsTypes = yamlize.Attribute(key="xs types", type=yamlize.StrList)
     # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
@@ -106,8 +145,8 @@ class AssemblyBlueprint(yamlize.Object):
             Root blueprint object containing relevant modeling options.
         """
         runLog.info("Constructing assembly `{}`".format(self.name))
+        self._checkParamConsistency()
         a = self._constructAssembly(cs, blueprint)
-        self._checkParamConsistency(a)
         a.calculateZCoords()
         return a
 
@@ -155,15 +194,22 @@ class AssemblyBlueprint(yamlize.Object):
 
     def _createBlock(self, cs, blueprint, bDesign, axialIndex):
         """Create a block based on the block design and the axial index."""
-        materialInputs = self.materialModifications or {}
         meshPoints = self.axialMeshPoints[axialIndex]
         height = self.height[axialIndex]
         xsType = self.xsTypes[axialIndex]
-        materialInput = {
-            modName: modList[axialIndex]
-            for modName, modList in materialInputs.items()
-            if modList[axialIndex] != ""
-        }
+
+        materialInput = {}
+
+        for key, mod in {
+            "byBlock": {**self.materialModifications},
+            **self.materialModifications.byComponent,
+        }.items():
+            materialInput[key] = {
+                modName: modList[axialIndex]
+                for modName, modList in mod.items()
+                if modList[axialIndex] != ""
+            }
+
         b = bDesign.construct(
             cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
         )
@@ -172,24 +218,27 @@ class AssemblyBlueprint(yamlize.Object):
         b.completeInitialLoading()
         return b
 
-    def _checkParamConsistency(self, a):
+    def _checkParamConsistency(self):
         """Check that the number of block params specified is equal to the number of blocks specified."""
-        materialInputs = self.materialModifications or {}
         paramsToCheck = {
             "mesh points": self.axialMeshPoints,
             "heights": self.height,
             "xs types": self.xsTypes,
         }
-        for modName, modList in materialInputs.items():
-            paramName = "material modifications for {}".format(modName)
-            paramsToCheck[paramName] = modList
+
+        for mod in [self.materialModifications] + list(
+            self.materialModifications.byComponent.values()
+        ):
+            for modName, modList in mod.items():
+                paramName = "material modifications for {}".format(modName)
+                paramsToCheck[paramName] = modList
 
         for paramName, blockVals in paramsToCheck.items():
             if len(self.blocks) != len(blockVals):
                 raise ValueError(
                     "Assembly {} had {} blocks, but {} {}. These numbers should be equal. "
                     "Check input for errors.".format(
-                        a, len(self.blocks), len(blockVals), paramName
+                        self.name, len(self.blocks), len(blockVals), paramName
                     )
                 )
 
