@@ -204,10 +204,6 @@ class TestUnshapedComponent(TestGeneralComponents):
 class TestShapedComponent(TestGeneralComponents):
     """Abstract class for all shaped components"""
 
-    def test_getBoundingCircleOuterDiameter(self):
-        with self.assertRaises(NotImplementedError):
-            self.component.getBoundingCircleOuterDiameter(cold=True)
-
     def test_preserveMassDuringThermalExpansion(self):
         if not self.component.THERMAL_EXPANSION_DIMS:
             return

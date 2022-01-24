@@ -59,13 +59,22 @@ class Sphere(ShapedComponent):
             components, od=od, id=id, mult=mult, modArea=modArea
         )
 
-    def getComponentArea(self, cold=False):
-        raise NotImplementedError("Cannot compute area of a sphere component.")
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        """Abstract bounding circle method that should be overwritten by each shape subclass."""
+        return self.getDimension("od")
 
-    def getComponentVolume(self):
+    def getComponentArea(self, cold=False):
+        """Compute an average area over the height"""
+        from armi.reactor.blocks import Block  # avoid circular import
+
+        block = self.getAncestor(lambda c: isinstance(c, Block))
+        return self.getComponentVolume(cold) / block.getHeight()
+        # raise NotImplementedError("Cannot compute area of a sphere component.")
+
+    def getComponentVolume(self, cold=False):
         """Computes the volume of the sphere in cm^3."""
-        od = self.getDimension("od")
-        iD = self.getDimension("id")
+        od = self.getDimension("od", cold=cold)
+        iD = self.getDimension("id", cold=cold)
         mult = self.getDimension("mult")
         vol = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (iD / 2.0) ** 3)
         return vol

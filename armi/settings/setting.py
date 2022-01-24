@@ -326,6 +326,7 @@ class Setting:
             isEnvironment=bool(self.isEnvironment),
             oldNames=None if self.oldNames is None else list(self.oldNames),
         )
+        setting._value = copy.deepcopy(self._value)
         return setting
 
 

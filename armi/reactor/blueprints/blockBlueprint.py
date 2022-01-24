@@ -95,7 +95,10 @@ class BlockBlueprint(yamlize.KeyedList):
             String representing the xsType of this block.
 
         materialInput : dict
-            dict containing material modification names and values
+            Double-layered dict.
+            Top layer groups the by-block material modifications under the `byBlock` key
+            and the by-component material modifications under the component's name.
+            The inner dict under each key contains material modification names and values.
         """
         runLog.debug("Constructing block {}".format(self.name))
         components = collections.OrderedDict()
@@ -106,8 +109,14 @@ class BlockBlueprint(yamlize.KeyedList):
             spatialGrid = gridDesign.construct()
         else:
             spatialGrid = None
+
+        self._checkByComponentMaterialInput(materialInput)
+
         for componentDesign in self:
-            c = componentDesign.construct(blueprint, materialInput)
+            filteredMaterialInput = self._filterMaterialInput(
+                materialInput, componentDesign
+            )
+            c = componentDesign.construct(blueprint, filteredMaterialInput)
             components[c.name] = c
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
@@ -130,8 +139,9 @@ class BlockBlueprint(yamlize.KeyedList):
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
 
+        # Resolve linked dims after all components in the block are created
         for c in components.values():
-            c._resolveLinkedDims(components)
+            c.resolveLinkedDims(components)
 
         boundingComp = sorted(components.values())[-1]
         # give a temporary name (will be updated by b.makeName as real blocks populate systems)
@@ -170,6 +180,46 @@ class BlockBlueprint(yamlize.KeyedList):
                 runLog.warning(str(e), single=True)
         return b
 
+    def _checkByComponentMaterialInput(self, materialInput):
+        for component in materialInput:
+            if component != "byBlock":
+                if component not in [componentDesign.name for componentDesign in self]:
+                    if materialInput[component]:  # ensure it is not empty
+                        raise ValueError(
+                            f"The component '{component}' used to specify a by-component"
+                            f" material modification is not in block '{self.name}'."
+                        )
+
+    @staticmethod
+    def _filterMaterialInput(materialInput, componentDesign):
+        """
+        Get the by-block material modifications and those specifically for this
+        component.
+
+        If a material modification is specified both by-block and by-component
+        for a given component, the by-component value will be used.
+        """
+        filteredMaterialInput = {}
+
+        # first add the by-block modifications without question
+        if "byBlock" in materialInput:
+            for modName, modVal in materialInput["byBlock"].items():
+                filteredMaterialInput[modName] = modVal
+
+        # then get the by-component modifications as appropriate
+        for component, mod in materialInput.items():
+            if component == "byBlock":
+                pass  # we already added these
+            else:
+                # these are by-component mods, first test if the component matches
+                # before adding. if component matches, add the modifications,
+                # overwriting any by-block modifications of the same type
+                if component == componentDesign.name:
+                    for modName, modVal in mod.items():
+                        filteredMaterialInput[modName] = modVal
+
+        return filteredMaterialInput
+
     def _getGridDesign(self, blueprint):
         """
         Get the appropriate grid design
@@ -188,7 +238,9 @@ class BlockBlueprint(yamlize.KeyedList):
 
     @staticmethod
     def _mergeComponents(b):
-        solventNamesToMergeInto = set(c.p.mergeWith for c in b if c.p.mergeWith)
+        solventNamesToMergeInto = set(
+            c.p.mergeWith for c in b.iterComponents() if c.p.mergeWith
+        )
 
         if solventNamesToMergeInto:
             runLog.warning(

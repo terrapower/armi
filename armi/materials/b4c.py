@@ -49,7 +49,7 @@ class B4C(material.Material):
         if TD_frac is not None:
             self.updateTD(TD_frac)
 
-    def updateTD(self, TD):
+    def updateTD(self, TD: float) -> None:
         self.p.theoreticalDensityFrac = TD
         self.clearCache()
 
@@ -112,7 +112,7 @@ class B4C(material.Material):
 
         return boron10MassGrams, boron11MassGrams, carbonMassGrams
 
-    def setDefaultMassFracs(self):
+    def setDefaultMassFracs(self) -> None:
         r"""B4C mass fractions. Using Natural B4C. 19.9% B-10/ 80.1% B-11
         Boron: 10.811 g/mol
         Carbon:  12.0107 g/mol
@@ -143,7 +143,7 @@ class B4C(material.Material):
         )
 
     @staticmethod
-    def getMassEnrichmentFromNumEnrich(naturalB10NumberFraction):
+    def getMassEnrichmentFromNumEnrich(naturalB10NumberFraction: float) -> float:
         b10AtomicMass = nuclideBases.byName["B10"].weight
         b11AtomicMass = nuclideBases.byName["B11"].weight
         return (
@@ -155,7 +155,7 @@ class B4C(material.Material):
             )
         )
 
-    def density(self, Tk=None, Tc=None):
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         mass density
         """
@@ -170,7 +170,7 @@ class B4C(material.Material):
             )
         return density * theoreticalDensityFrac  # g/cc
 
-    def linearExpansionPercent(self, Tk=None, Tc=None):
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""
         Tc = getTc(Tc, Tk)
         self.checkTempRange(25, 500, Tc, "linear expansion percent")

@@ -122,6 +122,7 @@ extensions = [
     "nbsphinx_link",
     "sphinxext.opengraph",
     "sphinx_gallery.gen_gallery",
+    "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
 ]
 
 # Our API should make sense without documenting private/special members.
@@ -420,3 +421,10 @@ warnings.filterwarnings(
 )
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+
+# these are defaults in Windows in more recent versions of the imgconverter plugin and
+# can be removed if/when we upgrade Sphinx beyond 2.2.
+# Otherwise, 'convert' from system32 folder is used.
+if "win32" in sys.platform:
+    image_converter = "magick"
+    image_converter_args = ["convert"]

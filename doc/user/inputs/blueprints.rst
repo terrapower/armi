@@ -101,6 +101,10 @@ input. The structure will be something like::
     the reactor model must currently be done programatically. We are currently
     developing additional input capabilities to use these more flexibly.
 
+    Associated with this is a ``component groups:`` section which can collect
+    different free components with different volume fractions. This also
+    is not fully implemented yet.
+
 Defining a Component
 --------------------
 The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane
@@ -404,9 +408,89 @@ material modifications
   you can define any fuel material as being made of LWR-derived TRU plus depleted uranium
   at various weight fractions. Note that this input style only adjusts the heavy metal.
 
-  .. warning:: The input processing system will try to apply the extra input parameters to all components in
-        the block, so there should typically only be one component per block that understands each input
-        parameter.
+  To enable the application of different values for the same material modification type
+  on different components within a block, the user may specify material modifications
+  by component. This is useful, for instance, when two pins within an assembly
+  made of the same base material have different fuel enrichments. This is done
+  using the ``by component`` attribute to the material modifications as in::
+
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel]
+                height: [1.0]
+                axial mesh points: [1]
+                xs types: [A]
+                material modifications:
+                    by component:
+                        fuel1:
+                            U235_wt_frac: [0.20]
+                        fuel2:
+                            Zr_wt_frac: [0.02]
+                    U235_wt_frac: [0.30]
+
+  Material modifications specified on the ``material modifications`` level are
+  referred to as "block default" values and apply to all components on the block not
+  associated with a by-component value.
+  This example would apply an enrichment of 20% to the ``fuel1`` component and an
+  enrichment of 30% to all other components in the block that accept the ``U235_wt_frac``
+  material modification.
+
+  All by-component material modifications override any block default material modifications
+  of the same type. In addition, any by-component entries omitted for a given axial block
+  will revert to the block default (or material class default, if no block default value is provided and a material class
+  default exists) value::
+
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel, *block_fuel]
+                height: [0.5, 0.5]
+                axial mesh points: [1, 1]
+                xs types: [A, A]
+                material modifications:
+                    by component:
+                        fuel1:
+                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block defaul value
+                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
+                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
+                    U235_wt_frac: [0.30, 0.30]
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some
 other structure.

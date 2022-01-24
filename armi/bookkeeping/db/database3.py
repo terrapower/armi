@@ -1149,7 +1149,7 @@ class Database3(database.Database):
 
         # Need to keep a collection of Component instances for linked dimension
         # resolution, before they can be add()ed to their parents. Not just filtering
-        # out of `children`, since _resolveLinkedDims() needs a dict
+        # out of `children`, since resolveLinkedDims() needs a dict
         childComponents = collections.OrderedDict()
         children = []
 
@@ -1160,7 +1160,7 @@ class Database3(database.Database):
                 childComponents[child.name] = child
 
         for _childName, child in childComponents.items():
-            child._resolveLinkedDims(childComponents)
+            child.resolveLinkedDims(childComponents)
 
         for child in children:
             comp.add(child)

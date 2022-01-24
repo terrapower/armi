@@ -84,7 +84,7 @@ def describeInterfaces(cs):
 _ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase)
 
 
-def getXSTypeNumberFromLabel(xsTypeLabel):
+def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
     """
     Convert a XSID label (e.g. 'AA') to an integer.
 
@@ -95,7 +95,7 @@ def getXSTypeNumberFromLabel(xsTypeLabel):
     return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
 
 
-def getXSTypeLabelFromNumber(xsTypeNumber):
+def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
     """
     Convert a XSID label (e.g. 65) to an XS label (e.g. 'A').
 
