@@ -263,23 +263,30 @@ def cleanPath(path):
             "You tried to delete {0}, but it does not seem safe to do so.".format(path)
         )
 
-    for i in range(3):
-        try:
-            if os.path.exists(path) and os.path.isdir(path):
-                shutil.rmtree(path)
-            elif not os.path.isdir(path):
-                # it's just a file. Delete it.
-                os.remove(path)
-        except:
-            if i == 2:
-                pass
-            # in case the OS is behind or something
+    try:
+        if armi.MPI_RANK == 0:
+            clearPath(path)
+        while os.path.exists(path):
             sleep(0.1)
+        armi.MPI_COMM.barrier()
+    except:
+        for i in range(3):
+            try:
+                if os.path.exists(path) and os.path.isdir(path):
+                    shutil.rmtree(path)
+                elif not os.path.isdir(path):
+                    # it's just a file. Delete it.
+                    os.remove(path)
+            except:
+                if i == 2:
+                    pass
+                # in case the OS is behind or something
+                sleep(0.1)
 
-        sleep(0.3)
-        if not os.path.exists(path):
-            break
-        sleep(0.3)
+            sleep(0.3)
+            if not os.path.exists(path):
+                break
+            sleep(0.3)
 
     if os.path.exists(path):
         return False

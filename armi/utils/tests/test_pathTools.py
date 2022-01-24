@@ -72,7 +72,10 @@ class PathToolsTests(unittest.TestCase):
         self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":PathToolsTests"))
 
     def test_cleanPathOnValidPaths(self):
-        """Test cleanPaths by cleaning a path for a file, an empty folder, and a file containing a folder."""
+        """Test cleanPaths by cleaning a path for a file, an empty folder, and a file containing a folder.
+        Test in an initialized armi context to include MPI."""
+        import armi
+
         testParentFolderPath = tempfile.mkdtemp(
             dir=str(os.path.join(THIS_DIR)), prefix="testCleanPath"
         )
@@ -112,7 +115,10 @@ class PathToolsTests(unittest.TestCase):
         os.rmdir(testParentFolderPath)
 
     def test_cleanPathOnInvalidPath(self):
-        """Test cleanPath when passed an 'invalid' path not present in the list of valid paths inside cleanPath."""
+        """Test cleanPath when passed an 'invalid' path not present in the list of valid paths inside cleanPath.
+        Test in an initialized armi context to include MPI."""
+        import armi
+
         with tempfile.TemporaryDirectory() as invalidFolderPath:
             self.assertRaises(Exception, pathTools.cleanPath, invalidFolderPath)
 
