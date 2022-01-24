@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the runLog interface"""
+"""Tests of the runLog tooling"""
 # pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
 from io import StringIO
 import logging
@@ -255,7 +255,6 @@ class TestRunLog(unittest.TestCase):
 
     def test_concatenateLogs(self):
         """simple test of the concat logs function"""
-        # create a temp dir to hide test files
         with TemporaryDirectoryChanger():
             # create the log dir
             logDir = "test_concatenateLogs"
