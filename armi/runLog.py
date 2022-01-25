@@ -314,10 +314,11 @@ def concatenateLogs(logDir=None):
 
     # default worker log name if none is found
     caseTitle = "armi-workers"
-    for stdoutFile in stdoutFiles:
+    for stdoutPath in stdoutFiles:
+        stdoutFile = os.path.normpath(stdoutPath).split(os.sep)[-1]
         prefix = STDOUT_LOGGER_NAME + "."
         if stdoutFile[0 : len(prefix)] == prefix:
-            caseTitle = stdoutFile.split(".")[1]
+            caseTitle = stdoutFile.split(".")[-3]
             break
 
     combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))

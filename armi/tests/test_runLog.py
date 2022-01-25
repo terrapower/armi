@@ -263,11 +263,15 @@ class TestRunLog(unittest.TestCase):
             context.createLogDir(0, logDir)
 
             # create as stdout file
-            stdoutFile1 = os.path.join(logDir, logDir + ".runLogTest.0000.stdout")
+            stdoutFile1 = os.path.join(
+                logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
             with open(stdoutFile1, "w") as f:
                 f.write("hello world\n")
 
-            stdoutFile2 = os.path.join(logDir, logDir + ".runLogTest.0001.stdout")
+            stdoutFile2 = os.path.join(
+                logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
             with open(stdoutFile2, "w") as f:
                 f.write("hello other world\n")
 
@@ -275,7 +279,9 @@ class TestRunLog(unittest.TestCase):
             self.assertTrue(os.path.exists(stdoutFile2))
 
             # create a stderr file
-            stderrFile = os.path.join(logDir, logDir + ".runLogTest.0000.stderr")
+            stderrFile = os.path.join(
+                logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME)
+            )
             with open(stderrFile, "w") as f:
                 f.write("goodbye cruel world\n")
 
