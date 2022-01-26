@@ -111,7 +111,7 @@ class UraniumOxide(material.FuelMaterial):
                 )
             elif td == 0:
                 runLog.warning(
-                    "Theoretical density frac for {self} is zero!",
+                    f"Theoretical density frac for {self} is zero!",
                     single=True,
                     label="Zero theoretical density",
                 )
