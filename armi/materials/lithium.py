@@ -19,8 +19,10 @@ Lithium.
 .. WARNING:: Whenever you irradiate lithium you will get tritium.
 """
 
+from armi import runLog
 from armi import utils
 from armi.materials import material
+from armi.nucDirectory import nuclideBases as nb
 
 
 class Lithium(material.Fluid):
@@ -28,11 +30,26 @@ class Lithium(material.Fluid):
     references = {"density": "Wikipedia"}
     enrichedNuclide = "LI6"
 
-    def applyInputParams(self, LI_wt_frac=None, *args, **kwargs):
-        enrich = utils.getFloat(LI_wt_frac)
+    def applyInputParams(self, LI_wt_frac=None, LI6_wt_frac=None, *args, **kwargs):
+        if LI_wt_frac is not None:
+            runLog.warning(
+                "The 'LI_wt_frac' material modification for Lithium will be deprecated"
+                " Update your inputs to use 'LI6_wt_frac' instead.",
+                single=True,
+            )
+            if LI6_wt_frac is not None:
+                runLog.warning(
+                    "Both 'LI_wt_frac' and 'LI6_wt_frac' are specified "
+                    f"for {self}. 'LI6_wt_frac' will be used.",
+                    single=True,
+                )
+
+        LI6_wt_frac = LI6_wt_frac or LI_wt_frac
+
+        enrich = utils.getFloat(LI6_wt_frac)
         # allow 0.0 to pass in!
         if enrich is not None:
-            self.adjustMassEnrichment(LI_wt_frac)
+            self.adjustMassEnrichment(LI6_wt_frac)
 
     def density(self, Tk=None, Tc=None):
         r"""
@@ -43,8 +60,8 @@ class Lithium(material.Fluid):
         return 0.512  # g/cc
 
     def setDefaultMassFracs(self):
-        self.setMassFrac("LI6", 0.075)
-        self.setMassFrac("LI7", 0.925)
+        self.setMassFrac("LI6", nb.byName["LI6"].abundance)
+        self.setMassFrac("LI7", nb.byName["LI7"].abundance)
 
     def meltingPoint(self):
         return 453.69  # K
