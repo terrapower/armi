@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2022 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from armi.materials.lithium import Lithium
 from armi.nucDirectory import nuclideBases as nb
 
 
-class B4C_TestCase(_Material_Test, unittest.TestCase):
+class Lithium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = Lithium
     defaultMassFrac = nb.byName["LI6"].abundance
 
