@@ -26,6 +26,7 @@ your ARMI virtual environment with::
 You also need to have the following utilities available in your PATH:
 
 * `Graphviz <https://graphviz.org/>`_
+* `Pandoc <https://pandoc.org/>`_
 
 If you want to build the documentation into a PDF using the Sphinx LaTeX
 builder, you also need:

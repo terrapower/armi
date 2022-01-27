@@ -21,6 +21,8 @@ jobs:
         run: sudo apt-get update
       - name: Install mpi libs
         run: sudo apt-get -y install libopenmpi-dev
+      - name: Install Pandoc
+        run: sudo apt-get -y install pandoc
       - name: Install Tox and any other packages
         run: pip install tox
       - name: Make HTML Docs

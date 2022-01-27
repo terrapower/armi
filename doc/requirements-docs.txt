@@ -19,6 +19,10 @@ sphinxcontrib-apidoc==0.3.0
 # generates OpenGraph metadata?
 sphinxext-opengraph==0.5.1
 
+# This is not strictly necessary via PIP, but MUST be in the path.
+# Used to convert between file formats.
+pandoc
+
 # iPython kernel to run Jupyter notebooks
 ipykernel==6.7.0
 
