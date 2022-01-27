@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - upgrade_sphinx
 
 jobs:
   build:
@@ -27,11 +26,11 @@ jobs:
         run: pip install tox
       - name: Make HTML Docs
         run: tox -e doc
-#      - name: deploy
-#        uses: JamesIves/github-pages-deploy-action@4.1.5
-#        with:
-#          token: ${{ secrets.ACCESS_TOKEN }}
-#          repository-name: ${{ github.repository_owner }}/terrapower.github.io
-#          branch: master
-#          folder: doc/_build/html
-#          target-folder: armi
+      - name: deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          repository-name: ${{ github.repository_owner }}/terrapower.github.io
+          branch: master
+          folder: doc/_build/html
+          target-folder: armi
