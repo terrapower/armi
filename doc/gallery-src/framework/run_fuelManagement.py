@@ -28,8 +28,6 @@ ARMI to do fuel management. Thus, this example applies a dummy burnup distributi
 demonstration purposes.
 
 """
-import logging
-
 # Tell the gallery to feature the 2nd image
 # sphinx_gallery_thumbnail_number = 2
 import math
@@ -40,9 +38,6 @@ from armi.physics.fuelCycle import fuelHandlers
 from armi.utils import plotting
 
 from armi import configure, runLog
-
-# init ARMI logging tools
-logging.setLoggerClass(runLog.RunLogger)
 
 # configure ARMI
 configure(permissive=True)
