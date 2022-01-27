@@ -1,5 +1,27 @@
-Tooling and infrastructure
+Tooling and Infrastructure
 ==========================
+
+Good Commit Messages
+--------------------
+The ARMI project follows a few basic rools for "good" commit messages:
+
+* The purpose of the message is to explain to the changes you made to a stranger 5 years from now.
+* Keep your writing short and to the point.
+* The first line of each commit must be shorter than 50 characters.
+* Commit messages should be active voice, present tense.
+* Multi-line comments are allowed, but make sure the second line of the commit is blank:
+
+.. code-block::
+
+    Adding this commit for REASONS.
+
+    Here is some super important extra info.
+    Oh, there is so much extra info.
+    This section
+    * is
+    * totally
+    * optional.
+
 
 Packaging and dependency management
 -----------------------------------
