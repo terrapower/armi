@@ -1,4 +1,4 @@
-# Unlike usual, we are tightly constraining our docs/Sphinx requirements.
+# these are most specified that usual, because Sphinx docs seem to be quite fragile
 Sphinx==4.4.0
 
 # Parses Jupyter notebooks
