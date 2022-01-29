@@ -87,7 +87,7 @@ setup(
             "pytest-html",
             "pylint",
             "docutils",
-            "sphinx==2.2",
+            "sphinx",
             "sphinx-rtd-theme",
             "black",
             # for running jupyter dynamically in docs
@@ -97,7 +97,6 @@ setup(
             "ipykernel",
             "nbsphinx",
             "nbsphinx-link",
-            "pandoc",
             "sphinxext-opengraph",
             "sphinx-gallery",
         ],

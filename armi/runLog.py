@@ -145,7 +145,7 @@ class _RunLog:
             except AttributeError:
                 exec(_ADD_LOG_METHOD_STR.format(longLogString, logValue))
 
-    def log(self, msgType, msg, single=False, label=None):
+    def log(self, msgType, msg, single=False, label=None, **kwargs):
         """
         This is a wrapper around logger.log() that does most of the work and is
         used by all message passers (e.g. info, warning, etc.).
@@ -475,7 +475,7 @@ class RunLogger(logging.Logger):
         handler.setFormatter(form)
         self.addHandler(handler)
 
-    def log(self, msgType, msg, single=False, label=None):
+    def log(self, msgType, msg, single=False, label=None, **kwargs):
         """
         This is a wrapper around logger.log() that does most of the work and is
         used by all message passers (e.g. info, warning, etc.).
