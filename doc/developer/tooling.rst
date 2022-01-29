@@ -82,7 +82,10 @@ Every release should follow this process:
 2. Bump the ``__version__`` string in ``armi/meta.py``.
 3. Add release notes to the documentation:
    `here <https://github.com/terrapower/armi/tree/master/doc/release>`__.
-4. Tag the commit after it goes into the repo: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+4. Tag the commit after it goes into the repo:
+  - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+  - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
+  - Pushing to the repo: ``git push 1.0.0``
 5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
 6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
    archive the new documentation.

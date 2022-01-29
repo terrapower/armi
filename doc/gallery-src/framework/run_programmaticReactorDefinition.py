@@ -28,13 +28,8 @@ This example shows how to make Blueprints objects programmatically completely
 from scratch.
 
 """
-import logging
-
 import matplotlib.pyplot as plt
 from armi import configure, runLog
-
-# init ARMI logging tools
-logging.setLoggerClass(runLog.RunLogger)
 
 # configure ARMI
 configure(permissive=True)
