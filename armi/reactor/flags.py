@@ -216,7 +216,6 @@ class Flags(Flag):
     FUEL = auto()
     TEST = auto()
     CONTROL = auto()
-    MOVABLE = auto()  # Allows movement of lower plenum with control rod
     ULTIMATE = auto()
     SHUTDOWN = auto()
     SHIELD = auto()
@@ -277,6 +276,9 @@ class Flags(Flag):
 
     STRUCTURE = auto()
     DEPLETABLE = auto()
+
+    # Allows movement of lower plenum with control rod
+    MOVABLE = auto()
 
     @classmethod
     def fromStringIgnoreErrors(cls, typeSpec):
