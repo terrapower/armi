@@ -89,7 +89,7 @@ setup(
             "docutils",
             "sphinx",
             "sphinx-rtd-theme",
-            "black",
+            "black==20.8b1",
             # for running jupyter dynamically in docs
             "sphinxcontrib-apidoc",
             "jupyter_client",
