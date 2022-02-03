@@ -13,7 +13,7 @@ What's new in ARMI v0.2.3
 
 Bug fixes
 ---------
-#. TBD
+#. Fixed issue where UML diagrams weren't being generated in docs (`#550 <https://github.com/terrapower/armi/issues/550>`_)
 
 
 ARMI v0.2.2
