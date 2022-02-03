@@ -28,3 +28,6 @@ ipykernel==6.7.0
 
 # helps us use RST files
 docutils<0.18
+
+# used to generate UML diagrams
+pylint==2.7.4
