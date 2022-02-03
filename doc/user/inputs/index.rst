@@ -6,7 +6,7 @@ ARMI input files define the initial state of the reactor model and tell ARMI wha
 performed on it.
 
 .. note:: We have an :doc:`input walkthrough </tutorials/walkthrough_inputs>` tutorial for a quick 
-    overview of th inputs.
+    overview of the inputs.
 
 There are several input files:
 
