@@ -821,6 +821,53 @@ class TestHelix(TestShapedComponent):
             cur = d in self.component.THERMAL_EXPANSION_DIMS
             self.assertEqual(cur, ref[i])
 
+    def test_validParameters(self):
+        """testing the Helix class performs as expected with various inputs"""
+        # stupid/simple inputs
+        h = Helix("thing", "Cu", 0, 0, 1, 1, 1)
+        self.assertEqual(h.getDimension("axialPitch"), 1)
+
+        # standard case / inputs ordered well
+        h = Helix(
+            "what",
+            "Cu",
+            Tinput=25.0,
+            Thot=425.0,
+            id=0.1,
+            od=0.35,
+            mult=1.0,
+            axialPitch=1.123,
+            helixDiameter=1.5,
+        )
+        self.assertTrue(1.123 < h.getDimension("axialPitch") < 1.15)
+
+        # inputs ordered crazy
+        h = Helix(
+            material="Cu",
+            id=0.1,
+            mult=1.0,
+            Tinput=25.0,
+            Thot=425.0,
+            axialPitch=1.123,
+            name="stuff",
+            od=0.35,
+            helixDiameter=1.5,
+        )
+        self.assertTrue(1.123 < h.getDimension("axialPitch") < 1.15)
+
+        # missing helixDiameter input
+        with self.assertRaises(TypeError):
+            h = Helix(
+                name="helix",
+                material="Cu",
+                Tinput=25.0,
+                Thot=425.0,
+                id=0.1,
+                od=0.35,
+                mult=1.0,
+                axialPitch=1.123,
+            )
+
 
 class TestSphere(TestShapedComponent):
     componentCls = Sphere
