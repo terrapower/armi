@@ -277,6 +277,9 @@ class Flags(Flag):
     STRUCTURE = auto()
     DEPLETABLE = auto()
 
+    # Allows movement of lower plenum with control rod
+    MOVEABLE = auto()
+
     @classmethod
     def fromStringIgnoreErrors(cls, typeSpec):
         return _fromStringIgnoreErrors(cls, typeSpec)

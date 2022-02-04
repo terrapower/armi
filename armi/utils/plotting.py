@@ -321,8 +321,9 @@ def plotFaceMap(
     collection.set_array(numpy.array(data))
     if minScale or maxScale:
         collection.set_clim([minScale, maxScale])
+    else:
+        collection.norm.autoscale(numpy.array(data))
     ax.add_collection(collection)
-    collection.norm.autoscale(numpy.array(data))
 
     # Makes text in the center of each shape displaying the values.
     # (The text is either black or white depending on the background color it is written on)

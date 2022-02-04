@@ -263,14 +263,25 @@ class TestRunLog(unittest.TestCase):
             context.createLogDir(0, logDir)
 
             # create as stdout file
-            stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
-            with open(stdoutFile, "w") as f:
+            stdoutFile1 = os.path.join(
+                logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stdoutFile1, "w") as f:
                 f.write("hello world\n")
 
-            self.assertTrue(os.path.exists(stdoutFile))
+            stdoutFile2 = os.path.join(
+                logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stdoutFile2, "w") as f:
+                f.write("hello other world\n")
+
+            self.assertTrue(os.path.exists(stdoutFile1))
+            self.assertTrue(os.path.exists(stdoutFile2))
 
             # create a stderr file
-            stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
+            stderrFile = os.path.join(
+                logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME)
+            )
             with open(stderrFile, "w") as f:
                 f.write("goodbye cruel world\n")
 
@@ -280,7 +291,10 @@ class TestRunLog(unittest.TestCase):
             runLog.concatenateLogs(logDir=logDir)
 
             # verify output
-            self.assertFalse(os.path.exists(stdoutFile))
+            combinedLogFile = os.path.join(logDir, "runLogTest-mpi.log")
+            self.assertTrue(os.path.exists(combinedLogFile))
+            self.assertFalse(os.path.exists(stdoutFile1))
+            self.assertFalse(os.path.exists(stdoutFile2))
             self.assertFalse(os.path.exists(stderrFile))
 
 
