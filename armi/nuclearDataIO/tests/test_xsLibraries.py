@@ -245,11 +245,11 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         finally:
             os.remove(dummyFileName)
 
-        dummyFileName = "isotopics.txt"
+        dummyFileName = "ISOtopics.txt"
         with open(dummyFileName, "w") as file:
             file.write(
-                "This is a file that starts with the letters 'iso' but is not"
-                " an ISOXX file."
+                "This is a file that starts with the letters 'ISO' but will"
+                " break the regular expression search."
             )
 
         try:
