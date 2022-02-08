@@ -24,6 +24,8 @@ jobs:
         run: sudo apt-get -y install pandoc
       - name: Install Tox and any other packages
         run: pip install tox
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v1
       - name: Make HTML Docs
         run: tox -e doc
       - name: deploy
