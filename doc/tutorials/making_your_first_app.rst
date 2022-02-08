@@ -8,7 +8,8 @@ Making your first ARMI-based App
 
 In this tutorial we will build a nuclear analysis application that runs (dummy) neutron
 flux and thermal/hydraulics calculations. Applications that do real analysis can be
-modeled after this starting point.
+modeled after this starting point. A complete, working version of this application can
+be found `here <https://github.com/terrapower/armi-example-app>`_.
 
 We'll assume you have the :doc:`ARMI Framework installed </user/user_install>` already.
 You can make sure it is ready by running the following command in a shell prompt::
@@ -47,6 +48,7 @@ files for us to fill in, like this::
             app.py
             plugin.py
             fluxSolver.py
+            materials.py
             thermalSolver.py
         doc/
         setup.py
