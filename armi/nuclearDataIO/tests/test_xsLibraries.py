@@ -246,7 +246,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
             os.remove(dummyFileName)
 
         dummyFileName = "isotopics.txt"
-        with open(dummyFileName, 'w') as file:
+        with open(dummyFileName, "w") as file:
             file.write(
                 "This is a file that starts with the letters 'iso' but is not"
                 " an ISOXX file."
