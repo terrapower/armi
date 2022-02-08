@@ -1,8 +1,7 @@
 # See the discussion in docs\developer\tooling
 --prefer-binary
-# see https://github.com/numpy/numpy/issues/17726
-# This is included in requirements.txt because it is not a semantic version
-# bound, but rather intended to avoid a bug in windows
-numpy<1.19.4
+# see https://github.com/advisories/GHSA-6p56-wp2h-9hxr
+# This is included in requirements.txt because of a security alert numpy released
+numpy>=1.21
 
 -e .[memprof]
