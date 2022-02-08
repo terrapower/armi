@@ -18,14 +18,9 @@ Plot a reactor facemap
 Load a test reactor from the test suite and plot a dummy
 power distribution from it. You can plot any block parameter.
 """
-import logging
-
 from armi.reactor.tests import test_reactors
 from armi.utils import plotting
 from armi import configure, runLog
-
-# init ARMI logging tools
-logging.setLoggerClass(runLog.RunLogger)
 
 # configure ARMI
 configure(permissive=True)

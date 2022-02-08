@@ -17,15 +17,17 @@ This module defines the ARMI input for a component definition, and code for cons
 
 Special logic is required for handling component links.
 """
-import six
 import yamlize
 
 from armi import runLog
 from armi import materials
 from armi.reactor import components
+from armi.reactor import composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
 from armi.nucDirectory import nuclideBases
+
+COMPONENT_GROUP_SHAPE = "group"
 
 
 class ComponentDimension(yamlize.Object):
@@ -38,7 +40,7 @@ class ComponentDimension(yamlize.Object):
     def __init__(self, value):
         # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
         self.value = value
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             if not components.COMPONENT_LINK_REGEX.search(value):
                 raise ValueError(
                     "Bad component link `{}`, must be in form `name.dimension`".format(
@@ -124,20 +126,30 @@ class ComponentBlueprint(yamlize.Object):
 
     @name.validator
     def name(self, name):  # pylint: disable=no-self-use; reason=yamlize requirement
-        if name in {"cladding"}:
-            raise ValueError("Cannot set ComponentBlueprint.name to {}".format(name))
+        """Validate component names."""
+        if name == "cladding":
+            # many users were mixing cladding and clad and it caused issues downstream
+            # where physics plugins checked for clad.
+            raise ValueError(
+                f"Cannot set ComponentBlueprint.name to {name}. Prefer 'clad'."
+            )
 
     shape = yamlize.Attribute(type=str)
 
     @shape.validator
     def shape(self, shape):  # pylint: disable=no-self-use; reason=yamlize requirement
         normalizedShape = shape.strip().lower()
-        if normalizedShape not in components.ComponentType.TYPES:
-            raise ValueError("Cannot set ComponentBlueprint.shape to {}".format(shape))
+        if (
+            normalizedShape not in components.ComponentType.TYPES
+            and normalizedShape != COMPONENT_GROUP_SHAPE
+        ):
+            raise ValueError(
+                f"Cannot set ComponentBlueprint.shape to unknown shape: {shape}"
+            )
 
-    material = yamlize.Attribute(type=str)
-    Tinput = yamlize.Attribute(type=float)
-    Thot = yamlize.Attribute(type=float)
+    material = yamlize.Attribute(type=str, default=None)
+    Tinput = yamlize.Attribute(type=float, default=None)
+    Thot = yamlize.Attribute(type=float, default=None)
     isotopics = yamlize.Attribute(type=str, default=None)
     latticeIDs = yamlize.Attribute(type=list, default=None)
     origin = yamlize.Attribute(type=list, default=None)
@@ -146,28 +158,27 @@ class ComponentBlueprint(yamlize.Object):
     area = yamlize.Attribute(type=float, default=None)
 
     def construct(self, blueprint, matMods):
-        """Construct a component"""
+        """Construct a component or group"""
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
-        component = components.factory(self.shape.strip().lower(), [], kwargs)
+        shape = self.shape.lower().strip()
+        if shape == COMPONENT_GROUP_SHAPE:
+            group = blueprint.componentGroups[self.name]
+            constructedObject = composites.Composite(self.name)
+            for groupedComponent in group:
+                componentDesign = blueprint.componentDesigns[groupedComponent.name]
+                component = componentDesign.construct(blueprint, matMods=dict())
+                # override free component multiplicity if it's set based on the group definition
+                component.setDimension("mult", groupedComponent.mult)
+                _setComponentFlags(component, self.flags, blueprint)
+                _insertDepletableNuclideKeys(component, blueprint)
+                constructedObject.add(component)
 
-        # the component __init__ calls setType(), which gives us our initial guess at
-        # what the flags should be.
-        if self.flags is not None:
-            # override the flags from __init__ with the ones from the blueprint
-            component.p.flags = Flags.fromString(self.flags)
         else:
-            # potentially add the DEPLETABLE flag. Don't do this if we set flags
-            # explicitly. WARNING: If you add flags explicitly, it will
-            # turn off depletion so be sure to add depletable to your list of flags
-            # if you expect depletion
-            if any(nuc in blueprint.activeNuclides for nuc in component.getNuclides()):
-                component.p.flags |= Flags.DEPLETABLE
-
-        if component.hasFlags(Flags.DEPLETABLE):
-            # depletable components, whether auto-derived or explicitly flagged need expanded nucs
-            _insertDepletableNuclideKeys(component, blueprint)
-        return component
+            constructedObject = components.factory(shape, [], kwargs)
+            _setComponentFlags(constructedObject, self.flags, blueprint)
+            _insertDepletableNuclideKeys(constructedObject, blueprint)
+        return constructedObject
 
     def _conformKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component"""
@@ -288,9 +299,11 @@ def _insertDepletableNuclideKeys(c, blueprint):
     armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.isDepletable :
         contains design docs describing the ``DEPLETABLE`` flagging situation
     """
-    nuclideBases.initReachableActiveNuclidesThroughBurnChain(
-        c.p.numberDensities, blueprint.activeNuclides
-    )
+    if c.hasFlags(Flags.DEPLETABLE):
+        # depletable components, whether auto-derived or explicitly flagged need expanded nucs
+        nuclideBases.initReachableActiveNuclidesThroughBurnChain(
+            c.p.numberDensities, blueprint.activeNuclides
+        )
 
 
 class ComponentKeyedList(yamlize.KeyedList):
@@ -305,6 +318,46 @@ class ComponentKeyedList(yamlize.KeyedList):
 
     item_type = ComponentBlueprint
     key_attr = ComponentBlueprint.name
+
+
+class GroupedComponent(yamlize.Object):
+    """
+    A pointer to a component with a multiplicity to be used in a ComponentGroup.
+
+    Multiplicity can be a fraction (e.g. to set volume fractions)
+    """
+
+    name = yamlize.Attribute(type=str)
+    mult = yamlize.Attribute(type=float)
+
+
+class ComponentGroup(yamlize.KeyedList):
+    """
+    A single component group containing multiple GroupedComponents
+
+    Example
+    -------
+    triso:
+      kernel:
+        mult: 0.7
+      buffer:
+        mult: 0.3
+    """
+
+    group_name = yamlize.Attribute(type=str)
+    key_attr = GroupedComponent.name
+    item_type = GroupedComponent
+
+
+class ComponentGroups(yamlize.KeyedList):
+    """
+    A list of component groups.
+
+    This is used in the top-level blueprints file.
+    """
+
+    key_attr = ComponentGroup.group_name
+    item_type = ComponentGroup
 
 
 # This import-time magic requires all possible components
@@ -324,3 +377,19 @@ for dimName in set(
         dimName,
         yamlize.Attribute(name=dimName, type=ComponentDimension, default=None),
     )
+
+
+def _setComponentFlags(component, flags, blueprint):
+    """Update component flags based on user input in blueprint"""
+    # the component __init__ calls setType(), which gives us our initial guess at
+    # what the flags should be.
+    if flags is not None:
+        # override the flags from __init__ with the ones from the blueprint
+        component.p.flags = Flags.fromString(flags)
+    else:
+        # potentially add the DEPLETABLE flag. Don't do this if we set flags
+        # explicitly. WARNING: If you add flags explicitly, it will
+        # turn off depletion so be sure to add depletable to your list of flags
+        # if you expect depletion
+        if any(nuc in blueprint.activeNuclides for nuc in component.getNuclides()):
+            component.p.flags |= Flags.DEPLETABLE

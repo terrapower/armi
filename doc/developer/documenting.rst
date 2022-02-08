@@ -23,8 +23,16 @@ your ARMI virtual environment with::
 
     pip3 install -r requirements-testing.txt
 
-You also need to have `Graphviz <https://graphviz.org/>`_ and `Pandoc
-<https://pandoc.org/>`_ installed.
+You also need to have the following utilities available in your PATH:
+
+* `Graphviz <https://graphviz.org/>`_
+* `Pandoc <https://pandoc.org/>`_
+
+If you want to build the documentation into a PDF using the Sphinx LaTeX
+builder, you also need:
+
+* LaTeX (`MikTeX <https://miktex.org/>`_ on Windows)
+* `ImageMagick <https://imagemagick.org/>`_
 
 The documentation depends on at least one submodule as well, so you must be sure
 it is available in your source tree with::
@@ -32,7 +40,7 @@ it is available in your source tree with::
     git submodule update --init
 
 
-To build the ARMI documentation, go to the ``doc`` folder and run::
+To build the ARMI documentation as html, go to the ``doc`` folder and run::
 
     make html
 

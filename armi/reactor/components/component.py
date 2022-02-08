@@ -21,7 +21,6 @@ import re
 import copy
 
 import numpy
-import six
 
 from armi.materials import material
 from armi.materials import custom
@@ -277,12 +276,13 @@ class Component(composites.Composite, metaclass=ComponentType):
             self.setDimension(key, val)
 
         if components:
-            self._resolveLinkedDims(components)
+            self.resolveLinkedDims(components)
 
-    def _resolveLinkedDims(self, components):
+    def resolveLinkedDims(self, components):
+        """Convert dimension link strings to actual links."""
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
-            if not isinstance(value, six.string_types):
+            if not isinstance(value, str):
                 continue
 
             match = COMPONENT_LINK_REGEX.search(value)

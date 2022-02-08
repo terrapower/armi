@@ -1,5 +1,27 @@
-Tooling and infrastructure
+Tooling and Infrastructure
 ==========================
+
+Good Commit Messages
+--------------------
+The ARMI project follows a few basic rools for "good" commit messages:
+
+* The purpose of the message is to explain to the changes you made to a stranger 5 years from now.
+* Keep your writing short and to the point.
+* The first line of each commit must be shorter than 50 characters.
+* Commit messages should be active voice, present tense.
+* Multi-line comments are allowed, but make sure the second line of the commit is blank:
+
+.. code-block::
+
+    Adding this commit for REASONS.
+
+    Here is some super important extra info.
+    Oh, there is so much extra info.
+    This section
+    * is
+    * totally
+    * optional.
+
 
 Packaging and dependency management
 -----------------------------------
@@ -60,7 +82,10 @@ Every release should follow this process:
 2. Bump the ``__version__`` string in ``armi/meta.py``.
 3. Add release notes to the documentation:
    `here <https://github.com/terrapower/armi/tree/master/doc/release>`__.
-4. Tag the commit after it goes into the repo: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+4. Tag the commit after it goes into the repo:
+  - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+  - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
+  - Pushing to the repo: ``git push 1.0.0``
 5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
 6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
    archive the new documentation.
