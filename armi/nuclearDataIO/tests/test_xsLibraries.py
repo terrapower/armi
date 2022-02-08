@@ -255,7 +255,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         try:
             with mockRunLogs.BufferLog() as log:
                 lib = xsLibraries.IsotxsLibrary()
-                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
+                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
                 self.assertTrue(
                     f"Ignoring file {dummyFileName} in the merging of ISOXX files"
                     in log.getStdoutValue()
