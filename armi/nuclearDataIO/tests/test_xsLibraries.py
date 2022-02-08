@@ -245,6 +245,24 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         finally:
             os.remove(dummyFileName)
 
+        dummyFileName = "isotopics.txt"
+        with open(dummyFileName, 'w') as file:
+            file.write(
+                "This is a file that starts with the letters 'iso' but is not"
+                " an ISOXX file."
+            )
+
+        try:
+            with mockRunLogs.BufferLog() as log:
+                lib = xsLibraries.IsotxsLibrary()
+                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
+                self.assertTrue(
+                    f"Ignoring file {dummyFileName} in the merging of ISOXX files"
+                    in log.getStdoutValue()
+                )
+        finally:
+            os.remove(dummyFileName)
+
     def _xsLibraryAttributeHelper(
         self,
         lib,
