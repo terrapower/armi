@@ -317,7 +317,7 @@ def defineSettings() -> List[setting.Setting]:
             default=[10, 20, 30, 100],
             label="Burnup Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type",
+            "for a given assembly type (units of %FIMA).",
             schema=vol.Schema([vol.Any(int, float)]),
         ),
         setting.Setting(

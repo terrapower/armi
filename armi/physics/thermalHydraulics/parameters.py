@@ -77,13 +77,6 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THdeltaPFric",
-            units="Pa",
-            saveToDB=False,
-            description="Friction component to the pressure drop.",
-        )
-
-        pb.defParam(
             "THdeltaPInlet",
             units="Pa",
             saveToDB=False,
@@ -312,13 +305,6 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THassemPressDrop",
-            units="Pa",
-            description="The pressure drop across this block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "THaveCoolantVel",
             units="m/s",
             description="Average of the inlet and outlet coolant velocities",
@@ -372,13 +358,6 @@ def _getBlockParams():
             "THcoolantStaticT",
             units=units.DEGC,
             description="Volume-based average coolant temperature, recommended for neutronics",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THdPfrict",
-            units="Pa",
-            description="Frictional pressure drop",
             location=ParamLocation.AVERAGE,
         )
 
