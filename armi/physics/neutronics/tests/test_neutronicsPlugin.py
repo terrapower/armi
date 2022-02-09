@@ -21,6 +21,11 @@ import voluptuous as vol
 
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.settings import (
+    CONF_OUTERS_,
+    CONF_INNERS_,
+    CONF_NEUTRONICS_KERNEL,
+)
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
@@ -61,6 +66,14 @@ class Test_NeutronicsPlugin(TestPlugin):
         fname = "test_setting_obj_io_round.yaml"
         cs.writeToYamlFile(fname)
         os.remove(fname)
+
+    def test_neutronicsSettingsLoaded(self):
+        """Check that various special neutronics-specifics settings are loaded"""
+        cs = caseSettings.Settings()
+
+        self.assertIn(CONF_INNERS_, cs)
+        self.assertIn(CONF_OUTERS_, cs)
+        self.assertIn(CONF_NEUTRONICS_KERNEL, cs)
 
 
 class NeutronicsReactorTests(unittest.TestCase):
