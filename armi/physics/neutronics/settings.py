@@ -37,6 +37,8 @@ CONF_EIGEN_PROB = "eigenProb"
 CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
+CONF_OUTERS_ = "outers"
+CONF_INNERS_ = "inners"
 
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
@@ -226,6 +228,18 @@ def defineSettings():
             default=False,
             label="Restart neutronics",
             description="Restart global flux case using outputs from last time as a guess",
+        ),
+        setting.Setting(
+            CONF_OUTERS_,
+            default=100,
+            label="Max Outer Iterations",
+            description="max outer iterations",
+        ),
+        setting.Setting(
+            CONF_INNERS_,
+            default=0,
+            label="Inner Iterations",
+            description="XY and Axial partial current sweep inner iterations. 0 is let DIF3D pick or use default if can't pick.",
         ),
         setting.Setting(
             CONF_GRID_PLATE_DPA_XS_SET,
