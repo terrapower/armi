@@ -175,9 +175,16 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
     librariesToMerge = []
     neutronVelocities = {}  # Dictionary of neutron velocities from each ISOTXS file
     for xsLibFilePath in sorted(xsLibFiles):
-        xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
-            1
-        )  # get XS ID from the cross section library name
+        try:
+            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
+                1
+            )  # get XS ID from the cross section library name
+        except AttributeError:
+            # if glob has matched something that is not actually an ISOXX file,
+            # the .group() call will fail
+            runLog.debug(f"Ignoring file {xsLibFilePath} in the merging of ISOXX files")
+            continue
+
         xsFileTypes = "ISOTXS" if not mergeGammaLibs else "ISOTXS, GAMISO, and PMATRX"
         runLog.info(
             "Retrieving {} data for XS ID {}{}".format(
