@@ -9,10 +9,15 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
+#. Removed unused Thermal Hydraulics settings.
 #. TBD
 
 Bug fixes
 ---------
+#. Supporting swapping assemblies with different block meshes in ``_swapFluxParam``.
+#. Fixed issues finding ``ISOXX`` files cross-platform.
+#. Fixed issue with docs not correctly loading their Git submodule in TOX.
 #. TBD
 
 
