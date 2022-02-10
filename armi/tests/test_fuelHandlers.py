@@ -519,7 +519,7 @@ class TestFuelHandler(ArmiTestHelper):
         locSchedule = fh.buildEqRingSchedule([2, 1])
         self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
-    def test_swapFuelParam(self):
+    def test_swapFluxParamSameLength(self):
         # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FEED)
         self.assertEqual(len(assems), 14)
@@ -533,8 +533,86 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(list(a1.getBlocks())[3].p.height, 25)
         self.assertEqual(list(a2.getBlocks())[3].p.height, 25)
 
-        blocks2 = a2.getBlocks()
+        # grab the blocks from the second assembly
+        blocks1 = list(a1.getBlocks())
+        blocks2 = list(a2.getBlocks())
+        self.assertEqual(len(blocks1), 5)
         self.assertEqual(len(blocks2), 5)
+
+        # alter the values of a single block in assembly 2
+        b2 = list(blocks2)[1]
+        b2.p.flux = b2.p.flux * 2
+        b2.p.power = 1000
+        b2.p.pdens = b2.p.power / b2.getVolume()
+
+        # validate the situation is as you'd expect
+        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.flux, 100000000000.0)
+        self.assertEqual(list(a1.getBlocks())[1].p.power, 0.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.power, 1000.0)
+        self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
+        self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
+
+        # to the swap
+        fh = fuelHandlers.FuelHandler(self.o)
+        fh._swapFluxParam(a1, a2)
+
+        # validate the swap worked
+        self.assertEqual(list(a1.getBlocks())[1].p.flux, 100000000000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a1.getBlocks())[1].p.power, 1000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.power, 0.0)
+        self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
+
+    def test_swapFluxParamDifferentLength(self):
+        # grab the assemblies
+        assems = self.r.core.getAssemblies(Flags.FEED)
+
+        # make two copies of an arbitraty assembly
+        a1 = copy.deepcopy(list(assems)[1])
+        a2 = copy.deepcopy(list(assems)[1])
+        self.assertEqual(list(a1.getBlocks())[3].p.height, 25)
+        self.assertEqual(list(a2.getBlocks())[3].p.height, 25)
+
+        # grab the blocks from the second assembly
+        blocks2 = copy.deepcopy(list(a2.getBlocks()))
+        self.assertEqual(len(blocks2), 5)
+
+        # grab a single block from the second assembly, to be altered
+        b2 = list(blocks2)[1]
+        height2 = 25.0
+        volume2 = 6074.356
+        self.assertEqual(b2.p.height, height2)
+        self.assertEqual(b2.p.flux, 50000000000.0)
+        self.assertIsNone(b2.p.mgFlux)
+        self.assertEqual(b2.p.power, 0.0)
+        self.assertEqual(b2.p.pdens, 0.0)
+        self.assertAlmostEqual(b2.getVolume(), volume2, delta=0.1)
+
+        # split the the block into two of half the heights
+        b20 = copy.deepcopy(b2)
+        b21 = copy.deepcopy(b2)
+        b20.setHeight(height2 / 2)
+        b21.setHeight(height2 / 2)
+        self.assertAlmostEqual(b20.getVolume(), volume2 / 2, delta=0.1)
+        self.assertAlmostEqual(b21.getVolume(), volume2 / 2, delta=0.1)
+
+        # give the two new (smaller) blocks some power/pdens
+        b20.p.power = 1000
+        b21.p.power = 2000
+        b20.p.pdens = b20.p.power / b20.getVolume()
+        b21.p.pdens = b21.p.power / b21.getVolume()
+        self.assertEqual(b20.p.power, 1000.0)
+        self.assertEqual(b21.p.power, 2000.0)
+        self.assertAlmostEqual(b20.p.pdens, 0.3292, delta=0.1)
+        self.assertAlmostEqual(b21.p.pdens, 0.6585, delta=0.1)
+
+        # give the second assembly the new blocks
+        a2._children = blocks2
+
+        fh = fuelHandlers.FuelHandler(self.o)
+        fh._swapFluxParam(a1, a2)
 
 
 class TestFuelPlugin(unittest.TestCase):

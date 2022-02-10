@@ -1437,6 +1437,7 @@ class FuelHandler:
                 "{0} and {1} have different numbers of blocks. Flux swapping (for XS weighting) will "
                 "be questionable".format(incoming, outgoing)
             )
+            return
 
         for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
             if (
@@ -1452,10 +1453,12 @@ class FuelHandler:
                     bIncoming.p.flux = outgoingFlux
                     bIncoming.p.mgFlux = outgoingMgFlux
                     bIncoming.p.power = outgoingPower
+                    bIncoming.p.pdens = outgoingPower / bIncoming.getVolume()
                 if incomingFlux > 0.0:
                     bOutgoing.p.flux = incomingFlux
                     bOutgoing.p.mgFlux = incomingMgFlux
                     bOutgoing.p.power = incomingPower
+                    bOutgoing.p.pdens = incomingPower / bOutgoing.getVolume()
 
     def swapCascade(self, assemList):
         """
