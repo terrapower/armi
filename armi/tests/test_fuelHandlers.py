@@ -530,22 +530,20 @@ class TestFuelHandler(ArmiTestHelper):
         # make two copies of an arbitraty assembly
         a1 = copy.deepcopy(list(assems)[1])
         a2 = copy.deepcopy(list(assems)[1])
-        self.assertEqual(list(a1.getBlocks())[3].p.height, 25)
-        self.assertEqual(list(a2.getBlocks())[3].p.height, 25)
-
-        # grab the blocks from the second assembly
         blocks1 = list(a1.getBlocks())
         blocks2 = list(a2.getBlocks())
         self.assertEqual(len(blocks1), 5)
         self.assertEqual(len(blocks2), 5)
+        self.assertEqual(blocks1[3].p.height, 25)
+        self.assertEqual(blocks2[3].p.height, 25)
 
-        # alter the values of a single block in assembly 2
+        # 1. alter the values of a single block in assembly 2
         b2 = list(blocks2)[1]
         b2.p.flux = b2.p.flux * 2
         b2.p.power = 1000
         b2.p.pdens = b2.p.power / b2.getVolume()
 
-        # validate the situation is as you'd expect
+        # 2. validate the situation is as you'd expect
         self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
         self.assertEqual(list(a2.getBlocks())[1].p.flux, 100000000000.0)
         self.assertEqual(list(a1.getBlocks())[1].p.power, 0.0)
@@ -553,11 +551,11 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
         self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
 
-        # to the swap
+        # 3. do the swap
         fh = fuelHandlers.FuelHandler(self.o)
         fh._swapFluxParam(a1, a2)
 
-        # validate the swap worked
+        # 4. validate the swap worked
         self.assertEqual(list(a1.getBlocks())[1].p.flux, 100000000000.0)
         self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
         self.assertEqual(list(a1.getBlocks())[1].p.power, 1000.0)
@@ -565,29 +563,29 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
         self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
 
-    def test_swapFluxParamDifferentLength(self):
+    def test_swapFluxParamDifferentLengths(self):
         # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FEED)
 
         # make two copies of an arbitraty assembly
         a1 = copy.deepcopy(list(assems)[1])
         a2 = copy.deepcopy(list(assems)[1])
-        self.assertEqual(list(a1.getBlocks())[3].p.height, 25)
-        self.assertEqual(list(a2.getBlocks())[3].p.height, 25)
+        height2 = 25.0
+        self.assertEqual(list(a1.getBlocks())[3].p.height, height2)
+        self.assertEqual(list(a2.getBlocks())[3].p.height, height2)
 
         # grab the blocks from the second assembly
-        blocks2 = copy.deepcopy(list(a2.getBlocks()))
+        blocks2 = list(a2.getBlocks())
         self.assertEqual(len(blocks2), 5)
 
         # grab a single block from the second assembly, to be altered
         b2 = list(blocks2)[1]
-        height2 = 25.0
-        volume2 = 6074.356
         self.assertEqual(b2.p.height, height2)
         self.assertEqual(b2.p.flux, 50000000000.0)
         self.assertIsNone(b2.p.mgFlux)
         self.assertEqual(b2.p.power, 0.0)
         self.assertEqual(b2.p.pdens, 0.0)
+        volume2 = 6074.356
         self.assertAlmostEqual(b2.getVolume(), volume2, delta=0.1)
 
         # split the the block into two of half the heights
@@ -609,10 +607,43 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertAlmostEqual(b21.p.pdens, 0.6585, delta=0.1)
 
         # give the second assembly the new blocks
-        a2._children = blocks2
+        a2._children = [blocks2[0]] + [b20, b21] + blocks2[2:]
 
+        # validate the situation is as you'd expect
+        self.assertEqual(len(a1.getBlocks()), 5)
+        self.assertEqual(len(a2.getBlocks()), 6)
+
+        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a2.getBlocks())[2].p.flux, 50000000000.0)
+
+        self.assertEqual(list(a1.getBlocks())[1].p.power, 0.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.power, 1000.0)
+        self.assertEqual(list(a2.getBlocks())[2].p.power, 2000.0)
+
+        self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
+        self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
+        self.assertGreater(list(a2.getBlocks())[2].p.pdens, 0.0)
+
+        # do the swap
         fh = fuelHandlers.FuelHandler(self.o)
         fh._swapFluxParam(a1, a2)
+
+        # validate the swap worked
+        self.assertEqual(len(a1.getBlocks()), 5)
+        self.assertEqual(len(a2.getBlocks()), 6)
+
+        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a2.getBlocks())[2].p.flux, 50000000000.0)
+
+        self.assertEqual(list(a1.getBlocks())[1].p.power, 1500.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.power, 0.0)
+        self.assertEqual(list(a2.getBlocks())[2].p.power, 0.0)
+
+        self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
+        self.assertEqual(list(a2.getBlocks())[2].p.pdens, 0.0)
 
 
 class TestFuelPlugin(unittest.TestCase):
