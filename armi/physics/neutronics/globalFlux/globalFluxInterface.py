@@ -734,7 +734,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         These parameters are left as zeroes at BOC because no dose has been accumulated yet.
         """
         if self.r.p.timeNode <= 0:
-            continue
+            return
 
         maxDetailedDpaThisCycle = 0.0
         peakDoseAssem = None
