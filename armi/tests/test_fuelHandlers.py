@@ -121,7 +121,7 @@ class TestFuelHandler(ArmiTestHelper):
 
         self.directoryChanger.close()
 
-    def test_FindHighBu(self):
+    def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
         # set burnup way over 1.0, which is otherwise the highest bu in the core
@@ -133,7 +133,7 @@ class TestFuelHandler(ArmiTestHelper):
         )
         self.assertIs(a, a1)
 
-    def test_Width(self):
+    def test_width(self):
         """Tests the width capability of findAssembly."""
         fh = fuelHandlers.FuelHandler(self.o)
         assemsByRing = collections.defaultdict(list)
@@ -224,10 +224,8 @@ class TestFuelHandler(ArmiTestHelper):
             "The lowest power ring returned is {0}. It should be {1}".format(ring, 1),
         )
 
-    def test_FindMany(self):
-        r"""
-        Tests the findMany and type aspects of the fuel handler
-        """
+    def test_findMany(self):
+        """Tests the findMany and type aspects of the fuel handler"""
         fh = fuelHandlers.FuelHandler(self.o)
 
         igniters = fh.findAssembly(typeSpec=Flags.IGNITER | Flags.FUEL, findMany=True)
@@ -256,9 +254,7 @@ class TestFuelHandler(ArmiTestHelper):
         )
 
     def test_findInSFP(self):
-        r"""
-        Tests ability to pull from the spent fuel pool.
-        """
+        """Tests ability to pull from the spent fuel pool"""
         fh = fuelHandlers.FuelHandler(self.o)
         spent = fh.findAssembly(
             findMany=True,
@@ -522,6 +518,23 @@ class TestFuelHandler(ArmiTestHelper):
         fh = fuelHandlers.FuelHandler(self.o)
         locSchedule = fh.buildEqRingSchedule([2, 1])
         self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
+
+    def test_swapFuelParam(self):
+        # grab the assemblies
+        assems = self.r.core.getAssemblies(Flags.FEED)
+        self.assertEqual(len(assems), 14)
+
+        for a in assems:
+            self.assertEqual(len(a.getBlocks()), 5)
+
+        # make two copies of an arbitraty assembly
+        a1 = copy.deepcopy(list(assems)[1])
+        a2 = copy.deepcopy(list(assems)[1])
+        self.assertEqual(list(a1.getBlocks())[3].p.height, 25)
+        self.assertEqual(list(a2.getBlocks())[3].p.height, 25)
+
+        blocks2 = a2.getBlocks()
+        self.assertEqual(len(blocks2), 5)
 
 
 class TestFuelPlugin(unittest.TestCase):

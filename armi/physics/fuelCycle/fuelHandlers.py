@@ -1332,12 +1332,12 @@ class FuelHandler:
         --------
         dischargeSwap : swap assemblies where one is outside the core and the other is inside
         """
-
         if a1 is None or a2 is None:
             runLog.warning(
                 "Cannot swap None assemblies. Check your findAssembly results. Skipping swap"
             )
             return
+
         runLog.extra("Swapping {} with {}.".format(a1, a2))
         # add assemblies into the moved location
         for a in [a1, a2]:
@@ -1437,6 +1437,7 @@ class FuelHandler:
                 "{0} and {1} have different numbers of blocks. Flux swapping (for XS weighting) will "
                 "be questionable".format(incoming, outgoing)
             )
+
         for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
             if (
                 bi not in self.cs["stationaryBlocks"]
@@ -1471,7 +1472,6 @@ class FuelHandler:
             [A  <- B <- C <- D]
 
         """
-
         # first check for duplicates
         for assem in assemList:
             if assemList.count(assem) != 1:
@@ -1564,7 +1564,6 @@ class FuelHandler:
         makeShuffleReport : writes the file that is read here.
 
         """
-
         try:
             f = open(fname)
         except:
@@ -1878,7 +1877,6 @@ class FuelHandler:
         -----
         This is a helper function for repeatShufflePattern
         """
-
         moved = []
 
         # shuffle all of the load chain assemblies (These include discharges to SFP
