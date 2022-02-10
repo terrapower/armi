@@ -1432,13 +1432,20 @@ class FuelHandler:
         Assumes assemblies have the same block structure. If not, blocks will be swapped one-for-one until
         the shortest one has been used up and then the process will truncate.
         """
-        if len(incoming) != len(outgoing):
+        # Find the block-based mesh points for each assembly
+        mesh_in = self.r.core.findAllAxialMeshPoints([incoming], False)
+        mesh_out = self.r.core.findAllAxialMeshPoints([outgoing], False)
+
+        # If the assembly mesh points don't match, the swap won't be easy
+        if mesh_in != mesh_out:
             runLog.warning(
-                "{0} and {1} have different numbers of blocks. Flux swapping (for XS weighting) will "
-                "be questionable".format(incoming, outgoing)
+                "{0} and {1} have different blocks. Flux swapping (for XS weighting) will be questionable".format(
+                    incoming, outgoing
+                )
             )
             return
 
+        # Since the axial mesh points match, do the simple swap
         for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
             if (
                 bi not in self.cs["stationaryBlocks"]

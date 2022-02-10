@@ -1793,7 +1793,7 @@ class Core(composites.Composite):
         assems : list, optional
             assemblies to consider when determining the mesh points. If not given, all in-core assemblies are used.
         applySubMesh : bool, optional
-            Apply submeshing parameters to make the mesh smaller on a block-by-block basis. Default=True.
+            Apply submeshing parameters to make mesh points smaller than blocks. Default=True.
 
 
         Returns
@@ -1849,9 +1849,7 @@ class Core(composites.Composite):
         return iMesh, jMesh, kMesh
 
     def findAllAxialMeshPoints(self, assems=None, applySubMesh=True):
-        """
-        Return a list of all z-mesh positions in the core including zero and the top.
-        """
+        """Return a list of all z-mesh positions in the core including zero and the top."""
         _i, _j, k = self.findAllMeshPoints(assems, applySubMesh)
         return k
 
