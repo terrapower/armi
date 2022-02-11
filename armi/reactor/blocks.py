@@ -188,7 +188,7 @@ class Block(composites.Composite):
 
         core = self.core
         if core is None:
-            return None
+            return self.getAncestor(lambda o: isinstance(o, Reactor))
 
         if not isinstance(core.parent, Reactor):
             raise TypeError(
