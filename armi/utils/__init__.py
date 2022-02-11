@@ -201,6 +201,36 @@ def copyWithoutBlocking(src, dest):
     return t
 
 
+def resampleStepwiseByAverages(xin, yin, xout, fill_value=0.0):
+    """TODO"""
+    # TODO: assuming xin and xout start and end at the same place
+    assert xin[0] == xout[0] and xin[-1] == xout[-1]
+
+    # TODO: yin must be 1 shorter than xin
+    assert (len(xin) - 1) == len(yin)
+
+    yout = []
+
+    bins = numpy.digitize(xout, bins=xin)
+
+    for i in range(1, len(bins)):
+        start = bins[i - 1]
+        end = bins[i]
+        chunk = yin[max(start - 1, 0) : end]
+        if not len(chunk):
+            yout.append(0)
+        else:
+            if xin[start] < xout[i - 1]:
+                chunk[0] *= (xin[start + 1] - xout[i - 1]) / (
+                    xin[start + 1] - xin[start]
+                )
+            if xin[end] > xout[i]:
+                chunk[-1] *= (xout[i] - xin[end - 1]) / (xin[end] - xin[end - 1])
+            yout.append(sum(chunk) / len(chunk))
+
+    return yout
+
+
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     r"""
     does a linear interpolation (or extrapolation) for y=f(x)
@@ -229,7 +259,6 @@ def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     x = (y-b)/m
 
     """
-
     if x1 == x0:
         raise ZeroDivisionError("The x-values are identical. Cannot interpolate.")
 
@@ -532,12 +561,10 @@ def classesInHierarchy(obj, classCounts, visited=None):
 
 
 def slantSplit(val, ratio, nodes, order="low first"):
-
     r"""
     Returns a list of values whose sum is equal to the value specified.
     The ratio between the highest and lowest value is equal to the specified ratio,
     and the middle values trend linearly between them.
-
     """
     val = float(val)
     ratio = float(ratio)
@@ -704,7 +731,7 @@ def runFunctionFromAllModules(funcName, *args, **kwargs):
             traceback.print_exc()
 
 
-# TODO: move to pathTools
+# TODO: move to pathTools (and reference it here for convenience)
 def mkdir(dirname):
     r"""
     Keeps trying to make a directory, outputting whatever errors it encounters,
@@ -715,7 +742,6 @@ def mkdir(dirname):
     dirname : str
         Path to the directory to create.
         What you would normally pass to os.mkdir.
-
     """
     numTimesTried = 0
     while numTimesTried < 1000:
