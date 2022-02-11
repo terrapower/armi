@@ -377,9 +377,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         )
 
     def _clearStateOnReactor(self, reactor):
-        """
-        Also clear mgFlux params.
-        """
+        """Also clear mgFlux params"""
         UniformMeshGeometryConverter._clearStateOnReactor(self, reactor)
 
         for b in reactor.core.getBlocks():

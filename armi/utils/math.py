@@ -12,64 +12,79 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""various, helpful math utilities"""
+"""various math utilities"""
 import numpy as np
 
 
 def resampleStepwise(xin, yin, xout, method="avg"):
-    """TODO"""
-    # TODO: assuming xin and xout start and end at the same place
-    assert xin[0] == xout[0] and xin[-1] == xout[-1]
+    """
+    Resample a piecewise-defined step function from one set of mesh points
+    to another. This is useful for reallocating values along a given axial
+    mesh (or assembly of blocks).
 
-    # TODO: yin must be 1 shorter than xin
+    Parameters
+    ----------
+    xin : list
+        interval points / mesh points
+
+    yin : list
+        interval values / inter-mesh values
+
+    xout : list
+        new interval points / new mesh points
+
+    method : str, optional
+        By default, this method resamples to average values,
+        but using "sum" here will resample to a conservation
+        of the total value.
+    """
+    # validation: there must be one more mesh point than inter-mesh values
     assert (len(xin) - 1) == len(yin)
 
+    # find out in which xin bin each xout value lies
     bins = np.digitize(xout, bins=xin)
-    print("bins", bins)
 
+    # loop through xout / the xout bins
     yout = []
     for i in range(1, len(bins)):
-        chunk = yin[bins[i - 1] - 1 : bins[i]]
-        length = xin[bins[i - 1] - 1 : bins[i] + 1]
+        start = bins[i - 1]
+        end = bins[i]
+        chunk = yin[start - 1 : end]
+        length = xin[start - 1 : end + 1]
         length = [length[j] - length[j - 1] for j in range(1, len(length))]
 
-        print("\n==== Chunk ", chunk)
-        print("    LENGTH", length)
-
+        # if the xout lies outside the xin range
         if not len(chunk):
             yout.append(0)
             continue
 
-        if xout[i] < xin[min(bins[i], len(xin) - 1)]:
-            print("--------- trimming right")
-            fraction = (xout[i] - xin[bins[i] - 1]) / (xin[bins[i]] - xin[bins[i] - 1])
+        # trim any partial right-side bins
+        if xout[i] < xin[min(end, len(xin) - 1)]:
+            fraction = (xout[i] - xin[end - 1]) / (xin[end] - xin[end - 1])
             if not fraction:
                 chunk = chunk[:-1]
                 length = length[:-1]
+            elif method == "sum":
+                chunk[-1] *= fraction
             else:
-                chunk[-1]  # *= fraction
                 length[-1] *= fraction
-            print("trim right side: ", chunk, length)
 
-        if xout[i - 1] > xin[bins[i - 1] - 1]:
-            print("--------- trimming left")
-            fraction = (xin[bins[i - 1]] - xout[i - 1]) / (
-                xin[bins[i - 1]] - xin[bins[i - 1] - 1]
-            )
+        # trim any partial left-side bins
+        if xout[i - 1] > xin[start - 1]:
+            fraction = (xin[start] - xout[i - 1]) / (xin[start] - xin[start - 1])
             if not fraction:
                 chunk = chunk[1:]
                 length = length[1:]
+            elif method == "sum":
+                chunk[0] *= fraction
             else:
-                chunk[0]  # *= fraction
                 length[0] *= fraction
-            print("trim left side: ", chunk, length)
 
-        print("final chunk", chunk)
-        print("final length", length)
-        assert len(length) == len(chunk)
-
-        weighted_sum = sum([c * l for c, l in zip(chunk, length)])
-        print(weighted_sum, sum(length))
-        yout.append(weighted_sum / sum(length))
+        # return the sum or the average
+        if method == "sum":
+            yout.append(sum(chunk))
+        else:
+            weighted_sum = sum([c * l for c, l in zip(chunk, length)])
+            yout.append(weighted_sum / sum(length))
 
     return yout
