@@ -30,7 +30,14 @@ The key classes of the reactor package are shown below:
 See :doc:`/developer/index`.
 """
 
+from typing import Dict, Callable, Union, TYPE_CHECKING
+
 from armi import plugins
+
+# Provide type checking but avoid circular imports
+if TYPE_CHECKING:
+    from armi.reactor.reactors import Core
+    from armi.reactor.assemblyLists import SpentFuelPool
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
@@ -66,3 +73,16 @@ class ReactorPlugin(plugins.ArmiPlugin):
             (CartesianBlock, CartesianAssembly),
             (ThRZBlock, ThRZAssembly),
         ]
+
+    @staticmethod
+    @plugins.HOOKIMPL(trylast=True)
+    def defineSystemGridBuilders() -> Dict[
+        str, Callable[[str], Union["Core", "SpentFuelPool"]]
+    ]:
+        from armi.reactor.reactors import Core
+        from armi.reactor.assemblyLists import SpentFuelPool
+
+        return {
+            "core": Core,
+            "sfp": SpentFuelPool,
+        }

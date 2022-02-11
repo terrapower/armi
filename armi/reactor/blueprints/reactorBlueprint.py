@@ -74,25 +74,29 @@ class SystemBlueprint(yamlize.Object):
 
     @staticmethod
     def _resolveSystemType(typ: str):
-        # avoid circular import, though ideally reactors shouldnt depend on blueprints!
-        from armi.reactor import reactors
-        from armi.reactor import assemblyLists
+        # Loop over all plugins that could be attached and determine if any
+        # tell us how to build a specific systems attribute. Sub-optimial
+        # as this check is called for each system (e.g., core, spent fuel pool).
+        # It is assumed that the number of systems is currently low enough to justify
+        # this structure.
 
-        # TODO: This is far from the the perfect place for this; most likely plugins
-        # will need to be able to extend it. Also, the concept of "system" will need to
-        # be well-defined, and most systems will probably need their own, rather
-        # dissimilar Blueprints. We may need to break with yamlize unfortunately.
-        _map = {"core": reactors.Core, "sfp": assemblyLists.SpentFuelPool}
+        manager = armi.getPluginManagerOrFail()
 
-        try:
-            cls = _map[typ]
-        except KeyError:
-            raise ValueError(
-                "Could not determine an appropriate class for handling a "
-                "system of type `{}`. Supported types are {}.".format(typ, _map.keys())
-            )
+        # Only need this to handle the case we don't find the grid we expect
+        seen = set()
+        for options in manager.hook.defineSystemGridBuilders():
+            for key, builder in options.items():
+                # Take the first match we find. This would allow other plugins to
+                # define a new core builder before finding those defined by the
+                # ReactorPlugin
+                if key == typ:
+                    return builder
+                seen.add(key)
 
-        return cls
+        raise ValueError(
+            "Could not determine an appropriate class for handling a "
+            "system of type `{}`. Supported types are {}.".format(typ, sorted(seen))
+        )
 
     def construct(self, cs, bp, reactor, geom=None):
         """Build a core/IVS/EVST/whatever and fill it with children."""
