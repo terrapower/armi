@@ -16,7 +16,7 @@ r""" Testing mathematics utilities
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 
-from armi.utils.math import resampleStepwise
+from armi.utils.mathematics import resampleStepwise
 
 
 class TestMath(unittest.TestCase):
