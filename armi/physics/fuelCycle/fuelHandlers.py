@@ -40,6 +40,7 @@ from armi.operators import RunTypes
 from armi.utils import directoryChangers, pathTools
 from armi import utils
 from armi.utils import plotting
+from armi.utils.mathematics import resampleStepwise
 
 
 class FuelHandlerInterface(interfaces.Interface):
@@ -1433,41 +1434,79 @@ class FuelHandler:
         the shortest one has been used up and then the process will truncate.
         """
         # Find the block-based mesh points for each assembly
-        mesh_in = self.r.core.findAllAxialMeshPoints([incoming], False)
-        mesh_out = self.r.core.findAllAxialMeshPoints([outgoing], False)
+        print(incoming)
+        print(outgoing)
+        meshIn = self.r.core.findAllAxialMeshPoints([incoming], False)
+        meshOut = self.r.core.findAllAxialMeshPoints([outgoing], False)
 
         # If the assembly mesh points don't match, the swap won't be easy
-        if mesh_in != mesh_out:
-            runLog.warning(
-                "{0} and {1} have different blocks. Flux swapping (for XS weighting) will be questionable".format(
+        if meshIn != meshOut:
+            runLog.debug(
+                "{0} and {1} have different meshes, resampling.".format(
                     incoming, outgoing
                 )
             )
 
-            # TODO: JOHN!  IMPLEMENT THIS!!!!!!!!!!!!!!!!!
+            # grab the current values for incoming and outgoing
+            fluxIn = [b.p.flux for b in incoming]
+            mgFluxIn = [b.p.mgFlux for b in incoming]
+            powerIn = [b.p.power for b in incoming]
+            fluxOut = [b.p.flux for b in outgoing]
+            mgFluxOut = [b.p.mgFlux for b in outgoing]
+            powerOut = [b.p.power for b in outgoing]
+
+            # resample incoming to outgoing, and vice versa
+            fluxOutNew = resampleStepwise(meshIn, fluxIn, meshOut)
+            mgFluxOutNew = resampleStepwise(meshIn, mgFluxIn, meshOut)
+            powerOutNew = resampleStepwise(meshIn, powerIn, meshOut)
+            fluxInNew = resampleStepwise(meshOut, fluxOut, meshIn)
+            mgFluxInNew = resampleStepwise(meshOut, mgFluxOut, meshIn)
+            powerInNew = resampleStepwise(meshOut, powerOut, meshIn)
+
+            # load the new outgoing values into place
+            for b, flux, mgFlux, power in zip(
+                outgoing, fluxOutNew, mgFluxOutNew, powerOutNew
+            ):
+                b.p.flux = flux
+                b.p.mgFlux = mgFlux
+                b.p.power = power
+                b.p.pdens = power / b.getVolume()
+
+            # load the new incoming values into place
+            for b, flux, mgFlux, power in zip(
+                incoming, fluxInNew, mgFluxInNew, powerInNew
+            ):
+                b.p.flux = flux
+                b.p.mgFlux = mgFlux
+                b.p.power = power
+                b.p.pdens = power / b.getVolume()
+
             return
 
         # Since the axial mesh points match, do the simple swap
         for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
-            if (
-                bi not in self.cs["stationaryBlocks"]
-            ):  # stationary blocks are already swapped.
-                incomingFlux = bIncoming.p.flux
-                incomingMgFlux = bIncoming.p.mgFlux
-                incomingPower = bIncoming.p.power
-                outgoingFlux = bOutgoing.p.flux
-                outgoingMgFlux = bOutgoing.p.mgFlux
-                outgoingPower = bOutgoing.p.power
-                if outgoingFlux > 0.0:
-                    bIncoming.p.flux = outgoingFlux
-                    bIncoming.p.mgFlux = outgoingMgFlux
-                    bIncoming.p.power = outgoingPower
-                    bIncoming.p.pdens = outgoingPower / bIncoming.getVolume()
-                if incomingFlux > 0.0:
-                    bOutgoing.p.flux = incomingFlux
-                    bOutgoing.p.mgFlux = incomingMgFlux
-                    bOutgoing.p.power = incomingPower
-                    bOutgoing.p.pdens = incomingPower / bOutgoing.getVolume()
+            if bi in self.cs["stationaryBlocks"]:
+                # stationary blocks are already swapped
+                continue
+
+            incomingFlux = bIncoming.p.flux
+            incomingMgFlux = bIncoming.p.mgFlux
+            incomingPower = bIncoming.p.power
+            outgoingFlux = bOutgoing.p.flux
+            outgoingMgFlux = bOutgoing.p.mgFlux
+            outgoingPower = bOutgoing.p.power
+
+            if outgoingFlux > 0.0:
+                bIncoming.p.flux = outgoingFlux
+                bIncoming.p.mgFlux = outgoingMgFlux
+                bIncoming.p.power = outgoingPower
+                bIncoming.p.pdens = outgoingPower / bIncoming.getVolume()
+
+            if incomingFlux > 0.0:
+                bOutgoing.p.flux = incomingFlux
+                bOutgoing.p.mgFlux = incomingMgFlux
+                bOutgoing.p.power = incomingPower
+                bOutgoing.p.pdens = incomingPower / bOutgoing.getVolume()
 
     def swapCascade(self, assemList):
         """
