@@ -250,6 +250,12 @@ class TestHexToRZConverter(unittest.TestCase):
                 )
             )
 
+    def _checkNuclideCategoriesAreSame(self, newR):
+        """Check that the nuclide categories between the original core and the converted core are identical."""
+        self.assertDictEqual(
+            self.r.core._nuclideCategories, newR.core._nuclideCategories
+        )
+
     def test_createHomogenizedRZTBlock(self):
         newBlock = blocks.ThRZBlock("testBlock", self.cs)
         a = self.r.core[0]

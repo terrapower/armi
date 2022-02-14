@@ -341,21 +341,25 @@ class HexToRZThetaConverter(GeometryConverter):
         boundaryType=geometry.BoundaryType.NO_SYMMETRY,
     )
     _BLOCK_MIXTURE_TYPE_MAP = {
-        "mixture control": ["control"],
-        "mixture fuel": ["fuel"],
-        "mixture radial shield": ["radial shield"],
-        "mixture axial shield": ["shield"],
+        "mixture control": [Flags.CONTROL],
+        "mixture fuel": [Flags.FUEL],
+        "mixture radial shield": [Flags.RADIAL | Flags.SHIELD],
+        "mixture axial shield": [Flags.AXIAL | Flags.SHIELD, Flags.SHIELD],
         "mixture structure": [
-            "grid plate",
-            "reflector",
-            "inlet nozzle",
-            "handling socket",
+            Flags.GRID_PLATE,
+            Flags.REFLECTOR,
+            Flags.INLET_NOZZLE,
+            Flags.HANDLING_SOCKET,
         ],
-        "mixture duct": ["duct"],
-        "mixture plenum": ["plenum"],
+        "mixture duct": [Flags.DUCT],
+        "mixture plenum": [Flags.PLENUM],
     }
 
-    _BLOCK_MIXTURE_TYPE_EXCLUSIONS = ["control", "fuel", "radial shield"]
+    _BLOCK_MIXTURE_TYPE_EXCLUSIONS = [
+        Flags.CONTROL,
+        Flags.FUEL,
+        Flags.RADIAL | Flags.SHIELD,
+    ]
     _MESH_BY_RING_COMP = "Ring Compositions"
     _MESH_BY_AXIAL_COORDS = "Axial Coordinates"
     _MESH_BY_AXIAL_BINS = "Axial Bins"
@@ -560,6 +564,15 @@ class HexToRZThetaConverter(GeometryConverter):
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
         self.convReactor.core.name += " - {0}".format(self._GEOMETRY_TYPE)
 
+        # It is important to map the nuclide categories from the source
+        # reactor so that the fuel, coolant, and structures are mapped to
+        # the same nuclides. This comes into play in areas of the framework
+        # (like in lattice physics), where the categorization makes an impact
+        # for physics modeling.
+        self.convReactor.core._nuclideCategories = (
+            self._sourceReactor.core._nuclideCategories
+        )
+
     def _setAssemsInRadialZone(self, radialIndex, lowerRing, upperRing):
         """
         Retrieve a list of assemblies in the reactor between (lowerRing, upperRing)
@@ -744,7 +757,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
             # Set new homogenized block parameters
             material = materials.material.Material()
-            material.name = "mixture"
+            material.name = "mixture "
             material.p.refDens = 1.0  # generic density. Will cancel out.
             dims = {
                 "inner_radius": innerDiameter / 2.0,
@@ -760,7 +773,7 @@ class HexToRZThetaConverter(GeometryConverter):
             for nuc in self._sourceReactor.blueprints.allNuclidesInProblem:
                 material.setMassFrac(nuc, 0.0)
             newComponent = components.DifferentialRadialSegment(
-                "mixture", material, **dims
+                f"component {newBlockType}", material, **dims
             )
             newBlock.p.axMesh = int(axialSegmentHeight / BLOCK_AXIAL_MESH_SPACING) + 1
             newBlock.p.zbottom = lowerAxialZ
@@ -892,14 +905,15 @@ class HexToRZThetaConverter(GeometryConverter):
         # Find the most common block type out of the types in the block mixture type exclusions list
         excludedBlockTypesInBlock = set(
             [
-                x
+                Flags.toString(x)
                 for x in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS
                 for y in numHexBlockByType
-                if x in y
+                if Flags.toString(x) in y
             ]
         )
         if excludedBlockTypesInBlock:
-            for blockType in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS:
+            for blockFlags in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS:
+                blockType = Flags.toString(blockFlags)
                 if blockType in excludedBlockTypesInBlock:
                     assignedMixtureBlockType = "mixture " + blockType
                     return assignedMixtureBlockType
@@ -910,7 +924,8 @@ class HexToRZThetaConverter(GeometryConverter):
         ]  # sort needed for tie break
 
         for mixtureType in sorted(self._BLOCK_MIXTURE_TYPE_MAP):
-            validBlockTypesInMixture = self._BLOCK_MIXTURE_TYPE_MAP[mixtureType]
+            validBlockFlagsInMixture = self._BLOCK_MIXTURE_TYPE_MAP[mixtureType]
+            validBlockTypesInMixture = Flags.toString(validBlockFlagsInMixture)
             for validBlockType in validBlockTypesInMixture:
                 if validBlockType in mostCommonHexBlockType:
                     assignedMixtureBlockType = mixtureType
