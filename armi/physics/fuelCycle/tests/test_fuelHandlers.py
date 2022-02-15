@@ -493,20 +493,28 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_buildRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        schedule, widths = fh.buildRingSchedule(17, 1, jumpRingFrom=14)
 
-        # test 1
-        self.assertEqual(
-            schedule, [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17]
-        )
-        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        # simple divergent
+        schedule, widths = fh.buildRingSchedule(1, 9)
+        self.assertEqual(schedule, [9, 8, 7, 6, 5, 4, 3, 2, 1])
 
-        # test 2
+        # simple with 1 jump
+        schedule, widths = fh.buildRingSchedule(9, 1, jumpRingFrom=6)
+        self.assertEqual(schedule, [5, 4, 3, 2, 1, 6, 7, 8, 9])
+        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # 1 jump plus auto-correction to core size
         schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=5)
-        self.assertEqual(
-            schedule, [17, 16, 15, 14, 13, 12, 11, 10, 6, 7, 8, 9, 5, 4, 3, 2, 1]
-        )
-        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.assertEqual(schedule, [6, 7, 8, 9, 5, 4, 3, 2, 1])
+        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # crash on invalid jumpring
+        with self.assertRaises(ValueError):
+            schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=0)
+
+        # test 4: Mid way jumping
+        schedule, widths = fh.buildRingSchedule(1, 9, jumpRingTo=6, jumpRingFrom=3)
+        self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
 
     def test_buildConvergentRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)

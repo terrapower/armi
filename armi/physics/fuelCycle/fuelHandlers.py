@@ -29,11 +29,11 @@ import math
 import os
 import re
 import warnings
+import logging
 
 import numpy
 
 from armi import interfaces
-from armi import runLog
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
@@ -41,6 +41,8 @@ from armi.utils import directoryChangers, pathTools
 from armi import utils
 from armi.utils import plotting
 from armi.utils.mathematics import resampleStepwise
+
+runLog = logging.getLogger(__name__)
 
 
 class FuelHandlerInterface(interfaces.Interface):
@@ -1175,18 +1177,44 @@ class FuelHandler:
         findAssembly
 
         """
+        maxRingInCore = self.r.core.getNumRings()
+        if dischargeRing > maxRingInCore:
+            runLog.warning(
+                f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). "
+                "Changing it to be the max ring"
+            )
+            dischargeRing = maxRingInCore
+        if chargeRing > maxRingInCore:
+            runLog.warning(
+                f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). "
+                "Changing it to be the max ring."
+            )
+            chargeRing = maxRingInCore
+
         # process arguments
         if dischargeRing is None:
-            # default to convergent
+            # No discharge ring given, so we default to converging from outside to inside
+            # and therefore discharging from the center
             dischargeRing = 1
         if chargeRing is None:
-            chargeRing = self.r.core.getNumRings()
+            # Charge ring not specified. Since we default to convergent shuffling, we
+            # must insert the fuel at the periphery.
+            chargeRing = maxRingInCore
+        if jumpRingFrom is not None and not (1 < jumpRingFrom < maxRingInCore):
+            raise ValueError(f"JumpRingFrom {jumpRingFrom} is not in the core.")
+        if jumpRingTo is not None and not (1 < jumpRingTo < maxRingInCore):
+            raise ValueError(f"JumpRingTo {jumpRingTo} is not in the core.")
 
-        if chargeRing > dischargeRing and not jumpRingTo:
+        if chargeRing > dischargeRing and jumpRingTo is None:
+            # a convergent shuffle with no jumping. By setting
+            # jumpRingTo to be 1, no jumping will be activated
+            # in the later logic.
             jumpRingTo = 1
-        elif not jumpRingTo:
+        elif jumpRingTo is None:
+            # divergent case. Disable jumping by putting jumpring
+            # at periphery.
             if self.r:
-                jumpRingTo = self.r.core.getNumRings()
+                jumpRingTo = maxRingInCore
             else:
                 jumpRingTo = 18
 
