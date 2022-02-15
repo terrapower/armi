@@ -340,6 +340,23 @@ class Core(composites.Composite):
 
         return assems[0]
 
+    @property
+    def nuclideCategories(self):
+        if not self._nuclideCategories:
+            self._getNuclideCategories()
+
+        expectedNuclideCategories = ["coolant", "fuel", "structure"]
+        assert sorted(self._nuclideCategories.keys()) == expectedNuclideCategories, (
+            f"Nuclide categories in {self} do not match the expected "
+            f"values of {expectedNuclideCategories}. "
+            f"Current values: {self._nuclideCategories.keys()}"
+        )
+        return self._nuclideCategories
+
+    @nuclideCategories.setter
+    def nuclideCategories(self, value):
+        self._nuclideCategories = value
+
     def summarizeReactorStats(self):
         """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
         totalMass = 0.0
@@ -1238,7 +1255,7 @@ class Core(composites.Composite):
         """Return all XS suffices (e.g. AA, AB, etc.) in the core."""
         return sorted(set(b.getMicroSuffix() for b in self.getBlocks()))
 
-    def getNuclideCategories(self):
+    def _getNuclideCategories(self):
         """
         Categorize nuclides as coolant, fuel and structure.
 
@@ -1267,35 +1284,28 @@ class Core(composites.Composite):
             set of nuclide names
 
         """
-        if not self._nuclideCategories:
-            coolantNuclides = set()
-            fuelNuclides = set()
-            structureNuclides = set()
-            for c in self.iterComponents():
-                if c.getName() == "coolant":
-                    coolantNuclides.update(c.getNuclides())
-                elif "fuel" in c.getName():
-                    fuelNuclides.update(c.getNuclides())
-                else:
-                    structureNuclides.update(c.getNuclides())
-            structureNuclides -= coolantNuclides
-            structureNuclides -= fuelNuclides
-            remainingNuclides = (
-                set(self.parent.blueprints.allNuclidesInProblem)
-                - structureNuclides
-                - coolantNuclides
-            )
-            fuelNuclides.update(remainingNuclides)
-            self._nuclideCategories["coolant"] = coolantNuclides
-            self._nuclideCategories["fuel"] = fuelNuclides
-            self._nuclideCategories["structure"] = structureNuclides
-            self.summarizeNuclideCategories()
-
-        return (
-            self._nuclideCategories["coolant"],
-            self._nuclideCategories["fuel"],
-            self._nuclideCategories["structure"],
+        coolantNuclides = set()
+        fuelNuclides = set()
+        structureNuclides = set()
+        for c in self.iterComponents():
+            if c.getName() == "coolant":
+                coolantNuclides.update(c.getNuclides())
+            elif "fuel" in c.getName():
+                fuelNuclides.update(c.getNuclides())
+            else:
+                structureNuclides.update(c.getNuclides())
+        structureNuclides -= coolantNuclides
+        structureNuclides -= fuelNuclides
+        remainingNuclides = (
+            set(self.parent.blueprints.allNuclidesInProblem)
+            - structureNuclides
+            - coolantNuclides
         )
+        fuelNuclides.update(remainingNuclides)
+        self._nuclideCategories["coolant"] = sorted(coolantNuclides)
+        self._nuclideCategories["fuel"] = sorted(fuelNuclides)
+        self._nuclideCategories["structure"] = sorted(structureNuclides)
+        self.summarizeNuclideCategories()
 
     def summarizeNuclideCategories(self):
         """Write summary table of the various nuclide categories within the reactor."""
@@ -2284,7 +2294,7 @@ class Core(composites.Composite):
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
-        self.getNuclideCategories()
+        self.nuclideCategories
 
         # some blocks will not move in the core like grid plates... Find them and fix them in place
         stationaryBlocks = []

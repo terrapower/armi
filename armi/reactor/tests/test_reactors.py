@@ -759,7 +759,7 @@ class CartesianReactorTests(ReactorTests):
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
 
     def test_getNuclideCategoriesLogging(self):
-        """Simplest possible test of the getNuclideCategories method and its logging"""
+        """Simplest possible test of the setting the ``nuclideCategories`` on the core and its logging"""
         log = mockRunLogs.BufferLog()
 
         # this strange namespace-stomping is used to the test to set the logger in reactors.Core
@@ -769,7 +769,7 @@ class CartesianReactorTests(ReactorTests):
         runLog.LOG = log
 
         # run the actual method in question
-        self.r.core.getNuclideCategories()
+        self.r.core.nuclideCategories
         messages = log.getStdoutValue()
 
         self.assertIn("Nuclide categorization", messages)

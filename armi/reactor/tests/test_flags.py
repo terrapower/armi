@@ -104,6 +104,35 @@ class TestFlags(unittest.TestCase):
         stream = pickle.dumps(flags.Flags.BOND | flags.Flags.A)
         flag = pickle.loads(stream)
         self.assertEqual(flag, flags.Flags.BOND | flags.Flags.A)
+        
+    def test_areHashable(self):
+        """
+        Test that the implemented ``Flags`` can be hashed. 
+        
+        This is important for inserting flags into the keys of a dictionary.
+        """
+        self.assertTrue(hash(flags.Flags.FUEL))
+        
+    def test_areSortable(self):
+        """Test that flags can be ordered."""
+        self.assertEqual(flags.Flags.FUEL, flags.Flags.FUEL)
+        #self.assertGreater(flags.Flags.CONTROL, flags.Flags.FUEL)
+        #self.assertGreaterEqual(flags.Flags.CONTROL, flags.Flags.FUEL)
+        #self.assertLessEqual(flags.Flags.FUEL, flags.Flags.CONTROL)
+        #self.assertLess(flags.Flags.FUEL, flags.Flags.CONTROL)
+        self.assertNotEqual(flags.Flags.FUEL, flags.Flags.CONTROL)
+        
+        strings = ["control", "axial shield", "radial shield", "fuel", "structure",
+                   "plenum", "duct"]
+        sortedStrings = ["axial shield", "control", "duct", "fuel", "plenum", "radial shield",
+                         "structure"]
+        self.assertEqual(sorted(strings), sortedStrings)
+        
+        print(sorted([flags.Flags.fromString(x) for x in strings]))
+        print([flags.Flags.fromString(x) for x in sortedStrings])
+        self.assertEqual(sorted([flags.Flags.fromString(x) for x in strings]), 
+                         [flags.Flags.fromString(x) for x in sortedStrings])
+        
 
 
 if __name__ == "__main__":

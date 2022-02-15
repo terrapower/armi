@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from unicodedata import category
 
 """
 Change a reactor from one geometry to another.
@@ -52,6 +53,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.utils import hexagon
 from armi.reactor.converters import blockConverters
+from armi.physics.neutronics.crossSectionGroupManager import getBlockNuclideTemperatureAvgTerms
 
 BLOCK_AXIAL_MESH_SPACING = (
     20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
@@ -340,22 +342,22 @@ class HexToRZThetaConverter(GeometryConverter):
         domainType=geometry.DomainType.FULL_CORE,
         boundaryType=geometry.BoundaryType.NO_SYMMETRY,
     )
-    _BLOCK_MIXTURE_TYPE_MAP = {
-        "mixture control": [Flags.CONTROL],
-        "mixture fuel": [Flags.FUEL],
-        "mixture radial shield": [Flags.RADIAL | Flags.SHIELD],
-        "mixture axial shield": [Flags.AXIAL | Flags.SHIELD, Flags.SHIELD],
-        "mixture structure": [
+    _BLOCK_MIXTURE_FLAG_MAP = {
+        Flags.CONTROL : [Flags.CONTROL],
+        Flags.FUEL: [Flags.FUEL],
+        Flags.RADIAL | Flags.SHIELD: [Flags.RADIAL | Flags.SHIELD],
+        Flags.AXIAL | Flags.SHIELD: [Flags.AXIAL | Flags.SHIELD, Flags.SHIELD],
+        Flags.STRUCTURE: [
             Flags.GRID_PLATE,
             Flags.REFLECTOR,
             Flags.INLET_NOZZLE,
             Flags.HANDLING_SOCKET,
         ],
-        "mixture duct": [Flags.DUCT],
-        "mixture plenum": [Flags.PLENUM],
+        Flags.DUCT: [Flags.DUCT],
+        Flags.PLENUM: [Flags.PLENUM],
     }
 
-    _BLOCK_MIXTURE_TYPE_EXCLUSIONS = [
+    _BLOCK_MIXTURE_FLAG_EXCLUSIONS = [
         Flags.CONTROL,
         Flags.FUEL,
         Flags.RADIAL | Flags.SHIELD,
@@ -569,8 +571,8 @@ class HexToRZThetaConverter(GeometryConverter):
         # the same nuclides. This comes into play in areas of the framework
         # (like in lattice physics), where the categorization makes an impact
         # for physics modeling.
-        self.convReactor.core._nuclideCategories = (
-            self._sourceReactor.core._nuclideCategories
+        self.convReactor.core.nuclideCategories = (
+            self._sourceReactor.core.nuclideCategories
         )
 
     def _setAssemsInRadialZone(self, radialIndex, lowerRing, upperRing):
@@ -725,22 +727,11 @@ class HexToRZThetaConverter(GeometryConverter):
 
         lowerAxialZ = 0.0
         for axialIndex, upperAxialZ in enumerate(self.meshConverter.axialMesh):
-
-            # Setup the new block data
-            newBlockName = "B{:04d}{}".format(
+            newBlockName = "B{:05d}{}".format(
                 int(newAssembly.getNum()), chr(axialIndex + 65)
             )
-            newBlock = blocks.ThRZBlock(newBlockName)
-
-            # Compute the homogenized block data
-            (
-                newBlockAtoms,
-                newBlockType,
-                newBlockTemp,
-                newBlockVol,
-            ) = self.createHomogenizedRZTBlock(
-                newBlock, lowerAxialZ, upperAxialZ, zoneAssems
-            )
+            # Create a new block.
+            newBlock, _homBlockVolume = self.createHomogenizedRZTBlock(newBlockName, lowerAxialZ, upperAxialZ, zoneAssems)
             # Compute radial zone outer diameter
             axialSegmentHeight = upperAxialZ - lowerAxialZ
             radialZoneVolume = self._calcRadialRingVolume(
@@ -754,45 +745,32 @@ class HexToRZThetaConverter(GeometryConverter):
             outerDiameter = blockConverters.getOuterDiamFromIDAndArea(
                 innerDiameter, radialRingArea
             )
-
-            # Set new homogenized block parameters
-            material = materials.material.Material()
-            material.name = "mixture "
-            material.p.refDens = 1.0  # generic density. Will cancel out.
-            dims = {
-                "inner_radius": innerDiameter / 2.0,
-                "radius_differential": (outerDiameter - innerDiameter) / 2.0,
-                "inner_axial": lowerAxialZ,
-                "height": axialSegmentHeight,
-                "inner_theta": lowerTheta,
-                "azimuthal_differential": (upperTheta - lowerTheta),
-                "mult": 1.0,
-                "Tinput": newBlockTemp,
-                "Thot": newBlockTemp,
-            }
-            for nuc in self._sourceReactor.blueprints.allNuclidesInProblem:
-                material.setMassFrac(nuc, 0.0)
-            newComponent = components.DifferentialRadialSegment(
-                f"component {newBlockType}", material, **dims
-            )
+            # It order to preserve the temperatures of nuclides that have been
+            # homogenized, we aim to break the number of materials and components
+            # into a set that defines the `FUEL`, `COOLANT`, and `STRUCTURE` compositions.
+            # For nuclides that have an overlap among these materials we set the
+            # number densities based on the volume fractions of the regions they
+            # came from.
+            dims = {"innerDiameter": innerDiameter,
+                    "outerDiameter": outerDiameter,
+                    "lowerAxialZ": lowerAxialZ,
+                    "upperAxialZ": upperAxialZ,
+                    "lowerTheta": lowerTheta,
+                    "upperTheta": upperTheta,}
+            self._addNewComponents(newBlock, **dims)
+            
+            # Clear the cache so that volumes and other volume-dependent parameters
+            # can be re-calculated based on the added components.
+            newBlock.p.height = axialSegmentHeight
             newBlock.p.axMesh = int(axialSegmentHeight / BLOCK_AXIAL_MESH_SPACING) + 1
             newBlock.p.zbottom = lowerAxialZ
             newBlock.p.ztop = upperAxialZ
-
+            
             # Assign the new block cross section type and burn up group
-            newBlock.setType(newBlockType)
             newXsType, newBuGroup = self._createBlendedXSID(newBlock)
             newBlock.p.xsType = newXsType
             newBlock.p.buGroup = newBuGroup
-
-            # Update the block dimensions and set the block densities
-            newComponent.updateDims()  # ugh.
-            newBlock.p.height = axialSegmentHeight
-            newBlock.clearCache()
-            newBlock.add(newComponent)
-            for nuc, atoms in newBlockAtoms.items():
-                newBlock.setNumberDensity(nuc, atoms / newBlockVol)
-
+            
             self._writeRadialThetaZoneInfo(axialIndex + 1, axialSegmentHeight, newBlock)
             self._checkVolumeConservation(newBlock)
 
@@ -802,6 +780,105 @@ class HexToRZThetaConverter(GeometryConverter):
         self.convReactor.core.add(newAssembly)
 
         return outerDiameter
+    
+    def _addNewComponents(self, newBlock, innerDiameter, outerDiameter, 
+                          lowerAxialZ, upperAxialZ, lowerTheta, upperTheta):
+        """
+        Add a set of components to the new homogenized block that was created.
+        
+        Notes
+        -----
+        This is useful for maintaining temperature-dependence of components and the underlying
+        materials/nuclides rather than only having a block-averaged temperature that is applied
+        to all of its children.
+        """        
+        nuclideCategories = self.convReactor.core.nuclideCategories
+        
+        # Get the category label for each nuclide in the core.
+        categoryByNuclide = {}        
+        for category, nucs in nuclideCategories.items():
+            for nuc in nucs:
+                categoryByNuclide[nuc] = category
+        
+        # Set up some dictionary contains for the temperatures and
+        # number densities for each of the categories. These are assigned
+        # to each new component below after they are populated.
+        tempByNuclideCategory = collections.defaultdict(float)
+        ndensByNuclideCategory = collections.defaultdict(dict)
+        volumeFracsByNuclideCategory = collections.defaultdict(float)
+        for category in nuclideCategories:
+            ndensByNuclideCategory[category] = collections.defaultdict(float)      
+        
+        print(newBlock)
+        for b in self.blockMap[newBlock]:            
+            # Calculate the average temperatures of each category of nuclides.
+            for category, nucs in nuclideCategories.items():
+                nvt, nv = getBlockNuclideTemperatureAvgTerms(b, nucs)
+                # Update the nvt and nv arrays to remove any indices in nv where the division 
+                # of nvt/nv would result in a `nan`.
+                nnvt = []
+                nnv = []
+                for i, nuc in enumerate(nucs):
+                    if nv[i] == 0.0:
+                        continue
+                    nnvt.append(nvt[i])
+                    nnv.append(nv[i])
+                
+                tempByNuclideCategory[category] = numpy.mean(numpy.array(nnvt)/numpy.array(nnv))
+                
+            # Determine the volume fractions of the each component/category and the number densities
+            for c in b:
+                
+                # This is the volume fraction of the component within the new homogenized block,
+                # taking into account the fact that the block that this component belongs to
+                # may have been sliced axially based on the mesh boundaries.
+                volFracInNewBlock = c.getVolumeFraction() * self.blockVolFracs[newBlock][b]
+                
+                ndens = c.getNumberDensities()
+                for nuc, category in categoryByNuclide.items():
+                    nucNumberDensity = ndens.get(nuc, 0.0)
+                    ndensByNuclideCategory[category][nuc] += nucNumberDensity * volFracInNewBlock
+                
+                
+                #### THIS IS WRONG -- I am stumped how to get the right volume fractions for the
+                # new components within the homogenized block so that mass is preserved....
+                if c.getName() == "coolant":
+                    volumeFracsByNuclideCategory["coolant"] += volFracInNewBlock
+                elif "fuel" in c.getName():
+                    volumeFracsByNuclideCategory["fuel"] += volFracInNewBlock 
+                else:
+                    volumeFracsByNuclideCategory["structure"] += volFracInNewBlock 
+                    
+                                    
+#         for category in nuclideCategories:
+#             volumeFracsByNuclideCategory[category] /= sum(volumeFracsByNuclideCategory.values())
+        print(sum(volumeFracsByNuclideCategory.values()), volumeFracsByNuclideCategory)
+        print(tempByNuclideCategory)
+        
+        # Create a new component for each category and add it to the 
+        # homogenized block.
+        for category in volumeFracsByNuclideCategory:
+            material = materials.material.Material()
+            material.name = f"{category}"
+            material.p.refDens = 1.0  # Assign a density - This will be overwritten by `setNumberDensities` on the component-level.
+            dims = {
+                "inner_radius": innerDiameter / 2.0,
+                "radius_differential": (outerDiameter - innerDiameter) / 2.0,
+                "inner_axial": lowerAxialZ,
+                "height": (upperAxialZ - lowerAxialZ),
+                "inner_theta": lowerTheta,
+                "azimuthal_differential": (upperTheta - lowerTheta),
+                "mult": volumeFracsByNuclideCategory[category],
+                "Tinput": tempByNuclideCategory[category],
+                "Thot": tempByNuclideCategory[category],
+            }                
+            newComponent = components.DifferentialRadialSegment(
+                f"{category}", material, **dims
+            )
+            newComponent.setNumberDensities(ndensByNuclideCategory[category])
+            newComponent.updateDims()
+            newBlock.clearCache()
+            newBlock.add(newComponent)
 
     def _calcRadialRingVolume(self, lowerZ, upperZ, radialIndex):
         """Compute the total volume of a list of assemblies within a ring between two axial heights."""
@@ -828,7 +905,7 @@ class HexToRZThetaConverter(GeometryConverter):
             )
 
     def createHomogenizedRZTBlock(
-        self, homBlock, lowerAxialZ, upperAxialZ, radialThetaZoneAssems
+        self, blockName, lowerAxialZ, upperAxialZ, radialThetaZoneAssems
     ):
         """
         Create the homogenized RZT block by computing the average atoms in the zone.
@@ -836,30 +913,24 @@ class HexToRZThetaConverter(GeometryConverter):
         Additional calculations are performed to determine the homogenized block type, the block average temperature,
         and the volume fraction of each hex block that is in the new homogenized block.
         """
+        homBlock = blocks.ThRZBlock(blockName)
         homBlockXsTypes = set()
-        numHexBlockByType = collections.Counter()
-        homBlockAtoms = collections.defaultdict(int)
-        homBlockVolume = 0.0
-        homBlockTemperature = 0.0
+        numHexBlockByFlag = collections.Counter()
+        homBlockVolume = 0.0        
         for assem in radialThetaZoneAssems:
             blocksHere = assem.getBlocksBetweenElevations(lowerAxialZ, upperAxialZ)
             for b, heightHere in blocksHere:
                 homBlockXsTypes.add(b.p.xsType)
-                numHexBlockByType[b.getType().lower()] += 1
+                numHexBlockByFlag[b.p.flags] += 1
                 blockVolumeHere = b.getVolume() * heightHere / b.getHeight()
+                homBlockVolume += blockVolumeHere
                 if blockVolumeHere == 0.0:
                     raise ValueError(
                         "Geometry conversion failed. Block {} has zero volume".format(b)
                     )
-                homBlockVolume += blockVolumeHere
-                homBlockTemperature += b.getAverageTempInC() * blockVolumeHere
-
-                numDensities = b.getNumberDensities()
-
-                for nucName, nDen in numDensities.items():
-                    homBlockAtoms[nucName] += nDen * blockVolumeHere
                 self.blockMap[homBlock].append(b)
                 self.blockVolFracs[homBlock][b] = blockVolumeHere
+        
         # Notify if blocks with different xs types are being homogenized. May be undesired behavior.
         if len(homBlockXsTypes) > 1:
             msg = "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} " "cm and {} cm. ".format(
@@ -875,69 +946,64 @@ class HexToRZThetaConverter(GeometryConverter):
             else:
                 runLog.important(msg)
 
-        homBlockType = self._getHomogenizedBlockType(numHexBlockByType)
-        homBlockTemperature = homBlockTemperature / homBlockVolume
+        homBlockFlag = self._getHomogenizedBlockFlag(numHexBlockByFlag)
+        homBlock.setType(Flags.toString(homBlockFlag))
         for b in self.blockMap[homBlock]:
             self.blockVolFracs[homBlock][b] = (
                 self.blockVolFracs[homBlock][b] / homBlockVolume
             )
+        
+        return homBlock, homBlockVolume
 
-        return homBlockAtoms, homBlockType, homBlockTemperature, homBlockVolume
-
-    def _getHomogenizedBlockType(self, numHexBlockByType):
+    def _getHomogenizedBlockFlag(self, numHexBlockByFlags):
         """
-        Generate the homogenized block mixture type based on the frequency of hex block types that were merged
+        Generate the homogenized block flag based on the frequency of hex block types that were merged
         together.
 
         Notes
         -----
-        self._BLOCK_MIXTURE_TYPE_EXCLUSIONS:
-            The normal function of this method is to assign the mixture name based on the number of occurrences of the
-            block type. This list stops that and assigns the mixture based on the first occurrence.
-            (i.e. if the mixture has a set of blocks but it comes across one with the name of 'control' the process will
-            stop and the new mixture type will be set to 'mixture control'
+        self._BLOCK_MIXTURE_FLAG_EXCLUSIONS:
+            The normal function of this method is to assign the flags based on the number of occurrences of the
+            block flag. This list stops that and assigns the mixture based on the first occurrence.
 
-        self._BLOCK_MIXTURE_TYPE_MAP:
-            A dictionary that provides the name of blocks that are condensed together
+        self._BLOCK_MIXTURE_FLAG_MAP:
+            A dictionary that provides the flags of blocks that are condensed together.
         """
-        assignedMixtureBlockType = None
+        assignedMixtureBlockFlag = None
 
-        # Find the most common block type out of the types in the block mixture type exclusions list
-        excludedBlockTypesInBlock = set(
+        # Find the most common block type out of the types in the block flags exclusions list
+        excludedBlockFlagsInBlock = set(
             [
-                Flags.toString(x)
-                for x in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS
-                for y in numHexBlockByType
-                if Flags.toString(x) in y
+                x
+                for x in self._BLOCK_MIXTURE_FLAG_EXCLUSIONS
+                for y in numHexBlockByFlags
+                if x in y
             ]
         )
-        if excludedBlockTypesInBlock:
-            for blockFlags in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS:
-                blockType = Flags.toString(blockFlags)
-                if blockType in excludedBlockTypesInBlock:
-                    assignedMixtureBlockType = "mixture " + blockType
-                    return assignedMixtureBlockType
+        if excludedBlockFlagsInBlock:
+            for blockFlags in self._BLOCK_MIXTURE_FLAG_EXCLUSIONS:
+                if blockFlags in excludedBlockFlagsInBlock:
+                    assignedMixtureBlockFlag = blockFlags
+                    return assignedMixtureBlockFlag
 
         # Assign block type by most common hex block type
-        mostCommonHexBlockType = sorted(numHexBlockByType.most_common(1))[0][
+        mostCommonHexBlockType = sorted(numHexBlockByFlags.most_common(1))[0][
             0
         ]  # sort needed for tie break
+        
+        for flags in self._BLOCK_MIXTURE_FLAG_MAP:
+            validBlockFlagsInMixture = self._BLOCK_MIXTURE_FLAG_MAP[flags]
+            for validBlockFlag in validBlockFlagsInMixture:
+                if validBlockFlag in mostCommonHexBlockType:
+                    return validBlockFlagsInMixture
 
-        for mixtureType in sorted(self._BLOCK_MIXTURE_TYPE_MAP):
-            validBlockFlagsInMixture = self._BLOCK_MIXTURE_TYPE_MAP[mixtureType]
-            validBlockTypesInMixture = Flags.toString(validBlockFlagsInMixture)
-            for validBlockType in validBlockTypesInMixture:
-                if validBlockType in mostCommonHexBlockType:
-                    assignedMixtureBlockType = mixtureType
-                    return assignedMixtureBlockType
-
-        assignedMixtureBlockType = "mixture structure"
+        assignedMixtureBlockFlag = Flags.STRUCTURE
         runLog.debug(
             f"The mixture type for this homogenized block {mostCommonHexBlockType} "
-            f"was not determined and is defaulting to {assignedMixtureBlockType}"
+            f"was not determined and is defaulting to {assignedMixtureBlockFlag}"
         )
 
-        return assignedMixtureBlockType
+        return assignedMixtureBlockFlag
 
     def _createBlendedXSID(self, newBlock):
         """

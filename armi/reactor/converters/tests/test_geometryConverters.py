@@ -146,7 +146,7 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.cs
         del self.r
 
-    def testConvert(self):
+    def test_convert(self):
         converterSettings = {
             "radialConversionType": "Ring Compositions",
             "axialConversionType": "Axial Coordinates",
@@ -168,7 +168,7 @@ class TestHexToRZConverter(unittest.TestCase):
         self._checkNuclideMasses(expectedMassDict, newR)
         self._checkBlockAtMeshPoint(geomConv)
         self._checkReactorMeshCoordinates(geomConv)
-        figs = geomConv.plotConvertedReactor()
+        _figs = geomConv.plotConvertedReactor()
         with directoryChangers.TemporaryDirectoryChanger():
             geomConv.plotConvertedReactor("fname")
 
@@ -209,13 +209,11 @@ class TestHexToRZConverter(unittest.TestCase):
         return expectedMassDict, expectedNuclideList
 
     def _checkBlockComponents(self, newR):
+        expectedNumComponents = len(newR.core.nuclideCategories.keys())
         for b in newR.core.getBlocks():
-            if len(b) != 1:
-                raise ValueError(
-                    "Block {} has {} components and should only have 1".format(
-                        b, len(b)
-                    )
-                )
+            if len(b) > expectedNumComponents:
+                raise ValueError(f"Block {b} has {len(b)} components and "
+                                 f"should have {expectedNumComponents}.")
 
     def _checkNuclidesMatch(self, expectedNuclideList, newR):
         """Check that the nuclide lists match before and after conversion"""
@@ -253,26 +251,21 @@ class TestHexToRZConverter(unittest.TestCase):
     def _checkNuclideCategoriesAreSame(self, newR):
         """Check that the nuclide categories between the original core and the converted core are identical."""
         self.assertDictEqual(
-            self.r.core._nuclideCategories, newR.core._nuclideCategories
+            self.r.core.nuclideCategories, newR.core.nuclideCategories
         )
 
     def test_createHomogenizedRZTBlock(self):
-        newBlock = blocks.ThRZBlock("testBlock", self.cs)
+        """Test the creation of a new homogenized RZT block."""
         a = self.r.core[0]
         converterSettings = {}
         geomConv = geometryConverters.HexToRZConverter(
             self.cs, converterSettings, expandReactor=self._expandReactor
         )
-        volumeExpected = a.getVolume()
-        (
-            _atoms,
-            _newBlockType,
-            _newBlockTemp,
-            newBlockVol,
-        ) = geomConv.createHomogenizedRZTBlock(newBlock, 0, a.getHeight(), [a])
-
-        # The volume of the radialZone and the radialThetaZone should be equal for RZ geometry
-        self.assertAlmostEqual(volumeExpected, newBlockVol)
+        newBlock, homBlockVolume = geomConv.createHomogenizedRZTBlock("mixture fuel", 0, a.getHeight(), [a])
+        
+        self.assertEqual(a.getVolume(), homBlockVolume)
+        self.assertEqual(newBlock.p.type, "FUEL")
+        self.assertEqual(newBlock.p.flags, Flags.FUEL)
 
 
 class TestEdgeAssemblyChanger(unittest.TestCase):

@@ -279,7 +279,18 @@ class Flags(Flag):
 
     # Allows movement of lower plenum with control rod
     MOVEABLE = auto()
-
+    
+    def __lt__(self, other):
+        """
+        Allows the ``Flags`` to be sorted.
+        
+        Notes
+        -----
+        Sorting can be required to have deterministic behavior
+        when looping over a set/list of ``Flags``.
+        """
+        return self._value < other._value
+  
     @classmethod
     def fromStringIgnoreErrors(cls, typeSpec):
         return _fromStringIgnoreErrors(cls, typeSpec)
@@ -291,7 +302,6 @@ class Flags(Flag):
     @classmethod
     def toString(cls, typeSpec):
         return _toString(cls, typeSpec)
-
 
 class InvalidFlagsError(KeyError):
     """Raised when code attempts to look for an undefined flag."""

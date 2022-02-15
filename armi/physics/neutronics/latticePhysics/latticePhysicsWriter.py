@@ -204,11 +204,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
         """
         dfpDensities = self._getDetailedFPDensities()
-        (
-            coolantNuclides,
-            fuelNuclides,
-            structureNuclides,
-        ) = self.r.core.getNuclideCategories()
+        coolantNuclides = self.r.core.nuclideCategories["coolant"]
+        fuelNuclides = self.r.core.nuclideCategories["fuel"]
+        structureNuclides = self.r.core.nuclideCategories["structure"]
         nucDensities = {}
         subjectObject = component or self.block
         depletableNuclides = nuclideBases.getDepletableNuclides(
