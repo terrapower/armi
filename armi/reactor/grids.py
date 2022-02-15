@@ -384,9 +384,7 @@ class IndexLocation(LocationBase):
         return self.grid.getSymmetricEquivalents(self.indices)
 
     def distanceTo(self, other) -> float:
-        """
-        Return the distance from this locator to another.
-        """
+        """Return the distance from this locator to another."""
         return math.sqrt(
             (
                 (

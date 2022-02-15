@@ -1829,9 +1829,8 @@ class Core(composites.Composite):
                     else (1, 1, 1)
                 )
                 base = b.spatialLocator.getGlobalCellBase()
-                top = (
-                    b.spatialLocator.getGlobalCellTop()
-                )  # make sure this is in mesh coordinates (important to have TRZ, not XYZ in TRZ cases.
+                # make sure this is in mesh coordinates (important to have TRZ, not XYZ in TRZ cases
+                top = b.spatialLocator.getGlobalCellTop()
                 for axis, (collection, subdivisions) in enumerate(
                     zip((iMesh, jMesh, kMesh), numPoints)
                 ):
@@ -1840,9 +1839,8 @@ class Core(composites.Composite):
                     for _subdivision in range(subdivisions):
                         collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
                         axisVal += step
-                    collection.add(
-                        round(axisVal, units.FLOAT_DIMENSION_DECIMALS)
-                    )  # add top too (only needed for last point)
+                    # add top too (only needed for last point)
+                    collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
 
         iMesh, jMesh, kMesh = map(sorted, (iMesh, jMesh, kMesh))
 

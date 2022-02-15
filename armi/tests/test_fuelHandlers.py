@@ -569,7 +569,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(sum([b.p.power for b in a1.getBlocks()]), power2)
         self.assertEqual(sum([b.p.power for b in a2.getBlocks()]), power1)
 
-    def XXXXXtest_swapFluxParamDifferentLengths(self):
+    def test_swapFluxParamDifferentLengths(self):
+        """TODO JOHN: Should we test more cases?"""
         # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FEED)
 
@@ -613,53 +614,50 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertAlmostEqual(b21.p.pdens, 0.6585, delta=0.1)
 
         # give the second assembly the new blocks
-        a2._children = [blocks2[0]] + [b20, b21] + blocks2[2:]
+        a2.removeAll()
+        a2.setChildren([blocks2[0]] + [b20, b21] + blocks2[2:])
 
         # grab the power before the swap
-        power1 = sum([b.p.power for b in a1.getBlocks()])
-        power2 = sum([b.p.power for b in a2.getBlocks()])
+        power1 = [b.p.power for b in a1.getBlocks()]
+        power2 = [b.p.power for b in a2.getBlocks()]
 
         # validate the situation is as you'd expect
         self.assertEqual(len(a1.getBlocks()), 5)
         self.assertEqual(len(a2.getBlocks()), 6)
 
+        self.assertEqual(power1, [0, 0, 0, 0, 0])
+        self.assertEqual(power2, [0, 1000, 2000, 0, 0, 0])
+
         self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
         self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
         self.assertEqual(list(a2.getBlocks())[2].p.flux, 50000000000.0)
-
-        self.assertEqual(list(a1.getBlocks())[1].p.power, 0.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.power, 1000.0)
-        self.assertEqual(list(a2.getBlocks())[2].p.power, 2000.0)
 
         self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
         self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
         self.assertGreater(list(a2.getBlocks())[2].p.pdens, 0.0)
 
-        power1 = sum([b.p.power for b in a1.getBlocks()])
-        power2 = sum([b.p.power for b in a2.getBlocks()])
-
         # do the swap
         fh = fuelHandlers.FuelHandler(self.o)
         fh._swapFluxParam(a1, a2)
+
+        # grab the power after the swap
+        power1f = [b.p.power for b in a1.getBlocks()]
+        power2f = [b.p.power for b in a2.getBlocks()]
 
         # validate the swap worked
         self.assertEqual(len(a1.getBlocks()), 5)
         self.assertEqual(len(a2.getBlocks()), 6)
 
+        self.assertEqual(power1f, [0, 1500, 0, 0, 0])
+        self.assertEqual(power2f, [0, 0, 0, 0, 0, 0])
+
         self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
         self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
         self.assertEqual(list(a2.getBlocks())[2].p.flux, 50000000000.0)
 
-        self.assertEqual(list(a1.getBlocks())[1].p.power, 1500.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.power, 0.0)
-        self.assertEqual(list(a2.getBlocks())[2].p.power, 0.0)
-
         self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
         self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
         self.assertEqual(list(a2.getBlocks())[2].p.pdens, 0.0)
-
-        self.assertEqual(sum([b.p.power for b in a1.getBlocks()]), power2)
-        self.assertEqual(sum([b.p.power for b in a2.getBlocks()]), power1)
 
 
 class TestFuelPlugin(unittest.TestCase):

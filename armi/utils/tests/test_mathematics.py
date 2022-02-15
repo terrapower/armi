@@ -242,6 +242,74 @@ class TestMath(unittest.TestCase):
         self.assertAlmostEqual(yout[3], 11 / 2)
         self.assertAlmostEqual(yout[4], 11 / 2)
 
+    def test_resampleStepwiseAvgAllNones(self):
+        """Test resampleStepwise() averaging when the inputs are all None"""
+        xin = [0, 1, 2, 13.3]
+        yin = [None, None, None]
+        xout = [0, 1, 2, 13.3]
+
+        yout = resampleStepwise(xin, yin, xout)
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertIsNone(yout[0])
+        self.assertIsNone(yout[1])
+        self.assertIsNone(yout[2])
+
+    def test_resampleStepwiseAvgOneNone(self):
+        """Test resampleStepwise() averaging when one input is None"""
+        xin = [0, 1, 2, 13.3]
+        yin = [None, 1, 2]
+        xout = [0, 1, 2, 13.3]
+
+        yout = resampleStepwise(xin, yin, xout)
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertIsNone(yout[0])
+        self.assertEqual(yout[1], 1)
+        self.assertEqual(yout[2], 2)
+
+    def test_resampleStepwiseSumAllNones(self):
+        """Test resampleStepwise() summing when the inputs are all None"""
+        xin = [0, 1, 2, 13.3]
+        yin = [None, None, None]
+        xout = [0, 1, 2, 13.3]
+
+        yout = resampleStepwise(xin, yin, xout, method="sum")
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertIsNone(yout[0])
+        self.assertIsNone(yout[1])
+        self.assertIsNone(yout[2])
+
+    def test_resampleStepwiseSumOneNone(self):
+        """Test resampleStepwise() summing when one inputs is None"""
+        xin = [0, 1, 2, 13.3]
+        yin = [None, 1, 2]
+        xout = [0, 1, 2, 13.3]
+
+        yout = resampleStepwise(xin, yin, xout, method="sum")
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertIsNone(yout[0])
+        self.assertEqual(yout[1], 1)
+        self.assertEqual(yout[2], 2)
+
+    def test_resampleStepwiseAvgComplicatedNone(self):
+        """Test resampleStepwise() averaging with a None value, when the intervals don't line up"""
+        xin = [2, 4, 6, 8, 10]
+        yin = [11, None, 33, 44]
+        xout = [-1, 0, 1, 2, 4, 7, 9]
+
+        yout = resampleStepwise(xin, yin, xout)
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertEqual(yout[0], 0)
+        self.assertEqual(yout[1], 0)
+        self.assertEqual(yout[2], 0)
+        self.assertEqual(yout[3], 11)
+        self.assertIsNone(yout[4])
+        self.assertEqual(yout[5], 38.5)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1434,8 +1434,6 @@ class FuelHandler:
         the shortest one has been used up and then the process will truncate.
         """
         # Find the block-based mesh points for each assembly
-        print(incoming)
-        print(outgoing)
         meshIn = self.r.core.findAllAxialMeshPoints([incoming], False)
         meshOut = self.r.core.findAllAxialMeshPoints([outgoing], False)
 

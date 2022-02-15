@@ -61,7 +61,7 @@ def resampleStepwise(xin, yin, xout, method="avg"):
         # trim any partial right-side bins
         if xout[i] < xin[min(end, len(xin) - 1)]:
             fraction = (xout[i] - xin[end - 1]) / (xin[end] - xin[end - 1])
-            if not fraction:
+            if fraction == 0:
                 chunk = chunk[:-1]
                 length = length[:-1]
             elif method == "sum":
@@ -72,7 +72,7 @@ def resampleStepwise(xin, yin, xout, method="avg"):
         # trim any partial left-side bins
         if xout[i - 1] > xin[start - 1]:
             fraction = (xin[start] - xout[i - 1]) / (xin[start] - xin[start - 1])
-            if not fraction:
+            if fraction == 0:
                 chunk = chunk[1:]
                 length = length[1:]
             elif method == "sum":
@@ -81,7 +81,9 @@ def resampleStepwise(xin, yin, xout, method="avg"):
                 length[0] *= fraction
 
         # return the sum or the average
-        if method == "sum":
+        if None in chunk:
+            yout.append(None)
+        elif method == "sum":
             yout.append(sum(chunk))
         else:
             weighted_sum = sum([c * l for c, l in zip(chunk, length)])
