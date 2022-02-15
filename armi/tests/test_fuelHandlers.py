@@ -520,6 +520,11 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
     def test_swapFluxParamSameLength(self):
+        """
+        Test the _swapFluxParams method for the usual case,
+        where each of the input assembles have the same number of assemblies,
+        on the same mesh
+        """
         # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FEED)
         self.assertEqual(len(assems), 14)
@@ -570,7 +575,11 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(sum([b.p.power for b in a2.getBlocks()]), power1)
 
     def test_swapFluxParamDifferentLengths(self):
-        """TODO JOHN: Should we test more cases?"""
+        """
+        Test the _swapFluxParams method for the less common, and more complicated case,
+        where the input assembles have different numbers of blocks, potentially on
+        wildly different point meshes.
+        """
         # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FEED)
 
@@ -617,26 +626,33 @@ class TestFuelHandler(ArmiTestHelper):
         a2.removeAll()
         a2.setChildren([blocks2[0]] + [b20, b21] + blocks2[2:])
 
-        # grab the power before the swap
-        power1 = [b.p.power for b in a1.getBlocks()]
-        power2 = [b.p.power for b in a2.getBlocks()]
-
         # validate the situation is as you'd expect
         self.assertEqual(len(a1.getBlocks()), 5)
         self.assertEqual(len(a2.getBlocks()), 6)
 
+        # validate the power before the swap
+        power1 = [b.p.power for b in a1.getBlocks()]
+        power2 = [b.p.power for b in a2.getBlocks()]
+
         self.assertEqual(power1, [0, 0, 0, 0, 0])
         self.assertEqual(power2, [0, 1000, 2000, 0, 0, 0])
 
-        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
-        self.assertEqual(list(a2.getBlocks())[2].p.flux, 50000000000.0)
+        # validate the power density before the swap
+        for b in a1.getBlocks():
+            self.assertEqual(b.p.pdens, 0.0)
 
-        self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
-        self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
-        self.assertGreater(list(a2.getBlocks())[2].p.pdens, 0.0)
+        pdens2i = [0, 0.32925299379047496, 0.6585059875809499, 0, 0, 0]
+        for i, b in enumerate(a2.getBlocks()):
+            self.assertAlmostEqual(b.p.pdens, pdens2i[i], msg=i)
 
-        # do the swap
+        # validate the flux before the swap
+        for b in a1.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
+        for b in a2.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
+        # do the swap, using averages
         fh = fuelHandlers.FuelHandler(self.o)
         fh._swapFluxParam(a1, a2)
 
@@ -651,13 +667,20 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(power1f, [0, 1500, 0, 0, 0])
         self.assertEqual(power2f, [0, 0, 0, 0, 0, 0])
 
-        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
-        self.assertEqual(list(a2.getBlocks())[2].p.flux, 50000000000.0)
+        # validate the power density before the swap
+        pdens1f = [0, 0.2469397453428562, 0, 0, 0]
+        for i, b in enumerate(a1.getBlocks()):
+            self.assertAlmostEqual(b.p.pdens, pdens1f[i], msg=i)
 
-        self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
-        self.assertEqual(list(a2.getBlocks())[2].p.pdens, 0.0)
+        for i, b in enumerate(a2.getBlocks()):
+            self.assertAlmostEqual(b.p.pdens, 0, msg=i)
+
+        # validate the flux after the swap
+        for b in a1.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
+        for b in a2.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
 
 
 class TestFuelPlugin(unittest.TestCase):
