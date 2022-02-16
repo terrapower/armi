@@ -73,9 +73,7 @@ runLog = logging.getLogger(__name__)
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
-    """
-    Build uniform mesh version of the source reactor
-    """
+    """Build uniform mesh version of the source reactor"""
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -102,9 +100,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     @staticmethod
     def initNewReactor(sourceReactor):
-        """
-        Built an empty version of the new reactor.
-        """
+        """Build an empty version of the new reactor"""
         # XXX: this deepcopy is extremely wasteful because the assemblies copied
         # are immediately removed. It's just laziness of getting the same class
         # of reactor set up.
@@ -381,9 +377,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         )
 
     def _clearStateOnReactor(self, reactor):
-        """
-        Also clear mgFlux params.
-        """
+        """Also clear mgFlux params"""
         UniformMeshGeometryConverter._clearStateOnReactor(self, reactor)
 
         for b in reactor.core.getBlocks():

@@ -229,7 +229,6 @@ def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     x = (y-b)/m
 
     """
-
     if x1 == x0:
         raise ZeroDivisionError("The x-values are identical. Cannot interpolate.")
 
@@ -532,12 +531,10 @@ def classesInHierarchy(obj, classCounts, visited=None):
 
 
 def slantSplit(val, ratio, nodes, order="low first"):
-
     r"""
     Returns a list of values whose sum is equal to the value specified.
     The ratio between the highest and lowest value is equal to the specified ratio,
     and the middle values trend linearly between them.
-
     """
     val = float(val)
     ratio = float(ratio)
@@ -704,7 +701,7 @@ def runFunctionFromAllModules(funcName, *args, **kwargs):
             traceback.print_exc()
 
 
-# TODO: move to pathTools
+# TODO: move to pathTools (and reference it here for convenience)
 def mkdir(dirname):
     r"""
     Keeps trying to make a directory, outputting whatever errors it encounters,
@@ -715,7 +712,6 @@ def mkdir(dirname):
     dirname : str
         Path to the directory to create.
         What you would normally pass to os.mkdir.
-
     """
     numTimesTried = 0
     while numTimesTried < 1000:
