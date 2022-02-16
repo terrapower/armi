@@ -672,11 +672,11 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(len(a1.getBlocks()), 5)
         self.assertEqual(len(a2.getBlocks()), 6)
 
-        self.assertEqual(power1f, [0, 1500, 0, 0, 0])
+        self.assertEqual(power1f, [0, 3000, 0, 0, 0])
         self.assertEqual(power2f, [0, 0, 0, 0, 0, 0])
 
         # validate the power density before the swap
-        pdens1f = [0, 0.2469397453428562, 0, 0, 0]
+        pdens1f = [0, 0.4938794906857124, 0, 0, 0]
         for i, b in enumerate(a1.getBlocks()):
             self.assertAlmostEqual(b.p.pdens, pdens1f[i], msg=i)
 
