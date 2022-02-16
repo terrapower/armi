@@ -502,6 +502,22 @@ class Inspector:
             lambda: self._assignCS("cycleLengths", []),
         )
 
+        def _simpleCyclesInputEntered():
+            from armi.settings.fwSettings.globalSettings import (
+                SIMPLE_CYCLES_INPUT_ENTERED,
+            )
+
+            return SIMPLE_CYCLES_INPUT_ENTERED
+
+        self.addQuery(
+            lambda: _simpleCyclesInputEntered() and self.cs["cycles"],
+            "If specifying detailed cycle history with `cycles`, you may not"
+            " also use any of the simple cycle history inputs `cycleLength(s)`,"
+            " `burnSteps`, `availabilityFactor(s)`, `nCycles`, or `powerFractions`.",
+            "Use detailed cycle history?",
+            self.NO_ACTION,
+        )
+
         def _correctCycles():
             newSettings = {"nCycles": 1, "burnSteps": 0}
             self.cs = self.cs.modified(newSettings=newSettings)

@@ -29,6 +29,10 @@ import voluptuous as vol
 from armi import context
 from armi.settings import setting
 
+# track if any of the case settings of the simple cycles input style have been used
+global SIMPLE_CYCLES_INPUT_ENTERED
+SIMPLE_CYCLES_INPUT_ENTERED = False
+
 
 # Framework settings
 CONF_NUM_PROCESSORS = "numProcessors"
@@ -106,6 +110,7 @@ CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
+CONF_CYCLES = "cycles"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -217,6 +222,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("burnTime", None),
             ],
+            schema=_registerSimpleCyclesInput,
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
@@ -226,7 +232,7 @@ def defineSettings() -> List[setting.Setting]:
             "duration will be affected by the availability factor. R is repeat. For "
             "example [100, 150, '9R'] is 1 100 day cycle followed by 10 150 day "
             "cycles. Empty list is constant duration set by 'cycleLength'.",
-            schema=vol.Schema([vol.Coerce(str)]),
+            schema=_registerSimpleCyclesInputList,
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTOR,
@@ -238,6 +244,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("capacityFactor", None),
             ],
+            schema=_registerSimpleCyclesInput,
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
@@ -247,7 +254,7 @@ def defineSettings() -> List[setting.Setting]:
             "(fraction of time plant is not in an outage). R is repeat. For example "
             "[0.5, 1.0, '9R'] is 1 50% CF followed by 10 100 CF. Empty list is "
             "constant duration set by 'availabilityFactor'.",
-            schema=vol.Schema([vol.Coerce(str)]),
+            schema=_registerSimpleCyclesInputList,
         ),
         setting.Setting(
             CONF_POWER_FRACTIONS,
@@ -258,7 +265,7 @@ def defineSettings() -> List[setting.Setting]:
             "'9R'] is 1 50% PF followed by 10 100% PF. Specify zeros to indicate "
             "decay-only cycles (i.e. for decay heat analysis). Empty list implies "
             "always full rated power.",
-            schema=vol.Schema([vol.Coerce(str)]),
+            schema=_registerSimpleCyclesInputList,
         ),
         setting.Setting(
             CONF_BURN_STEPS,
@@ -267,6 +274,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of depletion substeps, n, in one cycle. Note: There "
             "will be n+1 time nodes and the burnup step time will be computed as cycle "
             "length/n.",
+            schema=_registerSimpleCyclesInput,
         ),
         setting.Setting(
             CONF_BETA,
@@ -509,6 +517,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of cycles that will be simulated. Fuel management "
             "happens at the beginning of each cycle. Can include active (full-power) "
             "cycles as well as post-shutdown decay-heat steps.",
+            schema=_registerSimpleCyclesInput,
         ),
         setting.Setting(
             CONF_NUM_CONTROL_BLOCKS,
@@ -737,5 +746,46 @@ def defineSettings() -> List[setting.Setting]:
             "grid upon construction? This feature makes heavy use of multi-index "
             "locations, which are not yet universally supported.",
         ),
+        setting.Setting(
+            CONF_CYCLES,
+            default="",
+            label="Cycle information",
+            description="YAML input defining the cycle history of the case.",
+            schema=vol.Schema(
+                [
+                    vol.All(
+                        {
+                            'name': str,
+                            vol.Required('cumulative days'): vol.Coerce(str),
+                            vol.Required('power fractions'): vol.Coerce(str),
+                        },
+                        _mutuallyExclusiveCyclesInputs,
+                    )
+                ]
+            ),
+        ),
     ]
     return settings
+
+
+def _mutuallyExclusiveCyclesInputs(cycle):
+    return  # do something eventually
+    # cycleKeys = cycle.keys()
+    # if 'cumulative days' in cycleKeys and 'power fractions' in cycleKeys:
+    #     raise vol.Invalid('asfsdfasf')
+
+
+def _cyclesSchema(cyclesInput):
+    print(cyclesInput)
+
+    return cyclesInput
+
+
+def _registerSimpleCyclesInputList(userInput):
+    _registerSimpleCyclesInput(userInput)
+    return vol.Schema([vol.Coerce(str)])(userInput)
+
+
+def _registerSimpleCyclesInput(_):
+    global SIMPLE_CYCLES_INPUT_ENTERED
+    SIMPLE_CYCLES_INPUT_ENTERED = True
