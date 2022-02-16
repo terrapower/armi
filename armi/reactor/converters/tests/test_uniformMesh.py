@@ -56,22 +56,17 @@ class TestUniformMeshComponents(unittest.TestCase):
         """
         refMesh = self.r.core.findAllAxialMeshPoints(
             [self.r.core.getFirstAssembly(Flags.FUEL)]
-        )[
-            1:
-        ]  # pop 0
+        )[1:]
         self.converter._computeAverageAxialMesh()
         avgMesh = self.converter._uniformMesh
 
         self.assertEqual(len(refMesh), len(avgMesh))
         self.assertEqual(refMesh[0], avgMesh[0])
-        self.assertNotEqual(refMesh[4], avgMesh[4])  # above the fuel.
+        self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
 
 def applyNonUniformHeightDistribution(reactor):
-    """
-    Modifies some assemblies to have non-uniform axial meshes
-
-    """
+    """Modifies some assemblies to have non-uniform axial meshes"""
     for a in reactor.core:
         delta = 0.0
         for b in a[:-1]:
@@ -211,5 +206,4 @@ class TestParamConversion(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestUniformMesh.test_applyStateToOriginal']
     unittest.main()

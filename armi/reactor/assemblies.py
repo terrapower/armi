@@ -1082,10 +1082,6 @@ class Assembly(composites.Composite):
         param : str
             the parameter to interpolate
 
-        elevations : array of float
-            the elevations from the bottom of the assembly in cm at which you want the
-            point.
-
         interpType: str or int
             used in interp1d. interp1d documention: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
