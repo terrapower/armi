@@ -135,7 +135,7 @@ class TestMath(unittest.TestCase):
         yin = [4.76, 9.99, -123.456]
         xout = [0, 1, 2, 13.3]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertAlmostEqual(yout[0], 4.76)
@@ -149,7 +149,7 @@ class TestMath(unittest.TestCase):
         yin = [3, 2, 5, 3]
         xout = [0, 2, 3.5, 4]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertEqual(yout[0], 5)
@@ -163,7 +163,7 @@ class TestMath(unittest.TestCase):
         yin = [3, 2, 5, 3, 4]
         xout = [0, 2, 3.5, 5]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertEqual(yout[0], 5)
@@ -177,7 +177,7 @@ class TestMath(unittest.TestCase):
         yin = [3, 2, 5, 3, 4]
         xout = [0, 2, 3.5, 6]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertEqual(yout[0], 5)
@@ -191,7 +191,7 @@ class TestMath(unittest.TestCase):
         yin = [3.1, 2.2, 5.3, 3.4]
         xout = [0, 3, 5, 6.777, 9.123]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertEqual(yout[0], 3.1)
@@ -206,7 +206,7 @@ class TestMath(unittest.TestCase):
         yin = [3.1, 2.2, 5.3, 3.4]
         xout = [0, 5, 9.123]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertAlmostEqual(yout[0], 5.3)
@@ -219,7 +219,7 @@ class TestMath(unittest.TestCase):
         yin = [11, 22, 33, 44]
         xout = [2, 3, 4, 5, 6]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertEqual(yout[0], 33)
@@ -233,7 +233,7 @@ class TestMath(unittest.TestCase):
         yin = [11, 22, 33, 44]
         xout = [-1, 0, 1, 2, 3, 4]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertEqual(yout[0], 0)
@@ -274,7 +274,7 @@ class TestMath(unittest.TestCase):
         yin = [None, None, None]
         xout = [0, 1, 2, 13.3]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertIsNone(yout[0])
@@ -287,7 +287,7 @@ class TestMath(unittest.TestCase):
         yin = [None, 1, 2]
         xout = [0, 1, 2, 13.3]
 
-        yout = resampleStepwise(xin, yin, xout, method="sum")
+        yout = resampleStepwise(xin, yin, xout, avg=False)
 
         self.assertEqual(len(yout), len(xout) - 1)
         self.assertIsNone(yout[0])

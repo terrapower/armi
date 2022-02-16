@@ -16,7 +16,7 @@
 import numpy as np
 
 
-def resampleStepwise(xin, yin, xout, method="avg"):
+def resampleStepwise(xin, yin, xout, avg=True):
     """
     Resample a piecewise-defined step function from one set of mesh points
     to another. This is useful for reallocating values along a given axial
@@ -33,10 +33,10 @@ def resampleStepwise(xin, yin, xout, method="avg"):
     xout : list
         new interval points / new mesh points
 
-    method : str, optional
-        By default, this method resamples to average values,
-        but using "sum" here will resample to a conservation
-        of the total value.
+    avg : bool
+        By default, this is set to True, forcing the resampling to be done
+        by averaging. But if this is False, the resmampling will be done by
+        summation, to try and preserve the totals after resampling.
     """
     # validation: there must be one more mesh point than inter-mesh values
     assert (len(xin) - 1) == len(yin)
@@ -64,10 +64,10 @@ def resampleStepwise(xin, yin, xout, method="avg"):
             if fraction == 0:
                 chunk = chunk[:-1]
                 length = length[:-1]
-            elif method == "sum":
-                chunk[-1] *= fraction
-            else:
+            elif avg:
                 length[-1] *= fraction
+            else:
+                chunk[-1] *= fraction
 
         # trim any partial left-side bins
         if xout[i - 1] > xin[start - 1]:
@@ -75,18 +75,18 @@ def resampleStepwise(xin, yin, xout, method="avg"):
             if fraction == 0:
                 chunk = chunk[1:]
                 length = length[1:]
-            elif method == "sum":
-                chunk[0] *= fraction
-            else:
+            elif avg:
                 length[0] *= fraction
+            else:
+                chunk[0] *= fraction
 
         # return the sum or the average
         if None in chunk:
             yout.append(None)
-        elif method == "sum":
-            yout.append(sum(chunk))
-        else:
+        elif avg:
             weighted_sum = sum([c * l for c, l in zip(chunk, length)])
             yout.append(weighted_sum / sum(length))
+        else:
+            yout.append(sum(chunk))
 
     return yout

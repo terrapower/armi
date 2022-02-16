@@ -1484,10 +1484,10 @@ class FuelHandler:
             # resample incoming to outgoing, and vice versa
             fluxOutNew = resampleStepwise(meshIn, fluxIn, meshOut)
             mgFluxOutNew = resampleStepwise(meshIn, mgFluxIn, meshOut)
-            powerOutNew = resampleStepwise(meshIn, powerIn, meshOut, method="sum")
+            powerOutNew = resampleStepwise(meshIn, powerIn, meshOut, avg=False)
             fluxInNew = resampleStepwise(meshOut, fluxOut, meshIn)
             mgFluxInNew = resampleStepwise(meshOut, mgFluxOut, meshIn)
-            powerInNew = resampleStepwise(meshOut, powerOut, meshIn, method="sum")
+            powerInNew = resampleStepwise(meshOut, powerOut, meshIn, avg=False)
 
             # load the new outgoing values into place
             for b, flux, mgFlux, power in zip(
