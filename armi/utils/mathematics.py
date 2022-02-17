@@ -90,3 +90,45 @@ def resampleStepwise(xin, yin, xout, avg=True):
             yout.append(sum(chunk))
 
     return yout
+
+
+def parabolaFromPoints(p1, p2, p3):
+    r"""
+    find the parabola that passes through three points
+
+    We solve a simultaneous equation with three points.
+
+    A = x1**2 x1 1
+        x2**2 x2 1
+        x3**2 x3 1
+
+    b = y1
+        y2
+        y3
+
+    find coefficients Ax=b
+
+    Parameters
+    ----------
+    p1 : tuple
+        first point (x,y) coordinates
+    p2,p3: tuple, second and third points.
+
+    Returns
+    -------
+    a,b,c coefficients of y=ax^2+bx+c
+
+    """
+
+    A = np.array(
+        [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
+    )
+
+    b = np.array([[p1[1]], [p2[1]], [p3[1]]])
+    try:
+        x = np.linalg.solve(A, b)
+    except:
+        print("Error in parabola {} {}".format(A, b))
+        raise
+
+    return float(x[0]), float(x[1]), float(x[2])
