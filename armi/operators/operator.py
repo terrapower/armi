@@ -62,6 +62,13 @@ class Operator:  # pylint: disable=too-many-public-methods
     cs : CaseSettings object
             Global settings that define the run.
 
+    cycleNames : list
+        The name of each cycle. Cycles without a name are `None`.
+
+    stepLengths : list
+        A two-tiered list, where primary indices correspond to cycle and
+        secondary indices correspond to the length of each intra-cycle step (in days).
+
     cycleLengths : list
         The duration of each individual cycle in a run (in days). This is the entire cycle,
         from startup to startup and includes outage time.
@@ -71,7 +78,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         is always less than or equal to this, depending on the power fraction achieved during each cycle.
 
     powerFractions : list
-        The fraction of full rated capacity that the plant achieves while it is online in each cycle.
+        A two-tiered list, where primary indices correspond to cycles and secondary
+        indices correspond to the fraction of full rated capacity that the plant achieves
+        during that step of the cycle.
         Zero power fraction can indicate decay-only cycles.
 
     interfaces : list
@@ -101,9 +110,10 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
-        self.cycleLengths = self._getCycleLengths()
-        self.availabilityFactors = self._getAvailabilityFactors()
+        self.cycleNames = self._getCycleNames()
+        self.stepLengths, self.cycleLengths = self._getStepAndCycleLengths()
         self.powerFractions = self._getPowerFractions()
+        self.availabilityFactors = self._getAvailabilityFactors()
         self._checkReactorCycleAttrs()
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
@@ -140,23 +150,79 @@ class Operator:  # pylint: disable=too-many-public-methods
                 # if it actually doesn't exist, that's an actual error. Raise
                 raise
 
-    def _getCycleLengths(self):
-        """Return the cycle length for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["cycleLengths"]) or (
-            [self.cs["cycleLength"]] * self.cs["nCycles"]
-        )
+    def _getCycleNames(self):
+        """Return cycle names that are defined. Those undefined will be `None`."""
+        if self.cs["cycles"] != []:
+            return [
+                (cycle["name"] if "name" in cycle.keys() else None)
+                for cycle in self.cs["cycles"]
+            ]
+        else:
+            return [None] * self.cs["nCycles"]
+
+    def _getStepAndCycleLengths(self):
+        """Return intra-cycle steps and cycle lengths."""
+        stepLengths = []
+        if self.cs["cycles"] != []:
+            for cycle in self.cs["cycles"]:
+                if "step days" in cycle.keys():
+                    stepLengths.append(utils.expandRepeatedFloats(cycle["step days"]))
+                elif "cumulative days" in cycle.keys():
+                    cumulativeDays = cycle["cumulative days"]
+                    stepLengths.append(
+                        [cumulativeDays[0]]
+                        + [
+                            (cumulativeDays[i] - cumulativeDays[i - 1])
+                            for i in range(1, len(cumulativeDays))
+                        ]
+                    )
+            cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
+        else:
+            cycleLengths = (
+                utils.expandRepeatedFloats(self.cs["cycleLengths"])
+                or [self.cs["cycleLength"]] * self.cs["nCycles"]
+            )
+            stepLengths = [
+                [cycleLength / self.cs["burnSteps"]] * self.cs["burnSteps"]
+                for cycleLength in cycleLengths
+            ]
+
+        return stepLengths, cycleLengths
 
     def _getAvailabilityFactors(self):
         """Return the availability factors (capacity factor) for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["availabilityFactors"]) or (
-            [self.cs["availabilityFactor"]] * self.cs["nCycles"]
-        )
+        if self.cs["cycles"] != []:
+            # for input in the detailed-cycle style, the availability factor is
+            # backed out by seeing if the last step in the cycle has zero power.
+            # if it is at power, then availability factor will be 1 for that cycle
+            return [
+                (
+                    (1 - (cycleStepLengths[-1]) / cycleLength)
+                    if cyclePowerFracs[-1] == 0
+                    else 1
+                )
+                for cyclePowerFracs, cycleLength, cycleStepLengths in zip(
+                    self.powerFractions, self.cycleLengths, self.stepLengths
+                )
+            ]
+        else:
+            return utils.expandRepeatedFloats(self.cs["availabilityFactors"]) or (
+                [self.cs["availabilityFactor"]] * self.cs["nCycles"]
+            )
 
     def _getPowerFractions(self):
         """Return the power fractions for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["powerFractions"]) or (
-            [1.0 for _cl in self.cycleLengths]
-        )
+        if self.cs["cycles"] != []:
+            return [
+                utils.expandRepeatedFloats(cycle["power fractions"])
+                for cycle in self.cs["cycles"]
+            ]
+        else:
+            valuePerCycle = utils.expandRepeatedFloats(self.cs["powerFractions"]) or (
+                [1.0 for _cl in self.cycleLengths]
+            )
+
+            return [[value] * self.cs["burnSteps"] for value in valuePerCycle]
 
     def _checkReactorCycleAttrs(self):
         operatingParams = {
