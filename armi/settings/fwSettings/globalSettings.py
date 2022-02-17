@@ -232,7 +232,7 @@ def defineSettings() -> List[setting.Setting]:
             "duration will be affected by the availability factor. R is repeat. For "
             "example [100, 150, '9R'] is 1 100 day cycle followed by 10 150 day "
             "cycles. Empty list is constant duration set by 'cycleLength'.",
-            schema=_registerSimpleCyclesInputList,
+            schema=vol.All(vol.Schema([vol.Coerce(str)]), _registerSimpleCyclesInput),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTOR,
@@ -254,7 +254,7 @@ def defineSettings() -> List[setting.Setting]:
             "(fraction of time plant is not in an outage). R is repeat. For example "
             "[0.5, 1.0, '9R'] is 1 50% CF followed by 10 100 CF. Empty list is "
             "constant duration set by 'availabilityFactor'.",
-            schema=_registerSimpleCyclesInputList,
+            schema=vol.All(vol.Schema([vol.Coerce(str)]), _registerSimpleCyclesInput),
         ),
         setting.Setting(
             CONF_POWER_FRACTIONS,
@@ -265,7 +265,7 @@ def defineSettings() -> List[setting.Setting]:
             "'9R'] is 1 50% PF followed by 10 100% PF. Specify zeros to indicate "
             "decay-only cycles (i.e. for decay heat analysis). Empty list implies "
             "always full rated power.",
-            schema=_registerSimpleCyclesInputList,
+            schema=vol.All(vol.Schema([vol.Coerce(str)]), _registerSimpleCyclesInput),
         ),
         setting.Setting(
             CONF_BURN_STEPS,
@@ -791,11 +791,6 @@ def _mutuallyExclusiveCyclesInputs(cycle):
             else baseErrMsg
         )
     return cycle
-
-
-def _registerSimpleCyclesInputList(userInput):
-    _ = _registerSimpleCyclesInput(userInput)
-    return vol.Schema([vol.Coerce(str)])(userInput)
 
 
 def _registerSimpleCyclesInput(userInput):
