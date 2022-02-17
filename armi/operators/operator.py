@@ -192,19 +192,13 @@ class Operator:  # pylint: disable=too-many-public-methods
     def _getAvailabilityFactors(self):
         """Return the availability factors (capacity factor) for each cycle of the system as a list."""
         if self.cs["cycles"] != []:
-            # for input in the detailed-cycle style, the availability factor is
-            # backed out by seeing if the last step in the cycle has zero power.
-            # if it is at power, then availability factor will be 1 for that cycle
-            return [
-                (
-                    (1 - (cycleStepLengths[-1]) / cycleLength)
-                    if cyclePowerFracs[-1] == 0
-                    else 1
-                )
-                for cyclePowerFracs, cycleLength, cycleStepLengths in zip(
-                    self.powerFractions, self.cycleLengths, self.stepLengths
-                )
-            ]
+            availabilityFactors = []
+            for cycle in self.cs["cycles"]:
+                if "availability factor" in cycle.keys():
+                    availabilityFactors.append(cycle["availability factor"])
+                else:
+                    availabilityFactors.append(1)
+            return availabilityFactors
         else:
             return utils.expandRepeatedFloats(self.cs["availabilityFactors"]) or (
                 [self.cs["availabilityFactor"]] * self.cs["nCycles"]

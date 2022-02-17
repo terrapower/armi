@@ -759,6 +759,7 @@ def defineSettings() -> List[setting.Setting]:
                             "cumulative days": vol.All([int], _monotonicIncreasing),
                             "step days": [vol.Coerce(str)],
                             vol.Required("power fractions"): [vol.Coerce(str)],
+                            "availability factor": float,
                         },
                         _mutuallyExclusiveCyclesInputs,
                     )
