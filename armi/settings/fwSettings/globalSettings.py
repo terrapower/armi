@@ -748,16 +748,17 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_CYCLES,
-            default="",
+            default=[],
             label="Cycle information",
             description="YAML input defining the cycle history of the case.",
             schema=vol.Schema(
                 [
                     vol.All(
                         {
-                            'name': str,
-                            vol.Required('cumulative days'): vol.Coerce(str),
-                            vol.Required('power fractions'): vol.Coerce(str),
+                            "name": str,
+                            "cumulative days": vol.All([int], _monotonicIncreasing),
+                            "step days": [vol.Coerce(str)],
+                            vol.Required("power fractions"): [vol.Coerce(str)],
                         },
                         _mutuallyExclusiveCyclesInputs,
                     )
@@ -768,24 +769,36 @@ def defineSettings() -> List[setting.Setting]:
     return settings
 
 
+def _monotonicIncreasing(inputList):
+    if not all(x < y for x, y in zip(inputList, inputList[1:])):
+        raise vol.Invalid(f"Vector must be monotonically increasing: {inputList}")
+    return inputList
+
+
 def _mutuallyExclusiveCyclesInputs(cycle):
-    return  # do something eventually
-    # cycleKeys = cycle.keys()
-    # if 'cumulative days' in cycleKeys and 'power fractions' in cycleKeys:
-    #     raise vol.Invalid('asfsdfasf')
+    cycleKeys = cycle.keys()
+    if ('cumulative days' in cycleKeys and 'step days' in cycleKeys) or (
+        "cumulative days" not in cycleKeys and "step days" not in cycleKeys
+    ):
+        baseErrMsg = (
+            "Must have exactly one of either 'cumulative days' or 'step days'"
+            " in each cycle definition."
+        )
 
-
-def _cyclesSchema(cyclesInput):
-    print(cyclesInput)
-
-    return cyclesInput
+        raise vol.Invalid(
+            (baseErrMsg + " Check cycle {}.".format(cycle["name"]))
+            if "name" in cycleKeys
+            else baseErrMsg
+        )
+    return cycle
 
 
 def _registerSimpleCyclesInputList(userInput):
-    _registerSimpleCyclesInput(userInput)
+    _ = _registerSimpleCyclesInput(userInput)
     return vol.Schema([vol.Coerce(str)])(userInput)
 
 
-def _registerSimpleCyclesInput(_):
+def _registerSimpleCyclesInput(userInput):
     global SIMPLE_CYCLES_INPUT_ENTERED
     SIMPLE_CYCLES_INPUT_ENTERED = True
+    return userInput
