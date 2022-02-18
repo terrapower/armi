@@ -85,8 +85,10 @@ class MainInterface(interfaces.Interface):
             # and the database contains the values from the run at the end of the
             # interface stack, which are what the start start cycle and start node
             # should begin with.
+            cycle = self.cs["startCycle"]
+            node = self.cs["startNode"]
             dbCycle, dbNode = utils.getPreviousTimeStep(
-                self.cs["startCycle"], self.cs["startNode"], self.cs["burnSteps"]
+                cycle, node, self.o.burnSteps[cycle]
             )
             try:
                 # NOTE: this should be the responsibility of the database, but cannot
