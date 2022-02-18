@@ -73,6 +73,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         The duration of each individual cycle in a run (in days). This is the entire cycle,
         from startup to startup and includes outage time.
 
+    burnSteps : list
+        The number of sub-cycles in each cycle.
+
     availabilityFactors : list
         The fraction of time in a cycle that the plant is producing power. Note that capacity factor
         is always less than or equal to this, depending on the power fraction achieved during each cycle.
@@ -112,6 +115,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.loadedRestartData = []
         self.cycleNames = self._getCycleNames()
         self.stepLengths, self.cycleLengths = self._getStepAndCycleLengths()
+        self.burnSteps = [len(steps) for steps in self.stepLengths]
         self.powerFractions = self._getPowerFractions()
         self.availabilityFactors = self._getAvailabilityFactors()
         self._checkReactorCycleAttrs()
@@ -182,10 +186,14 @@ class Operator:  # pylint: disable=too-many-public-methods
                 utils.expandRepeatedFloats(self.cs["cycleLengths"])
                 or [self.cs["cycleLength"]] * self.cs["nCycles"]
             )
-            stepLengths = [
-                [cycleLength / self.cs["burnSteps"]] * self.cs["burnSteps"]
-                for cycleLength in cycleLengths
-            ]
+            stepLengths = (
+                [
+                    [cycleLength / self.cs["burnSteps"]] * self.cs["burnSteps"]
+                    for cycleLength in cycleLengths
+                ]
+                if self.cs["burnSteps"] != 0
+                else []
+            )
 
         return stepLengths, cycleLengths
 
@@ -312,10 +320,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         """Run the portion of the main loop that happens each cycle."""
         self.r.p.cycleLength = self.cycleLengths[cycle]
         self.r.p.availabilityFactor = self.availabilityFactors[cycle]
-        self.r.core.p.power = self.powerFractions[cycle] * self.cs["power"]
-        self.r.p.capacityFactor = (
-            self.r.p.availabilityFactor * self.powerFractions[cycle]
-        )
         self.r.p.cycle = cycle
         self.r.core.p.coupledIteration = 0
         if cycle == startingCycle:
@@ -327,7 +331,19 @@ class Operator:  # pylint: disable=too-many-public-methods
         if halt:
             return False
 
-        for timeNode in range(startingNode, int(self.cs["burnSteps"]) + 1):
+        for timeNode in range(startingNode, int(self.burnSteps[cycle])):
+            print(self.powerFractions[cycle][timeNode])
+            self.r.core.p.power = (
+                self.powerFractions[cycle][timeNode] * self.cs["power"]
+            )
+            print(self.r.core.p.power)
+            self.r.p.capacityFactor = (
+                self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
+            )  # TODO what is this used for? is it being used correctly now?
+
+            self._timeNodeLoop(cycle, timeNode)
+        else:  # do one last node at the end using the same power as the previous node
+            timeNode = self.burnSteps[cycle]
             self._timeNodeLoop(cycle, timeNode)
 
         self.interactAllEOC(self.r.p.cycle)
