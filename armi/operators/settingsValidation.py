@@ -513,7 +513,7 @@ class Inspector:
             lambda: _simpleCyclesInputEntered() and self.cs["cycles"],
             "If specifying detailed cycle history with `cycles`, you may not"
             " also use any of the simple cycle history inputs `cycleLength(s)`,"
-            " `burnSteps`, `availabilityFactor(s)`, `nCycles`, or `powerFractions`.",
+            " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`.",
             "Use detailed cycle history?",
             self.NO_ACTION,
         )
