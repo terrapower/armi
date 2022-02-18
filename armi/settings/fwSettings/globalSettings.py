@@ -517,7 +517,6 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of cycles that will be simulated. Fuel management "
             "happens at the beginning of each cycle. Can include active (full-power) "
             "cycles as well as post-shutdown decay-heat steps.",
-            schema=_registerSimpleCyclesInput,
         ),
         setting.Setting(
             CONF_NUM_CONTROL_BLOCKS,
