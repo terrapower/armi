@@ -364,7 +364,7 @@ def getTimeStepNum(cycleNumber, subcycleNumber, cs):
     cs : Settings object
 
     """
-    return cycleNumber * getNodesPerCycle(cs) + subcycleNumber
+    return cycleNumber * getNodesPerCycle(cs)[cycleNumber] + subcycleNumber
 
 
 def getCycleNode(timeStepNum, cs):
@@ -380,12 +380,23 @@ def getCycleNode(timeStepNum, cs):
     """
     nodesPerCycle = getNodesPerCycle(cs)
 
-    return (timeStepNum // nodesPerCycle, timeStepNum % nodesPerCycle)
+    cNodes = 0  # cumulative nodes
+    for i in range(len(nodesPerCycle)):
+        cNodes += nodesPerCycle[i]
+        if timeStepNum < cNodes:
+            return (i, timeStepNum - (cNodes - nodesPerCycle[i]))
 
 
 def getNodesPerCycle(cs):
     """Return the number of nodes per cycles for this case settings."""
-    return cs["burnSteps"] + 1
+    if cs["cycles"] != []:
+        burnStepsPerCycle = [
+            len(utils.expandRepeatedFloats(cycle["power fractions"]))
+            for cycle in cs["cycles"]
+        ]
+        return [burnSteps + 1 for burnSteps in burnStepsPerCycles]
+    else:
+        return [cs["burnSteps"] + 1] * cs["nCycles"]
 
 
 def getPreviousTimeStep(cycle, node, burnSteps):
