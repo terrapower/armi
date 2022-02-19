@@ -13,7 +13,14 @@
 # limitations under the License.
 
 """Various math utilities"""
+import math
+import re
+
 import numpy as np
+import scipy.optimize as sciopt
+
+# special pattern to deal with FORTRAN-produced scipats without E, like 3.2234-234
+SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 
 # TODO: 0. JOHN! Find any unused and remove them.
@@ -29,18 +36,17 @@ def average1DWithinTolerance(vals, tolerance=0.2):
 
     Parameters
     ----------
-    vals : 2D numpy.array
+    vals : 2D np.array
         could be assembly x axial mesh tops or heights
     """
-    vals = numpy.array(vals)
+    vals = np.array(vals)
 
-    filterOut = numpy.array([False])  # this gets discarded
+    filterOut = np.array([False])  # this gets discarded
     while not filterOut.all():  # 20% difference is the default tolerance
         avg = vals.mean(axis=0)  # average over all columns
         diff = abs(vals - avg) / avg  # no nans, because all vals are non-zero
-        filterOut = (diff > tolerance).sum(
-            axis=1
-        ) == 0  # True = 1, sum across axis means any height in assem is off
+        # True = 1, sum across axis means any height in assem is off
+        filterOut = (diff > tolerance).sum(axis=1) == 0
         vals = vals[filterOut]  # filter anything that is skewing
 
     if vals.size == 0:
@@ -61,7 +67,7 @@ def convertToSlice(x, increment=False):
     to a slice. Also optionally increments that slice to make it easy to line
     up lists that don't start with 0.
 
-    Use this with numpy.array (numpy.ndarray) types to easily get selections of it's elements.
+    Use this with np.array (np.ndarray) types to easily get selections of it's elements.
 
     Parameters
     ----------
@@ -82,7 +88,7 @@ def convertToSlice(x, increment=False):
 
     Examples
     --------
-    a = numpy.array([10, 11, 12, 13])
+    a = np.array([10, 11, 12, 13])
 
     >>> convertToSlice(2)
     slice(2, 3, None)
@@ -116,12 +122,12 @@ def convertToSlice(x, increment=False):
         raise Exception("increment must be False or an integer in utils.convertToSlice")
 
     if x is None:
-        x = numpy.s_[:]
+        x = np.s_[:]
 
     if isinstance(x, list):
-        x = numpy.array(x)
+        x = np.array(x)
 
-    if isinstance(x, (int, numpy.integer)) or isinstance(x, (float, numpy.floating)):
+    if isinstance(x, (int, np.integer)) or isinstance(x, (float, np.floating)):
         x = slice(int(x), int(x) + 1, None)
 
     # Correct the slice indices to be group instead of index based.
@@ -142,10 +148,10 @@ def convertToSlice(x, increment=False):
 
         jstep = x.step
 
-        return numpy.s_[jstart:jstop:jstep]
+        return np.s_[jstart:jstop:jstep]
 
-    elif isinstance(x, numpy.ndarray):
-        return numpy.array([i + increment for i in x])
+    elif isinstance(x, np.ndarray):
+        return np.array([i + increment for i in x])
 
     else:
         raise Exception(
@@ -198,6 +204,44 @@ def expandRepeatedFloats(repeatedList):
     return nonRepeatList
 
 
+def findClosest(listToSearch, val, indx=False):
+    r"""
+    find closest item in a list.
+
+    Parameters
+    ----------
+    listToSearch : list
+        The list to search through
+
+    val : float
+        The target value that is being searched for in the list
+
+    indx : bool, optional
+        If true, returns minVal and minIndex, otherwise, just the value
+
+    Returns
+    -------
+    minVal : float
+        The item in the listToSearch that is closest to val
+    minI : int
+        The index of the item in listToSearch that is closest to val. Returned if indx=True.
+
+    """
+    d = float("inf")
+    minVal = None
+    minI = None
+    for i, item in enumerate(listToSearch):
+        if abs(item - val) < d:
+            d = abs(item - val)
+            minVal = item
+            minI = i
+    if indx:
+        return minVal, minI
+    else:
+        # backwards compatibility
+        return minVal
+
+
 def findNearestValue(searchList, searchValue):
     """Search a given list for the value that is closest to the given search value."""
     return findNearestValueAndIndex(searchList, searchValue)[0]
@@ -206,8 +250,8 @@ def findNearestValue(searchList, searchValue):
 def findNearestValueAndIndex(searchList, searchValue):
     """Search a given list for the value that is closest to the given search value. Return a tuple
     containing the value and its index in the list."""
-    searchArray = numpy.array(searchList)
-    closestValueIndex = (numpy.abs(searchArray - searchValue)).argmin()
+    searchArray = np.array(searchList)
+    closestValueIndex = (np.abs(searchArray - searchValue)).argmin()
     return searchArray[closestValueIndex], closestValueIndex
 
 
@@ -291,6 +335,121 @@ def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
         return (targetY - b) / m
 
 
+def minimizeScalarFunc(
+    func,
+    goal,
+    guess,
+    maxIterations=None,
+    cs=None,
+    positiveGuesses=False,
+    method=None,
+    tol=1.0e-3,
+):
+    r"""
+    Use scipy minimize with the given function, goal value, and first guess.
+
+    Parameters
+    ----------
+    func : function
+        The function that guess will be changed to try to make it return the goal value.
+
+    goal : float
+        The function will be changed until it's return equals this value.
+
+    guess : float
+        The first guess value to do Newton's method on the func.
+
+    maxIterations : int
+        The maximum number of iterations that the Newton's method will be allowed to perform.
+
+
+    Returns
+    -------
+    ans : float
+        The guess that when input to the func returns the goal.
+
+    """
+
+    def goalFunc(guess, func, positiveGuesses):
+        if positiveGuesses is True:
+            guess = abs(guess)
+        funcVal = func(guess)
+        val = abs(goal - funcVal)
+        return val
+
+    if (maxIterations is None) and (cs is not None):
+        maxIterations = cs["maxNewtonsIterations"]
+
+    X = sciopt.minimize(
+        goalFunc,
+        guess,
+        args=(func, positiveGuesses),
+        method=method,
+        tol=tol,
+        options={"maxiter": maxIterations},
+    )
+    ans = float(X["x"])
+    if positiveGuesses is True:
+        ans = abs(ans)
+
+    return ans
+
+
+def newtonsMethod(
+    func, goal, guess, maxIterations=None, cs=None, positiveGuesses=False
+):
+    r"""
+    Solves a Newton's method with the given function, goal value, and first guess.
+
+    Parameters
+    ----------
+    func : function
+        The function that guess will be changed to try to make it return the goal value.
+
+    goal : float
+        The function will be changed until it's return equals this value.
+
+    guess : float
+        The first guess value to do Newton's method on the func.
+
+    maxIterations : int
+        The maximum number of iterations that the Newton's method will be allowed to perform.
+
+
+    Returns
+    -------
+    ans : float
+        The guess that when input to the func returns the goal.
+
+    """
+
+    def goalFunc(guess, func, positiveGuesses):
+        if positiveGuesses is True:
+            guess = abs(guess)
+        funcVal = func(guess)
+        val = abs(goal - funcVal)
+        return val
+
+    if (maxIterations is None) and (cs is not None):
+        maxIterations = cs["maxNewtonsIterations"]
+
+    # try:
+    ans = float(
+        sciopt.newton(
+            goalFunc,
+            guess,
+            args=(func, positiveGuesses),
+            tol=1.0e-3,
+            maxiter=maxIterations,
+        )
+    )
+
+    if positiveGuesses is True:
+        ans = abs(ans)
+
+    return ans
+
+
 def parabolaFromPoints(p1, p2, p3):
     r"""
     find the parabola that passes through three points
@@ -331,6 +490,59 @@ def parabolaFromPoints(p1, p2, p3):
         raise
 
     return float(x[0]), float(x[1]), float(x[2])
+
+
+def parabolicInterpolation(ap, bp, cp, targetY):
+    r"""
+    Given parabola coefficients, this interpolates the time
+    that would give k=targetK.
+
+    keff = at^2+bt+c
+    We want to solve a*t^2+bt+c-targetK = 0.0 for time.
+    if there are real roots, we should probably take the smallest one
+    because the larger one might be at very high burnup.
+    If there are no real roots, just take the point where the deriv ==0, or
+    2at+b=0, so t = -b/2a
+    The slope of the curve is the solution to 2at+b at whatever t has been determined
+
+    Parameters
+    ----------
+    ap, bp,cp : floats
+        coefficients of a parabola y = ap*x^2 + bp*x + cp
+
+    targetK : float
+        The keff to find the cycle length of
+
+    Returns
+    -------
+    realRoots : list of tuples
+        (root, slope)
+        The best guess of the cycle length that will give k=targetK
+        If no positive root was found, this is the maximum of the curve. In that case,
+        it will be a negative number. If there are two positive roots, there will be two entries.
+
+        slope : float
+            The slope of the keff vs. time curve at t=newTime
+
+    """
+    roots = np.roots([ap, bp, cp - targetY])
+    realRoots = []
+    for r in roots:
+        if r.imag == 0 and r.real > 0:
+            realRoots.append((r.real, 2.0 * ap * r.real + bp))
+
+    if not realRoots:
+        # no positive real roots. Take maximum and give up for this cyclic.
+        newTime = -bp / (2 * ap)
+        if newTime < 0:
+            raise RuntimeError("No positive roots or maxima.")
+        slope = 2.0 * ap * newTime + bp
+        newTime = (
+            -newTime
+        )  # return a negative newTime to signal that it is not expected to be critical.
+        realRoots = [(newTime, slope)]
+
+    return realRoots
 
 
 def relErr(v1: float, v2: float) -> float:
@@ -442,8 +654,8 @@ def rotateXY(x, y, degreesCounterclockwise=None, radiansCounterclockwise=None):
 
     sinT = math.sin(radiansCounterclockwise)
     cosT = math.cos(radiansCounterclockwise)
-    rotationMatrix = numpy.array([[cosT, -sinT], [sinT, cosT]])
-    xr, yr = rotationMatrix.dot(numpy.vstack((x, y)))
+    rotationMatrix = np.array([[cosT, -sinT], [sinT, cosT]])
+    xr, yr = rotationMatrix.dot(np.vstack((x, y)))
     if len(xr) > 1:
         # Convert to lists because everyone prefers lists for some reason
         return xr.tolist(), yr.tolist()

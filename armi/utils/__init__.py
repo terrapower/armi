@@ -32,9 +32,6 @@ import collections
 
 import hashlib
 
-import numpy
-import scipy.optimize as sciopt
-
 import armi
 from armi import runLog
 from armi.utils import iterables
@@ -43,9 +40,6 @@ from armi.utils.mathematics import *  # for backwards compatibility
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
 _HASH_BUFFER_SIZE = 1024 * 1024
-
-# special pattern to deal with FORTRAN-produced scipats without E, like 3.2234-234
-SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 
 # TODO: UNUSED? JOHN?
@@ -116,44 +110,6 @@ def getFileSHA1Hash(filePath, digits=40):
     return sha1.hexdigest()[:digits]
 
 
-def findClosest(listToSearch, val, indx=False):
-    r"""
-    find closest item in a list.
-
-    Parameters
-    ----------
-    listToSearch : list
-        The list to search through
-
-    val : float
-        The target value that is being searched for in the list
-
-    indx : bool, optional
-        If true, returns minVal and minIndex, otherwise, just the value
-
-    Returns
-    -------
-    minVal : float
-        The item in the listToSearch that is closest to val
-    minI : int
-        The index of the item in listToSearch that is closest to val. Returned if indx=True.
-
-    """
-    d = float("inf")
-    minVal = None
-    minI = None
-    for i, item in enumerate(listToSearch):
-        if abs(item - val) < d:
-            d = abs(item - val)
-            minVal = item
-            minI = i
-    if indx:
-        return minVal, minI
-    else:
-        # backwards compatibility
-        return minVal
-
-
 def copyWithoutBlocking(src, dest):
     """
     Copy a file in a separate thread to avoid blocking while IO completes.
@@ -165,59 +121,6 @@ def copyWithoutBlocking(src, dest):
     t = threading.Thread(target=shutil.copy, args=(src, dest))
     t.start()
     return t
-
-
-def parabolicInterpolation(ap, bp, cp, targetY):
-    r"""
-    Given parabola coefficients, this interpolates the time
-    that would give k=targetK.
-
-    keff = at^2+bt+c
-    We want to solve a*t^2+bt+c-targetK = 0.0 for time.
-    if there are real roots, we should probably take the smallest one
-    because the larger one might be at very high burnup.
-    If there are no real roots, just take the point where the deriv ==0, or
-    2at+b=0, so t = -b/2a
-    The slope of the curve is the solution to 2at+b at whatever t has been determined
-
-    Parameters
-    ----------
-    ap, bp,cp : floats
-        coefficients of a parabola y = ap*x^2 + bp*x + cp
-
-    targetK : float
-        The keff to find the cycle length of
-
-    Returns
-    -------
-    realRoots : list of tuples
-        (root, slope)
-        The best guess of the cycle length that will give k=targetK
-        If no positive root was found, this is the maximum of the curve. In that case,
-        it will be a negative number. If there are two positive roots, there will be two entries.
-
-        slope : float
-            The slope of the keff vs. time curve at t=newTime
-
-    """
-    roots = numpy.roots([ap, bp, cp - targetY])
-    realRoots = []
-    for r in roots:
-        if r.imag == 0 and r.real > 0:
-            realRoots.append((r.real, 2.0 * ap * r.real + bp))
-
-    if not realRoots:
-        # no positive real roots. Take maximum and give up for this cyclic.
-        newTime = -bp / (2 * ap)
-        if newTime < 0:
-            raise RuntimeError("No positive roots or maxima.")
-        slope = 2.0 * ap * newTime + bp
-        newTime = (
-            -newTime
-        )  # return a negative newTime to signal that it is not expected to be critical.
-        realRoots = [(newTime, slope)]
-
-    return realRoots
 
 
 def getTimeStepNum(cycleNumber, subcycleNumber, cs):
@@ -297,12 +200,13 @@ def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):
             try:
                 pickle.dumps(ob)  # dump as a string
             except:
+                # traceback.print_exc(limit=0,file=sys.stdout)
                 print(
                     "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
                 )
-                # traceback.print_exc(limit=0,file=sys.stdout)
 
 
+# TODO: JOHN! JOHN! USUSED!
 def tryPickleOnAllContents2(*args, **kwargs):
     # helper
     print(doTestPickleOnAllContents2(*args, **kwargs))
@@ -342,7 +246,7 @@ def doTestPickleOnAllContents2(obj, ignore=None, path=None, verbose=False):
 
 class MyPickler(pickle.Pickler):
     r"""
-    The big guns. This will find your pickle errors if all else fails.
+    This will find your pickle errors if all else fails.
 
     Use with tryPickleOnAllContents3.
     """
@@ -366,7 +270,6 @@ def tryPickleOnAllContents3(obj, ignore=None, path=None, verbose=False):
     to make it work like the other testPickle functions and handle errors, you could.
     But usually you just have to find one unpickleable SOB.
     """
-
     with tempfile.TemporaryFile() as output:
         try:
             MyPickler(output).dump(obj)
@@ -375,9 +278,7 @@ def tryPickleOnAllContents3(obj, ignore=None, path=None, verbose=False):
 
 
 def classesInHierarchy(obj, classCounts, visited=None):
-    """
-    Count the number of instances of each class contained in an objects heirarchy.
-    """
+    """Count the number of instances of each class contained in an objects heirarchy."""
     if not isinstance(classCounts, collections.defaultdict):
         raise TypeError(
             "Need to pass in a default dict for classCounts (it's an out param)"
@@ -415,121 +316,6 @@ def slantSplit(val, ratio, nodes, order="low first"):
         X.reverse()
 
     return X
-
-
-def newtonsMethod(
-    func, goal, guess, maxIterations=None, cs=None, positiveGuesses=False
-):
-    r"""
-    Solves a Newton's method with the given function, goal value, and first guess.
-
-    Parameters
-    ----------
-    func : function
-        The function that guess will be changed to try to make it return the goal value.
-
-    goal : float
-        The function will be changed until it's return equals this value.
-
-    guess : float
-        The first guess value to do Newton's method on the func.
-
-    maxIterations : int
-        The maximum number of iterations that the Newton's method will be allowed to perform.
-
-
-    Returns
-    -------
-    ans : float
-        The guess that when input to the func returns the goal.
-
-    """
-
-    def goalFunc(guess, func, positiveGuesses):
-        if positiveGuesses is True:
-            guess = abs(guess)
-        funcVal = func(guess)
-        val = abs(goal - funcVal)
-        return val
-
-    if (maxIterations is None) and (cs is not None):
-        maxIterations = cs["maxNewtonsIterations"]
-
-    # try:
-    ans = float(
-        sciopt.newton(
-            goalFunc,
-            guess,
-            args=(func, positiveGuesses),
-            tol=1.0e-3,
-            maxiter=maxIterations,
-        )
-    )
-
-    if positiveGuesses is True:
-        ans = abs(ans)
-
-    return ans
-
-
-def minimizeScalarFunc(
-    func,
-    goal,
-    guess,
-    maxIterations=None,
-    cs=None,
-    positiveGuesses=False,
-    method=None,
-    tol=1.0e-3,
-):
-    r"""
-    Use scipy minimize with the given function, goal value, and first guess.
-
-    Parameters
-    ----------
-    func : function
-        The function that guess will be changed to try to make it return the goal value.
-
-    goal : float
-        The function will be changed until it's return equals this value.
-
-    guess : float
-        The first guess value to do Newton's method on the func.
-
-    maxIterations : int
-        The maximum number of iterations that the Newton's method will be allowed to perform.
-
-
-    Returns
-    -------
-    ans : float
-        The guess that when input to the func returns the goal.
-
-    """
-
-    def goalFunc(guess, func, positiveGuesses):
-        if positiveGuesses is True:
-            guess = abs(guess)
-        funcVal = func(guess)
-        val = abs(goal - funcVal)
-        return val
-
-    if (maxIterations is None) and (cs is not None):
-        maxIterations = cs["maxNewtonsIterations"]
-
-    X = sciopt.minimize(
-        goalFunc,
-        guess,
-        args=(func, positiveGuesses),
-        method=method,
-        tol=tol,
-        options={"maxiter": maxIterations},
-    )
-    ans = float(X["x"])
-    if positiveGuesses is True:
-        ans = abs(ans)
-
-    return ans
 
 
 def runFunctionFromAllModules(funcName, *args, **kwargs):
@@ -747,10 +533,8 @@ def plotMatrix(
     cmap=None,
     figsize=None,
 ):
-    """
-    Plots a matrix
-    """
-    import matplotlib
+    """Plots a matrix"""
+    import matplotlib  # TODO: JOHN! Fix Imports?
     import matplotlib.pyplot as plt
 
     if figsize:
@@ -819,9 +603,6 @@ class MergeableDict(dict):
             self.update(dictionary)
 
 
-shutil_copy = shutil.copy
-
-
 def safeCopy(src: str, dst: str) -> None:
     """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
     waitTime = 0.01  # 10 ms
@@ -838,4 +619,6 @@ def safeCopy(src: str, dst: str) -> None:
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 
+# TODO: JOHN! EXPLAIN!
+shutil_copy = shutil.copy
 shutil.copy = safeCopy
