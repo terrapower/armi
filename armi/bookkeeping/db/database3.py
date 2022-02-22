@@ -246,7 +246,7 @@ class DatabaseInterface(interfaces.Interface):
         DBs should receive the state information of the run at each node.
         """
         # skip writing for last burn step since it will be written at interact EOC
-        if node < self.cs["burnSteps"]:
+        if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
             ) / 60.0
@@ -313,6 +313,7 @@ class DatabaseInterface(interfaces.Interface):
             loadDbCs = inputDB.loadCS()
 
             # Not beginning or end of cycle so burnSteps matter to get consistent time.
+            # TODO replace the burnSteps instances here
             isMOC = self.cs["startNode"] not in (0, loadDbCs["burnSteps"])
             if loadDbCs["burnSteps"] != self.cs["burnSteps"] and isMOC:
                 raise ValueError(

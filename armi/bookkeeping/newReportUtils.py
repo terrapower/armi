@@ -227,7 +227,10 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         ["Burnup Cycles", "{}".format(cs["nCycles"])],
     )
     coreDesignTable.addRow(
-        ["Burnup Steps per Cycle", "{}".format(cs["burnSteps"])],
+        [
+            "Burnup Steps per Cycle",
+            "{}".format(cs["burnSteps"]),
+        ],  # TODO does this need to be changed?
     )
     corePowerMult = int(core.powerMultiplier)
     coreDesignTable.addRow(
@@ -407,7 +410,7 @@ def insertSettingsData(cs, report):
     report[COMPREHENSIVE_REPORT][BURNUP_GROUPS] = newReports.Table("Burn Up Groups")
     for key in [
         "nCycles",
-        "burnSteps",
+        "burnSteps",  # TODO?
         "skipCycles",
         "cycleLength",
         "numProcessors",

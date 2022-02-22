@@ -78,7 +78,11 @@ class SnapshotInterface(interfaces.Interface):
             raise ValueError(
                 "Cannot create default snapshots when `eqToDatabaseOnlyWhenConverged` setting is active"
             )
-        return [(0, 0), (0, self.cs["burnSteps"] // 2), (0, self.cs["burnSteps"])]
+        return [
+            (0, 0),
+            (0, self.cs["burnSteps"] // 2),
+            (0, self.cs["burnSteps"]),
+        ]  # TODO?
 
     def _getSnapTimesNormal(self):
         try:

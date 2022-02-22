@@ -778,7 +778,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     )
     report.setData(
         "Burnup Steps per Cycle",
-        "{}".format(cs["burnSteps"]),
+        "{}".format(cs["burnSteps"]),  # TODO?
         coreDesignTable,
         report.DESIGN,
     )
