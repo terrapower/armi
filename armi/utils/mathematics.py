@@ -23,10 +23,6 @@ import scipy.optimize as sciopt
 SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 
-# TODO: 1. JOHN! Look for unit tests, and move them into test_math.py.
-# TODO: 2. JOHN! Find imports within ARMI and fix them.
-
-
 def average1DWithinTolerance(vals, tolerance=0.2):
     """
     Compute the average of a series of arrays with a tolerance.

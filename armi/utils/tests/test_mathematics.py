@@ -20,6 +20,7 @@ import unittest
 import numpy as np
 
 from armi.utils.mathematics import (
+    average1DWithinTolerance,
     convertToSlice,
     efmt,
     expandRepeatedFloats,
@@ -39,12 +40,23 @@ from armi.utils.mathematics import (
 )
 
 
-# TODO: JOHN! Need tests for:
-#       average1DWithinTolerance
-
-
 class TestMath(unittest.TestCase):
     """Tests for various math utilities"""
+
+    def test_average1DWithinTolerance(self):
+        vals = np.array([np.array([1, 2, 3]), np.array([4, 5, 6]), np.array([7, 8, 9])])
+        result = average1DWithinTolerance(vals, 0.1)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0], 4.0)
+        self.assertEqual(result[1], 5.0)
+        self.assertEqual(result[2], 6.0)
+
+    def test_average1DWithinToleranceInvalid(self):
+        vals = np.array(
+            [np.array([1, -2, 3]), np.array([4, -5, 6]), np.array([7, -8, 9])]
+        )
+        with self.assertRaises(ValueError):
+            average1DWithinTolerance(vals, 0.1)
 
     def test_convertToSlice(self):
         slice1 = convertToSlice(2)
