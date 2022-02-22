@@ -780,7 +780,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                 runLog.warning(
                     "Something strange with detailedDpaThisCycle shape in {}"
                     ", non-2 number of values matching {}".format(
-                        peakDoseAssem, aclpDoseLimit / 3.0
+                        peakDoseAssem, aclpDoseLimit3
                     )
                 )
             else:
@@ -794,7 +794,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                 runLog.warning(
                     "Something strange with detailedDpaThisCycle shape in {}, "
                     "non-2 number of values matching {}".format(
-                        peakDoseAssem, aclpDoseLimit / 7.0
+                        peakDoseAssem, aclpDoseLimit7
                     )
                 )
             else:
