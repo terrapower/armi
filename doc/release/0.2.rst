@@ -11,6 +11,7 @@ What's new in ARMI
 ------------------
 #. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
 #. Removed unused Thermal Hydraulics settings.
+#. Minor code re-org, moving math utilities into their own module.
 #. TBD
 
 Bug fixes
