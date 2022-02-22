@@ -58,11 +58,17 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.cycleFmt = "03d"  # produce ig001.inp
 
-        if self.cs["burnSteps"] > 10:
+        if self._getMaxBurnSteps() > 10:
             self.nodeFmt = "03d"  # produce ig001_001.inp
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
+
+    def _getMaxBurnSteps(self):
+        if self.cs["cycles"] != []:
+            return max([len(cycle["power fractions"]) for cycle in self.cs["cycles"]])
+        else:
+            return self.cs["burnSteps"]
 
     def getHistoryParams(self):
         """Return parameters that will be added to assembly versus time history printouts."""
@@ -302,7 +308,6 @@ class GlobalFluxOptions(executers.ExecutionOptions):
 
         self.dpaPerFluence = None
         self.aclpDoseLimit = None
-        self.burnSteps = None
         self.loadPadElevation = None
         self.loadPadLength = None
 
@@ -334,7 +339,6 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         # dose/dpa specific (should be separate subclass?)
         self.dpaPerFluence = cs["dpaPerFluence"]
         self.aclpDoseLimit = cs["aclpDoseLimit"]
-        self.burnSteps = cs["burnSteps"]
         self.loadPadElevation = cs["loadPadElevation"]
         self.loadPadLength = cs["loadPadLength"]
         self.boundaries = cs["boundaries"]
@@ -734,7 +738,12 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         These parameters are left as zeroes at BOC because no dose has been accumulated yet.
         """
 
-        if self.r.p.timeNode > 0:
+        cycle = self.r.p.cycle
+        timeNode = self.r.p.timeNode
+
+        if timeNode > 0:
+            daysIntoCycle = sum(self.r.p.stepLengths[cycle][:timeNode])
+            cycleLength = self.r.p.cycleLengths[cycle]
 
             maxDetailedDpaThisCycle = 0.0
             peakDoseAssem = None
@@ -763,9 +772,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                 )
 
             aclpDoseLimit = self.options.aclpDoseLimit
-            aclpDoseLimit3 = (
-                aclpDoseLimit / 3.0 * self.r.p.timeNode / self.options.burnSteps
-            )
+            aclpDoseLimit3 = aclpDoseLimit / 3.0 * (daysIntoCycle / cycleLength)
             aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
                 "detailedDpaThisCycle", aclpDoseLimit3
             )
@@ -779,9 +786,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             else:
                 self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
 
-            aclpDoseLimit7 = (
-                aclpDoseLimit / 7.0 * self.r.p.timeNode / self.options.burnSteps
-            )
+            aclpDoseLimit7 = aclpDoseLimit / 7.0 * (daysIntoCycle / cycleLength)
             aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
                 "detailedDpaThisCycle", aclpDoseLimit7
             )
