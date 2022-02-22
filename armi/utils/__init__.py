@@ -41,53 +41,6 @@ from armi.utils.mathematics import *  # for backwards compatibility
 _HASH_BUFFER_SIZE = 1024 * 1024
 
 
-# TODO: UNUSED? JOHN?
-def coverageReportHelper(config, dataPaths):
-    """
-    Small utility function to generate coverage reports.
-
-    This was created to side-step the difficulties in submitting multi-line python
-    commands on-the-fly.
-
-    This combines data paths and then makes html and xml reports for the
-    fully-combined result.
-    """
-    from coverage import Coverage
-    import coverage
-
-    try:
-        cov = Coverage(config_file=config)
-        if dataPaths:
-            # fun fact: if you combine when there's only one file, it gets deleted.
-            cov.combine(data_paths=dataPaths)
-            cov.save()
-        else:
-            cov.load()
-        cov.html_report()
-        cov.xml_report()
-    except PermissionError as e:
-        # Some file systems have some issues with filenames that start with a '.', such as the
-        # .coverage files. If a permissions error is raised, it likely has something to
-        # do with that. We changed the COVERAGE_RESULTS_FILE in cases.py for this reason.
-        runLog.error(
-            f"There was an issue in generating coverage reports due "
-            f"to the following permissions error: {e}"
-        )
-        # disabled until we figure out the problem.
-        # raise
-    except coverage.misc.CoverageException as e:
-        # This is happening when forming the unit test coverage report. This may be
-        # caused by the TestFixture coverage report gobbling up all of the coverage
-        # files before the UnitTests.cov_report task gets a chance to see them. It may
-        # simply be that we dont want a coverage report generated for the TestFixture.
-        # Something to think about. Either way, we do not want to fail the job just
-        # because of this
-        runLog.error(
-            "There was an issue generating coverage reports "
-            "({}):\n{}".format(type(e), e.args)
-        )
-
-
 def getFileSHA1Hash(filePath, digits=40):
     """
     Generate a SHA-1 hash of the input file.
@@ -199,16 +152,9 @@ def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):
             try:
                 pickle.dumps(ob)  # dump as a string
             except:
-                # traceback.print_exc(limit=0,file=sys.stdout)
                 print(
                     "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
                 )
-
-
-# TODO: JOHN! JOHN! USUSED!
-def tryPickleOnAllContents2(*args, **kwargs):
-    # helper
-    print(doTestPickleOnAllContents2(*args, **kwargs))
 
 
 def doTestPickleOnAllContents2(obj, ignore=None, path=None, verbose=False):
@@ -351,34 +297,6 @@ def runFunctionFromAllModules(funcName, *args, **kwargs):
         except:
             # just print traceback but don't throw an error.
             traceback.print_exc()
-
-
-# TODO: JOHN! move to pathTools (and reference it here for convenience)
-def mkdir(dirname):
-    r"""
-    Keeps trying to make a directory, outputting whatever errors it encounters,
-    until it is successful.
-
-    Parameters
-    ----------
-    dirname : str
-        Path to the directory to create.
-        What you would normally pass to os.mkdir.
-    """
-    numTimesTried = 0
-    while numTimesTried < 1000:
-        try:
-            os.mkdir(dirname)
-            break
-        except FileExistsError:
-            break
-        except Exception as err:
-            numTimesTried += 1
-            # Only ouput err every 10 times.
-            if numTimesTried % 10 == 0:
-                print(err)
-            # Wait 0.5 seconds, try again.
-            time.sleep(0.5)
 
 
 def prependToList(originalList, listToPrepend):
@@ -533,15 +451,17 @@ def plotMatrix(
     figsize=None,
 ):
     """Plots a matrix"""
-    import matplotlib  # TODO: JOHN! Fix Imports?
+    import matplotlib
     import matplotlib.pyplot as plt
 
     if figsize:
         plt.figure(figsize=figsize)  # dpi=300)
     else:
         plt.figure()
+
     if cmap is None:
         cmap = plt.cm.jet  # @UndefinedVariable  #pylint: disable=no-member
+
     cmap.set_bad("w")
     try:
         matrix = matrix.todense()
@@ -555,9 +475,9 @@ def plotMatrix(
 
     if title is None:
         title = fName
-    plt.imshow(
-        matrix, cmap=cmap, norm=norm, interpolation="nearest"
-    )  # or bicubic or nearest#,vmin=0, vmax=300)
+
+    # or bicubic or nearest#,vmin=0, vmax=300)
+    plt.imshow(matrix, cmap=cmap, norm=norm, interpolation="nearest")
     plt.colorbar()
     plt.title(title)
     plt.xlabel(xlabel)
@@ -618,6 +538,6 @@ def safeCopy(src: str, dst: str) -> None:
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 
-# TODO: JOHN! EXPLAIN!
+# Allow us to check the copy operation is complete before continuing
 shutil_copy = shutil.copy
 shutil.copy = safeCopy
