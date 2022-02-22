@@ -23,7 +23,6 @@ import scipy.optimize as sciopt
 SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 
-# TODO: 0. JOHN! Find any unused and remove them.
 # TODO: 1. JOHN! Look for unit tests, and move them into test_math.py.
 # TODO: 2. JOHN! Find imports within ARMI and fix them.
 
@@ -477,12 +476,12 @@ def parabolaFromPoints(p1, p2, p3):
     a,b,c coefficients of y=ax^2+bx+c
 
     """
-
     A = np.array(
         [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
     )
 
     b = np.array([[p1[1]], [p2[1]], [p3[1]]])
+
     try:
         x = np.linalg.solve(A, b)
     except:
@@ -546,7 +545,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
 
 def relErr(v1: float, v2: float) -> float:
-    """TODO JOHN"""
+    """find the relative error between to numbers"""
     if v1:
         return (v2 - v1) / v1
     else:

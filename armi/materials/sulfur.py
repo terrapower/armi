@@ -17,7 +17,7 @@ Sulfur
 """
 
 from armi import runLog
-from armi import utils
+from armi.utils.mathematics import linearInterpolation
 from armi.utils.units import getTk
 from armi.materials import material
 
@@ -67,6 +67,4 @@ class Sulfur(material.Fluid):
         Tk = getTk(Tc, Tk)
 
         self.checkTempRange(334, 430, Tk, "volumetric expansion")
-        return utils.linearInterpolation(
-            x0=334, y0=5.28e-4, x1=430, y1=5.56e-4, targetX=Tk
-        )
+        return linearInterpolation(x0=334, y0=5.28e-4, x1=430, y1=5.56e-4, targetX=Tk)

@@ -32,9 +32,9 @@ from typing import Dict, Optional, Tuple, List
 import collections
 
 from armi import plugins, pluginManager, meta, settings
+from armi.reactor import parameters
 from armi.settings import Setting
 from armi.settings import fwSettings
-from armi.reactor import parameters
 
 
 class App:

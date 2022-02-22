@@ -13,24 +13,23 @@
 # limitations under the License.
 
 """Generic ARMI utilities"""
-import os
-import sys
-import time
-import pickle
-import re
-import pkgutil
-import importlib
-import traceback
-import getpass
-import math
-import datetime
-import tempfile
-import shutil
-import threading
-import subprocess
 import collections
-
+import datetime
+import getpass
 import hashlib
+import importlib
+import math
+import os
+import pickle
+import pkgutil
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import traceback
 
 import armi
 from armi import runLog

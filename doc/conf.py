@@ -26,11 +26,11 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import os
 import pathlib
 import re
-import warnings
 import sys
-import os
+import warnings
 
 import sphinx_rtd_theme
 from sphinx.domains.python import PythonDomain
@@ -41,9 +41,9 @@ sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
 os.environ["PYTHONPATH"] = PYTHONPATH
 import armi
-from armi.context import RES
 from armi import apps
 from armi.bookkeeping import tests as bookkeepingTests
+from armi.context import RES
 from armi.utils.dochelpers import *
 
 # Configure the baseline framework "App" for framework doc building

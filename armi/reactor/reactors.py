@@ -32,7 +32,7 @@ import os
 
 import numpy
 
-from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings, utils
+from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
@@ -42,9 +42,10 @@ from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import zones
 from armi.reactor import reactorParameters
-from armi.utils import units
+from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils.iterables import Sequence
 from armi.utils import directoryChangers
+from armi.utils.mathematics import average1DWithinTolerance
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.nuclearDataIO import xsLibraries
@@ -1305,19 +1306,19 @@ class Core(composites.Composite):
                 [
                     (
                         "Fuel",
-                        utils.createFormattedStrWithDelimiter(
+                        createFormattedStrWithDelimiter(
                             self._nuclideCategories["fuel"]
                         ),
                     ),
                     (
                         "Coolant",
-                        utils.createFormattedStrWithDelimiter(
+                        createFormattedStrWithDelimiter(
                             self._nuclideCategories["coolant"]
                         ),
                     ),
                     (
                         "Structure",
-                        utils.createFormattedStrWithDelimiter(
+                        createFormattedStrWithDelimiter(
                             self._nuclideCategories["structure"]
                         ),
                     ),
@@ -1874,7 +1875,7 @@ class Core(composites.Composite):
         # depending on what makes the most sense
         refAssem = self.refAssem
         refMesh = self.findAllAxialMeshPoints([refAssem])
-        avgHeight = utils.average1DWithinTolerance(
+        avgHeight = average1DWithinTolerance(
             numpy.array(
                 [
                     [
