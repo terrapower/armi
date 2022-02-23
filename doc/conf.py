@@ -26,11 +26,11 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import os
 import pathlib
 import re
-import warnings
 import sys
-import os
+import warnings
 
 import sphinx_rtd_theme
 from sphinx.domains.python import PythonDomain
@@ -41,9 +41,9 @@ sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
 os.environ["PYTHONPATH"] = PYTHONPATH
 import armi
-from armi.context import RES
 from armi import apps
 from armi.bookkeeping import tests as bookkeepingTests
+from armi.context import RES
 from armi.utils.dochelpers import *
 
 # Configure the baseline framework "App" for framework doc building
@@ -61,7 +61,6 @@ armi._ignoreConfigures = True
 
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
-APIDOC_DIR = APIDOC_REL
 _TUTORIAL_FILES = [
     pathlib.Path(SOURCE_DIR) / "tests" / "tutorials" / fName
     for fName in bookkeepingTests.TUTORIAL_FILES
@@ -405,7 +404,7 @@ sphinx_gallery_conf = {
     "default_thumb_file": os.path.join(RES, "images", "TerraPowerLogo.png"),
 }
 
-suppress_warnings: ["autoapi.python_import_resolution"]
+suppress_warnings = ["autoapi.python_import_resolution"]
 
 # filter out this warning which shows up in sphinx-gallery builds.
 # this is suggested in the sphinx-gallery example but doesn't actually work?

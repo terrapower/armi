@@ -38,9 +38,8 @@ from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
 from armi.utils import directoryChangers, pathTools
-from armi import utils
 from armi.utils import plotting
-from armi.utils.mathematics import resampleStepwise
+from armi.utils.mathematics import findClosest, resampleStepwise
 
 runLog = logging.getLogger(__name__)
 
@@ -1249,17 +1248,16 @@ class FuelHandler:
         # build widths
         widths = []
         for i, ring in enumerate(baseRings[:-1]):
-            widths.append(
-                abs(baseRings[i + 1] - ring) - 1
-            )  # 0 is the most restrictive, meaning don't even look in other rings.
+            # 0 is the most restrictive, meaning don't even look in other rings.
+            widths.append(abs(baseRings[i + 1] - ring) - 1)
         widths.append(0)  # add the last ring with width 0.
 
         # step 2: locate which rings should be reversed to give the jump-ring effect.
         if jumpRingFrom is not None:
-            _closestRingFrom, jumpRingFromIndex = utils.findClosest(
+            _closestRingFrom, jumpRingFromIndex = findClosest(
                 baseRings, jumpRingFrom, indx=True
             )
-            _closestRingTo, jumpRingToIndex = utils.findClosest(
+            _closestRingTo, jumpRingToIndex = findClosest(
                 baseRings, jumpRingTo, indx=True
             )
         else:
