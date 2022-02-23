@@ -309,6 +309,7 @@ def __readMc2Nuclides():
     """
     with open(os.path.join(armi.context.RES, "mc2Nuclides.yaml"), "r") as mc2Nucs:
         mc2Nuclides = yaml.load(mc2Nucs, Loader=yaml.FullLoader)
+
     # now add the mc2 specific nuclideBases, and correct the mc2Ids when a > 0 and state = 0
     for name, data in mc2Nuclides.items():
         z = data["z"]

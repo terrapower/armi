@@ -58,7 +58,7 @@ import logging
 import numpy
 
 from armi import runLog
-from armi import utils
+from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
 from armi.utils import plotting
 from armi.reactor import grids
@@ -124,7 +124,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=True)[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
-        self._uniformMesh = utils.average1DWithinTolerance(numpy.array(allMeshes))
+        self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
 
     @staticmethod
     def _createNewAssembly(sourceAssembly):

@@ -14,13 +14,169 @@
 r""" Testing mathematics utilities
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+from math import sqrt
 import unittest
 
-from armi.utils.mathematics import resampleStepwise
+import numpy as np
+
+from armi.utils.mathematics import (
+    average1DWithinTolerance,
+    convertToSlice,
+    efmt,
+    expandRepeatedFloats,
+    findClosest,
+    findNearestValue,
+    fixThreeDigitExp,
+    getFloat,
+    getStepsFromValues,
+    linearInterpolation,
+    minimizeScalarFunc,
+    newtonsMethod,
+    parabolaFromPoints,
+    parabolicInterpolation,
+    relErr,
+    resampleStepwise,
+    rotateXY,
+)
 
 
 class TestMath(unittest.TestCase):
     """Tests for various math utilities"""
+
+    def test_average1DWithinTolerance(self):
+        vals = np.array([np.array([1, 2, 3]), np.array([4, 5, 6]), np.array([7, 8, 9])])
+        result = average1DWithinTolerance(vals, 0.1)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0], 4.0)
+        self.assertEqual(result[1], 5.0)
+        self.assertEqual(result[2], 6.0)
+
+    def test_average1DWithinToleranceInvalid(self):
+        vals = np.array(
+            [np.array([1, -2, 3]), np.array([4, -5, 6]), np.array([7, -8, 9])]
+        )
+        with self.assertRaises(ValueError):
+            average1DWithinTolerance(vals, 0.1)
+
+    def test_convertToSlice(self):
+        slice1 = convertToSlice(2)
+        self.assertEqual(slice1, slice(2, 3, None))
+        slice1 = convertToSlice(2.0, increment=-1)
+        self.assertEqual(slice1, slice(1, 2, None))
+        slice1 = convertToSlice(None)
+        self.assertEqual(slice1, slice(None, None, None))
+        slice1 = convertToSlice([1, 2, 3])
+        self.assertTrue(np.allclose(slice1, np.array([1, 2, 3])))
+        slice1 = convertToSlice(slice(2, 3, None))
+        self.assertEqual(slice1, slice(2, 3, None))
+        slice1 = convertToSlice(np.array([1, 2, 3]))
+        self.assertTrue(np.allclose(slice1, np.array([1, 2, 3])))
+        with self.assertRaises(Exception):
+            slice1 = convertToSlice("slice")
+
+    def test_efmt(self):
+        self.assertAlmostEqual(efmt("1.0e+001"), "1.0E+01")
+        self.assertAlmostEqual(efmt("1.0E+01"), "1.0E+01")
+
+    def test_expandRepeatedFloats(self):
+        repeatedFloats = ["150", "2R", 200.0, 175, "4r", 180.0, "0R"]
+        expectedFloats = [150] * 3 + [200] + [175] * 5 + [180]
+        self.assertEqual(expandRepeatedFloats(repeatedFloats), expectedFloats)
+
+    def test_findClosest(self):
+        l1 = range(10)
+        self.assertEqual(findClosest(l1, 5.6), 6)
+        self.assertEqual(findClosest(l1, 10.1), 9)
+        self.assertEqual(findClosest(l1, -200), 0)
+
+        # with index
+        self.assertEqual(findClosest(l1, 5.6, indx=True), (6, 6))
+
+    def test_findNearestValue(self):
+        searchList = [0.1, 0.2, 0.25, 0.35, 0.4]
+        searchValue = 0.225
+        self.assertEqual(findNearestValue(searchList, searchValue), 0.2)
+        searchValue = 0.226
+        self.assertEqual(findNearestValue(searchList, searchValue), 0.25)
+        searchValue = 0.0
+        self.assertEqual(findNearestValue(searchList, searchValue), 0.1)
+        searchValue = 10
+        self.assertEqual(findNearestValue(searchList, searchValue), 0.4)
+
+    def test_fixThreeDigitExp(self):
+        fixed = fixThreeDigitExp("-9.03231714805651E+101")
+        self.assertEqual(-9.03231714805651e101, fixed)
+        fixed = fixThreeDigitExp("9.03231714805651-101")
+        self.assertEqual(9.03231714805651e-101, fixed)
+        fixed = fixThreeDigitExp("-2.4594981981654+101")
+        self.assertEqual(-2.4594981981654e101, fixed)
+        fixed = fixThreeDigitExp("-2.4594981981654-101")
+        self.assertEqual(-2.4594981981654e-101, fixed)
+
+    def test_getFloat(self):
+        self.assertEqual(getFloat(1.0), 1.0)
+        self.assertEqual(getFloat("1.0"), 1.0)
+        self.assertIsNone(getFloat("word"))
+
+    def test_getStepsFromValues(self):
+        steps = getStepsFromValues([1.0, 3.0, 6.0, 10.0], prevValue=0.0)
+        self.assertListEqual(steps, [1.0, 2.0, 3.0, 4.0])
+
+    def test_linearInterpolation(self):
+        y = linearInterpolation(1.0, 2.0, 3.0, 4.0, targetX=20.0)
+        x = linearInterpolation(1.0, 2.0, 3.0, 4.0, targetY=y)
+
+        x2 = linearInterpolation(1.0, 1.0, 2.0, 2.0, targetY=50)
+
+        self.assertEqual(x, 20.0)
+        self.assertEqual(x2, 50.0)
+
+        with self.assertRaises(ZeroDivisionError):
+            _ = linearInterpolation(1.0, 1.0, 1.0, 2.0)
+
+    def test_minimizeScalarFunc(self):
+        f = lambda x: (x + 1) ** 2
+        minimum = minimizeScalarFunc(f, -3.0, 10.0, maxIterations=10)
+        self.assertAlmostEqual(minimum, -1.0, places=3)
+        minimum = minimizeScalarFunc(
+            f, -3.0, 10.0, maxIterations=10, positiveGuesses=True
+        )
+        self.assertAlmostEqual(minimum, 0.0, places=3)
+
+    def test_newtonsMethod(self):
+        f = lambda x: (x + 2) * (x - 1)
+        root = newtonsMethod(f, 0.0, 5.0, maxIterations=10, positiveGuesses=True)
+        self.assertAlmostEqual(root, 1.0, places=3)
+        root = newtonsMethod(f, 0.0, -10.0, maxIterations=10)
+        self.assertAlmostEqual(root, -2.0, places=3)
+
+    def test_parabola(self):
+        # test the parabola function
+        a, b, c = parabolaFromPoints((0, 1), (1, 2), (-1, 2))
+        self.assertEqual(a, 1.0)
+        self.assertEqual(b, 0.0)
+        self.assertEqual(c, 1.0)
+
+        with self.assertRaises(Exception):
+            a, b, c = parabolaFromPoints((0, 1), (0, 1), (-1, 2))
+
+    def test_parabolicInterpolation(self):
+        realRoots = parabolicInterpolation(2.0e-6, -5.0e-4, 1.02, 1.0)
+        self.assertAlmostEqual(realRoots[0][0], 200.0)
+        self.assertAlmostEqual(realRoots[0][1], 3.0e-4)
+        self.assertAlmostEqual(realRoots[1][0], 50.0)
+        self.assertAlmostEqual(realRoots[1][1], -3.0e-4)
+        noRoots = parabolicInterpolation(2.0e-6, -4.0e-4, 1.03, 1.0)
+        self.assertAlmostEqual(noRoots[0][0], -100.0)
+        self.assertAlmostEqual(noRoots[0][1], 0.0)
+        # 3. run time error
+        with self.assertRaises(RuntimeError):
+            _ = parabolicInterpolation(2.0e-6, 4.0e-4, 1.02, 1.0)
+
+    def test_relErr(self):
+        self.assertAlmostEqual(relErr(1.00, 1.01), 0.01)
+        self.assertAlmostEqual(relErr(100.0, 97.0), -0.03)
+        self.assertAlmostEqual(relErr(0.00, 1.00), -1e99)
 
     def test_resampleStepwiseAvg0(self):
         """Test resampleStepwise() averaging when in and out bins match"""
@@ -309,6 +465,26 @@ class TestMath(unittest.TestCase):
         self.assertEqual(yout[3], 11)
         self.assertIsNone(yout[4])
         self.assertEqual(yout[5], 38.5)
+
+    def test_rotateXY(self):
+        x = [1.0, -1.0]
+        y = [1.0, 1.0]
+
+        # test operation on scalar
+        xr, yr = rotateXY(x[0], y[0], 45.0)
+        self.assertAlmostEqual(xr, 0.0)
+        self.assertAlmostEqual(yr, sqrt(2))
+
+        xr, yr = rotateXY(x[1], y[1], 45.0)
+        self.assertAlmostEqual(xr, -sqrt(2))
+        self.assertAlmostEqual(yr, 0.0)
+
+        # test operation on list
+        xr, yr = rotateXY(x, y, 45.0)
+        self.assertAlmostEqual(xr[0], 0.0)
+        self.assertAlmostEqual(yr[0], sqrt(2))
+        self.assertAlmostEqual(xr[1], -sqrt(2))
+        self.assertAlmostEqual(yr[1], 0.0)
 
 
 if __name__ == "__main__":

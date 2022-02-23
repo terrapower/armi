@@ -31,7 +31,7 @@ import armi
 from armi import context
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
-from armi import utils
+from armi.utils.mathematics import expandRepeatedFloats
 from armi.utils import codeTiming
 from armi.utils import pathTools
 from armi import settings
@@ -142,19 +142,19 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def _getCycleLengths(self):
         """Return the cycle length for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["cycleLengths"]) or (
+        return expandRepeatedFloats(self.cs["cycleLengths"]) or (
             [self.cs["cycleLength"]] * self.cs["nCycles"]
         )
 
     def _getAvailabilityFactors(self):
         """Return the availability factors (capacity factor) for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["availabilityFactors"]) or (
+        return expandRepeatedFloats(self.cs["availabilityFactors"]) or (
             [self.cs["availabilityFactor"]] * self.cs["nCycles"]
         )
 
     def _getPowerFractions(self):
         """Return the power fractions for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["powerFractions"]) or (
+        return expandRepeatedFloats(self.cs["powerFractions"]) or (
             [1.0 for _cl in self.cycleLengths]
         )
 
@@ -919,7 +919,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         newFolder = "snapShot{0}_{1}".format(cycle, node)
         if os.path.exists(newFolder):
             runLog.important("Deleting existing snapshot data in {0}".format(newFolder))
-            utils.pathTools.cleanPath(newFolder)  # careful with cleanPath!
+            pathTools.cleanPath(newFolder)  # careful with cleanPath!
             # give it a minute.
             time.sleep(1)
 
