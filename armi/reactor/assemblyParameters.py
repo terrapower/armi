@@ -262,7 +262,9 @@ def getAssemblyParameterDefinitions():
             units="cm",
             description="The initial starting position of the bottom of the control "
             "material when starting control operations as measured from the 0 point in the "
-            "reactor model",
+            "reactor model. Note that the starting height is taken to be a maximum withdrawn "
+            "location for the control rod for determining the position when the control rod "
+            "is fully withdrawn.",
         )
 
     with pDefs.createBuilder() as pb:
