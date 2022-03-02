@@ -887,7 +887,7 @@ class Core(composites.Composite):
             )
 
         # determine if the circularRingList has been generated
-        ## TODO: make circularRingList a property that is generated on request
+        # TODO: make circularRingList a property that is generated on request
         if not self.circularRingList:
             self.circularRingList = self.buildCircularRingDictionary(
                 self._circularRingPitch
@@ -1230,9 +1230,8 @@ class Core(composites.Composite):
         self._getAssembliesByName()
         self._genBlocksByName()
         runLog.important("Regenerating Core Zones")
-        self.buildZones(
-            settings.getMasterCs()
-        )  # TODO: this call is questionable... the cs should correspond to analysis
+        # TODO: this call is questionable... the cs should correspond to analysis
+        self.buildZones(settings.getMasterCs())
         self._genChildByLocationLookupTable()
 
     def getAllXsSuffixes(self):
@@ -1571,7 +1570,6 @@ class Core(composites.Composite):
             showBlanks = True.  This will have no effect if the model is full core since
             asymmetric models could find many duplicates in the other thirds
 
-
         Notes
         -----
         This only works for 1/3 or full core symmetry.
@@ -1579,7 +1577,6 @@ class Core(composites.Composite):
         This uses the 'mcnp' index map (MCNP GEODST hex coordinates) instead of the
         standard (ring, pos) map. because neighbors have consistent indices this way.  We
         then convert over to (ring, pos) using the lookup table that a reactor has.
-
 
         Returns
         -------
@@ -1597,7 +1594,6 @@ class Core(composites.Composite):
             assembly. It will only return "None" for an assembly when that assembly is
             non-existing AND has no existing "symmetric identical".
 
-
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
@@ -1607,7 +1603,12 @@ class Core(composites.Composite):
             *a.spatialLocator.getCompleteIndices()
         )
 
-        ## TODO: where possible, move logic out of loops
+        dupReflectors = (
+            self.symmetry.domain == geometry.DomainType.THIRD_CORE
+            and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
+            and duplicateAssembliesOnReflectiveBoundary
+        )
+
         neighbors = []
         for iN, jN, kN in neighborIndices:
             neighborLoc = self.spatialGrid[iN, jN, kN]
@@ -1615,11 +1616,7 @@ class Core(composites.Composite):
             if neighbor is not None:
                 neighbors.append(neighbor)
             elif showBlanks:
-                if (
-                    self.symmetry.domain == geometry.DomainType.THIRD_CORE
-                    and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
-                    and duplicateAssembliesOnReflectiveBoundary
-                ):
+                if dupReflectors:
                     symmetricAssem = self._getReflectiveDuplicateAssembly(neighborLoc)
                     neighbors.append(symmetricAssem)
                 else:
@@ -2019,7 +2016,6 @@ class Core(composites.Composite):
         targetRing, fraction of flux : tuple
             targetRing is the ring with the fraction of flux that best meets the target.
         """
-
         # get the total number of assembly rings
         numRings = self.getNumRings()
 
@@ -2031,7 +2027,6 @@ class Core(composites.Composite):
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
-
             # compare to outer most ring
             # flatten list into one list of all blocks
             blocksInRing = list(
@@ -2089,7 +2084,7 @@ class Core(composites.Composite):
         denom = 0.0
         if not blockList:
             blockList = list(self.getBlocks())
-            ## TODO: this doesn't need to be a list
+
         for b in blockList:
             if flux2Weight:
                 weight = b.p.flux ** 2.0
@@ -2290,13 +2285,12 @@ class Core(composites.Composite):
         for i, b in enumerate(refAssem):
             if b.hasFlags(Flags.GRID_PLATE):
                 stationaryBlocks.append(i)
+                # TODO: remove hard-coded assumption of grid plates (T3019)
                 runLog.extra(
                     "Detected a grid plate {}.  Adding to stationary blocks".format(b)
-                )  # TODO: remove hard-coded assumption of grid plates (T3019)
+                )
 
-        cs[
-            "stationaryBlocks"
-        ] = stationaryBlocks  # TODO: DeprecationWarning - changing settings
+        cs["stationaryBlocks"] = stationaryBlocks
 
         # Perform initial zoning task
         self.buildZones(cs)

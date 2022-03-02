@@ -1480,15 +1480,7 @@ class Database3(database.Database):
             )
 
             lLocation = layout.location
-            # filter for objects that live under the desired ancestor and at a desired
-            # location
-            # TODO: There might be a numpy way of doing this faster, were we to treat
-            # the locations as a numpy array. The elements are tuple of int, tuple of
-            # float, or sometimes even None, as determined by the pack/unpackLocations
-            # implementations, so it might not be possible, let alone trivial to do
-            # this. One approach could be to go back to the locations in their raw
-            # HDF5 form, then list index into that, along with locationType, and
-            # re-unpack them. 🤔
+            # filter for objects that live under the desired ancestor and at a desired location
             objectIndicesInLayout = numpy.array(
                 [
                     i
