@@ -387,7 +387,7 @@ class TestCircle(TestShapedComponent):
         """
         Test that demonstrates that number densities can be retrieved on from component.
 
-        :req:`REQ378c720f-987b-4fa8-8a2b-aba557aaa744`
+        :req:`REQ378c720f
         """
         self.component.p.numberDensities = {"NA23": 1.0}
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
@@ -396,7 +396,7 @@ class TestCircle(TestShapedComponent):
         """
         Test that demonstates that the number densities on a component can be modified.
 
-        :req:`REQc263722f-3a59-45ef-903a-6276fc99cb40`
+        :req:`REQc263722f
         """
         self.component.p.numberDensities = {"NA23": 1.0}
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)

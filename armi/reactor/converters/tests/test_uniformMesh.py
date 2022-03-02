@@ -37,7 +37,9 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        random.seed(987324987234)  # so it's always the same
+        random.seed(
+            987324987234
+        )  # TODO: WHY would this be necessary? Are our uniform meshes random???
         cls.o, cls.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
@@ -52,7 +54,7 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     def test_computeAverageAxialMesh(self):
         """
-        :req:`REQ5cabd0da-b92d-4bc1-b653-8c2139697582`
+        :req:`REQ5cabd0da
         """
         refMesh = self.r.core.findAllAxialMeshPoints(
             [self.r.core.getFirstAssembly(Flags.FUEL)]
