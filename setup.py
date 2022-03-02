@@ -66,7 +66,6 @@ setup(
         "pluggy",
         "pyevtk",
         "pympler",
-        "pyyaml>=5.1",
         "scipy",
         "tabulate",
         "voluptuous",
