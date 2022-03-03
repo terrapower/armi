@@ -77,8 +77,17 @@ class PatchedPythonDomain(PythonDomain):
         )
 
 
+def autodoc_skip_member_handler(app, what, name, obj, skip, options):
+    """Manually exclude certain methods/functions from docs"""
+    excludes = ["setUp", "setUpClass", "tearDown", "tearDownClass"]
+    return name in excludes
+
+
 def setup(app):
     """Method to make `python setup.py build_sphinx` generate api documentation"""
+    # Connect the autodoc-skip-member event from apidoc to the callback
+    app.connect("autodoc-skip-member", autodoc_skip_member_handler)
+
     app.add_domain(PatchedPythonDomain, override=True)
 
     app.add_directive("exec", ExecDirective)
@@ -99,7 +108,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-# needs_sphinx = '1.0'
+needs_sphinx = "4.4.0"
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -121,6 +130,8 @@ extensions = [
     "sphinxext.opengraph",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
+    "sphinxcontrib.plantuml",
+    "sphinxcontrib.needs",
 ]
 
 # Our API should make sense without documenting private/special members.
@@ -134,7 +145,7 @@ autoclass_content = "both"
 
 apidoc_module_dir = SOURCE_DIR
 apidoc_output_dir = APIDOC_REL
-apidoc_excluded_paths = ["tests", "*/test*"]
+# apidoc_excluded_paths = ["tests", "*/test*"]
 apidoc_separate_modules = True
 apidoc_module_first = True
 
