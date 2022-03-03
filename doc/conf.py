@@ -80,7 +80,7 @@ class PatchedPythonDomain(PythonDomain):
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     """Manually exclude certain methods/functions from docs"""
     excludes = ["setUp", "setUpClass", "tearDown", "tearDownClass"]
-    return name in excludes
+    return name.startswith("_") or name in excludes
 
 
 def setup(app):
