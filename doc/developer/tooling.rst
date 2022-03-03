@@ -69,6 +69,8 @@ might look like ``0.1.7``, ``1.0.0``, or ``1.2.123``. Each number has a specific
   this might happen once a year.
 * ``bump`` - Revved every time we modify the API, or at will; any time we want.
 
+Version bumps are probably not appropriate for changes to documenation or testing.
+
 **Any change to a major or minor version is considered a release.**
 
 Only a core member of the ARMI team may release a new version, or add a tag of any kind to

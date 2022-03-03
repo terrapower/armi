@@ -384,20 +384,12 @@ class TestCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_getNumberDensities(self):
-        """
-        Test that demonstrates that number densities can be retrieved on from component.
-
-        :req:`REQ378c720f
-        """
+        """Test that demonstrates that number densities can be retrieved on from component."""
         self.component.p.numberDensities = {"NA23": 1.0}
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
-        """
-        Test that demonstates that the number densities on a component can be modified.
-
-        :req:`REQc263722f
-        """
+        """Test that demonstates that the number densities on a component can be modified."""
         self.component.p.numberDensities = {"NA23": 1.0}
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
         self.component.changeNDensByFactor(3.0)

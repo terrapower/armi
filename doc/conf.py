@@ -85,7 +85,6 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 
 def setup(app):
     """Method to make `python setup.py build_sphinx` generate api documentation"""
-    # Connect the autodoc-skip-member event from apidoc to the callback
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
 
     app.add_domain(PatchedPythonDomain, override=True)
@@ -145,7 +144,7 @@ autoclass_content = "both"
 
 apidoc_module_dir = SOURCE_DIR
 apidoc_output_dir = APIDOC_REL
-# apidoc_excluded_paths = ["tests", "*/test*"]
+apidoc_excluded_paths = ["*/test_gridGui.py"]
 apidoc_separate_modules = True
 apidoc_module_first = True
 

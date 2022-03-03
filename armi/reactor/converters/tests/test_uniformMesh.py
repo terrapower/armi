@@ -37,9 +37,8 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        random.seed(
-            987324987234
-        )  # TODO: WHY would this be necessary? Are our uniform meshes random???
+        # TODO: WHY would this be necessary? Are our uniform meshes random???
+        random.seed(987324987234)
         cls.o, cls.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
@@ -53,9 +52,6 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.converter._sourceReactor = self.r
 
     def test_computeAverageAxialMesh(self):
-        """
-        :req:`REQ5cabd0da
-        """
         refMesh = self.r.core.findAllAxialMeshPoints(
             [self.r.core.getFirstAssembly(Flags.FUEL)]
         )[1:]
