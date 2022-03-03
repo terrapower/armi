@@ -38,8 +38,8 @@ from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.operators import RunTypes
 from armi.utils import directoryChangers, pathTools
-from armi import utils
 from armi.utils import plotting
+from armi.utils.mathematics import findClosest, resampleStepwise
 
 runLog = logging.getLogger(__name__)
 
@@ -1248,17 +1248,16 @@ class FuelHandler:
         # build widths
         widths = []
         for i, ring in enumerate(baseRings[:-1]):
-            widths.append(
-                abs(baseRings[i + 1] - ring) - 1
-            )  # 0 is the most restrictive, meaning don't even look in other rings.
+            # 0 is the most restrictive, meaning don't even look in other rings.
+            widths.append(abs(baseRings[i + 1] - ring) - 1)
         widths.append(0)  # add the last ring with width 0.
 
         # step 2: locate which rings should be reversed to give the jump-ring effect.
         if jumpRingFrom is not None:
-            _closestRingFrom, jumpRingFromIndex = utils.findClosest(
+            _closestRingFrom, jumpRingFromIndex = findClosest(
                 baseRings, jumpRingFrom, indx=True
             )
-            _closestRingTo, jumpRingToIndex = utils.findClosest(
+            _closestRingTo, jumpRingToIndex = findClosest(
                 baseRings, jumpRingTo, indx=True
             )
         else:
@@ -1360,12 +1359,12 @@ class FuelHandler:
         --------
         dischargeSwap : swap assemblies where one is outside the core and the other is inside
         """
-
         if a1 is None or a2 is None:
             runLog.warning(
                 "Cannot swap None assemblies. Check your findAssembly results. Skipping swap"
             )
             return
+
         runLog.extra("Swapping {} with {}.".format(a1, a2))
         # add assemblies into the moved location
         for a in [a1, a2]:
@@ -1460,29 +1459,78 @@ class FuelHandler:
         Assumes assemblies have the same block structure. If not, blocks will be swapped one-for-one until
         the shortest one has been used up and then the process will truncate.
         """
-        if len(incoming) != len(outgoing):
-            runLog.warning(
-                "{0} and {1} have different numbers of blocks. Flux swapping (for XS weighting) will "
-                "be questionable".format(incoming, outgoing)
+        # Find the block-based mesh points for each assembly
+        meshIn = self.r.core.findAllAxialMeshPoints([incoming], False)
+        meshOut = self.r.core.findAllAxialMeshPoints([outgoing], False)
+
+        # If the assembly mesh points don't match, the swap won't be easy
+        if meshIn != meshOut:
+            runLog.debug(
+                "{0} and {1} have different meshes, resampling.".format(
+                    incoming, outgoing
+                )
             )
+
+            # grab the current values for incoming and outgoing
+            fluxIn = [b.p.flux for b in incoming]
+            mgFluxIn = [b.p.mgFlux for b in incoming]
+            powerIn = [b.p.power for b in incoming]
+            fluxOut = [b.p.flux for b in outgoing]
+            mgFluxOut = [b.p.mgFlux for b in outgoing]
+            powerOut = [b.p.power for b in outgoing]
+
+            # resample incoming to outgoing, and vice versa
+            fluxOutNew = resampleStepwise(meshIn, fluxIn, meshOut)
+            mgFluxOutNew = resampleStepwise(meshIn, mgFluxIn, meshOut)
+            powerOutNew = resampleStepwise(meshIn, powerIn, meshOut, avg=False)
+            fluxInNew = resampleStepwise(meshOut, fluxOut, meshIn)
+            mgFluxInNew = resampleStepwise(meshOut, mgFluxOut, meshIn)
+            powerInNew = resampleStepwise(meshOut, powerOut, meshIn, avg=False)
+
+            # load the new outgoing values into place
+            for b, flux, mgFlux, power in zip(
+                outgoing, fluxOutNew, mgFluxOutNew, powerOutNew
+            ):
+                b.p.flux = flux
+                b.p.mgFlux = mgFlux
+                b.p.power = power
+                b.p.pdens = power / b.getVolume()
+
+            # load the new incoming values into place
+            for b, flux, mgFlux, power in zip(
+                incoming, fluxInNew, mgFluxInNew, powerInNew
+            ):
+                b.p.flux = flux
+                b.p.mgFlux = mgFlux
+                b.p.power = power
+                b.p.pdens = power / b.getVolume()
+
+            return
+
+        # Since the axial mesh points match, do the simple swap
         for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
-            if (
-                bi not in self.cs["stationaryBlocks"]
-            ):  # stationary blocks are already swapped.
-                incomingFlux = bIncoming.p.flux
-                incomingMgFlux = bIncoming.p.mgFlux
-                incomingPower = bIncoming.p.power
-                outgoingFlux = bOutgoing.p.flux
-                outgoingMgFlux = bOutgoing.p.mgFlux
-                outgoingPower = bOutgoing.p.power
-                if outgoingFlux > 0.0:
-                    bIncoming.p.flux = outgoingFlux
-                    bIncoming.p.mgFlux = outgoingMgFlux
-                    bIncoming.p.power = outgoingPower
-                if incomingFlux > 0.0:
-                    bOutgoing.p.flux = incomingFlux
-                    bOutgoing.p.mgFlux = incomingMgFlux
-                    bOutgoing.p.power = incomingPower
+            if bi in self.cs["stationaryBlocks"]:
+                # stationary blocks are already swapped
+                continue
+
+            incomingFlux = bIncoming.p.flux
+            incomingMgFlux = bIncoming.p.mgFlux
+            incomingPower = bIncoming.p.power
+            outgoingFlux = bOutgoing.p.flux
+            outgoingMgFlux = bOutgoing.p.mgFlux
+            outgoingPower = bOutgoing.p.power
+
+            if outgoingFlux > 0.0:
+                bIncoming.p.flux = outgoingFlux
+                bIncoming.p.mgFlux = outgoingMgFlux
+                bIncoming.p.power = outgoingPower
+                bIncoming.p.pdens = outgoingPower / bIncoming.getVolume()
+
+            if incomingFlux > 0.0:
+                bOutgoing.p.flux = incomingFlux
+                bOutgoing.p.mgFlux = incomingMgFlux
+                bOutgoing.p.power = incomingPower
+                bOutgoing.p.pdens = incomingPower / bOutgoing.getVolume()
 
     def swapCascade(self, assemList):
         """
@@ -1499,7 +1547,6 @@ class FuelHandler:
             [A  <- B <- C <- D]
 
         """
-
         # first check for duplicates
         for assem in assemList:
             if assemList.count(assem) != 1:
@@ -1592,7 +1639,6 @@ class FuelHandler:
         makeShuffleReport : writes the file that is read here.
 
         """
-
         try:
             f = open(fname)
         except:
@@ -1906,7 +1952,6 @@ class FuelHandler:
         -----
         This is a helper function for repeatShufflePattern
         """
-
         moved = []
 
         # shuffle all of the load chain assemblies (These include discharges to SFP

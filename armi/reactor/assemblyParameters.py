@@ -72,25 +72,33 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "chargeBu",
             units="%FIMA",
-            description="Max block-average burnup in this assembly when it entered the core.",
+            description="Max block-average burnup in this assembly when it most recently"
+            " entered the core. If the assembly was discharged and then re-charged,"
+            " this value will only reflect the most recent charge.",
         )
 
         pb.defParam(
             "chargeCycle",
             units="",
-            description="Cycle number that this assembly entered the core.",
+            description="Cycle number that this assembly most recently entered the core."
+            " If the assembly was discharged and then re-charged, this value will only"
+            " reflect the most recent charge.",
         )
 
         pb.defParam(
             "chargeFis",
             units="kg",
-            description="Fissile mass in assembly when it entered the core.",
+            description="Fissile mass in assembly when it most recently entered the core."
+            " If the assembly was discharged and then re-charged, this value will only"
+            " reflect the most recent charge.",
         )
 
         pb.defParam(
             "chargeTime",
             units="years",
-            description="Time at which this assembly entered the core.",
+            description="Time at which this assembly most recently entered the core."
+            " If the assembly was discharged and then re-charged, this value will only"
+            " reflect the most recent charge.",
             default=parameters.NoDefault,
         )
 
@@ -254,7 +262,9 @@ def getAssemblyParameterDefinitions():
             units="cm",
             description="The initial starting position of the bottom of the control "
             "material when starting control operations as measured from the 0 point in the "
-            "reactor model",
+            "reactor model. Note that the starting height is taken to be a maximum withdrawn "
+            "location for the control rod for determining the position when the control rod "
+            "is fully withdrawn.",
         )
 
     with pDefs.createBuilder() as pb:

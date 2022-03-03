@@ -20,9 +20,9 @@ Lithium.
 """
 
 from armi import runLog
-from armi import utils
 from armi.materials import material
 from armi.nucDirectory import nuclideBases as nb
+from armi.utils.mathematics import getFloat
 
 
 class Lithium(material.Fluid):
@@ -46,7 +46,7 @@ class Lithium(material.Fluid):
 
         LI6_wt_frac = LI6_wt_frac or LI_wt_frac
 
-        enrich = utils.getFloat(LI6_wt_frac)
+        enrich = getFloat(LI6_wt_frac)
         # allow 0.0 to pass in!
         if enrich is not None:
             self.adjustMassEnrichment(LI6_wt_frac)
