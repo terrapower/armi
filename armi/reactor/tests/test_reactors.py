@@ -269,6 +269,12 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(numControlBlocks, 3)
 
     def test_countFuelAxialBlocks(self):
+        """Tests that the users definition of fuel blocks is preserved.
+
+        .. test:: Tests that the users definition of fuel blocks is preserved.
+            :id: TEST_0_2
+            :links: REQ_0
+        """
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
         self.assertEqual(numFuelBlocks, 3)
 
@@ -398,7 +404,6 @@ class HexReactorTests(ReactorTests):
         assert_allclose(expectedPoints, radPoints)
 
     def test_findNeighbors(self):
-
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
@@ -521,6 +526,12 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(a1, a3)
 
     def test_countAssemblies(self):
+        """Tests that the users definition of assemblies is preserved.
+
+        .. test:: Tests that the users definition of assembilies is preserved.
+            :id: TEST_0_3
+            :links: REQ_0
+        """
         nFuel = self.r.core.countAssemblies(Flags.FUEL)
         self.assertEqual(2, nFuel)
         nFuel_r3 = self.r.core.countAssemblies(Flags.FUEL, ring=3)

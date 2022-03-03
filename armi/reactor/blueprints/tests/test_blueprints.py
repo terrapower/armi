@@ -66,7 +66,7 @@ class TestBlueprints(unittest.TestCase):
     def test_nuclides(self):
         """Tests the available sets of nuclides work as expected
 
-        .. test:: This that user-specified nuclides in a reactor are ingested correctly.
+        .. test:: Tests that users can define their nuclides of interest.
             :id: TEST_0_0
             :links: REQ_0
         """
@@ -91,6 +91,12 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(mox["PU239"], 0.00286038)
 
     def test_componentDimensions(self):
+        """Tests that the user can specifiy the dimensions of a component with arbitray fidelity.
+
+        .. test:: Tests that the user can specify the dimensions of a component with arbitrary fidelity.
+            :id: TEST_0_1
+            :links: REQ_0
+        """
         fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
         self.assertAlmostEqual(fuel.getDimension("od", cold=True), 0.86602)
@@ -124,9 +130,9 @@ class TestBlueprintsSchema(unittest.TestCase):
             mult: 1.0
             op: 10.0
     fuel2: &block_fuel2
-        group1: 
+        group1:
             shape: Group
-        duct: 
+        duct:
             shape: Hexagon
             material: UZr
             Tinput: 25.0
@@ -134,7 +140,7 @@ class TestBlueprintsSchema(unittest.TestCase):
             ip: 9.0
             mult: 1.0
             op: 10.0
-        matrix: 
+        matrix:
             shape: DerivedShape
             material: Graphite
             Tinput: 25.0
