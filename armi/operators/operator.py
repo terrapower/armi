@@ -423,7 +423,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
-        allInterfaces = self.interfaces[:]  ## copy just in case
+        allInterfaces = self.interfaces[:]  # copy just in case
         self._interactAll("Init", allInterfaces)
 
     def interactAllBOL(self, excludedInterfaceNames=()):
