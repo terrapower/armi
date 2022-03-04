@@ -21,6 +21,10 @@ certain number of cycles with a certain number of timenodes per cycle.
 This is analogous to a real reactor operating over some period of time,
 often from initial startup, through the various cycles, and out to
 the end of plant life.
+
+.. impl:: Controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
+   :id: IMPL_1_0
+   :links: REQ_1
 """
 import time
 import shutil
@@ -29,16 +33,16 @@ import os
 
 import armi
 from armi import context
+from armi import interfaces
 from armi import runLog
-from armi.bookkeeping import memoryProfiler
-from armi.utils.mathematics import expandRepeatedFloats
-from armi.utils import codeTiming
-from armi.utils import pathTools
 from armi import settings
+from armi.bookkeeping import memoryProfiler
+from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
-from armi import interfaces
-from armi.bookkeeping.report import reportingUtils
+from armi.utils import codeTiming
+from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Operator:  # pylint: disable=too-many-public-methods

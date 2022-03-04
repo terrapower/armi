@@ -177,7 +177,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     Base Blueprintsobject representing all the subsections in the input file.
 
     .. impl:: ARMI shall be able to represent a user-specified reactor.
-        :id: IMPL_0
+        :id: IMPL_0_0
         :links: REQ_0
     """
 

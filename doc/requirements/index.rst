@@ -17,5 +17,5 @@ be linked to both unit tests and source code within the ARMI repository.
    :numbered:
    :glob:
 
-   requirements
+   srsd
    *
