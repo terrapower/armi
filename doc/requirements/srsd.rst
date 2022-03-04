@@ -9,7 +9,7 @@ Functional Requirements
 
 .. req:: ARMI shall be able to represent a user-specified reactor.
    :id: REQ_0
-   :status: implemented
+   :status: implemented, needs more tests
 
    Given user input describing a reactor system, ARMI shall construct with equivalent
    fidelity a software model of the reactor. In particular, ARMI shall appropriately
@@ -51,7 +51,7 @@ Functional Requirements
 
    .. req:: ARMI shall support the specification of symmetry options and boundary conditions.
       :id: REQ_0_4
-      :status: implemented, need impl/test links
+      :status: implemented, need impl/test
 
       ARMI shall support symmetric models including 1/4, 1/8 core models for Cartesian meshes
       and 1/3 and full core for Hex meshes. For Cartesian 1/8 core symmetry, the core axial
@@ -59,21 +59,21 @@ Functional Requirements
 
    .. req:: ARMI shall check for basic correctness.
       :id: REQ_0_5
-      :status: implemented, need impl/test links
+      :status: implemented, need impl/test
 
       ARMI shall check its input for certain obvious errors including unphysical densities
       and proper fit.
 
    .. req:: ARMI shall allow for the definition of limited one-dimensional translation paths.
       :id: REQ_0_6
-      :status: implemented, need impl/test links
+      :status: implemented, need impl/test
 
       ARMI shall allow the user specification of translation pathways for certain objects to
       follow, to support moving control mechanisms.
 
    .. req:: ARMI shall allow the definition of fuel management operations (i.e. shuffling)
       :id: REQ_0_7
-      :status: implemented, need impl/test links
+      :status: implemented, need impl/test
 
       ARMI shall allow for the modeling of a reactor over multiple cycles.
 
