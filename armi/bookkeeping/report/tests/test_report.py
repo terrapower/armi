@@ -61,7 +61,7 @@ class TestReport(unittest.TestCase):
         self.assertEqual(filled_instance["banana_3"], ["sundae", "chocolate"])
 
     def test_printReports(self):
-        """testing testing"""
+        """testing printReports method"""
         repInt = reportInterface.ReportInterface(None, None)
         rep = repInt.printReports()
 

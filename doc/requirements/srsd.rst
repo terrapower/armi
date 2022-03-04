@@ -19,7 +19,7 @@ Functional Requirements
 
    .. req:: ARMI shall represent the reactor heirarchically.
       :id: REQ_0_0
-      :status: implemented
+      :status: completed
 
       To maintain consistency with the physical reactor being modeled, ARMI shall
       maintain a heirarchical definition of its components. For example, all the
@@ -29,14 +29,14 @@ Functional Requirements
 
    .. req:: ARMI shall automatically handle thermal expansion.
       :id: REQ_0_1
-      :status: implemented
+      :status: completed
 
       ARMI shall automatically compute and applied thermal expansion and contraction
       of materials.
 
    .. req:: ARMI shall support a reasonable set of basic shapes.
       :id: REQ_0_2
-      :status: implemented
+      :status: implemented, needs more tests
 
       ARMI shall support the following basic shapes: Hexagonal prism (ducts in fast
       reactors), rectangular prism (ducts in thermal reactors), cylindrical prism
@@ -46,12 +46,12 @@ Functional Requirements
       :id: REQ_0_3
       :status: completed
 
-      ARMI shall support regular, repeating meshes in hexagonal, triangular, radial-
-      zeta-theta (RZT), and Cartesian structures.
+      ARMI shall support regular, repeating meshes in hexagonal, radial-zeta-theta (RZT),
+      and Cartesian structures.
 
    .. req:: ARMI shall support the specification of symmetry options and boundary conditions.
       :id: REQ_0_4
-      :status: completed
+      :status: implemented, need impl/test links
 
       ARMI shall support symmetric models including 1/4, 1/8 core models for Cartesian meshes
       and 1/3 and full core for Hex meshes. For Cartesian 1/8 core symmetry, the core axial
@@ -59,27 +59,27 @@ Functional Requirements
 
    .. req:: ARMI shall check for basic correctness.
       :id: REQ_0_5
-      :status: completed
+      :status: implemented, need impl/test links
 
       ARMI shall check its input for certain obvious errors including unphysical densities
       and proper fit.
 
    .. req:: ARMI shall allow for the definition of limited one-dimensional translation paths.
       :id: REQ_0_6
-      :status: completed
+      :status: implemented, need impl/test links
 
       ARMI shall allow the user specification of translation pathways for certain objects to
       follow, to support moving control mechanisms.
 
    .. req:: ARMI shall allow the definition of fuel management operations (i.e. shuffling)
       :id: REQ_0_7
-      :status: completed
+      :status: implemented, need impl/test links
 
       ARMI shall allow for the modeling of a reactor over multiple cycles.
 
 .. req:: ARMI shall represent and reflect the evolving state of a reactor.
    :id: REQ_1
-   :status: implemented
+   :status: implemented, needs test
 
    The state shale be made available to users and modules, which may in turn modify the
    state (e.g. for analysis or based on the results of a physical calculation). ARMI

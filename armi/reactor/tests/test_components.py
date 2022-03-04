@@ -205,6 +205,12 @@ class TestShapedComponent(TestGeneralComponents):
     """Abstract class for all shaped components"""
 
     def test_preserveMassDuringThermalExpansion(self):
+        """Test that when we thermally expand any arbirtray shape, mass is conserved
+
+        .. test:: Test that ARMI can thermally expand any arbitrary shape.
+           :id: TEST_0_1_0
+           :links: REQ_0_1
+        """
         if not self.component.THERMAL_EXPANSION_DIMS:
             return
         temperatures = [25.0, 30.0, 40.0, 60.0, 80.0, 430.0]
@@ -288,7 +294,13 @@ class TestCircle(TestShapedComponent):
         "mult": 1.5,
     }
 
-    def test_getThermalExpansionFactorConserveMassByLinearExpansionPercent(self):
+    def test_getThermalExpansionFactorConservedMassByLinearExpansionPercent(self):
+        """Test that when ARMI thermally expands a circle, mass is conserved.
+
+        .. test:: Test that ARMI correctly thermally expands objects with circular shape.
+           :id: TEST_0_1_1
+           :links: REQ_0_1
+        """
         hotTemp = 700.0
         dLL = self.component.material.linearExpansionFactor(
             Tc=hotTemp, T0=self._coldTemp
@@ -304,6 +316,12 @@ class TestCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a circle
+
+        .. test:: Test that ARMI can thermally expands a circle
+           :id: TEST_0_1_2
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_getBoundingCircleOuterDiameter(self):
@@ -415,6 +433,12 @@ class TestTriangle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a triangle
+
+        .. test:: Test that ARMI can thermally expands a triangle
+           :id: TEST_0_1_3
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
@@ -473,6 +497,12 @@ class TestRectangle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a rectangle
+
+        .. test:: Test that ARMI can thermally expands a rectangle
+           :id: TEST_0_1_4
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
@@ -513,6 +543,12 @@ class TestSolidRectangle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a solid rectangle
+
+        .. test:: Test that ARMI can thermally expands a solid rectangle
+           :id: TEST_0_1_5
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
@@ -565,6 +601,12 @@ class TestSquare(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a square
+
+        .. test:: Test that ARMI can thermally expands a square
+           :id: TEST_0_1_6
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
@@ -624,6 +666,12 @@ class TestCube(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a cube
+
+        .. test:: Test that ARMI can thermally expands a cube
+           :id: TEST_0_1_7
+           :links: REQ_0_1
+        """
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
 
@@ -652,6 +700,12 @@ class TestHexagon(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a hexagon
+
+        .. test:: Test that ARMI can thermally expands a hexagon
+           :id: TEST_0_1_8
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
@@ -690,6 +744,12 @@ class TestHoledHexagon(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a holed hexagon
+
+        .. test:: Test that ARMI can thermally expands a holed hexagon
+           :id: TEST_0_1_9
+           :links: REQ_0_1
+        """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
@@ -767,6 +827,9 @@ class TestHoledSquare(TestHoledRectangle):
     def setClassDims(self):
         # This enables subclassing testing for square
         self.width = self.length = self.component.getDimension("widthOuter")
+
+    def test_thermallyExpands(self):
+        self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
 
 class TestHelix(TestShapedComponent):

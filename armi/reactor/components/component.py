@@ -17,8 +17,8 @@ Components represent geometric objects within an assembly such as fuel, bond, co
 
 This module contains the abstract definition of a Component.
 """
-import re
 import copy
+import re
 
 import numpy
 
@@ -180,6 +180,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         Temperature in C to which dimensions were thermally-expanded upon input.
     material : str or material.Material
         The material object that makes up this component and give it its thermo-mechanical properties.
+
+    .. impl:: All components in ARMI can be thermally-expanded using custom curves.
+       :id: IMPL_0_1_0
+       :links: REQ_0_1
     """
 
     DIMENSION_NAMES = tuple()  # will be assigned by ComponentType

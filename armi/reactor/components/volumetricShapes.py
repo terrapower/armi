@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""3-dimensional shapes."""
+"""3-dimensional shapes
+
+
+.. impl:: ARMI shall support a reasonable set of basic shapes.
+   :id: IMPL_0_2_2
+   :links: REQ_0_2
+
+   Here ARMI implements its support for: Spheres, Cubes, Toruses, and more.
+"""
 
 import math
 

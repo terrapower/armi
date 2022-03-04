@@ -127,11 +127,11 @@ class TestGeneralUtils(unittest.TestCase):
         """Tests the classesInHierarchy utility
 
         .. test:: Tests that the Reactor is stored heirarchically
-            :id: TEST_0_0_0
-            :links: REQ_0_0
+           :id: TEST_0_0_0
+           :links: REQ_0_0
 
-            This test shows that the Blocks and Assemblies are stored
-            heirarchically inside the Core, which is inside the Reactor object.
+           This test shows that the Blocks and Assemblies are stored
+           heirarchically inside the Core, which is inside the Reactor object.
         """
         # load the test reactor
         o, r = loadTestReactor()
