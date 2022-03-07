@@ -96,8 +96,6 @@ class TestNHFLUX(unittest.TestCase):
 
         The 5 flux moments values are manually verified for two nodes. The indices
         are converted to zero based from the original by subtracting one.
-
-        :req:`REQ77f06870-5923-429c-b3c7-d42f5a24f404`
         """
         # node 1 (ring=1, position=1), axial=3, group=2
         i = 0  # first one in node map (ring=1, position=1)
@@ -131,8 +129,6 @@ class TestNHFLUX(unittest.TestCase):
         The surface partial currents can be used to reconstruct the surface
         flux and corner flux values. This test shows that the outgoing current
         in one hex is identical to the incoming current in the adjacent hex.
-
-        :req:`REQ77f06870-5923-429c-b3c7-d42f5a24f404`
         """
         # node 2 (ring=3, position=1), axial=4, group=2, surface=4, outgoing
         iNode, iSurf, iz, ig = 1, 3, 3, 1  # zero based
@@ -154,8 +150,6 @@ class TestNHFLUX(unittest.TestCase):
 
         The Z-directed partial currents are manually checked for one node
         surface.
-
-        :req:`REQ77f06870-5923-429c-b3c7-d42f5a24f404`
         """
         # node 15 (ring=2, position=3), axial=3, group=3, j=1 (z-plus)
         iNode, iz, ig, j = 14, 2, 2, 0
