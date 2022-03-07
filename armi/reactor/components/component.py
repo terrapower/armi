@@ -181,7 +181,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     material : str or material.Material
         The material object that makes up this component and give it its thermo-mechanical properties.
 
-    .. impl:: All components in ARMI can be thermally-expanded using custom curves.
+    .. impl:: ARMI allows for thermal expansion of all components by user-defined custom curves.
        :id: IMPL_0_1_0
        :links: REQ_0_1
     """

@@ -22,7 +22,7 @@ This is analogous to a real reactor operating over some period of time,
 often from initial startup, through the various cycles, and out to
 the end of plant life.
 
-.. impl:: Controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
+.. impl:: ARMI controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
    :id: IMPL_1_0
    :links: REQ_1
 """

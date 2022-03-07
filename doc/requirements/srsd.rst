@@ -2,6 +2,8 @@
 Software Requirement Specification Document (SRSD)
 **************************************************
 
+Work In Progress: The ARMI Requirements are thus-far incomplete.
+
 -----------------------
 Functional Requirements
 -----------------------

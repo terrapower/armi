@@ -15,7 +15,7 @@
 """3-dimensional shapes
 
 
-.. impl:: ARMI shall support a reasonable set of basic shapes.
+.. impl:: ARMI supports a reasonable set of basic shapes.
    :id: IMPL_0_2_2
    :links: REQ_0_2
 

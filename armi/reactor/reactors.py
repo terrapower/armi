@@ -20,7 +20,7 @@ Core is a high-level object in the data model in ARMI. They contain assemblies w
 more refinement in representing the physical reactor. The reactor is the owner of many of the
 plant-wide state variables such as keff, cycle, and node.
 
-.. impl:: The Reactor is represented here heirarchically.
+.. impl:: ARMI represents the Reactor heirarchically.
    :id: IMPL_0_0_0
    :links: REQ_0_0
 

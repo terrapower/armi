@@ -15,7 +15,7 @@
 """
 Components represented by complex shapes, and typically less widely used.
 
-.. impl:: ARMI shall support a reasonable set of basic shapes.
+.. impl:: ARMI supports a reasonable set of basic shapes.
    :id: IMPL_0_2_1
    :links: REQ_0_2
 

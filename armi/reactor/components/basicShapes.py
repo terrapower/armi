@@ -18,7 +18,7 @@ Components represented by basic shapes.
 Many reactor components can be described in 2D by circles, hexagons, rectangles, etc. These
 are defined in this subpackage.
 
-.. impl:: ARMI shall support a reasonable set of basic shapes.
+.. impl:: ARMI supports a reasonable set of basic shapes.
    :id: IMPL_0_2_0
    :links: REQ_0_2
 

@@ -15,8 +15,8 @@
 """
 Tests for the uniform mesh geometry converter
 """
-import unittest
 import random
+import unittest
 
 import numpy
 
@@ -37,7 +37,7 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # TODO: WHY would this be necessary? Are our uniform meshes random???
+        # random seed to support random mesh in unit tests below
         random.seed(987324987234)
         cls.o, cls.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
