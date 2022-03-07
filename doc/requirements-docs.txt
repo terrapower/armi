@@ -19,6 +19,10 @@ sphinxcontrib-apidoc==0.3.0
 # generates OpenGraph metadata?
 sphinxext-opengraph==0.5.1
 
+# supporting requirement documentation
+sphinxcontrib-needs==0.7.6
+sphinxcontrib-plantuml==0.23
+
 # This is not strictly necessary via PIP, but MUST be in the path.
 # Used to convert between file formats.
 pandoc

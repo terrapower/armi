@@ -10,7 +10,7 @@
 	<calcSourceTerm value="True" />
 	<claddingStrain value="True" />
 	<claddingWastage value="True" />
-	<comment value="Run MCC3 and DIF3D and get out of there. Base case for long-running follow-on tests.     DIF3D interface requirements         - REQe22644db-63f2-47bc-b928-790caaa84554 (execute DIF3D code)     " />
+	<comment value="Run MCC3 and DIF3D and get out of there. Base case for long-running follow-on tests." />
 	<cycleLength value="550.0" />
 	<detailAssemLocationsBOL value="['A9008']" />
 	<dilationCoeffs value="[0.0, 0.02615, -2.693e-05, 1.448e-08]" />

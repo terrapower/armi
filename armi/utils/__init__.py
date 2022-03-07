@@ -228,6 +228,7 @@ def classesInHierarchy(obj, classCounts, visited=None):
         raise TypeError(
             "Need to pass in a default dict for classCounts (it's an out param)"
         )
+
     if visited is None:
         classCounts[type(obj)] += 1
         visited = set()
