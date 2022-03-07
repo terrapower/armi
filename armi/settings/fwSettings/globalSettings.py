@@ -161,30 +161,30 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_CONDITIONAL_MODULE_NAME,
             default="",
-            label="",
-            description="This is file name -- directory not included -- of the python "
+            label="Burn End Conditional",
+            description="File name (directory not included) of the Python "
             "module that contains a conditional function to determine the end of burn "
             "cycles",
         ),
         setting.Setting(
             CONF_AUTOMATIC_VARIABLE_MESH,
             default=False,
-            label="",
-            description="This is a flag to let armi add additional mesh points if the "
-            "dif3d mesh is too irregular",
+            label="Automatic Neutronics Variable Mesh",
+            description="Flag to let ARMI add additional mesh points if the "
+            "neutronics mesh is too irregular",
         ),
         setting.Setting(
             CONF_TRACE,
             default=False,
-            label="Use the Python tracer",
-            description="Activate Python trace module to print out each line as its "
+            label="Use the Python Tracer",
+            description="Activate Python trace module to print out each line as it's "
             "executed",
             isEnvironment=True,
         ),
         setting.Setting(
             CONF_PROFILE,
             default=False,
-            label="turn on the profiler",
+            label="Turn On the Profiler",
             description="Turn on the profiler for the submitted case. The profiler "
             "results will not include all import times.",
             isEnvironment=True,
@@ -195,7 +195,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_COVERAGE,
             default=False,
-            label="turn on coverage report generation",
+            label="Turn On Coverage Report Generation",
             description="Turn on coverage report generation which tracks all the lines "
             "of code that execute during a run",
             isEnvironment=True,
@@ -203,7 +203,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_MIN_MESH_SIZE_RATIO,
             default=0.15,
-            label="",
+            label="Minimum Mesh Size Ratio",
             description="This is the minimum ratio of mesh sizes (dP1/(dP1 + dP2)) "
             "allowable -- only active if automaticVariableMesh flag is set to True",
         ),
@@ -221,7 +221,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_CYCLE_LENGTHS,
             default=[],
-            label="Cycle durations",
+            label="Cycle Durations",
             description="List of durations of each cycle in days. The at-power "
             "duration will be affected by the availability factor. R is repeat. For "
             "example [100, 150, '9R'] is 1 100 day cycle followed by 10 150 day "
@@ -242,7 +242,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
             default=[],
-            label="Availability factors",
+            label="Availability Factors",
             description="List of availability factor of each cycle as a fraction "
             "(fraction of time plant is not in an outage). R is repeat. For example "
             "[0.5, 1.0, '9R'] is 1 50% CF followed by 10 100 CF. Empty list is "
@@ -252,7 +252,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_POWER_FRACTIONS,
             default=[],
-            label="Power fractions",
+            label="Power Fractions",
             description="List of power fractions at each cycle (fraction of rated "
             "thermal power the plant achieves). R is repeat. For example [0.5, 1.0, "
             "'9R'] is 1 50% PF followed by 10 100% PF. Specify zeros to indicate "
@@ -271,8 +271,8 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_BETA,
             default=None,
-            label="Delayed neutron fraction",
-            description="Set individual precursor group delayed neutron fractions.",
+            label="Delayed Neutron Fraction",
+            description="Individual precursor group delayed neutron fractions",
             schema=vol.Any(
                 [float], None, float, msg="Expected NoneType, float, or list of floats."
             ),
@@ -284,7 +284,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_DECAY_CONSTANTS,
             default=None,
             label="Decay Constants",
-            description="Set individual precursor group delayed neutron decay constants.",
+            description="Individual precursor group delayed neutron decay constants",
             schema=vol.Any(
                 [float], None, float, msg="Expected NoneType, float, or list of floats."
             ),
@@ -309,7 +309,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_MODULE_VERBOSITY,
             default={},
             label="Module-Level Verbosity",
-            description="Verbosity of any module-specific loggers that are set.",
+            description="Verbosity of any module-specific loggers that are set",
             isEnvironment=True,
         ),
         setting.Setting(
@@ -317,7 +317,7 @@ def defineSettings() -> List[setting.Setting]:
             default=[10, 20, 30, 100],
             label="Burnup Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type (units of %FIMA).",
+            "for a given assembly type (units of %FIMA)",
             schema=vol.Schema([vol.Any(int, float)]),
         ),
         setting.Setting(
@@ -329,15 +329,15 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_CIRCULAR_RING_PITCH,
             default=1.0,
-            label="Circular ring relative pitch",
+            label="Circular Ring Relative Pitch",
             description="The relative pitch to be used to define a single circular "
-            "ring in circular shuffling. ",
+            "ring in circular shuffling",
         ),
         setting.Setting(
             CONF_COMMENT,
             default="",
             label="Case Comments",
-            description="A comment describing this case.",
+            description="A comment describing this case",
         ),
         setting.Setting(
             CONF_COPY_FILES_FROM, default=[], label="None", description="None"
@@ -348,7 +348,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_CREATE_ASSEMBLY_TYPE_ZONES,
             default=False,
-            label="Create fuel zones automatically",
+            label="Create Fuel Zones Automatically",
             description="Let ARMI create zones based on fuel type automatically ",
         ),
         setting.Setting(
@@ -403,7 +403,7 @@ def defineSettings() -> List[setting.Setting]:
             default=[],
             label="Detailed Reactor Snapshots",
             description="List of snapshots to dump detailed reactor analysis data. Can "
-            "be used to perform follow-on analysis (i.e., Reactivity coefficient "
+            "be used to perform follow-on analysis (i.e., reactivity coefficient "
             "generation).",
         ),
         setting.Setting(
@@ -411,14 +411,14 @@ def defineSettings() -> List[setting.Setting]:
             default=False,
             label="Perform Core Orificing",
             description="Perform orificed thermal hydraulics (requires bounds file "
-            "from a previous case).",
+            "from a previous case)",
         ),
         setting.Setting(
             CONF_EQ_DIRECT,
             default=False,
             label="Direct Eq Shuffling",
             description="Does the equilibrium search with repetitive shuffing but with "
-            "direct shuffling rather than the fast way.",
+            "direct shuffling rather than the fast way",
         ),
         setting.Setting(
             CONF_FLUX_RECON,
@@ -437,22 +437,22 @@ def defineSettings() -> List[setting.Setting]:
             CONF_GEOM_FILE,
             default="",
             label="Core Map Input File",
-            description="Input file containing BOL core map.",
+            description="Input file containing BOL core map",
         ),
         setting.Setting(
             CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
             default=False,
             label="Expand to Full Core on Snapshot Load",
-            description="Grows from 1/3 to full core after loading from a 1/3 "
+            description="Grows from 1/3 to full core after loading a 1/3 "
             "symmetric snapshot. Note: This is needed when a full core model is needed "
-            "and the database was produced using a third core model",
+            "and the database was produced using a third core model.",
         ),
         setting.Setting(
             CONF_START_CYCLE,
             default=0,
             label="Start Cycle",
             description="Cycle number to continue calculation from. Database will "
-            "load from the time step just before. For snapshots use `dumpSnapshot`",
+            "load from the time step just before. For snapshots use `dumpSnapshot`.",
             oldNames=[
                 ("loadCycle", None),
             ],
@@ -461,13 +461,13 @@ def defineSettings() -> List[setting.Setting]:
             CONF_LOADING_FILE,
             default="",
             label="Blueprints File",
-            description="Browse for the blueprints/loading input file containing "
+            description="The blueprints/loading input file path containing "
             "component dimensions, materials, etc.",
         ),
         setting.Setting(
             CONF_START_NODE,
             default=0,
-            label="StartNode",
+            label="Start Node",
             description="Timenode number (0 for BOC, etc.) to continue calulation from. "
             "Database will load from the time step just before.",
             oldNames=[
@@ -484,28 +484,26 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_LOW_POWER_REGION_FRACTION,
             default=0.05,
-            label="low power region fraction",
-            description="Description Needed",
+            label="Low-power Region Fraction",
+            description="Description needed",
         ),
         setting.Setting(
             CONF_MEM_PER_NODE,
             default=2000,
-            label="Memory per node",
+            label="Memory per Node",
             description="Memory requested per cluster node",
         ),
         setting.Setting(
             CONF_MPI_TASKS_PER_NODE,
             default=0,
-            label="mpiTasksPerNode",
+            label="MPI Tasks per Node",
             description="Number of independent processes that are allocated to each "
-            "cluster node. 0 means 1 process per CPU (or 12 per node on some "
-            "clusters). Set between 1-12 to increase RAM and number of cores needed "
-            "for large problems. ",
+            "cluster node. 0 means 1 process per CPU.",
         ),
         setting.Setting(
             CONF_N_CYCLES,
             default=1,
-            label="Number of cycles",
+            label="Number of Cycles",
             description="Number of cycles that will be simulated. Fuel management "
             "happens at the beginning of each cycle. Can include active (full-power) "
             "cycles as well as post-shutdown decay-heat steps.",
@@ -513,7 +511,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_NUM_CONTROL_BLOCKS,
             default=6,
-            label="numControlBlocks",
+            label="Number of Control Blocks",
             description="Number of blocks with control for a REBUS poison search",
         ),
         setting.Setting(
@@ -521,7 +519,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0,
             label="Tight Coupling Iterations",
             description="Number of tight coupled physics iterations to occur at each "
-            "timestep.",
+            "timestep",
         ),
         setting.Setting(
             CONF_OPERATOR_LOCATION,
@@ -533,7 +531,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_OUTPUT_FILE_EXTENSION,
             default="jpg",
-            label="Plot file extension",
+            label="Plot File Extension",
             description="The default extension for plots",
             options=["jpg", "png", "svg", "pdf"],
         ),
@@ -546,19 +544,19 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_POWER,
             default=0.0,
-            label="Reactor Thermal Power (W)",
-            description="Nameplate thermal power of the reactor. Can be varied by "
-            "setting the powerFraction setting.",
+            label="Reactor Thermal Power",
+            description="Nameplate thermal power of the reactor in Watts. Can be varied by "
+            "setting the powerFractions setting.",
         ),
         setting.Setting(
-            CONF_REMOVE_PER_CYCLE, default=3, label="Move per cycle", description="None"
+            CONF_REMOVE_PER_CYCLE, default=3, label="Move per Cycle", description="None"
         ),
         setting.Setting(
             CONF_RUN_TYPE,
             default="Standard",
             label="Run Type",
             description="Type of run that this is, e.g. a normal run through all "
-            "cycles, a snapshot loaded rx. coefficient run, etc.",
+            "cycles, a snapshot-loaded reactivity coefficient run, etc.",
             options=["Standard", "Equilibrium", "Snapshots"],
         ),
         setting.Setting(
@@ -580,21 +578,21 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_SMALL_RUN,
             default=False,
-            label="Clean up Files at EOL",
+            label="Clean Up Files at EOL",
             description="Clean up intermediate files after the run completes (EOL)",
         ),
         setting.Setting(
             CONF_REALLY_SMALL_RUN,
             default=False,
-            label="Clean up Files at BOC",
+            label="Clean Up Files at BOC",
             description="Clean up files at the beginning of each cycle (BOC)",
         ),
         setting.Setting(
             CONF_STATIONARY_BLOCKS,
             default=[],
-            label="stationary Blocks",
-            description="blocks with these indices (int values) will not move in "
-            "moves.",
+            label="Stationary Blocks",
+            description="Blocks with these indices (int values) will not move in "
+            "moves",
         ),
         setting.Setting(
             CONF_TARGET_K,
@@ -606,8 +604,8 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_TRACK_ASSEMS,
             default=True,
-            label="Save discharged assems",
-            description="track assemblies for detailed fuel histories. Disable in case "
+            label="Save Discharged Assemblies",
+            description="Track assemblies for detailed fuel histories. Disable in case "
             "you get memory errors.",
         ),
         setting.Setting(
@@ -630,15 +628,15 @@ def defineSettings() -> List[setting.Setting]:
             CONF_ZONE_DEFINITIONS,
             default=[],
             label="Zone Definitions",
-            description="definitions of zones as lists of assembly locations (e.g. "
+            description="Definitions of zones as lists of assembly locations (e.g. "
             "'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used by "
-            "various summary and calculation routines",
+            "various summary and calculation routines.",
         ),
         setting.Setting(
             CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
             default=1e-05,
-            label="",
-            description="This is the limit of error in between the block's cross "
+            label="Acceptable Block Area Error",
+            description="The limit of error between a block's cross-"
             "sectional area and the reference block used during the assembly area "
             "consistency check",
         ),
@@ -655,70 +653,78 @@ def defineSettings() -> List[setting.Setting]:
             default=True,
             label="Split Zones",
             description="Automatically split defined zones further based on number of "
-            "blocks and assembly types.",
+            "blocks and assembly types",
         ),
         setting.Setting(
             CONF_INDEPENDENT_VARIABLES,
             default=[],
-            label="Indep. Vars",
-            description="List of (independentVarName, value) tuples to inform optimization post-processing.",
+            label="Independent Variables",
+            description="List of (independentVarName, value) tuples to inform "
+            "optimization post-processing",
         ),
         setting.Setting(
             CONF_HCF_CORETYPE,
             default="TWRC",
             label="Hot Channel Factor Set",
-            description="Switch to apply different sets of hot channel factors based  on design being analyzed",
+            description="Switch to apply different sets of hot channel factors based "
+            "on design being analyzed",
             options=["TWRC", "TWRP", "TWRC-HEX"],
         ),
         setting.Setting(
             CONF_LOOSE_COUPLING,
             default=False,
             label="Activate Loose Physics Coupling",
-            description="Update material densities and dimensions after running thermal-hydraulics. Note: Thermal-hydraulics calculation is needed to perform the loose physics coupling calculation.",
+            description="Update material densities and dimensions after running "
+            "thermal-hydraulics. Note: Thermal-hydraulics calculation is needed "
+            "to perform the loose physics coupling calculation.",
         ),
         setting.Setting(
             CONF_T_IN,
             default=360.0,
-            label="Inlet T (C)",
+            label="Inlet Temperature",
             description="The inlet temperature of the reactor in C",
         ),
         setting.Setting(
             CONF_T_OUT,
             default=510.0,
-            label="Outlet T (C)",
+            label="Outlet Temperature",
             description="The outlet temperature of the reactor in C",
         ),
         setting.Setting(
             CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD,
             default=False,
-            label="Temperatures from Input on DB Load",
-            description="when loading from a database, first set all component temperatures to the input temperatures. Required when a coupled TH case is being derived from a case without any coupled TH.",
+            label="Temperatures From Input on DB Load",
+            description="When loading from a database, first set all component "
+            "temperatures to the input temperatures. Required when a coupled TH "
+            "case is being derived from a case without any coupled TH.",
         ),
         setting.Setting(
             CONF_DEFERRED_INTERFACES_CYCLE,
             default=0,
             label="Deferred Interface Start Cycle",
-            description="The supplied list of interface names in deferredInterfaceNames will begin normal operations on this cycle number.",
+            description="The supplied list of interface names in deferredInterfaceNames"
+            " will begin normal operations on this cycle number",
         ),
         setting.Setting(
             CONF_DEFERRED_INTERFACE_NAMES,
             default=[],
             label="Deferred Interface Names",
-            description="Interfaces to delay the normal operations of for special circumstance problem avoidance",
+            description="Interfaces to delay the normal operations of for special "
+            "circumstance problem avoidance",
         ),
         setting.Setting(
             CONF_OUTPUT_CACHE_LOCATION,
             default="",
-            label="Location of output cache",
+            label="Location of Output Cache",
             description="Location where cached calculations are stored and "
             "retrieved if exactly the same as the calculation requested. Empty "
-            "string will not cache",
+            "string will not cache.",
             isEnvironment=True,
         ),
         setting.Setting(
             CONF_MATERIAL_NAMESPACE_ORDER,
             default=[],
-            label="Material namespace order",
+            label="Material Namespace Order",
             description=(
                 "Ordered list of Python namespaces for finding materials by class name. "
                 "This allows users to choose between different implementations of reactor "
