@@ -23,8 +23,8 @@ often from initial startup, through the various cycles, and out to
 the end of plant life.
 
 .. impl:: ARMI controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
-   :id: IMPL_1_0
-   :links: REQ_1
+   :id: IMPL_EVOLVING_STATE_0
+   :links: REQ_EVOLVING_STATE
 """
 import time
 import shutil

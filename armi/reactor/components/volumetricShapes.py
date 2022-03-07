@@ -16,8 +16,8 @@
 
 
 .. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_0_2_2
-   :links: REQ_0_2
+   :id: IMPL_REACTOR_SHAPES_2
+   :links: REQ_REACTOR_SHAPES
 
    Here ARMI implements its support for: Spheres, Cubes, Toruses, and more.
 """

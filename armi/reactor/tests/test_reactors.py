@@ -272,8 +272,8 @@ class HexReactorTests(ReactorTests):
         """Tests that the users definition of fuel blocks is preserved.
 
         .. test:: Tests that the users definition of fuel blocks is preserved.
-            :id: TEST_0_2
-            :links: REQ_0
+            :id: TEST_REACTOR_2
+            :links: REQ_REACTOR
         """
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
         self.assertEqual(numFuelBlocks, 3)
@@ -529,8 +529,8 @@ class HexReactorTests(ReactorTests):
         """Tests that the users definition of assemblies is preserved.
 
         .. test:: Tests that the users definition of assembilies is preserved.
-            :id: TEST_0_3
-            :links: REQ_0
+            :id: TEST_REACTOR_3
+            :links: REQ_REACTOR
         """
         nFuel = self.r.core.countAssemblies(Flags.FUEL)
         self.assertEqual(2, nFuel)

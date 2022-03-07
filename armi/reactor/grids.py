@@ -623,8 +623,8 @@ class Grid:
       indices. Thus we reduce the size of the unitSteps tuple accordingly.
 
     .. impl:: ARMI supports a number of structured mesh options.
-       :id: IMPL_0_3_0
-       :links: REQ_0_3
+       :id: IMPL_REACTOR_MESH_0
+       :links: REQ_REACTOR_MESH
     """
 
     def __init__(
@@ -1150,8 +1150,8 @@ class CartesianGrid(Grid):
         location is offset from the origin.
 
     .. impl:: ARMI supports a Cartesian mesh.
-       :id: IMPL_0_3_1
-       :links: REQ_0_3
+       :id: IMPL_REACTOR_MESH_1
+       :links: REQ_REACTOR_MESH
     """
 
     @classmethod
@@ -1389,8 +1389,8 @@ class HexGrid(Grid):
                 (-1, 0) ( 0,-1)
 
     .. impl:: ARMI supports a Hexagonal mesh.
-       :id: IMPL_0_3_2
-       :links: REQ_0_3
+       :id: IMPL_REACTOR_MESH_2
+       :links: REQ_REACTOR_MESH
     """
 
     @staticmethod
@@ -1760,8 +1760,8 @@ class ThetaRZGrid(Grid):
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
 
     .. impl:: ARMI supports an RZTheta mesh.
-       :id: IMPL_0_3_3
-       :links: REQ_0_3
+       :id: IMPL_REACTOR_MESH_3
+       :links: REQ_REACTOR_MESH
     """
 
     @staticmethod

@@ -197,8 +197,8 @@ class TestHexGrid(unittest.TestCase):
     """A set of tests for the Hexagonal Grid
 
     .. test: Tests of the Hexagonal grid.
-       :id: TEST_0_3_0
-       :link: REQ_0_3
+       :id: TEST_REACTOR_MESH_0
+       :link: REQ_REACTOR_MESH
     """
 
     def testPositions(self):
@@ -411,8 +411,8 @@ class TestThetaRZGrid(unittest.TestCase):
     """A set of tests for the RZTheta Grid
 
     .. test: Tests of the RZTheta grid.
-       :id: TEST_0_3_1
-       :link: REQ_0_3
+       :id: TEST_REACTOR_MESH_1
+       :link: REQ_REACTOR_MESH
     """
 
     def testPositions(self):
@@ -434,8 +434,8 @@ class TestCartesianGrid(unittest.TestCase):
     """A set of tests for the Cartesian Grid
 
     .. test: Tests of the Cartesian grid.
-       :id: TEST_0_3_2
-       :link: REQ_0_3
+       :id: TEST_REACTOR_MESH_2
+       :link: REQ_REACTOR_MESH
     """
 
     def testRingPosNoSplit(self):

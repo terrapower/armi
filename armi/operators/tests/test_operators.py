@@ -40,7 +40,7 @@ class InterfaceC(Interface):
     name = "Third"
 
 
-# TODO: Add a test that shows time evolution of Reactor (REQ_1)
+# TODO: Add a test that shows time evolution of Reactor (REQ_EVOLVING_STATE)
 class OperatorTests(unittest.TestCase):
     def test_addInterfaceSubclassCollision(self):
         self.cs = settings.Settings()

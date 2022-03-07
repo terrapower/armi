@@ -10,7 +10,7 @@ Functional Requirements
 
 
 .. req:: ARMI shall be able to represent a user-specified reactor.
-   :id: REQ_0
+   :id: REQ_REACTOR
    :status: implemented, needs more tests
 
    Given user input describing a reactor system, ARMI shall construct with equivalent
@@ -19,25 +19,25 @@ Functional Requirements
    thermo-mechanical properties), isotopic composition, and temperatures of the
    reactor.
 
-   .. req:: ARMI shall represent the reactor heirarchically.
-      :id: REQ_0_0
+   .. req:: ARMI shall represent the reactor hierarchically.
+      :id: REQ_REACTOR_HIERARCHY
       :status: completed
 
       To maintain consistency with the physical reactor being modeled, ARMI shall
-      maintain a heirarchical definition of its components. For example, all the
+      maintain a hierarchical definition of its components. For example, all the
       fuel pins in a single fuel assembly in a solid-fuel reactor shall be
       collected such that they can be queried or modified as a unit as well as
       individuals.
 
    .. req:: ARMI shall automatically handle thermal expansion.
-      :id: REQ_0_1
+      :id: REQ_REACTOR_THERMAL_EXPANSION
       :status: completed
 
       ARMI shall automatically compute and applied thermal expansion and contraction
       of materials.
 
    .. req:: ARMI shall support a reasonable set of basic shapes.
-      :id: REQ_0_2
+      :id: REQ_REACTOR_SHAPES
       :status: implemented, needs more tests
 
       ARMI shall support the following basic shapes: Hexagonal prism (ducts in fast
@@ -45,14 +45,14 @@ Functional Requirements
       (fuel pins, cladding, etc.), and helix (wire wrap).
 
    .. req:: ARMI shall support a number of structured mesh options.
-      :id: REQ_0_3
+      :id: REQ_REACTOR_MESH
       :status: completed
 
       ARMI shall support regular, repeating meshes in hexagonal, radial-zeta-theta (RZT),
       and Cartesian structures.
 
    .. req:: ARMI shall support the specification of symmetry options and boundary conditions.
-      :id: REQ_0_4
+      :id: REQ_REACTOR_BOUNDARIES
       :status: implemented, need impl/test
 
       ARMI shall support symmetric models including 1/4, 1/8 core models for Cartesian meshes
@@ -60,27 +60,27 @@ Functional Requirements
       symmetry plane (midplane) will be located at the top of the reactor.
 
    .. req:: ARMI shall check for basic correctness.
-      :id: REQ_0_5
+      :id: REQ_REACTOR_CORRECTNESS
       :status: implemented, need impl/test
 
       ARMI shall check its input for certain obvious errors including unphysical densities
       and proper fit.
 
    .. req:: ARMI shall allow for the definition of limited one-dimensional translation paths.
-      :id: REQ_0_6
+      :id: REQ_REACTOR_TRANSLATION
       :status: implemented, need impl/test
 
       ARMI shall allow the user specification of translation pathways for certain objects to
       follow, to support moving control mechanisms.
 
    .. req:: ARMI shall allow the definition of fuel management operations (i.e. shuffling)
-      :id: REQ_0_7
+      :id: REQ_REACTOR_SHUFFLING
       :status: implemented, need impl/test
 
       ARMI shall allow for the modeling of a reactor over multiple cycles.
 
 .. req:: ARMI shall represent and reflect the evolving state of a reactor.
-   :id: REQ_1
+   :id: REQ_EVOLVING_STATE
    :status: implemented, needs test
 
    The state shale be made available to users and modules, which may in turn modify the

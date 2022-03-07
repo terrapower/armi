@@ -208,8 +208,8 @@ class TestShapedComponent(TestGeneralComponents):
         """Test that when we thermally expand any arbirtray shape, mass is conserved
 
         .. test:: Test that ARMI can thermally expand any arbitrary shape.
-           :id: TEST_0_1_0
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_0
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         if not self.component.THERMAL_EXPANSION_DIMS:
             return
@@ -298,8 +298,8 @@ class TestCircle(TestShapedComponent):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
         .. test:: Test that ARMI correctly thermally expands objects with circular shape.
-           :id: TEST_0_1_1
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_1
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         hotTemp = 700.0
         dLL = self.component.material.linearExpansionFactor(
@@ -319,8 +319,8 @@ class TestCircle(TestShapedComponent):
         """Test that ARMI can thermally expands a circle
 
         .. test:: Test that ARMI can thermally expands a circle
-           :id: TEST_0_1_2
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_2
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -436,8 +436,8 @@ class TestTriangle(TestShapedComponent):
         """Test that ARMI can thermally expands a triangle
 
         .. test:: Test that ARMI can thermally expands a triangle
-           :id: TEST_0_1_3
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_3
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -500,8 +500,8 @@ class TestRectangle(TestShapedComponent):
         """Test that ARMI can thermally expands a rectangle
 
         .. test:: Test that ARMI can thermally expands a rectangle
-           :id: TEST_0_1_4
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_4
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -546,8 +546,8 @@ class TestSolidRectangle(TestShapedComponent):
         """Test that ARMI can thermally expands a solid rectangle
 
         .. test:: Test that ARMI can thermally expands a solid rectangle
-           :id: TEST_0_1_5
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_5
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -604,8 +604,8 @@ class TestSquare(TestShapedComponent):
         """Test that ARMI can thermally expands a square
 
         .. test:: Test that ARMI can thermally expands a square
-           :id: TEST_0_1_6
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_6
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -669,8 +669,8 @@ class TestCube(TestShapedComponent):
         """Test that ARMI can thermally expands a cube
 
         .. test:: Test that ARMI can thermally expands a cube
-           :id: TEST_0_1_7
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_7
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -703,8 +703,8 @@ class TestHexagon(TestShapedComponent):
         """Test that ARMI can thermally expands a hexagon
 
         .. test:: Test that ARMI can thermally expands a hexagon
-           :id: TEST_0_1_8
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_8
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -747,8 +747,8 @@ class TestHoledHexagon(TestShapedComponent):
         """Test that ARMI can thermally expands a holed hexagon
 
         .. test:: Test that ARMI can thermally expands a holed hexagon
-           :id: TEST_0_1_9
-           :links: REQ_0_1
+           :id: TEST_REACTOR_THERMAL_EXPANSION_9
+           :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
