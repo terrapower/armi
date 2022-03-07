@@ -2,8 +2,6 @@
 Software Requirement Specification Document (SRSD)
 **************************************************
 
-Work In Progress: The ARMI Requirements are thus-far incomplete.
-
 -----------------------
 Functional Requirements
 -----------------------
@@ -52,7 +50,7 @@ Functional Requirements
       and Cartesian structures.
 
    .. req:: ARMI shall support the specification of symmetry options and boundary conditions.
-      :id: REQ_REACTOR_BOUNDARIES
+      :id: REQ_REACTOR_4
       :status: implemented, need impl/test
 
       ARMI shall support symmetric models including 1/4, 1/8 core models for Cartesian meshes
@@ -60,27 +58,27 @@ Functional Requirements
       symmetry plane (midplane) will be located at the top of the reactor.
 
    .. req:: ARMI shall check for basic correctness.
-      :id: REQ_REACTOR_CORRECTNESS
+      :id: REQ_REACTOR_5
       :status: implemented, need impl/test
 
       ARMI shall check its input for certain obvious errors including unphysical densities
       and proper fit.
 
    .. req:: ARMI shall allow for the definition of limited one-dimensional translation paths.
-      :id: REQ_REACTOR_TRANSLATION
+      :id: REQ_REACTOR_6
       :status: implemented, need impl/test
 
       ARMI shall allow the user specification of translation pathways for certain objects to
       follow, to support moving control mechanisms.
 
    .. req:: ARMI shall allow the definition of fuel management operations (i.e. shuffling)
-      :id: REQ_REACTOR_SHUFFLING
+      :id: REQ_REACTOR_7
       :status: implemented, need impl/test
 
       ARMI shall allow for the modeling of a reactor over multiple cycles.
 
 .. req:: ARMI shall represent and reflect the evolving state of a reactor.
-   :id: REQ_EVOLVING_STATE
+   :id: REQ_1
    :status: implemented, needs test
 
    The state shale be made available to users and modules, which may in turn modify the

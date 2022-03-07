@@ -2,6 +2,8 @@
 Requirements
 ############
 
+.. note:: Work In Progress: The ARMI Requirements are thus-far incomplete.
+
 This section gives a general overview of the requirements of ARMI. These requirements
 are meant to satisfy NRC regulations and also give a firm basis for the high-level
 goals of ARMI.
