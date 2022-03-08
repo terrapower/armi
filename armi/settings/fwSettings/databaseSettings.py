@@ -33,9 +33,9 @@ def defineSettings():
             CONF_DB,
             default=True,
             label="Activate Database",
-            description="Write the state information to a database at every timestep.",
+            description="Write the state information to a database at every timestep",
         ),
-        setting.Setting(CONF_DEBUG_DB, default=False, label="Debug DB"),
+        setting.Setting(CONF_DEBUG_DB, default=False, label="Debug Database"),
         setting.Setting(
             CONF_RELOAD_DB_NAME,
             default="",
@@ -52,28 +52,30 @@ def defineSettings():
         setting.Setting(
             CONF_DB_STORAGE_AFTER_CYCLE,
             default=0,
-            label="DB Storage After Cycle",
-            description="Only store cycles after this cycle in the DB (to save storage space)",
+            label="Database Storage After Cycle",
+            description="Only store cycles after this cycle in the database (to "
+            "save storage space)",
         ),
         setting.Setting(
             CONF_ZERO_OUT_NUCLIDES_NOT_IN_DB,
             default=True,
-            label="Load Nuclides not in Database",
-            description="If a nuclide was added to the problem after a previous case was run, deactivate this to let it survive in a restart run",
+            label="Load Nuclides Not in Database",
+            description="If a nuclide was added to the problem after a previous case"
+            " was run, deactivate this to let it survive in a restart run",
         ),
         setting.Setting(
             CONF_SYNC_AFTER_WRITE,
             default=False,
-            label="Sync DB after write",
+            label="Sync Database After Write",
             description=(
-                "Copy the output DB from the fast scratch space to the shared network drive "
-                "after each write."
+                "Copy the output database from the fast scratch space to the shared "
+                "network drive after each write."
             ),
         ),
         setting.Setting(
             CONF_FORCE_DB_PARAMS,
             default=[],
-            label="Force database write of parameters",
+            label="Force Database Write of Parameters",
             description=(
                 "A list of parameter names that should always be written to the "
                 "database, regardless of their Parameter Definition's typical saveToDB "
