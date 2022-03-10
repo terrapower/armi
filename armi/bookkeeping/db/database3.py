@@ -327,7 +327,9 @@ class DatabaseInterface(interfaces.Interface):
             self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])
         self.loadState(dbCycle, dbNode)
 
-    def _getLoadDB(self, fileName):
+    def _getLoadDB(
+        self, fileName
+    ):  # TODO: I don't see an order here, or any reason for yield.
         """
         Return the database to load from in order of preference.
 
@@ -336,17 +338,19 @@ class DatabaseInterface(interfaces.Interface):
         If filename is present only returns one database since specifically instructed
         to load from that database.
         """
-        if fileName is not None:
+        if fileName is not None:  # TODO: fileName=None is apparently an option here?
             # only yield 1 database if the file name is specified
             if self._db is not None and fileName == self._db._fileName:
                 yield self._db
             elif os.path.exists(fileName):
                 yield Database3(fileName, "r")
+            # TODO: You CAN drop off the end here.
         else:
             if self._db is not None:
                 yield self._db
             if os.path.exists(self.cs["reloadDBName"]):
                 yield Database3(self.cs["reloadDBName"], "r")
+            # TODO: You CAN drop off the end here.
 
     def loadState(
         self, cycle, timeNode, timeStepName="", fileName=None, updateGlobalAssemNum=True
@@ -367,8 +371,8 @@ class DatabaseInterface(interfaces.Interface):
             `cs["reloadDBName"]` have the time step specified.
         """
 
-        for potentialDatabase in self._getLoadDB(fileName):
-            with potentialDatabase as loadDB:
+        for potentialDatabase in self._getLoadDB(fileName):  # TODO: Is this wise?
+            with potentialDatabase as loadDB:  # TODO: Does this line to any good?
                 if loadDB.hasTimeStep(cycle, timeNode, statePointName=timeStepName):
                     newR = loadDB.load(
                         cycle,
@@ -1095,6 +1099,9 @@ class Database3(database.Database):
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
         root = comps[0][0]
+
+        # TODO: Testing
+        updateGlobalAssemblyNum(root)
         return root  # usually reactor object
 
     @staticmethod
