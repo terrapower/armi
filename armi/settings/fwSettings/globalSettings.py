@@ -684,7 +684,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Independent Variables",
             description="List of (independentVarName, value) tuples to inform "
             "optimization post-processing",
-            schema=vol.Schema([vol.All((), vol.Length(2))]),
+            schema=vol.Schema([vol.All(tuple, vol.Length(min=2, max=2))]),
         ),
         setting.Setting(
             CONF_HCF_CORETYPE,
