@@ -100,11 +100,6 @@ class TestSchema(unittest.TestCase):
                 "invalid": 0,
                 "error": vol.error.RangeInvalid,
             },
-            "independentVariables": {
-                "valid": [("length", "two"), ("length", "two")],
-                "invalid": [("too", "many", "entries")],
-                "error": vol.error.MultipleInvalid,
-            },
             "Tin": {"valid": -272, "invalid": -274, "error": vol.error.RangeInvalid},
             "Tout": {"valid": -272, "invalid": -274, "error": vol.error.RangeInvalid},
             "dbStorageAfterCycle": {
