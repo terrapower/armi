@@ -18,7 +18,7 @@ Just try to be as clear as possible, while using as few words as possible.
 
 .. important ::
     Most of the guidelines can be broken, but all deviations need to be justified. It is up to the code reviewers
-    to determine whether the justification was adequate..
+    to determine whether the justification was adequate.
 
     Developers and reviewers should consult the standards/guidelines while writing and reviewing code to ensure
     consistency. Code reviewers should make sure to be familiar with the standards, so that their comments are
@@ -31,7 +31,7 @@ it is important to remember to us the ``black`` formatter before pushing any cod
 to ARMI on github.com will be automatically checked to see if they conform to the ``black`` code formatter standards.
 
 The ``black`` formatter provides 100% consistency in ARMI for: whitespace, line length, trailing commas, and string
-formatting .
+formatting.
 
 Remove commented-out code
 =========================
@@ -161,7 +161,7 @@ Other names are also consistently used throughout ARMI for specific objects:
 
 Break large methods into operative sections.
 ============================================
-A method should one clear purpose. If you are writing a method that does one thing after the other,
+A method should have one clear purpose. If you are writing a method that does one thing after the other,
 break it up into multiple methods and have a primary method call them in order. If your method is longer
 than 100 lines, see if you can't break it up. This does a few things:
 
