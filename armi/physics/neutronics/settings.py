@@ -342,7 +342,7 @@ def defineSettings():
     return settings
 
 
-## OLD STYLE settings rules from settingsRules.py. Prefer validators moving forward.
+# OLD STYLE settings rules from settingsRules.py. Prefer validators moving forward.
 
 
 @include_as_rule("genXS")

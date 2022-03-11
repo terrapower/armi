@@ -61,10 +61,7 @@ class TestReport(unittest.TestCase):
         self.assertEqual(filled_instance["banana_3"], ["sundae", "chocolate"])
 
     def test_printReports(self):
-        """testing testing
-
-        :ref:`REQ86d884bb-6133-4078-8804-5a334c935338`
-        """
+        """testing printReports method"""
         repInt = reportInterface.ReportInterface(None, None)
         rep = repInt.printReports()
 

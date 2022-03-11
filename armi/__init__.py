@@ -306,7 +306,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     app = app or apps.App()
 
     if _app is not None:
-        if permissive and type(_app) is type(app):
+        if permissive and isinstance(app, apps.App):
             return
         else:
             raise RuntimeError(

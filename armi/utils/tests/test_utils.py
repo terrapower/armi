@@ -15,12 +15,14 @@
 r""" Testing some utility functions
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
-import unittest
+from collections import defaultdict
 import math
+import unittest
 
 import numpy as np
 
 from armi import utils
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.utils import directoryChangers
 
 
@@ -120,6 +122,32 @@ class TestGeneralUtils(unittest.TestCase):
             utils.plotMatrix(matrix, fname, show=True, title="plot")
             utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
             utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
+
+    def test_classesInHierarchy(self):
+        """Tests the classesInHierarchy utility
+
+        .. test:: Tests that the Reactor is stored heirarchically
+           :id: TEST_REACTOR_HIERARCHY_0
+           :links: REQ_REACTOR_HIERARCHY
+
+           This test shows that the Blocks and Assemblies are stored
+           heirarchically inside the Core, which is inside the Reactor object.
+        """
+        # load the test reactor
+        o, r = loadTestReactor()
+
+        # call the `classesInHierarchy` function
+        classCounts = defaultdict(lambda: 0)
+        utils.classesInHierarchy(r, classCounts, None)
+
+        # validate the `classesInHierarchy` function
+        self.assertGreater(len(classCounts), 30)
+        self.assertEqual(classCounts[type(r)], 1)
+        self.assertEqual(classCounts[type(r.core)], 1)
+
+        # further validate the Reactor heirarchy is in place
+        self.assertGreater(len(r.core.getAssemblies()), 50)
+        self.assertGreater(len(r.core.getBlocks()), 200)
 
 
 if __name__ == "__main__":
