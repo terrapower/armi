@@ -14,6 +14,8 @@
 
 """Settings related to the ARMI database."""
 
+import voluptuous as vol
+
 from armi.settings import setting
 
 
@@ -55,6 +57,7 @@ def defineSettings():
             label="Database Storage After Cycle",
             description="Only store cycles after this cycle in the database (to "
             "save storage space)",
+            schema=vol.Range(min=0),
         ),
         setting.Setting(
             CONF_ZERO_OUT_NUCLIDES_NOT_IN_DB,
