@@ -14,6 +14,8 @@
 
 """Settings related to the report generation."""
 
+import voluptuous as vol
+
 from armi.settings import setting
 
 
@@ -59,6 +61,7 @@ def defineSettings():
             label="Timer Cutoff",
             description="Timers who are not active for this percent of the run will "
             "not be presented in the timeline graphic",
+            schema=vol.Range(min=0, max=100),
         ),
     ]
     return settings
