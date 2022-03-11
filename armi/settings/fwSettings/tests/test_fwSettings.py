@@ -59,6 +59,11 @@ class TestSchema(unittest.TestCase):
                 "invalid": [0, 1],
                 "error": vol.error.AnyInvalid,
             },
+            "decayConstants": {
+                "valid": [1, 1],
+                "invalid": (1, 1),
+                "error": vol.error.AnyInvalid,
+            },
             "buGroups": {
                 "valid": [1, 5],
                 "invalid": [-1, 200],
