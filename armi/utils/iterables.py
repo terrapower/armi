@@ -193,7 +193,7 @@ class Sequence:
     ...        i += 1
     ...
     >>> s = Sequence(counter()).select(lambda i: i < 10)
-    >>> tuple(s)  ## DON'T DO THIS!
+    >>> tuple(s)  # DON'T DO THIS!
 
     Although the result should be (0,1,2,3,4,5,6,7,8,9), the select method is not
     smart enough to know that it's a terminal condition and will continue to

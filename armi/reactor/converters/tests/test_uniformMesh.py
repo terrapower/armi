@@ -15,8 +15,8 @@
 """
 Tests for the uniform mesh geometry converter
 """
-import unittest
 import random
+import unittest
 
 import numpy
 
@@ -37,7 +37,8 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        random.seed(987324987234)  # so it's always the same
+        # random seed to support random mesh in unit tests below
+        random.seed(987324987234)
         cls.o, cls.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
@@ -51,9 +52,6 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.converter._sourceReactor = self.r
 
     def test_computeAverageAxialMesh(self):
-        """
-        :req:`REQ5cabd0da-b92d-4bc1-b653-8c2139697582`
-        """
         refMesh = self.r.core.findAllAxialMeshPoints(
             [self.r.core.getFirstAssembly(Flags.FUEL)]
         )[1:]

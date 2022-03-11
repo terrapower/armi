@@ -383,7 +383,7 @@ def writeCycleSummary(core):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    ## would io be worth considering for this?
+    # would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
     runLog.important("Cycle {0} Summary:".format(cycle))
@@ -583,7 +583,7 @@ def summarizePower(core):
 
     # calculate total power
     tot = sum(sums.values()) or float("inf")
-    ## NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
+    # NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
 
     runLog.important("Power summary")
     for atype, val in sums.items():
@@ -870,7 +870,6 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     )
 
 
-## Block Design Report
 def makeBlockDesignReport(r):
     r"""Summarize the block designs from the loading file
 
