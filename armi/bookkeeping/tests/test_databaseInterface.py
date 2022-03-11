@@ -256,6 +256,7 @@ class TestDatabaseReading(unittest.TestCase):
     # TODO: This passes. Whoops.
     def test_growToFullCoreFromFactory(self):
         from armi.bookkeeping.db import databaseFactory
+
         db = databaseFactory(self.dbName, "r")
         with db:
             r = db.load(1, 0)
