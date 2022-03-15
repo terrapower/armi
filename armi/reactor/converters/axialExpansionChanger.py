@@ -348,15 +348,33 @@ class ExpansionData:
             self.expansionFactors[c] = p
 
     def _mapTempToComponent(self, c):
-        if c.hasFlags(Flags.FUEL) or c.hasFlags(Flags.SHIELD):
+        if (
+            c.hasFlags(Flags.FUEL)
+            or c.hasFlags(Flags.SHIELD)
+        ):
             temp = c.parent.p.THTfuelCL
-        elif c.hasFlags(Flags.CLAD):
+        elif (
+            c.hasFlags(Flags.CLAD)
+            or c.hasFlags(Flags.WIRE)
+        ):
             temp = c.parent.p.THaverageCladTemp
-        elif c.hasFlags(Flags.DUCT) or c.hasFlags(Flags.HANDLING_SOCKET):
+        elif (
+            c.hasFlags(Flags.DUCT)
+            or c.hasFlags(Flags.HANDLING_SOCKET)
+            or c.hasFlags(Flags.GRID_PLATE)
+            or c.hasFlags(Flags.INLET_NOZZLE)
+        ):
             temp = c.parent.p.THaverageDuctTemp
-        elif c.hasFlags(Flags.COOLANT) or c.hasFlags(Flags.INTERCOOLANT):
+        elif (
+            c.hasFlags(Flags.COOLANT)
+            or c.hasFlags(Flags.INTERCOOLANT)
+            or c.hasFlags(Flags.BOND)
+        ):
             temp = c.parent.p.THcoolantStaticT
-        elif c.hasFlags(Flags.PLENUM):
+        elif (
+            c.hasFlags(Flags.PLENUM)
+            or c.hasFlags(Flags.GAP)
+        ):
             temp = c.parent.p.THaverageGapTemp
         else:
             raise ValueError(
