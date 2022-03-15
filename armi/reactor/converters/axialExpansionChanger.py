@@ -149,21 +149,22 @@ class AxialExpansionChanger:
 
         return cVolumes
 
-    def mapHotTempToBlocks(self, temp: object, idt: int):
+    def mapHotTempToBlocks(self, temp_grid, temp_field):
         """map axial temp distribution to blocks in assembly
 
         Parameters
         ----------
-        temp
-            Temperature class object
-        idt : integer
-            temp index (synonomous to time step)
+        temp_grid : numpy array
+            axial temperature grid (i.e., physical locations where temp is stored)
+        temp_field : numpy array
+            temperature values along grid
 
         Notes
         -----
         - maps the radially uniform axial temperature distribution to blocks
         - searches for temperatures that fall within the bounds of a block,
           averages them, and assigns them as appropriate
+        - temp_grid and temp_field must be same length
 
         Raises
         ------
@@ -172,9 +173,9 @@ class AxialExpansionChanger:
         """
         for b in self._linked.a:
             tmpMapping = []
-            for idz, z in enumerate(temp.temp_grid):
+            for idz, z in enumerate(temp_grid):
                 if b.p.zbottom <= z <= b.p.ztop:
-                    tmpMapping.append(temp.temperature_field[idt][idz])
+                    tmpMapping.append(temp_field[idz])
                 if z > b.p.ztop:
                     break
 
