@@ -15,16 +15,137 @@
 """Test axialExpansionChanger"""
 
 import unittest
-from numpy import linspace, ones
-
-# from armi.reactor.tests.test_reactors import loadTestReactor
-# from armi.tests import TEST_ROOT
+from numpy import linspace, ones, array, vstack
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape
 from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.flags import Flags
+
+class TestConservation(unittest.TestCase):
+    """verify that conservation is maintained in assembly-level axial expansion"""
+
+    Steel_Component_Lst = [
+        Flags.DUCT,
+        Flags.GRID_PLATE,
+        Flags.HANDLING_SOCKET,
+        Flags.INLET_NOZZLE,
+        Flags.CLAD,
+        Flags.WIRE,
+        Flags.ACLP,
+        Flags.GUIDE_TUBE,
+    ]
+
+    def setUp(self):
+        self._converterSettings = {}
+        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.a = self.r.core.refAssem
+        self.obj = AxialExpansionChanger(self._converterSettings)
+        self.obj.setAssembly(self.a)
+
+        # initialize class variables for conservation checks
+        self.massAndDens = {}
+        self.steelMass = []
+        self.blockHeights = {}
+        self.oldMass = {}
+        for b in self.a:
+            self.oldMass[b.name] = 0.0
+
+        # do the expansion and store mass and density info
+        coldTemp = 1.0
+        hotInletTemp = 1000.0
+        temp_grid = linspace(0.0, self.a.getTotalHeight())
+        temp_field = coldTemp * ones(len(temp_grid))
+        self.tempSteps = 100
+        for idt in range(self.tempSteps):
+            self.obj.mapHotTempToBlocks(temp_grid, temp_field)
+            self.obj.expansionData.computeThermalExpansionFactors()
+            self.obj.axiallyExpandAssembly()
+            self.getConservationMetrics()
+            # increment temperature
+            temp_field = (
+                coldTemp
+                + (idt + 1) / (self.tempSteps / 3) * temp_grid
+                + (hotInletTemp - coldTemp) * (idt + 1) / self.tempSteps
+            )
+
+    def test_TargetComponentMassConservation(self):
+        """tests mass conservation for target components"""
+        for idt in range(self.tempSteps):
+            for b in self.a[:-1]:  # skip the dummy sodium block
+                if idt != 0:
+                    self.assertAlmostEqual(
+                        self.oldMass[b.name],
+                        self.massAndDens[b.name][idt][0],
+                        places=7,
+                        msg="Conservation of Mass Failed on time step {0:d}, block name {1:s},\
+                            with old mass {2:.7e}, and new mass {3:.7e}.".format(
+                            idt,
+                            b.name,
+                            self.oldMass[b.name],
+                            self.massAndDens[b.name][idt][0],
+                        ),
+                    )
+                self.oldMass[b.name] = self.massAndDens[b.name][idt][0]
+
+    def test_SteelConservation(self):
+        """tests mass conservation for total assembly steel
+
+        Component list defined by, Steel_Component_List, in GetSteelMass()
+        """
+        for idt in range(self.tempSteps - 1):
+            self.assertAlmostEqual(
+                self.steelMass[idt],
+                self.steelMass[idt + 1],
+                places=7,
+                msg="Conservation of steel mass failed on time step {0:d}".format(idt),
+            )
+
+    def getConservationMetrics(self):
+        """retrieves and stores various conservation metrics
+
+        - useful for verification and unittesting
+        - Finds and stores:
+            1. mass and density of target components
+            2. mass of assembly steel
+            3. block heights
+        """
+        mass = 0.0
+        for b in self.a:
+            for c in b:
+                ## store mass and density of target component
+                if self.obj.expansionData.isTargetComponent(c):
+                    self._storeTargetComponentMassAndDensity(c)
+                ## store steel mass for assembly
+                if c.p.flags in self.Steel_Component_Lst:
+                    mass += c.getMass()
+
+            # store block heights
+            tmp = array([b.p.zbottom, b.p.ztop, b.p.height, b.getVolume()])
+            if b.name not in self.blockHeights:
+                self.blockHeights[b.name] = tmp
+            else:
+                self.blockHeights[b.name] = vstack((self.blockHeights[b.name], tmp))
+
+        self.steelMass.append(mass)
+
+    def _storeTargetComponentMassAndDensity(self, c):
+        tmp = array(
+            [
+                c.getMass(),
+                c.material.getProperty("density", c.temperatureInK),
+            ]
+        )
+        if c.parent.name not in self.massAndDens:
+            self.massAndDens[c.parent.name] = tmp
+        else:
+            self.massAndDens[c.parent.name] = vstack(
+                (self.massAndDens[c.parent.name], tmp)
+            )
 
 
 class TestExceptions(unittest.TestCase):
@@ -73,7 +194,7 @@ class TestExceptions(unittest.TestCase):
                 self.obj.mapHotTempToBlocks(temp_grid, temp_field)
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
-                # increament temperature
+                # increment temperature
                 temp_field = (
                     coldTemp
                     + (idt + 1) / (tempSteps / 3) * temp_grid
