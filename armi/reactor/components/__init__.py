@@ -158,10 +158,6 @@ class UnshapedComponent(Component):
         """
         return self.p.area
 
-    def setArea(self, val):
-        self.p.area = val
-        self.clearCache()
-
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """
         Approximate it as circular and return the radius.
