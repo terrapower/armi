@@ -223,7 +223,7 @@ class TestUnshapedComponent(TestGeneralComponents):
 
         coldComponent = self.setUp(
             UnshapedComponent(
-                name='coldComponent',
+                name="coldComponent",
                 material=self.componentMaterial,
                 Tinput=self.component.inputTemperatureInC,
                 Thot=self.component.inputTemperatureInC,
