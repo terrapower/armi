@@ -49,7 +49,7 @@ class Base(unittest.TestCase):
         self.steelMass = []
         self.blockHeights = {}
 
-    def getConservationMetrics(self, a):
+    def _getConservationMetrics(self, a):
         """retrieves and stores various conservation metrics
 
         - useful for verification and unittesting
@@ -123,9 +123,9 @@ class Temperature:
         self.tempSteps = tempSteps
         self.tempGrid = linspace(0.0, L, num=numTempGridPts)
         self.tempField = zeros((tempSteps, numTempGridPts))
-        self.generateTempField(coldTemp, hotInletTemp, uniform)
+        self._generateTempField(coldTemp, hotInletTemp, uniform)
 
-    def generateTempField(self, coldTemp, hotInletTemp, uniform):
+    def _generateTempField(self, coldTemp, hotInletTemp, uniform):
         """
         generate temperature field and grid
 
@@ -162,7 +162,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         )
 
         # get the right/expected answer
-        self.generateComponentWiseExpectedHeight()
+        self._generateComponentWiseExpectedHeight()
 
         # do the axial expansion
         self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
@@ -170,7 +170,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
             self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt, :])
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
-            self.getConservationMetrics(self.a)
+            self._getConservationMetrics(self.a)
             self.axialMeshLocs[idt, :] = self.a.getAxialMesh()
 
     def test_AssemblyAxialExpansionHeight(self):
@@ -205,7 +205,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
                     ),
                 )
 
-    def generateComponentWiseExpectedHeight(self):
+    def _generateComponentWiseExpectedHeight(self):
         """calculate the expected height, external of AssemblyAxialExpansion()"""
         assem = buildTestAssemblyWithFakeMaterial(name="Fake")
         aveBlockTemp = zeros((len(assem), self.temp.tempSteps))
@@ -216,7 +216,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         for idt in range(self.temp.tempSteps):
             # get average block temp
             for ib in range(len(assem)):
-                aveBlockTemp[ib, idt] = self.getAveTemp(ib, idt, assem)
+                aveBlockTemp[ib, idt] = self._getAveTemp(ib, idt, assem)
             # get block ztops
             for ib, b in enumerate(assem[:-1]):
                 if ib > 0:
@@ -233,7 +233,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
                 b.p.height = b.p.ztop - b.p.zbottom
                 self.trueHeight[ib, idt] = b.p.height
 
-    def getAveTemp(self, ib, idt, assem):
+    def _getAveTemp(self, ib, idt, assem):
         tmpMapping = []
         for idz, z in enumerate(self.temp.tempGrid):
             if assem[ib].p.zbottom <= z <= assem[ib].p.ztop:
@@ -266,7 +266,7 @@ class TestConservation(Base, unittest.TestCase):
             self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt, :])
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
-            self.getConservationMetrics(self.a)
+            self._getConservationMetrics(self.a)
 
     def test_TargetComponentMassConservation(self):
         """tests mass conservation for target components"""
