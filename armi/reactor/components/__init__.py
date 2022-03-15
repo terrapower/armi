@@ -165,7 +165,7 @@ class UnshapedComponent(Component):
         This is the smallest it can possibly be. Since this is used to determine
         the outer component, it will never be allowed to be the outer one.
         """
-        return math.sqrt(self.p.area / math.pi)
+        return 2 * math.sqrt(self.p.area / math.pi)
 
     @staticmethod
     def fromComponent(otherComponent):

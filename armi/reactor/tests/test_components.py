@@ -193,7 +193,7 @@ class TestUnshapedComponent(TestGeneralComponents):
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "area": math.pi}
 
     def test_getBoundingCircleOuterDiameter(self):
-        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 1.0)
+        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 2.0)
 
     def test_fromComponent(self):
         circle = components.Circle("testCircle", "Material", 25, 25, 1.0)
