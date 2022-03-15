@@ -27,6 +27,7 @@ from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 
+
 class Base(unittest.TestCase):
     """common methods and variables for unit tests"""
 
@@ -47,7 +48,7 @@ class Base(unittest.TestCase):
         self.massAndDens = {}
         self.steelMass = []
         self.blockHeights = {}
-    
+
     def getConservationMetrics(self, a):
         """retrieves and stores various conservation metrics
 
@@ -75,7 +76,7 @@ class Base(unittest.TestCase):
                 self.blockHeights[b.name] = vstack((self.blockHeights[b.name], tmp))
 
         self.steelMass.append(mass)
-    
+
     def _storeTargetComponentMassAndDensity(self, c):
         tmp = array(
             [
@@ -90,11 +91,18 @@ class Base(unittest.TestCase):
                 (self.massAndDens[c.parent.name], tmp)
             )
 
+
 class Temperature:
     """create and store temperature grid/field"""
 
     def __init__(
-        self, L, coldTemp=25.0, hotInletTemp=360.0, numTempGridPts=25, tempSteps=100, uniform=False,
+        self,
+        L,
+        coldTemp=25.0,
+        hotInletTemp=360.0,
+        numTempGridPts=25,
+        tempSteps=100,
+        uniform=False,
     ):
         """
         Parameters
@@ -137,15 +145,16 @@ class Temperature:
                 )
         else:
             tmp = linspace(coldTemp, hotInletTemp, self.tempSteps)
-            for i in range(1,self.tempSteps):
+            for i in range(1, self.tempSteps):
                 self.tempField[i, :] = tmp[i]
 
-class TestAxialExpansionHeight(Base,unittest.TestCase):
+
+class TestAxialExpansionHeight(Base, unittest.TestCase):
     """verify that test assembly is expanded correctly"""
 
     def setUp(self):
         Base.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name='Fake')
+        self.a = buildTestAssemblyWithFakeMaterial(name="Fake")
         self.obj.setAssembly(self.a)
 
         self.temp = Temperature(
@@ -158,7 +167,7 @@ class TestAxialExpansionHeight(Base,unittest.TestCase):
         # do the axial expansion
         self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
         for idt in range(self.temp.tempSteps):
-            self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt,:])
+            self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt, :])
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
             self.getConservationMetrics(self.a)
@@ -234,6 +243,7 @@ class TestAxialExpansionHeight(Base,unittest.TestCase):
 
         return mean(tmpMapping)
 
+
 class TestConservation(Base, unittest.TestCase):
     """verify that conservation is maintained in assembly-level axial expansion"""
 
@@ -253,7 +263,7 @@ class TestConservation(Base, unittest.TestCase):
             self.a.getTotalHeight(), coldTemp=1.0, hotInletTemp=1000.0
         )
         for idt in range(self.temp.tempSteps):
-            self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt,:])
+            self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt, :])
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
             self.getConservationMetrics(self.a)
@@ -296,7 +306,7 @@ class TestExceptions(Base, unittest.TestCase):
 
     def setUp(self):
         Base.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name='FakeException')
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeException")
         self.obj.setAssembly(self.a)
 
     def test_setExpansionFactors(self):
@@ -371,7 +381,7 @@ class TestExceptions(Base, unittest.TestCase):
 
 def buildTestAssemblyWithFakeMaterial(name):
     """Create test assembly consisting of list of fake material
-    
+
     Parameters
     ----------
     name : string
