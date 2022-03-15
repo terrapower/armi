@@ -242,6 +242,7 @@ def getAssemblyParameterDefinitions():
             "crCurrentHeight",
             units="cm",
             description="The current height of the bottom of the control material from the 0 point in the reactor model",
+            categories=[parameters.Category.assignInBlueprints],
         )
 
         pb.defParam(
@@ -255,6 +256,7 @@ def getAssemblyParameterDefinitions():
             "crRodLength",
             units="cm",
             description="length of the control material within the control rod",
+            categories=[parameters.Category.assignInBlueprints],
         )
 
         pb.defParam(
