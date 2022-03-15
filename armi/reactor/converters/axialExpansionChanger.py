@@ -172,9 +172,7 @@ class AxialExpansionChanger:
             if no temperature points found within a block
         """
         if len(temp_grid) != len(temp_field):
-            runLog.error(
-                "temp_grid and temp_field must have the same length."
-            )
+            runLog.error("temp_grid and temp_field must have the same length.")
             raise RuntimeError
 
         for b in self._linked.a:
