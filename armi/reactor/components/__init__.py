@@ -118,6 +118,9 @@ class UnshapedComponent(Component):
     A component with undefined dimensions.
 
     Useful for situations where you just want to enter the area directly.
+    For instance, in filler situations where the exact shape of this component is
+    is unknown but you have some left-over space between other components filled
+    with a known material you might need to model.
     """
 
     pDefs = componentParameters.getUnshapedParameterDefinitions()
@@ -154,7 +157,7 @@ class UnshapedComponent(Component):
         Parameters
         ----------
         cold : bool, optional
-            Compute the area with as-input dimensions instead of thermally-expanded
+            Ignored for this component
         """
         coldArea = self.p.area
         if cold:

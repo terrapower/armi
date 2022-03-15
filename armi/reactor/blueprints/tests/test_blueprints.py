@@ -45,7 +45,6 @@ class TestBlueprints(unittest.TestCase):
 
     TODO: see the above note, and try to test blueprints on a wider range of input
     files, touching on each failure case.
-
     """
 
     @classmethod
@@ -65,7 +64,12 @@ class TestBlueprints(unittest.TestCase):
         cls.directoryChanger.close()
 
     def test_nuclides(self):
-        """Tests the available sets of nuclides work as expected"""
+        """Tests the available sets of nuclides work as expected
+
+        .. test:: Tests that users can define their nuclides of interest.
+            :id: TEST_REACTOR_0
+            :links: REQ_REACTOR
+        """
         actives = set(self.blueprints.activeNuclides)
         inerts = set(self.blueprints.inertNuclides)
         self.assertEqual(
@@ -87,6 +91,12 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(mox["PU239"], 0.00286038)
 
     def test_componentDimensions(self):
+        """Tests that the user can specifiy the dimensions of a component with arbitray fidelity.
+
+        .. test:: Tests that the user can specify the dimensions of a component with arbitrary fidelity.
+            :id: TEST_REACTOR_1
+            :links: REQ_REACTOR
+        """
         fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
         self.assertAlmostEqual(fuel.getDimension("od", cold=True), 0.86602)
@@ -109,7 +119,7 @@ class TestBlueprints(unittest.TestCase):
 class TestBlueprintsSchema(unittest.TestCase):
     """Test the blueprint schema checks"""
 
-    yamlString = r"""blocks:
+    _yamlString = r"""blocks:
     fuel: &block_fuel
         fuel: &component_fuel_fuel
             shape: Hexagon
@@ -120,9 +130,9 @@ class TestBlueprintsSchema(unittest.TestCase):
             mult: 1.0
             op: 10.0
     fuel2: &block_fuel2
-        group1: 
+        group1:
             shape: Group
-        duct: 
+        duct:
             shape: Hexagon
             material: UZr
             Tinput: 25.0
@@ -130,7 +140,7 @@ class TestBlueprintsSchema(unittest.TestCase):
             ip: 9.0
             mult: 1.0
             op: 10.0
-        matrix: 
+        matrix:
             shape: DerivedShape
             material: Graphite
             Tinput: 25.0
@@ -191,7 +201,7 @@ grids:
 
     def test_assemblyParameters(self):
         cs = settings.Settings()
-        design = blueprints.Blueprints.load(self.yamlString)
+        design = blueprints.Blueprints.load(self._yamlString)
         fa = design.constructAssem(cs, name="fuel a")
         fb = design.constructAssem(cs, name="fuel b")
         for paramDef in fa.p.paramDefs.inCategory(
@@ -211,12 +221,12 @@ grids:
         self.assertEqual(fb.p.hotChannelFactors, "Reactor")
 
     def test_nuclidesMc2v2(self):
-        """Tests that ZR is not expanded to its isotopics for this setting.."""
+        """Tests that ZR is not expanded to its isotopics for this setting."""
         cs = settings.Settings()
         newSettings = {"xsKernel": "MC2v2"}
         cs = cs.modified(newSettings=newSettings)
 
-        design = blueprints.Blueprints.load(self.yamlString)
+        design = blueprints.Blueprints.load(self._yamlString)
         design._prepConstruction(cs)
         self.assertTrue(
             set({"U238", "U235", "ZR"}).issubset(set(design.allNuclidesInProblem))
@@ -233,7 +243,7 @@ grids:
         newSettings = {"xsKernel": "MC2v3"}
         cs = cs.modified(newSettings=newSettings)
 
-        design = blueprints.Blueprints.load(self.yamlString)
+        design = blueprints.Blueprints.load(self._yamlString)
         design._prepConstruction(cs)
 
         # 93 and 95 are not naturally occurring.
@@ -532,7 +542,7 @@ assemblies:
         without requiring a parent.
         """
         cs = settings.Settings()
-        design = blueprints.Blueprints.load(self.yamlString)
+        design = blueprints.Blueprints.load(self._yamlString)
         # The following is needed to prep customisotopics
         # which is required during construction of a component
         design._resolveNuclides(cs)
@@ -543,15 +553,12 @@ assemblies:
         self.assertGreater(topComponent.getMass("U235"), 0.0)
 
     def test_componentGroupInput(self):
-        """
-        Make sure component groups can be input in blueprints.
-        """
-        design = blueprints.Blueprints.load(self.yamlString)
+        """Make sure component groups can be input in blueprints."""
+        design = blueprints.Blueprints.load(self._yamlString)
         componentGroup = design.componentGroups["group1"]
         self.assertEqual(componentGroup["freefuel"].name, "freefuel")
         self.assertEqual(componentGroup["freefuel"].mult, 1.0)
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestBlueprints.test_nuclides']]
     unittest.main()

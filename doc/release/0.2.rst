@@ -3,17 +3,42 @@ ARMI v0.2 Release Notes
 =======================
 
 
-ARMI v0.2.3
+ARMI v0.2.4
 ===========
 Release Date: TBD
 
-What's new in ARMI v0.2.3
--------------------------
+What's new in ARMI
+------------------
+#. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
+#. Removed unused Thermal Hydraulics settings.
+#. Minor code re-org, moving math utilities into their own module.
+#. Removed the ``PyYaml`` dependency.
 #. TBD
 
 Bug fixes
 ---------
+#. Supporting swapping assemblies with different block meshes in ``_swapFluxParam``.
+#. Fixed issues finding ``ISOXX`` files cross-platform.
+#. Fixed issue with docs not correctly loading their Git submodule in TOX.
+#. Fixed issue with ``_swapFluxParams`` failing for assemblies with different blocks (`#566 <https://github.com/terrapower/armi/issues/566>`_)
+#. TBD
+
+
+ARMI v0.2.3
+===========
+Release Date: 2022-02-08
+
+What's new in ARMI
+------------------
+#. Upgrading the version of NumPy for a security alert (`PR#530 <https://github.com/terrapower/armi/pull/530>`_)
+#. Upgraded ThoriumOxide material (`PR#558 <https://github.com/terrapower/armi/pull/548>`_)
+#. Upgraded Lithium material (`PR#546 <https://github.com/terrapower/armi/pull/546>`_)
+#. Improved Helix class (`PR#558 <https://github.com/terrapower/armi/pull/558>`_)
+
+Bug fixes
+---------
 #. Fixed issue where UML diagrams weren't being generated in docs (`#550 <https://github.com/terrapower/armi/issues/550>`_)
+#. Fixed issue with Inconel Alloy 617 (`PR#557 <https://github.com/terrapower/armi/pull/557>`_)
 
 
 ARMI v0.2.2

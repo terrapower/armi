@@ -15,7 +15,7 @@
 import unittest
 import os
 import io
-import yaml
+from ruamel import yaml
 
 from armi.utils import directoryChangers
 from armi import cases
@@ -201,7 +201,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
                 f"case-suite-testBPBM/000{case_nbr}/armi-000{case_nbr}-blueprints.yaml",
                 "r",
             )
-            bp_dict = yaml.safe_load(yamlfile)
+            bp_dict = yaml.load(yamlfile)
             yamlfile.close()
 
             self.assertEqual(bp_dict["blocks"]["fuel 1"]["clad"]["od"], 3.14)
