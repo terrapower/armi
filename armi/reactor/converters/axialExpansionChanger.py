@@ -67,7 +67,7 @@ class AxialExpansionChanger:
                     if ib == 0:
                         c.zbottom = 0.0
                     else:
-                        if self._linked.linkedComponents[c]:
+                        if self._linked.linkedComponents[c][0] is not None:
                             # use linked components below
                             c.zbottom = self._linked.linkedComponents[c][0].ztop
                         else:
@@ -275,25 +275,28 @@ class AssemblyAxialLinkage:
         | 0 |  Block 0 is linked to block 1.
         |_ _|
         """
-        lstLinkedBlks = []
+        lowerLinkedBlock = None
+        upperLinkedBlock = None
         block_list = self.a.getChildren()
         for otherBlk in block_list:
-            if otherBlk.name == b.name:
-                continue
-            if (b.p.zbottom == otherBlk.p.ztop) or (b.p.ztop == otherBlk.p.zbottom):
-                lstLinkedBlks.append(otherBlk)
+            if b.name != otherBlk.name:
+                if b.p.zbottom == otherBlk.p.ztop:
+                    lowerLinkedBlock = otherBlk
+                elif b.p.ztop == otherBlk.p.zbottom:
+                    upperLinkedBlock = otherBlk
 
-        self.linkedBlocks[b] = lstLinkedBlks
+        self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
 
     def _getLinkedComponents(self, b, c):
         """retrieve the axial linkage for component c"""
-        lstLinkedC = []
-        for linkdBlk in self.linkedBlocks[b]:
-            for otherC in linkdBlk.getChildren():
-                if isinstance(otherC, type(c)):  # equivalent to type(otherC) == type(c)
-                    area_diff = abs(otherC.getArea() - c.getArea())
-                    if area_diff < self._TOLERANCE:
-                        lstLinkedC.append(otherC)
+        lstLinkedC = [None, None]
+        for ib,linkdBlk in enumerate(self.linkedBlocks[b]):
+            if linkdBlk is not None:
+                for otherC in linkdBlk.getChildren():
+                    if isinstance(otherC, type(c)):  # equivalent to type(otherC) == type(c)
+                        area_diff = abs(otherC.getArea() - c.getArea())
+                        if area_diff < self._TOLERANCE:
+                            lstLinkedC[ib] = otherC
 
         self.linkedComponents[c] = lstLinkedC
 
