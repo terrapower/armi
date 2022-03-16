@@ -406,7 +406,7 @@ class IsotxsLibrary(_XSLibrary):
 
     def getNuclide(self, nucName, suffix):
         """
-        Get a nuclide object from the XS library or None.
+        Get a nuclide object from the XS library.
 
         Parameters
         ----------
@@ -420,8 +420,8 @@ class IsotxsLibrary(_XSLibrary):
         nuclide : Nuclide object
             A nuclide from the library or None
         """
-
         libLabel = nuclideBases.byName[nucName].label + suffix
+
         try:
             return self[libLabel]
         except KeyError:
@@ -512,7 +512,6 @@ class IsotxsLibrary(_XSLibrary):
         --------
         _buildScatterWeights
         """
-
         if not self._scatterWeights.get(scatterMatrixKey):
             self._scatterWeights[scatterMatrixKey] = self._buildScatterWeights(
                 scatterMatrixKey
@@ -557,7 +556,6 @@ class IsotxsLibrary(_XSLibrary):
         """
         generates a XS plot for a nuclide on the ISOTXS library
 
-
         nucName : str or list
             The nuclides to plot
         xsName : str or list
@@ -583,7 +581,6 @@ class IsotxsLibrary(_XSLibrary):
         armi.nucDirectory.nuclide.plotScatterMatrix
 
         """
-
         # convert all input to lists
         if isinstance(nucNames, str):
             nucNames = [nucNames]
