@@ -265,8 +265,9 @@ class AssemblyAxialLinkage:
         blkLst = self.a.getBlocks()
         if not blkLst[-1].hasFlags(Flags.DUMMY):
             runLog.warning(
-                "No dummy block present at the top of {0}! Top most block will be \
-                    artificially chopped to preserve assembly height".format(self.a)
+                "No dummy block present at the top of {0}! "
+                "Top most block will be artificially chopped "
+                "to preserve assembly height".format(self.a)
             )
 
     def _determineAxialLinkage(self):
