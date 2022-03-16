@@ -85,8 +85,8 @@ class AxialExpansionChanger:
             oldComponentVolumes = _getComponentVolumes(b)
             oldHeight = b.getHeight()
             b.p.height = b.p.ztop - b.p.zbottom
-            self._checkBlockHeight(b)
-            self._conserveComponentMass(b, oldHeight, oldComponentVolumes)
+            _checkBlockHeight(b)
+            _conserveComponentMass(b, oldHeight, oldComponentVolumes)
             ## set block mid point and redo mesh
             # - functionality based on assembly.calculateZCoords()
             b.p.z = b.p.zbottom + b.p.height / 2.0
@@ -96,32 +96,6 @@ class AxialExpansionChanger:
         bounds = list(self._linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self._linked.a.spatialGrid._bounds = tuple(bounds)
-
-    def _conserveComponentMass(self, b, oldHeight, oldVolume):
-        """Update block height dependent component parameters
-        1) update component volume (used to compute block volume)
-        2) update number density
-        """
-        for ic, c in enumerate(b[:-1]):
-            c.p.volume = oldVolume[ic] * b.p.height / oldHeight
-            for key in c.getNuclides():
-                c.setNumberDensity(
-                    key, c.getNumberDensity(key) * oldHeight / b.p.height
-                )
-
-    def _checkBlockHeight(self, b):
-        if b.p.height < 3.0:
-            runLog.warning(
-                "Block {0:s} has a height less than 3.0 cm. ({1:.12e})".format(
-                    b.name, b.p.height
-                )
-            )
-        if b.p.height < 0.0:
-            raise ArithmeticError(
-                "Block {0:s} has a negative height! ({1:.12e})".format(
-                    b.name, b.p.height
-                )
-            )
 
     def mapHotTempToBlocks(self, tempGrid, tempField):
         """map axial temp distribution to blocks in assembly
@@ -240,6 +214,31 @@ def _getComponentVolumes(b):
 
     return cVolumes
 
+def _conserveComponentMass(b, oldHeight, oldVolume):
+    """Update block height dependent component parameters
+    1) update component volume (used to compute block volume)
+    2) update number density
+    """
+    for ic, c in enumerate(b[:-1]):
+        c.p.volume = oldVolume[ic] * b.p.height / oldHeight
+        for key in c.getNuclides():
+            c.setNumberDensity(
+                key, c.getNumberDensity(key) * oldHeight / b.p.height
+            )
+
+def _checkBlockHeight(b):
+    if b.p.height < 3.0:
+        runLog.warning(
+            "Block {0:s} has a height less than 3.0 cm. ({1:.12e})".format(
+                b.name, b.p.height
+            )
+        )
+    if b.p.height < 0.0:
+        raise ArithmeticError(
+            "Block {0:s} has a negative height! ({1:.12e})".format(
+                b.name, b.p.height
+            )
+        )
 
 class AssemblyAxialLinkage:
     """Determines and stores the block- and component-wise axial linkage for an assembly"""
