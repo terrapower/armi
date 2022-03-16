@@ -321,9 +321,15 @@ class AssemblyAxialLinkage:
 
         self.linkedComponents[c] = lstLinkedC
 
-        if not lstLinkedC:
+        if lstLinkedC[0] is None:
             runLog.warning(
-                "Component {0:22s} within Block {1:22s} is not axially linked to anything!".format(
+                "Component {0:22s} within Block {1:22s} has nothing linked below it!".format(
+                    str(c.p.flags), str(c.parent.p.flags)
+                )
+            )
+        if lstLinkedC[1] is None:
+            runLog.warning(
+                "Component {0:22s} within Block {1:22s} has nothing linked above it!".format(
                     str(c.p.flags), str(c.parent.p.flags)
                 )
             )
