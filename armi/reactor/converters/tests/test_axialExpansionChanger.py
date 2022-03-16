@@ -335,23 +335,14 @@ class TestExceptions(Base, unittest.TestCase):
 
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
-        coldTemp = 25.0
-        hotInletTemp = 310.0
-        tempSteps = 10
-        numTempGridPts = 11
-        tempGrid = linspace(0.0, self.a.getTotalHeight(), numTempGridPts)
-        tempField = coldTemp * ones(numTempGridPts)
+        temp = Temperature(
+            self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
+        )
         with self.assertRaises(ArithmeticError) as cm:
-            for idt in range(1, tempSteps):
-                self.obj.mapHotTempToBlocks(tempGrid, tempField)
+            for idt in range(temp.tempSteps):
+                self.obj.mapHotTempToBlocks(temp.tempGrid, temp.tempField[idt, :])
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
-                # increment temperature
-                tempField = (
-                    coldTemp
-                    + (idt + 1) / (tempSteps / 3) * tempGrid
-                    + (hotInletTemp - coldTemp) * (idt + 1) / tempSteps
-                )
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
