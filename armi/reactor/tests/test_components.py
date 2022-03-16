@@ -233,7 +233,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         coldDensity = coldComponent.density()
         coldArea = coldComponent.getArea()
 
-        self.assertNotEqual(thermalExpansionFactor, 1)
+        self.assertGreater(thermalExpansionFactor, 1)
         self.assertAlmostEqual(
             (coldDensity / hotDensity) / (thermalExpansionFactor * hotArea / coldArea),
             1,
