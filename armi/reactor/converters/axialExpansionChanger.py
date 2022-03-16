@@ -54,13 +54,14 @@ class AxialExpansionChanger:
     def axiallyExpandAssembly(self):
         """utilizes assembly linkage to do axial expansion"""
         mesh = [0.0]
+        numOfBlocks = self._linked.a.countBlocksWithFlags()
         for ib, b in enumerate(self._linked.a):
             ## set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
                 b.p.zbottom = self._linked.linkedBlocks[b][0].p.ztop
             ## if not in the dummy block, get expansion factor, do alignment, and modify block
-            if not b.hasFlags(Flags.DUMMY):
+            if ib < (numOfBlocks - 1):
                 for c in b:
                     c.height = self.expansionData.getExpansionFactor(c) * b.p.height
                     # align linked components
@@ -250,6 +251,23 @@ class AssemblyAxialLinkage:
         self.linkedBlocks = {}
         self.linkedComponents = {}
         self._determineAxialLinkage()
+        self._isTopDummyBlockPresent()
+
+    def _isTopDummyBlockPresent(self):
+        """determines if top most block of assembly is a dummy block
+        
+        Notes
+        -----
+        - If true, then axial expansion will be physical for all blocks.
+        - If false, the top most block in the assembly is artificially chopped 
+          to preserve the assembly height. A runLog.Warning also issued.
+        """
+        blkLst = self.a.getBlocks()
+        if not blkLst[-1].hasFlags(Flags.DUMMY):
+            runLog.warning(
+                "No dummy block present at the top of {0}! Top most block will be \
+                    artificially chopped to preserve assembly height".format(self.a)
+            )
 
     def _determineAxialLinkage(self):
         """gets the block and component based linkage"""
