@@ -214,6 +214,7 @@ class AxialExpansionChanger:
             "From {1} cm to {2} cm.".format(oldMesh, newMesh)
         )
 
+
 def _getComponentVolumes(b):
     """manually retrieve volume of components within a block
 
@@ -238,6 +239,7 @@ def _getComponentVolumes(b):
         cVolumes.append(c.getArea(cold=c.temperatureInC) * c.parent.getHeight())
 
     return cVolumes
+
 
 class AssemblyAxialLinkage:
     """Determines and stores the block- and component-wise axial linkage for an assembly"""
@@ -290,10 +292,12 @@ class AssemblyAxialLinkage:
     def _getLinkedComponents(self, b, c):
         """retrieve the axial linkage for component c"""
         lstLinkedC = [None, None]
-        for ib,linkdBlk in enumerate(self.linkedBlocks[b]):
+        for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in linkdBlk.getChildren():
-                    if isinstance(otherC, type(c)):  # equivalent to type(otherC) == type(c)
+                    if isinstance(
+                        otherC, type(c)
+                    ):  # equivalent to type(otherC) == type(c)
                         area_diff = abs(otherC.getArea() - c.getArea())
                         if area_diff < self._TOLERANCE:
                             lstLinkedC[ib] = otherC
@@ -349,15 +353,9 @@ class ExpansionData:
             self.expansionFactors[c] = p
 
     def _mapTempToComponent(self, c):
-        if (
-            c.hasFlags(Flags.FUEL)
-            or c.hasFlags(Flags.SHIELD)
-        ):
+        if c.hasFlags(Flags.FUEL) or c.hasFlags(Flags.SHIELD):
             temp = c.parent.p.THTfuelCL
-        elif (
-            c.hasFlags(Flags.CLAD)
-            or c.hasFlags(Flags.WIRE)
-        ):
+        elif c.hasFlags(Flags.CLAD) or c.hasFlags(Flags.WIRE):
             temp = c.parent.p.THaverageCladTemp
         elif (
             c.hasFlags(Flags.DUCT)
@@ -372,10 +370,7 @@ class ExpansionData:
             or c.hasFlags(Flags.BOND)
         ):
             temp = c.parent.p.THcoolantStaticT
-        elif (
-            c.hasFlags(Flags.PLENUM)
-            or c.hasFlags(Flags.GAP)
-        ):
+        elif c.hasFlags(Flags.PLENUM) or c.hasFlags(Flags.GAP):
             temp = c.parent.p.THaverageGapTemp
         else:
             raise ValueError(
@@ -403,6 +398,7 @@ class ExpansionData:
                 c.temperatureInC = temp
 
     def getExpansionFactor(self, c):
+        """retrieves expansion factor for c. If not set, assumes it to be 1.0 (i.e., no change)"""
         if c in self.expansionFactors:
             value = self.expansionFactors[c]
         else:
