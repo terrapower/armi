@@ -82,7 +82,7 @@ class AxialExpansionChanger:
 
             ## see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
-            oldComponentVolumes = self._getComponentVolumes(b)
+            oldComponentVolumes = _getComponentVolumes(b)
             oldHeight = b.getHeight()
             b.p.height = b.p.ztop - b.p.zbottom
             self._checkBlockHeight(b)
@@ -122,32 +122,6 @@ class AxialExpansionChanger:
                     b.name, b.p.height
                 )
             )
-
-    def _getComponentVolumes(self, b):
-        """manually retrieve volume of components within a block
-
-        Parameters
-        ----------
-        c
-            ARMI component
-
-        Notes
-        -----
-        This is functionally very similar to c.computeVolume(), however differs in
-        the temperatures that get used to compute dimensions.
-        - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
-        cold=False results in self.getDimension to use the cold/input component temperature.
-        However, we want the "old hot" temp to be used. So, here we manually call
-        c.getArea and pass in the correct "cold" (old hot) temperature. This ensures that
-        component mass is conserved.
-
-        """
-        cVolumes = []
-        for ic, c in enumerate(b):
-            cVolumes.append(c.getArea(cold=c.temperatureInC) * c.parent.getHeight())
-            c._checkNegativeVolume(cVolumes[ic])
-
-        return cVolumes
 
     def mapHotTempToBlocks(self, tempGrid, tempField):
         """map axial temp distribution to blocks in assembly
@@ -240,6 +214,30 @@ class AxialExpansionChanger:
             "From {1} cm to {2} cm.".format(oldMesh, newMesh)
         )
 
+def _getComponentVolumes(b):
+    """manually retrieve volume of components within a block
+
+    Parameters
+    ----------
+    c
+        ARMI component
+
+    Notes
+    -----
+    This is functionally very similar to c.computeVolume(), however differs in
+    the temperatures that get used to compute dimensions.
+    - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
+    cold=False results in self.getDimension to use the cold/input component temperature.
+    However, we want the "old hot" temp to be used. So, here we manually call
+    c.getArea and pass in the correct "cold" (old hot) temperature. This ensures that
+    component mass is conserved.
+
+    """
+    cVolumes = []
+    for c in b:
+        cVolumes.append(c.getArea(cold=c.temperatureInC) * c.parent.getHeight())
+
+    return cVolumes
 
 class AssemblyAxialLinkage:
     """Determines and stores the block- and component-wise axial linkage for an assembly"""
