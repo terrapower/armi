@@ -118,9 +118,13 @@ class UnshapedComponent(Component):
     A component with undefined dimensions.
 
     Useful for situations where you just want to enter the area directly.
-    For instance, in filler situations where the exact shape of this component is
-    is unknown but you have some left-over space between other components filled
-    with a known material you might need to model.
+
+    For instance, when you want to model neutronic behavior of an assembly based
+    on only knowing the area fractions of each material in the assembly.
+
+    See Also
+    --------
+    DerivedShape : Useful to just fill leftover space in a block with a material
     """
 
     pDefs = componentParameters.getUnshapedParameterDefinitions()
