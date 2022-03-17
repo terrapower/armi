@@ -309,6 +309,21 @@ class TestExceptions(Base, unittest.TestCase):
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeException")
         self.obj.setAssembly(self.a)
 
+    def test_isTopDummyBlockPresent(self):
+        # build test assembly without dummy
+        assembly = HexAssembly("testAssemblyType")
+        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid.armiObject = assembly
+        assembly.add(_buildTestBlock("shield", "Fake"))
+        assembly.calculateZCoords()
+        assembly.reestablishBlockOrder()
+        # create instance of expansion changer
+        obj = AxialExpansionChanger({"detailedAxialExpansion":True})
+        with self.assertRaises(RuntimeError) as cm:
+            obj.setAssembly(assembly)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
     def test_setExpansionFactors(self):
         with self.assertRaises(RuntimeError) as cm:
             cList = self.a.getChildren()

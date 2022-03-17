@@ -50,6 +50,31 @@ class AxialExpansionChanger:
         """
         self._linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(a)
+        self._isTopDummyBlockPresent()
+
+    def _isTopDummyBlockPresent(self):
+        """determines if top most block of assembly is a dummy block
+
+        Notes
+        -----
+        - If true, then axial expansion will be physical for all blocks.
+        - If false, the top most block in the assembly is artificially chopped
+          to preserve the assembly height. A runLog.Warning also issued.
+        """
+        blkLst = self._linked.a.getBlocks()
+        if not blkLst[-1].hasFlags(Flags.DUMMY):
+            runLog.warning(
+                "No dummy block present at the top of {0}! "
+                "Top most block will be artificially chopped "
+                "to preserve assembly height".format(self._linked.a)
+            )
+            if "detailedAxialExpansion" in self._converterSettings: # avoid KeyError
+                if self._converterSettings["detailedAxialExpansion"]:
+                    runLog.error(
+                        "Cannot run detailedAxialExpansion without a dummy block"
+                        "at the top of the assembly!"
+                    )
+                raise RuntimeError
 
     def axiallyExpandAssembly(self):
         """utilizes assembly linkage to do axial expansion"""
@@ -198,24 +223,6 @@ class AssemblyAxialLinkage:
         self.linkedBlocks = {}
         self.linkedComponents = {}
         self._determineAxialLinkage()
-        self._isTopDummyBlockPresent()
-
-    def _isTopDummyBlockPresent(self):
-        """determines if top most block of assembly is a dummy block
-
-        Notes
-        -----
-        - If true, then axial expansion will be physical for all blocks.
-        - If false, the top most block in the assembly is artificially chopped
-          to preserve the assembly height. A runLog.Warning also issued.
-        """
-        blkLst = self.a.getBlocks()
-        if not blkLst[-1].hasFlags(Flags.DUMMY):
-            runLog.warning(
-                "No dummy block present at the top of {0}! "
-                "Top most block will be artificially chopped "
-                "to preserve assembly height".format(self.a)
-            )
 
     def _determineAxialLinkage(self):
         """gets the block and component based linkage"""
