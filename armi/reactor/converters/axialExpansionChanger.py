@@ -215,6 +215,7 @@ def _getComponentVolumes(b):
 
     return cVolumes
 
+
 def _conserveComponentMass(b, oldHeight, oldVolume):
     """Update block height dependent component parameters
     1) update component volume (used to compute block volume)
@@ -223,9 +224,8 @@ def _conserveComponentMass(b, oldHeight, oldVolume):
     for ic, c in enumerate(b[:-1]):
         c.p.volume = oldVolume[ic] * b.p.height / oldHeight
         for key in c.getNuclides():
-            c.setNumberDensity(
-                key, c.getNumberDensity(key) * oldHeight / b.p.height
-            )
+            c.setNumberDensity(key, c.getNumberDensity(key) * oldHeight / b.p.height)
+
 
 def _checkBlockHeight(b):
     if b.p.height < 3.0:
@@ -236,10 +236,9 @@ def _checkBlockHeight(b):
         )
     if b.p.height < 0.0:
         raise ArithmeticError(
-            "Block {0:s} has a negative height! ({1:.12e})".format(
-                b.name, b.p.height
-            )
+            "Block {0:s} has a negative height! ({1:.12e})".format(b.name, b.p.height)
         )
+
 
 class AssemblyAxialLinkage:
     """Determines and stores the block- and component-wise axial linkage for an assembly"""
@@ -255,11 +254,11 @@ class AssemblyAxialLinkage:
 
     def _isTopDummyBlockPresent(self):
         """determines if top most block of assembly is a dummy block
-        
+
         Notes
         -----
         - If true, then axial expansion will be physical for all blocks.
-        - If false, the top most block in the assembly is artificially chopped 
+        - If false, the top most block in the assembly is artificially chopped
           to preserve the assembly height. A runLog.Warning also issued.
         """
         blkLst = self.a.getBlocks()
