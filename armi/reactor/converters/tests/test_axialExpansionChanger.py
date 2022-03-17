@@ -16,7 +16,7 @@
 
 from statistics import mean
 import unittest
-from numpy import linspace, ones, array, vstack, zeros
+from numpy import linspace, array, vstack, zeros
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
@@ -167,7 +167,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         # do the axial expansion
         self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
         for idt in range(self.temp.tempSteps):
-            self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt, :])
+            self.obj.expansionData.mapHotTempToComponents(self.temp.tempGrid, self.temp.tempField[idt, :])
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
@@ -263,7 +263,7 @@ class TestConservation(Base, unittest.TestCase):
             self.a.getTotalHeight(), coldTemp=1.0, hotInletTemp=1000.0
         )
         for idt in range(self.temp.tempSteps):
-            self.obj.mapHotTempToBlocks(self.temp.tempGrid, self.temp.tempField[idt, :])
+            self.obj.expansionData.mapHotTempToComponents(self.temp.tempGrid, self.temp.tempField[idt, :])
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
@@ -317,19 +317,19 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_mapHotTempToBlockValueError(self):
+    def test_mapHotTempToComponentsValueError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)
         with self.assertRaises(ValueError) as cm:
-            self.obj.mapHotTempToBlocks(tempGrid, tempField)
+            self.obj.expansionData.mapHotTempToComponents(tempGrid, tempField)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_mapHotTempToBlockRuntimeError(self):
+    def test_mapHotTempToComponentsRuntimeError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 10)
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.mapHotTempToBlocks(tempGrid, tempField)
+            self.obj.expansionData.mapHotTempToComponents(tempGrid, tempField)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -340,31 +340,9 @@ class TestExceptions(Base, unittest.TestCase):
         )
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
-                self.obj.mapHotTempToBlocks(temp.tempGrid, temp.tempField[idt, :])
+                self.obj.expansionData.mapHotTempToComponents(temp.tempGrid, temp.tempField[idt, :])
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_MapTempToComponent(self):
-        # build single block assembly
-        assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
-        assembly.spatialGrid.armiObject = assembly
-        # build block with unregistered flag
-        b = HexBlock("noExist", 1.0)
-        dims = {"Tinput": 1.0, "Thot": 1.0, "op": 1.0, "ip": 0.0, "mult": 1.0}
-        dummy = Hexagon("noExist", "Sodium", **dims)
-        b.add(dummy)
-        b.getVolumeFractions()
-        b.setType("noExist")
-        # add block to assembly and run test
-        assembly.add(b)
-        obj = AxialExpansionChanger(self._converterSettings)
-        obj.setAssembly(assembly)
-        with self.assertRaises(ValueError) as cm:
-            obj.expansionData.computeThermalExpansionFactors()
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)

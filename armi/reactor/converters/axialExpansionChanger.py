@@ -98,58 +98,6 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self._linked.a.spatialGrid._bounds = tuple(bounds)
 
-    def mapHotTempToBlocks(self, tempGrid, tempField):
-        """map axial temp distribution to blocks in assembly
-
-        Parameters
-        ----------
-        tempGrid : numpy array
-            axial temperature grid (i.e., physical locations where temp is stored)
-        tempField : numpy array
-            temperature values along grid
-
-        Notes
-        -----
-        - maps the radially uniform axial temperature distribution to blocks
-        - searches for temperatures that fall within the bounds of a block,
-          averages them, and assigns them as appropriate
-        - tempGrid and tempField must be same length
-
-        Raises
-        ------
-        ValueError
-            if no temperature points found within a block
-        RuntimeError
-            if tempGrid and tempField are different lengths
-        """
-        if len(tempGrid) != len(tempField):
-            runLog.error("tempGrid and tempField must have the same length.")
-            raise RuntimeError
-
-        for b in self._linked.a:
-            tmpMapping = []
-            for idz, z in enumerate(tempGrid):
-                if b.p.zbottom <= z <= b.p.ztop:
-                    tmpMapping.append(tempField[idz])
-                if z > b.p.ztop:
-                    break
-
-            if len(tmpMapping) == 0:
-                raise ValueError(
-                    "Block {0:s} has no temperature points within it! \
-                        Likely need to increase the refinement of the temperature grid.".format(
-                        str(b.name)
-                    )
-                )
-
-            blockAveTemp = mean(tmpMapping)
-            b.p.THcoolantStaticT = (
-                blockAveTemp  # difference relative to THcoolantAverageT ?
-            )
-            b.p.THaverageCladTemp = blockAveTemp
-            b.p.THaverageGapTemp = blockAveTemp  # used for bond and plenum
-            b.p.THaverageDuctTemp = blockAveTemp
-            b.p.THTfuelCL = blockAveTemp
 
     def axiallyExpandCore(self, r):  # , componentLst=None, percents=None):
         """
@@ -340,6 +288,7 @@ class ExpansionData:
 
     def __init__(self, a):
         self.a = a
+        self.oldHotTemp = {}
         self.expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents()
@@ -375,50 +324,70 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self.expansionFactors[c] = p
 
-    def _mapTempToComponent(self, c):
-        if c.hasFlags(Flags.FUEL) or c.hasFlags(Flags.SHIELD):
-            temp = c.parent.p.THTfuelCL
-        elif c.hasFlags(Flags.CLAD) or c.hasFlags(Flags.WIRE):
-            temp = c.parent.p.THaverageCladTemp
-        elif (
-            c.hasFlags(Flags.DUCT)
-            or c.hasFlags(Flags.HANDLING_SOCKET)
-            or c.hasFlags(Flags.GRID_PLATE)
-            or c.hasFlags(Flags.INLET_NOZZLE)
-        ):
-            temp = c.parent.p.THaverageDuctTemp
-        elif (
-            c.hasFlags(Flags.COOLANT)
-            or c.hasFlags(Flags.INTERCOOLANT)
-            or c.hasFlags(Flags.BOND)
-        ):
-            temp = c.parent.p.THcoolantStaticT
-        elif c.hasFlags(Flags.PLENUM) or c.hasFlags(Flags.GAP):
-            temp = c.parent.p.THaverageGapTemp
-        else:
-            raise ValueError(
-                "Component temperature not found!\n\
-                    Block = {0:s}\n\
-                    Component = {1:s}".format(
-                    str(c.parent.p.flags), str(c.p.flags)
+    def mapHotTempToComponents(self, tempGrid, tempField):
+        """map axial temp distribution to blocks and components in self.a
+
+        Parameters
+        ----------
+        tempGrid : numpy array
+            axial temperature grid (i.e., physical locations where temp is stored)
+        tempField : numpy array
+            temperature values along grid
+
+        Notes
+        -----
+        - maps the radially uniform axial temperature distribution to components
+        - searches for temperatures that fall within the bounds of a block,
+          averages them, and assigns them as appropriate
+        - tempGrid and tempField must be same length
+        - provides an example for mapping temperature field to components. Can be replaced
+          with a different approach (e.g., from a plugin). The only requirement is that
+          a temperature is mapped to **all** components.
+
+        Raises
+        ------
+        ValueError
+            if no temperature points found within a block
+        RuntimeError
+            if tempGrid and tempField are different lengths
+        """
+        if len(tempGrid) != len(tempField):
+            runLog.error("tempGrid and tempField must have the same length.")
+            raise RuntimeError
+
+        self.oldHotTemp = {} # reset, just to be safe
+        for b in self.a:
+            tmpMapping = []
+            for idz, z in enumerate(tempGrid):
+                if b.p.zbottom <= z <= b.p.ztop:
+                    tmpMapping.append(tempField[idz])
+                if z > b.p.ztop:
+                    break
+
+            if len(tmpMapping) == 0:
+                raise ValueError(
+                    "Block {0:s} has no temperature points within it! \
+                        Likely need to increase the refinement of the temperature grid.".format(
+                        str(b.name)
+                    )
                 )
-            )
-        return temp
+
+            blockAveTemp = mean(tmpMapping)
+            # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
+            # and ruins mass conservation via number densities. Instead,
+            # set manually.
+            for c in b:
+                self.oldHotTemp[c] = c.temperatureInC # stash the "old" hot temp
+                c.temperatureInC = blockAveTemp
 
     def computeThermalExpansionFactors(self):
         """computes expansion factors for all components via thermal expansion"""
 
         for b in self.a:
             for c in b:
-                temp = self._mapTempToComponent(c)
-
                 self.expansionFactors[c] = c.getThermalExpansionFactor(
-                    Tc=temp, T0=c.temperatureInC
+                    Tc=c.temperatureInC, T0=self.oldHotTemp[c]
                 )
-                # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
-                # and ruins mass conservation via number densities. Instead,
-                # set manually.
-                c.temperatureInC = temp
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c. If not set, assumes it to be 1.0 (i.e., no change)"""
