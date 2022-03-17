@@ -347,6 +347,13 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+    def test_computeThermalExpansionFactorsException(self):
+        with self.assertRaises(KeyError) as cm:
+            self.obj.expansionData.computeThermalExpansionFactors()
+
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
 
 def buildTestAssemblyWithFakeMaterial(name):
     """Create test assembly consisting of list of fake material

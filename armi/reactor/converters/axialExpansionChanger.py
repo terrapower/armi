@@ -385,9 +385,16 @@ class ExpansionData:
 
         for b in self.a:
             for c in b:
-                self.expansionFactors[c] = c.getThermalExpansionFactor(
-                    Tc=c.temperatureInC, T0=self.oldHotTemp[c]
-                )
+                try:
+                    self.expansionFactors[c] = c.getThermalExpansionFactor(
+                        Tc=c.temperatureInC, T0=self.oldHotTemp[c]
+                    )
+                except KeyError:
+                    runLog.error(
+                        "Component {0} is not in self.oldHotTemp."
+                        "Did you assign temperatures to the components?".format(c)
+                        )
+                    raise
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c. If not set, assumes it to be 1.0 (i.e., no change)"""
