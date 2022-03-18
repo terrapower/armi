@@ -118,9 +118,13 @@ class UnshapedComponent(Component):
     A component with undefined dimensions.
 
     Useful for situations where you just want to enter the area directly.
-    For instance, in filler situations where the exact shape of this component is
-    is unknown but you have some left-over space between other components filled
-    with a known material you might need to model.
+
+    For instance, when you want to model neutronic behavior of an assembly based
+    on only knowing the area fractions of each material in the assembly.
+
+    See Also
+    --------
+    DerivedShape : Useful to just fill leftover space in a block with a material
     """
 
     pDefs = componentParameters.getUnshapedParameterDefinitions()
@@ -159,11 +163,11 @@ class UnshapedComponent(Component):
         cold : bool, optional
             Ignored for this component
         """
-        return self.p.area
+        coldArea = self.p.area
+        if cold:
+            return coldArea
 
-    def setArea(self, val):
-        self.p.area = val
-        self.clearCache()
+        return self.getThermalExpansionFactor(self.temperatureInC) ** 2 * coldArea
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """
@@ -171,8 +175,12 @@ class UnshapedComponent(Component):
 
         This is the smallest it can possibly be. Since this is used to determine
         the outer component, it will never be allowed to be the outer one.
+
+        Notes
+        -----
+        Tc is not used in this method for this particular component.
         """
-        return math.sqrt(self.p.area / math.pi)
+        return 2 * math.sqrt(self.getComponentArea(cold=cold) / math.pi)
 
     @staticmethod
     def fromComponent(otherComponent):
@@ -180,11 +188,16 @@ class UnshapedComponent(Component):
         Build a new UnshapedComponent that has area equal to that of another component.
 
         This can be used to "freeze" a DerivedShape, among other things.
+
+        Notes
+        -----
+        Components created in this manner will not thermally expand beyond the expanded
+        area of the original component, but will retain their hot temperature.
         """
         newC = UnshapedComponent(
             name=otherComponent.name,
             material=otherComponent.material,
-            Tinput=otherComponent.inputTemperatureInC,
+            Tinput=otherComponent.temperatureInC,
             Thot=otherComponent.temperatureInC,
             area=otherComponent.getComponentArea(),
         )
