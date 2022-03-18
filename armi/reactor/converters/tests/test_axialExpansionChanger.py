@@ -466,9 +466,6 @@ def buildTestAssemblyWithFakeMaterial(name):
     """
     assembly = HexAssembly("testAssemblyType")
     assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
-    # The ArmiObject that this grid describes.
-    # https://terrapower.github.io/armi/.apidocs/armi.reactor.grids.html#armi.reactor.grids.Grid
-    # this feels recursive and not super clear....?
     assembly.spatialGrid.armiObject = assembly
     assembly.add(_buildTestBlock("shield", name))
     assembly.add(_buildTestBlock("fuel", name))
