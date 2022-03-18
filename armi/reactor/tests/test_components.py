@@ -134,7 +134,13 @@ class TestGeneralComponents(unittest.TestCase):
     componentMaterial = "HT9"
     componentDims = {"Tinput": 25.0, "Thot": 25.0}
 
-    def setUp(self):
+    def setUp(self, component=None):
+        """
+        Most of the time nothing will be passed as `component` and the result will
+        be stored in self, but you can also pass a component object as `component`,
+        in which case the object will be returned with the `parent` attribute assigned.
+        """
+
         class _Parent:
             def getSymmetryFactor(self):
                 return 1.0
@@ -150,10 +156,14 @@ class TestGeneralComponents(unittest.TestCase):
 
             derivedMustUpdate = False
 
-        self.component = self.componentCls(
-            "TestComponent", self.componentMaterial, **self.componentDims
-        )
-        self.component.parent = _Parent()
+        if component == None:
+            self.component = self.componentCls(
+                "TestComponent", self.componentMaterial, **self.componentDims
+            )
+            self.component.parent = _Parent()
+        else:
+            component.parent = _Parent()
+            return component
 
 
 class TestComponent(TestGeneralComponents):
@@ -189,14 +199,59 @@ class TestNullComponent(TestGeneralComponents):
 
 class TestUnshapedComponent(TestGeneralComponents):
     componentCls = UnshapedComponent
-    componentMaterial = "Material"
+    componentMaterial = "HT9"
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "area": math.pi}
 
+    def test_getComponentArea(self):
+        # a case without thermal expansion
+        self.assertEqual(self.component.getComponentArea(cold=True), math.pi)
+
+        # a case with thermal expansion
+        self.assertEqual(
+            self.component.getComponentArea(cold=False),
+            math.pi
+            * self.component.getThermalExpansionFactor(self.component.temperatureInC)
+            ** 2,
+        )
+
+        # show that area expansion is consistent with the density change in the material
+        hotDensity = self.component.density()
+        hotArea = self.component.getArea()
+        thermalExpansionFactor = self.component.getThermalExpansionFactor(
+            self.component.temperatureInC
+        )
+
+        coldComponent = self.setUp(
+            UnshapedComponent(
+                name="coldComponent",
+                material=self.componentMaterial,
+                Tinput=self.component.inputTemperatureInC,
+                Thot=self.component.inputTemperatureInC,
+                area=math.pi,
+            )
+        )
+        coldDensity = coldComponent.density()
+        coldArea = coldComponent.getArea()
+
+        self.assertGreater(thermalExpansionFactor, 1)
+        self.assertAlmostEqual(
+            (coldDensity / hotDensity) / (thermalExpansionFactor * hotArea / coldArea),
+            1,
+        )  # account for density being 3D while area is 2D
+
     def test_getBoundingCircleOuterDiameter(self):
-        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 1.0)
+        # a case without thermal expansion
+        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 2.0)
+
+        # a case with thermal expansion
+        self.assertEqual(
+            self.component.getBoundingCircleOuterDiameter(cold=False),
+            2.0
+            * self.component.getThermalExpansionFactor(self.component.temperatureInC),
+        )
 
     def test_fromComponent(self):
-        circle = components.Circle("testCircle", "Material", 25, 25, 1.0)
+        circle = components.Circle("testCircle", "HT9", 25, 500, 1.0)
         unshaped = components.UnshapedComponent.fromComponent(circle)
         self.assertEqual(circle.getComponentArea(), unshaped.getComponentArea())
 
