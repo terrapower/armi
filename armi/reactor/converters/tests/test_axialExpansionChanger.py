@@ -167,7 +167,9 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         # do the axial expansion
         self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
         for idt in range(self.temp.tempSteps):
-            self.obj.expansionData.mapHotTempToComponents(self.temp.tempGrid, self.temp.tempField[idt, :])
+            self.obj.expansionData.mapHotTempToComponents(
+                self.temp.tempGrid, self.temp.tempField[idt, :]
+            )
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
@@ -243,9 +245,10 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
 
         return mean(tmpMapping)
 
+
 class TestCoreExpansion(Base, unittest.TestCase):
     """verify core-based expansion changes r.core.p.axialMesh
-    
+
     Notes
     -----
     - Just checks that the mesh changes after expansion.
@@ -261,7 +264,7 @@ class TestCoreExpansion(Base, unittest.TestCase):
         self.tempField = {}
         self.componentLst = {}
         self.percents = {}
-        # just use self.tempField[-1], no need to use all steps in temp.tempField 
+        # just use self.tempField[-1], no need to use all steps in temp.tempField
         for a in self.r.core.getAssemblies(includeBolAssems=True):
             self.tempGrid[a] = self.temp.tempGrid
             self.tempField[a] = self.temp.tempField[-1]
@@ -272,17 +275,22 @@ class TestCoreExpansion(Base, unittest.TestCase):
         self.obj._converterSettings["detailedAxialExpansion"] = False
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCoreThermal(self.r, self.tempGrid, self.tempField)
-        self.assertNotEqual(oldMesh, self.r.core.p.axialMesh,
-            msg="The core mesh has not changed with the expansion. That's not right."
-            )
+        self.assertNotEqual(
+            oldMesh,
+            self.r.core.p.axialMesh,
+            msg="The core mesh has not changed with the expansion. That's not right.",
+        )
 
     def test_axiallyExpandCorePercent(self):
         self.obj._converterSettings["detailedAxialExpansion"] = False
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCorePercent(self.r, self.componentLst, self.percents)
-        self.assertNotEqual(oldMesh, self.r.core.p.axialMesh,
-            msg="The core mesh has not changed with the expansion. That's not right."
-            )
+        self.assertNotEqual(
+            oldMesh,
+            self.r.core.p.axialMesh,
+            msg="The core mesh has not changed with the expansion. That's not right.",
+        )
+
 
 class TestConservation(Base, unittest.TestCase):
     """verify that conservation is maintained in assembly-level axial expansion"""
@@ -303,7 +311,9 @@ class TestConservation(Base, unittest.TestCase):
             self.a.getTotalHeight(), coldTemp=1.0, hotInletTemp=1000.0
         )
         for idt in range(self.temp.tempSteps):
-            self.obj.expansionData.mapHotTempToComponents(self.temp.tempGrid, self.temp.tempField[idt, :])
+            self.obj.expansionData.mapHotTempToComponents(
+                self.temp.tempGrid, self.temp.tempField[idt, :]
+            )
             self.obj.expansionData.computeThermalExpansionFactors()
             self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
@@ -358,7 +368,7 @@ class TestExceptions(Base, unittest.TestCase):
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
-        obj = AxialExpansionChanger({"detailedAxialExpansion":True})
+        obj = AxialExpansionChanger({"detailedAxialExpansion": True})
         with self.assertRaises(RuntimeError) as cm:
             obj.setAssembly(assembly)
             the_exception = cm.exception
@@ -390,12 +400,12 @@ class TestExceptions(Base, unittest.TestCase):
 
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
-        temp = Temperature(
-            self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
-        )
+        temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
-                self.obj.expansionData.mapHotTempToComponents(temp.tempGrid, temp.tempField[idt, :])
+                self.obj.expansionData.mapHotTempToComponents(
+                    temp.tempGrid, temp.tempField[idt, :]
+                )
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
 
@@ -426,7 +436,7 @@ class TestExceptions(Base, unittest.TestCase):
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
-    
+
     def test_specifyTargetComponentRuntimeErrorSecond(self):
         # build block for testing
         b = HexBlock("test", height=10.0)

@@ -68,7 +68,7 @@ class AxialExpansionChanger:
                 "Top most block will be artificially chopped "
                 "to preserve assembly height".format(self._linked.a)
             )
-            if "detailedAxialExpansion" in self._converterSettings: # avoid KeyError
+            if "detailedAxialExpansion" in self._converterSettings:  # avoid KeyError
                 if self._converterSettings["detailedAxialExpansion"]:
                     runLog.error(
                         "Cannot run detailedAxialExpansion without a dummy block"
@@ -123,8 +123,7 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self._linked.a.spatialGrid._bounds = tuple(bounds)
 
-
-    def axiallyExpandCoreThermal(self, r, tempGrid, tempField):  # , componentLst=None, percents=None):
+    def axiallyExpandCoreThermal(self, r, tempGrid, tempField):
         """
         Perform thermally driven axial expansion of the core.
 
@@ -134,7 +133,7 @@ class AxialExpansionChanger:
             ARMI reactor to be expanded
         tempGrid : dictionary
             keys --> assembly object
-            values --> grid 
+            values --> grid
         tempField : dictionary
             keys --> assembly object
             values --> temperatures
@@ -394,7 +393,7 @@ class ExpansionData:
             runLog.error("tempGrid and tempField must have the same length.")
             raise RuntimeError
 
-        self.oldHotTemp = {} # reset, just to be safe
+        self.oldHotTemp = {}  # reset, just to be safe
         for b in self.a:
             tmpMapping = []
             for idz, z in enumerate(tempGrid):
@@ -416,7 +415,7 @@ class ExpansionData:
             # and ruins mass conservation via number densities. Instead,
             # set manually.
             for c in b:
-                self.oldHotTemp[c] = c.temperatureInC # stash the "old" hot temp
+                self.oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
                 c.temperatureInC = blockAveTemp
 
     def computeThermalExpansionFactors(self):
@@ -432,7 +431,7 @@ class ExpansionData:
                     runLog.error(
                         "Component {0} is not in self.oldHotTemp."
                         "Did you assign temperatures to the components?".format(c)
-                        )
+                    )
                     raise
 
     def getExpansionFactor(self, c):
@@ -477,7 +476,7 @@ class ExpansionData:
         Raises
         ------
         RuntimeError
-            no target component found 
+            no target component found
         RuntimeError
             multiple target components found
         """
@@ -486,14 +485,14 @@ class ExpansionData:
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:
-            raise RuntimeError(
-                "No target component found!\n   Block {0}".format(b)
-                )
+            raise RuntimeError("No target component found!\n   Block {0}".format(b))
         if len(componentWFlag) > 1:
             raise RuntimeError(
                 "Cannot have more than one component within a block that has the target flag!"
-                "Block {0}\nflagOfInterest {1}\nComponents {2}".format(b, flagOfInterest, componentWFlag)
-        )
+                "Block {0}\nflagOfInterest {1}\nComponents {2}".format(
+                    b, flagOfInterest, componentWFlag
+                )
+            )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
 
     # TO-DO update this
