@@ -419,29 +419,49 @@ class ExpansionData:
         """
         for b in self.a:
             if b.hasFlags(Flags.PLENUM):
-                self._specifyTargetComponent(b.getChildrenWithFlags(Flags.CLAD))
+                self._specifyTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
-                self._specifyTargetComponent(b.getChildrenWithFlags(b.p.flags))
+                self._specifyTargetComponent(b)
 
-    def _specifyTargetComponent(self, componentWFlag):
+    def _specifyTargetComponent(self, b, flagOfInterest=None):
         """appends target component to self._componentDeterminesBlockHeight
 
         Parameters
         ----------
-        componentWFlag
-            list of components (len == 1) that match prescribed flag
+        b
+            armi block
+        flagOfInterest
+            the flag of interest to identify the target component
 
         Notes
         -----
-        - The length of componentWFlag MUST be 1! Will throw an error otherwise.
+        - if flagOfInterest is None, finds the component within b that contains flags that
+          are defined in b.p.flags
+        - if flagOfInterest is not None, finds the component that contains the flagOfInterest.
+          This is currently used **only** for the plenum - see _setTargetComponents.
+
+        Raises
+        ------
+        RuntimeError
+            no target component found 
+        RuntimeError
+            multiple target components found
         """
-        errorMsg = "Cannot have more than one component within a block that has the target flag! \
-                    Block {0}, Flags {1}, Components {2}".format(
-            componentWFlag[0].parent, componentWFlag[0].parent.p.flags, componentWFlag
+        if flagOfInterest is None:
+            componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
+        else:
+            componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
+        if len(componentWFlag) == 0:
+            raise RuntimeError(
+                "No target component found!\n   Block {0}".format(b)
+                )
+        if len(componentWFlag) > 1:
+            raise RuntimeError(
+                "Cannot have more than one component within a block that has the target flag!"
+                "Block {0}\nflagOfInterest {1}\nComponents {2}".format(b, flagOfInterest, componentWFlag)
         )
-        assert len(componentWFlag) == 1, errorMsg
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
 
     # TO-DO update this

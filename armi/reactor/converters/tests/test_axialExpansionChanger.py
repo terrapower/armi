@@ -369,6 +369,42 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+    def test_specifyTargetComponentRuntimeErrorFirst(self):
+        # build block for testing
+        b = HexBlock("test", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        mainType = Circle("main", "Fake", **fuelDims)
+        clad = Circle("clad", "Fake", **cladDims)
+        b.add(mainType)
+        b.add(clad)
+        b.setType("test")
+        b.getVolumeFractions()
+        # do test
+        with self.assertRaises(RuntimeError) as cm:
+            self.obj.expansionData._specifyTargetComponent(b)
+
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+    
+    def test_specifyTargetComponentRuntimeErrorSecond(self):
+        # build block for testing
+        b = HexBlock("test", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        mainType = Circle("test", "Fake", **fuelDims)
+        clad = Circle("test", "Fake", **cladDims)
+        b.add(mainType)
+        b.add(clad)
+        b.setType("test")
+        b.getVolumeFractions()
+        # do test
+        with self.assertRaises(RuntimeError) as cm:
+            self.obj.expansionData._specifyTargetComponent(b)
+
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
 
 def buildTestAssemblyWithFakeMaterial(name):
     """Create test assembly consisting of list of fake material
