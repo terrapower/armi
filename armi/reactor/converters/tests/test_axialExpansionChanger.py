@@ -16,7 +16,7 @@
 
 from statistics import mean
 import unittest
-from numpy import linspace, array, vstack, zeros
+from numpy import linspace, ones, array, vstack, zeros
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
@@ -243,6 +243,46 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
 
         return mean(tmpMapping)
 
+class TestCoreExpansion(Base, unittest.TestCase):
+    """verify core-based expansion changes r.core.p.axialMesh
+    
+    Notes
+    -----
+    - Just checks that the mesh changes after expansion.
+    - Actual verification of axial expansion occurs in class TestAxialExpansionHeight
+    """
+
+    def setUp(self):
+        Base.setUp(self)
+        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.temp = Temperature(self.r.core.refAssem.getTotalHeight())
+        # populate test temperature and percent expansion data
+        self.tempGrid = {}
+        self.tempField = {}
+        self.componentLst = {}
+        self.percents = {}
+        # just use self.tempField[-1], no need to use all steps in temp.tempField 
+        for a in self.r.core.getAssemblies(includeBolAssems=True):
+            self.tempGrid[a] = self.temp.tempGrid
+            self.tempField[a] = self.temp.tempField[-1]
+            self.componentLst[a] = [c for b in a for c in b]
+            self.percents[a] = list(0.01 * ones(len(self.componentLst[a])))
+
+    def test_axiallyExpandCoreThermal(self):
+        self.obj._converterSettings["detailedAxialExpansion"] = False
+        oldMesh = self.r.core.p.axialMesh
+        self.obj.axiallyExpandCoreThermal(self.r, self.tempGrid, self.tempField)
+        self.assertNotEqual(oldMesh, self.r.core.p.axialMesh,
+            msg="The core mesh has not changed with the expansion. That's not right."
+            )
+
+    def test_axiallyExpandCorePercent(self):
+        self.obj._converterSettings["detailedAxialExpansion"] = False
+        oldMesh = self.r.core.p.axialMesh
+        self.obj.axiallyExpandCorePercent(self.r, self.componentLst, self.percents)
+        self.assertNotEqual(oldMesh, self.r.core.p.axialMesh,
+            msg="The core mesh has not changed with the expansion. That's not right."
+            )
 
 class TestConservation(Base, unittest.TestCase):
     """verify that conservation is maintained in assembly-level axial expansion"""

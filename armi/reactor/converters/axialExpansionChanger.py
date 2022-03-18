@@ -124,27 +124,59 @@ class AxialExpansionChanger:
         self._linked.a.spatialGrid._bounds = tuple(bounds)
 
 
-    def axiallyExpandCore(self, r):  # , componentLst=None, percents=None):
+    def axiallyExpandCoreThermal(self, r, tempGrid, tempField):  # , componentLst=None, percents=None):
         """
-        Perform an axial expansion of the core.
+        Perform thermally driven axial expansion of the core.
 
         Parameters
         ----------
         r
             ARMI reactor to be expanded
+        tempGrid : dictionary
+            keys --> assembly object
+            values --> grid 
+        tempField : dictionary
+            keys --> assembly object
+            values --> temperatures
 
-        Notes
-        -----
-        - Only does thermal expansion. Need to decide on data structure to account for
-          manual expansion.
         """
-        oldMesh = r.core.p.axialMesh
         for a in r.core.getAssemblies(includeBolAssems=True):
             self.setAssembly(a)
+            self.expansionData.mapHotTempToComponents(tempGrid[a], tempField[a])
             self.expansionData.computeThermalExpansionFactors()
-            # self.expansionData.setExpansionFactors() # TO-DO figure out data structure for manual expansion factors
             self.axiallyExpandAssembly()
 
+        self._manageCoreMesh(r)
+
+    def axiallyExpandCorePercent(self, r, components, percents):
+        """
+        Perform axial expansion of the core driven by user-defined expansion percentages.
+
+        Parameters
+        ----------
+        r
+            ARMI reactor to be expanded
+        components : dictionary
+            keys --> assembly object
+            values --> list of components to be expanded
+        percents : dictionary
+            keys --> assembly object
+            values --> list of percentages to expand components by
+        """
+        for a in r.core.getAssemblies(includeBolAssems=True):
+            self.setAssembly(a)
+            self.expansionData.setExpansionFactors(components[a], percents[a])
+            self.axiallyExpandAssembly()
+
+        self._manageCoreMesh(r)
+
+    def _manageCoreMesh(self, r):
+        """
+        Notes
+        -----
+        - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
+        - update average core mesh values with call to r.core.updateAxialMesh()
+        """
         if not self._converterSettings["detailedAxialExpansion"]:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             refAssem = r.core.refAssem
@@ -155,11 +187,11 @@ class AxialExpansionChanger:
                     axMesh
                 )  # , conserveMassFlag=True, adjustList=adjustList)
 
+        oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()  # floating point correction
-        newMesh = r.core.p.axialMesh
         runLog.important(
             "Adjusted full core fuel axial mesh uniformly "
-            "From {1} cm to {2} cm.".format(oldMesh, newMesh)
+            "From {0} cm to {1} cm.".format(oldMesh, r.core.p.axialMesh)
         )
 
 
