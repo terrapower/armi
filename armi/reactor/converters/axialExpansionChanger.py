@@ -74,7 +74,7 @@ class AxialExpansionChanger:
                         "Cannot run detailedAxialExpansion without a dummy block"
                         "at the top of the assembly!"
                     )
-                raise RuntimeError
+                    raise RuntimeError
 
     def axiallyExpandAssembly(self):
         """utilizes assembly linkage to do axial expansion"""
