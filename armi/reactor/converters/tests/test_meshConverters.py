@@ -115,6 +115,7 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
         self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
 
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'TestRZReactorMeshConverter.test_meshByRingCompositionAxialBinsSmallCore']
     unittest.main()
