@@ -613,7 +613,7 @@ def resampleStepwise(xin, yin, xout, avg=True):
                 chunk[0] *= fraction
 
         # return the sum or the average
-        if None in chunk:
+        if [1 for c in chunk if (not hasattr(c, "__len__") and c is None)]:
             yout.append(None)
         elif avg:
             weighted_sum = sum([c * l for c, l in zip(chunk, length)])
