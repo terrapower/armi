@@ -120,7 +120,7 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
    user settings. This also predated the plugin infrastructure, and may one day be
    replaced with plugin-based fuel handler logic.
 """
-from typing import Dict, Union, Callable, Optional, TYPE_CHECKING
+from typing import Dict, Union, Callable, TYPE_CHECKING
 
 import pluggy
 
