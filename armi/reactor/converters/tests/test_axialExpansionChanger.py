@@ -318,6 +318,37 @@ class TestConservation(Base, unittest.TestCase):
             self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
 
+    def test_ExpansionContractionConservation(self):
+        """expand all components and then contract back to original state
+
+        Notes
+        -----
+        - uniform expansion over all components within the assembly
+        - 10 total expansion steps: 5 at +1%, and 5 at -1%
+        - assertion on if original axial mesh matches the final axial mesh
+        """
+        a = buildTestAssemblyWithFakeMaterial(name="Fake")
+        obj = AxialExpansionChanger(converterSettings={})
+        obj.setAssembly(a)
+        oldMesh = a.getAxialMesh()
+        componentLst = [c for b in a for c in b]
+        for i in range(0, 10):
+            # get the percentage change
+            if i < 5:
+                percents = 0.01 + zeros(len(componentLst))
+            else:
+                percents = -0.01 + zeros(len(componentLst))
+            # set the expansion factors
+            obj.expansionData.setExpansionFactors(componentLst, percents)
+            # do the expansion
+            obj.axiallyExpandAssembly()
+
+        self.assertEqual(
+            oldMesh,
+            a.getAxialMesh(),
+            msg="Axial mesh is not the same after the expansion and contraction!",
+        )
+
     def test_TargetComponentMassConservation(self):
         """tests mass conservation for target components"""
         for idt in range(self.temp.tempSteps):

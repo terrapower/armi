@@ -88,7 +88,11 @@ class AxialExpansionChanger:
             ## if not in the dummy block, get expansion factor, do alignment, and modify block
             if ib < (numOfBlocks - 1):
                 for c in b:
-                    c.height = self.expansionData.getExpansionFactor(c) * b.p.height
+                    growFrac = self.expansionData.getExpansionFactor(c)
+                    if growFrac >= 0.0:
+                        c.height = (1.0 + growFrac) * b.p.height
+                    else:
+                        c.height = (1.0 / (1.0 - growFrac)) * b.p.height
                     # align linked components
                     if ib == 0:
                         c.zbottom = 0.0
@@ -424,8 +428,11 @@ class ExpansionData:
         for b in self.a:
             for c in b:
                 try:
-                    self.expansionFactors[c] = c.getThermalExpansionFactor(
-                        Tc=c.temperatureInC, T0=self.oldHotTemp[c]
+                    self.expansionFactors[c] = (
+                        c.getThermalExpansionFactor(
+                            Tc=c.temperatureInC, T0=self.oldHotTemp[c]
+                        )
+                        - 1.0
                     )
                 except KeyError:
                     runLog.error(
@@ -440,7 +447,7 @@ class ExpansionData:
             value = self.expansionFactors[c]
         else:
             runLog.warning("No expansion factor for {}! Setting to 1.0".format(c))
-            value = 1.0
+            value = 0.0
         return value
 
     def _setTargetComponents(self):
