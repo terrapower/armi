@@ -465,28 +465,28 @@ def _buildZonesByOrifice(core, cs):
 
     # first get all different orifice setting zones
     for a in core.getAssembliesOfType(Flags.FUEL):
-        orificeSetting = "zone" + str(a.p.THorificeZone)
+        orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.NozzleType)
         b = a.getFirstBlock(Flags.FUEL)
         cFuel = b.getComponent(Flags.FUEL)
         fuelMaterial = cFuel.getProperties()
-        if "lta" in a.getType():
-            orificeSetting = "lta" + str((orificeSetting))
-        elif "Oxide" in fuelMaterial.getName():
+        #if "lta" in a.getType():
+        #    orificeSetting = "lta" + str((orificeSetting))
+        if "Oxide" in fuelMaterial.getName():
             orificeSetting = "Oxide" + str((orificeSetting))
         if orificeSetting not in orificeZones.names:
             orificeZones.add(Zone(orificeSetting))
 
     # now put FAs of the same orifice zone in to one channel
     for a in core.getAssembliesOfType(Flags.FUEL):
-        orificeSetting = "zone" + str(a.p.THorificeZone)
+        orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.NozzleType)
         b = a.getFirstBlock(Flags.FUEL)
         cFuel = b.getComponent(Flags.FUEL)
         fuelMaterial = cFuel.getProperties()
         # get channel for lta
-        if "lta" in a.getType():
-            orificeZones["lta" + str(orificeSetting)].append(a.getLocation())
+        #if "lta" in a.getType():
+        #    orificeZones["lta" + str(orificeSetting)].append(a.getLocation())
         # account for oxide fuel
-        elif "Oxide" in fuelMaterial.getName():
+        if "Oxide" in fuelMaterial.getName():
             orificeZones["Oxide" + str(orificeSetting)].append(a.getLocation())
         # account for LTA
         else:

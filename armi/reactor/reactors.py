@@ -1064,6 +1064,10 @@ class Core(composites.Composite):
 
         return assems
 
+    def getNozzleTypes(self):
+        nozzleList = list(set(a.p.nozzleType for a in self.getAssemblies()))
+        return { nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList)) }
+
     def getBlockByName(self, name):
         """
         Finds a block based on its name.
