@@ -82,9 +82,9 @@ class SystemBlueprint(yamlize.Object):
 
         manager = armi.getPluginManagerOrFail()
 
-        # Only need this to handle the case we don't find the grid we expect
+        # Only need this to handle the case we don't find the system we expect
         seen = set()
-        for options in manager.hook.defineSystemGridBuilders():
+        for options in manager.hook.defineSystemBuilders():
             for key, builder in options.items():
                 # Take the first match we find. This would allow other plugins to
                 # define a new core builder before finding those defined by the

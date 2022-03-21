@@ -570,7 +570,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineSystemGridBuilders() -> Dict[str, Callable[[str], "Composite"]]:
+    def defineSystemBuilders() -> Dict[str, Callable[[str], "Composite"]]:
         """
         Convert a user-string from the systems section into a valid composite builder
 
