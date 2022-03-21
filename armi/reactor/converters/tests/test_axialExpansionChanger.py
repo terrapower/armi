@@ -376,7 +376,7 @@ class TestExceptions(Base, unittest.TestCase):
 
     def test_setExpansionFactors(self):
         with self.assertRaises(RuntimeError) as cm:
-            cList = self.a.getChildren()
+            cList = self.a[0].getChildren()
             percents = range(len(cList) + 1)
             self.obj.expansionData.setExpansionFactors(cList, percents)
             the_exception = cm.exception
