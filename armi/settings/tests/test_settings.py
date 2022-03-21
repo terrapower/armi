@@ -360,15 +360,6 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
 
-
-class TestSettingsConversion(unittest.TestCase):
-    """Make sure we can convert from old XML type settings to new Yaml settings."""
-
-    def test_convert(self):
-        cs = caseSettings.Settings()
-        cs.loadFromInputFile(TEST_XML)
-        self.assertEqual(cs["buGroups"], [3, 10, 20, 100])
-
     def test_empty(self):
         cs = caseSettings.Settings()
         cs = cs.modified(newSettings={"buGroups": []})

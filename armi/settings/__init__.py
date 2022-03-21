@@ -136,12 +136,11 @@ def promptForSettingsFile(choice=None):
     Parameters
     ----------
     choice : int, optional
-        The item in the list of valid XML files to load
-
+        The item in the list of valid YAML files to load
     """
     runLog.info("Welcome to the ARMI Loader")
     runLog.info("Scanning for ARMI settings files...")
-    files = sorted(glob.glob("*.yaml") + glob.glob("*.xml"))  # phase out xml later
+    files = sorted(glob.glob("*.yaml"))
     if not files:
         runLog.info(
             "No eligible settings files found. Creating settings without choice"
@@ -200,6 +199,7 @@ def convertSettingsFromXMLToYaml(cs):
         # don't overwrite anything
         newName = "{}{}.yaml".format(newNameBase, counter)
         counter += 1
+
     if counter:
         runLog.warning(
             "{} already exists in YAML format; writing {} instead".format(
