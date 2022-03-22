@@ -112,7 +112,7 @@ class AxialExpansionChanger:
 
             ## see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
-            oldComponentVolumes = _getComponentVolumes(b)
+            oldComponentVolumes = [c.getVolume() for c in b]
             oldHeight = b.getHeight()
             b.p.height = b.p.ztop - b.p.zbottom
             _checkBlockHeight(b)
@@ -198,38 +198,12 @@ class AxialExpansionChanger:
         )
 
 
-def _getComponentVolumes(b):
-    """manually retrieve volume of components within a block
-
-    Parameters
-    ----------
-    c
-        ARMI component
-
-    Notes
-    -----
-    This is functionally very similar to c.computeVolume(), however differs in
-    the temperatures that get used to compute dimensions.
-    - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
-    cold=False results in self.getDimension to use the cold/input component temperature.
-    However, we want the "old hot" temp to be used. So, here we manually call
-    c.getArea and pass in the correct "cold" (old hot) temperature. This ensures that
-    component mass is conserved.
-
-    """
-    cVolumes = []
-    for c in b:
-        cVolumes.append(c.getArea(cold=c.temperatureInC) * c.parent.getHeight())
-
-    return cVolumes
-
-
 def _conserveComponentMass(b, oldHeight, oldVolume):
     """Update block height dependent component parameters
     1) update component volume (used to compute block volume)
     2) update number density
     """
-    for ic, c in enumerate(b[:-1]):
+    for ic, c in enumerate(b):
         c.p.volume = oldVolume[ic] * b.p.height / oldHeight
         for key in c.getNuclides():
             c.setNumberDensity(key, c.getNumberDensity(key) * oldHeight / b.p.height)
@@ -381,10 +355,13 @@ class ExpansionData:
         - maps the radially uniform axial temperature distribution to components
         - searches for temperatures that fall within the bounds of a block,
           averages them, and assigns them as appropriate
-        - tempGrid and tempField must be same length
-        - provides an example for mapping temperature field to components. Can be replaced
-          with a different approach (e.g., from a plugin). The only requirement is that
-          a temperature is mapped to **all** components.
+        - The second portion, when component volume is set, is functionally very similar
+        to c.computeVolume(), however differs in the temperatures that get used to compute dimensions.
+           - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
+        cold=False results in self.getDimension to use the cold/input component temperature.
+        However, we want the "old hot" temp to be used. So, here we manually call
+        c.getArea and pass in the correct "cold" (old hot) temperature. This ensures that
+        component mass is conserved.
 
         Raises
         ------
@@ -415,11 +392,13 @@ class ExpansionData:
                 )
 
             blockAveTemp = mean(tmpMapping)
-            # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
-            # and ruins mass conservation via number densities. Instead,
-            # set manually.
             for c in b:
                 self.oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
+                # set component volume to be evaluated at "old" hot temp
+                c.p.volume = c.getArea(cold=self.oldHotTemp[c]) * c.parent.getHeight()
+                # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
+                # and ruins mass conservation via number densities. Instead,
+                # set manually.
                 c.temperatureInC = blockAveTemp
 
     def computeThermalExpansionFactors(self):

@@ -315,8 +315,8 @@ class TestConservation(Base, unittest.TestCase):
                 self.temp.tempGrid, self.temp.tempField[idt, :]
             )
             self.obj.expansionData.computeThermalExpansionFactors()
-            self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
+            self.obj.axiallyExpandAssembly()
 
     def test_ExpansionContractionConservation(self):
         """expand all components and then contract back to original state
@@ -339,9 +339,13 @@ class TestConservation(Base, unittest.TestCase):
             else:
                 percents = -0.01 + zeros(len(componentLst))
             # set the expansion factors
+            oldMasses = [c.getMass() for b in a for c in b if obj.expansionData.isTargetComponent(c)]
             obj.expansionData.setExpansionFactors(componentLst, percents)
             # do the expansion
             obj.axiallyExpandAssembly()
+            newMasses = [c.getMass() for b in a for c in b if obj.expansionData.isTargetComponent(c)]
+            for old,new in zip(oldMasses, newMasses):
+                self.assertAlmostEqual(old,new)
 
         self.assertEqual(
             oldMesh,
