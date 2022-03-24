@@ -138,8 +138,6 @@ Naming quick-reference
       - ``_assemblies``
     * - variable names
       - ``linearHeatGenerationRate``
-
-        ``lhgr`` if it is commonly used by subject-matter experts.
       - ``_unusedDescription``
 
         There are not "private" variables, use this for an unused variable.
@@ -159,8 +157,8 @@ Other names are also consistently used throughout ARMI for specific objects:
 * ``lib`` when referring to a cross section library (would have been better as ``xsLib``)
 
 
-Break large methods into operative sections.
-============================================
+Prefer shorter methods
+======================
 A method should have one clear purpose. If you are writing a method that does one thing after the other,
 break it up into multiple methods and have a primary method call them in order. If your method is longer
 than 100 lines, see if you can't break it up. This does a few things:
@@ -173,14 +171,8 @@ than 100 lines, see if you can't break it up. This does a few things:
 Avoid repeating code
 ====================
 In other words, don't repeat yourself. (`D. R. Y. <https://en.wikipedia.org/wiki/Don't_repeat_yourself>`_).
-Repetitious code is harder to read, and will be annoying for others to update in the future. If you ever find
-yourself copying and pasting code, consider pulling the repeated code out into it's own function.
-
-Use comments only when you cannot express what you're doing with names
-======================================================================
-Use comments sparingly. This is important because often code gets updated but comments do not, which leads to
-confusion and lost time. Strive to express what the code is doing and why with descriptive variable and method names.
-Of course, some times you will have to use comments.
+Repetitious code is harder to read, and harderd for others to update. If you ever find yourself copying and pasting
+code, consider pulling the repeated code out into it's own function, or using a loop.
 
 Public methods should have docstrings
 =====================================
@@ -190,17 +182,17 @@ functions and public classes.
 Unit tests
 ==========
 All ARMI developers are required to write unit tests. In particular, if you are adding new code to the code base, you
-will be required to add unit tests for your new code.
+are required to add unit tests for your new code.
 
 ARMI uses the ``pytest`` library to drive tests, therefore tests need to be runnable from the commandline by
 ``python -m pytest armi``. Furthermore, for consistency:
 
-* Each individual unit test should take under 5 seconds.
-* All unit tests together should take under 30 seconds.
-* All unit tests **shall** be placed into a separate module from production code that is prefixed with ``test_``.
-* All unit tests **shall** be written in object-oriented fashion, inheriting from ``unittest.TestCase``.
-* All test method names **shall** start with ``test_``.
-* All test method names **shall** be descriptive. If the test method is not descriptive enough, add a docstring.
+* Each individual unit test should take under 10 seconds, on a modern laptop.
+* All unit tests together should take under 60 seconds, on a modern laptop.
+* All unit tests should be placed into a separate module from production code that is prefixed with ``test_``.
+* All unit tests should be written in object-oriented fashion, inheriting from ``unittest.TestCase``.
+* All test method names should start with ``test_``.
+* All test method names should be descriptive. If the test method is not descriptive enough, add a docstring.
 * Unit tests should have at least one assertion.
 
 Import statements
@@ -217,7 +209,7 @@ Import ordering
 For consistency, import packages in this order:
 
 1. Python built-in packages
-2. External 3rd party packages
+2. External third-party packages
 3. ARMI modules
 
 Place a single line between each of these groups, for example:
@@ -275,23 +267,23 @@ Data model
 Any reactor state information that is created by an ``Interface`` should be stored in the ARMI data model. The goal
 is that given minimal information (i.e. case settings and blueprints) ARMI should be able to load an entire reactor
 simulation from a given database. If you add state data to your modeling that isn't stored in the reactor, or add
-new input files, you will break this paradigm and make everyone's life just a little harder.
+new input files, you will break this paradigm and make everyone's life just a little bit harder.
 
 Input files
 ===========
-ARMI developers **shall** use one of the following well defined, Python supported, input file formats.
+ARMI developers **shall** use one of the following well-defined, Python-supported, input file formats.
 
 .json
     JSON files are used for a variety of data-object representations. There are some limitations of JSON, in that it
     does not easily support comments. JSON is also very strict.
 
 .yaml
-	YAML files are like JSON files but can have comments in them.
+    YAML files are like JSON files but can have comments in them.
 
 Address the pylint warnings
 ===========================
-Our code review system and IDEs integrate with the automatic code checker, pylint. Any new code you add to the code
-base must have zero pylint warnings or errors.
+Our pull request system integrates with the automatic code checker, pylint. Any new code you add must have
+zero pylint warnings or errors.
 
 General do's and don'ts
 =======================
@@ -304,6 +296,6 @@ do not use ``super``
     ``__init__``, use ``ParentClass.__init__(self, plus, additional, arguments)``.
 
 do not leave ``TODO`` statements in production code
-    NQA-1 requires that the code be "complete", and a ``TODO`` statement leaves the code looking
-    incomplete. Therefore, do not leave ``TODO`` statements within production code. Instead, open a ticket.
+    NQA-1 requires that the code be "complete", and a ``TODO`` statement leaves the code looking incomplete.
+    Therefore, do not leave ``TODO`` statements within production code. Instead, open a ticket.
     If your ``TODO`` statement is important, perhaps it should be a GitHub Issue.
