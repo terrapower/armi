@@ -46,7 +46,7 @@ FILE_SPEC_1D_KEYS = (
     "iorder",
 )
 
-FILE_SPEC_1D_KEYS_VARIANT10 = (
+FILE_SPEC_1D_KEYS_VARIANT11 = (
     "npcbdy",
     "npcsym",
     "npcsec",
@@ -165,8 +165,8 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             data set. Each data set overwrites the previous one on the NHFLUX class object, which will contain
             only the numDataSetsToRead-th data set. The first numDataSetsToRead-1 data sets are essentially
             skipped over.
-
         """
+
         self._rwFileID()
         self._rwBasicFileData1D()
 
@@ -209,12 +209,12 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # The axial surface partial currents are indexed by axial surface (NOT by axial node),
             # so there are nz+1 records for z-surface currents
 
-            # Loop through all energy groups: high-to-low for real, low-to-high for adjoint
+            # Loop through all energy groups: high-to-low for forward flux, low-to-high for
+            # adjoint flux
             for g in range(ng):  # loop through energy groups
-
                 gEff = self._getEnergyGroupIndex(g)
-
                 for z in range(nz):  # loop through axial nodes
+
                     self._data.fluxMoments[:, z, :, gEff] = self._rwFluxMoments3D(
                         self._data.fluxMoments[:, z, :, gEff]
                     )
@@ -262,7 +262,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.)
         """
         if self._metadata["variantFlag"]:
-            keys = FILE_SPEC_1D_KEYS + FILE_SPEC_1D_KEYS_VARIANT10
+            keys = FILE_SPEC_1D_KEYS + FILE_SPEC_1D_KEYS_VARIANT11  + ("IDUM",) * 6
         else:
             keys = FILE_SPEC_1D_KEYS + ("IDUM",) * 11
 
