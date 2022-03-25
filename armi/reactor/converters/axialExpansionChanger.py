@@ -37,7 +37,7 @@ class AxialExpansionChanger:
             settings are implementation specific.
         """
         self._converterSettings = converterSettings
-        self._linked = None
+        self.linked = None
         self.expansionData = None
 
     def setAssembly(self, a):
@@ -48,7 +48,7 @@ class AxialExpansionChanger:
         a
             ARMI assembly to be changed
         """
-        self._linked = AssemblyAxialLinkage(a)
+        self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(a)
         self._isTopDummyBlockPresent()
 
@@ -61,12 +61,12 @@ class AxialExpansionChanger:
         - If false, the top most block in the assembly is artificially chopped
           to preserve the assembly height. A runLog.Warning also issued.
         """
-        blkLst = self._linked.a.getBlocks()
+        blkLst = self.linked.a.getBlocks()
         if not blkLst[-1].hasFlags(Flags.DUMMY):
             runLog.warning(
                 "No dummy block present at the top of {0}! "
                 "Top most block will be artificially chopped "
-                "to preserve assembly height".format(self._linked.a)
+                "to preserve assembly height".format(self.linked.a)
             )
             if "detailedAxialExpansion" in self._converterSettings:  # avoid KeyError
                 if self._converterSettings["detailedAxialExpansion"]:
@@ -79,12 +79,12 @@ class AxialExpansionChanger:
     def axiallyExpandAssembly(self):
         """utilizes assembly linkage to do axial expansion"""
         mesh = [0.0]
-        numOfBlocks = self._linked.a.countBlocksWithFlags()
-        for ib, b in enumerate(self._linked.a):
+        numOfBlocks = self.linked.a.countBlocksWithFlags()
+        for ib, b in enumerate(self.linked.a):
             ## set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
-                b.p.zbottom = self._linked.linkedBlocks[b][0].p.ztop
+                b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             ## if not in the dummy block, get expansion factor, do alignment, and modify block
             if ib < (numOfBlocks - 1):
                 for c in b:
@@ -97,14 +97,14 @@ class AxialExpansionChanger:
                     if ib == 0:
                         c.zbottom = 0.0
                     else:
-                        if self._linked.linkedComponents[c][0] is not None:
+                        if self.linked.linkedComponents[c][0] is not None:
                             # use linked components below
-                            c.zbottom = self._linked.linkedComponents[c][0].ztop
+                            c.zbottom = self.linked.linkedComponents[c][0].ztop
                         else:
                             # otherwise there aren't any linked components
                             # so just set the bottom of the component to
                             # the top of the block below it
-                            c.zbottom = self._linked.linkedBlocks[b][0].p.ztop
+                            c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
@@ -121,11 +121,11 @@ class AxialExpansionChanger:
             # - functionality based on assembly.calculateZCoords()
             b.p.z = b.p.zbottom + b.p.height / 2.0
             mesh.append(b.p.ztop)
-            b.spatialLocator = self._linked.a.spatialGrid[0, 0, ib]
+            b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-        bounds = list(self._linked.a.spatialGrid._bounds)
+        bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
-        self._linked.a.spatialGrid._bounds = tuple(bounds)
+        self.linked.a.spatialGrid._bounds = tuple(bounds)
 
     def axiallyExpandCoreThermal(self, r, tempGrid, tempField):
         """
