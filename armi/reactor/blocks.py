@@ -113,6 +113,7 @@ class Block(composites.Composite):
         # TODO: what's causing these to have wrong values at BOL?
         for problemParam in ["THcornTemp", "THedgeTemp"]:
             self.p[problemParam] = []
+
         for problemParam in [
             "residence",
             "bondRemoved",
