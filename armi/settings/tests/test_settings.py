@@ -37,7 +37,6 @@ from armi.reactor.flags import Flags
 from armi.utils.customExceptions import NonexistentSetting
 
 THIS_DIR = os.path.dirname(__file__)
-TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
 
 
 class DummyPlugin1(plugins.ArmiPlugin):
