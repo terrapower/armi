@@ -251,12 +251,9 @@ class SettingsReader:
             else:
                 # apply validations
                 settingObj = self.cs.getSetting(settingName)
-                if value:
-                    value = applyTypeConversions(settingObj, value)
 
-                # The value is automatically coerced into the
-                # expected type when set using either the default or
-                # user-defined schema
+                # The value is automatically coerced into the expected type
+                # when set using either the default or user-defined schema
                 self.cs[settingName] = value
 
     def applyConversions(self, name, value):
@@ -277,19 +274,6 @@ class SettingsReader:
             settingsToApply.update(func(self.cs, name, value))
 
         return settingsToApply
-
-
-# TODO: JOHN, do we still need to do this?
-def applyTypeConversions(settingObj, value):
-    """
-    Coerce value to proper type given a valid setting object.
-
-    Useful in converting XML settings with no type info (all string) as well as
-    in GUI operations.
-    """
-    if settingObj.underlyingType == list and not isinstance(value, list):
-        return ast.literal_eval(value)
-    return value
 
 
 class SettingsWriter:
