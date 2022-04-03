@@ -234,41 +234,6 @@ def getAssemblyParameterDefinitions():
             default=0,  # integer default
         )
 
-    with pDefs.createBuilder(
-        location="N/A", default=0.0, categories=["control rods"]
-    ) as pb:
-
-        pb.defParam(
-            "crCurrentHeight",
-            units="cm",
-            description="The current height of the bottom of the control material from the 0 point in the reactor model",
-            categories=[parameters.Category.assignInBlueprints],
-        )
-
-        pb.defParam(
-            "crEndingHeight",
-            units="cm",
-            description="The final position of the bottom of the control material when "
-            "starting control operations as measured from the 0 point in the reactor model",
-        )
-
-        pb.defParam(
-            "crRodLength",
-            units="cm",
-            description="length of the control material within the control rod",
-            categories=[parameters.Category.assignInBlueprints],
-        )
-
-        pb.defParam(
-            "crStartingHeight",
-            units="cm",
-            description="The initial starting position of the bottom of the control "
-            "material when starting control operations as measured from the 0 point in the "
-            "reactor model. Note that the starting height is taken to be a maximum withdrawn "
-            "location for the control rod for determining the position when the control rod "
-            "is fully withdrawn.",
-        )
-
     with pDefs.createBuilder() as pb:
 
         pb.defParam(

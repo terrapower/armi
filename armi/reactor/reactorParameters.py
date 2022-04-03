@@ -224,8 +224,6 @@ def defineCoreParameters():
             description="The item index of the inner matrix in an optimization case",
         )
 
-        pb.defParam("keffUnc", units=None, description="Uncontrolled keff")
-
         pb.defParam(
             "lastKeff",
             units=None,

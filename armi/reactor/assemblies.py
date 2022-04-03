@@ -973,36 +973,6 @@ class Assembly(composites.Composite):
 
         return blocksHere
 
-    def getBlockLengthAboveAndBelowHeight(self, height):
-        """
-        Returns a tuple with the amount of a block above or below a given height in an assembly.
-
-        Used to determine what fraction of the block should be merged with a control
-        rod.
-
-        Parameters
-        ----------
-        height : float
-            The height of interest to grab a block (cm)
-
-        Returns
-        -------
-        distances : tuple
-            tuple containing the distance from height to top of block followed by
-            distance of height to bottom of block
-
-        """
-        for b in self:
-            if height > b.p.zbottom and height <= b.p.ztop:
-                distanceFromTop = abs(b.p.ztop - height)
-                distanceFromBottom = abs(height - b.p.zbottom)
-                break
-        else:
-            raise ValueError(
-                "There are no blocks in {} at a height of {} cm".format(self, height)
-            )
-        return (distanceFromTop, distanceFromBottom)
-
     def getParamValuesAtZ(
         self, param, elevations, interpType="linear", fillValue=numpy.NaN
     ):
