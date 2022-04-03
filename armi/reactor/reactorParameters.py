@@ -225,6 +225,16 @@ def defineCoreParameters():
         )
 
         pb.defParam(
+            "keffUnc",
+            units=None,
+            saveToDB=True,
+            default=0.0,
+            description=(
+                "Uncontrolled k-effective for the reactor core (with control rods fully removed).."
+            ),
+        )
+
+        pb.defParam(
             "lastKeff",
             units=None,
             description="Previously calculated Keff for potential keff convergence",
