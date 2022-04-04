@@ -24,7 +24,10 @@ from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape
 from armi.reactor.components.basicShapes import Circle, Hexagon
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.converters.axialExpansionChanger import (
+    AxialExpansionChanger,
+    ExpansionData,
+)
 from armi.reactor.flags import Flags
 
 
@@ -500,6 +503,34 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+    def test_isFuelLocked(self):
+        b_TwoFuel = HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        fuel2Dims = {
+            "Tinput": 25.0,
+            "Thot": 25.0,
+            "od": 0.80,
+            "id": 0.77,
+            "mult": 127.0,
+        }
+        fuel = Circle("fuel", "Fake", **fuelDims)
+        fuel2 = Circle("fuel", "Fake", **fuel2Dims)
+        b_TwoFuel.add(fuel)
+        b_TwoFuel.add(fuel2)
+        b_TwoFuel.setType("test")
+        expdata = ExpansionData(HexAssembly("testAssemblyType"))
+        # do test
+        with self.assertRaises(RuntimeError) as cm:
+            expdata._isFuelLocked(b_TwoFuel)  # pylint: disable=protected-access
+
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+        b_NoFuel = HexBlock("fuel", height=10.0)
+        shield = Circle("shield", "Fake", **fuelDims)
+        b_NoFuel.add(shield)
+        with self.assertRaises(RuntimeError) as cm:
+            expdata._isFuelLocked(b_NoFuel)  # pylint: disable=protected-access
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
