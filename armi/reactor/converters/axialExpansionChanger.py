@@ -495,15 +495,15 @@ class ExpansionData:
         """
         for b in self._a:
             if b.hasFlags(Flags.PLENUM):
-                self._specifyTargetComponent(b, Flags.CLAD)
+                self.specifyTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
-                self._specifyTargetComponent(b, Flags.COOLANT)
+                self.specifyTargetComponent(b, Flags.COOLANT)
             elif b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
-                self._specifyTargetComponent(b)
+                self.specifyTargetComponent(b)
 
-    def _specifyTargetComponent(self, b, flagOfInterest=None):
+    def specifyTargetComponent(self, b, flagOfInterest=None):
         """appends target component to self._componentDeterminesBlockHeight
 
         Parameters

@@ -477,7 +477,7 @@ class TestExceptions(Base, unittest.TestCase):
         b.getVolumeFractions()
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData._specifyTargetComponent(b)
+            self.obj.expansionData.specifyTargetComponent(b)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -495,7 +495,11 @@ class TestExceptions(Base, unittest.TestCase):
         b.getVolumeFractions()
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData._specifyTargetComponent(b)
+            self.obj.expansionData.specifyTargetComponent(b)
+
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
