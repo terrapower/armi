@@ -52,7 +52,7 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        a
+         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
             ARMI assembly to be changed
         """
         self.linked = AssemblyAxialLinkage(a)
@@ -140,14 +140,14 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        r
+        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             ARMI reactor to be expanded
         tempGrid : dictionary
-            keys --> assembly object
-            values --> grid
+            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
+            values --> grid (list of floats)
         tempField : dictionary
-            keys --> assembly object
-            values --> temperatures
+            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+            values --> temperatures (list of floats)
 
         """
         for a in r.core.getAssemblies(includeBolAssems=True):
@@ -164,14 +164,14 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        r
+        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             ARMI reactor to be expanded
-        components : dictionary
-            keys --> assembly object
-            values --> list of components to be expanded
-        percents : dictionary
-            keys --> assembly object
-            values --> list of percentages to expand components by
+        components : dict
+            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
+            values --> list of :py:class:`Component <armi.reactor.components.component.Component>` to be expanded
+        percents : dict
+            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
+            values --> list of percentages to expand :py:class:`Component <armi.reactor.components.component.Component>` by # pylint: disable=line-too-long
         """
         for a in r.core.getAssemblies(includeBolAssems=True):
             self.setAssembly(a)
@@ -182,6 +182,13 @@ class AxialExpansionChanger:
 
     def _manageCoreMesh(self, r):
         """
+        manage core mesh post assembly-level expansion
+
+        Parameters
+        ----------
+        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+            ARMI reactor to have mesh modified
+
         Notes
         -----
         - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
@@ -207,8 +214,16 @@ class AxialExpansionChanger:
 
 def _conserveComponentMass(b, oldHeight, oldVolume):
     """Update block height dependent component parameters
+
     1) update component volume (used to compute block volume)
     2) update number density
+
+    Parameters
+    ----------
+    oldHeight : list of floats
+        list containing block heights pre-expansion
+    oldVolume : list of floats
+        list containing component volumes pre-expansion
     """
     for ic, c in enumerate(b):
         c.p.volume = oldVolume[ic] * b.p.height / oldHeight
@@ -264,6 +279,11 @@ class AssemblyAxialLinkage:
     def _getLinkedBlocks(self, b):
         """retrieve the axial linkage for block b
 
+        Parameters
+        ----------
+        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+            block to determine axial linkage for
+
         NOTES
         -----
         - block linkage is determined by matching ztop/zbottom (see below)
@@ -292,7 +312,15 @@ class AssemblyAxialLinkage:
         self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
 
     def _getLinkedComponents(self, b, c):
-        """retrieve the axial linkage for component c"""
+        """retrieve the axial linkage for component c
+
+        Parameters
+        ----------
+        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+            key to access blocks containing linked components
+        c : :py:class:`Component <armi.reactor.components.component.Component>` object
+            component to determine axial linkage for
+        """
         lstLinkedC = [None, None]
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
@@ -335,9 +363,9 @@ class ExpansionData:
 
         Parameters
         ----------
-        componentLst
-            list of armi component objects to have their heights changed
-        percents
+        componentLst : list of :py:class:`Component <armi.reactor.components.component.Component>`
+            list of :py:class:`Component <armi.reactor.components.component.Component>` objects to have their heights changed # pylint: disable=line-too-long
+        percents : list of floats
             list of height changes in percent that are to be applied to componentLst
 
         Raises
@@ -442,7 +470,17 @@ class ExpansionData:
                     raise
 
     def getExpansionFactor(self, c):
-        """retrieves expansion factor for c. If not set, assumes it to be 1.0 (i.e., no change)"""
+        """retrieves expansion factor for c
+
+        Parameters
+        ----------
+        c : :py:class:`Component <armi.reactor.components.component.Component>` object
+            :py:class:`Component <armi.reactor.components.component.Component>` object to retrive expansion factor for
+
+        Notes
+        -----
+        - warning is raised if expansion factor is not set and assumes it to be 1.0 (i.e., no change)
+        """
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
         else:
@@ -470,9 +508,9 @@ class ExpansionData:
 
         Parameters
         ----------
-        b
-            armi block
-        flagOfInterest
+        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+            block to specify target component for
+        flagOfInterest : :py:class:`Flags <armi.reactor.flags.Flags>` object
             the flag of interest to identify the target component
 
         Notes
@@ -480,7 +518,6 @@ class ExpansionData:
         - if flagOfInterest is None, finds the component within b that contains flags that
           are defined in b.p.flags
         - if flagOfInterest is not None, finds the component that contains the flagOfInterest.
-          This is currently used **only** for the plenum - see _setTargetComponents.
 
         Raises
         ------
@@ -512,4 +549,11 @@ class ExpansionData:
                 self._componentDeterminesBlockHeight[c] = True
 
     def isTargetComponent(self, c):
+        """returns bool if c is a target component
+
+        Parameters
+        ----------
+        c : :py:class:`Component <armi.reactor.components.component.Component>` object
+            :py:class:`Component <armi.reactor.components.component.Component>` object to check target component status
+        """
         return bool(c in self._componentDeterminesBlockHeight)
