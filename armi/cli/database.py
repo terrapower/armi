@@ -120,11 +120,7 @@ class ExtractInputs(EntryPoint):
         with db:
             settings, geom, bp = db.readInputsFromDB()
 
-        settingsExt = ".yaml"
-        if settings.lstrip()[0] == "<":
-            settingsExt = ".xml"
-
-        settingsPath = self.args.output_base + "_settings" + settingsExt
+        settingsPath = self.args.output_base + "_settings.yaml"
         bpPath = self.args.output_base + "_blueprints.yaml"
 
         geomPath = None

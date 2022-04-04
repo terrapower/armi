@@ -182,14 +182,7 @@ class CompareSuites(CompareCases):
         # contains all tests that user had access to
         allTests = []
         for pat in self.args.patterns + self.args.additional_comparisons:
-            name, ext = os.path.splitext(pat)
             allTests.append(pat)
-            if ext == ".yaml":
-                # auto-add XML variants of yaml settings
-                # to accommodate comparisons against xml suites (e.g. testing)
-                xmlName = name + ".xml"
-                runLog.extra("Including {} in reference patterns.".format(xmlName))
-                allTests.append(xmlName)
         refSuite.discover(
             rootDir=self.args.reference,
             patterns=allTests,

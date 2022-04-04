@@ -19,7 +19,7 @@ object has access to it. It contains global user settings like the core
 power level, the input file names, the number of cycles to run, the run type,
 the environment setup, and hundreds of other things.
 
-A settings object can be saved as or loaded from an XML file. The ARMI GUI is designed to
+A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
 A master case settings is created as ``masterCs``
@@ -219,11 +219,7 @@ class Settings:
 
     def loadFromInputFile(self, fName, handleInvalids=True, setPath=True):
         """
-        Read in settings from an input file.
-
-        Supports YAML and two XML formats, the newer (tags are the key, etc.)
-        and the former (tags are the type, etc.). If the extension is ``xml``,
-        it assumes XML format. Otherwise, YAML is assumed.
+        Read in settings from an input YAML file.
 
         Passes the reader back out in case you want to know something about how the reading went
         like for knowing if a file contained deprecated settings, etc.
@@ -248,10 +244,7 @@ class Settings:
         return settingsIO.SettingsReader(self), path
 
     def loadFromString(self, string, handleInvalids=True):
-        """Read in settings from a string.
-
-        Supports two xml formats, the newer (tags are the key, etc.) and the former
-        (tags are the type, etc.)
+        """Read in settings from a YAML string.
 
         Passes the reader back out in case you want to know something about how the
         reading went like for knowing if a file contained deprecated settings, etc.
@@ -265,8 +258,6 @@ class Settings:
 
         reader = settingsIO.SettingsReader(self)
         fmt = reader.SettingsInputFormat.YAML
-        if string.strip()[0] == "<":
-            fmt = reader.SettingsInputFormat.XML
         reader.readFromStream(
             io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
         )
@@ -290,23 +281,6 @@ class Settings:
             runLog.setVerbosity(self["branchVerbosity"])
 
         self.setModuleVerbosities(force=True)
-
-    def writeToXMLFile(self, fName, style="short"):
-        """Write out settings to an xml file
-
-        Parameters
-        ----------
-        fName : str
-            the file to write to
-        style : str
-            the method of XML output to be used when creating the xml file for
-            the current state of settings
-        """
-        self.path = pathTools.armiAbsPath(fName)
-        writer = settingsIO.SettingsWriter(self, style=style)
-        with open(self.path, "w") as stream:
-            writer.writeXml(stream)
-        return writer
 
     def writeToYamlFile(self, fName, style="short"):
         """
