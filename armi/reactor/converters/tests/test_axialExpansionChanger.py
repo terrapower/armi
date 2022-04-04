@@ -339,13 +339,23 @@ class TestConservation(Base, unittest.TestCase):
             else:
                 percents = -0.01 + zeros(len(componentLst))
             # set the expansion factors
-            oldMasses = [c.getMass() for b in a for c in b if obj.expansionData.isTargetComponent(c)]
+            oldMasses = [
+                c.getMass()
+                for b in a
+                for c in b
+                if obj.expansionData.isTargetComponent(c)
+            ]
             obj.expansionData.setExpansionFactors(componentLst, percents)
             # do the expansion
             obj.axiallyExpandAssembly()
-            newMasses = [c.getMass() for b in a for c in b if obj.expansionData.isTargetComponent(c)]
-            for old,new in zip(oldMasses, newMasses):
-                self.assertAlmostEqual(old,new)
+            newMasses = [
+                c.getMass()
+                for b in a
+                for c in b
+                if obj.expansionData.isTargetComponent(c)
+            ]
+            for old, new in zip(oldMasses, newMasses):
+                self.assertAlmostEqual(old, new)
 
         self.assertEqual(
             oldMesh,
