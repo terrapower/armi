@@ -132,7 +132,7 @@ class NonexistentSetting(SettingException):
 
 
 class InvalidSettingsFileError(SettingException):
-    """Not a valid xml or settings file"""
+    """Not a valid settings file"""
 
     def __init__(self, path, customMsgEnd=""):
         msg = "Attempted to load an invalid settings file from: {}. ".format(path)

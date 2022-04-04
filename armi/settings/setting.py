@@ -24,12 +24,6 @@ for settings that are more complex dictionaries (e.g. XS, rx coeffs, etc.).
 
 One reason for complexity of the previous settings implementation was
 good interoperability with the GUI widgets.
-
-We originally thought putting settings definitions in XML files would
-help with future internationalization. This is not the case.
-Internationalization will likely be added later with string interpolators given
-the desire to internationalize, which is nicely compatible with this
-code-based re-implementation.
 """
 
 import copy
@@ -163,9 +157,7 @@ class Setting:
         elif self.options and self.enforcedOptions:
             self.schema = vol.Schema(vol.In(self.options))
         else:
-            # Coercion is needed to convert XML-read migrations (for old cases)
-            # as well as in some GUI instances where lists are getting set
-            # as strings.
+            # Coercion is needed in some GUI instances where lists are getting set as strings.
             if isinstance(self.default, list) and self.default:
                 # Non-empty default: assume the default has the desired contained type
                 # Coerce all values to the first entry in the default so mixed floats and ints work.
