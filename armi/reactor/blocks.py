@@ -219,6 +219,7 @@ class Block(composites.Composite):
         self.p.assemNum = assemNum
         return "B{0:04d}-{1:03d}".format(assemNum, axialIndex)
 
+    # TODO: Nick believes this is a no-op method, and/or perhaps totally unused.
     def makeUnique(self):
         """
         Assign a unique id (integer value) for each block.
