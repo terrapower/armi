@@ -303,9 +303,9 @@ class ExpansionData:
     """object containing data needed for axial expansion"""
 
     def __init__(self, a):
-        self.a = a
-        self.oldHotTemp = {}
-        self.expansionFactors = {}
+        self._a = a
+        self._oldHotTemp = {}
+        self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents()
 
@@ -338,7 +338,7 @@ class ExpansionData:
             )
             raise RuntimeError
         for c, p in zip(componentLst, percents):
-            self.expansionFactors[c] = p
+            self._expansionFactors[c] = p
 
     def mapHotTempToComponents(self, tempGrid, tempField):
         """map axial temp distribution to blocks and components in self.a
@@ -374,8 +374,8 @@ class ExpansionData:
             runLog.error("tempGrid and tempField must have the same length.")
             raise RuntimeError
 
-        self.oldHotTemp = {}  # reset, just to be safe
-        for b in self.a:
+        self._oldHotTemp = {}  # reset, just to be safe
+        for b in self._a:
             tmpMapping = []
             for idz, z in enumerate(tempGrid):
                 if b.p.zbottom <= z <= b.p.ztop:
@@ -393,9 +393,9 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self.oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
+                self._oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
                 # set component volume to be evaluated at "old" hot temp
-                c.p.volume = c.getArea(cold=self.oldHotTemp[c]) * c.parent.getHeight()
+                c.p.volume = c.getArea(cold=self._oldHotTemp[c]) * c.parent.getHeight()
                 # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
                 # and ruins mass conservation via number densities. Instead,
                 # set manually.
@@ -404,26 +404,26 @@ class ExpansionData:
     def computeThermalExpansionFactors(self):
         """computes expansion factors for all components via thermal expansion"""
 
-        for b in self.a:
+        for b in self._a:
             for c in b:
                 try:
-                    self.expansionFactors[c] = (
+                    self._expansionFactors[c] = (
                         c.getThermalExpansionFactor(
-                            Tc=c.temperatureInC, T0=self.oldHotTemp[c]
+                            Tc=c.temperatureInC, T0=self._oldHotTemp[c]
                         )
                         - 1.0
                     )
                 except KeyError:
                     runLog.error(
-                        "Component {0} is not in self.oldHotTemp."
+                        "Component {0} is not in self._oldHotTemp."
                         "Did you assign temperatures to the components?".format(c)
                     )
                     raise
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c. If not set, assumes it to be 1.0 (i.e., no change)"""
-        if c in self.expansionFactors:
-            value = self.expansionFactors[c]
+        if c in self._expansionFactors:
+            value = self._expansionFactors[c]
         else:
             runLog.warning("No expansion factor for {}! Setting to 1.0".format(c))
             value = 0.0
@@ -434,7 +434,7 @@ class ExpansionData:
 
         - To-Do: allow users to specify target component for a block in settings
         """
-        for b in self.a:
+        for b in self._a:
             if b.hasFlags(Flags.PLENUM):
                 self._specifyTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
