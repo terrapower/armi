@@ -98,6 +98,11 @@ FLAG_STYLES = {
     # WHITE (same as above, this will just lighten anything that it accompanies)
     Flags.MIDDLE: (numpy.array([1.0, 1.0, 1.0]), None),
     Flags.ANNULAR: (numpy.array([1.0, 1.0, 1.0]), None),
+
+    Flags.IGNITER: (numpy.array([0.2, 0.2, 0.2]), None),
+    Flags.STARTER: (numpy.array([0.4, 0.4, 0.4]), None),
+    Flags.FEED: (numpy.array([0.6, 0.6, 0.6]), None),
+    Flags.DRIVER: (numpy.array([0.8, 0.8, 0.8]), None),
 }
 
 # RGB weights for calculating luminance. We use this to decide whether we should put
