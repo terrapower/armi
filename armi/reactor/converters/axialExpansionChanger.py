@@ -24,6 +24,13 @@ class AxialExpansionChanger:
     Axially expand or contract assemblies or an entire core.
 
     Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
+
+    Attributes
+    ----------
+    linked : :py:class:`AssemblyAxialLinkage <armi.reactor.converters.axialExpansionChanger.AssemblyAxialLinkage>` object. # pylint: disable=line-too-long
+        establishes object containing axial linkage information
+    expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.ExpansionData>` object.
+        establishes object to store and access relevant expansion data
     """
 
     def __init__(self, converterSettings: dict):
@@ -223,7 +230,21 @@ def _checkBlockHeight(b):
 
 
 class AssemblyAxialLinkage:
-    """Determines and stores the block- and component-wise axial linkage for an assembly"""
+    """Determines and stores the block- and component-wise axial linkage for an assembly
+
+    Attributes
+    ----------
+    a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+        reference to original assembly; is directly modified/changed during expansion.
+    linkedBlocks : dict
+        keys   --> :py:class:`Block <armi.reactor.blocks.Block>` object
+        values --> list of axially linked blocks; index 0 = lower linked block; index 1: upper linked block.
+                   see also: self._getLinkedBlocks()
+    linkedComponents : dict
+        keys -->   :py:class:`Component <armi.reactor.components.component.Component>` object
+        values --> list of axially linked components; index 0 = lower linked component; index 1: upper linked component.
+                   see also: self._getLinkedComponents
+    """
 
     _TOLERANCE = 1.0e-03
 
