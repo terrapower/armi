@@ -437,6 +437,8 @@ class ExpansionData:
         for b in self.a:
             if b.hasFlags(Flags.PLENUM):
                 self._specifyTargetComponent(b, Flags.CLAD)
+            elif b.hasFlags(Flags.DUMMY):
+                self._specifyTargetComponent(b, Flags.COOLANT)
             elif b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
