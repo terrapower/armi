@@ -312,13 +312,6 @@ class Inspector:
         # import here to avoid cyclic issues
         from armi import operators
 
-        self.addQuery(
-            lambda: self.cs.path.endswith(".xml"),
-            "Your settings were loaded from a XML file. These are being converted to yaml files.",
-            "Would you like to auto-convert it to YAML?",
-            lambda: settings.convertSettingsFromXMLToYaml(self.cs),
-        )
-
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
         self.addQuery(
