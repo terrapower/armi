@@ -40,7 +40,7 @@ class SettingsFailureTests(unittest.TestCase):
                 "idontexist"
             ] = "this test should fail because no setting named idontexist should exist."
 
-    def test_loadFromXmlFailsOnBadNames(self):
+    def test_loadFromYamlFailsOnBadNames(self):
         ss = settings.Settings()
         with self.assertRaises(TypeError):
             ss.loadFromInputFile(None)
