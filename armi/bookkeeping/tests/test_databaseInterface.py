@@ -254,6 +254,7 @@ class TestDatabaseReading(unittest.TestCase):
         r.core.growToFullCore(None)
 
         self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 217)
         self.assertEqual(len(r.core.circularRingList), 0)
         self.assertEqual(len(r.core.blocksByName), 1085)
@@ -265,6 +266,7 @@ class TestDatabaseReading(unittest.TestCase):
         r.core.growToFullCore(self.cs)
 
         self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 217)
         self.assertEqual(len(r.core.circularRingList), 0)
         self.assertEqual(len(r.core.blocksByName), 1085)
@@ -279,6 +281,7 @@ class TestDatabaseReading(unittest.TestCase):
         r.core.growToFullCore(None)
 
         self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 217)
         self.assertEqual(len(r.core.circularRingList), 0)
         self.assertEqual(len(r.core.blocksByName), 1085)
@@ -293,6 +296,7 @@ class TestDatabaseReading(unittest.TestCase):
         r.core.growToFullCore(self.cs)
 
         self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 217)
         self.assertEqual(len(r.core.circularRingList), 0)
         self.assertEqual(len(r.core.blocksByName), 1085)
