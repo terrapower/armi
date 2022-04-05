@@ -148,7 +148,6 @@ class Assembly(composites.Composite):
         self.p.assemNum = incrementAssemNum()
         self.name = self.makeNameFromAssemNum(self.p.assemNum)
         for bi, b in enumerate(self):
-            b.makeUnique()
             b.setName(b.makeName(self.p.assemNum, bi))
 
     @staticmethod
