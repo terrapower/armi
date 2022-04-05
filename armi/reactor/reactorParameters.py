@@ -191,12 +191,12 @@ def defineCoreParameters():
         pb.defParam(
             "crWorthRequiredPrimary",
             units="pcm",
-            description="The total worth in $ required for primary control rods to shutdown reactor accounting for uncertainties and margins",
+            description="Worth requirement for the primary control rods in the reactor core to achieve safe shutdown.",
         )
         pb.defParam(
             "crWorthRequiredSecondary",
             units="pcm",
-            description="The total worth in $ required for secondary control rods to shutdown reactor accounting for uncertainties and margins",
+            description="Worth requirement for the secondary control rods in the reactor core to achieve safe shutdown.",
         )
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
