@@ -1100,7 +1100,7 @@ class Database3(database.Database):
         )
         root = comps[0][0]
 
-        # TODO: Testing
+        # TODO: JOHN: This is a fix without a test.
         updateGlobalAssemblyNum(root)
         return root  # usually reactor object
 
