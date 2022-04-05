@@ -88,6 +88,7 @@ setup(
             "docutils",
             "sphinx",
             "sphinx-rtd-theme",
+            "click==8.0.1",  # fixing click problem in black
             "black==20.8b1",
             # for running jupyter dynamically in docs
             "sphinxcontrib-apidoc",

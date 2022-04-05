@@ -37,7 +37,6 @@ from armi.reactor.flags import Flags
 from armi.utils.customExceptions import NonexistentSetting
 
 THIS_DIR = os.path.dirname(__file__)
-TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
 
 
 class DummyPlugin1(plugins.ArmiPlugin):
@@ -359,15 +358,6 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEquals(s2.name, "testCopy")
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
-
-
-class TestSettingsConversion(unittest.TestCase):
-    """Make sure we can convert from old XML type settings to new Yaml settings."""
-
-    def test_convert(self):
-        cs = caseSettings.Settings()
-        cs.loadFromInputFile(TEST_XML)
-        self.assertEqual(cs["buGroups"], [3, 10, 20, 100])
 
     def test_empty(self):
         cs = caseSettings.Settings()

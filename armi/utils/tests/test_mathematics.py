@@ -466,6 +466,38 @@ class TestMath(unittest.TestCase):
         self.assertIsNone(yout[4])
         self.assertEqual(yout[5], 38.5)
 
+    def test_resampleStepwiseAvgNpArray(self):
+        """Test resampleStepwise() averaging when some of the values are arrays"""
+        xin = [0, 1, 2, 3, 4]
+        yin = [11, np.array([1, 1]), np.array([2, 2]), 44]
+        xout = [2, 4, 5, 6, 7]
+
+        yout = resampleStepwise(xin, yin, xout, avg=True)
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertTrue(isinstance(yout[0], type(yin[1])))
+        self.assertEqual(yout[0][0], 23.0)
+        self.assertEqual(yout[0][1], 23.0)
+        self.assertEqual(yout[1], 0)
+        self.assertEqual(yout[2], 0)
+        self.assertEqual(yout[3], 0)
+
+    def test_resampleStepwiseAvgNpArray(self):
+        """Test resampleStepwise() summing when some of the values are arrays"""
+        xin = [0, 1, 2, 3, 4]
+        yin = [11, np.array([1, 1]), np.array([2, 2]), 44]
+        xout = [2, 4, 5, 6, 7]
+
+        yout = resampleStepwise(xin, yin, xout, avg=False)
+
+        self.assertEqual(len(yout), len(xout) - 1)
+        self.assertTrue(isinstance(yout[0], type(yin[1])))
+        self.assertEqual(yout[0][0], 46.0)
+        self.assertEqual(yout[0][1], 46.0)
+        self.assertEqual(yout[1], 0)
+        self.assertEqual(yout[2], 0)
+        self.assertEqual(yout[3], 0)
+
     def test_rotateXY(self):
         x = [1.0, -1.0]
         y = [1.0, 1.0]
