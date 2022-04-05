@@ -1228,12 +1228,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             for i, j in otherLocs:
                 newAssem = copy.deepcopy(a)
                 newAssem.makeUnique()
-                if a.spatialLocator.indices[0]==4 and a.spatialLocator.indices[1]==-2:
-                    print("Copying block to: "+str(i)+ " "+str(j))
-                    print(newAssem.getBlocks()[-1].p["THcornTemp"])
                 newAssem.rotate(count*angle)
-                if a.spatialLocator.indices[0]==4 and a.spatialLocator.indices[1]==-2:
-                    print(newAssem.getBlocks()[-1].p["THcornTemp"])
                 count = count + 1
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
