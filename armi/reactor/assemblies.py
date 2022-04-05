@@ -1317,6 +1317,16 @@ class Assembly(composites.Composite):
         """Return the symmetry factor of this assembly."""
         return self[0].getSymmetryFactor()
 
+    def rotate(self, deg):
+        # note this can only rotate in 60 degree increments.
+        # as this is only called by growToFullCore which is strictly hex, the 60 degree restriction is acceptable 
+        rotNum = round((deg%(2*math.pi))/math.radians(60))
+        for b in self.getBlocks():
+            b.rotatePins(rotNum)
+            b.p["THcornTemp"] = b.p["THcornTemp"][-rotNum:] + b.p["THcornTemp"][:-rotNum]
+            b.p["THedgeTemp"] = b.p["THedgeTemp"][-rotNum:] + b.p["THedgeTemp"][:-rotNum]
+
+
 
 class HexAssembly(Assembly):
     pass
