@@ -247,14 +247,18 @@ class TestDatabaseReading(unittest.TestCase):
         del cls.r
         cls.r = None
 
-    # TODO: This passes. Whoops.
     def test_growToFullCore(self):
         with Database3(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(None)
 
-    # TODO: This passes. Whoops.
+    def test_growToFullCoreWithCS(self):
+        with Database3(self.dbName, "r") as db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(self.cs)
+
     def test_growToFullCoreFromFactory(self):
         from armi.bookkeeping.db import databaseFactory
 
@@ -263,6 +267,15 @@ class TestDatabaseReading(unittest.TestCase):
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(None)
+
+    def test_growToFullCoreFromFactoryWithCS(self):
+        from armi.bookkeeping.db import databaseFactory
+
+        db = databaseFactory(self.dbName, "r")
+        with db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(self.cs)
 
     def test_readWritten(self):
         with Database3(self.dbName, "r") as db:
