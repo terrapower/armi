@@ -168,7 +168,9 @@ def defineCoreParameters():
 
         pb.defParam("numMoves", units="", description="numMoves", default=0)
 
-    with pDefs.createBuilder(location="N/A", default="None", categories=["control rods"]) as pb:
+    with pDefs.createBuilder(
+        location="N/A", default="None", categories=["control rods"]
+    ) as pb:
 
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
@@ -196,7 +198,6 @@ def defineCoreParameters():
             units="pcm",
             description="The total worth in $ required for secondary control rods to shutdown reactor accounting for uncertainties and margins",
         )
-
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
