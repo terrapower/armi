@@ -168,6 +168,36 @@ def defineCoreParameters():
 
         pb.defParam("numMoves", units="", description="numMoves", default=0)
 
+    with pDefs.createBuilder(location="N/A", default="None", categories=["control rods"]) as pb:
+
+        pb.defParam(
+            "crMostValuablePrimaryRodLocation",
+            units=None,
+            saveToDB=True,
+            description=(
+                "Core assembly location for the most valuable primary control rod."
+            ),
+        )
+        pb.defParam(
+            "crMostValuableSecondaryRodLocation",
+            units=None,
+            saveToDB=True,
+            description=(
+                "Core assembly location for the most valuable secondary control rod."
+            ),
+        )
+        pb.defParam(
+            "crWorthRequiredPrimary",
+            units="pcm",
+            description="The total worth in $ required for primary control rods to shutdown reactor accounting for uncertainties and margins",
+        )
+        pb.defParam(
+            "crWorthRequiredSecondary",
+            units="pcm",
+            description="The total worth in $ required for secondary control rods to shutdown reactor accounting for uncertainties and margins",
+        )
+
+
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(
@@ -175,18 +205,6 @@ def defineCoreParameters():
             units="N/A",
             description="Ratio of fissile Burned and discharged to fissile discharged",
             saveToDB=False,
-        )
-
-        pb.defParam(
-            "crWorthRequiredPrimary",
-            units="$",
-            description="The total worth in $ required for primary control rods to shutdown reactor accounting for uncertainties and margins",
-        )
-
-        pb.defParam(
-            "crWorthRequiredSecondary",
-            units="$",
-            description="The total worth in $ required for secondary control rods to shutdown reactor accounting for uncertainties and margins",
         )
 
         pb.defParam(

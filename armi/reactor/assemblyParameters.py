@@ -173,6 +173,48 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(
+        location="N/A", default=0.0, categories=["control rods"]
+    ) as pb:
+
+        pb.defParam(
+            "crCriticalElevation",
+            units="cm",
+            description="The elevation of the bottom of the moveable section of a control rod assembly when the core is critical.",
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crCurrentElevation",
+            units="cm",
+            description="The current elevation of the bottom of the moveable section of a control rod assembly.",
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crEndingElevation",
+            units="cm",
+            description="The final elevation of the bottom of the control material when fully inserted.",
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crRodLength",
+            units="cm",
+            description="length of the control material within the control rod",
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crStartingElevation",
+            units="cm",
+            description="The initial starting elevation of the moveable section of a control rod assembly when fully withdrawn.",
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
+    with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
 
