@@ -327,9 +327,8 @@ class DatabaseInterface(interfaces.Interface):
             self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])
         self.loadState(dbCycle, dbNode)
 
-    def _getLoadDB(
-        self, fileName
-    ):  # TODO: I don't see an order here, or any reason for yield.
+    # TODO: The use of "yield" here is suspect.
+    def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
 
@@ -338,19 +337,17 @@ class DatabaseInterface(interfaces.Interface):
         If filename is present only returns one database since specifically instructed
         to load from that database.
         """
-        if fileName is not None:  # TODO: fileName=None is apparently an option here?
+        if fileName is not None:
             # only yield 1 database if the file name is specified
             if self._db is not None and fileName == self._db._fileName:
                 yield self._db
             elif os.path.exists(fileName):
                 yield Database3(fileName, "r")
-            # TODO: You CAN drop off the end here.
         else:
             if self._db is not None:
                 yield self._db
             if os.path.exists(self.cs["reloadDBName"]):
                 yield Database3(self.cs["reloadDBName"], "r")
-            # TODO: You CAN drop off the end here.
 
     def loadState(
         self, cycle, timeNode, timeStepName="", fileName=None, updateGlobalAssemNum=True
@@ -371,8 +368,8 @@ class DatabaseInterface(interfaces.Interface):
             `cs["reloadDBName"]` have the time step specified.
         """
 
-        for potentialDatabase in self._getLoadDB(fileName):  # TODO: Is this wise?
-            with potentialDatabase as loadDB:  # TODO: Does this line to any good?
+        for potentialDatabase in self._getLoadDB(fileName):
+            with potentialDatabase as loadDB:
                 if loadDB.hasTimeStep(cycle, timeNode, statePointName=timeStepName):
                     newR = loadDB.load(
                         cycle,
@@ -1100,9 +1097,11 @@ class Database3(database.Database):
         )
         root = comps[0][0]
 
-        # TODO: JOHN: This is a fix without a test.
+        # ensure the max assembly number is correct
         updateGlobalAssemblyNum(root)
-        return root  # usually reactor object
+
+        # usually a reactor object
+        return root
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):
