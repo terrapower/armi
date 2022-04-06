@@ -1327,6 +1327,9 @@ class Assembly(composites.Composite):
                 if isinstance(b.p[param], list):
                     if len(b.p[param]) == 6:
                         b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
+                    elif b.p[param] == []:
+                        # List hasn't been defined yet, no warning needed.
+                        pass
                     else:
                         runLog.warning(
                             "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
@@ -1340,6 +1343,9 @@ class Assembly(composites.Composite):
                 if isinstance(b.p[param], list):
                     if len(b.p[param]) == 6:
                         b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
+                    elif b.p[param] == []:
+                        # List hasn't been defined yet, no warning needed.
+                        pass
                     else:
                         runLog.warning(
                             "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
