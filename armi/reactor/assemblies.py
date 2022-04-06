@@ -1323,12 +1323,38 @@ class Assembly(composites.Composite):
         rotNum = round((deg % (2 * math.pi)) / math.radians(60))
         for b in self.getBlocks():
             b.rotatePins(rotNum)
-            b.p["THcornTemp"] = (
-                b.p["THcornTemp"][-rotNum:] + b.p["THcornTemp"][:-rotNum]
-            )
-            b.p["THedgeTemp"] = (
-                b.p["THedgeTemp"][-rotNum:] + b.p["THedgeTemp"][:-rotNum]
-            )
+            for param in b.p.paramDefs.atLocation(ParamLocation.CORNERS).names:
+                if isinstance(b.p[param], list):
+                    if len(b.p[param]) == 6:
+                        b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
+                    else:
+                        runLog.warning(
+                            "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
+                                param
+                            )
+                        )
+                else:
+                    # this is a scalar and there shouldn't be any rotation.
+                    pass
+            for param in b.p.paramDefs.atLocation(ParamLocation.EDGES).names:
+                if isinstance(b.p[param], list):
+                    if len(b.p[param]) == 6:
+                        b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
+                    else:
+                        runLog.warning(
+                            "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
+                                param
+                            )
+                        )
+                else:
+                    # this is a scalar and there shouldn't be any rotation.
+                    pass
+
+            dispx = b.p.get("displacementX")
+            dispy = b.p.get("displacementY")
+            if (dispx is not None) and (dispy is not None):
+                b.p["displacementX"] = dispx * math.cos(deg) - dispy * math.sin(deg)
+                b.p["displacementY"] = dispx * math.sin(deg) + dispy * math.cos(deg)
 
 
 class HexAssembly(Assembly):
