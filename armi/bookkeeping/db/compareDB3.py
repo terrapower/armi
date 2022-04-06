@@ -31,6 +31,7 @@ means that one generally should not be worried about a converted database having
 parameters in it that the one produced directly may not, assuming that the extra
 converted parameters are the default. Also, especially at the Component level, some of
 the parameters are expected to be different. Specifically the following:
+
 * temperatures: The old database format simply did not store these on the component
   level, so when converting a database, the components in a block will uniformly get
   whatever the Block temperature was.
@@ -40,6 +41,7 @@ the parameters are expected to be different. Specifically the following:
   temperatures
 * memory usage: Relatively self-evident. Resource usage will vary from run to run,
   even if the code hasn't changed.
+
 """
 import collections
 import os

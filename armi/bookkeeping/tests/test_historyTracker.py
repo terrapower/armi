@@ -72,13 +72,17 @@ class TestHistoryTracker(ArmiTestHelper):
         runTutorialNotebook()
 
         reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
-        with reloadCs._unlock():
-            reloadCs.caseTitle = "armiRun"
-            reloadCs["db"] = True
-            reloadCs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-            reloadCs["runType"] = "Snapshots"
-            reloadCs["loadStyle"] = "fromDB"
-            reloadCs["detailAssemLocationsBOL"] = ["001-001"]
+
+        newSettings = {}
+        newSettings["db"] = True
+        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+        newSettings["runType"] = "Snapshots"
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["detailAssemLocationsBOL"] = ["001-001"]
+
+        reloadCs = reloadCs.modified(newSettings=newSettings)
+        reloadCs.caseTitle = "armiRun"
+
         o = armi_init(cs=reloadCs)
         cls.o = o
 
@@ -88,12 +92,13 @@ class TestHistoryTracker(ArmiTestHelper):
 
     def setUp(self):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
-        with cs._unlock():
-            cs["db"] = True
-            cs["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-            cs["loadStyle"] = "fromDB"
-            cs["detailAssemLocationsBOL"] = ["001-001"]
-            cs["startNode"] = 1
+        newSettings = {}
+        newSettings["db"] = True
+        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["detailAssemLocationsBOL"] = ["001-001"]
+        newSettings["startNode"] = 1
+        cs = cs.modified(newSettings=newSettings)
 
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
@@ -159,7 +164,7 @@ class TestHistoryTracker(ArmiTestHelper):
 
         self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
 
-    def testHistoryReport(self):
+    def test_historyReport(self):
         """
         Test generation of history report.
 
@@ -199,8 +204,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFiltering(self):
         times = range(30)
-        with self.history.cs._unlock():
-            self.history.cs["burnSteps"] = 2
+        self.history.cs = self.history.cs.modified(newSettings={"burnSteps": 2})
+
         inputs = [
             {"boc": True},
             {"moc": True},
@@ -219,8 +224,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
     def test_timestepFilteringWithGap(self):
         times = list(range(10)) + list(range(15, 20))
-        with self.history.cs._unlock():
-            self.history.cs["burnSteps"] = 2
+        self.history.cs = self.history.cs.modified(newSettings={"burnSteps": 2})
+
         runResults = self.history.filterTimeIndices(times, boc=True)
         self.assertEqual(runResults, [0, 3, 6, 9, 15, 18])
 
@@ -236,5 +241,5 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHistoryTracker.testHistoryReport"]
+    # import sys;sys.argv = ["", "TestHistoryTracker.test_historyReport"]
     unittest.main()

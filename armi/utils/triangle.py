@@ -19,7 +19,9 @@ Generic triangle math.
 import math
 
 
-def getTriangleArea(x1, y1, x2, y2, x3, y3):
+def getTriangleArea(
+    x1: float, y1: float, x2: float, y2: float, x3: float, y3: float
+) -> float:
     """
     Get the area of a triangle given the verticies of a triangle using Heron's formula.
 
@@ -90,7 +92,9 @@ def getTriangleCentroid(x1, y1, x2, y2, x3, y3):
     return x, y
 
 
-def checkIfPointIsInTriangle(x1, y1, x2, y2, x3, y3, x, y):
+def checkIfPointIsInTriangle(
+    x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, x: float, y: float
+) -> bool:
     """
     Test if a point defined by x,y coordinates is within a triangle defined by verticies with x,y coordinates.
 

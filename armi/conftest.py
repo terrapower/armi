@@ -34,7 +34,6 @@ from armi.tests import TEST_ROOT
 
 
 def pytest_sessionstart(session):
-
     print("Initializing generic ARMI Framework application")
     configure(apps.App())
     bootstrapArmiTestEnv()

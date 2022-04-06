@@ -452,8 +452,8 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getXsType(self):
         self.cs = settings.getMasterCs()
-        with self.cs._unlock():
-            self.cs["loadingFile"] = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+        newSettings = {"loadingFile": os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         self.Block.p.xsType = "B"
         cur = self.Block.p.xsType
@@ -461,15 +461,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
         oldBuGroups = self.cs["buGroups"]
-        with self.cs._unlock():
-            self.cs["buGroups"] = [100]
+        newSettings = {"buGroups": [100]}
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         self.Block.p.xsType = "BB"
         cur = self.Block.p.xsType
         ref = "BB"
         self.assertEqual(cur, ref)
-        with self.cs._unlock():
-            self.cs["buGroups"] = oldBuGroups
 
     def test27b_setBuGroup(self):
         type_ = "A"
@@ -1519,6 +1517,43 @@ class Block_TestCase(unittest.TestCase):
     def test_getDimensions(self):
         dims = self.Block.getDimensions("od")
         self.assertIn(self.Block.getComponent(Flags.FUEL).p.od, dims)
+
+
+class Test_NegativeVolume(unittest.TestCase):
+    def test_negativeVolume(self):
+        """Build a block with WAY too many fuel pins and show that the derived volume is negative"""
+        block = blocks.HexBlock("TestHexBlock")
+
+        coldTemp = 20
+        hotTemp = 200
+
+        fuelDims = {
+            "Tinput": coldTemp,
+            "Thot": hotTemp,
+            "od": 0.84,
+            "id": 0.6,
+            "mult": 1000.0,  # pack in too many fuels
+        }
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+
+        coolantDims = {"Tinput": hotTemp, "Thot": hotTemp}
+        coolant = components.DerivedShape("coolant", "Sodium", **coolantDims)
+
+        interDims = {
+            "Tinput": hotTemp,
+            "Thot": hotTemp,
+            "op": 17.8,
+            "ip": 17.3,
+            "mult": 1.0,
+        }
+        interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
+
+        block.add(fuel)
+        block.add(coolant)
+        block.add(interSodium)
+        block.setHeight(16.0)
+        with self.assertRaises(ValueError):
+            block.getVolumeFractions()
 
 
 class HexBlock_TestCase(unittest.TestCase):

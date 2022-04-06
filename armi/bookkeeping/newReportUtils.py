@@ -1,6 +1,18 @@
-import os
-
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import collections
+import os
 import numpy
 
 from armi.reactor.components import component
@@ -14,7 +26,6 @@ from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
-
     insertCoreDesignReport(r.core, cs, report)
     insertCoreAndAssemblyMaps(r, cs, report, blueprint),
     insertBlockDiagrams(cs, blueprint, report, True)
@@ -22,7 +33,6 @@ def insertBlueprintContent(r, cs, report, blueprint):
 
 
 def insertGeneralReportContent(cs, r, report, stage):
-
     """
     Creates Report content that is not plugin specific. Various things for the Design
     and Comprehensive sections of the report.
@@ -35,7 +45,6 @@ def insertGeneralReportContent(cs, r, report, stage):
 
     """
     # These items only happen once at BOL
-
     if stage == newReports.ReportStage.Begin:
         comprehensiveBOLContent(cs, r, report)
         insertDesignContent(r, report)
@@ -50,7 +59,6 @@ def comprehensiveBOLContent(cs, r, report):
     r: Reactor
     report: ReportContent
     """
-
     insertMetaTable(cs, report)
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
     if first_fuel_block is not None:
@@ -72,7 +80,6 @@ def insertDesignContent(r, report):
     report: ReportContent
 
     """
-
     report[DESIGN][PIN_ASSEMBLY_DESIGN_SUMMARY] = getPinDesignTable(r.core)
 
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
@@ -90,7 +97,6 @@ def insertDesignContent(r, report):
 
 
 def insertBlockDesignReport(blueprint, report, cs):
-
     r"""Summarize the block designs from the loading file
 
     Parameters
@@ -166,7 +172,6 @@ def insertCoreDesignReport(core, cs, report):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-
     coreDesignTable = newReports.Table("Core Report Table")
     coreDesignTable.header = ["", "Input Parameter"]
     report["Design"]["Core Design Table"] = coreDesignTable
@@ -291,15 +296,17 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
 
 def insertEndOfLifeContent(r, report):
-    """Generate End of Life Content for the report
+    """
+    Generate End of Life Content for the report
 
-    Parameters:
-    r: Reactor
-    report: ReportContent
+    Parameters
+    ----------
+    r : Reactor
+        the reactor
+    report : ReportContent
         The report to be added to.
 
     """
-
     fName2 = "powerMap.png"
     dataForTotalPower = [a.getMaxParam("power") / units.WATTS_PER_MW for a in r.core]
     plotting.plotFaceMap(
@@ -332,7 +339,6 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
     cold: boolean
         True for dimensions at cold temps
     """
-
     materialList = []
     for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
@@ -372,7 +378,6 @@ def insertMetaTable(cs, report):
     report: ReportContent
 
     """
-
     section = report[COMPREHENSIVE_REPORT]
     tableList = section.get(
         SETTINGS, newReports.Table("Settings", "General overview of the run")
@@ -393,7 +398,6 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
-
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
         "Reactor Parameters"
@@ -433,7 +437,6 @@ def getPinDesignTable(core):
     ----------
     core: Core
     """
-
     designInfo = collections.defaultdict(list)
 
     try:
@@ -492,18 +495,21 @@ def getPinDesignTable(core):
 
 
 def insertAreaFractionsReport(block, report):
-    """Adds to an Assembly Area Fractions table subsection of the Comprehensive Section
+    """
+    Adds to an Assembly Area Fractions
+
+    Adds to the table subsection of the Comprehensive Section
     of the report.
 
-        Parameters
-        ----------
-        block: Block
-        report: ReportContent
+    Parameters
+    ----------
+    block : Block
+        The block
+    report : ReportContent
+        The report
 
     """
-
     for c, frac in block.getVolumeFractions():
-
         report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(
             [c.getName(), "{0:10f}".format(c.getArea()), "{0:10f}".format(frac)]
         )
@@ -520,7 +526,6 @@ def createDimensionReport(comp):
     -------
     newReports.Table that corresponds to the passed componenets dimension report
     """
-
     REPORT_GROUPS = {
         Flags.INTERCOOLANT: INTERCOOLANT_DIMS,
         Flags.BOND: BOND_DIMS,

@@ -118,6 +118,13 @@ class UnshapedComponent(Component):
     A component with undefined dimensions.
 
     Useful for situations where you just want to enter the area directly.
+
+    For instance, when you want to model neutronic behavior of an assembly based
+    on only knowing the area fractions of each material in the assembly.
+
+    See Also
+    --------
+    DerivedShape : Useful to just fill leftover space in a block with a material
     """
 
     pDefs = componentParameters.getUnshapedParameterDefinitions()
@@ -154,13 +161,13 @@ class UnshapedComponent(Component):
         Parameters
         ----------
         cold : bool, optional
-            Compute the area with as-input dimensions instead of thermally-expanded
+            Ignored for this component
         """
-        return self.p.area
+        coldArea = self.p.area
+        if cold:
+            return coldArea
 
-    def setArea(self, val):
-        self.p.area = val
-        self.clearCache()
+        return self.getThermalExpansionFactor(self.temperatureInC) ** 2 * coldArea
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """
@@ -168,8 +175,12 @@ class UnshapedComponent(Component):
 
         This is the smallest it can possibly be. Since this is used to determine
         the outer component, it will never be allowed to be the outer one.
+
+        Notes
+        -----
+        Tc is not used in this method for this particular component.
         """
-        return math.sqrt(self.p.area / math.pi)
+        return 2 * math.sqrt(self.getComponentArea(cold=cold) / math.pi)
 
     @staticmethod
     def fromComponent(otherComponent):
@@ -177,11 +188,16 @@ class UnshapedComponent(Component):
         Build a new UnshapedComponent that has area equal to that of another component.
 
         This can be used to "freeze" a DerivedShape, among other things.
+
+        Notes
+        -----
+        Components created in this manner will not thermally expand beyond the expanded
+        area of the original component, but will retain their hot temperature.
         """
         newC = UnshapedComponent(
             name=otherComponent.name,
             material=otherComponent.material,
-            Tinput=otherComponent.inputTemperatureInC,
+            Tinput=otherComponent.temperatureInC,
             Thot=otherComponent.temperatureInC,
             area=otherComponent.getComponentArea(),
         )
@@ -286,6 +302,11 @@ class DerivedShape(UnshapedComponent):
     ----
     - This component type is "derived" through the addition or
       subtraction of other shaped components (e.g. Coolant)
+    - Because its area and volume are defined by other components,
+      a DerivedShape's area and volume may change as the other
+      components thermally expand. However the DerivedShape cannot
+      drive thermal expansion itself, even if it is a solid component
+      with non-zero thermal expansion coefficient
     """
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
@@ -296,10 +317,11 @@ class DerivedShape(UnshapedComponent):
         -----
         This is used to sort components relative to one another.
 
-        There can only be one derived component per block, this is generally the coolant inside a
-        duct. Under most circumstances, the volume (or area) of coolant will be greater than any
-        other (single) component (i.e. a single pin) within the assembly. So, sorting based on the
-        Dh of the DerivedShape will result in somewhat expected results.
+        There can only be one derived component per block, this is generally the coolant
+        inside a duct. Under most circumstances, the volume (or area) of coolant will be
+        greater than any other (single) component (i.e. a single pin) within the assembly.
+        So, sorting based on the Dh of the DerivedShape will result in somewhat expected
+        results.
         """
         if self.parent is None:
             # since this is only used for comparison, and it must be smaller than at
@@ -315,7 +337,7 @@ class DerivedShape(UnshapedComponent):
 
     def _deriveVolumeAndArea(self):
         """
-        Derive the volume and area of ``DerivedShape``s.
+        Derive the volume and area of ``DerivedShape``\ s.
 
         Notes
         -----
@@ -323,6 +345,13 @@ class DerivedShape(UnshapedComponent):
         both the volume and area based on its context within the scope
         of the parent object by considering the volumes and areas of
         the surrounding components.
+
+        Since some components are volumetric shapes, this must consider the volume
+        so that it wraps around in all three dimensions.
+
+        But there are also situations where we need to handle zero-height blocks
+        with purely 2D components. Thus we track area and volume fractions here
+        when possible.
         """
 
         if self.parent is None:
@@ -332,8 +361,8 @@ class DerivedShape(UnshapedComponent):
 
         # Determine the volume/areas of the non-derived shape components
         # within the parent.
-        siblingArea = 0.0
         siblingVolume = 0.0
+        siblingArea = 0.0
         for sibling in self.parent.getChildren():
             if sibling is self:
                 continue
@@ -342,20 +371,25 @@ class DerivedShape(UnshapedComponent):
                     f"More than one ``DerivedShape`` component in {self.parent} is not allowed."
                 )
 
-            siblingArea += sibling.getArea()
             siblingVolume += sibling.getVolume()
+            try:
+                if siblingArea is not None:
+                    siblingArea += sibling.getArea()
+            except:
+                siblingArea = None
 
-        remainingArea = self.parent.getMaxArea() - siblingArea
         remainingVolume = self.parent.getMaxVolume() - siblingVolume
+        if siblingArea:
+            remainingArea = self.parent.getMaxArea() - siblingArea
 
-        # Check for negative area
-        if remainingArea < 0:
+        # Check for negative
+        if remainingVolume < 0:
             msg = (
                 f"The component areas in {self.parent} exceed the maximum "
-                f"allowable area based on the geometry. Check that the "
+                f"allowable volume based on the geometry. Check that the "
                 f"geometry is defined correctly.\n"
-                f"Maximum allowable area: {self.parent.getMaxArea()} cm^2\n"
-                f"Area of all non-derived shape components: {siblingArea} cm^2\n"
+                f"Maximum allowable volume: {self.parent.getMaxVolume()} cm^3\n"
+                f"Volume of all non-derived shape components: {siblingVolume} cm^3\n"
             )
             runLog.error(msg)
             raise ValueError(
@@ -363,18 +397,26 @@ class DerivedShape(UnshapedComponent):
                 "Check log for errors."
             )
 
-        self.p.area = remainingArea
+        height = self.parent.getHeight()
+        if not height:
+            # special handling for 0-height blocks
+            if not remainingArea:
+                raise ValueError(f"Cannot derive area in 0-height block {self.parent}")
+            self.p.area = remainingArea
+        else:
+            self.p.area = remainingVolume / height
         return remainingVolume
 
     def getVolume(self):
         """
         Get volume of derived shape.
 
-        The DerivedShape must pay attention to all of the companion objects, because if they change, this changes.
-        However it's inefficient to always recompute the derived volume, so we have to rely on the parent to know
-        if anything has changed.
+        The DerivedShape must pay attention to all of the companion objects, because if
+        they change, this changes.  However it's inefficient to always recompute the
+        derived volume, so we have to rely on the parent to know if anything has changed.
 
-        Since each parent is only allowed one DerivedShape, we can reset the update flag here.
+        Since each parent is only allowed one DerivedShape, we can reset the update flag
+        here.
 
         Returns
         -------

@@ -19,20 +19,21 @@ object has access to it. It contains global user settings like the core
 power level, the input file names, the number of cycles to run, the run type,
 the environment setup, and hundreds of other things.
 
-A settings object can be saved as or loaded from an XML file. The ARMI GUI is designed to
+A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
 A master case settings is created as ``masterCs``
 
 """
 import io
+import logging
 import os
-import copy
-from contextlib import contextmanager
+from copy import copy, deepcopy
 
 import armi
 from armi import runLog
 from armi.settings import settingsIO
+from armi.settings.setting import Setting
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
 
@@ -48,6 +49,8 @@ class Settings:
 
     The settings object has a 1-to-1 correspondence with the ARMI settings input file.
     This file may be created by hand or by the GUI in submitter.py.
+
+    NOTE: The actual settings in any instance of this class are immutable.
     """
 
     # Settings is not a singleton, but there is a globally
@@ -65,6 +68,8 @@ class Settings:
         fName : str, optional
             Path to a valid yaml settings file that will be loaded
         """
+        # if the "loadingFile" is not set, this better be True, or there are no blueprints at all
+        self.filelessBP = False
 
         self._failOnLoad = False
         """This is state information.
@@ -75,41 +80,20 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        self._lock = False
         self.path = ""
 
         app = armi.getApp()
         assert app is not None
-        self.settings = app.getSettings()
+        self.__settings = app.getSettings()
         if not Settings.instance:
             Settings.instance = self
-        self._backedup = {}
 
         if fName:
             self.loadFromInputFile(fName)
-        self._lock = True
-
-    def lock(self):
-        """Permanently make the settings immutable
-
-        NOTE: The immutable-lock functionality is not in place yet.
-              This is currently used only for DeprecationWarnings.
-        """
-        self._lock = True
-
-    @contextmanager
-    def _unlock(self):
-        """Temporarily make the settings mutable
-
-        NOTE: This is a termporary measure, which will only exist as long as the
-              DeprecationWarning and mutable settings.
-        """
-        self._lock = False
-        yield
-        self._lock = True
 
     @property
     def inputDirectory(self):
+        """getter for settings file path"""
         if self.path is None:
             return os.getcwd()
         else:
@@ -117,6 +101,7 @@ class Settings:
 
     @property
     def caseTitle(self):
+        """getter for settings case title"""
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -124,36 +109,53 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
-        if self._lock:
-            runLog.warning(DEP_WARNING.format("caseTitle"), single=True)
+        """setter for the case title"""
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
     def environmentSettings(self):
+        """getter for environment settings"""
         return [
-            setting.name for setting in self.settings.values() if setting.isEnvironment
+            setting.name
+            for setting in self.__settings.values()
+            if setting.isEnvironment
         ]
 
+    def __contains__(self, key):
+        return key in self.__settings
+
     def __repr__(self):
-        total = len(self.settings.keys())
+        total = len(self.__settings.keys())
         isAltered = lambda setting: 1 if setting.value != setting.default else 0
-        altered = sum([isAltered(setting) for setting in self.settings.values()])
+        altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
         return "<{} name:{} total:{} altered:{}>".format(
             self.__class__.__name__, self.caseTitle, total, altered
         )
 
     def __getitem__(self, key):
-        if key in self.settings:
-            return self.settings[key].value
+        if key in self.__settings:
+            return self.__settings[key].value
+        else:
+            raise NonexistentSetting(key)
+
+    def getSetting(self, key, default=None):
+        """
+        Return a copy of an actual Setting object, instead of just its value.
+
+        NOTE: This is used very rarely, try to organize your code to only need a Setting value.
+        """
+        if key in self.__settings:
+            return copy(self.__settings[key])
+        elif default is not None:
+            return default
         else:
             raise NonexistentSetting(key)
 
     def __setitem__(self, key, val):
-        if key in self.settings:
-            if self._lock:
-                runLog.warning(DEP_WARNING.format(key), single=True)
-            self.settings[key].setValue(val)
+        # TODO: This potentially allows for invisible settings mutations and should be removed.
+        if key in self.__settings:
+            self.__settings[key].setValue(val)
         else:
             raise NonexistentSetting(key)
 
@@ -168,44 +170,43 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        self.settings = armi.getApp().getSettings()
+        self.__settings = armi.getApp().getSettings()
 
         # restore non-setting instance attrs
         for key, val in state.items():
-            if key != "settings":
+            if key != "_Settings__settings":
                 setattr(self, key, val)
 
         # with schema restored, restore all setting values
-        for name, settingState in state["settings"].items():
+        for name, settingState in state["_Settings__settings"].items():
             # pylint: disable=protected-access
-            self.settings[name]._value = settingState.value
+            if name in self.__settings:
+                self.__settings[name]._value = settingState.value
+            elif isinstance(settingState, Setting):
+                self.__settings[name] = copy(settingState)
+            else:
+                raise NonexistentSetting(name)
 
     def keys(self):
-        return self.settings.keys()
+        return self.__settings.keys()
 
-    def update(self, values):
-        if self._lock:
-            runLog.warning(DEP_WARNING.format(sorted(values.keys())), single=True)
+    def values(self):
+        return self.__settings.values()
 
-        for key, val in values.items():
-            self[key] = val
-
-    def clear(self):
-        if self._lock:
-            runLog.warning(DEP_WARNING.format("ALL"), single=True)
-
-        self.settings.clear()
+    def items(self):
+        return self.__settings.items()
 
     def duplicate(self):
-        cs = copy.deepcopy(self)
+        """return a duplicate copy of this settings object"""
+        cs = deepcopy(self)
         cs._failOnLoad = False  # pylint: disable=protected-access
         # it's not really protected access since it is a new Settings object.
         # _failOnLoad is set to false, because this new settings object should be independent of the command line
         return cs
 
     def revertToDefaults(self):
-        r"""Sets every setting back to its default value"""
-        for setting in self.settings.values():
+        """Sets every setting back to its default value"""
+        for setting in self.__settings.values():
             setting.revertToDefault()
 
     def failOnLoad(self):
@@ -218,19 +219,14 @@ class Settings:
 
     def loadFromInputFile(self, fName, handleInvalids=True, setPath=True):
         """
-        Read in settings from an input file.
-
-        Supports YAML and two XML formats, the newer (tags are the key, etc.)
-        and the former (tags are the type, etc.). If the extension is ``xml``,
-        it assumes XML format. Otherwise, YAML is assumed.
+        Read in settings from an input YAML file.
 
         Passes the reader back out in case you want to know something about how the reading went
         like for knowing if a file contained deprecated settings, etc.
         """
-        with self._unlock():
-            reader, path = self._prepToRead(fName)
-            reader.readFromFile(fName, handleInvalids)
-            self._applyReadSettings(path if setPath else None)
+        reader, path = self._prepToRead(fName)
+        reader.readFromFile(fName, handleInvalids)
+        self._applyReadSettings(path if setPath else None)
 
         return reader
 
@@ -248,62 +244,43 @@ class Settings:
         return settingsIO.SettingsReader(self), path
 
     def loadFromString(self, string, handleInvalids=True):
-        """Read in settings from a string.
-
-        Supports two xml formats, the newer (tags are the key, etc.) and the former
-        (tags are the type, etc.)
+        """Read in settings from a YAML string.
 
         Passes the reader back out in case you want to know something about how the
         reading went like for knowing if a file contained deprecated settings, etc.
         """
-        with self._unlock():
-            if self._failOnLoad:
-                raise RuntimeError(
-                    "Cannot load settings after processing of command "
-                    "line options begins.\nYou may be able to fix this by "
-                    "reordering the command line arguments."
-                )
-
-            reader = settingsIO.SettingsReader(self)
-            fmt = reader.SettingsInputFormat.YAML
-            if string.strip()[0] == "<":
-                fmt = reader.SettingsInputFormat.XML
-            reader.readFromStream(
-                io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
+        if self._failOnLoad:
+            raise RuntimeError(
+                "Cannot load settings after processing of command "
+                "line options begins.\nYou may be able to fix this by "
+                "reordering the command line arguments."
             )
 
-            if armi.MPI_RANK == 0:
-                runLog.setVerbosity(self["verbosity"])
-            else:
-                runLog.setVerbosity(self["branchVerbosity"])
+        reader = settingsIO.SettingsReader(self)
+        fmt = reader.SettingsInputFormat.YAML
+        reader.readFromStream(
+            io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
+        )
+
+        self.initLogVerbosity()
 
         return reader
 
     def _applyReadSettings(self, path=None):
+        self.initLogVerbosity()
+
+        if path:
+            self.path = path  # can't set this before a chance to fail occurs
+
+    # TODO: At some point, much of the logging init will be moved to context, including this.
+    def initLogVerbosity(self):
+        """Central location to init logging verbosity"""
         if armi.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
         else:
             runLog.setVerbosity(self["branchVerbosity"])
 
-        if path:
-            self.path = path  # can't set this before a chance to fail occurs
-
-    def writeToXMLFile(self, fName, style="short"):
-        """Write out settings to an xml file
-
-        Parameters
-        ----------
-        fName : str
-            the file to write to
-        style : str
-            the method of XML output to be used when creating the xml file for
-            the current state of settings
-        """
-        self.path = pathTools.armiAbsPath(fName)
-        writer = settingsIO.SettingsWriter(self, style=style)
-        with open(self.path, "w") as stream:
-            writer.writeXml(stream)
-        return writer
+        self.setModuleVerbosities(force=True)
 
     def writeToYamlFile(self, fName, style="short"):
         """
@@ -341,37 +318,51 @@ class Settings:
         otherCs : Settings object
             A cs object that environment settings will be inherited from.
 
-
         This enables users to run tests with their environment rather than the reference environment
         """
         for replacement in self.environmentSettings:
             self[replacement] = otherCs[replacement]
 
-    def temporarilySet(self, settingName, temporaryValue):
+    def modified(self, caseTitle=None, newSettings=None):
+        """Return a new Settings object containing the provided modifications."""
+        # pylint: disable=protected-access
+        settings = self.duplicate()
+
+        if caseTitle:
+            settings.caseTitle = caseTitle
+
+        if newSettings:
+            for key, val in newSettings.items():
+                if isinstance(val, Setting):
+                    settings.__settings[key] = copy(val)
+                elif key in settings.__settings:
+                    settings.__settings[key].setValue(val)
+                else:
+                    settings.__settings[key] = Setting(key, val)
+
+        return settings
+
+    def setModuleVerbosities(self, force=False):
+        """Attempt to grab the module-level logger verbosities from the settings file,
+        and then set their log levels (verbosities).
+
+        NOTE: This method is only meant to be called once per run.
+
+        Parameters
+        ----------
+        force : bool, optional
+            If force is False, don't overwrite the log verbosities if the logger already exists.
+            IF this needs to be used mid-run, force=False is safer.
         """
-        Change a setting that you will restore later.
+        # try to get the setting dict
+        verbs = self["moduleVerbosity"]
 
-        Useful to change settings before doing a certain run and then reverting them
+        # set, but don't use, the module-level loggers
+        for mName, mLvl in verbs.items():
+            # by default, we init module-level logging, not change it mid-run
+            if force or mName not in logging.Logger.manager.loggerDict:
+                # cast verbosity to integer
+                lvl = int(mLvl) if mLvl.isnumeric() else runLog.LOG.logLevels[mLvl][0]
 
-        See Also
-        --------
-        unsetTemporarySettings : reverts this
-        """
-        with self._unlock():
-            runLog.debug(
-                "Temporarily changing {} from {} to {}".format(
-                    settingName, self[settingName], temporaryValue
-                )
-            )
-            self._backedup[settingName] = self[settingName]
-            self[settingName] = temporaryValue
-
-    def unsetTemporarySettings(self):
-        with self._unlock():
-            for settingName, origValue in self._backedup.items():
-                runLog.debug(
-                    "Reverting {} from {} back to its original value of {}".format(
-                        settingName, self[settingName], origValue
-                    )
-                )
-                self[settingName] = origValue
+                log = logging.getLogger(mName)
+                log.setVerbosity(lvl)

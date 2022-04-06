@@ -214,7 +214,7 @@ class MpiAction:
 
         Parameters
         ----------
-        o : :py:class:`armi.operators.Operator`
+        o : :py:class:`armi.operators.operator.Operator`
             the operator for this process
         r : :py:class:`armi.reactor.reactors.Reactor`
             the reactor represented in this process

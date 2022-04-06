@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Tests some capabilities of the fuel handling machine.
 
@@ -122,7 +121,7 @@ class TestFuelHandler(ArmiTestHelper):
 
         self.directoryChanger.close()
 
-    def test_FindHighBu(self):
+    def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
         # set burnup way over 1.0, which is otherwise the highest bu in the core
@@ -134,7 +133,7 @@ class TestFuelHandler(ArmiTestHelper):
         )
         self.assertIs(a, a1)
 
-    def test_Width(self):
+    def test_width(self):
         """Tests the width capability of findAssembly."""
         fh = fuelHandlers.FuelHandler(self.o)
         assemsByRing = collections.defaultdict(list)
@@ -225,10 +224,8 @@ class TestFuelHandler(ArmiTestHelper):
             "The lowest power ring returned is {0}. It should be {1}".format(ring, 1),
         )
 
-    def test_FindMany(self):
-        r"""
-        Tests the findMany and type aspects of the fuel handler
-        """
+    def test_findMany(self):
+        """Tests the findMany and type aspects of the fuel handler"""
         fh = fuelHandlers.FuelHandler(self.o)
 
         igniters = fh.findAssembly(typeSpec=Flags.IGNITER | Flags.FUEL, findMany=True)
@@ -257,9 +254,7 @@ class TestFuelHandler(ArmiTestHelper):
         )
 
     def test_findInSFP(self):
-        r"""
-        Tests ability to pull from the spent fuel pool.
-        """
+        """Tests ability to pull from the spent fuel pool"""
         fh = fuelHandlers.FuelHandler(self.o)
         spent = fh.findAssembly(
             findMany=True,
@@ -390,10 +385,11 @@ class TestFuelHandler(ArmiTestHelper):
         # reset core to BOL state
         # reset assembly counter to get the same assem nums.
         self.setUp()
-        with self.o.cs._unlock():
-            self.o.cs["plotShuffleArrows"] = True
-            # now repeat shuffles
-            self.o.cs["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
+
+        newSettings = {"plotShuffleArrows": True}
+        # now repeat shuffles
+        newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
         fh = self.r.o.getInterface("fuelHandler")
 
@@ -466,8 +462,8 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_simpleAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        with self.o.cs._unlock():
-            self.o.cs["assemblyRotationStationary"] = True
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
         hist = self.o.getInterface("history")
         assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
         addSomeDetailAssemblies(hist, assems)
@@ -480,8 +476,8 @@ class TestFuelHandler(ArmiTestHelper):
     def test_buReducingAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
         hist = self.o.getInterface("history")
-        with self.o.cs._unlock():
-            self.o.cs["assemblyRotationStationary"] = True
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
         # apply dummy pin-level data to allow intelligent rotation
         for b in assem.getBlocks(Flags.FUEL):
@@ -497,11 +493,28 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_buildRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        schedule, widths = fh.buildRingSchedule(17, 1, jumpRingFrom=14)
-        self.assertEqual(
-            schedule, [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17]
-        )
-        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # simple divergent
+        schedule, widths = fh.buildRingSchedule(1, 9)
+        self.assertEqual(schedule, [9, 8, 7, 6, 5, 4, 3, 2, 1])
+
+        # simple with 1 jump
+        schedule, widths = fh.buildRingSchedule(9, 1, jumpRingFrom=6)
+        self.assertEqual(schedule, [5, 4, 3, 2, 1, 6, 7, 8, 9])
+        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # 1 jump plus auto-correction to core size
+        schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=5)
+        self.assertEqual(schedule, [6, 7, 8, 9, 5, 4, 3, 2, 1])
+        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # crash on invalid jumpring
+        with self.assertRaises(ValueError):
+            schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=0)
+
+        # test 4: Mid way jumping
+        schedule, widths = fh.buildRingSchedule(1, 9, jumpRingTo=6, jumpRingFrom=3)
+        self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
 
     def test_buildConvergentRingSchedule(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -514,6 +527,169 @@ class TestFuelHandler(ArmiTestHelper):
         locSchedule = fh.buildEqRingSchedule([2, 1])
         self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
+    def test_swapFluxParamSameLength(self):
+        """
+        Test the _swapFluxParams method for the usual case,
+        where each of the input assembles have the same number of assemblies,
+        on the same mesh
+        """
+        # grab the assemblies
+        assems = self.r.core.getAssemblies(Flags.FEED)
+        self.assertEqual(len(assems), 14)
+
+        for a in assems:
+            self.assertEqual(len(a.getBlocks()), 5)
+
+        # make two copies of an arbitraty assembly
+        a1 = copy.deepcopy(list(assems)[1])
+        a2 = copy.deepcopy(list(assems)[1])
+        blocks1 = list(a1.getBlocks())
+        blocks2 = list(a2.getBlocks())
+        self.assertEqual(len(blocks1), 5)
+        self.assertEqual(len(blocks2), 5)
+        self.assertEqual(blocks1[3].p.height, 25)
+        self.assertEqual(blocks2[3].p.height, 25)
+
+        # 1. alter the values of a single block in assembly 2
+        b2 = list(blocks2)[1]
+        b2.p.flux = b2.p.flux * 2
+        b2.p.power = 1000
+        b2.p.pdens = b2.p.power / b2.getVolume()
+
+        # grab the power before the swap
+        power1 = sum([b.p.power for b in a1.getBlocks()])
+        power2 = sum([b.p.power for b in a2.getBlocks()])
+
+        # 2. validate the situation is as you'd expect
+        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.flux, 100000000000.0)
+        self.assertEqual(list(a1.getBlocks())[1].p.power, 0.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.power, 1000.0)
+        self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
+        self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
+
+        # 3. do the swap
+        fh = fuelHandlers.FuelHandler(self.o)
+        fh._swapFluxParam(a1, a2)
+
+        # 4. validate the swap worked
+        self.assertEqual(list(a1.getBlocks())[1].p.flux, 100000000000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
+        self.assertEqual(list(a1.getBlocks())[1].p.power, 1000.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.power, 0.0)
+        self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
+        self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
+        self.assertEqual(sum([b.p.power for b in a1.getBlocks()]), power2)
+        self.assertEqual(sum([b.p.power for b in a2.getBlocks()]), power1)
+
+    def test_swapFluxParamDifferentLengths(self):
+        """
+        Test the _swapFluxParams method for the less common, and more complicated case,
+        where the input assembles have different numbers of blocks, potentially on
+        wildly different point meshes.
+        """
+        # grab the assemblies
+        assems = self.r.core.getAssemblies(Flags.FEED)
+
+        # make two copies of an arbitraty assembly
+        a1 = copy.deepcopy(list(assems)[1])
+        a2 = copy.deepcopy(list(assems)[1])
+        height2 = 25.0
+        self.assertEqual(list(a1.getBlocks())[3].p.height, height2)
+        self.assertEqual(list(a2.getBlocks())[3].p.height, height2)
+
+        # grab the blocks from the second assembly
+        blocks2 = list(a2.getBlocks())
+        self.assertEqual(len(blocks2), 5)
+
+        # grab a single block from the second assembly, to be altered
+        b2 = list(blocks2)[1]
+        self.assertEqual(b2.p.height, height2)
+        self.assertEqual(b2.p.flux, 50000000000.0)
+        self.assertIsNone(b2.p.mgFlux)
+        self.assertEqual(b2.p.power, 0.0)
+        self.assertEqual(b2.p.pdens, 0.0)
+        volume2 = 6074.356
+        self.assertAlmostEqual(b2.getVolume(), volume2, delta=0.1)
+
+        # split the the block into two of half the heights
+        b20 = copy.deepcopy(b2)
+        b21 = copy.deepcopy(b2)
+        b20.setHeight(height2 / 2)
+        b21.setHeight(height2 / 2)
+        self.assertAlmostEqual(b20.getVolume(), volume2 / 2, delta=0.1)
+        self.assertAlmostEqual(b21.getVolume(), volume2 / 2, delta=0.1)
+
+        # give the two new (smaller) blocks some power/pdens
+        b20.p.power = 1000
+        b21.p.power = 2000
+        b20.p.pdens = b20.p.power / b20.getVolume()
+        b21.p.pdens = b21.p.power / b21.getVolume()
+        self.assertEqual(b20.p.power, 1000.0)
+        self.assertEqual(b21.p.power, 2000.0)
+        self.assertAlmostEqual(b20.p.pdens, 0.3292, delta=0.1)
+        self.assertAlmostEqual(b21.p.pdens, 0.6585, delta=0.1)
+
+        # give the second assembly the new blocks
+        a2.removeAll()
+        a2.setChildren([blocks2[0]] + [b20, b21] + blocks2[2:])
+
+        # validate the situation is as you'd expect
+        self.assertEqual(len(a1.getBlocks()), 5)
+        self.assertEqual(len(a2.getBlocks()), 6)
+
+        # validate the power before the swap
+        power1 = [b.p.power for b in a1.getBlocks()]
+        power2 = [b.p.power for b in a2.getBlocks()]
+
+        self.assertEqual(power1, [0, 0, 0, 0, 0])
+        self.assertEqual(power2, [0, 1000, 2000, 0, 0, 0])
+
+        # validate the power density before the swap
+        for b in a1.getBlocks():
+            self.assertEqual(b.p.pdens, 0.0)
+
+        pdens2i = [0, 0.32925299379047496, 0.6585059875809499, 0, 0, 0]
+        for i, b in enumerate(a2.getBlocks()):
+            self.assertAlmostEqual(b.p.pdens, pdens2i[i], msg=i)
+
+        # validate the flux before the swap
+        for b in a1.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
+        for b in a2.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
+        # do the swap, using averages
+        fh = fuelHandlers.FuelHandler(self.o)
+        fh._swapFluxParam(a1, a2)
+
+        # grab the power after the swap
+        power1f = [b.p.power for b in a1.getBlocks()]
+        power2f = [b.p.power for b in a2.getBlocks()]
+
+        # validate the swap worked
+        self.assertEqual(len(a1.getBlocks()), 5)
+        self.assertEqual(len(a2.getBlocks()), 6)
+
+        self.assertEqual(power1f, [0, 3000, 0, 0, 0])
+        self.assertEqual(power2f, [0, 0, 0, 0, 0, 0])
+
+        # validate the power density after the swap
+        pdens1f = [0, 0.4938794906857124, 0, 0, 0]
+        for i, b in enumerate(a1.getBlocks()):
+            self.assertAlmostEqual(b.p.pdens, pdens1f[i], msg=i)
+
+        for i, b in enumerate(a2.getBlocks()):
+            self.assertAlmostEqual(b.p.pdens, 0, msg=i)
+
+        # validate the flux after the swap
+        for b in a1.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
+        for b in a2.getBlocks():
+            self.assertEqual(b.p.flux, 50000000000.0)
+
 
 class TestFuelPlugin(unittest.TestCase):
     """Tests that make sure the plugin is being discovered well."""
@@ -523,7 +699,7 @@ class TestFuelPlugin(unittest.TestCase):
         nm = settings.CONF_CIRCULAR_RING_ORDER
         self.assertEqual(cs[nm], "angle")
 
-        setting = cs.settings[nm]
+        setting = cs.getSetting(nm)
         self.assertIn("distance", setting.options)
 
 

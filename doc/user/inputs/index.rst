@@ -6,7 +6,7 @@ ARMI input files define the initial state of the reactor model and tell ARMI wha
 performed on it.
 
 .. note:: We have an :doc:`input walkthrough </tutorials/walkthrough_inputs>` tutorial for a quick 
-    overview of th inputs.
+    overview of the inputs.
 
 There are several input files:
 
@@ -18,9 +18,6 @@ Blueprints file
 	Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel 
   	pins to heat exchangers
  
-Core map file
-	Describes where various assemblies (defined in blueprints) exist in a core relative to one another
-
 Fuel management file
 	Describes how fuel moves around during a simulation
 
@@ -38,6 +35,5 @@ The core map input files can be graphically manipulated with the
 
    settings
    blueprints
-   facemap_file
    fuel_management
    settings_report

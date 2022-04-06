@@ -1,7 +1,21 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Unit tests for input modifiers"""
 import unittest
 import os
 import io
+from ruamel import yaml
 
 from armi.utils import directoryChangers
 from armi import cases
@@ -111,6 +125,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
 
     def test_SmearDensityFail(self):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
+
         builder.addDegreeOfFreedom(
             pinTypeInputModifiers.SmearDensityModifier(v) for v in (0.5, 0.6)
         )
@@ -149,18 +164,63 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
 
             self.assertTrue(os.path.exists("case-suite"))
 
+    def test_BluePrintBlockModifier(self):
+        """test BluePrintBlockModifier with build suite naming function argument"""
+
+        case_nbr = 1
+
+        builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
+
+        builder.addDegreeOfFreedom(
+            [
+                inputModifiers.BluePrintBlockModifier(
+                    "fuel 1", "clad", "od", float("{:.2f}".format(22 / 7))
+                )
+            ]
+        )
+        builder.addDegreeOfFreedom(
+            [inputModifiers.BluePrintBlockModifier("block 5", "clad", "od", 3.14159)]
+        )
+
+        def SuiteNaming(index, _case, _mods):
+            uniquePart = "{:0>4}".format(index + case_nbr)
+            return os.path.join(
+                ".",
+                "case-suite-testBPBM",
+                uniquePart,
+                self.baseCase.title + "-" + uniquePart,
+            )
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            suite = builder.buildSuite(namingFunc=SuiteNaming)
+            suite.writeInputs()
+
+            self.assertTrue(os.path.exists("case-suite-testBPBM"))
+
+            yamlfile = open(
+                f"case-suite-testBPBM/000{case_nbr}/armi-000{case_nbr}-blueprints.yaml",
+                "r",
+            )
+            bp_dict = yaml.load(yamlfile)
+            yamlfile.close()
+
+            self.assertEqual(bp_dict["blocks"]["fuel 1"]["clad"]["od"], 3.14)
+            self.assertEqual(bp_dict["blocks"]["block 5"]["clad"]["od"], 3.14159)
+
 
 class TestSettingsModifiers(unittest.TestCase):
     def test_NeutronicConvergenceModifier(self):
         cs = settings.Settings()
 
         with self.assertRaises(ValueError):
-            neutronicsModifiers.NeutronicConvergenceModifier(0.0)
+            _ = neutronicsModifiers.NeutronicConvergenceModifier(0.0)
 
         with self.assertRaises(ValueError):
-            neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
+            _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
 
-        neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(cs, None, None)
+        cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
+            cs, None, None
+        )
         self.assertAlmostEqual(cs["epsEig"], 1e-2)
         self.assertAlmostEqual(cs["epsFSAvg"], 1.0)
         self.assertAlmostEqual(cs["epsFSPoint"], 1.0)
@@ -172,7 +232,8 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
         self.neutronicsKernelOpts = neutronicsKernelOpts
 
     def __call__(self, cs, bp, geom):
-        cs.update(self.neutronicsKernelOpts)
+        cs = cs.modified(self.neutronicsKernelOpts)
+        return cs, bp, geom
 
 
 class TestFullCoreModifier(unittest.TestCase):
@@ -183,7 +244,7 @@ class TestFullCoreModifier(unittest.TestCase):
         case = cases.Case(cs=cs)
         mod = inputModifiers.FullCoreModifier()
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
-        mod(case, case.bp, None)
+        case, case.bp, _ = mod(case, case.bp, None)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
 
 

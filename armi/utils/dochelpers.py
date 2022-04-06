@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Helpers for sphinx documentation.
 
@@ -254,4 +267,41 @@ def generateParamTable(klass, fwParams, app=None):
     """
         content.append(pluginContent + "\n")
 
+    return "\n".join(content)
+
+
+def generatePluginSettingsTable(settings, pluginName):
+    """
+    Return a string containing one or more restructured text list tables containing
+    settings descriptions for a plugin.
+
+    Parameters
+    ----------
+    settings : list of Settings
+        This is a list of settings definitions, typically returned by a
+        ``defineSettings`` plugin hook.
+    """
+    headerContent = """
+    .. list-table:: Settings defined in the {}
+       :header-rows: 1
+       :widths: 20 10 50 20
+
+       * - Name
+         - Label
+         - Description
+         - Default Value
+    """.format(
+        pluginName
+    )
+
+    content = [f".. _{pluginName}-settings-table:"]
+    pluginContent = headerContent
+    for setting in settings:
+        default = None if setting.default == "" else setting.default
+        pluginContent += f"""   * - ``{setting.name}``
+         - {setting.label}
+         - {setting.description}
+         - {default}
+    """
+    content.append(pluginContent + "\n")
     return "\n".join(content)

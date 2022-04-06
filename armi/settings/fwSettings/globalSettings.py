@@ -19,7 +19,7 @@ This should contain Settings definitions for general-purpose "framework" setting
 should only include settings that are not related to any particular physics or plugins.
 
 TODO: There are lots of settings in here that violate the above rule, which still need
-to be migrated to their respective plugins.
+to be migrated to their respective plugins: they are clearly separated for review.
 """
 import os
 from typing import List
@@ -35,7 +35,6 @@ CONF_NUM_PROCESSORS = "numProcessors"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_ZONING_STRATEGY = "zoningStrategy"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
-CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_TRACE = "trace"
 CONF_PROFILE = "profile"
@@ -69,29 +68,26 @@ CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_FRESH_FEED_TYPE = "freshFeedType"
 CONF_GEOM_FILE = "geomFile"
-CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_START_CYCLE = "startCycle"
 CONF_LOADING_FILE = "loadingFile"
 CONF_START_NODE = "startNode"
 CONF_LOAD_STYLE = "loadStyle"
 CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
-CONF_MEM_PER_NODE = "memPerNode"
+CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_MPI_TASKS_PER_NODE = "mpiTasksPerNode"
 CONF_N_CYCLES = "nCycles"
-CONF_NUM_CONTROL_BLOCKS = "numControlBlocks"  # dif3d
 CONF_NUM_COUPLED_ITERATIONS = "numCoupledIterations"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PLOTS = "plots"
 CONF_POWER = "power"
-CONF_REMOVE_PER_CYCLE = "removePerCycle"  # fuel handler
 CONF_RUN_TYPE = "runType"
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_SKIP_CYCLES = "skipCycles"
 CONF_SMALL_RUN = "smallRun"
 CONF_REALLY_SMALL_RUN = "reallySmallRun"
 CONF_STATIONARY_BLOCKS = "stationaryBlocks"
-CONF_TARGET_K = "targetK"  # lots of things use this; not clear who should own
+CONF_TARGET_K = "targetK"  # lots of things use this
 CONF_TRACK_ASSEMS = "trackAssems"
 CONF_VERBOSITY = "verbosity"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
@@ -104,7 +100,6 @@ CONF_HCF_CORETYPE = "HCFcoretype"
 CONF_LOOSE_COUPLING = "looseCoupling"
 CONF_T_IN = "Tin"
 CONF_T_OUT = "Tout"
-CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD = "useInputTemperaturesOnDBLoad"
 CONF_DEFERRED_INTERFACES_CYCLE = "deferredInterfacesCycle"
 CONF_DEFERRED_INTERFACE_NAMES = "deferredInterfaceNames"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
@@ -112,10 +107,17 @@ CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 
+# Unused by ARMI, slated for removal
+CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
+CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"  # mcnp & gui
+CONF_MEM_PER_NODE = "memPerNode"  # unused?
+CONF_NUM_CONTROL_BLOCKS = "numControlBlocks"  # dif3d
+CONF_REMOVE_PER_CYCLE = "removePerCycle"  # fuel handler, equilibrium, mcnp
+CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD = "useInputTemperaturesOnDBLoad"  # th
+
 
 def defineSettings() -> List[setting.Setting]:
     """Return a list of global framework settings."""
-
     settings = [
         setting.Setting(
             CONF_NUM_PROCESSORS,
@@ -209,7 +211,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLE_LENGTH,
             default=365.242199,
             label="Cycle Length",
-            description="Duration of one single cycle. If availability factor is below "
+            description="Duration of one single cycle in days. If availability factor is below "
             "1, the reactor will be at power less than this. If variable, use "
             "cycleLengths setting.",
             oldNames=[
@@ -262,9 +264,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_BURN_STEPS,
             default=4,
             label="Burnup Steps per Cycle",
-            description="Number of depletion substeps in one cycle, n. Note: There "
-            "will be n+1 time nodes so the burnup step time will be computed as cycle "
-            "length/n+1.",
+            description="Number of depletion substeps, n, in one cycle. Note: There "
+            "will be n+1 time nodes and the burnup step time will be computed as cycle "
+            "length/n.",
         ),
         setting.Setting(
             CONF_BETA,
@@ -304,11 +306,18 @@ def defineSettings() -> List[setting.Setting]:
             isEnvironment=True,
         ),
         setting.Setting(
+            CONF_MODULE_VERBOSITY,
+            default={},
+            label="Module-Level Verbosity",
+            description="Verbosity of any module-specific loggers that are set.",
+            isEnvironment=True,
+        ),
+        setting.Setting(
             CONF_BU_GROUPS,
             default=[10, 20, 30, 100],
             label="Burnup Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type",
+            "for a given assembly type (units of %FIMA).",
             schema=vol.Schema([vol.Any(int, float)]),
         ),
         setting.Setting(

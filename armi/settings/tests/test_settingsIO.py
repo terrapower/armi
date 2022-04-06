@@ -40,20 +40,20 @@ class SettingsFailureTests(unittest.TestCase):
                 "idontexist"
             ] = "this test should fail because no setting named idontexist should exist."
 
-    def test_loadFromXmlFailsOnBadNames(self):
+    def test_loadFromYamlFailsOnBadNames(self):
         ss = settings.Settings()
         with self.assertRaises(TypeError):
             ss.loadFromInputFile(None)
         with self.assertRaises(IOError):
-            ss.loadFromInputFile("this-settings-file-does-not-exist.xml")
+            ss.loadFromInputFile("this-settings-file-does-not-exist.yaml")
 
     def test_invalidFile(self):
         with self.assertRaises(InvalidSettingsFileError):
             cs = settings.caseSettings.Settings()
             reader = settingsIO.SettingsReader(cs)
             reader.readFromStream(
-                io.StringIO(r"<uselessTag>¯\_(ツ)_/¯</uselessTag>"),
-                fmt=settingsIO.SettingsReader.SettingsInputFormat.XML,
+                io.StringIO("useless:\n    should_fail"),
+                fmt=settingsIO.SettingsReader.SettingsInputFormat.YAML,
             )
 
 
@@ -103,15 +103,11 @@ class SettingsWriterTests(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         self.init_mode = armi.CURRENT_MODE
-        self.filepathXml = os.path.join(
-            os.getcwd(), self._testMethodName + "test_setting_io.xml"
-        )
         self.filepathYaml = os.path.join(
             os.getcwd(), self._testMethodName + "test_setting_io.yaml"
         )
         self.cs = settings.Settings()
-        with self.cs._unlock():
-            self.cs["nCycles"] = 55
+        self.cs = self.cs.modified(newSettings={"nCycles": 55})
 
     def tearDown(self):
         armi.Mode.setMode(self.init_mode)
@@ -119,8 +115,8 @@ class SettingsWriterTests(unittest.TestCase):
 
     def test_writeShorthand(self):
         """Setting output as a sparse file"""
-        self.cs.writeToXMLFile(self.filepathXml, style="short")
-        self.cs.loadFromInputFile(self.filepathXml)
+        self.cs.writeToYamlFile(self.filepathYaml, style="short")
+        self.cs.loadFromInputFile(self.filepathYaml)
         self.assertEqual(self.cs["nCycles"], 55)
 
     def test_writeYaml(self):
@@ -150,4 +146,4 @@ class SettingArgsTests(unittest.TestCase):
         self.test_commandLineSetting()
 
         with self.assertRaises(RuntimeError):
-            self.cs.loadFromInputFile("somefile.xml")
+            self.cs.loadFromInputFile("somefile.yaml")

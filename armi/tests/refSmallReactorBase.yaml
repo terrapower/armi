@@ -73,7 +73,7 @@ blocks:
             ip: duct.op
             mult: 1.0
             op: 16.75
-    control: &block_control
+    moveable control: &block_control
         control:
             shape: Circle
             material: B4C
@@ -197,7 +197,7 @@ blocks:
             id: 0.0
             mult: shield.mult
             od: 0.10056
-    plenum: &block_plenum
+    moveable plenum: &block_plenum
         clad:
             shape: Circle
             material: HT9

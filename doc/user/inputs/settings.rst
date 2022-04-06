@@ -41,13 +41,12 @@ Blueprints, Core Map, and Fuel Management inputs.
 
 .. tip:: The ARMI GUI is not yet included in the open-source ARMI framework
 
-The assembly dragger
+The assembly clicker
 --------------------
-The assembly dragger (in the ``Geometry`` tab) allows users to define the 2-D layout of the assemblies defined in the
-:doc:`/user/inputs/blueprints`. It is currently limited to hexagons. The results of this arrangement get written to
-:doc:`/user/inputs/facemap_file`. Drag hexagons from the options on the right and place them into the core positions you
-want them to be in. By default, the input assumes a 1/3 core model, but you can create a full core model through the
-menu.
+The assembly clicker (in the ``grids`` editor) allows users to define the 2-D layout of the assemblies defined in the
+:doc:`/user/inputs/blueprints`. This can be done in hexagon or cartesian. The results of this arrangement get written to
+grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
+assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
 
 If you want one assembly type to fill all positions in a ring, right click it once it is placed and choose ``Make ring
 like this hex``. Once you submit the job or save the settings file (File -> Save), you will be prompted for a new name

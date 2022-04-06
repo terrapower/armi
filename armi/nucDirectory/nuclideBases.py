@@ -18,7 +18,7 @@ The nuclideBases module classes for providing *base* nuclide information, such a
 For details on how to setup the RIPL-3 data files to process extra nuclide data see:
 :doc:`/user/user_install`
 
-The nuclide class structure is outlined in :ref:`nuclide-bases-class-diagram`.
+The nuclide class structure is outlined in :ref:`the figure <nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
 
@@ -97,8 +97,9 @@ U235_7
 
 import os
 import pathlib
+import glob
 
-import yaml
+from ruamel import yaml
 
 import armi
 from armi.nucDirectory import elements
@@ -307,7 +308,8 @@ def __readMc2Nuclides():
     that have already been added from RIPL.
     """
     with open(os.path.join(armi.context.RES, "mc2Nuclides.yaml"), "r") as mc2Nucs:
-        mc2Nuclides = yaml.load(mc2Nucs, Loader=yaml.FullLoader)
+        mc2Nuclides = yaml.load(mc2Nucs, yaml.RoundTripLoader)
+
     # now add the mc2 specific nuclideBases, and correct the mc2Ids when a > 0 and state = 0
     for name, data in mc2Nuclides.items():
         z = data["z"]
@@ -398,7 +400,8 @@ def imposeBurnChain(burnChainStream):
         runLog.warning("Burn chain already imposed. Skipping reimposition.")
         return
     _burnChainImposed = True
-    burnData = yaml.load(burnChainStream, Loader=yaml.FullLoader)
+    burnData = yaml.load(burnChainStream, yaml.RoundTripLoader)
+
     for nucName, burnInfo in burnData.items():
         nuclide = byName[nucName]
         # think of this protected stuff as "module level protection" rather than class.
@@ -484,20 +487,14 @@ def __readRiplDecayData():
     if not path.exists() or not path.is_dir():
         raise ValueError(f"`{_riplEnvironVariable}`: {path} is invalid.")
 
-    # Check for all (.dat) data files within the directory. These
-    # are ordered from z000.dat to z117.dat. If all files do not
-    # exist then an exception is thrown for the missing data files.
+    # Check that the number of expected (.dat) data files within the directory exist.
     numRIPLDataFiles = 118
-    dataFileNames = ["z{:>03d}.dat".format(i) for i in range(0, numRIPLDataFiles)]
-    missingFileNames = []
-    for df in dataFileNames:
-        expectedDataFilePath = os.path.abspath(os.path.join(path, df))
-        if not os.path.exists(expectedDataFilePath):
-            missingFileNames.append(df)
-    if missingFileNames:
-        raise ValueError(
-            f"There are {len(missingFileNames)} missing RIPL data files in `{_riplEnvironVariable}`: {path}.\n"
-            f"The following data files were expected: {missingFileNames}"
+    numAvailableRIPLFiles = len(glob.glob(os.path.join(riplPath, "z???.dat")))
+    if numAvailableRIPLFiles < numRIPLDataFiles:
+        runLog.warning(
+            f"The number of RIPL files are expected to be {numRIPLDataFiles}, but "
+            f"only {numAvailableRIPLFiles} exist. There may be missing nuclides that "
+            f"are loaded into the `nuclideBases` directory."
         )
 
     ripl.makeDecayConstantTable(directory=path)

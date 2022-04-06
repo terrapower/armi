@@ -113,6 +113,7 @@ class Block(composites.Composite):
         # TODO: what's causing these to have wrong values at BOL?
         for problemParam in ["THcornTemp", "THedgeTemp"]:
             self.p[problemParam] = []
+
         for problemParam in [
             "residence",
             "bondRemoved",
@@ -834,7 +835,7 @@ class Block(composites.Composite):
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
-        for child in self:
+        for child in self.iterComponents():
             child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
             massHmBOL += child.p.massHmBOL
         self.p.massHmBOL = massHmBOL
@@ -910,10 +911,14 @@ class Block(composites.Composite):
 
         self.derivedMustUpdate = True
         self.clearCache()
-        mult = int(c.getDimension("mult"))
-        if self.p.percentBuByPin is None or len(self.p.percentBuByPin) < mult:
-            # this may be a little wasteful, but we can fix it later...
-            self.p.percentBuByPin = [0.0] * mult
+        try:
+            mult = int(c.getDimension("mult"))
+            if self.p.percentBuByPin is None or len(self.p.percentBuByPin) < mult:
+                # this may be a little wasteful, but we can fix it later...
+                self.p.percentBuByPin = [0.0] * mult
+        except AttributeError:
+            # maybe adding a Composite of components rather than a single
+            pass
         self._updatePitchComponent(c)
 
     def removeAll(self, recomputeAreaFractions=True):
@@ -1292,11 +1297,13 @@ class Block(composites.Composite):
             self.completeInitialLoading()
 
     def getMfp(self, gamma=False):
-        r"""calculates the mean free path for neutron or gammas in this block.
+        r"""
+        Calculate the mean free path for neutron or gammas in this block.
 
-                    Sum_E(flux_e*macro_e*dE)     Sum_E(flux_e*d*sum_type(micro_e) * dE)
-        <Macro> = --------------------------- =  -------------------------------------
-                     Sum_E (flux_e*dE)                Sum_E (flux_e*dE)
+        .. math::
+
+            <\Sigma> = \frac{\sum_E(\phi_e \Sigma_e dE)}{\sum_E (\phi_e dE)}  =
+            \frac{\sum_E(\phi_e N \sum_{\text{type}}(\sigma_e)  dE}{\sum_E (\phi_e dE))}
 
         Block macro is the sum of macros of all nuclides.
 
@@ -1627,8 +1634,8 @@ class HexBlock(Block):
         -----
         This handles rotations using the pinLocation parameters.
 
-        Outputs
-        -------
+        This sets:
+
         self.p.pinPowers : 1-D numpy array
             The block-level pin linear power densities. pinPowers[i] represents the average linear
             power density of pin i.
@@ -1970,7 +1977,7 @@ class HexBlock(Block):
         """
 
         # Check multiplicities...
-        mults = {c.getDimension("mult") for c in self}
+        mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
             raise ValueError(

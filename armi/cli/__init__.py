@@ -156,7 +156,7 @@ class ArmiCLI:
 
         sub = re.compile(r"\s+").sub
 
-        ## given a string, condense white space into a single space
+        # given a string, condense white space into a single space
         condense = lambda s: sub(" ", s.strip())
 
         commands = self._entryPoints.values()
@@ -164,10 +164,10 @@ class ArmiCLI:
         formatter = "{name:<{width}}{desc}".format
         print("\ncommands:")
         for cmd in sorted(commands, key=lambda cmd: cmd.name):
-            ## Each command can optionally define a class attribute `description`
-            ## as documentation. If description is not defined (default=None since
-            ## it should inherit from EntryPoint), then the docstring is used.
-            ## If the docstring is also None, then fall back to an empty string.
+            """Each command can optionally define a class attribute `description`
+            as documentation. If description is not defined (default=None since
+            it should inherit from EntryPoint), then the docstring is used.
+            If the docstring is also None, then fall back to an empty string."""
             desc = condense(cmd.description or cmd.__doc__ or "")
             print(wrapper.fill(formatter(width=indent, name=cmd.name, desc=desc)))
 

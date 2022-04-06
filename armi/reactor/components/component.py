@@ -17,11 +17,10 @@ Components represent geometric objects within an assembly such as fuel, bond, co
 
 This module contains the abstract definition of a Component.
 """
-import re
 import copy
+import re
 
 import numpy
-import six
 
 from armi.materials import material
 from armi.materials import custom
@@ -181,6 +180,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         Temperature in C to which dimensions were thermally-expanded upon input.
     material : str or material.Material
         The material object that makes up this component and give it its thermo-mechanical properties.
+
+    .. impl:: ARMI allows for thermal expansion of all components by user-defined custom curves.
+       :id: IMPL_REACTOR_THERMAL_EXPANSION_0
+       :links: REQ_REACTOR_THERMAL_EXPANSION
     """
 
     DIMENSION_NAMES = tuple()  # will be assigned by ComponentType
@@ -277,12 +280,13 @@ class Component(composites.Composite, metaclass=ComponentType):
             self.setDimension(key, val)
 
         if components:
-            self._resolveLinkedDims(components)
+            self.resolveLinkedDims(components)
 
-    def _resolveLinkedDims(self, components):
+    def resolveLinkedDims(self, components):
+        """Convert dimension link strings to actual links."""
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
-            if not isinstance(value, six.string_types):
+            if not isinstance(value, str):
                 continue
 
             match = COMPONENT_LINK_REGEX.search(value)

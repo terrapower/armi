@@ -25,7 +25,6 @@ import re
 from typing import Dict, Tuple, Set
 import sys
 import warnings
-import xml.etree.ElementTree as ET
 
 from ruamel.yaml import YAML
 import ruamel.yaml.comments
@@ -148,16 +147,15 @@ class SettingsReader:
     """
 
     class SettingsInputFormat(enum.Enum):
-        XML = enum.auto()
         YAML = enum.auto()
 
+        # TODO: Is this method still necessary?
         @classmethod
         def fromExt(cls, ext):
-            return {".xml": cls.XML, ".yaml": cls.YAML}[ext]
+            return {".yaml": cls.YAML}[ext]
 
     def __init__(self, cs):
         self.cs = cs
-        self.rootTag = Roots.CUSTOM
         self.format = self.SettingsInputFormat.YAML
         self.inputPath = "<stream>"
 
@@ -166,7 +164,7 @@ class SettingsReader:
         self.liveVersion = version
         self.inputVersion = version
 
-        self._renamer = SettingRenamer(self.cs.settings)
+        self._renamer = SettingRenamer(dict(self.cs.items()))
 
         # the input version will be overwritten if explicitly stated in input file.
         # otherwise, it's assumed to precede the version inclusion change and should be
@@ -180,11 +178,6 @@ class SettingsReader:
 
     def __repr__(self):
         return "<{} {}>".format(self.__class__.__name__, self.inputPath)
-
-    @property
-    def isXmlFormat(self):
-        """True if file read is in the old XML format."""
-        return self.format == self.SettingsInputFormat.XML
 
     def readFromFile(self, path, handleInvalids=True):
         """Load file and read it."""
@@ -204,59 +197,13 @@ class SettingsReader:
         """Read from a file-like stream."""
         self.format = fmt
         if self.format == self.SettingsInputFormat.YAML:
-            try:
-                self._readYaml(stream, handleInvalids=handleInvalids)
-            except ruamel.yaml.scanner.ScannerError:
-                # mediocre way to detect xml vs. yaml at the stream level
-                runLog.info(
-                    "Could not read stream in YAML format. Attempting XML format."
-                )
-                self.format = self.SettingsInputFormat.XML
-                stream.seek(0)
-        if self.format == self.SettingsInputFormat.XML:
-            self._readXml(stream, handleInvalids=handleInvalids)
-
-    def _readXml(self, stream, handleInvalids=True):
-        """
-        Read user settings from XML stream.
-        """
-        warnings.warn(
-            "Loading from XML-format settings files is being deprecated.",
-            DeprecationWarning,
-        )
-        tree = ET.parse(stream)
-        settingRoot = tree.getroot()
-        if Roots.VERSION in settingRoot.attrib:
-            self.inputVersion = settingRoot.attrib[Roots.VERSION]
-
-        if settingRoot.tag != self.rootTag:
-            # checks to make sure the right kind of settings XML file
-            # is being applied to the right class
-            if settingRoot.tag == systemLayoutInput.SystemLayoutInput.ROOT_TAG:
-                customMsg = (
-                    "\nSettings file appears to be a reactor geometry file. "
-                    "Please provide a valid settings file."
-                )
-            else:
-                customMsg = '\nRoot tag "{}" does not match expected value "{}"'.format(
-                    settingRoot.tag, self.rootTag
-                )
-            raise InvalidSettingsFileError(self.inputPath, customMsgEnd=customMsg)
-
-        for settingElement in list(settingRoot):
-            self._interpretXmlSetting(settingElement)
+            self._readYaml(stream)
 
         if handleInvalids:
             self._checkInvalidSettings()
 
-    def _readYaml(self, stream, handleInvalids=True):
-        """
-        Read settings from a YAML stream.
-
-        Notes
-        -----
-        This is intended to replace the XML stuff as we converge on consistent input formats.
-        """
+    def _readYaml(self, stream):
+        """Read settings from a YAML stream."""
         from armi.physics.thermalHydraulics import const  # avoid circular import
 
         yaml = YAML()
@@ -295,59 +242,18 @@ class SettingsReader:
         else:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
-    def _interpretXmlSetting(self, settingElement):
-        settingName = settingElement.tag
-        attributes = settingElement.attrib
-        if settingName in self.settingsAlreadyRead:
-            raise SettingException(
-                "The setting {} has been specified more than once in {}. Adjust input."
-                "".format(settingName, self.inputPath)
-            )
-        # add here, before it gets converted by name cleaning below.
-        self.settingsAlreadyRead.add(settingName)
-        if settingName in settingsRules.OLD_TAGS:
-            # name cleaning
-            settingName = settingElement.attrib["key"].replace(" ", "")
-            values = list(settingElement)
-            if not values:
-                attributes = {"type": settingsRules.OLD_TAGS[settingElement.tag]}
-                if "val" in settingElement.attrib:
-                    attributes["value"] = settingElement.attrib["val"]
-                else:
-                    # means this item has no children and no value, no reason for it to exist.
-                    return
-            else:
-                attributes["value"] = [
-                    subElement.attrib["val"] for subElement in values
-                ]
-                attributes["containedType"] = settingsRules.OLD_TAGS[
-                    settingElement.attrib["type"]
-                ]
-
-        elif "value" not in attributes:
-            raise SettingException(
-                "No value supplied for the setting {} in {}".format(
-                    settingName, self.inputPath
-                )
-            )
-
-        self._applySettings(settingName, attributes["value"])
-
     def _applySettings(self, name, val):
         nameToSet, _wasRenamed = self._renamer.renameSetting(name)
         settingsToApply = self.applyConversions(nameToSet, val)
         for settingName, value in settingsToApply.items():
-            if settingName not in self.cs.settings:
+            if settingName not in self.cs:
                 self.invalidSettings.add(settingName)
             else:
                 # apply validations
-                settingObj = self.cs.settings[settingName]
-                if value:
-                    value = applyTypeConversions(settingObj, value)
+                settingObj = self.cs.getSetting(settingName)
 
-                # The value is automatically coerced into the
-                # expected type when set using either the default or
-                # user-defined schema
+                # The value is automatically coerced into the expected type
+                # when set using either the default or user-defined schema
                 self.cs[settingName] = value
 
     def applyConversions(self, name, value):
@@ -368,18 +274,6 @@ class SettingsReader:
             settingsToApply.update(func(self.cs, name, value))
 
         return settingsToApply
-
-
-def applyTypeConversions(settingObj, value):
-    """
-    Coerce value to proper type given a valid setting object.
-
-    Useful in converting XML settings with no type info (all string) as well as
-    in GUI operations.
-    """
-    if settingObj.underlyingType == list and not isinstance(value, list):
-        return ast.literal_eval(value)
-    return value
 
 
 class SettingsWriter:
@@ -410,21 +304,6 @@ class SettingsWriter:
     def _getVersion():
         tag, attrib = Roots.CUSTOM, {Roots.VERSION: version}
         return tag, attrib
-
-    def writeXml(self, stream):
-        """Write settings to XML file."""
-        settingData = self._getSettingDataToWrite()
-        tag, attrib = self._getVersion()
-        root = ET.Element(tag, attrib=attrib)
-        tree = ET.ElementTree(root)
-
-        for settingObj, settingDatum in settingData.items():
-            settingNode = ET.SubElement(root, settingObj.name)
-            for attribName in settingDatum:
-                settingNode.set(attribName, str(settingObj.dump()))
-
-        stream.write('<?xml version="1.0" ?>\n')
-        stream.write(self.prettyPrintXmlRecursively(tree.getroot(), spacing=False))
 
     def writeYaml(self, stream):
         """Write settings to YAML file."""
@@ -463,7 +342,7 @@ class SettingsWriter:
         """
         settingData = collections.OrderedDict()
         for _settingName, settingObject in iter(
-            sorted(self.cs.settings.items(), key=lambda name: name[0].lower())
+            sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
             if self.style == self.Styles.short and not settingObject.offDefault:
                 continue
@@ -476,106 +355,6 @@ class SettingsWriter:
                 settingDatum[attribName] = attribValue
             settingData[settingObject] = settingDatum
         return settingData
-
-    def prettyPrintXmlRecursively(self, node, indentation=0, spacing=True):
-        r"""Generates a pretty output string of an element tree better than the default .write()
-
-        Uses helper cleanQuotesFromString to get everything both python and xml readable
-
-        Parameters
-        ----------
-        node : ET.Element
-            the element tree element to write the output for
-        indentation : int,
-            not for manual use, but for the recursion to nicely nest parts of the string
-        spacing : bool
-            used to flip the newline behavior for spacing out an xml file or keeping it compact
-            primarily for the difference between a default settings and a custom settings file.
-
-        """
-        if spacing:
-            spacing = 1
-        else:
-            spacing = 0
-
-        cleanTag = self.cleanStringForXml(node.tag)
-        cleanText = self.cleanStringForXml(node.text)
-        cleanTail = self.cleanStringForXml(node.tail)
-
-        # open the tag
-        output = "\n" + "\t" * indentation + "<{tag}".format(tag=cleanTag)
-        indentation += 1
-
-        # fill in attributes
-        for key, value in iter(sorted(node.attrib.items())):
-            cleanKey = self.cleanStringForXml(key)
-            cleanValue = self.cleanStringForXml(value)
-            output += (
-                "\n" * spacing
-                + "\t" * indentation * spacing
-                + " " * ((spacing - 1) * -1)
-                + '{key}="{value}"'.format(key=cleanKey, value=cleanValue)
-            )
-
-        # if there are internal nodes, keep the tag open, otherwise close it immediately
-        if not node.text and not list(node):  # no internal tags
-            output += " />" + "\n" * spacing
-        elif node.text and not list(node):  # internal text, no children
-            output += (
-                ">"
-                + "\n" * spacing
-                + "\t" * indentation
-                + "{text}\n".format(text=cleanText)
-            )
-            indentation -= 1
-            output += "\t" * indentation + "</{tag}>".format(tag=cleanTag)
-        elif node.text and list(node):  # internal text, children
-            output += (
-                ">"
-                + "\n" * spacing
-                + "\t" * indentation
-                + "{text}\n".format(text=cleanText)
-            )
-            for child in list(node):
-                output += self.prettyPrintXmlRecursively(
-                    child, indentation=indentation, spacing=spacing
-                )
-            indentation -= 1
-            output += "\t" * indentation + "</{tag}>".format(tag=cleanTag)
-        else:  # has children, no text
-            output += ">" + "\n" * spacing
-            for child in list(node):
-                output += self.prettyPrintXmlRecursively(
-                    child, indentation=indentation, spacing=spacing
-                )
-            indentation -= 1
-            output += "\n" + "\t" * indentation + "</{tag}>".format(tag=cleanTag)
-
-        # add on the tail
-        if node.tail:
-            output += "{tail}".format(tail=cleanTail)
-
-        return output
-
-    def cleanStringForXml(self, s):
-        """Assures no XML entity issues will occur on parsing a string
-
-        A helper function used to make strings xml friendly
-        XML has some reserved characters, this should handle them.
-        apostrophes aren't  being dealt with but seem to behave nicely as is.
-
-        http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
-        """
-        if not s:
-            return ""
-
-        s = (
-            s.replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
-        )  # .replace("'",'&apos;')
-        s = re.sub(
-            "&(?!quot;|lt;|gt;|amp;|apos;)", "&amp;", s
-        )  # protects against chaining &amp
-        return s
 
 
 def prompt(statement, question, *options):

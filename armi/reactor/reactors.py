@@ -20,34 +20,41 @@ Core is a high-level object in the data model in ARMI. They contain assemblies w
 more refinement in representing the physical reactor. The reactor is the owner of many of the
 plant-wide state variables such as keff, cycle, and node.
 
+.. impl:: ARMI represents the Reactor heirarchically.
+   :id: IMPL_REACTOR_HIERARCHY_0
+   :links: REQ_REACTOR_HIERARCHY
+
+   The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
+   each contain a collection of Blocks.
 """
+from typing import Optional
 import collections
 import copy
 import itertools
 import logging
-from typing import Optional
+import os
 import tabulate
 import time
-import os
 
 import numpy
 
-from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings, utils
+from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
+from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
-from armi.reactor import systemLayoutInput
 from armi.reactor import grids
 from armi.reactor import parameters
-from armi.reactor import zones
 from armi.reactor import reactorParameters
-from armi.utils import units
-from armi.utils.iterables import Sequence
-from armi.utils import directoryChangers
+from armi.reactor import systemLayoutInput
+from armi.reactor import zones
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
-from armi.nuclearDataIO import xsLibraries
+from armi.utils import createFormattedStrWithDelimiter, units
+from armi.utils import directoryChangers
+from armi.utils.iterables import Sequence
+from armi.utils.mathematics import average1DWithinTolerance
 
 # init logger
 runLog = logging.getLogger(__name__)
@@ -395,14 +402,18 @@ class Core(composites.Composite):
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
 
-        Originally, this held onto all assemblies in the spend fuel pool. However, having this sitting in memory
-        becomes constraining for large problems. It is more memory-efficient to only save the assemblies
-        that are required for detailed history tracking. In fact, there's no need to save the assembly object at all,
-        just have the history interface save the relevant parameters. This is an important cleanup.
+
+        Originally, this held onto all assemblies in the spend fuel pool. However, having
+        this sitting in memory becomes constraining for large problems. It is more
+        memory-efficient to only save the assemblies that are required for detailed
+        history tracking. In fact, there's no need to save the assembly object at all,
+        just have the history interface save the relevant parameters. This is an important
+        cleanup.
 
         See Also
         --------
         add : adds an assembly
+
         """
         paramDefs = set(parameters.ALL_DEFINITIONS)
         paramDefs.difference_update(set(parameters.forType(Core)))
@@ -689,7 +700,7 @@ class Core(composites.Composite):
         try:
             return max(sum(b.hasFlags(blockTypeSpec) for b in a) for a in assems)
         except ValueError:
-            ## In case assems is empty
+            # In case assems is empty
             return 0
 
     def countFuelAxialBlocks(self):
@@ -706,7 +717,7 @@ class Core(composites.Composite):
         )
         try:
             return max(len(fuel) for fuel in fuelblocks)
-        except ValueError:  ## thrown when iterator is empty
+        except ValueError:  # thrown when iterator is empty
             return 0
 
     def getFirstFuelBlockAxialNode(self):
@@ -725,13 +736,13 @@ class Core(composites.Composite):
                 if b.hasFlags(Flags.FUEL)
             )
         except ValueError:
-            ## ValueError is thrown if min is called on an empty sequence.
-            ## Since this is expected to be a rare case, try/except is more
-            ## efficient than an if/else condition that checks whether the
-            ## iterator is empty (the latter would require generating a list
-            ## or tuple, which further adds to the inefficiency). Hence Python's
-            ## mantra, "It's easier to ask forgiveness than permission." In fact
-            ## it's quicker to ask forgiveness than permission.
+            """ValueError is thrown if min is called on an empty sequence.
+            Since this is expected to be a rare case, try/except is more
+            efficient than an if/else condition that checks whether the
+            iterator is empty (the latter would require generating a list
+            or tuple, which further adds to the inefficiency). Hence Python's
+            mantra, "It's easier to ask forgiveness than permission." In fact
+            it's quicker to ask forgiveness than permission."""
             return float("inf")
 
     def getAssembliesInRing(
@@ -830,7 +841,7 @@ class Core(composites.Composite):
             exclusions = set(exclusions)
             assems.drop(lambda a: a in exclusions)
 
-        ## filter based on geomType
+        # filter based on geomType
         if (
             self.geomType == geometry.GeomType.CARTESIAN
         ):  # a ring in cartesian is basically a square.
@@ -840,7 +851,7 @@ class Core(composites.Composite):
         else:
             assems.select(lambda a: (a.spatialLocator.getRingPos()[0] == ring))
 
-        ## filter based on typeSpec
+        # filter based on typeSpec
         if typeSpec:
             assems.select(lambda a: a.hasFlags(typeSpec, exact=exactType))
 
@@ -882,7 +893,7 @@ class Core(composites.Composite):
             )
 
         # determine if the circularRingList has been generated
-        ## TODO: make circularRingList a property that is generated on request
+        # TODO: make circularRingList a property that is generated on request
         if not self.circularRingList:
             self.circularRingList = self.buildCircularRingDictionary(
                 self._circularRingPitch
@@ -890,12 +901,12 @@ class Core(composites.Composite):
 
         assems = Sequence(self)
 
-        ## Remove exclusions
+        # Remove exclusions
         if exclusions:
             exclusions = set(exclusions)
             assems.drop(lambda a: a in exclusions)
 
-        ## get assemblies at locations
+        # get assemblies at locations
         locSet = self.circularRingList[ring]
         assems.select(lambda a: a.getLocation() in locSet)
 
@@ -927,8 +938,8 @@ class Core(composites.Composite):
 
         for a in self:
             dist = a.spatialLocator.distanceTo(refLocation)
-            ## To reduce numerical sensitivity, round distance to 6 decimal places
-            ## before truncating.
+            # To reduce numerical sensitivity, round distance to 6 decimal places
+            # before truncating.
             index = int(round(dist * pitchFactor, 6)) or 1  # 1 is the smallest ring.
             circularRingDict[index].add(a.getLocation())
 
@@ -979,7 +990,7 @@ class Core(composites.Composite):
         """
         runLog.extra("Generating assemblies-by-name map.")
 
-        ## NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
+        # NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
         self.assembliesByName = assymap = {}
         # don't includeAll b/c detailed ones are not ready yet
         for assem in self.getAssemblies(includeBolAssems=True, includeSFP=True):
@@ -1125,9 +1136,9 @@ class Core(composites.Composite):
             block.getName(): block for block in self.getBlocks(includeAll=True)
         }
 
-    ## An idea: wrap this in an "if not self.blocksByLocName:"
-    ## This will likely fail, but it will help diagnose why property approach
-    ## wasn't working correctly
+    # TODO: (Idea) wrap this in an "if not self.blocksByLocName:"
+    # This will likely fail, but it will help diagnose why property approach
+    # wasn't working correctly
     def genBlocksByLocName(self):
         """
         If self.blocksByLocName is deleted, then this will regenerate it or update it if things change
@@ -1214,7 +1225,7 @@ class Core(composites.Composite):
                 runLog.warning("No assem of type {0} in reactor".format(typeSpec))
                 return None
 
-        ## Assumes at least one assembly in `self`.
+        # Assumes at least one assembly in `self`
         return next(iter(self))
 
     def regenAssemblyLists(self):
@@ -1225,9 +1236,8 @@ class Core(composites.Composite):
         self._getAssembliesByName()
         self._genBlocksByName()
         runLog.important("Regenerating Core Zones")
-        self.buildZones(
-            settings.getMasterCs()
-        )  # TODO: this call is questionable... the cs should correspond to analysis
+        # TODO: this call is questionable... the cs should correspond to analysis
+        self.buildZones(settings.getMasterCs())
         self._genChildByLocationLookupTable()
 
     def getAllXsSuffixes(self):
@@ -1243,12 +1253,13 @@ class Core(composites.Composite):
         This is used to categorize nuclides for Doppler broadening. Control nuclides are treated as structure.
 
         The categories are defined in the following way:
+
         1. Add nuclides from coolant components to coolantNuclides
-        2. Add nuclides from fuel components to fuelNuclides (this may be incomplete, e.g. at BOL there are no fission
-           products)
+        2. Add nuclides from fuel components to fuelNuclides (this may be incomplete, e.g.
+           at BOL there are no fission products)
         3. Add nuclides from all other components to structureNuclides
-        4. Since fuelNuclides may be incomplete, add anything else the user wants to model that isn't already listed
-           in coolantNuclides or structureNuclides.
+        4. Since fuelNuclides may be incomplete, add anything else the user wants to model
+           that isn't already listed in coolantNuclides or structureNuclides.
 
         Returns
         -------
@@ -1260,6 +1271,7 @@ class Core(composites.Composite):
 
         structureNuclides : set
             set of nuclide names
+
         """
         if not self._nuclideCategories:
             coolantNuclides = set()
@@ -1299,19 +1311,19 @@ class Core(composites.Composite):
                 [
                     (
                         "Fuel",
-                        utils.createFormattedStrWithDelimiter(
+                        createFormattedStrWithDelimiter(
                             self._nuclideCategories["fuel"]
                         ),
                     ),
                     (
                         "Coolant",
-                        utils.createFormattedStrWithDelimiter(
+                        createFormattedStrWithDelimiter(
                             self._nuclideCategories["coolant"]
                         ),
                     ),
                     (
                         "Structure",
-                        utils.createFormattedStrWithDelimiter(
+                        createFormattedStrWithDelimiter(
                             self._nuclideCategories["structure"]
                         ),
                     ),
@@ -1349,8 +1361,8 @@ class Core(composites.Composite):
         makeLocationLookup : allows caching to speed this up if you call it a lot.
         """
 
-        ## Why isn't locContents an attribute of reactor? It could be another
-        ## property that is generated on demand
+        # Why isn't locContents an attribute of reactor? It could be another
+        # property that is generated on demand
         if not locContents:
             locContents = self.makeLocationLookup(assemblyLevel)
         try:
@@ -1376,7 +1388,7 @@ class Core(composites.Composite):
         else:
             return {b.getLocation(): b for a in self for b in a}
 
-    ## Can be cleaned up, but need test case to guard agains breakage
+    # TODO: Can be cleaned up, but need test case to guard agains breakage
     def getFluxVector(
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):
@@ -1529,7 +1541,8 @@ class Core(composites.Composite):
         """
         Find assemblies that are next this assembly.
 
-        Return a list of neighboring assemblies from the 30 degree point (point 1) then counterclockwise around.
+        Return a list of neighboring assemblies from the 30 degree point (point 1) then
+        counterclockwise around.
 
         Parameters
         ----------
@@ -1537,55 +1550,71 @@ class Core(composites.Composite):
             The assembly to find neighbors of.
 
         showBlanks : Boolean, optional
-            If True, the returned array of 6 neighbors will return "None" for neighbors that do not explicitly
-                exist in the 1/3 core model (including many that WOULD exist in a full core model).
-            If False, the returned array will not include the "None" neighbors. If one or more neighbors does
-                not explicitly exist in the 1/3 core model, the returned array will have a length of less than 6.
+            If True, the returned array of 6 neighbors will return "None" for neighbors
+            that do not explicitly exist in the 1/3 core model (including many that WOULD
+            exist in a full core model).
+
+            If False, the returned array will not include the "None" neighbors. If one or
+            more neighbors does not explicitly exist in the 1/3 core model, the returned
+            array will have a length of less than 6.
 
         duplicateAssembliesOnReflectiveBoundary : Boolean, optional
-            If True, findNeighbors duplicates neighbor assemblies into their "symmetric identicals" so that
-                even assemblies that border symmetry lines will have 6 neighbors. The only assemblies that
-                will have fewer than 6 neighbors are those that border the outer core boundary (usually vacuum).
-            If False, findNeighbors returns None for assemblies that do not exist in a 1/3 core model
-                (but WOULD exist in a full core model).
-            For example, applying findNeighbors for the central assembly (ring, pos) = (1, 1) in 1/3 core symmetry
-                (with duplicateAssembliesOnReflectiveBoundary = True) would return a list of 6 assemblies, but
-                those 6 would really only be assemblies (2, 1) and (2, 2) repeated 3 times each.
-            Note that the value of duplicateAssembliesOnReflectiveBoundary only really if showBlanks = True.
-            This will have no effect if the model is full core since asymmetric models could find many
-            duplicates in the other thirds
+            If True, findNeighbors duplicates neighbor assemblies into their "symmetric
+            identicals" so that even assemblies that border symmetry lines will have 6
+            neighbors. The only assemblies that will have fewer than 6 neighbors are those
+            that border the outer core boundary (usually vacuum).
 
+            If False, findNeighbors returns None for assemblies that do not exist in a 1/3
+            core model (but WOULD exist in a full core model).
+
+            For example, applying findNeighbors for the central assembly (ring, pos) = (1,
+            1) in 1/3 core symmetry (with duplicateAssembliesOnReflectiveBoundary = True)
+            would return a list of 6 assemblies, but those 6 would really only be
+            assemblies (2, 1) and (2, 2) repeated 3 times each.
+
+            Note that the value of duplicateAssembliesOnReflectiveBoundary only really if
+            showBlanks = True.  This will have no effect if the model is full core since
+            asymmetric models could find many duplicates in the other thirds
 
         Notes
         -----
         This only works for 1/3 or full core symmetry.
 
-        This uses the 'mcnp' index map (MCNP GEODST hex coordinates)
-        instead of the standard (ring, pos) map. because neighbors have consistent indices this way.
-        We then convert over to (ring, pos) using the lookup table that a reactor has.
-
+        This uses the 'mcnp' index map (MCNP GEODST hex coordinates) instead of the
+        standard (ring, pos) map. because neighbors have consistent indices this way.  We
+        then convert over to (ring, pos) using the lookup table that a reactor has.
 
         Returns
         -------
         neighbors : list of assembly objects
             This is a list of "nearest neighbors" to assembly a.
-            If showBlanks = False, it will return fewer than 6 neighbors if not all 6 neighbors explicitly exist in the core model.
-            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = False, it will have a "None" for assemblies
-                that do not exist in the 1/3 model.
-            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = True, it will return the existing "symmetric identical"
-                assembly of a non-existing assembly. It will only return "None" for an assembly when that assembly is non-existing AND
-                has no existing "symmetric identical".
 
+            If showBlanks = False, it will return fewer than 6 neighbors if not all 6
+            neighbors explicitly exist in the core model.
+
+            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = False, it
+            will have a "None" for assemblies that do not exist in the 1/3 model.
+
+            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = True, it
+            will return the existing "symmetric identical" assembly of a non-existing
+            assembly. It will only return "None" for an assembly when that assembly is
+            non-existing AND has no existing "symmetric identical".
 
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
+
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()
         )
 
-        ## TODO: where possible, move logic out of loops
+        dupReflectors = (
+            self.symmetry.domain == geometry.DomainType.THIRD_CORE
+            and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
+            and duplicateAssembliesOnReflectiveBoundary
+        )
+
         neighbors = []
         for iN, jN, kN in neighborIndices:
             neighborLoc = self.spatialGrid[iN, jN, kN]
@@ -1593,11 +1622,7 @@ class Core(composites.Composite):
             if neighbor is not None:
                 neighbors.append(neighbor)
             elif showBlanks:
-                if (
-                    self.symmetry.domain == geometry.DomainType.THIRD_CORE
-                    and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
-                    and duplicateAssembliesOnReflectiveBoundary
-                ):
+                if dupReflectors:
                     symmetricAssem = self._getReflectiveDuplicateAssembly(neighborLoc)
                     neighbors.append(symmetricAssem)
                 else:
@@ -1632,7 +1657,7 @@ class Core(composites.Composite):
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
         data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
-        ## NOTE: moveList is actually a moveDict (misnomer)
+        # NOTE: moveList is actually a moveDict (misnomer)
         if self.moveList.get(cycle) is None:
             self.moveList[cycle] = []
         if data in self.moveList[cycle]:
@@ -1772,7 +1797,7 @@ class Core(composites.Composite):
         assems : list, optional
             assemblies to consider when determining the mesh points. If not given, all in-core assemblies are used.
         applySubMesh : bool, optional
-            Apply submeshing parameters to make the mesh smaller on a block-by-block basis. Default=True.
+            Apply submeshing parameters to make mesh points smaller than blocks. Default=True.
 
 
         Returns
@@ -1808,9 +1833,8 @@ class Core(composites.Composite):
                     else (1, 1, 1)
                 )
                 base = b.spatialLocator.getGlobalCellBase()
-                top = (
-                    b.spatialLocator.getGlobalCellTop()
-                )  # make sure this is in mesh coordinates (important to have TRZ, not XYZ in TRZ cases.
+                # make sure this is in mesh coordinates (important to have TRZ, not XYZ in TRZ cases
+                top = b.spatialLocator.getGlobalCellTop()
                 for axis, (collection, subdivisions) in enumerate(
                     zip((iMesh, jMesh, kMesh), numPoints)
                 ):
@@ -1819,18 +1843,15 @@ class Core(composites.Composite):
                     for _subdivision in range(subdivisions):
                         collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
                         axisVal += step
-                    collection.add(
-                        round(axisVal, units.FLOAT_DIMENSION_DECIMALS)
-                    )  # add top too (only needed for last point)
+                    # add top too (only needed for last point)
+                    collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
 
         iMesh, jMesh, kMesh = map(sorted, (iMesh, jMesh, kMesh))
 
         return iMesh, jMesh, kMesh
 
     def findAllAxialMeshPoints(self, assems=None, applySubMesh=True):
-        """
-        Return a list of all z-mesh positions in the core including zero and the top.
-        """
+        """Return a list of all z-mesh positions in the core including zero and the top."""
         _i, _j, k = self.findAllMeshPoints(assems, applySubMesh)
         return k
 
@@ -1857,7 +1878,7 @@ class Core(composites.Composite):
         # depending on what makes the most sense
         refAssem = self.refAssem
         refMesh = self.findAllAxialMeshPoints([refAssem])
-        avgHeight = utils.average1DWithinTolerance(
+        avgHeight = average1DWithinTolerance(
             numpy.array(
                 [
                     [
@@ -1942,20 +1963,19 @@ class Core(composites.Composite):
         return i
 
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
-        r"""
-        returns a list of all radial-mesh positions in the core.
+        """
+        Return a list of all radial-mesh positions in the core.
 
-        Notes
-        -----
 
         Parameters
         ----------
         extraAssems : list
-            additional assemblies to consider when determining the mesh points.
-            They may be useful in the MCPNXT models to represent the fuel management dummies.
+            additional assemblies to consider when determining the mesh points.  They may
+            be useful in the MCPNXT models to represent the fuel management dummies.
 
         applySubMesh : bool
-            (not implemented) generates submesh points to further discretize the radial reactor mesh
+            (not implemented) generates submesh points to further discretize the radial
+            reactor mesh
 
         """
         _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
@@ -2002,7 +2022,6 @@ class Core(composites.Composite):
         targetRing, fraction of flux : tuple
             targetRing is the ring with the fraction of flux that best meets the target.
         """
-
         # get the total number of assembly rings
         numRings = self.getNumRings()
 
@@ -2014,7 +2033,6 @@ class Core(composites.Composite):
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
-
             # compare to outer most ring
             # flatten list into one list of all blocks
             blocksInRing = list(
@@ -2072,7 +2090,7 @@ class Core(composites.Composite):
         denom = 0.0
         if not blockList:
             blockList = list(self.getBlocks())
-            ## TODO: this doesn't need to be a list
+
         for b in blockList:
             if flux2Weight:
                 weight = b.p.flux ** 2.0
@@ -2284,13 +2302,12 @@ class Core(composites.Composite):
         for i, b in enumerate(refAssem):
             if b.hasFlags(Flags.GRID_PLATE):
                 stationaryBlocks.append(i)
+                # TODO: remove hard-coded assumption of grid plates (T3019)
                 runLog.extra(
                     "Detected a grid plate {}.  Adding to stationary blocks".format(b)
-                )  # TODO: remove hard-coded assumption of grid plates (T3019)
+                )
 
-        cs[
-            "stationaryBlocks"
-        ] = stationaryBlocks  # TODO: DeprecationWarning - changing settings
+        cs["stationaryBlocks"] = stationaryBlocks
 
         # Perform initial zoning task
         self.buildZones(cs)

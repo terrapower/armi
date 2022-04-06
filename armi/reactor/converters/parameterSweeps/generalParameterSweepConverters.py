@@ -40,11 +40,13 @@ class SettingsModifier(ParameterSweepConverter):
 
     def convert(self, r=None):
         ParameterSweepConverter.convert(self, r)
-        sType = self._cs.settings[self.modifier].underlyingType
+        sType = self._cs.getSetting(self.modifier).underlyingType
         if sType is not type(None):
             # NOTE: this won't work with "new-style" settings related to the plugin system.
             # Using the type of the setting._default may be more appropriate if there are issues.
-            self._cs[self.modifier] = sType(self._parameter)
+            self._cs = self._cs.modified(
+                newSettings={self.modifier: sType(self._parameter)}
+            )
 
 
 class CustomModifier(ParameterSweepConverter):
@@ -62,7 +64,10 @@ class NeutronicConvergenceModifier(ParameterSweepConverter):
     def convert(self, r=None):
         ParameterSweepConverter.convert(self, r)
         fs = 1.0e-12 + self._parameter * 1.0e-3
-        with self._cs._unlock():
-            self._cs["epsFSAvg"] = fs
-            self._cs["epsFSPoint"] = fs
-            self._cs["epsEig"] = 1.0e-14 + self._parameter * 1.0e-4
+
+        newSettings = {}
+        newSettings["epsFSAvg"] = fs
+        newSettings["epsFSPoint"] = fs
+        newSettings["epsEig"] = 1.0e-14 + self._parameter * 1.0e-4
+
+        self._cs = self._cs.modified(newSettings=newSettings)

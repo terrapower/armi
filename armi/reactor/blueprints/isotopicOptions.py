@@ -350,9 +350,12 @@ class CustomIsotopic(yamlize.Map):
         if self.density is not None:
             if not isinstance(material, materials.Custom):
                 runLog.warning(
-                    "You specified a custom mass density on `{}` with custom isotopics `{}`. "
-                    "This has no effect; you can only set this on `Custom` "
-                    "materials. Continuing to use {} mass density.".format(
+                    "You either specified a custom mass density or number densities "
+                    "(which implies a mass density) on `{}` with custom isotopics `{}`. "
+                    "This has no effect on this Material class; you can only "
+                    "override mass density on `Custom` "
+                    "materials. Consider switching to number fraction input. "
+                    "Continuing to use {} mass density.".format(
                         material, self.name, material
                     )
                 )

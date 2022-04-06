@@ -211,7 +211,7 @@ class EntryPoint:
             particularly beneficial when many options are being added as they can clutter the :code:`--help` to be
             almost unusable.
         """
-        settingsInstance = self.cs.settings[settingName]
+        settingsInstance = self.cs.getSetting(settingName)
 
         if settings.isBoolSetting(settingsInstance):
             helpMessage = (
@@ -295,7 +295,8 @@ def setSetting(ep):
         """
 
         def __call__(self, parser, namespace, values, option_string=None):
-            ep.cs[self.dest] = values  # correctly converts type
+            # correctly converts type
+            ep.cs[self.dest] = values
             ep.settingsProvidedOnCommandLine.append(self.dest)
             ep.cs.failOnLoad()
 

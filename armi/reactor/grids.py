@@ -39,10 +39,10 @@ a grid or in arbitrary, continuous space (using a :py:class:`CoordinateLocation`
 
 Below is a basic example of how to use a 2-D grid::
 
->>> grid = CartesianGrid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
->>> location = grid[1,2,0]
->>> location.getGlobalCoordinates()
-array([ 1.,  2.,  0.])
+    >>> grid = CartesianGrid.fromRectangle(1.0, 1.0)  # 1 cm square-pitch Cartesian grid
+    >>> location = grid[1,2,0]
+    >>> location.getGlobalCoordinates()
+    array([ 1.,  2.,  0.])
 
 Grids can be chained together in a parent-child relationship. This is often used in ARMI
 where a 1-D axial grid (e.g. in an assembly) is being positioned in a core or spent-fuel
@@ -296,9 +296,11 @@ class IndexLocation(LocationBase):
         equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
 
         It is a numpy array for two reasons:
+
         1. It can be added and subtracted for the recursive computations
            through different coordinate systems
         2. It can be written/read from the database.
+
         """
         return numpy.array(self[:3])
 
@@ -382,9 +384,7 @@ class IndexLocation(LocationBase):
         return self.grid.getSymmetricEquivalents(self.indices)
 
     def distanceTo(self, other) -> float:
-        """
-        Return the distance from this locator to another.
-        """
+        """Return the distance from this locator to another."""
         return math.sqrt(
             (
                 (
@@ -533,7 +533,8 @@ class Grid:
             (dxi, dxj, jxk), (dyi, dyj, dyk), (dzi, dzj, dzk)
 
         where ``dmn`` is the distance (in cm) that dimension ``m`` will change as a
-                function of index ``n``.
+        function of index ``n``.
+
         Unit steps are used as a generic method for defining repetitive grids in a
         variety of geometries, including hexagonal and Cartesian.  The tuples are not
         vectors in the direction of the translation, but rather grouped by direction. If
@@ -620,6 +621,10 @@ class Grid:
 
     * Unit step calculations use dot products and must not be polluted by the bound
       indices. Thus we reduce the size of the unitSteps tuple accordingly.
+
+    .. impl:: ARMI supports a number of structured mesh options.
+       :id: IMPL_REACTOR_MESH_0
+       :links: REQ_REACTOR_MESH
     """
 
     def __init__(
@@ -1129,14 +1134,14 @@ class CartesianGrid(Grid):
 
     These concepts are illustrated in the example drawings below.
 
-    .. figure:: ../.static/through-center.svg
+    .. figure:: ../.static/through-center.png
         :width: 400px
         :align: center
 
         Grid example where the axes pass through the "center assembly" (odd-by-odd).
         Note that ring 1 only has one location in it.
 
-    .. figure:: ../.static/not-through-center.svg
+    .. figure:: ../.static/not-through-center.png
         :width: 400px
         :align: center
 
@@ -1144,6 +1149,9 @@ class CartesianGrid(Grid):
         Note that ring 1 has four locations, and that the center of the (0, 0)-index
         location is offset from the origin.
 
+    .. impl:: ARMI supports a Cartesian mesh.
+       :id: IMPL_REACTOR_MESH_1
+       :links: REQ_REACTOR_MESH
     """
 
     @classmethod
@@ -1379,6 +1387,10 @@ class HexGrid(Grid):
             (-1, 1) ( 0, 0) ( 1,-1)
 
                 (-1, 0) ( 0,-1)
+
+    .. impl:: ARMI supports a Hexagonal mesh.
+       :id: IMPL_REACTOR_MESH_2
+       :links: REQ_REACTOR_MESH
     """
 
     @staticmethod
@@ -1746,6 +1758,10 @@ class ThetaRZGrid(Grid):
     meshes.
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
+
+    .. impl:: ARMI supports an RZTheta mesh.
+       :id: IMPL_REACTOR_MESH_3
+       :links: REQ_REACTOR_MESH
     """
 
     @staticmethod

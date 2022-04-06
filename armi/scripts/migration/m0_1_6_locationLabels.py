@@ -49,7 +49,7 @@ class ConvertAlphanumLocationSettingsToNum(SettingsMigration):
                 "".format("\n  * ".join(list(reader.invalidSettings)))
             )
 
-        _modify_settings(cs)
+        cs = _modify_settings(cs)
         writer = settingsIO.SettingsWriter(cs)
         newStream = io.StringIO()
         writer.writeYaml(newStream)
@@ -71,8 +71,9 @@ def _modify_settings(cs):
                 loc = newLoc
             newLocs.append(loc)
 
-        with cs._unlock():
-            cs["detailAssemLocationsBOL"] = newLocs
+        cs = cs.modified(newSettings={"detailAssemLocationsBOL": newLocs})
+
+    return cs
 
 
 def getIndicesFromDIF3DStyleLocatorLabel(label):

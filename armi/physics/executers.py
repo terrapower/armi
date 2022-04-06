@@ -1,3 +1,16 @@
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Executors are useful for having a standard way to run physics calculations.
 
@@ -72,7 +85,7 @@ class ExecutionOptions:
     def resolveDerivedOptions(self):
         """Called by executers right before executing."""
 
-    def setRunDirFromCaseTitle(self, caseTitle):
+    def setRunDirFromCaseTitle(self, caseTitle: str) -> None:
         """
         Set run directory derived from case title and label.
 
@@ -87,7 +100,7 @@ class ExecutionOptions:
         caseTitleHash = str(hashlib.sha1(caseString).hexdigest())[:8]
         self.runDir = os.path.join(getFastPath(), f"{caseTitleHash}-{MPI_RANK}")
 
-    def describe(self):
+    def describe(self) -> str:
         """Make a string summary of all options."""
         lines = ["Options summary:", "----------------"]
         for key, val in sorted(self.__dict__.items()):
@@ -187,7 +200,7 @@ class DefaultExecuter(Executer):
         outputs.extend(self.options.extraOutputFiles)
         return inputs, outputs
 
-    def _execute(self):
+    def _execute(self) -> bool:
         runLog.extra(
             f"Executing {self.options.executablePath}\n"
             f"\tInput: {self.options.inputFile}\n"

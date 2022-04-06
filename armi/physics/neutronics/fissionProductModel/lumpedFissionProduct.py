@@ -284,30 +284,20 @@ class LumpedFissionProductCollection(dict):
         return self.keys()
 
     def getAllFissionProductNames(self):
-        """
-        Gets names of all fission products in this collection
-
-        TODO: This can use a set, continually updated from the keys() for each lfp, then converted
-        to a list. This will change the order of the fission products, though, so should be done
-        with care
-        """
-        fpNames = []
+        """Gets names of all fission products in this collection"""
+        fpNames = set()
         for lfp in self.values():
             for fp in lfp.keys():
-                if fp not in fpNames:
-                    fpNames.append(fp.name)
-        return fpNames
+                fpNames.add(fp.name)
+        return sorted(fpNames)
 
     def getAllFissionProductNuclideBases(self):
-        """
-        Gets names of all fission products in this collection
-        """
-        clideBases = []
+        """Gets names of all fission products in this collection"""
+        clideBases = set()
         for _lfpName, lfp in self.items():
             for fp in lfp.keys():
-                if fp not in clideBases:
-                    clideBases.append(fp)
-        return clideBases
+                clideBases.add(fp)
+        return sorted(clideBases)
 
     def getNumberDensities(self, objectWithParentDensities=None, densFunc=None):
         """
@@ -493,7 +483,9 @@ class FissionProductDefinitionFile:
     The path to this file name is specified by the
     """
 
-    fpPat = re.compile(r"13\s+([A-Z]+\d+)\s+(......)\s+(" + SCIENTIFIC_PATTERN + ")")
+    fpPat = re.compile(
+        r"13\s+([A-Z]+\d+)[_]{0,1}[0-9]{0,1}\s+(......)\s+(" + SCIENTIFIC_PATTERN + ")"
+    )
 
     def __init__(self, stream):
         self.stream = stream

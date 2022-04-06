@@ -18,6 +18,8 @@ import math
 import os
 import unittest
 
+from numpy.testing import assert_allclose
+
 from armi import runLog
 from armi import settings
 from armi.reactor import blocks
@@ -27,6 +29,7 @@ from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.flags import Flags
+from armi.utils import directoryChangers
 
 
 THIS_DIR = os.path.dirname(__file__)
@@ -149,7 +152,7 @@ class TestHexToRZConverter(unittest.TestCase):
             "axialConversionType": "Axial Coordinates",
             "uniformThetaMesh": True,
             "thetaBins": 1,
-            "axialMesh": [50, 100, 150, 175],
+            "axialMesh": [25, 50, 75, 100, 150, 175],
             "thetaMesh": [2 * math.pi],
         }
 
@@ -163,6 +166,39 @@ class TestHexToRZConverter(unittest.TestCase):
         self._checkBlockComponents(newR)
         self._checkNuclidesMatch(expectedNuclideList, newR)
         self._checkNuclideMasses(expectedMassDict, newR)
+        self._checkBlockAtMeshPoint(geomConv)
+        self._checkReactorMeshCoordinates(geomConv)
+        figs = geomConv.plotConvertedReactor()
+        with directoryChangers.TemporaryDirectoryChanger():
+            geomConv.plotConvertedReactor("fname")
+
+    def _checkBlockAtMeshPoint(self, geomConv):
+        b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
+        self.assertTrue(b.hasFlags(Flags.FUEL))
+
+    def _checkReactorMeshCoordinates(self, geomConv):
+        thetaMesh, radialMesh, axialMesh = geomConv._getReactorMeshCoordinates()
+        expectedThetaMesh = [math.pi * 2.0]
+        expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 150.0, 175.0]
+        expectedRadialMesh = [
+            8.794379,
+            23.26774,
+            35.177517,
+            38.33381,
+            51.279602,
+            53.494121,
+            63.417171,
+            66.975997,
+            68.686298,
+            83.893031,
+            96.738172,
+            99.107621,
+            114.32693,
+            129.549296,
+        ]
+        assert_allclose(expectedThetaMesh, thetaMesh)
+        assert_allclose(expectedRadialMesh, radialMesh)
+        assert_allclose(expectedAxialMesh, axialMesh)
 
     def _getExpectedData(self):
         """Retrieve the mass of all nuclides in the reactor prior to converting."""
@@ -289,12 +325,16 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             ),
         )
         initialNumBlocks = len(self.r.core.getBlocks())
+
         # Perform reactor conversion
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
+
         # Check the full core conversion is successful
+        self.assertTrue(self.r.core.isFullCore)
         self.assertGreater(len(self.r.core.getBlocks()), initialNumBlocks)
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+
         # Check that the geometry can be restored to a third core
         changer.restorePreviousGeometry(self.o.cs, self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
@@ -304,6 +344,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
                 geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             ),
         )
+        self.assertFalse(self.r.core.isFullCore)
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
         """Test that hex core is not modified when third core to full core changer is called on an already full core geometry."""

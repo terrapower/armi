@@ -1,0 +1,20 @@
+{%- extends "sphinx_rtd_theme/breadcrumbs.html" %}
+
+{# We don't want to add a link on generated pages #}
+
+{% block breadcrumbs_aside %}
+  <li class="wy-breadcrumbs-aside">
+    {% if hasdoc(pagename) %}
+      {% if pagename in ("index", "installation", "glossary", "developer/index", "user/index", "blog/index", "release/index") %}
+        <a href="https://github.com/{{ github_user }}/{{ github_repo }}/blob/{{ github_version}}{{ conf_py_path }}{{ pagename }}.rst" class="fa fa-github"> {{ _('Edit on GitHub') }}</a>
+      {% elif pagename in ("tutorials/index", "tutorials/making_your_first_app", "tutorials/walkthrough_inputs", "tutorials/walkthrough_lwr_inputs") %}
+        <a href="https://github.com/{{ github_user }}/{{ github_repo }}/blob/{{ github_version}}{{ conf_py_path }}{{ pagename }}.rst" class="fa fa-github"> {{ _('Edit on GitHub') }}</a>
+      {% elif "tutorials/" in pagename  and "_demo" in pagename %}
+        <a href="https://github.com/{{ github_user }}/{{ github_repo }}/blob/{{ github_version}}{{ conf_py_path }}{{ pagename }}.ipynb" class="fa fa-github"> {{ _('Edit on GitHub') }}</a>
+      {% elif pagename == "gallery/index" %}
+        <a href="https://github.com/{{ github_user }}/{{ github_repo }}/blob/{{ github_version}}{{ conf_py_path }}gallery-src" class="fa fa-github"> {{ _('Edit on GitHub') }}</a>
+      {% endif %}
+    {% endif %}
+  </li>
+{% endblock %}
+

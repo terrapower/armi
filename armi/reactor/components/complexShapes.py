@@ -14,6 +14,13 @@
 
 """
 Components represented by complex shapes, and typically less widely used.
+
+.. impl:: ARMI supports a reasonable set of basic shapes.
+   :id: IMPL_REACTOR_SHAPES_1
+   :links: REQ_REACTOR_SHAPES
+
+   Here ARMI implements its support for: Holed Hexagons, Holed Rectangles,
+   Holed Squares, and Helixes.
 """
 
 import math
@@ -192,10 +199,10 @@ class Helix(ShapedComponent):
         material,
         Tinput,
         Thot,
-        od=None,
-        axialPitch=None,
-        mult=None,
-        helixDiameter=None,
+        od,
+        axialPitch,
+        helixDiameter,
+        mult=1.0,
         id=0.0,
         modArea=None,
         isotopics=None,

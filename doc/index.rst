@@ -13,8 +13,9 @@ ARMI
    tutorials/index
    user/index
    developer/index
-   blog/index
    release/index
+   glossary
+   requirements/index
    API Docs <.apidocs/modules>
 
 

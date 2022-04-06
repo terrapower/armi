@@ -37,6 +37,8 @@ CONF_EIGEN_PROB = "eigenProb"
 CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
+CONF_OUTERS_ = "outers"
+CONF_INNERS_ = "inners"
 
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
@@ -127,7 +129,7 @@ def defineSettings():
             CONF_BC_COEFFICIENT,
             default=0.0,
             label="Parameter A for generalized BC",
-            description="Value for the parameter A of the DIF3D generalized boundary "
+            description="Value for the parameter A of the generalized boundary "
             "condition.",
         ),
         setting.Setting(
@@ -185,7 +187,7 @@ def defineSettings():
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
-            description="convergence criterion for calculating the eigenvalue",
+            description="Convergence criteria for calculating the eigenvalue in the global flux solver",
         ),
         setting.Setting(
             CONF_EPS_FSAVG,
@@ -226,6 +228,18 @@ def defineSettings():
             default=False,
             label="Restart neutronics",
             description="Restart global flux case using outputs from last time as a guess",
+        ),
+        setting.Setting(
+            CONF_OUTERS_,
+            default=100,
+            label="Max Outer Iterations",
+            description="XY and Axial partial current sweep max outer iterations.",
+        ),
+        setting.Setting(
+            CONF_INNERS_,
+            default=0,
+            label="Inner Iterations",
+            description="XY and Axial partial current sweep inner iterations. 0 lets the neutronics code pick a default.",
         ),
         setting.Setting(
             CONF_GRID_PLATE_DPA_XS_SET,
@@ -311,7 +325,7 @@ def defineSettings():
             CONF_XS_BUCKLING_CONVERGENCE,
             default=1e-05,
             label="Buckling Convergence Criteria",
-            description="The convergence criteria for the buckling iteration if it is available in the lattice physics solver",
+            description="Convergence criteria for the buckling iteration if it is available in the lattice physics solver",
             oldNames=[
                 ("mc2BucklingConvergence", None),
                 ("bucklingConvergence", None),
@@ -321,14 +335,14 @@ def defineSettings():
             CONF_XS_EIGENVALUE_CONVERGENCE,
             default=1e-05,
             label="Eigenvalue Convergence Criteria",
-            description="The convergence criteria for the eigenvalue",
+            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
     ]
 
     return settings
 
 
-## OLD STYLE settings rules from settingsRules.py. Prefer validators moving forward.
+# OLD STYLE settings rules from settingsRules.py. Prefer validators moving forward.
 
 
 @include_as_rule("genXS")
@@ -454,10 +468,10 @@ def updateXSGroupStructure(cs, name, value):
         except KeyError:
             runLog.info(
                 "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
-                    value, cs.settings["groupStructure"].default
+                    value, cs.get("groupStructure").default
                 )
             )
-            return {name: cs.settings["groupStructure"].default}
+            return {name: cs.get("groupStructure").default}
 
 
 def _migrateDpa(_cs, name, value):

@@ -84,8 +84,7 @@ class TestArmiCase(unittest.TestCase):
         """
         with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
             cs = settings.Settings(ARMI_RUN_PATH)
-            with cs._unlock():
-                cs["verbosity"] = "important"
+            cs = cs.modified(newSettings={"verbosity": "important"})
             case = cases.Case(cs)
             c2 = case.clone()
             c2.summarizeDesign(True, True)
@@ -101,8 +100,7 @@ class TestArmiCase(unittest.TestCase):
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
         cs = settings.Settings(ARMI_RUN_PATH)
-        with cs._unlock():
-            cs["verbosity"] = "important"
+        cs = cs.modified(newSettings={"verbosity": "important"})
         baseCase = cases.Case(cs, bp=bp, geom=geom)
         with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
@@ -134,7 +132,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.suite.add(self.c2)
 
     def test_clone(self):
-        # if you pass an invalid path, the clone can't happen, but it won't do any damage either
+        """if you pass an invalid path, the clone can't happen, but it won't do any damage either"""
         with self.assertRaises(RuntimeError):
             clone = self.suite.clone("test_clone")
 
@@ -211,9 +209,12 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         for p1, p2, dbPath, isIn in checks:
             self.c1.cs.path = p1
             self.c2.cs.path = p2
-            with self.c2.cs._unlock():
-                self.c2.cs["loadStyle"] = "fromDB"
-                self.c2.cs["reloadDBName"] = dbPath
+
+            newSettings = {}
+            newSettings["loadStyle"] = "fromDB"
+            newSettings["reloadDBName"] = dbPath
+            self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
+
             # note that case.dependencies is a property and
             # will actually reflect these changes
             self.assertEqual(
@@ -223,29 +224,39 @@ class TestCaseSuiteDependencies(unittest.TestCase):
             )
 
     def test_dependencyFromDBName(self):
-        with self.c2.cs._unlock():
-            self.c2.cs[
-                "reloadDBName"
-            ] = "c1.h5"  # no effect -> need to specify loadStyle, 'fromDB'
-            self.assertEqual(0, len(self.c2.dependencies))
-            self.c2.cs["loadStyle"] = "fromDB"
-            self.assertIn(self.c1, self.c2.dependencies)
+        # no effect -> need to specify loadStyle, 'fromDB'
+        newSettings = {"reloadDBName": "c1.h5"}
+        self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
+        self.assertEqual(0, len(self.c2.dependencies))
 
-            # the .h5 extension is optional
-            self.c2.cs["reloadDBName"] = "c1"
+        newSettings = {"loadStyle": "fromDB"}
+        self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
+        self.assertIn(self.c1, self.c2.dependencies)
 
+        # the .h5 extension is optional
+        newSettings = {"reloadDBName": "c1"}
+        self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
         self.assertIn(self.c1, self.c2.dependencies)
 
     def test_dependencyFromExplictRepeatShuffles(self):
         self.assertEqual(0, len(self.c2.dependencies))
-        with self.c2.cs._unlock():
-            self.c2.cs["explicitRepeatShuffles"] = "c1-SHUFFLES.txt"
+        newSettings = {"explicitRepeatShuffles": "c1-SHUFFLES.txt"}
+        self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
         self.assertIn(self.c1, self.c2.dependencies)
 
     def test_explicitDependency(self):
         self.c1.addExplicitDependency(self.c2)
 
         self.assertIn(self.c2, self.c1.dependencies)
+
+    def test_titleSetterGetter(self):
+        self.assertEqual(self.c1.title, "c1")
+        self.c1.title = "new_bob"
+        self.assertEqual(self.c1.title, "new_bob")
+
+    def test_buildCommand(self):
+        cmd = self.c1.buildCommand()
+        self.assertEqual(cmd, 'python -u  -m armi run "c1.yaml"')
 
 
 class TestExtraInputWriting(unittest.TestCase):

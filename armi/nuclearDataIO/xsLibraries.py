@@ -175,9 +175,16 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
     librariesToMerge = []
     neutronVelocities = {}  # Dictionary of neutron velocities from each ISOTXS file
     for xsLibFilePath in sorted(xsLibFiles):
-        xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
-            1
-        )  # get XS ID from the cross section library name
+        try:
+            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
+                1
+            )  # get XS ID from the cross section library name
+        except AttributeError:
+            # if glob has matched something that is not actually an ISOXX file,
+            # the .group() call will fail
+            runLog.debug(f"Ignoring file {xsLibFilePath} in the merging of ISOXX files")
+            continue
+
         xsFileTypes = "ISOTXS" if not mergeGammaLibs else "ISOTXS, GAMISO, and PMATRX"
         runLog.info(
             "Retrieving {} data for XS ID {}{}".format(
@@ -399,7 +406,7 @@ class IsotxsLibrary(_XSLibrary):
 
     def getNuclide(self, nucName, suffix):
         """
-        Get a nuclide object from the XS library or None.
+        Get a nuclide object from the XS library.
 
         Parameters
         ----------
@@ -413,8 +420,8 @@ class IsotxsLibrary(_XSLibrary):
         nuclide : Nuclide object
             A nuclide from the library or None
         """
-
         libLabel = nuclideBases.byName[nucName].label + suffix
+
         try:
             return self[libLabel]
         except KeyError:
@@ -505,7 +512,6 @@ class IsotxsLibrary(_XSLibrary):
         --------
         _buildScatterWeights
         """
-
         if not self._scatterWeights.get(scatterMatrixKey):
             self._scatterWeights[scatterMatrixKey] = self._buildScatterWeights(
                 scatterMatrixKey
@@ -550,7 +556,6 @@ class IsotxsLibrary(_XSLibrary):
         """
         generates a XS plot for a nuclide on the ISOTXS library
 
-
         nucName : str or list
             The nuclides to plot
         xsName : str or list
@@ -576,7 +581,6 @@ class IsotxsLibrary(_XSLibrary):
         armi.nucDirectory.nuclide.plotScatterMatrix
 
         """
-
         # convert all input to lists
         if isinstance(nucNames, str):
             nucNames = [nucNames]

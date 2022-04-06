@@ -210,12 +210,13 @@ def plotFaceMap(
     param : str, optional
         The block-parameter to plot. Default: pdens
 
-    vals : ['peak', 'average', 'sum'], optional
-        the type of vals to produce. Will find peak, average, or sum of block values
-        in an assembly. Default: peak
+    vals : str, optional
+        Can be 'peak', 'average', or 'sum'. The type of vals to produce. Will find peak,
+        average, or sum of block values in an assembly. Default: peak
 
-    data : list(numeric)
-        rather than using param and vals, use the data supplied as is. It must be in the same order as iter(r).
+    data : list, optional
+        rather than using param and vals, use the data supplied as is. It must be in the
+        same order as iter(r).
 
     fName : str, optional
         File name to create. If none, will show on screen.
@@ -227,7 +228,7 @@ def plotFaceMap(
         The name of the matplotlib colormap to use. Default: jet
         Other possibilities: http://matplotlib.org/examples/pylab_examples/show_colormaps.html
 
-    labels : iterable(str), optional
+    labels : list of str, optional
         Data labels corresponding to data values.
 
     labelFmt : str, optional
@@ -247,11 +248,13 @@ def plotFaceMap(
 
     axisEqual : Boolean, optional
         If True, horizontal and vertical axes are scaled equally such that a circle
-            appears as a circle rather than an ellipse.
+        appears as a circle rather than an ellipse.
+
         If False, this scaling constraint is not imposed.
 
     makeColorBar : Boolean, optional
         If True, a vertical color bar is added on the right-hand side of the plot.
+
         If False, no color bar is added.
 
     cBarLabel : String, optional
@@ -272,8 +275,9 @@ def plotFaceMap(
 
     Examples
     --------
-    Plotting a BOL assembly type facemap with a legend:
-    >>> plotFaceMap(core, param='typeNumAssem', cmapName='RdYlBu')
+    Plotting a BOL assembly type facemap with a legend::
+
+        >>> plotFaceMap(core, param='typeNumAssem', cmapName='RdYlBu')
 
     """
     if referencesToKeep:
@@ -317,8 +321,9 @@ def plotFaceMap(
     collection.set_array(numpy.array(data))
     if minScale or maxScale:
         collection.set_clim([minScale, maxScale])
+    else:
+        collection.norm.autoscale(numpy.array(data))
     ax.add_collection(collection)
-    collection.norm.autoscale(numpy.array(data))
 
     # Makes text in the center of each shape displaying the values.
     # (The text is either black or white depending on the background color it is written on)

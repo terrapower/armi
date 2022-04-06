@@ -96,6 +96,15 @@ input. The structure will be something like::
             component name 2:
                 ...
 
+.. note:: You can also define components at the top level of the blueprints file under
+    the ``components:`` top level section, but bringing anything defined there into
+    the reactor model must currently be done programatically. We are currently
+    developing additional input capabilities to use these more flexibly.
+
+    Associated with this is a ``component groups:`` section which can collect
+    different free components with different volume fractions. This also
+    is not fully implemented yet.
+
 Defining a Component
 --------------------
 The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane
@@ -132,8 +141,6 @@ material
     supplied). The entry here should either be a class name of a valid material (``UZr``) or a ``module:className`` pair
     for specifying specific material (e.g. ``armi.materials.uZr:UZr``).
     Materials are handled through the :py:mod:`material library <armi.materials>`.
-
-    .. note:: TerraPower has a MAT_PROPS project underway at TerraPower that works with the ARMI Material Library.
 
 |Tinput|
     The temperature (in C) that corresponds to the input dimensions given here. This facilitates automatic thermal
@@ -401,9 +408,89 @@ material modifications
   you can define any fuel material as being made of LWR-derived TRU plus depleted uranium
   at various weight fractions. Note that this input style only adjusts the heavy metal.
 
-  .. warning:: The input processing system will try to apply the extra input parameters to all components in
-        the block, so there should typically only be one component per block that understands each input
-        parameter.
+  To enable the application of different values for the same material modification type
+  on different components within a block, the user may specify material modifications
+  by component. This is useful, for instance, when two pins within an assembly
+  made of the same base material have different fuel enrichments. This is done
+  using the ``by component`` attribute to the material modifications as in::
+
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel]
+                height: [1.0]
+                axial mesh points: [1]
+                xs types: [A]
+                material modifications:
+                    by component:
+                        fuel1:
+                            U235_wt_frac: [0.20]
+                        fuel2:
+                            Zr_wt_frac: [0.02]
+                    U235_wt_frac: [0.30]
+
+  Material modifications specified on the ``material modifications`` level are
+  referred to as "block default" values and apply to all components on the block not
+  associated with a by-component value.
+  This example would apply an enrichment of 20% to the ``fuel1`` component and an
+  enrichment of 30% to all other components in the block that accept the ``U235_wt_frac``
+  material modification.
+
+  All by-component material modifications override any block default material modifications
+  of the same type. In addition, any by-component entries omitted for a given axial block
+  will revert to the block default (or material class default, if no block default value is provided and a material class
+  default exists) value::
+
+        blocks:
+            fuel: &block_fuel
+                fuel1: &component_fuel_fuel1
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+                fuel2: &component_fuel_fuel2
+                    shape: Hexagon
+                    material: UZr
+                    Tinput: 600.0
+                    Thot: 600.0
+                    ip: 0.0
+                    mult: 1
+                    op: 10.0
+        assemblies:
+            fuel a: &assembly_a
+                specifier: IC
+                blocks: [*block_fuel, *block_fuel]
+                height: [0.5, 0.5]
+                axial mesh points: [1, 1]
+                xs types: [A, A]
+                material modifications:
+                    by component:
+                        fuel1:
+                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block defaul value
+                        fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
+                            Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
+                    U235_wt_frac: [0.30, 0.30]
 
 The first block listed is defined at the bottom of the core. This is typically a grid plate or some
 other structure.
@@ -412,7 +499,7 @@ other structure.
 
 Systems
 =======
-Once assemblies are defined they can be grouped together into the Core, the spent fuel pool, etc.
+Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
 
@@ -438,15 +525,12 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 
 Grids
 =====
-The ``lattice files`` are different geometry files that define arrangements in Hex, Cartesian, or R-Z-Theta.
-See :doc:`/user/inputs/facemap_file` for details. The optional
-``lattice pitch`` entry allows you to specify spacing between objects that is different from
-tight packing. This input is required in mixed geometry cases, for example if Hexagonal assemblies
-are to be loaded into a Cartesian arrangement. The contents of a grid may defined using one
-of the following:
+Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
+define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
+you to specify spacing between objects that is different from tight packing. This input is required
+in mixed geometry cases, for example if Hexagonal assemblies are to be loaded into a Cartesian
+arrangement. The contents of a grid may defined using one of the following:
 
-``lattice file:``
-    A path to a file that contains the lattice arrangement in either YAML (preferred) or XML (historical) formats.
 ``lattice map:``
     A ASCII map representing the grid contents
 ``grid contents:``
@@ -455,17 +539,42 @@ of the following:
 Example grid definitions are shown below::
 
     grids:
-        core:
-            lattice file: geometry.xml
+        control:
             geom: hex
-            symmetry: third periodic
-    	sfp:
-    	    lattice file: sfp-geom.xml
-            lattice pitch:
-                x: 50.0
-                y: 50.0
+            symmetry: full
+            lattice map: |
+               - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
+                - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
+                 - - - - - - - 1 8 1 1 1 1 1 1 1 1 1 1
+                  - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1
+                   - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                    - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                     - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                      - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                       - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                        7 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1
+                         1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1
+                          1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                           1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                            1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                             1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                              1 1 1 1 1 1 1 1 1 3 1 1 1
+                               1 1 1 1 1 1 1 1 1 1 1 1
+                                1 6 1 1 1 1 1 1 1 1 1
+                                 1 1 1 1 1 1 1 1 1 1
+    sfp:
+        symmetry: full
+        geom: cartesian
+        lattice pitch:
+            x: 50.0
+            y: 50.0
+        grid contents:
+            [0,0]: MC
+            [1,0]: MC
+            [0,1]: MC
+            [1,1]: MC
 
-.. warning:: We have gone through some effort to allow both pin and core grid definitions to share this
+.. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
 .. _custom-isotopics:

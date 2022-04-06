@@ -30,11 +30,12 @@ import numpy
 
 import armi
 from armi import runLog
-from armi import utils
+from armi.utils import getFileSHA1Hash
 from armi.utils import iterables
 from armi.utils import units
 from armi.utils import textProcessors
 from armi.utils import plotting
+from armi.utils.mathematics import findClosest
 from armi import interfaces
 from armi.bookkeeping import report
 from armi.reactor.flags import Flags
@@ -131,7 +132,7 @@ def writeWelcomeHeaders(o, cs):
             shaHash = (
                 "MISSING"
                 if (not fName or not os.path.exists(fName))
-                else utils.getFileSHA1Hash(fName, digits=10)
+                else getFileSHA1Hash(fName, digits=10)
             )
             inputInfo.append((label, fName, shaHash))
 
@@ -382,7 +383,7 @@ def writeCycleSummary(core):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    ## would io be worth considering for this?
+    # would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
     runLog.important("Cycle {0} Summary:".format(cycle))
@@ -582,7 +583,7 @@ def summarizePower(core):
 
     # calculate total power
     tot = sum(sums.values()) or float("inf")
-    ## NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
+    # NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
 
     runLog.important("Power summary")
     for atype, val in sums.items():
@@ -649,9 +650,8 @@ def summarizeZones(core, cs):
     peakAssem = highPow[peakIndex]
 
     avgPFrac = sum(pFracList) / len(pFracList)  # true mean power fraction
-    _avgAssemPFrac, avgIndex = utils.findClosest(
-        pFracList, avgPFrac, indx=True
-    )  # the closest-to-average pfrac in the list
+    # the closest-to-average pfrac in the list
+    _avgAssemPFrac, avgIndex = findClosest(pFracList, avgPFrac, indx=True)
     avgAssem = highPow[avgIndex]  # the actual average assembly
 
     # ok, now need counts, and peak and avg. flow and power in high power region.
@@ -680,7 +680,6 @@ def summarizeZones(core, cs):
     runLog.important(summary)
 
 
-## Core Design Report
 def makeCoreDesignReport(core, cs):
     r"""Builds report to summarize core design inputs
 
@@ -689,7 +688,6 @@ def makeCoreDesignReport(core, cs):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-
     coreDesignTable = report.data.Table(
         "SUMMARY OF CORE: {}".format(cs.caseTitle.upper())
     )
@@ -872,7 +870,6 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     )
 
 
-## Block Design Report
 def makeBlockDesignReport(r):
     r"""Summarize the block designs from the loading file
 

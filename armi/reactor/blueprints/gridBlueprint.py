@@ -36,6 +36,7 @@ armi.utils.asciimaps
 
 Examples
 --------
+
 ::
 
     grids:
@@ -101,6 +102,7 @@ Examples
                          IC   IC   MC   OC   RR   SH
                            IC   MC   MC   OC   RR
                          IC   IC   MC   PC   RR   SH
+
 
 """
 import copy
@@ -213,12 +215,12 @@ class GridBlueprint(yamlize.Object):
 
         Notes
         -----
-        yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        this is only needed for when you want to make this object from a non-YAML
+        yamlize does not call an ``__init__`` method, instead it uses ``__new__`` and
+        setattr this is only needed for when you want to make this object from a non-YAML
         source.
 
         .. warning:: This is a Yamlize object, so ``__init__`` never really gets called.
-        Only ``__new__`` does.
+               Only ``__new__`` does.
 
         """
         self.name = name
@@ -263,7 +265,7 @@ class GridBlueprint(yamlize.Object):
         runLog.extra("Creating the spatial grid")
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
-                # This check is regrattably late. It would be nice if we could validate
+                # This check is regrettably late. It would be nice if we could validate
                 # that bounds are provided if R-Theta mesh is being used.
                 raise InputError(
                     "Grid bounds must be provided for `{}` to specify a grid with "
@@ -578,36 +580,32 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
         if gridDesign.readFromLatticeMap or tryMap:
             geomType = geometry.GeomType.fromStr(gridDesign.geom)
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
+
+            aMap = asciimaps.asciiMapFromGeomAndDomain(
+                gridDesign.geom, symmetry.domain
+            )()
+            aMap.asciiLabelByIndices = {
+                (key[0], key[1]): val for key, val in gridDesign.gridContents.items()
+            }
             try:
-                aMap = asciimaps.asciiMapFromGeomAndDomain(
-                    gridDesign.geom, symmetry.domain
-                )()
-                aMap.asciiLabelByIndices = {
-                    (key[0], key[1]): val
-                    for key, val in gridDesign.gridContents.items()
-                }
                 aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
-                    "Cannot write geometry with asciimap. Defaulting to dict. Issue: {}".format(
-                        e
-                    )
+                    f"The `lattice map` for the current assembly arrangement cannot be written. "
+                    f"Defaulting to using the `grid contents` dictionary instead. Exception: {e}"
                 )
                 aMap = None
 
             if aMap is not None:
+                # If there is an ascii map available then use it to fill out
+                # the contents of the lattice map section of the grid design.
+                # This also clears out the grid contents so there is not duplicate
+                # data.
                 gridDesign.gridContents = None
-                if not isinstance(aMap, asciimaps.AsciiMapHexFullTipsUp):
-                    # this specific implementation of asciimap is broken, so we only
-                    # attempt to use the other implementations. If hex, full, tips-up is
-                    # being used we just preserve whatever was in the blueprints
-                    # already. this is bad, but we can do away with it when #437 is
-                    # fixed.
-                    mapString = StringIO()
-                    aMap.writeAscii(mapString)
-                    gridDesign.latticeMap = mapString.getvalue()
+                mapString = StringIO()
+                aMap.writeAscii(mapString)
                 gridDesign.latticeMap = scalarstring.LiteralScalarString(
-                    gridDesign.latticeMap
+                    mapString.getvalue()
                 )
             else:
                 gridDesign.latticeMap = None

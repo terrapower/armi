@@ -11,12 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+General framework-wide testing functions and files.
 
+This package contains some input files that can be used across
+a wide variety of unit tests in other lower-level subpackages.
+"""
 import os
 import datetime
-import inspect
 import itertools
-import timeit
 import unittest
 import re
 import shutil
@@ -24,9 +27,6 @@ from typing import Optional
 
 import armi
 from armi import runLog
-from armi import settings
-from armi.utils import directoryChangers
-from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import reactors
 from armi.reactor import grids
@@ -73,7 +73,8 @@ def getEmptyCartesianReactor(pitch=(10.0, 16.0)):
 
 
 class Fixture:
-    r"""Fixture for presenting a consistent data source for testing.
+    """
+    Fixture for presenting a consistent data source for testing.
 
     A Fixture is a class that wraps a function which generates resources needed by one
     or more tests that doesn't need to be updated every time tests are run.

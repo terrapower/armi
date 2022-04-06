@@ -194,14 +194,12 @@ def makeTestAssembly(
 
 class Assembly_TestCase(unittest.TestCase):
     def setUp(self):
-
         self.name = "A0015"
         self.assemNum = 15
         self.height = 10
         self.cs = settings.getMasterCs()
-        runLog.setVerbosity(
-            "error"
-        )  # Print nothing to the screen that would normally go to the log.
+        # Print nothing to the screen that would normally go to the log.
+        runLog.setVerbosity("error")
 
         self.r = tests.getEmptyHexReactor()
         self.r.core.symmetry = geometry.SymmetryType(
@@ -566,8 +564,8 @@ class Assembly_TestCase(unittest.TestCase):
     def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            with self.cs._unlock():
-                self.cs["loadingFile"] = filename
+            newSettings = {"loadingFile": filename}
+            self.cs = self.cs.modified(newSettings=newSettings)
 
             with open(self.cs["loadingFile"], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
@@ -1005,6 +1003,15 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assertEqual(self.Assembly.getDominantMaterial().getName(), ref)
 
+    def test_getBlockLengthAboveAndBelowHeight(self):
+        above, below = self.Assembly.getBlockLengthAboveAndBelowHeight(1)
+        self.assertEqual(above, 9.0)
+        self.assertEqual(below, 1.0)
+
+        above, below = self.Assembly.getBlockLengthAboveAndBelowHeight(5)
+        self.assertEqual(above, 5.0)
+        self.assertEqual(below, 5.0)
+
     def test_iteration(self):
         r"""
         Tests the ability to doubly-loop over assemblies (under development)
@@ -1385,8 +1392,8 @@ class AnnularFuelTestCase(unittest.TestCase):
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
-        with self.cs._unlock():
-            self.cs["xsKernel"] = "MC2v2"  # don't try to expand elementals
+        newSettings = {"xsKernel": "MC2v2"}  # don't try to expand elementals
+        self.cs = self.cs.modified(newSettings=newSettings)
 
         settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()

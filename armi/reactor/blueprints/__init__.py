@@ -24,7 +24,7 @@ The given yaml file is expected to rigidly adhere to given key:value pairings.
 
 See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
 
-The file structure is expectation is:
+The file structure is expectation is::
 
     nuclide flags:
         AM241: {burn: true, xs: true}
@@ -102,6 +102,8 @@ from armi.utils import textProcessors
 from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
+from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
+from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
 
@@ -171,7 +173,13 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
 
 class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
-    """Base Blueprintsobject representing all the subsections in the input file."""
+    """
+    Base Blueprintsobject representing all the subsections in the input file.
+
+    .. impl:: ARMI represents a user-specified reactor by providing a "Blueprint" YAML interface.
+        :id: IMPL_REACTOR_0
+        :links: REQ_REACTOR
+    """
 
     nuclideFlags = yamlize.Attribute(
         key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
@@ -185,6 +193,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     )
     systemDesigns = yamlize.Attribute(key="systems", type=Systems, default=None)
     gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
+    componentDesigns = yamlize.Attribute(
+        key="components", type=ComponentKeyedList, default=None
+    )
+    componentGroups = yamlize.Attribute(
+        key="component groups", type=ComponentGroups, default=None
+    )
 
     # These are used to set up new attributes that come from plugins. Defining its
     # initial state here to make pylint happy
@@ -528,9 +542,10 @@ def migrate(bp: Blueprints, cs):
     This is a good place to perform migrations that address changes to the system design
     description (settings, blueprints, geom file). We have access to all three here, so
     we can even move stuff between files. Namely, this:
-     - creates a grid blueprint to represent the core layout from the old ``geomFile``
+
+     * creates a grid blueprint to represent the core layout from the old ``geomFile``
        setting, and applies that grid to a ``core`` system.
-     - moves the radial and azimuthal submesh values from the ``geomFile`` to the
+     * moves the radial and azimuthal submesh values from the ``geomFile`` to the
        assembly designs, but only if they are uniform (this is limiting, but could be
        made more sophisticated in the future, if there is need)
 

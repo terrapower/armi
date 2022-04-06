@@ -1,39 +1,48 @@
-# USE AND DISTRIBUTION OF THIS CODE IS GOVERNED BY EXPORT CONTROL LAWS AND THE LICENSE IN LICENSE.txt.
-# @LICENSE:
+# Copyright 2019 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 GUI elements for manipulating grid layout and contents.
 
 This provides a handful of classes which provide wxPython Controls for manipulating
 grids and grid Blueprints.
 
-Use
-===
 The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 
     $ python -m armi grids
 
 
-Known Issues
-============
+**Known Issues**
 
- * There is no action stack or undo functionality. Save frequently if you want to
- recover previous states
+* There is no action stack or undo functionality. Save frequently if you want to
+  recover previous states
 
- * Cartesian grids are supported, but not rendered as nicely as their Hex counterparts.
- The "through center assembly" case is not rendered properly with the half-assemblies
- that lie along the edges.
+* Cartesian grids are supported, but not rendered as nicely as their Hex counterparts.
+  The "through center assembly" case is not rendered properly with the half-assemblies
+  that lie along the edges.
 
- * The controls are optimized for manipulating a Core layout, displaying an "Assembly
- palette" that contains the Assembly designs found in the top-level blueprints. A little
- extra work and this could also be made to manipulate block grids or other things.
+* The controls are optimized for manipulating a Core layout, displaying an "Assembly
+  palette" that contains the Assembly designs found in the top-level blueprints. A little
+  extra work and this could also be made to manipulate block grids or other things.
 
- * Assembly colors are derived from the set of flags applied to them, but the mapping of
- colors to flags is not particularly rich, and there isn't anything to disambiguate
- between asemblies of different design, but the same flags.
+* Assembly colors are derived from the set of flags applied to them, but the mapping of
+  colors to flags is not particularly rich, and there isn't anything to disambiguate
+  between asemblies of different design, but the same flags.
 
- * No proper zoom support, and object sizes are fixed and don't accommodate long
- specifiers. Adding zoom would make for a fun first task to a new developer interested
- in computer graphics.
+* No proper zoom support, and object sizes are fixed and don't accommodate long
+  specifiers. Adding zoom would make for a fun first task to a new developer interested
+  in computer graphics.
+
 """
 
 import colorsys
@@ -619,9 +628,10 @@ class GridGui(wx.ScrolledWindow):
     This is the actual viewer that displays the grid and grid blueprints contents, and
     responds to mouse events. Under the hood, it uses a wx.PseudoDC to handle the
     drawing, which provides the following benefits over a regular DC:
-     - Drawn objects can be associated with an ID, allowing parts of the drawing to be
+
+     * Drawn objects can be associated with an ID, allowing parts of the drawing to be
        modified or cleared without having to re-draw everything.
-     - The IDs associated with the objects can be used to distinguish what was clicked
+     * The IDs associated with the objects can be used to distinguish what was clicked
        on in a mouse event (though the support for this isn't super great, so we do have
        to do some of our own object disambiguation).
 
@@ -668,7 +678,7 @@ class GridGui(wx.ScrolledWindow):
         parent : wx.Window
             The parent control
 
-        bp : Optional set of grid blueprints
+        bp : set of grid blueprints, optional
             This should be the ``gridDesigns`` section of a root Blueprints object. If
             not provided, a dictionary will be created with an empty "core" grid
             blueprint.

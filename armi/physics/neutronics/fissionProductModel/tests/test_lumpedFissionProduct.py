@@ -17,8 +17,12 @@ Tests for lumpedFissionProduce module
 """
 import unittest
 import io
+import math
 
-from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.physics.neutronics.fissionProductModel import (
+    lumpedFissionProduct,
+    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
+)
 from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
@@ -54,6 +58,36 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
         self.assertIn("LFP35", lfps)
         for lfp in lfps.values():
             self.assertIn(xe135, lfp)
+
+    def testCreateReferenceLFPs(self):
+        """Test of the reference fission product model creation"""
+        with open(REFERENCE_LUMPED_FISSION_PRODUCT_FILE, "r") as LFP_FILE:
+            LFP_TEXT = LFP_FILE.read()
+        fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
+        fpd.fName = REFERENCE_LUMPED_FISSION_PRODUCT_FILE
+        lfps = fpd.createLFPsFromFile()
+        self.assertEqual(len(lfps), 5)
+
+        LFP_IDS = [
+            "LFP35",
+            "LFP38",
+            "LFP39",
+            "LFP40",
+            "LFP41",
+        ]
+
+        for lfp_id in LFP_IDS:
+            self.assertIn(lfp_id, lfps)
+
+        mo99 = nuclideBases.fromName("MO99")
+        ref_mo99_yields = [0.00091, 0.00112, 0.00099, 0.00108, 0.00101]
+
+        for ref_fp_yield, lfp_id in zip(ref_mo99_yields, LFP_IDS):
+            lfp = lfps[lfp_id]
+            self.assertIn(mo99, lfp)
+
+            error = math.fabs(ref_fp_yield - lfp[mo99]) / ref_fp_yield
+            self.assertLess(error, 1e-6)
 
 
 class TestLumpedFissionProduct(unittest.TestCase):
@@ -248,7 +282,6 @@ class TestExpandCollapse(unittest.TestCase):
         newMassFracs = lumpedFissionProduct.collapseFissionProducts(refMassFracs, lfps)
 
         self.assertAlmostEqual(newMassFracs["LFP35"], burnup, 6)
-
         lfps.updateYieldVector(massFrac=newMassFracs)
         self.assertAlmostEqual(lfps["LFP35"].getTotalYield(), 2.0)
 

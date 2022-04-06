@@ -50,30 +50,31 @@ Under most circumstances a :py:class:`armi.reactor.reactors.Reactor` instance wi
 ``.core`` attribute, which is an instance of :py:class:`armi.reactor.reactors.Core`. While the
 Composite pattern discussed above can be used very generally, the ``Core`` class
 enforces a couple of constrains that can be very useful:
-    * A ``Core`` is a 2-D arrangement of :py:class:`armi.reactor.assemblies.Assembly`
-      objects.
-    * Each ``Assembly`` is a 1-D arrangement of :py:class:`armi.reactor.blocks.Block`
-      objects.
-    * Blocks are :py:class:`armi.reactor.composites.Composite` objects with some extra
-      parameter bindings, utility functions, and other implementation details that let
-      them play nicely with their containing ``Assembly``.
+
+* A ``Core`` is a 2-D arrangement of :py:class:`armi.reactor.assemblies.Assembly`
+  objects.
+* Each ``Assembly`` is a 1-D arrangement of :py:class:`armi.reactor.blocks.Block`
+  objects.
+* Blocks are :py:class:`armi.reactor.composites.Composite` objects with some extra
+  parameter bindings, utility functions, and other implementation details that let
+  them play nicely with their containing ``Assembly``.
 
 In many scenarios, one wants to access specific assemblies or blocks from a core. There
-are a few ways to get the objects that you're interested in.
+are a few ways to get the objects that you're interested in:
 
-    * The `r.core.childrenByLocator` dictionary maps
-      :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
-      that location. For example ::
+* The `r.core.childrenByLocator` dictionary maps
+  :py:class:`armi.reactor.grids.IndexLocation` objects to whichever assembly is at
+  that location. For example ::
 
-          >>> loc = r.core.spatialGrid[i, j, 0]
-          >>> a = r.core.childrenByLocator[loc]
+      >>> loc = r.core.spatialGrid[i, j, 0]
+      >>> a = r.core.childrenByLocator[loc]
 
-      To access the ``k`` -th block in an assembly, try::
+  To access the ``k`` -th block in an assembly, try::
 
-          >>> b = a[k]
+      >>> b = a[k]
 
-    * `r.core.getAssemblies()` loops through all assemblies in the core for when you
-      need to do something to all assemblies.
+* `r.core.getAssemblies()` loops through all assemblies in the core for when you
+  need to do something to all assemblies.
 
 
 Parameters

@@ -61,7 +61,6 @@ class MigrateInputs(EntryPoint):
         Notes
         -----
         Some migrations change the paths so we update them one by one.
-        For example, a migration converts a settings file from xml to yaml.
         """
         for migrationI in ACTIVE_MIGRATIONS:
             if (

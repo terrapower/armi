@@ -84,7 +84,7 @@ def createTestXSLibraryFiles(cachePath):
     """
     cs = settings.Settings()
     cs["outputCacheLocation"] = cachePath
-    mc2v3 = cs.settings["mc2v3.path"].default
+    mc2v3 = cs.get("mc2v3.path").default
     with directoryChangers.DirectoryChanger(RUN_DIR):
         # the two lines below basically copy the inputs to be used for PMATRX and GAMISO generation.
         # Since they are inputs to secondary calculations, the inputs need to be created before any
@@ -242,6 +242,24 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                 with self.assertRaises(OSError):
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
                 self.assertTrue(dummyFileName in log.getStdoutValue())
+        finally:
+            os.remove(dummyFileName)
+
+        dummyFileName = "ISOtopics.txt"
+        with open(dummyFileName, "w") as file:
+            file.write(
+                "This is a file that starts with the letters 'ISO' but will"
+                " break the regular expression search."
+            )
+
+        try:
+            with mockRunLogs.BufferLog() as log:
+                lib = xsLibraries.IsotxsLibrary()
+                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
+                self.assertTrue(
+                    f"Ignoring file {dummyFileName} in the merging of ISOXX files"
+                    in log.getStdoutValue()
+                )
         finally:
             os.remove(dummyFileName)
 

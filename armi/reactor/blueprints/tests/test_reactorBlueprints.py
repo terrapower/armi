@@ -80,20 +80,22 @@ class TestReactorBlueprints(unittest.TestCase):
         for fn in fnames:
             with open(fn, "w") as f:
                 f.write(GEOM)
+
+        # test migration from geometry xml files
         cs = settings.Settings()
-        with cs._unlock():
-            # test migration from geometry xml files
-            cs["geomFile"] = self._testMethodName + "geometry.xml"
-            bp = blueprints.Blueprints.load(
-                test_customIsotopics.TestCustomIsotopics.yamlString
-            )
-            bp.systemDesigns = self.systemDesigns
-            bp.gridDesigns = self.gridDesigns
-            reactor = reactors.Reactor(cs.caseTitle, bp)
-            core = bp.systemDesigns["core"].construct(cs, bp, reactor)
-            sfp = bp.systemDesigns["sfp"].construct(cs, bp, reactor)
-            for fn in fnames:
-                os.remove(fn)
+        newSettings = {"geomFile": self._testMethodName + "geometry.xml"}
+        cs = cs.modified(newSettings=newSettings)
+
+        bp = blueprints.Blueprints.load(
+            test_customIsotopics.TestCustomIsotopics.yamlString
+        )
+        bp.systemDesigns = self.systemDesigns
+        bp.gridDesigns = self.gridDesigns
+        reactor = reactors.Reactor(cs.caseTitle, bp)
+        core = bp.systemDesigns["core"].construct(cs, bp, reactor)
+        sfp = bp.systemDesigns["sfp"].construct(cs, bp, reactor)
+        for fn in fnames:
+            os.remove(fn)
 
         return core, sfp
 

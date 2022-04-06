@@ -58,7 +58,7 @@ import logging
 import numpy
 
 from armi import runLog
-from armi import utils
+from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
 from armi.utils import plotting
 from armi.reactor import grids
@@ -73,9 +73,7 @@ runLog = logging.getLogger(__name__)
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
-    """
-    Build uniform mesh version of the source reactor
-    """
+    """Build uniform mesh version of the source reactor"""
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -102,9 +100,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     @staticmethod
     def initNewReactor(sourceReactor):
-        """
-        Built an empty version of the new reactor.
-        """
+        """Build an empty version of the new reactor"""
         # XXX: this deepcopy is extremely wasteful because the assemblies copied
         # are immediately removed. It's just laziness of getting the same class
         # of reactor set up.
@@ -128,7 +124,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=True)[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
-        self._uniformMesh = utils.average1DWithinTolerance(numpy.array(allMeshes))
+        self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
 
     @staticmethod
     def _createNewAssembly(sourceAssembly):
@@ -339,20 +335,23 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         sourcePow = self._sourceReactor.core.getTotalBlockParam("power")
         convPow = self.convReactor.core.getTotalBlockParam("power")
         if sourcePow > 0.0 and convPow > 0.0:
-            expectedPow = (
-                self._sourceReactor.core.p.power
-                / self._sourceReactor.core.powerMultiplier
-            )
             if abs(sourcePow - convPow) / sourcePow > 1e-5:
                 runLog.info(
                     f"Source reactor power ({sourcePow}) is too different from "
                     f"converted power ({convPow})."
                 )
-            if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
-                raise ValueError(
-                    f"Source reactor power ({sourcePow}) is too different from "
-                    f"user-input power ({expectedPow})."
+
+            if self._sourceReactor.p.timeNode != 0:
+                # only check on nodes other than BOC
+                expectedPow = (
+                    self._sourceReactor.core.p.power
+                    / self._sourceReactor.core.powerMultiplier
                 )
+                if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
+                    raise ValueError(
+                        f"Source reactor power ({sourcePow}) is too different from "
+                        f"user-input power ({expectedPow})."
+                    )
 
     def _setParamsToUpdate(self):
         """Activate conversion of various neutronics paramters."""
@@ -378,9 +377,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         )
 
     def _clearStateOnReactor(self, reactor):
-        """
-        Also clear mgFlux params.
-        """
+        """Also clear mgFlux params"""
         UniformMeshGeometryConverter._clearStateOnReactor(self, reactor)
 
         for b in reactor.core.getBlocks():
