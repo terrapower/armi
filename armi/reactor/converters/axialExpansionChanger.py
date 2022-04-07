@@ -233,14 +233,16 @@ def _conserveComponentMass(b, oldHeight, oldVolume):
 
 def _checkBlockHeight(b):
     if b.p.height < 3.0:
-        runLog.warning(
-            "Block {0:s} has a height less than 3.0 cm. ({1:.12e})".format(
-                b.name, b.p.height
+        runLog.debug(
+            "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
+                b.name, str(b.p.flags), b.p.height
             )
         )
     if b.p.height < 0.0:
         raise ArithmeticError(
-            "Block {0:s} has a negative height! ({1:.12e})".format(b.name, b.p.height)
+            "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
+                b.name, str(b.p.flags), b.p.height
+            )
         )
 
 
@@ -335,15 +337,23 @@ class AssemblyAxialLinkage:
         self.linkedComponents[c] = lstLinkedC
 
         if lstLinkedC[0] is None:
-            runLog.warning(
-                "Component {0:22s} within Block {1:22s} has nothing linked below it!".format(
-                    str(c.p.flags), str(c.parent.p.flags)
+            runLog.debug(
+                "Assembly {0:22s} at location {1:22s}, Block {2:22s}, Component {3:22s} "
+                "has nothing linked below it!".format(
+                    str(self.a.getName()),
+                    str(self.a.getLocation()),
+                    str(b.p.flags),
+                    str(c.p.flags),
                 )
             )
         if lstLinkedC[1] is None:
-            runLog.warning(
-                "Component {0:22s} within Block {1:22s} has nothing linked above it!".format(
-                    str(c.p.flags), str(c.parent.p.flags)
+            runLog.debug(
+                "Assembly {0:22s} at location {1:22s}, Block {2:22s}, Component {3:22s} "
+                "has nothing linked above it!".format(
+                    str(self.a.getName()),
+                    str(self.a.getLocation()),
+                    str(b.p.flags),
+                    str(c.p.flags),
                 )
             )
 
@@ -477,14 +487,11 @@ class ExpansionData:
         c : :py:class:`Component <armi.reactor.components.component.Component>` object
             :py:class:`Component <armi.reactor.components.component.Component>` object to retrive expansion factor for
 
-        Notes
-        -----
-        - warning is raised if expansion factor is not set and assumes it to be 1.0 (i.e., no change)
         """
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
         else:
-            runLog.warning("No expansion factor for {}! Setting to 1.0".format(c))
+            runLog.debug("No expansion factor for {}! Setting to 0.0".format(c))
             value = 0.0
         return value
 
