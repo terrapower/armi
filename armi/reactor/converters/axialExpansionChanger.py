@@ -47,6 +47,10 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
+    def reset(self):
+        self.linked = None
+        self.expansionData = None
+
     def setAssembly(self, a, setFuel=True):
         """set the armi assembly to be changed and init expansion data class for assembly
 
