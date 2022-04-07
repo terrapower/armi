@@ -47,7 +47,7 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
-    def setAssembly(self, a):
+    def setAssembly(self, a, setFuel=True):
         """set the armi assembly to be changed and init expansion data class for assembly
 
         Parameters
@@ -56,7 +56,7 @@ class AxialExpansionChanger:
             ARMI assembly to be changed
         """
         self.linked = AssemblyAxialLinkage(a)
-        self.expansionData = ExpansionData(a)
+        self.expansionData = ExpansionData(a, setFuel)
         self._isTopDummyBlockPresent()
 
     def _isTopDummyBlockPresent(self):
@@ -361,12 +361,12 @@ class AssemblyAxialLinkage:
 class ExpansionData:
     """object containing data needed for axial expansion"""
 
-    def __init__(self, a):
+    def __init__(self, a, setFuel):
         self._a = a
         self._oldHotTemp = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
-        self._setTargetComponents()
+        self._setTargetComponents(setFuel)
 
     def setExpansionFactors(self, componentLst, percents):
         """sets user defined expansion factors
@@ -495,7 +495,7 @@ class ExpansionData:
             value = 0.0
         return value
 
-    def _setTargetComponents(self):
+    def _setTargetComponents(self, setFuel):
         """sets target component for each block
 
         - To-Do: allow users to specify target component for a block in settings
@@ -505,7 +505,7 @@ class ExpansionData:
                 self.specifyTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
                 self.specifyTargetComponent(b, Flags.COOLANT)
-            elif b.hasFlags(Flags.FUEL):
+            elif setFuel and b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
                 self.specifyTargetComponent(b)

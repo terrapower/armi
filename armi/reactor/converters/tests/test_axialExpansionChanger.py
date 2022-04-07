@@ -518,7 +518,7 @@ class TestExceptions(Base, unittest.TestCase):
         b_TwoFuel.add(fuel)
         b_TwoFuel.add(fuel2)
         b_TwoFuel.setType("test")
-        expdata = ExpansionData(HexAssembly("testAssemblyType"))
+        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
         # do test
         with self.assertRaises(RuntimeError) as cm:
             expdata._isFuelLocked(b_TwoFuel)  # pylint: disable=protected-access
