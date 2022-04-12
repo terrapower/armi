@@ -1323,23 +1323,9 @@ class Assembly(composites.Composite):
         rotNum = round((deg % (2 * math.pi)) / math.radians(60))
         for b in self.getBlocks():
             b.rotatePins(rotNum)
-            for param in b.p.paramDefs.atLocation(ParamLocation.CORNERS).names:
-                if isinstance(b.p[param], list):
-                    if len(b.p[param]) == 6:
-                        b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
-                    elif b.p[param] == []:
-                        # List hasn't been defined yet, no warning needed.
-                        pass
-                    else:
-                        runLog.warning(
-                            "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
-                                param
-                            )
-                        )
-                else:
-                    # this is a scalar and there shouldn't be any rotation.
-                    pass
-            for param in b.p.paramDefs.atLocation(ParamLocation.EDGES).names:
+            params = b.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+            params += b.p.paramDefs.atLocation(ParamLocation.EDGES).names
+            for param in params:
                 if isinstance(b.p[param], list):
                     if len(b.p[param]) == 6:
                         b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
