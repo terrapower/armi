@@ -71,6 +71,7 @@ class TestApps(unittest.TestCase):
     def tearDown(self):
         """Restore the App to its original state"""
         armi._app = self._backupApp
+        armi.context.APP_NAME = "armi"
 
     def test_getParamRenames(self):
         app = armi.getApp()
@@ -120,6 +121,20 @@ class TestApps(unittest.TestCase):
         self.assertIn("Advanced", splash)
         self.assertIn("version", splash)
         self.assertIn(armi.meta.__version__, splash)
+
+    def test_splashTextDifferentApp(self):
+        app = armi.getApp()
+        name = "DifferentApp"
+        app.name = name
+        armi._app = app
+        armi.context.APP_NAME = name
+
+        splash = app.splashText
+        self.assertIn("========", splash)
+        self.assertIn("Advanced", splash)
+        self.assertIn("version", splash)
+        self.assertIn(armi.meta.__version__, splash)
+        self.assertIn("DifferentApp", splash)
 
 
 class TestArmi(unittest.TestCase):
