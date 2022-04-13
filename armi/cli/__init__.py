@@ -132,7 +132,7 @@ class ArmiCLI:
         group = parser.add_mutually_exclusive_group()
 
         group.add_argument(
-            "-v", "--version", action="version", version="%(prog)s " + armi.__version__
+            "-v", "--version", action="store_true", help="display the version"
         )
 
         group.add_argument(
@@ -142,6 +142,15 @@ class ArmiCLI:
         parser.add_argument("args", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
         self.parser = parser
+
+    def showVersion(self):
+        """Print the App name and version on the command line"""
+        prog = armi.context.APP_NAME
+        app = armi.getApp()
+        if app is None or prog == "armi":
+            print("{0} {1}".format(prog, armi.__version__))
+        else:
+            print("{0} {1}".format(prog, app.version))
 
     def listCommands(self):
         """List commands with a short description."""
@@ -176,12 +185,12 @@ class ArmiCLI:
 
         if args.list_commands:
             self.listCommands()
-
             return 0
-
-        if args.command == "help":
+        elif args.version:
+            self.showVersion()
+            return 0
+        elif args.command == "help":
             self.parser.print_help()
-
             return 0
 
         return self.executeCommand(args.command, args.args)
