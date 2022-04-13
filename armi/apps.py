@@ -246,6 +246,7 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
+            # pylint: disable=import-outside-toplevel # avoid cyclic import
             from armi import getApp
 
             splash += r"""
