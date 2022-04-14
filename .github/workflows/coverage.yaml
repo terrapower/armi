@@ -27,5 +27,5 @@ jobs:
         run: tox -e cov1 || true
       - name: Run Tox 2
         if: always()
-        name: tox -e cov2,report
+        run: tox -e cov2,report
 
