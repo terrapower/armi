@@ -13,18 +13,18 @@
 # limitations under the License.
 
 """Test reports."""
-import os
 import collections
+import os
 import unittest
 
 import htmltree
 
-import armi
-from armi.tests import TEST_ROOT
-from armi.reactor.tests import test_reactors
+from armi import getPluginManagerOrFail
 from armi.bookkeeping import newReports
-from armi.utils import directoryChangers
 from armi.physics.neutronics.reports import neutronicsPlotting
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
+from armi.utils import directoryChangers
 import armi.bookkeeping.newReports
 
 
@@ -56,7 +56,6 @@ class TestReportContentCreation(unittest.TestCase):
             self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
     def testTableCreation(self):
-
         header = ["item", "value"]
         table = newReports.Table("Assembly Table", "table of assemblies", header)
 
@@ -70,7 +69,7 @@ class TestReportContentCreation(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
 
-            armi.getPluginManagerOrFail().hook.getReportContents(
+            getPluginManagerOrFail().hook.getReportContents(
                 r=self.r,
                 cs=self.o.cs,
                 report=reportTest,
@@ -86,7 +85,6 @@ class TestReportContentCreation(unittest.TestCase):
             )
 
     def testNeutronicsPlotFunctions(self):
-
         reportTest = newReports.ReportContent("Test")
 
         neutronicsPlotting(self.r, reportTest, self.o.cs)
