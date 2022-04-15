@@ -25,7 +25,6 @@ from armi.physics.neutronics.reports import neutronicsPlotting
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
-import armi.bookkeeping.newReports
 
 
 class TestReportContentCreation(unittest.TestCase):
