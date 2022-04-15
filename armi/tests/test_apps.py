@@ -15,11 +15,13 @@
 """
 Tests for the App class.
 """
-
 import copy
 import unittest
 
-import armi
+from armi import cli
+from armi import configure
+from armi import getApp
+from armi import getDefaultPluginManager
 from armi import plugins
 from armi.__main__ import main
 
@@ -34,9 +36,7 @@ class TestPlugin1(plugins.ArmiPlugin):
 
 
 class TestPlugin2(plugins.ArmiPlugin):
-    """
-    This should lead to an error if it coexists with Plugin1.
-    """
+    """This should lead to an error if it coexists with Plugin1."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -64,21 +64,19 @@ class TestPlugin4(plugins.ArmiPlugin):
 
 
 class TestApps(unittest.TestCase):
-    """
-    Test the base apps.App interfaces.
-    """
+    """Test the base apps.App interfaces."""
 
     def setUp(self):
         """Manipulate the standard App. We can't just configure our own, since the
         pytest environment bleeds between tests :("""
-        self._backupApp = copy.deepcopy(armi._app)
+        self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):
         """Restore the App to its original state"""
-        armi._app = self._backupApp
+        configure(self._backupApp, permissive=True)
 
     def test_getParamRenames(self):
-        app = armi.getApp()
+        app = getApp()
         app.pluginManager.register(TestPlugin1)
         app.pluginManager.register(TestPlugin4)
         app._paramRenames = None  # need to implement better cache invalidation rules
@@ -107,22 +105,18 @@ class TestApps(unittest.TestCase):
 
 
 class TestArmi(unittest.TestCase):
-    """
-    Tests for functions in the ARMI __init__ module.
-    """
+    """Tests for functions in the ARMI __init__ module."""
 
     def test_getDefaultPlugMan(self):
-        from armi import cli
-
-        pm = armi.getDefaultPluginManager()
-        pm2 = armi.getDefaultPluginManager()
+        pm = getDefaultPluginManager()
+        pm2 = getDefaultPluginManager()
 
         self.assertTrue(pm is not pm2)
         self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
 
     def test_overConfigured(self):
         with self.assertRaises(RuntimeError):
-            armi.configure()
+            configure()
 
     def test_main(self):
         with self.assertRaises(SystemExit):
