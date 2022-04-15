@@ -19,7 +19,7 @@ import os
 import pathlib
 import re
 
-import armi
+from armi import context
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 from armi.utils.textProcessors import resolveMarkupInclusions
@@ -29,7 +29,7 @@ class ConvertDB(EntryPoint):
     """Convert databases between different versions"""
 
     name = "convert-db"
-    mode = armi.Mode.BATCH
+    mode = context.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Input database path", type=str)
@@ -93,7 +93,7 @@ class ExtractInputs(EntryPoint):
     """
 
     name = "extract-inputs"
-    mode = armi.Mode.BATCH
+    mode = context.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to input database", type=str)
@@ -159,7 +159,7 @@ class InjectInputs(EntryPoint):
     """
 
     name = "inject-inputs"
-    mode = armi.Mode.BATCH
+    mode = context.Mode.BATCH
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to affected database", type=str)

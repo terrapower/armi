@@ -38,6 +38,7 @@ import gc
 import traceback
 
 import armi
+from armi import context
 from armi.operators.operator import Operator
 from armi import mpiActions
 from armi import runLog
@@ -56,8 +57,8 @@ class OperatorMPI(Operator):
         except:
             # kill the workers too so everything dies.
             runLog.important("Master node failed on init. Quitting.")
-            if armi.MPI_COMM:  # else it's a single cpu case.
-                armi.MPI_COMM.bcast("quit", root=0)
+            if context.MPI_COMM:  # else it's a single cpu case.
+                context.MPI_COMM.bcast("quit", root=0)
             raise
 
     def operate(self):
@@ -68,7 +69,7 @@ class OperatorMPI(Operator):
         handles errors.
         """
         runLog.debug("OperatorMPI.operate")
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             # this is the master
             try:
                 # run the regular old operate function
@@ -80,15 +81,15 @@ class OperatorMPI(Operator):
                 )
                 raise
             finally:
-                if armi.MPI_SIZE > 0:
+                if context.MPI_SIZE > 0:
                     runLog.important(
                         "Stopping all MPI worker nodes and cleaning temps."
                     )
-                    armi.MPI_COMM.bcast(
+                    context.MPI_COMM.bcast(
                         "quit", root=0
                     )  # send the quit command to the workers.
                     runLog.debug("Waiting for all nodes to close down")
-                    armi.MPI_COMM.bcast(
+                    context.MPI_COMM.bcast(
                         "finished", root=0
                     )  # wait until they're done cleaning up.
                     runLog.important("All worker nodes stopped.")
@@ -138,8 +139,8 @@ class OperatorMPI(Operator):
         """
         while True:
             # sit around waiting for a command from the master
-            runLog.extra("Node {0} ready and waiting".format(armi.MPI_RANK))
-            cmd = armi.MPI_COMM.bcast(None, root=0)
+            runLog.extra("Node {0} ready and waiting".format(context.MPI_RANK))
+            cmd = context.MPI_COMM.bcast(None, root=0)
             runLog.extra("worker received command {0}".format(cmd))
             # got a command. go use it.
             if isinstance(cmd, mpiActions.MpiAction):
@@ -156,7 +157,7 @@ class OperatorMPI(Operator):
             elif cmd == "sync":
                 # wait around for a sync
                 runLog.debug("Worker syncing")
-                note = armi.MPI_COMM.bcast("wait", root=0)
+                note = context.MPI_COMM.bcast("wait", root=0)
                 if note != "wait":
                     raise RuntimeError('did not get "wait". Got {0}'.format(note))
             else:
@@ -168,7 +169,7 @@ class OperatorMPI(Operator):
                     if handled:
                         break
                 if not handled:
-                    if armi.MPI_RANK == 0:
+                    if context.MPI_RANK == 0:
                         print("Interfaces" + str(self.interfaces))
                     runLog.error(
                         "No interface understood worker command {0}\n check stdout for err\n"
@@ -228,7 +229,7 @@ class OperatorMPI(Operator):
         runLog.debug("Worker ending")
         runLog.close()  # no more messages.
         # wait until all workers are closed so we can delete them.
-        armi.MPI_COMM.bcast("finished", root=0)
+        context.MPI_COMM.bcast("finished", root=0)
 
     def collapseAllStderrs(self):
         """Takes all the individual stderr files from each processor and arranges them nicely into one file"""
