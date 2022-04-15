@@ -272,7 +272,7 @@ class Settings:
         if path:
             self.path = path  # can't set this before a chance to fail occurs
 
-    # TODO: At some point, much of the logging init will be moved to context, including this.
+    # TODO: At some point, much of the logging init will be moved to runLog, including this.
     def initLogVerbosity(self):
         """Central location to init logging verbosity"""
         if armi.MPI_RANK == 0:
