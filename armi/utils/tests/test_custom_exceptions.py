@@ -63,15 +63,17 @@ class CustomExceptionTests(unittest.TestCase):
         return "warning from root".format()
 
     def test_warn_when_root_decorator(self):
+        import armi  # pylint: disable=import-outside-toplevel
+
         with mockRunLogs.BufferLog() as mock:
             for ii in range(1, 4):
                 self.exampleWarnWhenRootMessage()
                 msg = "[warn] warning from root\n" * ii
                 self.assertEqual(msg, mock._outputStream)
-                context.MPI_RANK = 1
+                armi.MPI_RANK = 1
                 self.exampleWarnWhenRootMessage()
                 self.assertEqual(msg, mock._outputStream)
-                context.MPI_RANK = 0
+                armi.MPI_RANK = 0
 
 
 if __name__ == "__main__":

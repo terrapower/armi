@@ -48,7 +48,6 @@ import textwrap
 from typing import Optional
 
 from armi import context
-from armi import getPluginManager
 from armi import meta
 from armi import plugins
 from armi import runLog
@@ -112,6 +111,8 @@ class ArmiCLI:
     """
 
     def __init__(self):
+        from armi import getPluginManager  # pylint: disable=import-outside-toplevel
+
         self._entryPoints = dict()
         for pluginEntryPoints in getPluginManager().hook.defineEntryPoints():
             for entryPoint in pluginEntryPoints:
