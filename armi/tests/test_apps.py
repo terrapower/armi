@@ -73,7 +73,9 @@ class TestApps(unittest.TestCase):
 
     def tearDown(self):
         """Restore the App to its original state"""
-        configure(self._backupApp, permissive=True)
+        import armi
+
+        armi._app = self._backupApp
 
     def test_getParamRenames(self):
         app = getApp()
