@@ -40,6 +40,7 @@ armi.interfaces : Code that operators schedule to perform the real analysis or
 """
 
 import armi
+from armi import context
 from armi import runLog
 from armi.operators.runTypes import RunTypes
 from armi.operators.operator import Operator
@@ -71,7 +72,7 @@ def getOperatorClassFromSettings(cs):  # pylint: disable=too-many-return-stateme
     runType = cs["runType"]
 
     if runType == RunTypes.STANDARD:
-        if armi.MPI_SIZE == 1:
+        if context.MPI_SIZE == 1:
             return Operator
         else:
             return OperatorMPI
