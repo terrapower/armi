@@ -16,7 +16,7 @@ r"""Basic tests of the custom exceptions
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,invalid-name
 import unittest
 
-import armi
+from armi import context
 from armi.tests import mockRunLogs
 from armi.utils.customExceptions import info, important
 from armi.utils.customExceptions import warn, warn_when_root
@@ -68,10 +68,10 @@ class CustomExceptionTests(unittest.TestCase):
                 self.exampleWarnWhenRootMessage()
                 msg = "[warn] warning from root\n" * ii
                 self.assertEqual(msg, mock._outputStream)
-                armi.MPI_RANK = 1
+                context.MPI_RANK = 1
                 self.exampleWarnWhenRootMessage()
                 self.assertEqual(msg, mock._outputStream)
-                armi.MPI_RANK = 0
+                context.MPI_RANK = 0
 
 
 if __name__ == "__main__":
