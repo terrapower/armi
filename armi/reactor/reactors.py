@@ -2152,9 +2152,11 @@ class Core(composites.Composite):
             Geometry converter used to do the conversion.
 
         """
-        import armi.reactor.converters.geometryConverters as gc
+        from armi.reactor.converters.geometryConverters import (
+            ThirdCoreHexToFullCoreChanger,
+        )
 
-        converter = gc.ThirdCoreHexToFullCoreChanger(cs)
+        converter = ThirdCoreHexToFullCoreChanger(cs)
         converter.convert(self.r)
 
         return converter
