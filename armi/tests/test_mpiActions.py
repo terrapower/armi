@@ -15,44 +15,44 @@
 
 import unittest
 
-import armi
 from armi.mpiActions import (
     DistributeStateAction,
     DistributionAction,
     MpiAction,
     runActions,
 )
+from armi import context
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import iterables
 
 
-@unittest.skipUnless(armi.MPI_RANK == 0, "test only on root node")
+@unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class MpiIterTests(unittest.TestCase):
     def setUp(self):
         """save MPI size on entry"""
-        self._mpiSize = armi.MPI_SIZE
+        self._mpiSize = context.MPI_SIZE
         self.action = MpiAction()
 
     def tearDown(self):
         """restore MPI rank and size on exit"""
-        armi.MPI_SIZE = self._mpiSize
-        armi.MPI_RANK = 0
+        context.MPI_SIZE = self._mpiSize
+        context.MPI_RANK = 0
 
     def test_mpiIter(self):
         allObjs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         distObjs = [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9], [10, 11]]
 
-        armi.MPI_SIZE = 5
-        for rank in range(armi.MPI_SIZE):
-            armi.MPI_RANK = rank
+        context.MPI_SIZE = 5
+        for rank in range(context.MPI_SIZE):
+            context.MPI_RANK = rank
             myObjs = list(self.action.mpiIter(allObjs))
             self.assertEqual(myObjs, distObjs[rank])
 
     def _distributeObjects(self, allObjs, numProcs):
-        armi.MPI_SIZE = numProcs
+        context.MPI_SIZE = numProcs
         objs = []
-        for armi.MPI_RANK in range(armi.MPI_SIZE):
+        for context.MPI_RANK in range(context.MPI_SIZE):
             objs.append(list(self.action.mpiIter(allObjs)))
         return objs
 
