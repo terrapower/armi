@@ -23,6 +23,7 @@ import unittest
 from ruamel.yaml import YAML
 import voluptuous as vol
 
+from armi import configure
 from armi import getApp
 from armi import getPluginManagerOrFail
 from armi import plugins
@@ -131,9 +132,7 @@ class TestSettings2(unittest.TestCase):
         self._backupApp = copy.copy(getApp())
 
     def tearDown(self):
-        import armi
-
-        armi._app = self._backupApp
+        configure(self._backupApp, permissive=True)
 
     def testSchemaChecksType(self):
         newSettings = FuelHandlerPlugin.defineSettings()
