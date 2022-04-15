@@ -31,21 +31,21 @@ This is not *yet* smart enough to use shared memory when the MPI
 tasks are on the same machine. Everything goes through MPI. This can 
 be optimized as needed.
 """
-import time
-import re
-import os
 import gc
+import os
+import re
+import time
 import traceback
 
-import armi
 from armi import context
-from armi.operators.operator import Operator
+from armi import getPluginManager
 from armi import mpiActions
 from armi import runLog
-from armi.bookkeeping import memoryProfiler
-from armi.reactor import reactors
-from armi.reactor import assemblies
 from armi import settings
+from armi.bookkeeping import memoryProfiler
+from armi.operators.operator import Operator
+from armi.reactor import assemblies
+from armi.reactor import reactors
 
 
 class OperatorMPI(Operator):
@@ -186,7 +186,7 @@ class OperatorMPI(Operator):
                             cmd
                         )
                     )
-            pm = armi.getPluginManager()
+            pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
             # only reset if all the plugins agree to reset
             if all(resetFlags):
@@ -210,7 +210,6 @@ class OperatorMPI(Operator):
 
         .. warning:: This should build empty non-core systems too.
         """
-
         xsGroups = self.getInterface("xsGroups")
         if xsGroups:
             xsGroups.clearRepresentativeBlocks()
