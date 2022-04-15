@@ -48,7 +48,6 @@ import textwrap
 from typing import Optional
 
 from armi import context
-from armi import getApp
 from armi import getPluginManager
 from armi import meta
 from armi import plugins
@@ -221,6 +220,8 @@ class ArmiCLI:
 
 def splash():
     """Emit a the active App's splash text to the runLog for the master node."""
+    from armi import getApp  # pylint: disable=import-outside-toplevel
+
     app = getApp()
     assert app is not None
     if context.MPI_RANK == 0:
