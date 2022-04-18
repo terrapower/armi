@@ -169,11 +169,12 @@ def defineCoreParameters():
         pb.defParam("numMoves", units="", description="numMoves", default=0)
 
     with pDefs.createBuilder(
-        location="N/A", default="None", categories=["control rods"]
+        location="N/A", categories=["control rods"]
     ) as pb:
 
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
+            default="",
             units=None,
             saveToDB=True,
             description=(
@@ -182,6 +183,7 @@ def defineCoreParameters():
         )
         pb.defParam(
             "crMostValuableSecondaryRodLocation",
+            default="",
             units=None,
             saveToDB=True,
             description=(
@@ -190,13 +192,25 @@ def defineCoreParameters():
         )
         pb.defParam(
             "crWorthRequiredPrimary",
+            default=0.0,
             units="pcm",
+            saveToDB=True,
             description="Worth requirement for the primary control rods in the reactor core to achieve safe shutdown.",
         )
         pb.defParam(
             "crWorthRequiredSecondary",
+            default=0.0,
             units="pcm",
+            saveToDB=True,
             description="Worth requirement for the secondary control rods in the reactor core to achieve safe shutdown.",
+        )
+        pb.defParam(
+            "crTransientOverpowerWorth",
+            default=0.0,
+            units="pcm",
+            saveToDB=True,
+            description=("Reactivity worth introduced by removal of the highest worth primary "
+                         "control rod from the core, starting from its critical position"),
         )
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
@@ -432,12 +446,6 @@ def defineCoreParameters():
             "peakGridDpaAt60Years",
             units="dpa",
             description="Grid plate peak dpa after 60 years irradiation",
-        )
-
-        pb.defParam(
-            "topInitiator",
-            units="$",
-            description="Worth in $ of most valuable rod in critical position",
         )
 
         pb.defParam(

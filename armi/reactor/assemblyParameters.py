@@ -177,10 +177,12 @@ def getAssemblyParameterDefinitions():
     ) as pb:
 
         pb.defParam(
-            "crCriticalElevation",
-            units="cm",
-            description="The elevation of the bottom of the moveable section of a control rod assembly when the core is critical.",
+            "crCriticalFraction",
+            units="",
+            description=("The insertion fraction when the control rod assembly is in its critical configuration. "
+                         "Note that the default of -1.0 is a trigger for this value not being set yet."),
             saveToDB=True,
+            default=-1.0,
         )
 
         pb.defParam(
