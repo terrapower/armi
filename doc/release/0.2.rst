@@ -13,6 +13,7 @@ What's new in ARMI
 #. Removed unused Thermal Hydraulics settings.
 #. Minor code re-org, moving math utilities into their own module.
 #. Removed the ``PyYaml`` dependency.
+#. Removed all bare ``import armi`` statements, for code clarity.
 #. TBD
 
 Bug fixes
