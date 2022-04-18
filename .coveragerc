@@ -4,6 +4,11 @@ omit =
     armi/cli/gridGui.py
     armi/utils/gridEditor.py
     armi/utils/tests/test_gridGui.py
+    venv/
+source = armi
+
+[coverage:run]
+parallel = true
 
 [report]
 omit =
