@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """Test reports."""
-import os
 import collections
+import os
 import unittest
 
 import htmltree
@@ -26,6 +26,8 @@ from armi.bookkeeping import newReports
 from armi.utils import directoryChangers
 from armi.physics.neutronics.reports import neutronicsPlotting
 import armi.bookkeeping.newReports
+from armi.bookkeeping.report import data
+from armi.tests import mockRunLogs
 
 
 class TestReportContentCreation(unittest.TestCase):
@@ -56,7 +58,6 @@ class TestReportContentCreation(unittest.TestCase):
             self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
     def testTableCreation(self):
-
         header = ["item", "value"]
         table = newReports.Table("Assembly Table", "table of assemblies", header)
 
@@ -86,7 +87,6 @@ class TestReportContentCreation(unittest.TestCase):
             )
 
     def testNeutronicsPlotFunctions(self):
-
         reportTest = newReports.ReportContent("Test")
 
         neutronicsPlotting(self.r, reportTest, self.o.cs)
@@ -112,6 +112,32 @@ class TestReportContentCreation(unittest.TestCase):
                     if "<tr>" in line:
                         times = times + 1
             self.assertTrue(times == 2)
+
+    def test_reportBasics(self):
+        env = data.Report("Environment", "ARMI Env Info")
+
+        s = str(env)
+        self.assertIn("Environment", s)
+        self.assertIn("Env Info", s)
+
+        gro = env._groupRenderOrder
+        self.assertEqual(len(gro), 0)
+
+        self.assertIsNone(env["Environment"])
+
+    def test_reportLogs(self):
+        env = data.Report("Environment", "ARMI Env Info")
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock._outputStream)
+            _ = env["badStuff"]
+            self.assertIn("Cannot locate group", mock._outputStream)
+
+            mock._outputStream = ""
+            self.assertEqual("", mock._outputStream)
+            env.writeHTML()
+            self.assertIn("Writing HTML document", mock._outputStream)
+            self.assertIn("[info] HTML document", mock._outputStream)
 
 
 if __name__ == "__main__":
