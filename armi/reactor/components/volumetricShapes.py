@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""3-dimensional shapes."""
+"""3-dimensional shapes
+
+
+.. impl:: ARMI supports a reasonable set of basic shapes.
+   :id: IMPL_REACTOR_SHAPES_2
+   :links: REQ_REACTOR_SHAPES
+
+   Here ARMI implements its support for: Spheres, Cubes, Toruses, and more.
+"""
 
 import math
 
@@ -59,13 +67,22 @@ class Sphere(ShapedComponent):
             components, od=od, id=id, mult=mult, modArea=modArea
         )
 
-    def getComponentArea(self, cold=False):
-        raise NotImplementedError("Cannot compute area of a sphere component.")
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        """Abstract bounding circle method that should be overwritten by each shape subclass."""
+        return self.getDimension("od")
 
-    def getComponentVolume(self):
+    def getComponentArea(self, cold=False):
+        """Compute an average area over the height"""
+        from armi.reactor.blocks import Block  # avoid circular import
+
+        block = self.getAncestor(lambda c: isinstance(c, Block))
+        return self.getComponentVolume(cold) / block.getHeight()
+        # raise NotImplementedError("Cannot compute area of a sphere component.")
+
+    def getComponentVolume(self, cold=False):
         """Computes the volume of the sphere in cm^3."""
-        od = self.getDimension("od")
-        iD = self.getDimension("id")
+        od = self.getDimension("od", cold=cold)
+        iD = self.getDimension("id", cold=cold)
         mult = self.getDimension("mult")
         vol = mult * 4.0 / 3.0 * math.pi * ((od / 2.0) ** 3 - (iD / 2.0) ** 3)
         return vol
@@ -141,43 +158,50 @@ class Cube(ShapedComponent):
 
 
 class Torus(ShapedComponent):
-    r"""Theta defines the extent the radial segment is rotated around the Z-axis
+    r"""
+    A torus.
+
+    Theta defines the extent the radial segment is rotated around the Z-axis
     phi defines the extent around the major radius (i.e. a half torus is from 0 to pi)
 
     Notes
     -----
-    p0 - inner minor radius
-    p1 - outer minor radius
-    p2 - major radius
-    p3 - multiplier
-    p4 - inner theta (optional) 0 (default)
-    p5 - outer theta (optional) 2pi (default)
-    p6 - inner phi (optional) 0 (default)
-    p7 - outer phi (optional) 2pi (default)
-    p8 - height (optional) <set as outer minor radius > (default)
-    p9 - reference volume (optional)
+    The dimensions are:
 
-    Z
-    |
-    |
-    |
-    |            - ^ -
-    |          /   | minor radius
-    |-----------------------> major radius, R
-    |          \      /
-    |           - - -
-    |
+    * p0 - inner minor radius
+    * p1 - outer minor radius
+    * p2 - major radius
+    * p3 - multiplier
+    * p4 - inner theta (optional) 0 (default)
+    * p5 - outer theta (optional) 2pi (default)
+    * p6 - inner phi (optional) 0 (default)
+    * p7 - outer phi (optional) 2pi (default)
+    * p8 - height (optional) <set as outer minor radius > (default)
+    * p9 - reference volume (optional)
 
-    Y
-    ^                      -
-    |                 -
-    |            -    \
-    |       -  \       \
-    |  theta   |       |
-   ZX-----------------------> major radius, X
-    |
-    |
-    |
+    Image::
+
+        Z
+        |
+        |
+        |
+        |            - ^ -
+        |          /   | minor radius
+        |-----------------------> major radius, R
+        |          \      /
+        |           - - -
+        |
+
+        Y
+        ^                      -
+        |                 -
+        |            -    \
+        |       -  \       \
+        |  theta   |       |
+       ZX-----------------------> major radius, X
+        |
+        |
+        |
     """
 
     is3D = True

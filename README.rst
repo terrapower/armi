@@ -1,10 +1,13 @@
+
+
+
 |Build Status| |Code Coverage|
 
 The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) is an open-source tool that
 streamlines your nuclear reactor design/analysis needs by providing a
 software *reactor at your fingertips* and a rich ecosystem of utilities working in concert.
 It is made for and by professional reactor analysis teams and
-is maintained by `TerraPower LLC <http://terrapower.com/>`_, a nuclear technology 
+is maintained by `TerraPower LLC <http://terrapower.com/>`_, a nuclear technology
 development company.
 
 ARMI:
@@ -20,7 +23,7 @@ ARMI:
 
 * Provides useful utilities to assist in reactor development.
 
-A few demos of ARMI can be seen in the `ARMI example gallery 
+A few demos of ARMI can be seen in the `ARMI example gallery
 <https://terrapower.github.io/armi/gallery/index.html>`_.
 
 Using ARMI plus a collection of ARMI-aware physics plugins, an engineering team can
@@ -83,9 +86,9 @@ This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
 to run on a single process.
 
 From here, we recommend going through a few of our `gallery examples
-<https://terrapower.github.io/armi/gallery/index.html>`_ and 
+<https://terrapower.github.io/armi/gallery/index.html>`_ and
 `tutorials <https://terrapower.github.io/armi/tutorials/index.html>`_ to
-start touring the features and capabilities and then move on to the 
+start touring the features and capabilities and then move on to the
 `User Manual <https://terrapower.github.io/armi/user/index.html>`_.
 
 
@@ -393,14 +396,14 @@ Python. This started in 2009 and we have stuck with the convention.
 License
 -------
 TerraPower and ARMI are registered trademarks of TerraPower, LLC.
-Other trademarks and registered trademarks used in this Manual are the property of the 
+Other trademarks and registered trademarks used in this Manual are the property of the
 respective trademark holders.
 
 The ARMI system is licensed as follows:
 
 .. code-block:: none
 
-	Copyright 2009-2019 TerraPower, LLC
+	Copyright 2009-2022 TerraPower, LLC
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -414,6 +417,14 @@ The ARMI system is licensed as follows:
 	See the License for the specific language governing permissions and
 	limitations under the License.
 
+Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+to include anything with a license that superceeds our Apache license. For instance,
+any third-party Python library included in ARMI with a GPL license will make the whole
+project fall under the GPL license. But a lot of potential users of ARMI will want to
+keep some of their work private, so we can't allow any GPL tools.
+
+For that reason, it is generally considered best-practice in the ARMI ecosystem to
+only use third-party Python libraries that have MIT or BSD licenses.
 
 .. [#touranarmi] Touran, Nicholas W., et al. "Computational tools for the integrated design of advanced nuclear reactors."
    Engineering 3.4 (2017): 518-526. https://doi.org/10.1016/J.ENG.2017.04.016
@@ -423,6 +434,6 @@ The ARMI system is licensed as follows:
 .. |Build Status| image:: https://github.com/terrapower/armi/actions/workflows/unittests.yaml/badge.svg?branch=master
     :target: https://github.com/terrapower/armi/actions/workflows/unittests.yaml
 
-.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master&kill_cache=1
+.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master&kill_cache=2
     :target: https://coveralls.io/github/terrapower/armi?branch=master
 

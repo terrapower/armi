@@ -194,14 +194,12 @@ def makeTestAssembly(
 
 class Assembly_TestCase(unittest.TestCase):
     def setUp(self):
-
         self.name = "A0015"
         self.assemNum = 15
         self.height = 10
         self.cs = settings.getMasterCs()
-        runLog.setVerbosity(
-            "error"
-        )  # Print nothing to the screen that would normally go to the log.
+        # Print nothing to the screen that would normally go to the log.
+        runLog.setVerbosity("error")
 
         self.r = tests.getEmptyHexReactor()
         self.r.core.symmetry = geometry.SymmetryType(
@@ -1004,6 +1002,15 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
         self.assertEqual(self.Assembly.getDominantMaterial().getName(), ref)
+
+    def test_getBlockLengthAboveAndBelowHeight(self):
+        above, below = self.Assembly.getBlockLengthAboveAndBelowHeight(1)
+        self.assertEqual(above, 9.0)
+        self.assertEqual(below, 1.0)
+
+        above, below = self.Assembly.getBlockLengthAboveAndBelowHeight(5)
+        self.assertEqual(above, 5.0)
+        self.assertEqual(below, 5.0)
 
     def test_iteration(self):
         r"""

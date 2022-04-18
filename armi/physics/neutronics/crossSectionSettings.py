@@ -159,18 +159,21 @@ class XSSettings(dict):
 
         Notes
         -----
-        1. If `AA` and `AB` exist, but `AC` is created, then the intended behavior is that `AC`
-           settings will be set to the settings in `AA`.
 
-        2. If only `YZ' exists and `YA` is created, then the intended behavior is that
-           `YA` settings will NOT be set to the settings in `YZ`.
+        1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior
+           is that ``AC`` settings will be set to the settings in ``AA``.
+
+        2. If only ``YZ`` exists and ``YA`` is created, then the intended behavior is that
+           ``YA`` settings will NOT be set to the settings in ``YZ``
 
         3. Requirements for using the existing cross section settings:
+
            a.  The existing XS ID must match the current XS ID.
            b.  The current xs burnup group must be larger than the lowest burnup group for the
-                existing XS ID
+               existing XS ID
            c.  If 3a. and 3b. are not met, then the default cross section settings will be
                set for the current XS ID
+
         """
         if xsID in self:
             return dict.__getitem__(self, xsID)

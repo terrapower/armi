@@ -22,7 +22,10 @@ armi/tests/tutorials/case-suite
 .apidocs/
 doc/gallery
 doc/gallery-src/framework/*.yaml
+.coverage
+coverage.xml
 htmlcov/
+monkeytype.*
 
 # No workspace crumbs.
 *~
@@ -35,6 +38,7 @@ htmlcov/
 .pydevproject
 *.sublime-project
 *.sublime-workspace
+*.egg-info/
 phabricator-lint.txt
 temp-*
 tags
@@ -67,6 +71,3 @@ venv*/
 # fixtures
 .ipynb_checkpoints
 .tox
-
-*.egg-info/
-armi.egg-info

@@ -733,67 +733,67 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
         These parameters are left as zeroes at BOC because no dose has been accumulated yet.
         """
+        if self.r.p.timeNode <= 0:
+            return
 
-        if self.r.p.timeNode > 0:
+        maxDetailedDpaThisCycle = 0.0
+        peakDoseAssem = None
+        for a in self.r.core:
+            if a.getMaxParam("detailedDpaThisCycle") > maxDetailedDpaThisCycle:
+                maxDetailedDpaThisCycle = a.getMaxParam("detailedDpaThisCycle")
+                peakDoseAssem = a
+        self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
 
-            maxDetailedDpaThisCycle = 0.0
-            peakDoseAssem = None
-            for a in self.r.core:
-                if a.getMaxParam("detailedDpaThisCycle") > maxDetailedDpaThisCycle:
-                    maxDetailedDpaThisCycle = a.getMaxParam("detailedDpaThisCycle")
-                    peakDoseAssem = a
-            self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
+        if peakDoseAssem is None:
+            return
 
-            if peakDoseAssem is None:
-                return
-
-            doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
-                "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
-            )
-            if len(doseHalfMaxHeights) != 2:
-                runLog.warning(
-                    "Something strange with detailedDpaThisCycle shape in {}, "
-                    "non-2 number of values matching {}".format(
-                        peakDoseAssem, maxDetailedDpaThisCycle / 2.0
-                    )
+        doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
+            "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
+        )
+        if len(doseHalfMaxHeights) != 2:
+            runLog.warning(
+                "Something strange with detailedDpaThisCycle shape in {}, "
+                "non-2 number of values matching {}".format(
+                    peakDoseAssem, maxDetailedDpaThisCycle / 2.0
                 )
-            else:
-                self.r.core.p.dpaFullWidthHalfMax = (
-                    doseHalfMaxHeights[1] - doseHalfMaxHeights[0]
-                )
+            )
+        else:
+            self.r.core.p.dpaFullWidthHalfMax = (
+                doseHalfMaxHeights[1] - doseHalfMaxHeights[0]
+            )
 
-            aclpDoseLimit = self.options.aclpDoseLimit
-            aclpDoseLimit3 = (
-                aclpDoseLimit / 3.0 * self.r.p.timeNode / self.options.burnSteps
-            )
-            aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
-                "detailedDpaThisCycle", aclpDoseLimit3
-            )
-            if len(aclpLocations3) != 2:
-                runLog.warning(
-                    "Something strange with detailedDpaThisCycle shape in {}"
-                    ", non-2 number of values matching {}".format(
-                        peakDoseAssem, aclpDoseLimit / 3.0
-                    )
+        aclpDoseLimit = self.options.aclpDoseLimit
+        aclpDoseLimit3 = (
+            aclpDoseLimit / 3.0 * self.r.p.timeNode / self.options.burnSteps
+        )
+        aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
+            "detailedDpaThisCycle", aclpDoseLimit3
+        )
+        if len(aclpLocations3) != 2:
+            runLog.warning(
+                "Something strange with detailedDpaThisCycle shape in {}"
+                ", non-2 number of values matching {}".format(
+                    peakDoseAssem, aclpDoseLimit / 3.0
                 )
-            else:
-                self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
+            )
+        else:
+            self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
 
-            aclpDoseLimit7 = (
-                aclpDoseLimit / 7.0 * self.r.p.timeNode / self.options.burnSteps
-            )
-            aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
-                "detailedDpaThisCycle", aclpDoseLimit7
-            )
-            if len(aclpLocations7) != 2:
-                runLog.warning(
-                    "Something strange with detailedDpaThisCycle shape in {}, "
-                    "non-2 number of values matching {}".format(
-                        peakDoseAssem, aclpDoseLimit / 7.0
-                    )
+        aclpDoseLimit7 = (
+            aclpDoseLimit / 7.0 * self.r.p.timeNode / self.options.burnSteps
+        )
+        aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
+            "detailedDpaThisCycle", aclpDoseLimit7
+        )
+        if len(aclpLocations7) != 2:
+            runLog.warning(
+                "Something strange with detailedDpaThisCycle shape in {}, "
+                "non-2 number of values matching {}".format(
+                    peakDoseAssem, aclpDoseLimit / 7.0
                 )
-            else:
-                self.r.core.p.elevationOfACLP7Cycles = aclpLocations7[1]
+            )
+        else:
+            self.r.core.p.elevationOfACLP7Cycles = aclpLocations7[1]
 
     def updateLoadpadDose(self):
         """
@@ -917,21 +917,28 @@ def computeDpaRate(mgFlux, dpaXs):
     Notes
     -----
     Displacements calculated by displacement XS
-    Displacement rate = flux * nHT9 * barn  [in #/cm^3/s]
-                      = [#/cm^2/s] * [1/cm^3] * [barn]
-                      = [#/cm^5/s] * [barn] * 1e-24 [cm^2/barn]
-                      = [#/cm^3/s]
 
-    DPA rate = displacement density rate / (number of atoms/cc)
-             = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-             = flux * barn * 1e-24 ::
+    .. math::
+
+          \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
+          &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
+          &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
+          &= \#/\text{cm}^3/s
 
 
-                flux * N * xs
-    DPA / s=  -----------------  = flux * xs
-                     N
+    ::
 
-    nHT9 cancels out. It's in the macroscopic XS and in the original number of atoms.
+        DPA rate = displacement density rate / (number of atoms/cc)
+                 = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
+                 = flux * barn * 1e-24 
+
+
+    .. math::
+
+        \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
+
+    the Number density of the structural material cancels out. It's in the macroscopic 
+    XS and in the original number of atoms.
 
     Raises
     ------
@@ -999,13 +1006,22 @@ def calcReactionRates(obj, keff, lib):
     Scatter could be added as well. This function is quite slow so it is
     skipped for now as it is uncommonly needed.
 
-    Rxn rates are Sigma*Flux = Sum_Nuclides(Sum_E(Sigma*Flux*dE))
-    S*phi
-    n*s*phiV/V [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+    Reaction rates are:
 
-                  (Integral_E in g(phi(E)*sigma(e) dE)
-     sigma_g =   ---------------------------------
-                      Int_E in g (phi(E) dE)
+    .. math::
+
+        \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma \phi
+
+    The units of :math:`N \sigma \phi` are::
+
+        [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+
+    The group-averaged microscopic cross section is:
+
+    .. math::
+
+        \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E) dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

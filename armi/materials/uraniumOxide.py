@@ -88,13 +88,15 @@ class UraniumOxide(material.FuelMaterial):
 
     enrichedNuclide = "U235"
 
-    def adjustTD(self, val):
+    def adjustTD(self, val: float) -> None:
         self.theoreticalDensityFrac = val
 
-    def getTD(self):
+    def getTD(self) -> float:
         return self.theoreticalDensityFrac
 
-    def applyInputParams(self, U235_wt_frac=None, TD_frac=None, *args, **kwargs):
+    def applyInputParams(
+        self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs
+    ) -> None:
         if U235_wt_frac is not None:
             self.adjustMassEnrichment(U235_wt_frac)
 
@@ -109,7 +111,7 @@ class UraniumOxide(material.FuelMaterial):
                 )
             elif td == 0:
                 runLog.warning(
-                    "Theoretical density frac for {self} is zero!",
+                    f"Theoretical density frac for {self} is zero!",
                     single=True,
                     label="Zero theoretical density",
                 )
@@ -118,7 +120,7 @@ class UraniumOxide(material.FuelMaterial):
             self.adjustTD(1.00)  # default to fully dense.
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
-    def setDefaultMassFracs(self):
+    def setDefaultMassFracs(self) -> None:
         r"""
         UO2 mass fractions. Using Natural Uranium without U234
         """
@@ -147,7 +149,7 @@ class UraniumOxide(material.FuelMaterial):
         """
         return 3123.0
 
-    def density(self, Tk=None, Tc=None):
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Density in (g/cc)
 
@@ -157,7 +159,7 @@ class UraniumOxide(material.FuelMaterial):
         self.checkTempRange(300, 3100, Tk, "thermal conductivity")
         return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 
-    def thermalConductivity(self, Tk=None, Tc=None):
+    def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """
         Thermal conductivity
 
@@ -168,7 +170,7 @@ class UraniumOxide(material.FuelMaterial):
         self.checkTempRange(300, 3000, Tk, "density")
         return interp(Tk, self.thermalConductivityTableK, self.thermalConductivityTable)
 
-    def linearExpansion(self, Tk=None, Tc=None):
+    def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         """
         Linear expansion coefficient.
 
@@ -177,7 +179,7 @@ class UraniumOxide(material.FuelMaterial):
         self.checkTempRange(273, 3120, Tk, "linear expansion")
         return 1.06817e-12 * Tk ** 2 - 1.37322e-9 * Tk + 1.02863e-5
 
-    def linearExpansionPercent(self, Tk=None, Tc=None):
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return dL/L
 
@@ -194,7 +196,7 @@ class UraniumOxide(material.FuelMaterial):
                 -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk ** 2 + 1.219e-12 * Tk ** 3
             ) * 100.0
 
-    def heatCapacity(self, Tk=None, Tc=None):
+    def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:
         """
         Heat capacity in J/kg-K.
 

@@ -632,6 +632,12 @@ class Database3(database.Database):
                 stderr=subprocess.DEVNULL,
             ).returncode
             == 0
+            and subprocess.run(
+                ["git", "describe"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
         )
         if repo_exists:
             try:
@@ -1143,7 +1149,7 @@ class Database3(database.Database):
 
         # Need to keep a collection of Component instances for linked dimension
         # resolution, before they can be add()ed to their parents. Not just filtering
-        # out of `children`, since _resolveLinkedDims() needs a dict
+        # out of `children`, since resolveLinkedDims() needs a dict
         childComponents = collections.OrderedDict()
         children = []
 
@@ -1154,7 +1160,7 @@ class Database3(database.Database):
                 childComponents[child.name] = child
 
         for _childName, child in childComponents.items():
-            child._resolveLinkedDims(childComponents)
+            child.resolveLinkedDims(childComponents)
 
         for child in children:
             comp.add(child)
@@ -1474,15 +1480,7 @@ class Database3(database.Database):
             )
 
             lLocation = layout.location
-            # filter for objects that live under the desired ancestor and at a desired
-            # location
-            # TODO: There might be a numpy way of doing this faster, were we to treat
-            # the locations as a numpy array. The elements are tuple of int, tuple of
-            # float, or sometimes even None, as determined by the pack/unpackLocations
-            # implementations, so it might not be possible, let alone trivial to do
-            # this. One approach could be to go back to the locations in their raw
-            # HDF5 form, then list index into that, along with locationType, and
-            # re-unpack them. 🤔
+            # filter for objects that live under the desired ancestor and at a desired location
             objectIndicesInLayout = numpy.array(
                 [
                     i
@@ -1943,8 +1941,15 @@ class Layout:
         self.type: List[str] = []
         self.name: List[str] = []
         self.serialNum: List[int] = []
+        # The index into the parameter datasets corresponding to each object's class.
+        # E.g., the 5th HexBlock object in the tree would get 5; to look up its
+        # "someParameter" value, you would extract cXXnYY/HexBlock/someParameter[5].
         self.indexInData: List[int] = []
+        # The number of direct children this object has.
         self.numChildren: List[int] = []
+        # The type of location that specifies the object's physical location; see the
+        # associated pack/unpackLocation functions for more information about how
+        # locations are handled.
         self.locationType: List[str] = []
         # There is a minor asymmetry here in that before writing to the DB, this is
         # truly a flat list of tuples. However when reading, this may contain lists of
@@ -1955,6 +1960,8 @@ class Layout:
         # changing the interface of the various pack/unpack functions, which have
         # multiple versions, so the update would need to be done with care.
         self.location: List[Tuple[int, int, int]] = []
+        # Which grid, as stored in the database, this object uses to arrange its
+        # children
         self.gridIndex: List[int] = []
         self.temperatures: List[float] = []
         self.material: List[str] = []
@@ -2355,7 +2362,6 @@ NONE_MAP.update(
         intType: numpy.iinfo(intType).min + 2
         for intType in (
             int,
-            numpy.int,
             numpy.int8,
             numpy.int16,
             numpy.int32,
@@ -2375,9 +2381,7 @@ NONE_MAP.update(
         )
     }
 )
-NONE_MAP.update(
-    {floatType: floatType("nan") for floatType in (numpy.float, numpy.float64)}
-)
+NONE_MAP.update({floatType: floatType("nan") for floatType in (float, numpy.float64)})
 
 
 def packSpecialData(
@@ -2398,6 +2402,7 @@ def packSpecialData(
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
+
     * Dict[str, float]: These are stored by finding the set of all keys for all
       instances, and storing those keys as a list in an attribute. The data themselves
       are stored as arrays indexed by object, then key index. Dictionaries lacking data

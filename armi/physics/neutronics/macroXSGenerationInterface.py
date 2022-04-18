@@ -121,8 +121,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
 
         This will use MPI if armi.MPI_SIZE > 1
 
-        Builds G-vectors of
-            the basic XS ('nGamma','fission','nalph','np','n2n','nd','nt')
+        Builds G-vectors of the basic XS ('nGamma','fission','nalph','np','n2n','nd','nt')
         Builds GxG matrices for scatter matrices
 
         Parameters
@@ -130,14 +129,14 @@ class MacroXSGenerationInterface(interfaces.Interface):
         lib : library object , optional
             If lib is specified, then buildMacros will build macro XS using micro XS data from lib.
             If lib = None, then buildMacros will use the existing library self.r.core.lib. If that does
-                not exist, then buildMacros will use a new nuclearDataIO.ISOTXS object.
+            not exist, then buildMacros will use a new nuclearDataIO.ISOTXS object.
 
         buildScatterMatrix : Boolean, optional
             If True, all macro XS will be built, including the time-consuming scatter matrix.
             If False, only the macro XS that are needed for fluxRecon.computePinMGFluxAndPower
-                will be built. These include 'transport', 'fission', and a few others. No ng x ng
-                matrices (such as 'scatter' or 'chi') will be built. Essentially, this option
-                saves huge runtime for the fluxRecon module.
+            will be built. These include 'transport', 'fission', and a few others. No ng x ng
+            matrices (such as 'scatter' or 'chi') will be built. Essentially, this option
+            saves huge runtime for the fluxRecon module.
 
         buildOnlyCoolant : Boolean, optional
             If True, homogenized macro XS will be built only for NA-23.

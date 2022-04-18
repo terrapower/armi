@@ -358,11 +358,11 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Criteria include:
 
-            #. genXS setting is turned on
-            #. We are beyond any requested skipCycles (restart cycles)
-            #. The blocks have changed burnup beyond the burnup threshold
-            #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
-            (possible if it runs during fuel handling)
+        #. genXS setting is turned on
+        #. We are beyond any requested skipCycles (restart cycles)
+        #. The blocks have changed burnup beyond the burnup threshold
+        #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
+           (possible if it runs during fuel handling)
 
         """
         executeXSGen = bool(self.cs["genXS"] and cycle >= self.cs["skipCycles"])

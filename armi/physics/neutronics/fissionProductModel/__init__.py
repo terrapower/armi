@@ -15,3 +15,10 @@
 """
 The Fission product model subpackage.
 """
+
+import os
+from armi import ROOT
+
+REFERENCE_LUMPED_FISSION_PRODUCT_FILE = os.path.join(
+    ROOT, "resources", "referenceFissionProducts.dat"
+)

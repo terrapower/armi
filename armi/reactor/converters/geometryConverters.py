@@ -90,9 +90,7 @@ class GeometryChanger:
 
         Parameters
         ----------
-        cs : CaseSettings object
-            CaseSettings associated with a specific reactor
-        sourceReactor : Reactor object
+        r : Reactor object
             The reactor to convert.
 
         Returns
@@ -680,21 +678,21 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         Add a new stack of circles to the TRZ reactor by homogenizing assems
 
-        Inputs
-        ------
-        innerDiameter:
+        Parameters
+        ----------
+        innerDiameter : float
             The current innerDiameter of the radial-theta zone
 
-        thetaIndex:
+        thetaIndex : float
             The theta index of the radial-theta zone
 
-        radialIndex:
+        radialIndex : float
             The radial index of the radial-theta zone
 
-        lowerTheta:
+        lowerTheta : float
             The lower theta bound for the radial-theta zone
 
-        upperTheta:
+        upperTheta : float
             The upper theta bound for the radial-theta zone
 
         Returns

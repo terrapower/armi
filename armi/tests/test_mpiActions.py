@@ -13,164 +13,18 @@
 # limitations under the License.
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
-import os
-import subprocess
 import unittest
 
 import armi
-from armi import settings
-from armi import mpiActions
-from armi.reactor import reactors
-from armi.reactor import blueprints
-from armi.reactor.parameters import parameterDefinitions
+from armi.mpiActions import (
+    DistributeStateAction,
+    DistributionAction,
+    MpiAction,
+    runActions,
+)
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
 from armi.utils import iterables
-from armi.operators import OperatorMPI
-from armi.mpiActions import DistributeStateAction
-
-from armi.tests import ARMI_RUN_PATH
-
-
-class DistributeStateTests(unittest.TestCase):
-
-    # @unittest.skipIf(distutils.spawn.find_executable('mpiexec.exe') is None, "mpiexec is not in path.")
-    @unittest.skip("MPI tests are not working")
-    def testDistribute(self):
-        """
-        Calls a subprocess to spawn new tests.
-
-        The subprocess is redirected to dev/null (windows <any-dir>\\NUL), to prevent excessive
-        output. In order to debug, this test you will likely need to modify this code.
-        """
-        args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
-        args += ["armi.tests.test_mpiActions.MpiDistributeStateTests"]
-        with open(os.devnull, "w") as null:
-            # check_call needed because call will just keep going in the event
-            # of failures.
-            subprocess.check_call(args, stdout=null, stderr=subprocess.STDOUT)
-
-
-# these two must be defined up here so that they can be pickled
-class BcastAction1(mpiActions.MpiAction):
-    def invokeHook(self):
-        nItems = 50
-        results = [None] * nItems
-        for objIndex in range(nItems):
-            if objIndex % armi.MPI_SIZE == armi.MPI_RANK:
-                results[objIndex] = objIndex
-
-        allResults = self.gather(results)
-
-        if allResults:
-            # this is confounding!!!!
-            return [allResults[ai % armi.MPI_SIZE][ai] for ai in range(nItems)]
-
-
-class BcastAction2(mpiActions.MpiAction):
-    def invokeHook(self):
-        results = []
-        for num in self.mpiIter(range(50)):
-            results.append(num)
-
-        allResults = self.gather(results)
-        if allResults:
-            return self.mpiFlatten(allResults)
-
-
-if armi.MPI_SIZE > 1:
-
-    class MpiDistributeStateTests(unittest.TestCase):
-        def setUp(self):
-            self.cs = settings.Settings(fName=ARMI_RUN_PATH)
-            bp = blueprints.loadFromCs(self.cs)
-
-            settings.setMasterCs(self.cs)
-            self.o = OperatorMPI(self.cs)
-            self.o.r = reactors.factory(self.cs, bp)
-            self.action = DistributeStateAction()
-            self.action.o = self.o
-            self.action.r = self.o.r
-
-        def test_distributeSettings(self):
-            """Under normal circumstances, we would not test "private" methods;
-            however, distributeState is quite complicated.
-            """
-            self.action._distributeSettings()
-            if armi.MPI_RANK == 0:
-                self.assertEqual(self.cs, self.action.o.cs)
-            else:
-                self.assertNotEqual(self.cs, self.action.o.cs)
-                original = {ss.name: ss.value for ss in self.cs.values()}
-                current = {ss.name: ss.value for ss in self.action.o.cs.values()}
-                # remove values that are *expected to be* different...
-                # crossSectionControl is removed because unittest is being mean about
-                # comparing dicts...
-                for key in ["stationaryBlocks", "verbosity", "crossSectionControl"]:
-                    if key in original:
-                        del original[key]
-                    if key in current:
-                        del current[key]
-
-                for key in original.keys():
-                    self.assertEqual(original[key], current[key])
-
-        def test_distributeReactor(self):
-            """Under normal circumstances, we would not test "private" methods;
-            however, distributeState is quite complicated.
-            """
-            original_reactor = self.action.r
-            self.action._distributeReactor(self.cs)
-            if armi.MPI_RANK == 0:
-                self.assertEqual(original_reactor, self.action.r)
-            else:
-                self.assertNotEqual(original_reactor, self.action.r)
-            self.assertIsNone(self.action.r.core.lib)
-
-        def test_distributeInterfaces(self):
-            """Under normal circumstances, we would not test "private" methods;
-            however, distributeState is quite complicated.
-            """
-            original_interfaces = self.o.interfaces
-            self.action._distributeInterfaces()
-            if armi.MPI_RANK == 0:
-                self.assertEqual(original_interfaces, self.o.interfaces)
-            else:
-                self.assertEqual(original_interfaces, self.o.interfaces)
-
-        def test_distributeState(self):
-            original_reactor = self.o.r
-            original_lib = self.o.r.core.lib
-            original_interfaces = self.o.interfaces
-            original_bolassems = self.o.r.blueprints.assemblies
-            self.action.invokeHook()
-
-            if armi.MPI_RANK == 0:
-                self.assertEqual(self.cs, self.o.cs)
-                self.assertEqual(original_reactor, self.o.r)
-                self.assertEqual(original_interfaces, self.o.interfaces)
-                self.assertDictEqual(original_bolassems, self.o.r.blueprints.assemblies)
-                self.assertEqual(original_lib, self.o.r.core.lib)
-            else:
-                self.assertNotEqual(self.cs, self.o.cs)
-                self.assertNotEqual(original_reactor, self.o.r)
-                self.assertNotEqual(original_bolassems, self.o.r.blueprints.assemblies)
-                self.assertEqual(original_interfaces, self.o.interfaces)
-                self.assertEqual(original_lib, self.o.r.core.lib)
-
-            for pDef in parameterDefinitions.ALL_DEFINITIONS:
-                self.assertFalse(
-                    pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE
-                )
-
-        def test_compileResults(self):
-
-            action1 = BcastAction1()
-            armi.MPI_COMM.bcast(action1)
-            results1 = action1.invoke(None, None, None)
-
-            action2 = BcastAction2()
-            armi.MPI_COMM.bcast(action2)
-            results2 = action2.invoke(None, None, None)
-            self.assertEqual(results1, results2)
 
 
 @unittest.skipUnless(armi.MPI_RANK == 0, "test only on root node")
@@ -178,7 +32,7 @@ class MpiIterTests(unittest.TestCase):
     def setUp(self):
         """save MPI size on entry"""
         self._mpiSize = armi.MPI_SIZE
-        self.action = mpiActions.MpiAction()
+        self.action = MpiAction()
 
     def tearDown(self):
         """restore MPI rank and size on exit"""
@@ -188,7 +42,6 @@ class MpiIterTests(unittest.TestCase):
     def test_mpiIter(self):
         allObjs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         distObjs = [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9], [10, 11]]
-        # or distObjs = iterables.split(allObjs, 5)
 
         armi.MPI_SIZE = 5
         for rank in range(armi.MPI_SIZE):
@@ -254,9 +107,37 @@ class MpiIterTests(unittest.TestCase):
         self.assertLessEqual(imbalance, 1)
         self.assertEqual(iterables.flatten(objs), allObjs)
 
+    def test_runActionsDistributionAction(self):
+        numObjs, numProcs = 25, 5
+        allObjs = list(range(numObjs))
+        objs = self._distributeObjects(allObjs, numProcs)
+
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        act = DistributionAction([self.action])
+        act.invokeHook = passer
+        results = runActions(objs, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    def test_runActionsDistributeStateAction(self):
+        numObjs, numProcs = 25, 5
+        allObjs = list(range(numObjs))
+        objs = self._distributeObjects(allObjs, numProcs)
+
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        act = DistributeStateAction([self.action])
+
+        act.invokeHook = passer
+        results = runActions(objs, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+
+def passer():
+    """helper function, to do nothing, for unit tests"""
+    pass
+
 
 if __name__ == "__main__":
-    # args = ["mpiexec", "-n", "2", "python", "-m", "unittest"]
-    # args += ["armi.tests.test_mpiActions.MpiDistributeStateTests.test_compileResults"]
-    # subprocess.call(args)
     unittest.main()

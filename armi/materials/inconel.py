@@ -22,8 +22,8 @@ from armi.materials.material import Material
 class Inconel(Material):
     name = "Inconel"
     references = {
-        "mass fractions": "http://www.specialmetals.com/documents/Inconel%20alloy%20617.pdf",
-        "density": "http://www.specialmetals.com/documents/Inconel%20alloy%20617.pdf",
+        "mass fractions": "https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf",
+        "density": "https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf",
     }
 
     def setDefaultMassFracs(self):

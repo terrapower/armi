@@ -43,7 +43,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
     reactor : armi.reactor.reactors.Reactor
         The reactor to plot
 
-    dbi : DatabaseInterface
+    dbi : armi.bookkeeping.db.DatabaseInterface
         The DatabaseInterface object from which to pull historical data
 
     buGroups : list of float

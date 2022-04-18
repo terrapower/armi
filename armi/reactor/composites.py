@@ -29,6 +29,7 @@ analogy of the model to the physical nature of nuclear reactors.
 
 See Also: :doc:`/developer/index`.
 """
+import math
 import collections
 import itertools
 import timeit
@@ -268,6 +269,7 @@ class ArmiObject(metaclass=CompositeModelType):
     The abstract base class for all composites and leaves.
 
     This:
+
     * declares the interface for objects in the composition
     * implements default behavior for the interface common to all
       classes
@@ -454,9 +456,10 @@ class ArmiObject(metaclass=CompositeModelType):
         Make a clean copy of this object.
 
         .. warning:: Be careful with inter-object dependencies. If one object contains a
-        reference to another object which contains links to the entire hierarchical
-        tree, memory can fill up rather rapidly. Weak references are designed to help
-        with this problem.
+            reference to another object which contains links to the entire hierarchical
+            tree, memory can fill up rather rapidly. Weak references are designed to help
+            with this problem.
+
         """
         raise NotImplementedError
 
@@ -784,6 +787,9 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolume(self):
         return sum(child.getVolume() for child in self)
+
+    def getArea(self, cold=False):
+        return sum(child.getArea(cold) for child in self)
 
     def _updateVolume(self):
         """Recompute and store volume."""
@@ -1825,6 +1831,7 @@ class ArmiObject(metaclass=CompositeModelType):
         generationNum : int, optional
             Which generation to average over (1 for children, 2 for grandchildren)
 
+
         The weighted sum is:
 
         .. math::
@@ -1843,6 +1850,7 @@ class ArmiObject(metaclass=CompositeModelType):
         -------
         float
             The average parameter value.
+
         """
         total = 0.0
         weightSum = 0.0
@@ -2567,6 +2575,11 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return tempNumerator / totalVol
 
+    def resolveLinkedDims(self, components):
+        """Resolve link strings to links on all child components."""
+        for component in self.iterComponents():
+            component.resolveLinkedDims(components)
+
     def getDominantMaterial(self, typeSpec: TypeSpec = None, exact=False):
         """
         Return the first sample of the most dominant material (by volume) in this object.
@@ -3137,6 +3150,19 @@ class Composite(ArmiObject):
         self.childrenByLocator = {}
         for child in self:
             self.childrenByLocator[child.spatialLocator] = child
+
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        """
+        Get sum circle bound.
+
+        Used to roughly approximate relative size vs. other objects
+        """
+        return sum(
+            [
+                comp.getBoundingCircleOuterDiameter(Tc, cold)
+                for comp in self.iterComponents()
+            ]
+        )
 
 
 class Leaf(Composite):

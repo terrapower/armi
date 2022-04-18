@@ -16,32 +16,53 @@
 Tests for memoryProfiler
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+import logging
 import unittest
 
+from armi import runLog
 from armi.bookkeeping import memoryProfiler
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
+from armi.tests import mockRunLogs, TEST_ROOT
 
 
 class MemoryProfilerTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(TEST_ROOT, {"debugMem": True})
-
     def setUp(self):
-        self.memPro = memoryProfiler.MemoryProfiler()
-        self.o.addInterface(self.memPro)
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, {"debugMem": True})
+        self.memPro = self.o.getInterface("memoryProfiler")
 
     def tearDown(self):
         self.o.removeInterface(self.memPro)
 
-    @unittest.skip("Takes way too long in unit test suites")
     def test_fullBreakdown(self):
-        results = self.memPro._printFullMemoryBreakdown(
-            startsWith="armi.physics", reportSize=False
-        )
-        _objects, count, _size = results["Dif3dInterface"]
-        self.assertGreater(count, 0)
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock._outputStream)
+            runLog.LOG.startLog("test_fullBreakdown")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            # we should start at info level, and that should be working correctly
+            self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
+            self.memPro._printFullMemoryBreakdown(
+                startsWith="armi.physics", reportSize=False
+            )
+
+            # do some basic testing
+            self.assertTrue(mock._outputStream.count("UNIQUE_INSTANCE_COUNT") > 10)
+            self.assertIn("garbage", mock._outputStream)
+
+    def test_displayMemoryUsage(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock._outputStream)
+            runLog.LOG.startLog("test_displayMemUsage")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            # we should start at info level, and that should be working correctly
+            self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
+            self.memPro.displayMemoryUsage(1)
+
+            # do some basic testing
+            self.assertIn("End Memory Usage Report", mock._outputStream)
 
 
 class KlassCounterTests(unittest.TestCase):
@@ -87,5 +108,4 @@ class KlassCounterTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv=['','MemoryProfilerSimpleTests.test_expandContainerRecursionLimit']
     unittest.main()

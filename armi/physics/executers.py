@@ -85,7 +85,7 @@ class ExecutionOptions:
     def resolveDerivedOptions(self):
         """Called by executers right before executing."""
 
-    def setRunDirFromCaseTitle(self, caseTitle):
+    def setRunDirFromCaseTitle(self, caseTitle: str) -> None:
         """
         Set run directory derived from case title and label.
 
@@ -100,7 +100,7 @@ class ExecutionOptions:
         caseTitleHash = str(hashlib.sha1(caseString).hexdigest())[:8]
         self.runDir = os.path.join(getFastPath(), f"{caseTitleHash}-{MPI_RANK}")
 
-    def describe(self):
+    def describe(self) -> str:
         """Make a string summary of all options."""
         lines = ["Options summary:", "----------------"]
         for key, val in sorted(self.__dict__.items()):
@@ -200,7 +200,7 @@ class DefaultExecuter(Executer):
         outputs.extend(self.options.extraOutputFiles)
         return inputs, outputs
 
-    def _execute(self):
+    def _execute(self) -> bool:
         runLog.extra(
             f"Executing {self.options.executablePath}\n"
             f"\tInput: {self.options.inputFile}\n"

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the runLog interface"""
+"""Tests of the runLog tooling"""
 # pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
 from io import StringIO
 import logging
@@ -21,6 +21,7 @@ import unittest
 
 from armi import context, runLog
 from armi.tests import mockRunLogs
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestRunLog(unittest.TestCase):
@@ -254,34 +255,48 @@ class TestRunLog(unittest.TestCase):
 
     def test_concatenateLogs(self):
         """simple test of the concat logs function"""
-        # create the log dir
-        logDir = "test_concatenateLogs"
-        if os.path.exists(logDir):
-            rmtree(logDir)
-        context.createLogDir(0, logDir)
+        with TemporaryDirectoryChanger():
+            # create the log dir
+            logDir = "test_concatenateLogs"
+            if os.path.exists(logDir):
+                rmtree(logDir)
+            context.createLogDir(0, logDir)
 
-        # create as stdout file
-        stdoutFile = os.path.join(logDir, logDir + ".0.0.stdout")
-        with open(stdoutFile, "w") as f:
-            f.write("hello world\n")
+            # create as stdout file
+            stdoutFile1 = os.path.join(
+                logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stdoutFile1, "w") as f:
+                f.write("hello world\n")
 
-        self.assertTrue(os.path.exists(stdoutFile))
+            stdoutFile2 = os.path.join(
+                logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stdoutFile2, "w") as f:
+                f.write("hello other world\n")
 
-        # create a stderr file
-        stderrFile = os.path.join(logDir, logDir + ".0.0.stderr")
-        with open(stderrFile, "w") as f:
-            f.write("goodbye cruel world\n")
+            self.assertTrue(os.path.exists(stdoutFile1))
+            self.assertTrue(os.path.exists(stdoutFile2))
 
-        self.assertTrue(os.path.exists(stderrFile))
+            # create a stderr file
+            stderrFile = os.path.join(
+                logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stderrFile, "w") as f:
+                f.write("goodbye cruel world\n")
 
-        # concat logs
-        runLog.concatenateLogs(logDir=logDir)
+            self.assertTrue(os.path.exists(stderrFile))
 
-        # verify output
-        self.assertFalse(os.path.exists(stdoutFile))
-        self.assertFalse(os.path.exists(stderrFile))
+            # concat logs
+            runLog.concatenateLogs(logDir=logDir)
+
+            # verify output
+            combinedLogFile = os.path.join(logDir, "runLogTest-mpi.log")
+            self.assertTrue(os.path.exists(combinedLogFile))
+            self.assertFalse(os.path.exists(stdoutFile1))
+            self.assertFalse(os.path.exists(stdoutFile2))
+            self.assertFalse(os.path.exists(stderrFile))
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
