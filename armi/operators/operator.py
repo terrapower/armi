@@ -26,12 +26,11 @@ the end of plant life.
    :id: IMPL_EVOLVING_STATE_0
    :links: REQ_EVOLVING_STATE
 """
-import time
-import shutil
-import re
 import os
+import re
+import shutil
+import time
 
-import armi
 from armi import context
 from armi import interfaces
 from armi import runLog
@@ -206,7 +205,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
-            if armi.MPI_RANK == 0:
+            if context.MPI_RANK == 0:
                 runLog.header("=========== Interface Stack Summary  ===========")
                 runLog.info(reportingUtils.getInterfaceStackSummary(self))
                 self.interactAllInit()

@@ -42,12 +42,13 @@ armi : Fundamental entry point that calls this package.
 # classes
 
 import argparse
-import textwrap
 import re
 import sys
+import textwrap
 from typing import Optional
 
-import armi
+from armi import context
+from armi import meta
 from armi import plugins
 from armi import runLog
 
@@ -110,8 +111,10 @@ class ArmiCLI:
     """
 
     def __init__(self):
+        from armi import getPluginManager  # pylint: disable=import-outside-toplevel
+
         self._entryPoints = dict()
-        for pluginEntryPoints in armi.getPluginManager().hook.defineEntryPoints():
+        for pluginEntryPoints in getPluginManager().hook.defineEntryPoints():
             for entryPoint in pluginEntryPoints:
                 if entryPoint.name in self._entryPoints:
                     raise KeyError(
@@ -124,7 +127,7 @@ class ArmiCLI:
                 self._entryPoints[entryPoint.name] = entryPoint
 
         parser = ArmiParser(
-            prog=armi.context.APP_NAME,
+            prog=context.APP_NAME,
             description=self.__doc__,
             usage="%(prog)s [-h] [-l | command [args]]",
         )
@@ -145,10 +148,12 @@ class ArmiCLI:
 
     def showVersion(self):
         """Print the App name and version on the command line"""
-        prog = armi.context.APP_NAME
-        app = armi.getApp()
+        from armi import getApp  # pylint: disable=import-outside-toplevel
+
+        prog = context.APP_NAME
+        app = getApp()
         if app is None or prog == "armi":
-            print("{0} {1}".format(prog, armi.__version__))
+            print("{0} {1}".format(prog, meta.__version__))
         else:
             print("{0} {1}".format(prog, app.version))
 
@@ -217,19 +222,19 @@ class ArmiCLI:
         cmd.parse(args)
 
         if cmd.args.batch:
-            armi.Mode.setMode(armi.Mode.BATCH)
+            context.Mode.setMode(context.Mode.BATCH)
         elif cmd.mode is not None:
-            armi.Mode.setMode(cmd.mode)
+            context.Mode.setMode(cmd.mode)
 
         # do whatever there is to be done!
         return cmd.invoke()
 
 
 def splash():
-    """
-    Emit a the active App's splash text to the runLog for the master node.
-    """
-    app = armi.getApp()
+    """Emit a the active App's splash text to the runLog for the master node."""
+    from armi import getApp  # pylint: disable=import-outside-toplevel
+
+    app = getApp()
     assert app is not None
-    if armi.context.MPI_RANK == 0:
+    if context.MPI_RANK == 0:
         runLog.raw(app.splashText)

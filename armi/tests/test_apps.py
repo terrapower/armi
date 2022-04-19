@@ -13,11 +13,15 @@
 # limitations under the License.
 
 """Tests for the App class."""
-
 import copy
 import unittest
 
-import armi
+from armi import cli
+from armi import configure
+from armi import context
+from armi import getApp
+from armi import getDefaultPluginManager
+from armi import meta
 from armi import plugins
 from armi.__main__ import main
 
@@ -66,15 +70,17 @@ class TestApps(unittest.TestCase):
     def setUp(self):
         """Manipulate the standard App. We can't just configure our own, since the
         pytest environment bleeds between tests :("""
-        self._backupApp = copy.deepcopy(armi._app)
+        self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):
         """Restore the App to its original state"""
+        import armi
+
         armi._app = self._backupApp
-        armi.context.APP_NAME = "armi"
+        context.APP_NAME = "armi"
 
     def test_getParamRenames(self):
-        app = armi.getApp()
+        app = getApp()
         app.pluginManager.register(TestPlugin1)
         app.pluginManager.register(TestPlugin4)
         app._paramRenames = None  # need to implement better cache invalidation rules
@@ -102,12 +108,12 @@ class TestApps(unittest.TestCase):
             app.getParamRenames()
 
     def test_version(self):
-        app = armi.getApp()
+        app = getApp()
         ver = app.version
-        self.assertEqual(ver, armi.meta.__version__)
+        self.assertEqual(ver, meta.__version__)
 
     def test_getSettings(self):
-        app = armi.getApp()
+        app = getApp()
         settings = app.getSettings()
 
         self.assertGreater(len(settings), 100)
@@ -115,25 +121,27 @@ class TestApps(unittest.TestCase):
         self.assertEqual(settings["nCycles"].value, 1)
 
     def test_splashText(self):
-        app = armi.getApp()
+        app = getApp()
         splash = app.splashText
         self.assertIn("========", splash)
         self.assertIn("Advanced", splash)
         self.assertIn("version", splash)
-        self.assertIn(armi.meta.__version__, splash)
+        self.assertIn(meta.__version__, splash)
 
     def test_splashTextDifferentApp(self):
-        app = armi.getApp()
+        import armi
+
+        app = getApp()
         name = "DifferentApp"
         app.name = name
         armi._app = app
-        armi.context.APP_NAME = name
+        context.APP_NAME = name
 
         splash = app.splashText
         self.assertIn("========", splash)
         self.assertIn("Advanced", splash)
         self.assertIn("version", splash)
-        self.assertIn(armi.meta.__version__, splash)
+        self.assertIn(meta.__version__, splash)
         self.assertIn("DifferentApp", splash)
 
 
@@ -141,17 +149,15 @@ class TestArmi(unittest.TestCase):
     """Tests for functions in the ARMI __init__ module."""
 
     def test_getDefaultPlugMan(self):
-        from armi import cli
-
-        pm = armi.getDefaultPluginManager()
-        pm2 = armi.getDefaultPluginManager()
+        pm = getDefaultPluginManager()
+        pm2 = getDefaultPluginManager()
 
         self.assertTrue(pm is not pm2)
         self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
 
     def test_overConfigured(self):
         with self.assertRaises(RuntimeError):
-            armi.configure()
+            configure()
 
     def test_main(self):
         with self.assertRaises(SystemExit):

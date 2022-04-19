@@ -41,7 +41,9 @@ from armi.reactor.assemblies import (
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
-import armi.reactor.tests.test_reactors
+from armi.reactor.tests import test_reactors
+from armi.reactor.assemblies import getAssemNum
+from armi.reactor.assemblies import resetAssemNumCounter
 
 
 NUM_BLOCKS = 3
@@ -277,9 +279,9 @@ class Assembly_TestCase(unittest.TestCase):
         self.Assembly.calculateZCoords()
 
     def test_resetAssemNumCounter(self):
-        armi.reactor.assemblies.resetAssemNumCounter()
+        resetAssemNumCounter()
         cur = 0
-        ref = armi.reactor.assemblies._assemNum
+        ref = getAssemNum()
         self.assertEqual(cur, ref)
 
     def test_iter(self):
@@ -1178,7 +1180,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.o, self.r = armi.reactor.tests.test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
     def test_snapAxialMeshToReferenceConservingMassBasedOnBlockIgniter(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
