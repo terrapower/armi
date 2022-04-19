@@ -135,6 +135,7 @@ autodoc_default_options = {
     "private-members": False,
 }
 autodoc_member_order = "bysource"
+autodoc_inherit_docstrings = False
 autoclass_content = "both"
 
 apidoc_module_dir = SOURCE_DIR
