@@ -226,6 +226,10 @@ class Case:
         """
         Get a parent case based on a setting value and a pattern.
 
+        This is a convenient way for a plugin to express a dependency. It uses the
+        ``match.groupdict`` functionality to pull the directory and case name out of a
+        specific setting value an regular expression.
+        
         Parameters
         ----------
         settingValue : str
@@ -236,10 +240,6 @@ class Case:
             If the ``settingValue`` matches the passed pattern, this function will
             attempt to extract the ``dirName`` and ``title`` groups to find the
             dependency.
-
-        This is a convenient way for a plugin to express a dependency. It uses the
-        ``match.groupdict`` functionality to pull the directory and case name out of a
-        specific setting value an regular expression.
         """
         m = re.match(filePattern, settingValue, re.IGNORECASE)
         deps = self._getPotentialDependencies(**m.groupdict()) if m else set()
