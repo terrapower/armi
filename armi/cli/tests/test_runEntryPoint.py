@@ -173,12 +173,23 @@ class TestRunEntryPoint(unittest.TestCase):
         self.assertEqual(rep.name, "run")
         self.assertEqual(rep.settingsArgument, "required")
 
-    def test_runCommand(self):
+    def test_runCommandHelp(self):
         """Ensure main entry point with no args completes."""
         with self.assertRaises(SystemExit) as excinfo:
-            sys.argv = [""]  # have to override the pytest args
+            # have to override the pytest args
+            sys.argv = [""]
             main()
         self.assertEqual(excinfo.exception.code, 0)
+
+    def test_executeCommand(self):
+        """use executeCommand to call run,
+        But we expect it to fail because we provide a fictional settings YAML
+        """
+        with self.assertRaises(SystemExit) as excinfo:
+            # override the pytest args
+            sys.argv = ["run", "path/to/fake.yaml"]
+            main()
+        self.assertEqual(excinfo.exception.code, 1)
 
 
 class TestRunSuiteCommand(unittest.TestCase):
