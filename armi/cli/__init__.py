@@ -148,10 +148,12 @@ class ArmiCLI:
 
     def showVersion(self):
         """Print the App name and version on the command line"""
-        prog = armi.context.APP_NAME
-        app = armi.getApp()
+        from armi import getApp  # pylint: disable=import-outside-toplevel
+
+        prog = context.APP_NAME
+        app = getApp()
         if app is None or prog == "armi":
-            print("{0} {1}".format(prog, armi.__version__))
+            print("{0} {1}".format(prog, meta.__version__))
         else:
             print("{0} {1}".format(prog, app.version))
 
