@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import glob
 import os
 import pathlib
 import random
 import shutil
 import string
-import glob
 
-import armi
 from armi import context
 from armi import runLog
 from armi.utils import pathTools
@@ -219,7 +218,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         # creating its destination directory, it may always be safe to delete it
         # regardless of location.
         if root is None:
-            root = armi.context.getFastPath()
+            root = context.getFastPath()
             # ARMIs temp dirs are in an context.APP_DATA directory: validate this is a temp dir.
             if pathlib.Path(context.APP_DATA) not in pathlib.Path(root).parents:
                 raise ValueError(
@@ -298,7 +297,7 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
 
 
 def directoryChangerFactory():
-    if armi.MPI_SIZE > 1:
+    if context.MPI_SIZE > 1:
         from .directoryChangersMpi import MpiDirectoryChanger
 
         return MpiDirectoryChanger

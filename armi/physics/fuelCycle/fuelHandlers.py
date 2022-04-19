@@ -1453,11 +1453,6 @@ class FuelHandler:
         ----------
         incoming, outgoing : Assembly
             Assembly objects to be swapped
-
-        Notes
-        -----
-        Assumes assemblies have the same block structure. If not, blocks will be swapped one-for-one until
-        the shortest one has been used up and then the process will truncate.
         """
         # Find the block-based mesh points for each assembly
         meshIn = self.r.core.findAllAxialMeshPoints([incoming], False)

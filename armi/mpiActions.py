@@ -30,15 +30,15 @@ sends it to the workers, and then both the master and the workers
    * - 1
      - **master**: :py:class:`distributeState = DistributeStateAction() <armi.mpiActions.MpiAction>`
 
-       **worker**: :code:`action = armi.MPI_COMM.bcast(None, root=0)`
+       **worker**: :code:`action = context.MPI_COMM.bcast(None, root=0)`
      - **master**: Initializing a distribute state action.
 
        **worker**: Waiting for something to do, as determined by the master, this happens within the
        worker's :py:meth:`~armi.operators.MpiOperator.workerOperate`.
    * - 2
-     - **master**: :code:`armi.MPI_COMM.bcast(distributeState, root=0)`
+     - **master**: :code:`context.MPI_COMM.bcast(distributeState, root=0)`
 
-       **worker**: :code:`action = armi.MPI_COMM.bcast(None, root=0)`
+       **worker**: :code:`action = context.MPI_COMM.bcast(None, root=0)`
      - **master**: Broadcasts a distribute state action to all the worker nodes
 
        **worker**: Receives the action from the master, which is a
@@ -62,14 +62,14 @@ import math
 from six.moves import cPickle
 import tabulate
 
-import armi
+from armi import context
+from armi import interfaces
 from armi import runLog
 from armi import settings
-from armi import interfaces
+from armi import utils
 from armi.reactor import reactors
 from armi.reactor import assemblies
 from armi.reactor.parameters import parameterDefinitions
-from armi import utils
 from armi.utils import iterables
 
 
@@ -168,13 +168,13 @@ class MpiAction:
         """
         if self.serial:
             return obj if obj is not None else self
-        if armi.MPI_SIZE > 1:
-            result = self._mpiOperationHelper(obj, armi.MPI_COMM.bcast)
+        if context.MPI_SIZE > 1:
+            result = self._mpiOperationHelper(obj, context.MPI_COMM.bcast)
         # the following if-branch prevents the creation of duplicate objects on the master node
         # if the object is large with lots of links, it is prudent to call gc.collect()
-        if obj is None and armi.MPI_RANK == 0:
+        if obj is None and context.MPI_RANK == 0:
             return self
-        elif armi.MPI_RANK == 0:
+        elif context.MPI_RANK == 0:
             return obj
         else:
             return result
@@ -193,9 +193,9 @@ class MpiAction:
         """
         if self.serial:
             return [obj if obj is not None else self]
-        if armi.MPI_SIZE > 1:
-            result = self._mpiOperationHelper(obj, armi.MPI_COMM.gather)
-            if armi.MPI_RANK == 0:
+        if context.MPI_SIZE > 1:
+            result = self._mpiOperationHelper(obj, context.MPI_COMM.gather)
+            if context.MPI_RANK == 0:
                 # this cannot be result[0] = obj or self, because 0.0, 0, [] all eval to False
                 if obj is None:
                     result[0] = self
@@ -263,12 +263,12 @@ class MpiAction:
         mpiFlatten : used for collecting results
         """
         ntasks = len(objectsForAllCoresToIter)
-        numLocalObjects, deficit = divmod(ntasks, armi.MPI_SIZE)
-        if armi.MPI_RANK < deficit:
+        numLocalObjects, deficit = divmod(ntasks, context.MPI_SIZE)
+        if context.MPI_RANK < deficit:
             numLocalObjects += 1
-            first = armi.MPI_RANK * numLocalObjects
+            first = context.MPI_RANK * numLocalObjects
         else:
-            first = armi.MPI_RANK * numLocalObjects + deficit
+            first = context.MPI_RANK * numLocalObjects + deficit
 
         for objIndex in range(first, first + numLocalObjects):
             yield objectsForAllCoresToIter[objIndex]
@@ -294,20 +294,20 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 
     Notes
     -----
-    The number of actions DOES NOT need to match :code:`armi.MPI_SIZE`.
+    The number of actions DOES NOT need to match :code:`context.MPI_SIZE`.
 
     Calling this method may invoke MPI Split which will change the MPI_SIZE during the action. This allows someone to
     call MPI operations without being blocked by tasks which are not doing the same thing.
     """
-    if not armi.MPI_DISTRIBUTABLE or serial:
+    if not context.MPI_DISTRIBUTABLE or serial:
         return runActionsInSerial(o, r, cs, actions)
 
-    useForComputation = [True] * armi.MPI_SIZE
+    useForComputation = [True] * context.MPI_SIZE
     if numPerNode != None:
         if numPerNode < 1:
             raise ValueError("numPerNode must be >= 1")
-        numThisNode = {nodeName: 0 for nodeName in armi.MPI_NODENAMES}
-        for rank, nodeName in enumerate(armi.MPI_NODENAMES):
+        numThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
+        for rank, nodeName in enumerate(context.MPI_NODENAMES):
             useForComputation[rank] = numThisNode[nodeName] < numPerNode
             numThisNode[nodeName] += 1
     numBatches = int(
@@ -329,7 +329,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         for useRank in useForComputation:
             actionsThisRound.append(queue.pop(0) if useRank and queue else None)
         realActions = [
-            (armi.MPI_NODENAMES[rank], rank, act)
+            (context.MPI_NODENAMES[rank], rank, act)
             for rank, act in enumerate(actionsThisRound)
             if act is not None
         ]
@@ -377,7 +377,7 @@ class DistributionAction(MpiAction):
     it possible for sub-tasks to manage their own communicators and spawn their own work within some
     sub-communicator.
 
-    This performs an MPI Split operation and takes over the armi.MPI_COMM and associated varaibles.
+    This performs an MPI Split operation and takes over the context.MPI_COMM and associated varaibles.
     For this reason, it is possible that when someone thinks they have distributed information to all
     nodes, it may only be a subset that was necessary to perform the number of actions needed by this
     DsitributionAction.
@@ -402,11 +402,11 @@ class DistributionAction(MpiAction):
         =====
         Two things about this method make it non-recursiv
         """
-        canDistribute = armi.MPI_DISTRIBUTABLE
-        mpiComm = armi.MPI_COMM
-        mpiRank = armi.MPI_RANK
-        mpiSize = armi.MPI_SIZE
-        mpiNodeNames = armi.MPI_NODENAMES
+        canDistribute = context.MPI_DISTRIBUTABLE
+        mpiComm = context.MPI_COMM
+        mpiRank = context.MPI_RANK
+        mpiSize = context.MPI_SIZE
+        mpiNodeNames = context.MPI_NODENAMES
 
         if self.cs["verbosity"] == "debug" and mpiRank == 0:
             runLog.debug("Printing diagnostics for MPI actions!")
@@ -423,21 +423,21 @@ class DistributionAction(MpiAction):
         try:
             action = mpiComm.scatter(self._actions, root=0)
             # create a new communicator that only has these specific dudes running
-            armi.MPI_DISTRIBUTABLE = False
+            context.MPI_DISTRIBUTABLE = False
             hasAction = action is not None
-            armi.MPI_COMM = mpiComm.Split(int(hasAction))
-            armi.MPI_RANK = armi.MPI_COMM.Get_rank()
-            armi.MPI_SIZE = armi.MPI_COMM.Get_size()
-            armi.MPI_NODENAMES = armi.MPI_COMM.allgather(armi.MPI_NODENAME)
+            context.MPI_COMM = mpiComm.Split(int(hasAction))
+            context.MPI_RANK = context.MPI_COMM.Get_rank()
+            context.MPI_SIZE = context.MPI_COMM.Get_size()
+            context.MPI_NODENAMES = context.MPI_COMM.allgather(context.MPI_NODENAME)
             if hasAction:
                 return action.invoke(self.o, self.r, self.cs)
         finally:
             # restore the global variables
-            armi.MPI_DISTRIBUTABLE = canDistribute
-            armi.MPI_COMM = mpiComm
-            armi.MPI_RANK = mpiRank
-            armi.MPI_SIZE = mpiSize
-            armi.MPI_NODENAMES = mpiNodeNames
+            context.MPI_DISTRIBUTABLE = canDistribute
+            context.MPI_COMM = mpiComm
+            context.MPI_RANK = mpiRank
+            context.MPI_SIZE = mpiSize
+            context.MPI_NODENAMES = mpiNodeNames
 
 
 class MpiActionError(Exception):
@@ -458,7 +458,7 @@ class DistributeStateAction(MpiAction):
 
         """
 
-        if armi.MPI_SIZE <= 1:
+        if context.MPI_SIZE <= 1:
             runLog.extra("Not distributing state because there is only one processor")
             return
         # Detach phase:
@@ -489,13 +489,13 @@ class DistributeStateAction(MpiAction):
             runLog.error("Failed to transmit on distribute state root MPI bcast")
             runLog.error(error)
             # workers are still waiting for a reactor object
-            if armi.MPI_RANK == 0:
+            if context.MPI_RANK == 0:
                 _diagnosePickleError(self.o)
-                armi.MPI_COMM.bcast("quit")  # try to get the workers to quit.
+                context.MPI_COMM.bcast("quit")  # try to get the workers to quit.
 
             raise
 
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             self.r.core.regenAssemblyLists()  # pylint: disable=no-member
 
         # check to make sure that everything has been properly reattached
@@ -516,18 +516,18 @@ class DistributeStateAction(MpiAction):
         )
 
     def _distributeSettings(self):
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             runLog.debug("Sending the settings object")
         self.cs = cs = self.broadcast(self.o.cs)
         if isinstance(cs, settings.Settings):
             runLog.setVerbosity(
-                cs["verbosity"] if armi.MPI_RANK == 0 else cs["branchVerbosity"]
+                cs["verbosity"] if context.MPI_RANK == 0 else cs["branchVerbosity"]
             )
             runLog.debug("Received settings object")
         else:
             raise RuntimeError("Failed to transmit settings, received: {}".format(cs))
 
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             settings.setMasterCs(cs)
             self.o.cs = cs
         return cs
@@ -541,7 +541,7 @@ class DistributeStateAction(MpiAction):
         else:
             raise RuntimeError("Failed to transmit reactor, received: {}".format(r))
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             # on the master node this unfortunately created a __deepcopy__ of the reactor, delete it
             del r
         else:
@@ -561,7 +561,7 @@ class DistributeStateAction(MpiAction):
 
     def _distributeParamAssignments(self):
         data = dict()
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             data = {
                 (pName, pdType.__name__): pDef.assigned
                 for (
@@ -570,9 +570,9 @@ class DistributeStateAction(MpiAction):
                 ), pDef in parameterDefinitions.ALL_DEFINITIONS.items()
             }
 
-        data = armi.MPI_COMM.bcast(data, root=0)
+        data = context.MPI_COMM.bcast(data, root=0)
 
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             for (pName, pdType), pDef in parameterDefinitions.ALL_DEFINITIONS.items():
                 pDef.assigned = data[pName, pdType.__name__]
 
@@ -597,7 +597,7 @@ class DistributeStateAction(MpiAction):
         armi.interfaces.Interface.interactDistributeState : runs on workers after DS
 
         """
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             # These run on the master node. (Worker nodes run sychronized code below)
             toRestore = {}
             for i in self.o.getInterfaces():

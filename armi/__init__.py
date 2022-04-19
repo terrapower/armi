@@ -101,6 +101,12 @@ _ARMI_CONFIGURE_CONTEXT: Optional[str] = None
 _ignoreConfigures = False
 
 
+def disableFutureConfigures():
+    """Exposed function to ensure armi.configure() isn't called more than once"""
+    global _ignoreConfigures
+    _ignoreConfigures = True
+
+
 def isStableReleaseVersion(version=None):
     """Determine if the version should be considered a stable release"""
     version = version or __version__
@@ -322,13 +328,13 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
 
     _app = app
+    context.APP_NAME = app.name
 
     if _liveInterpreter():
         runLog.LOG.startLog(name=f"interactive-{app.name}")
         cli.splash()
 
     pm = app.pluginManager
-    context.APP_NAME = app.name
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
     flags.registerPluginFlags(pm)

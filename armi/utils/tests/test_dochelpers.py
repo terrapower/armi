@@ -26,7 +26,7 @@ from armi.utils.dochelpers import (
 
 
 class TestDocHelpers(unittest.TestCase):
-    """Tests for the utility dochelpers functionns."""
+    """Tests for the utility dochelpers functions."""
 
     def test_paramTable(self):
 

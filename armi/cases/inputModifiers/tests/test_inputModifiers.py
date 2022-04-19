@@ -123,7 +123,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         bp._prepConstruction(cs)
         cls.baseCase = cases.Case(cs=cs, bp=bp, geom=geom)
 
-    def test_SmearDensityFail(self):
+    def test_smearDensityFail(self):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
         builder.addDegreeOfFreedom(
@@ -137,7 +137,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "before .*SmearDensityModifier"):
             builder.buildSuite()
 
-    def test_example(self):
+    def test_settingsModifier(self):
         builder = suiteBuilder.SeparateEffectsSuiteBuilder(self.baseCase)
         builder.addDegreeOfFreedom(
             inputModifiers.SettingsModifier("fpModel", v)
@@ -164,11 +164,9 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
 
             self.assertTrue(os.path.exists("case-suite"))
 
-    def test_BluePrintBlockModifier(self):
+    def test_bluePrintBlockModifier(self):
         """test BluePrintBlockModifier with build suite naming function argument"""
-
         case_nbr = 1
-
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
         builder.addDegreeOfFreedom(
@@ -249,5 +247,4 @@ class TestFullCoreModifier(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
