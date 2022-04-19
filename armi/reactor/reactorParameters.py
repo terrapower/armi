@@ -168,9 +168,7 @@ def defineCoreParameters():
 
         pb.defParam("numMoves", units="", description="numMoves", default=0)
 
-    with pDefs.createBuilder(
-        location="N/A", categories=["control rods"]
-    ) as pb:
+    with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
 
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
@@ -209,8 +207,10 @@ def defineCoreParameters():
             default=0.0,
             units="pcm",
             saveToDB=True,
-            description=("Reactivity worth introduced by removal of the highest worth primary "
-                         "control rod from the core, starting from its critical position"),
+            description=(
+                "Reactivity worth introduced by removal of the highest worth primary "
+                "control rod from the core, starting from its critical position"
+            ),
         )
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:

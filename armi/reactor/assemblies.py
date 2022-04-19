@@ -956,10 +956,9 @@ class Assembly(composites.Composite):
                     blocksHere.append((b, heightHere))
 
         totalHeight = 0.0
+        allMeshPoints = sorted(allMeshPoints)
         # The expected height snaps to the minimum height that is requested
-        expectedHeight = min(
-            sorted(allMeshPoints)[-1] - sorted(allMeshPoints)[0], zUpper - zLower
-        )
+        expectedHeight = min(allMeshPoints[-1] - allMeshPoints[0], zUpper - zLower)
         for _b, height in blocksHere:
             totalHeight += height
 
@@ -968,7 +967,10 @@ class Assembly(composites.Composite):
         if abs(totalHeight - expectedHeight) > 1e-5:
             raise ValueError(
                 f"The cumulative height of {blocksHere} is {totalHeight} cm "
-                f"and does not equal the expected height of {expectedHeight} cm"
+                f"and does not equal the expected height of {expectedHeight} cm.\n"
+                f"All mesh points: {allMeshPoints}\n"
+                f"Upper mesh point: {zUpper} cm\n"
+                f"Lower mesh point: {zLower} cm\n"
             )
 
         return blocksHere

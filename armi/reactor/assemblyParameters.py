@@ -179,8 +179,10 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "crCriticalFraction",
             units="",
-            description=("The insertion fraction when the control rod assembly is in its critical configuration. "
-                         "Note that the default of -1.0 is a trigger for this value not being set yet."),
+            description=(
+                "The insertion fraction when the control rod assembly is in its critical configuration. "
+                "Note that the default of -1.0 is a trigger for this value not being set yet."
+            ),
             saveToDB=True,
             default=-1.0,
         )

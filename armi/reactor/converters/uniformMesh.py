@@ -52,11 +52,14 @@ The mesh mapping happens as described in the figure:
 .. figure:: /.static/axial_homogenization.png
 
 """
+import re
+import glob
 import copy
 import logging
 
 import numpy
 
+import armi
 from armi import runLog
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
@@ -244,13 +247,31 @@ class UniformMeshGeometryConverter(GeometryConverter):
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
             self.convReactor.core.add(newAssem, newLoc)
+        self.plotConvertedReactor()
 
     def plotConvertedReactor(self):
-        assemsToPlot = self.convReactor.core[:12]
-        for plotNum, assemBatch in enumerate(iterables.chunk(assemsToPlot, 6), start=1):
-            assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}.png"
+        bpAssems = list(self.convReactor.blueprints.assemblies.values())
+        assemsToPlot = []
+        for bpAssem in bpAssems:
+            a = self.convReactor.core.getAssemblies(bpAssem.p.flags)[0]
+            assemsToPlot.append(a)
+
+        # Obtain the plot numbering based on the existing files so that existing plots
+        # are not overwritten.
+        start = 0
+        existingFiles = glob.glob(
+            f"{self.convReactor.core.name}AssemblyTypes" + "*" + ".png"
+        )
+        for f in existingFiles:
+            newStart = int(re.search(r"\d+", f).group())
+            if newStart > start:
+                start = newStart
+        for plotNum, assemBatch in enumerate(
+            iterables.chunk(assemsToPlot, 6), start=start + 1
+        ):
+            assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
             plotting.plotAssemblyTypes(
-                self.convReactor.core.parent.blueprints,
+                self.convReactor.blueprints,
                 assemPlotName,
                 assemBatch,
                 maxAssems=6,
@@ -531,12 +552,17 @@ def _setStateFromOverlaps(
     # be incorrect. This checks that the parameters have been cleared and fails otherwise.
     for destBlock in destinationAssembly:
         existingDestBlockParamVals = getter(destBlock, paramNames)
-        if existingDestBlockParamVals is not None:
+        noneVals = [
+            True if val is None else False for val in existingDestBlockParamVals
+        ]
+        if not all(noneVals):
             raise ValueError(
                 f"The state of {destBlock} on {destinationAssembly} "
                 f"was not cleared prior to calling ``_setStateFromOverlaps``. "
                 f"This is an implementation bug in the mesh converter that should "
-                "be reported to the developers."
+                f"be reported to the developers. The following parameters should be cleared:\n"
+                f"Parameters: {paramNames}\n"
+                f"Values: {existingDestBlockParamVals}"
             )
 
     # The destination assembly is the assembly that the results are being mapped to
@@ -572,6 +598,11 @@ def _setStateFromOverlaps(
                 paramNames, sourceBlockVals, destBlockVals
             ):
 
+                # The value can be `None` if it has not been set yet. In this case,
+                # the mapping can be skipped.
+                if sourceBlockVal is None:
+                    continue
+
                 # Determine if the parameter is volumed integrated or not.
                 isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
                     parameters.ParamLocation.VOLUME_INTEGRATED
@@ -597,4 +628,4 @@ def _setStateFromOverlaps(
                         sourceBlockVal * integrationFactor
                     )
 
-            setter(destBlock, [updatedDestVal], [paramName])
+                setter(destBlock, [updatedDestVal], [paramName])
