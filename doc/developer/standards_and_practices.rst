@@ -47,6 +47,17 @@ Also, do not **ever** code the following things into the code: user names, passw
 environmental variables where possible and user-configurable settings elsewhere. You can also use the ``armi.ROOT``
 variable (for the active code directory) or ``armi.RES``, and some other useful root-level variables.
 
+Avoid the global keyword
+========================
+At all costs, avoid use of the ``global`` keyword in your code. Using this keyword can, and usually does, create
+extremely fragile code that is nigh-impossible to use a debugger on. Especially as part of object-oriented programming,
+this is extremely lazy design. A careful reader might notice that there are several files in ARMI that are currently
+using the ``global`` keyword. These are all schedule for a refactor to remove the use of ``global``. But, for now,
+changing the code would cause more annoyance for the ARMI ecosystem userbase than fixing it would. Still, all of those
+instance in ARMI will be fixed soon.
+
+No new uses of ``global`` will make it through the ARMI pull request process.
+
 Naming conventions
 ==================
 

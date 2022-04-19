@@ -21,6 +21,7 @@ Bug fixes
 #. Fixed issues finding ``ISOXX`` files cross-platform.
 #. Fixed issue with docs not correctly loading their Git submodule in TOX.
 #. Fixed issue with ``_swapFluxParams`` failing for assemblies with different blocks (`#566 <https://github.com/terrapower/armi/issues/566>`_)
+#. Multiple bug fixes in ``growToFullCore``.
 #. TBD
 
 

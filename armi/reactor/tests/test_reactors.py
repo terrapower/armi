@@ -750,6 +750,16 @@ class HexReactorTests(ReactorTests):
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
 
+    def test_getAvgTemp(self):
+        t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
+        self.assertAlmostEqual(t0, 459.267, delta=0.01)
+
+        t1 = self.r.core.getAvgTemp([Flags.CLAD, Flags.FUEL])
+        self.assertAlmostEqual(t1, 545.043, delta=0.01)
+
+        t2 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT, Flags.FUEL])
+        self.assertAlmostEqual(t2, 521.95269, delta=0.01)
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
