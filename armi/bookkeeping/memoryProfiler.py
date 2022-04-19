@@ -47,7 +47,7 @@ import logging
 import tabulate
 from typing import Optional
 
-import armi
+from armi import context
 from armi import interfaces
 from armi import mpiActions
 from armi import runLog
@@ -521,7 +521,7 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 
 class SystemAndProcessMemoryUsage:
     def __init__(self):
-        self.nodeName = armi.MPI_NODENAME
+        self.nodeName = context.MPI_NODENAME
         # no psutil, no memory diagnostics. TODO: Ideally, we could just cut
         # MemoryProfiler out entirely, but it is referred to directly by the standard
         # operator and reports, so easier said than done.

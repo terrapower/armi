@@ -19,15 +19,14 @@ import unittest
 
 import htmltree
 
-import armi
-from armi.tests import TEST_ROOT
-from armi.reactor.tests import test_reactors
+from armi import getPluginManagerOrFail
 from armi.bookkeeping import newReports
-from armi.utils import directoryChangers
-from armi.physics.neutronics.reports import neutronicsPlotting
-import armi.bookkeeping.newReports
 from armi.bookkeeping.report import data
+from armi.physics.neutronics.reports import neutronicsPlotting
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
 from armi.tests import mockRunLogs
+from armi.utils import directoryChangers
 
 
 class TestReportContentCreation(unittest.TestCase):
@@ -71,7 +70,7 @@ class TestReportContentCreation(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
 
-            armi.getPluginManagerOrFail().hook.getReportContents(
+            getPluginManagerOrFail().hook.getReportContents(
                 r=self.r,
                 cs=self.o.cs,
                 report=reportTest,
