@@ -322,13 +322,13 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     _ARMI_CONFIGURE_CONTEXT = "".join(traceback.format_stack())
 
     _app = app
+    context.APP_NAME = app.name
 
     if _liveInterpreter():
         runLog.LOG.startLog(name=f"interactive-{app.name}")
         cli.splash()
 
     pm = app.pluginManager
-    context.APP_NAME = app.name
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
     flags.registerPluginFlags(pm)

@@ -33,7 +33,25 @@ class TestRunSuiteSuite(unittest.TestCase):
             cli.listCommands()
         finally:
             sys.stdout = origout
+
         self.assertIn("run-suite", out.getvalue())
+
+    def test_showVersion(self):
+        """Test the ArmiCLI.showVersion method"""
+        from armi import cli, meta
+
+        cli = cli.ArmiCLI()
+
+        origout = sys.stdout
+        try:
+            out = io.StringIO()
+            sys.stdout = out
+            cli.showVersion()
+        finally:
+            sys.stdout = origout
+
+        self.assertIn("armi", out.getvalue())
+        self.assertIn(meta.__version__, out.getvalue())
 
 
 if __name__ == "__main__":
