@@ -328,6 +328,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])
         self.loadState(dbCycle, dbNode)
 
+    # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
@@ -1096,7 +1097,12 @@ class Database3(database.Database):
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
         root = comps[0][0]
-        return root  # usually reactor object
+
+        # ensure the max assembly number is correct
+        updateGlobalAssemblyNum(root)
+
+        # usually a reactor object
+        return root
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):
