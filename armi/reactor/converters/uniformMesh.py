@@ -624,8 +624,6 @@ def _setStateFromOverlaps(
                 if destBlockVal is None:
                     updatedDestVal = sourceBlockVal * integrationFactor
                 else:
-                    updatedDestVal = destBlockVals + (
-                        sourceBlockVal * integrationFactor
-                    )
+                    updatedDestVal += sourceBlockVal * integrationFactor
 
                 setter(destBlock, [updatedDestVal], [paramName])
