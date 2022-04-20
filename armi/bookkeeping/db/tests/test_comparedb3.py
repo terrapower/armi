@@ -30,7 +30,7 @@ class TestCompareDB3(unittest.TestCase):
     def tearDown(self):
         self.td.__exit__(None, None, None)
 
-    def test_outputWriter(self) -> None:
+    def test_outputWriter(self):
         fileName = "test_outputWriter.txt"
         with OutputWriter(fileName) as out:
             out.writeln("Rubber Baby Buggy Bumpers")
@@ -38,7 +38,7 @@ class TestCompareDB3(unittest.TestCase):
         txt = open(fileName, "r").read()
         self.assertIn("Rubber", txt)
 
-    def test_diffResultsBasic(self) -> None:
+    def test_diffResultsBasic(self):
         # init an instance of the class
         dr = DiffResults(0.01)
         self.assertEqual(len(dr._columns), 0)

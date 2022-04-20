@@ -193,7 +193,7 @@ class TestDatabase3(unittest.TestCase):
             database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
 
-    def test_load(self) -> None:
+    def test_load(self):
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
