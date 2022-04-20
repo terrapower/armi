@@ -537,10 +537,6 @@ def _setStateFromOverlaps(
             f"as a list. Value(s) given: {paramNames}"
         )
 
-    runLog.debug(
-        f"Mapping parameters from {sourceAssembly} to {destinationAssembly}: {paramNames}"
-    )
-
     # The mapping of data from the source assembly to the destination assembly assumes that
     # the parameter values returned from the given ``getter`` have been cleared. If any
     # of these do not return a None before the conversion occurs then the mapping will
