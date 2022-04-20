@@ -55,7 +55,8 @@ The mesh mapping happens as described in the figure:
 import re
 import glob
 import copy
-import logging
+import collections
+from timeit import default_timer as timer
 
 import numpy
 
@@ -72,8 +73,6 @@ from armi.reactor import parameters
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
 
-runLog = logging.getLogger(__name__)
-
 
 class UniformMeshGeometryConverter(GeometryConverter):
     """Build uniform mesh version of the source reactor"""
@@ -87,6 +86,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def convert(self, r=None):
         """Create a new reactor with a uniform mesh."""
         runLog.extra("Building copy of {} with a uniform axial mesh".format(r))
+
+        startTime = timer()
         self._sourceReactor = r
         self.convReactor = self.initNewReactor(r)
         self._setParamsToUpdate()
@@ -96,6 +97,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
         self.convReactor.core.updateAxialMesh()
         self._checkConversion()
+        endTime = timer()
+        runLog.extra(f"Reactor core conversion time: {startTime-endTime} seconds")
         return self.convReactor
 
     def _checkConversion(self):
@@ -154,9 +157,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
         for topMeshPoint in newMesh:
-            runLog.debug(
-                f"From axial elevation {bottom:<6.2f} cm to {topMeshPoint:<6.2f} cm"
-            )
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
             )
@@ -203,17 +203,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType
 
-            runLog.debug(
-                f"  - The source block for this region is {sourceBlock} with XS type {xsType}"
-            )
-
-            # Report the homogenization fractions for debugging purposes
-            for b, heightOverlap in overlappingBlockInfo:
-                totalHeight = topMeshPoint - bottom
-                runLog.debug(
-                    f"  - {b} accounts for {heightOverlap/totalHeight * 100.0:<5.2f}% of the homogenized region"
-                )
-
             block = copy.deepcopy(sourceBlock)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
@@ -253,8 +242,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         bpAssems = list(self.convReactor.blueprints.assemblies.values())
         assemsToPlot = []
         for bpAssem in bpAssems:
-            a = self.convReactor.core.getAssemblies(bpAssem.p.flags)[0]
-            assemsToPlot.append(a)
+            coreAssems = self.convReactor.core.getAssemblies(bpAssem.p.flags)
+            if not coreAssems:
+                continue
+            assemsToPlot.append(coreAssems[0])
 
         # Obtain the plot numbering based on the existing files so that existing plots
         # are not overwritten.
@@ -383,7 +374,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             parameters.Category.neutronics
         ).names
 
-        runLog.extra(
+        runLog.debug(
             f"Reactor parameters that will be mapped are: {self.reactorParamNames}"
         )
 
@@ -396,7 +387,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             parameters.Category.detailedAxialExpansion
         ).names
 
-        runLog.extra(
+        runLog.debug(
             f"Block params that will be mapped are: {self.blockMultigroupParamNames + self.blockDetailedAxialExpansionParamNames}"
         )
 
@@ -546,16 +537,20 @@ def _setStateFromOverlaps(
             f"as a list. Value(s) given: {paramNames}"
         )
 
+    runLog.debug(
+        f"Mapping parameters from {sourceAssembly} to {destinationAssembly}: {paramNames}"
+    )
+
     # The mapping of data from the source assembly to the destination assembly assumes that
     # the parameter values returned from the given ``getter`` have been cleared. If any
     # of these do not return a None before the conversion occurs then the mapping will
     # be incorrect. This checks that the parameters have been cleared and fails otherwise.
     for destBlock in destinationAssembly:
         existingDestBlockParamVals = getter(destBlock, paramNames)
-        noneVals = [
-            True if val is None else False for val in existingDestBlockParamVals
+        clearedValues = [
+            True if not val else False for val in existingDestBlockParamVals
         ]
-        if not all(noneVals):
+        if not all(clearedValues):
             raise ValueError(
                 f"The state of {destBlock} on {destinationAssembly} "
                 f"was not cleared prior to calling ``_setStateFromOverlaps``. "
@@ -571,8 +566,7 @@ def _setStateFromOverlaps(
     # coordinates that the uniform mesh (source assembly) will be mapped to.
     for destBlock in destinationAssembly:
         zLower = destBlock.p.zbottom
-        zUpper = zLower + destBlock.getHeight()
-
+        zUpper = destBlock.p.ztop
         # Determine which blocks in the uniform mesh source assembly are
         # within the lower and upper bounds of the destination block.
         sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
@@ -590,6 +584,7 @@ def _setStateFromOverlaps(
         # Iterate over each of the blocks that were found in the uniform mesh
         # source assembly within the lower and upper bounds of the destination
         # block and perform the parameter mapping.
+        updatedDestVals = collections.defaultdict(float)
         for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
             destBlockVals = getter(destBlock, paramNames)
             sourceBlockVals = getter(sourceBlock, paramNames)
@@ -597,9 +592,9 @@ def _setStateFromOverlaps(
             for paramName, sourceBlockVal, destBlockVal in zip(
                 paramNames, sourceBlockVals, destBlockVals
             ):
-
+                updatedDestVal = 0.0
                 # The value can be `None` if it has not been set yet. In this case,
-                # the mapping can be skipped.
+                # the mapping should be skipped.
                 if sourceBlockVal is None:
                     continue
 
@@ -626,4 +621,6 @@ def _setStateFromOverlaps(
                 else:
                     updatedDestVal += sourceBlockVal * integrationFactor
 
-                setter(destBlock, [updatedDestVal], [paramName])
+                updatedDestVals[paramName] += updatedDestVal
+
+            setter(destBlock, updatedDestVals.values(), updatedDestVals.keys())
