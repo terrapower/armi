@@ -737,68 +737,69 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
         These parameters are left as zeroes at BOC because no dose has been accumulated yet.
         """
-
         cycle = self.r.p.cycle
         timeNode = self.r.p.timeNode
 
-        if timeNode > 0:
-            daysIntoCycle = sum(self.r.p.stepLengths[cycle][:timeNode])
-            cycleLength = self.r.p.cycleLengths[cycle]
+        if timeNode <= 0:
+            return
 
-            maxDetailedDpaThisCycle = 0.0
-            peakDoseAssem = None
-            for a in self.r.core:
-                if a.getMaxParam("detailedDpaThisCycle") > maxDetailedDpaThisCycle:
-                    maxDetailedDpaThisCycle = a.getMaxParam("detailedDpaThisCycle")
-                    peakDoseAssem = a
-            self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
+        daysIntoCycle = sum(self.r.p.stepLengths[cycle][:timeNode])
+        cycleLength = self.r.p.cycleLengths[cycle]
 
-            if peakDoseAssem is None:
-                return
+        maxDetailedDpaThisCycle = 0.0
+        peakDoseAssem = None
+        for a in self.r.core:
+            if a.getMaxParam("detailedDpaThisCycle") > maxDetailedDpaThisCycle:
+                maxDetailedDpaThisCycle = a.getMaxParam("detailedDpaThisCycle")
+                peakDoseAssem = a
+        self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
 
-            doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
-                "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
+        if peakDoseAssem is None:
+            return
+
+        doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
+            "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
+        )
+        if len(doseHalfMaxHeights) != 2:
+            runLog.warning(
+                "Something strange with detailedDpaThisCycle shape in {}, "
+                "non-2 number of values matching {}".format(
+                    peakDoseAssem, maxDetailedDpaThisCycle / 2.0
+                )
             )
-            if len(doseHalfMaxHeights) != 2:
-                runLog.warning(
-                    "Something strange with detailedDpaThisCycle shape in {}, "
-                    "non-2 number of values matching {}".format(
-                        peakDoseAssem, maxDetailedDpaThisCycle / 2.0
-                    )
-                )
-            else:
-                self.r.core.p.dpaFullWidthHalfMax = (
-                    doseHalfMaxHeights[1] - doseHalfMaxHeights[0]
-                )
-
-            aclpDoseLimit = self.options.aclpDoseLimit
-            aclpDoseLimit3 = aclpDoseLimit / 3.0 * (daysIntoCycle / cycleLength)
-            aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
-                "detailedDpaThisCycle", aclpDoseLimit3
+        else:
+            self.r.core.p.dpaFullWidthHalfMax = (
+                doseHalfMaxHeights[1] - doseHalfMaxHeights[0]
             )
-            if len(aclpLocations3) != 2:
-                runLog.warning(
-                    "Something strange with detailedDpaThisCycle shape in {}"
-                    ", non-2 number of values matching {}".format(
-                        peakDoseAssem, aclpDoseLimit3
-                    )
-                )
-            else:
-                self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
 
-            aclpDoseLimit7 = aclpDoseLimit / 7.0 * (daysIntoCycle / cycleLength)
-            aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
-                "detailedDpaThisCycle", aclpDoseLimit7
-            )
-            if len(aclpLocations7) != 2:
-                runLog.warning(
-                    "Something strange with detailedDpaThisCycle shape in {}, "
-                    "non-2 number of values matching {}".format(
-                        peakDoseAssem, aclpDoseLimit7
-                    )
+        aclpDoseLimit = self.options.aclpDoseLimit
+        aclpDoseLimit3 = aclpDoseLimit / 3.0 * (daysIntoCycle / cycleLength)
+        aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
+            "detailedDpaThisCycle", aclpDoseLimit3
+        )
+        if len(aclpLocations3) != 2:
+            runLog.warning(
+                "Something strange with detailedDpaThisCycle shape in {}"
+                ", non-2 number of values matching {}".format(
+                    peakDoseAssem, aclpDoseLimit / 3.0
                 )
-            else:
-                self.r.core.p.elevationOfACLP7Cycles = aclpLocations7[1]
+            )
+        else:
+            self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
+
+        aclpDoseLimit7 = aclpDoseLimit / 7.0 * (daysIntoCycle / cycleLength)
+        aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
+            "detailedDpaThisCycle", aclpDoseLimit7
+        )
+        if len(aclpLocations7) != 2:
+            runLog.warning(
+                "Something strange with detailedDpaThisCycle shape in {}, "
+                "non-2 number of values matching {}".format(
+                    peakDoseAssem, aclpDoseLimit / 7.0
+                )
+            )
+        else:
+            self.r.core.p.elevationOfACLP7Cycles = aclpLocations7[1]
 
     def updateLoadpadDose(self):
         """

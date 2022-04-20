@@ -268,3 +268,40 @@ def generateParamTable(klass, fwParams, app=None):
         content.append(pluginContent + "\n")
 
     return "\n".join(content)
+
+
+def generatePluginSettingsTable(settings, pluginName):
+    """
+    Return a string containing one or more restructured text list tables containing
+    settings descriptions for a plugin.
+
+    Parameters
+    ----------
+    settings : list of Settings
+        This is a list of settings definitions, typically returned by a
+        ``defineSettings`` plugin hook.
+    """
+    headerContent = """
+    .. list-table:: Settings defined in the {}
+       :header-rows: 1
+       :widths: 20 10 50 20
+
+       * - Name
+         - Label
+         - Description
+         - Default Value
+    """.format(
+        pluginName
+    )
+
+    content = [f".. _{pluginName}-settings-table:"]
+    pluginContent = headerContent
+    for setting in settings:
+        default = None if setting.default == "" else setting.default
+        pluginContent += f"""   * - ``{setting.name}``
+         - {setting.label}
+         - {setting.description}
+         - {default}
+    """
+    content.append(pluginContent + "\n")
+    return "\n".join(content)

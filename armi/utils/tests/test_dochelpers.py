@@ -17,11 +17,16 @@ import unittest
 
 from armi.reactor import reactors
 from armi.reactor import reactorParameters
-from armi.utils.dochelpers import create_figure, create_table, generateParamTable
+from armi.utils.dochelpers import (
+    create_figure,
+    create_table,
+    generateParamTable,
+    generatePluginSettingsTable,
+)
 
 
-class TestFlag(unittest.TestCase):
-    """Tests for the utility Flag class and cohorts."""
+class TestDocHelpers(unittest.TestCase):
+    """Tests for the utility dochelpers functions."""
 
     def test_paramTable(self):
 
@@ -30,6 +35,17 @@ class TestFlag(unittest.TestCase):
             reactorParameters.defineCoreParameters(),
         )
         self.assertIn("keff", table)
+        self.assertNotIn("notAParameter", table)
+
+    def test_settingsTable(self):
+        from armi.settings.fwSettings import globalSettings
+
+        table = generatePluginSettingsTable(
+            globalSettings.defineSettings(),
+            "Framework",
+        )
+        self.assertIn("numProcessors", table)
+        self.assertNotIn("notASetting", table)
 
     def test_createFigure(self):
         rst = create_figure(

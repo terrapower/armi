@@ -1,6 +1,6 @@
 # How to contribute
 
-The ARMI framework project strongly encourages developers to help contribute to and build the code.
+The ARMI framework project strongly encourages developers to help contribute to the codebase.
 
 The ARMI framework code is open source, and your contributions will become open source.
 Although fewer laws apply to open source materials because they are publicly-available, you still
@@ -13,16 +13,16 @@ There are a lot of things we need help with right off the bat, to get your feet 
 * Many more type annotations are desired. Type issues cause lots of bugs.
 * Fewer Pylint warnings
 * Better documentation
-* Additional relevance to thermal reactors
 * Better test coverage
 * Targeted speedups (e.g. informed by a profiler)
+* Additional relevance to thermal reactors
 
 Naturally, we encourage other kinds of contributions as well.
 
 ## Testing
 
 Any contribution must pass all included unit tests. The tests are built and run with the
-pytest system. Please add new tests if you add new functionality. You can generally just run
+`pytest` system. Please add new tests if you add new functionality. You can generally just run
 `tox` to build the testing environment and execute all the tests and pylint checks.
 
 ## Submitting changes

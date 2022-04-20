@@ -41,7 +41,6 @@ Examples
     representativeBlockList = csm.representativeBlocks.values()
     blockThatRepresentsBA = csm.representativeBlocks['BA']
 
-
 The class diagram is provided in `xsgm-class-diagram`_
 
 .. _xsgm-class-diagram:
@@ -53,21 +52,21 @@ The class diagram is provided in `xsgm-class-diagram`_
 
     Class inheritance diagram for :py:mod:`crossSectionGroupManager`.
 """
+import collections
 import copy
 import os
 import shutil
 import string
-import collections
 
 import numpy
 
-import armi
-from armi import runLog
+from armi import context
 from armi import interfaces
-from armi.reactor.flags import Flags
-from armi.reactor.components import basicShapes
-from armi.utils.units import TRACE_NUMBER_DENSITY
+from armi import runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.reactor.components import basicShapes
+from armi.reactor.flags import Flags
+from armi.utils.units import TRACE_NUMBER_DENSITY
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
@@ -731,7 +730,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _copyPregeneratedXSFile(self, xsID):
         # stop a race condition to copy files between all processors
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return
 
         for xsFileLocation, xsFileName in self._getPregeneratedXsFileLocationData(xsID):

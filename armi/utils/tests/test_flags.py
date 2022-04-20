@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Testing flags.py
-"""
+r""" Testing flags.py"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 
@@ -26,9 +25,7 @@ class ExampleFlag(Flag):
 
 
 class TestFlag(unittest.TestCase):
-    """
-    Tests for the utility Flag class and cohorts.
-    """
+    """Tests for the utility Flag class and cohorts."""
 
     def test_auto(self):
         """
@@ -74,9 +71,7 @@ class TestFlag(unittest.TestCase):
         self.assertEqual(f, f2)
 
     def test_collision(self):
-        """
-        Make sure that we catch value collisions
-        """
+        """Make sure that we catch value collisions"""
         with self.assertRaises(AssertionError):
 
             class F(Flag):  # pylint: disable=unused-variable
@@ -94,9 +89,7 @@ class TestFlag(unittest.TestCase):
         self.assertFalse(ExampleFlag.BAR in f)
 
     def test_bitwise(self):
-        """
-        Make sure that bitwise operators work right
-        """
+        """Make sure that bitwise operators work right"""
         f = ExampleFlag.FOO | ExampleFlag.BAR
         self.assertTrue(f & ExampleFlag.FOO)
         self.assertTrue(f & ExampleFlag.BAR)
@@ -115,9 +108,7 @@ class TestFlag(unittest.TestCase):
         self.assertEqual(f2 ^ f, ExampleFlag.BAR | ExampleFlag.BAZ)
 
     def test_iteration(self):
-        """
-        we want to be able to iterate over set flags
-        """
+        """we want to be able to iterate over set flags"""
         f = ExampleFlag.FOO | ExampleFlag.BAZ
         flagsOn = [val for val in f]
         self.assertIn(ExampleFlag.FOO, flagsOn)
@@ -131,3 +122,7 @@ class TestFlag(unittest.TestCase):
 
     def test_getitem(self):
         self.assertEqual(ExampleFlag["FOO"], ExampleFlag.FOO)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -14,21 +14,19 @@
 import pathlib
 import webbrowser
 
-import armi
-from armi.cli import entryPoint
-from armi.reactor import reactors
-from armi.utils import runLog
+from armi import getPluginManagerOrFail
 from armi import settings
-from armi.utils import directoryChangers
-from armi.reactor import blueprints
 from armi.bookkeeping import newReports as reports
 from armi.bookkeeping.db import databaseFactory
+from armi.cli import entryPoint
+from armi.reactor import blueprints
+from armi.reactor import reactors
+from armi.utils import directoryChangers
+from armi.utils import runLog
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
-    """
-    Create report from database files.
-    """
+    """Create report from database files."""
 
     name = "report"
     settingsArgument = "optional"
@@ -100,7 +98,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
 
         else:
             report = reports.ReportContent("Overview")
-            pm = armi.getPluginManagerOrFail()
+            pm = getPluginManagerOrFail()
             db = databaseFactory(self.args.h5db, "r")
             if self.args.bp is not None:
                 blueprint = self.args.bp
@@ -116,14 +114,12 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         blueprint = db.loadBlueprints()
                     r = reactors.factory(cs, blueprint)
                     report.title = r.name
-                    pluginContent = (
-                        armi.getPluginManagerOrFail().hook.getReportContents(
-                            r=r,
-                            cs=cs,
-                            report=report,
-                            stage=reports.ReportStage.Begin,
-                            blueprint=blueprint,
-                        )
+                    pluginContent = getPluginManagerOrFail().hook.getReportContents(
+                        r=r,
+                        cs=cs,
+                        report=report,
+                        stage=reports.ReportStage.Begin,
+                        blueprint=blueprint,
                     )
                     stage = reports.ReportStage.Standard
                     for cycle, node in dbNodes:
@@ -164,7 +160,6 @@ def createReportFromSettings(cs):
     This will construct a reactor from the given settings and create BOL reports for
     that reactor/settings.
     """
-
     # not sure if this is necessary, but need to investigate more to understand possible
     # side-effects before removing. Probably better to get rid of all uses of
     # getMasterCs(), then we can remove all setMasterCs() calls without worrying.
@@ -173,7 +168,7 @@ def createReportFromSettings(cs):
     blueprint = blueprints.loadFromCs(cs)
     r = reactors.factory(cs, blueprint)
     report = reports.ReportContent("Overview")
-    pm = armi.getPluginManagerOrFail()
+    pm = getPluginManagerOrFail()
     report.title = r.name
 
     with directoryChangers.ForcedCreationDirectoryChanger(

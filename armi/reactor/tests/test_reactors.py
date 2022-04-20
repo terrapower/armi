@@ -269,6 +269,12 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(numControlBlocks, 3)
 
     def test_countFuelAxialBlocks(self):
+        """Tests that the users definition of fuel blocks is preserved.
+
+        .. test:: Tests that the users definition of fuel blocks is preserved.
+            :id: TEST_REACTOR_2
+            :links: REQ_REACTOR
+        """
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
         self.assertEqual(numFuelBlocks, 3)
 
@@ -398,7 +404,6 @@ class HexReactorTests(ReactorTests):
         assert_allclose(expectedPoints, radPoints)
 
     def test_findNeighbors(self):
-
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
@@ -521,6 +526,12 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(a1, a3)
 
     def test_countAssemblies(self):
+        """Tests that the users definition of assemblies is preserved.
+
+        .. test:: Tests that the users definition of assembilies is preserved.
+            :id: TEST_REACTOR_3
+            :links: REQ_REACTOR
+        """
         nFuel = self.r.core.countAssemblies(Flags.FUEL)
         self.assertEqual(2, nFuel)
         nFuel_r3 = self.r.core.countAssemblies(Flags.FUEL, ring=3)
@@ -738,6 +749,16 @@ class HexReactorTests(ReactorTests):
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
+
+    def test_getAvgTemp(self):
+        t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
+        self.assertAlmostEqual(t0, 459.267, delta=0.01)
+
+        t1 = self.r.core.getAvgTemp([Flags.CLAD, Flags.FUEL])
+        self.assertAlmostEqual(t1, 545.043, delta=0.01)
+
+        t2 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT, Flags.FUEL])
+        self.assertAlmostEqual(t2, 521.95269, delta=0.01)
 
 
 class CartesianReactorTests(ReactorTests):

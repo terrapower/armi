@@ -173,7 +173,13 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
 
 class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
-    """Base Blueprintsobject representing all the subsections in the input file."""
+    """
+    Base Blueprintsobject representing all the subsections in the input file.
+
+    .. impl:: ARMI represents a user-specified reactor by providing a "Blueprint" YAML interface.
+        :id: IMPL_REACTOR_0
+        :links: REQ_REACTOR
+    """
 
     nuclideFlags = yamlize.Attribute(
         key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
