@@ -98,7 +98,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self.convReactor.core.updateAxialMesh()
         self._checkConversion()
         endTime = timer()
-        runLog.extra(f"Reactor core conversion time: {startTime-endTime} seconds")
+        runLog.extra(f"Reactor core conversion time: {endTime-startTime} seconds")
         return self.convReactor
 
     def _checkConversion(self):
