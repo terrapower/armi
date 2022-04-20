@@ -135,6 +135,8 @@ autodoc_default_options = {
     "private-members": False,
 }
 autodoc_member_order = "bysource"
+# this line removes huge numbers of false and misleading, inherited docstrings
+autodoc_inherit_docstrings = False
 autoclass_content = "both"
 
 apidoc_module_dir = SOURCE_DIR
