@@ -37,6 +37,7 @@ face-map xml files.
 import tabulate
 import yamlize
 
+from armi import getPluginManagerOrFail
 from armi import context
 from armi import runLog
 from armi.reactor import geometry
@@ -80,7 +81,7 @@ class SystemBlueprint(yamlize.Object):
         # It is assumed that the number of systems is currently low enough to justify
         # this structure.
 
-        manager = armi.getPluginManagerOrFail()
+        manager = getPluginManagerOrFail()
 
         # Only need this to handle the case we don't find the system we expect
         seen = set()
