@@ -391,8 +391,37 @@ class TestDatabase3(unittest.TestCase):
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
+    def test_fileName(self):
+        # test the file name getter
+        self.assertEqual(str(self.db.fileName), "test_fileName.h5")
 
-class Test_LocationPacking(unittest.TestCase):
+        # test the file name setter
+        self.db.close()
+        self.db.fileName = "thing.h5"
+        self.assertEqual(str(self.db.fileName), "thing.h5")
+
+    def test_readInputsFromDB(self):
+        inputs = self.db.readInputsFromDB()
+        self.assertEqual(len(inputs), 3)
+
+        self.assertGreater(len(inputs[0]), 100)
+        self.assertIn("metadata:", inputs[0])
+        self.assertIn("settings:", inputs[0])
+
+        self.assertEqual(len(inputs[1]), 0)
+
+        self.assertGreater(len(inputs[2]), 100)
+        self.assertIn("custom isotopics:", inputs[2])
+        self.assertIn("blocks:", inputs[2])
+
+    def test_deleting(self):
+        self.assertEqual(type(self.db), database3.Database3)
+        del self.db
+
+        self.db = self.dbi.database
+
+
+class TestLocationPacking(unittest.TestCase):
     r"""Tests for database location"""
 
     def test_locationPacking(self):
@@ -441,5 +470,4 @@ class Test_LocationPacking(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestDatabase3.test_splitDatabase"]
     unittest.main()
