@@ -151,7 +151,7 @@ def resolveMarkupInclusions(
     -----
     While the use of ``!include`` appears as though it would invoke some sort of special
     custom YAML constructor code, this does not do that. Processing these inclusions as
-    part of the document parsing/composition that comes with pyyaml or ruamel.yaml could
+    part of the document parsing/composition that comes with ruamel.yaml could
     work, but has a number of prohibitive drawbacks (or at least reasons why it might
     not be worth doing). Using a custom constructor is more-or-less supported by
     ruamel.yaml (which we do use, as it is what underpins the yamlize package), but it

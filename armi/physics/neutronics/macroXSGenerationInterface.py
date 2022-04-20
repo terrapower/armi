@@ -20,12 +20,12 @@ Converts microscopic cross sections to macroscopic cross sections by multiplying
     \Sigma_i = N_i \sigma_i
 
 """
-import armi
-from armi import runLog
+from armi import context
 from armi import interfaces
 from armi import mpiActions
-from armi.utils import iterables
+from armi import runLog
 from armi.nuclearDataIO import xsCollections
+from armi.utils import iterables
 
 
 class MacroXSGenerator(mpiActions.MpiAction):
@@ -54,7 +54,7 @@ class MacroXSGenerator(mpiActions.MpiAction):
         # logic here gets messy due to all the default arguments in the calling
         # method. There exists a large number of permutations to be handled.
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             allBlocks = self.blocks
             if allBlocks is None:
                 allBlocks = self.r.core.getBlocks()
@@ -69,10 +69,10 @@ class MacroXSGenerator(mpiActions.MpiAction):
             self.buildScatterMatrix, self.buildOnlyCoolant
         )
 
-        if armi.MPI_SIZE > 1:
+        if context.MPI_SIZE > 1:
             myBlocks = _scatterList(allBlocks)
 
-            lib = armi.MPI_COMM.bcast(lib, root=0)
+            lib = context.MPI_COMM.bcast(lib, root=0)
 
             myMacros = [
                 mc.createMacrosFromMicros(lib, b, libType=self.libType)
@@ -87,7 +87,7 @@ class MacroXSGenerator(mpiActions.MpiAction):
                 for b in allBlocks
             ]
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             for b, macro in zip(allBlocks, allMacros):
                 b.macros = macro
 
@@ -119,7 +119,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
         """
         Builds block-level macroscopic cross sections for making diffusion equation matrices.
 
-        This will use MPI if armi.MPI_SIZE > 1
+        This will use MPI if armi.context.MPI_SIZE > 1
 
         Builds G-vectors of the basic XS ('nGamma','fission','nalph','np','n2n','nd','nt')
         Builds GxG matrices for scatter matrices
@@ -163,15 +163,15 @@ class MacroXSGenerationInterface(interfaces.Interface):
 
 
 def _scatterList(lst):
-    if armi.MPI_RANK == 0:
-        chunked = iterables.split(lst, armi.MPI_SIZE)
+    if context.MPI_RANK == 0:
+        chunked = iterables.split(lst, context.MPI_SIZE)
     else:
         chunked = None
-    return armi.MPI_COMM.scatter(chunked, root=0)
+    return context.MPI_COMM.scatter(chunked, root=0)
 
 
 def _gatherList(localList):
-    globalList = armi.MPI_COMM.gather(localList, root=0)
-    if armi.MPI_RANK == 0:
+    globalList = context.MPI_COMM.gather(localList, root=0)
+    if context.MPI_RANK == 0:
         globalList = iterables.flatten(globalList)
     return globalList

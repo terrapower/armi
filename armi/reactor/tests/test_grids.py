@@ -194,6 +194,13 @@ class TestGrid(unittest.TestCase):
 
 
 class TestHexGrid(unittest.TestCase):
+    """A set of tests for the Hexagonal Grid
+
+    .. test: Tests of the Hexagonal grid.
+       :id: TEST_REACTOR_MESH_0
+       :link: REQ_REACTOR_MESH
+    """
+
     def testPositions(self):
         grid = grids.HexGrid.fromPitch(1.0)
         side = 1.0 / math.sqrt(3)
@@ -401,6 +408,13 @@ class TestBoundsDefinedGrid(unittest.TestCase):
 
 
 class TestThetaRZGrid(unittest.TestCase):
+    """A set of tests for the RZTheta Grid
+
+    .. test: Tests of the RZTheta grid.
+       :id: TEST_REACTOR_MESH_1
+       :link: REQ_REACTOR_MESH
+    """
+
     def testPositions(self):
         grid = grids.ThetaRZGrid(
             bounds=(numpy.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30])
@@ -417,6 +431,13 @@ class TestThetaRZGrid(unittest.TestCase):
 
 
 class TestCartesianGrid(unittest.TestCase):
+    """A set of tests for the Cartesian Grid
+
+    .. test: Tests of the Cartesian grid.
+       :id: TEST_REACTOR_MESH_2
+       :link: REQ_REACTOR_MESH
+    """
+
     def testRingPosNoSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, isOffset=True)
 

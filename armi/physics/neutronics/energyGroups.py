@@ -15,14 +15,15 @@
 Energy group structures for multigroup neutronics calculations.
 """
 
-import itertools
 import copy
+import itertools
 import math
 
 import numpy
 
 from armi import utils
 from armi import runLog
+from armi.utils.mathematics import findNearestValue
 from .const import (
     FAST_FLUX_THRESHOLD_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
@@ -32,10 +33,7 @@ from .const import (
 
 
 def getFastFluxGroupCutoff(eGrpStruc):
-    """
-    Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold.
-    """
-
+    """Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold."""
     gThres = -1
     for g, eV in enumerate(eGrpStruc):
         if eV < FAST_FLUX_THRESHOLD_EV:
@@ -302,9 +300,7 @@ def _create_multigroup_structures_on_finegroup_energies(
     modifiedEnergyBounds = set()
     modifiedEnergyBounds.add(max(finegroup_energy_bounds))
     for energyBound in multigroup_energy_bounds[1:]:
-        modifiedEnergyBounds.add(
-            utils.findNearestValue(finegroup_energy_bounds, energyBound)
-        )
+        modifiedEnergyBounds.add(findNearestValue(finegroup_energy_bounds, energyBound))
 
     return sorted(modifiedEnergyBounds, reverse=True)
 

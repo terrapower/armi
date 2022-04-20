@@ -38,7 +38,6 @@ include armi/nuclearDataIO/tests/library-file-generation/mc2v3-dlayxs.inp
 include armi/nuclearDataIO/tests/longLivedRipleData.dat
 include armi/nuclearDataIO/tests/simple_hexz.inp
 include armi/nuclearDataIO/tests/z036.dat
-include armi/settings/tests/old_xml_settings_input.xml
 include armi/tests/1DslabXSByCompTest.yaml
 include armi/tests/armiRun-SHUFFLES.txt
 include armi/tests/armiRun.yaml

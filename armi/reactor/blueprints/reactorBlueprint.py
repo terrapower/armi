@@ -37,7 +37,7 @@ face-map xml files.
 import tabulate
 import yamlize
 
-import armi
+from armi import context
 from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -135,7 +135,7 @@ class SystemBlueprint(yamlize.Object):
             self.origin.x, self.origin.y, self.origin.z, None
         )
         system.spatialLocator = spatialLocator
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             # on non-master nodes we don't bother building up the assemblies
             # because they will be populated with DistributeState.
             return None

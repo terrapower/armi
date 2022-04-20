@@ -23,9 +23,11 @@ is impossible. Would you like to switch to ___?"
 """
 import os
 
-import armi
+from armi import context
+from armi import getPluginManagerOrFail
 from armi import runLog, settings, utils
 from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
@@ -89,7 +91,7 @@ class Query:
 
     def resolve(self):
         """Standard i/o prompt for resolution of an individual query"""
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return
 
         if self.condition():
@@ -165,7 +167,7 @@ class Inspector:
 
         # Gather and attach validators from all plugins
         # This runs on all registered plugins, not just active ones.
-        pluginQueries = armi.getPluginManagerOrFail().hook.defineSettingsValidators(
+        pluginQueries = getPluginManagerOrFail().hook.defineSettingsValidators(
             inspector=self
         )
         for queries in pluginQueries:
@@ -185,7 +187,7 @@ class Inspector:
         RuntimeError
             When a programming error causes queries to loop.
         """
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return False
 
         # the following attribute changes will alter what the queries investigate when
@@ -310,13 +312,6 @@ class Inspector:
         """Check settings for inconsistencies."""
         # import here to avoid cyclic issues
         from armi import operators
-
-        self.addQuery(
-            lambda: self.cs.path.endswith(".xml"),
-            "Your settings were loaded from a XML file. These are being converted to yaml files.",
-            "Would you like to auto-convert it to YAML?",
-            lambda: settings.convertSettingsFromXMLToYaml(self.cs),
-        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -463,7 +458,7 @@ class Inspector:
 
         def _factorsAreValid(factors, maxVal=1.0):
             try:
-                expandedList = utils.expandRepeatedFloats(factors)
+                expandedList = expandRepeatedFloats(factors)
             except (ValueError, IndexError):
                 return False
             return (
@@ -527,8 +522,8 @@ class Inspector:
         def decayCyclesHaveInputThatWillBeIgnored():
             """Check if there is any decay-related input that will be ignored."""
             try:
-                powerFracs = utils.expandRepeatedFloats(self.cs["powerFractions"])
-                availabilities = utils.expandRepeatedFloats(
+                powerFracs = expandRepeatedFloats(self.cs["powerFractions"])
+                availabilities = expandRepeatedFloats(
                     self.cs["availabilityFactors"]
                 ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
             except:  # pylint: disable=bare-except

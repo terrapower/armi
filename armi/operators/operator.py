@@ -21,24 +21,27 @@ certain number of cycles with a certain number of timenodes per cycle.
 This is analogous to a real reactor operating over some period of time,
 often from initial startup, through the various cycles, and out to
 the end of plant life.
-"""
-import time
-import shutil
-import re
-import os
 
-import armi
+.. impl:: ARMI controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
+   :id: IMPL_EVOLVING_STATE_0
+   :links: REQ_EVOLVING_STATE
+"""
+import os
+import re
+import shutil
+import time
+
 from armi import context
+from armi import interfaces
 from armi import runLog
-from armi.bookkeeping import memoryProfiler
-from armi import utils
-from armi.utils import codeTiming
-from armi.utils import pathTools
 from armi import settings
+from armi.bookkeeping import memoryProfiler
+from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
-from armi import interfaces
-from armi.bookkeeping.report import reportingUtils
+from armi.utils import codeTiming
+from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Operator:  # pylint: disable=too-many-public-methods
@@ -142,19 +145,19 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def _getCycleLengths(self):
         """Return the cycle length for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["cycleLengths"]) or (
+        return expandRepeatedFloats(self.cs["cycleLengths"]) or (
             [self.cs["cycleLength"]] * self.cs["nCycles"]
         )
 
     def _getAvailabilityFactors(self):
         """Return the availability factors (capacity factor) for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["availabilityFactors"]) or (
+        return expandRepeatedFloats(self.cs["availabilityFactors"]) or (
             [self.cs["availabilityFactor"]] * self.cs["nCycles"]
         )
 
     def _getPowerFractions(self):
         """Return the power fractions for each cycle of the system as a list."""
-        return utils.expandRepeatedFloats(self.cs["powerFractions"]) or (
+        return expandRepeatedFloats(self.cs["powerFractions"]) or (
             [1.0 for _cl in self.cycleLengths]
         )
 
@@ -202,7 +205,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
-            if armi.MPI_RANK == 0:
+            if context.MPI_RANK == 0:
                 runLog.header("=========== Interface Stack Summary  ===========")
                 runLog.info(reportingUtils.getInterfaceStackSummary(self))
                 self.interactAllInit()
@@ -419,7 +422,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
-        allInterfaces = self.interfaces[:]  ## copy just in case
+        allInterfaces = self.interfaces[:]  # copy just in case
         self._interactAll("Init", allInterfaces)
 
     def interactAllBOL(self, excludedInterfaceNames=()):
@@ -919,7 +922,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         newFolder = "snapShot{0}_{1}".format(cycle, node)
         if os.path.exists(newFolder):
             runLog.important("Deleting existing snapshot data in {0}".format(newFolder))
-            utils.pathTools.cleanPath(newFolder)  # careful with cleanPath!
+            pathTools.cleanPath(newFolder)  # careful with cleanPath!
             # give it a minute.
             time.sleep(1)
 

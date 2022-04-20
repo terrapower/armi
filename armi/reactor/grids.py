@@ -384,9 +384,7 @@ class IndexLocation(LocationBase):
         return self.grid.getSymmetricEquivalents(self.indices)
 
     def distanceTo(self, other) -> float:
-        """
-        Return the distance from this locator to another.
-        """
+        """Return the distance from this locator to another."""
         return math.sqrt(
             (
                 (
@@ -623,6 +621,10 @@ class Grid:
 
     * Unit step calculations use dot products and must not be polluted by the bound
       indices. Thus we reduce the size of the unitSteps tuple accordingly.
+
+    .. impl:: ARMI supports a number of structured mesh options.
+       :id: IMPL_REACTOR_MESH_0
+       :links: REQ_REACTOR_MESH
     """
 
     def __init__(
@@ -1147,6 +1149,9 @@ class CartesianGrid(Grid):
         Note that ring 1 has four locations, and that the center of the (0, 0)-index
         location is offset from the origin.
 
+    .. impl:: ARMI supports a Cartesian mesh.
+       :id: IMPL_REACTOR_MESH_1
+       :links: REQ_REACTOR_MESH
     """
 
     @classmethod
@@ -1382,6 +1387,10 @@ class HexGrid(Grid):
             (-1, 1) ( 0, 0) ( 1,-1)
 
                 (-1, 0) ( 0,-1)
+
+    .. impl:: ARMI supports a Hexagonal mesh.
+       :id: IMPL_REACTOR_MESH_2
+       :links: REQ_REACTOR_MESH
     """
 
     @staticmethod
@@ -1749,6 +1758,10 @@ class ThetaRZGrid(Grid):
     meshes.
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
+
+    .. impl:: ARMI supports an RZTheta mesh.
+       :id: IMPL_REACTOR_MESH_3
+       :links: REQ_REACTOR_MESH
     """
 
     @staticmethod

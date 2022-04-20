@@ -22,6 +22,10 @@ jobs:
         run: sudo apt-get -y install libopenmpi-dev
       - name: Install Tox and any other packages
         run: pip install tox
-      - name: Run Tox
-        run: tox -e cov,report
+      - name: Run Coverage Part 1
+        if: always()
+        run: tox -e cov1 || true
+      - name: Run Coverage Part 2
+        if: always()
+        run: tox -e cov2,report
 

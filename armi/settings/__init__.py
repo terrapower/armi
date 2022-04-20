@@ -136,12 +136,11 @@ def promptForSettingsFile(choice=None):
     Parameters
     ----------
     choice : int, optional
-        The item in the list of valid XML files to load
-
+        The item in the list of valid YAML files to load
     """
     runLog.info("Welcome to the ARMI Loader")
     runLog.info("Scanning for ARMI settings files...")
-    files = sorted(glob.glob("*.yaml") + glob.glob("*.xml"))  # phase out xml later
+    files = sorted(glob.glob("*.yaml"))
     if not files:
         runLog.info(
             "No eligible settings files found. Creating settings without choice"
@@ -185,33 +184,3 @@ def setMasterCs(cs):
     """
     Settings.instance = cs
     runLog.debug("Master cs set to {} with ID: {}".format(cs, id(cs)))
-
-
-def convertSettingsFromXMLToYaml(cs):
-    if not cs.path.endswith(".xml"):
-        raise ValueError("Can only convert XML files")
-
-    old = cs.path
-    oldCopy = old + "-converted"
-    newNameBase, _ext = os.path.splitext(old)
-    newName = newNameBase + ".yaml"
-    counter = 0
-    while os.path.exists(newName):
-        # don't overwrite anything
-        newName = "{}{}.yaml".format(newNameBase, counter)
-        counter += 1
-    if counter:
-        runLog.warning(
-            "{} already exists in YAML format; writing {} instead".format(
-                newNameBase, newName
-            )
-        )
-
-    runLog.info(
-        "Converting {} to new YAML format. Old copy will remain intact as {}".format(
-            old, oldCopy
-        )
-    )
-    cs.writeToYamlFile(newName)
-    cs.path = newName
-    shutil.move(old, oldCopy)

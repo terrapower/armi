@@ -16,30 +16,31 @@ r"""
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports
 """
-import re
-import os
 import collections
+import os
 import pathlib
-import textwrap
+import re
 import sys
-import time
 import tabulate
+import textwrap
+import time
 from copy import copy
 
 import numpy
 
-import armi
-from armi import runLog
-from armi import utils
-from armi.utils import iterables
-from armi.utils import units
-from armi.utils import textProcessors
-from armi.utils import plotting
+from armi import context
 from armi import interfaces
+from armi import runLog
 from armi.bookkeeping import report
-from armi.reactor.flags import Flags
-from armi.reactor.components import ComponentType
 from armi.operators import RunTypes
+from armi.reactor.components import ComponentType
+from armi.reactor.flags import Flags
+from armi.utils import getFileSHA1Hash
+from armi.utils import iterables
+from armi.utils import plotting
+from armi.utils import textProcessors
+from armi.utils import units
+from armi.utils.mathematics import findClosest
 
 
 # Set to prevent the image and text from being too small to read.
@@ -73,13 +74,13 @@ def writeWelcomeHeaders(o, cs):
                 Operator_TypeOfRun,
                 "{} - {}".format(cs["runType"], o.__class__.__name__),
             ),
-            (Operator_CurrentUser, armi.USER),
-            (Operator_ArmiCodebase, armi.ROOT),
+            (Operator_CurrentUser, context.USER),
+            (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
             (Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
-            (Operator_NumProcessors, armi.MPI_SIZE),
-            (Operator_Date, armi.START_TIME),
+            (Operator_NumProcessors, context.MPI_SIZE),
+            (Operator_Date, context.START_TIME),
         ]
 
         runLog.header("=========== Case Information ===========")
@@ -131,7 +132,7 @@ def writeWelcomeHeaders(o, cs):
             shaHash = (
                 "MISSING"
                 if (not fName or not os.path.exists(fName))
-                else utils.getFileSHA1Hash(fName, digits=10)
+                else getFileSHA1Hash(fName, digits=10)
             )
             inputInfo.append((label, fName, shaHash))
 
@@ -154,8 +155,8 @@ def writeWelcomeHeaders(o, cs):
 
     def _writeMachineInformation():
         """Create a table that contains basic machine and rank information."""
-        if armi.MPI_SIZE > 1:
-            processorNames = armi.MPI_NODENAMES
+        if context.MPI_SIZE > 1:
+            processorNames = context.MPI_NODENAMES
             uniqueNames = set(processorNames)
             nodeMappingData = []
             for uniqueName in uniqueNames:
@@ -195,7 +196,7 @@ def writeWelcomeHeaders(o, cs):
         runLog.header("=========== Reactor Cycle Information ===========")
         runLog.info(tabulate.tabulate(operatingData, tablefmt="armi"))
 
-    if armi.MPI_RANK > 0:
+    if context.MPI_RANK > 0:
         return  # prevent the worker nodes from printing the same thing
 
     _writeCaseInformation(o, cs)
@@ -382,7 +383,7 @@ def writeCycleSummary(core):
     core:  armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    ## would io be worth considering for this?
+    # would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
     runLog.important("Cycle {0} Summary:".format(cycle))
@@ -402,7 +403,6 @@ def setNeutronBalancesReport(core):
     core  : armi.reactor.reactors.Core
 
     """
-
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
             "No rate information (rateCap, rateAbs, etc.) available "
@@ -582,7 +582,7 @@ def summarizePower(core):
 
     # calculate total power
     tot = sum(sums.values()) or float("inf")
-    ## NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
+    # NOTE: if tot is 0.0, set to infinity to prevent ZeroDivisionError
 
     runLog.important("Power summary")
     for atype, val in sums.items():
@@ -649,9 +649,8 @@ def summarizeZones(core, cs):
     peakAssem = highPow[peakIndex]
 
     avgPFrac = sum(pFracList) / len(pFracList)  # true mean power fraction
-    _avgAssemPFrac, avgIndex = utils.findClosest(
-        pFracList, avgPFrac, indx=True
-    )  # the closest-to-average pfrac in the list
+    # the closest-to-average pfrac in the list
+    _avgAssemPFrac, avgIndex = findClosest(pFracList, avgPFrac, indx=True)
     avgAssem = highPow[avgIndex]  # the actual average assembly
 
     # ok, now need counts, and peak and avg. flow and power in high power region.
@@ -870,7 +869,6 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     )
 
 
-## Block Design Report
 def makeBlockDesignReport(r):
     r"""Summarize the block designs from the loading file
 
