@@ -229,7 +229,7 @@ class Case:
         This is a convenient way for a plugin to express a dependency. It uses the
         ``match.groupdict`` functionality to pull the directory and case name out of a
         specific setting value an regular expression.
-        
+
         Parameters
         ----------
         settingValue : str
