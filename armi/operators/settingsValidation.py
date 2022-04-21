@@ -23,7 +23,8 @@ is impossible. Would you like to switch to ___?"
 """
 import os
 
-import armi
+from armi import context
+from armi import getPluginManagerOrFail
 from armi import runLog, settings, utils
 from armi.utils import pathTools
 from armi.utils.mathematics import expandRepeatedFloats
@@ -90,7 +91,7 @@ class Query:
 
     def resolve(self):
         """Standard i/o prompt for resolution of an individual query"""
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return
 
         if self.condition():
@@ -166,7 +167,7 @@ class Inspector:
 
         # Gather and attach validators from all plugins
         # This runs on all registered plugins, not just active ones.
-        pluginQueries = armi.getPluginManagerOrFail().hook.defineSettingsValidators(
+        pluginQueries = getPluginManagerOrFail().hook.defineSettingsValidators(
             inspector=self
         )
         for queries in pluginQueries:
@@ -186,7 +187,7 @@ class Inspector:
         RuntimeError
             When a programming error causes queries to loop.
         """
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return False
 
         # the following attribute changes will alter what the queries investigate when

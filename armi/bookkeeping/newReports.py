@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import ABC, abstractmethod
 from enum import Enum
 from enum import auto
-import collections
-import shutil
-import os
-import copy
-from typing import Union, Dict
-from abc import ABC, abstractmethod
-import base64
 from operator import itemgetter
+from typing import Union, Dict
+import base64
+import collections
+import copy
+import os
+import shutil
 
-import matplotlib.pyplot as plt
 import htmltree
+import matplotlib.pyplot as plt
 
-import armi.context
+from armi import context
 from armi import runLog
 
 
@@ -56,7 +56,7 @@ class ReportContent:
         )
         header.C.append(
             htmltree.H1(
-                "{} Report".format(armi.context.APP_NAME.capitalize()),
+                "{} Report".format(context.APP_NAME.capitalize()),
                 _class="heading",
                 id="titleFont",
             )

@@ -31,7 +31,7 @@ customizing much of the Framework's behavior.
 from typing import Dict, Optional, Tuple, List
 import collections
 
-from armi import plugins, pluginManager, meta, settings
+from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters
 from armi.settings import Setting
 from armi.settings import fwSettings
@@ -96,10 +96,16 @@ class App:
         self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
 
     @property
+    def version(self) -> str:
+        """Grab the version of this app (defaults to ARMI version).
+
+        NOTE: This is designed to be over-ridable by Application developers.
+        """
+        return meta.__version__
+
+    @property
     def pluginManager(self) -> pluginManager.ArmiPluginManager:
-        """
-        Return the App's PluginManager.
-        """
+        """Return the App's PluginManager."""
         return self._pm
 
     def getSettings(self) -> Dict[str, Setting]:
@@ -221,19 +227,37 @@ class App:
         Return a textual splash screen.
 
         Specific applications will want to customize this, but by default the ARMI one
-        is produced.
+        is produced, with extra data on the App name and version, if available.
         """
-        # Don't move the triple quotes from the beginning of the line
-        return r"""
-                       ---------------------------------------------------
-                      |             _      ____     __  __    ___         |
-                      |            / \    |  _ \   |  \/  |  |_ _|        |
-                      |           / _ \   | |_) |  | |\/| |   | |         |
-                      |          / ___ \  |  _ <   | |  | |   | |         |
-                      |         /_/   \_\ |_| \_\  |_|  |_|  |___|        |
-                      |         Advanced  Reactor  Modeling Interface     |
-                       ---------------------------------------------------
-                                            Version {0:10s}
-""".format(
+        # typical ARMI splash text
+        splash = r"""
++===================================================+
+|            _      ____     __  __    ___          |
+|           / \    |  _ \   |  \/  |  |_ _|         |
+|          / _ \   | |_) |  | |\/| |   | |          |
+|         / ___ \  |  _ <   | |  | |   | |          |
+|        /_/   \_\ |_| \_\  |_|  |_|  |___|         |
+|        Advanced  Reactor  Modeling Interface      |
+|                                                   |
+|                    version {0:10s}             |
+|                                                   |""".format(
             meta.__version__
         )
+
+        # add the name/version of the current App, if it's not the default
+        if context.APP_NAME != "armi":
+            # pylint: disable=import-outside-toplevel # avoid cyclic import
+            from armi import getApp
+
+            splash += r"""
+|---------------------------------------------------|
+|   {0:>17s} app version {1:10s}        |""".format(
+                context.APP_NAME, getApp().version
+            )
+
+        # bottom border of the splash
+        splash += r"""
++===================================================+
+"""
+
+        return splash

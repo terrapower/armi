@@ -247,6 +247,60 @@ class TestDatabaseReading(unittest.TestCase):
         del cls.r
         cls.r = None
 
+    def test_growToFullCore(self):
+        with Database3(self.dbName, "r") as db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(None)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
+    def test_growToFullCoreWithCS(self):
+        with Database3(self.dbName, "r") as db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(self.cs)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
+    def test_growToFullCoreFromFactory(self):
+        from armi.bookkeeping.db import databaseFactory
+
+        db = databaseFactory(self.dbName, "r")
+        with db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(None)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
+    def test_growToFullCoreFromFactoryWithCS(self):
+        from armi.bookkeeping.db import databaseFactory
+
+        db = databaseFactory(self.dbName, "r")
+        with db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(self.cs)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
     def test_readWritten(self):
         with Database3(self.dbName, "r") as db:
             r2 = db.load(0, 0, self.cs, self.bp)

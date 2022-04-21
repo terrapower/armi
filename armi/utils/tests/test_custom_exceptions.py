@@ -16,7 +16,7 @@ r"""Basic tests of the custom exceptions
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,invalid-name
 import unittest
 
-import armi
+from armi import context
 from armi.tests import mockRunLogs
 from armi.utils.customExceptions import info, important
 from armi.utils.customExceptions import warn, warn_when_root
@@ -63,6 +63,8 @@ class CustomExceptionTests(unittest.TestCase):
         return "warning from root".format()
 
     def test_warn_when_root_decorator(self):
+        import armi  # pylint: disable=import-outside-toplevel
+
         with mockRunLogs.BufferLog() as mock:
             for ii in range(1, 4):
                 self.exampleWarnWhenRootMessage()
