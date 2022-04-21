@@ -505,7 +505,7 @@ class ExpansionData:
         - To-Do: allow users to specify target component for a block in settings
         """
         for b in self._a:
-            if b.hasFlags(Flags.PLENUM):
+            if b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.specifyTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
                 self.specifyTargetComponent(b, Flags.COOLANT)

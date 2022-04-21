@@ -398,6 +398,49 @@ class TestConservation(Base, unittest.TestCase):
                 msg="Conservation of steel mass failed on time step {0:d}".format(idt),
             )
 
+    def test_NoMovementACLP(self):
+        """ensures that above core load pad (ACLP) does not move during fuel-only expansion"""
+        # build test assembly with ACLP
+        assembly = HexAssembly("testAssemblyType")
+        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid.armiObject = assembly
+        assembly.add(_buildTestBlock("shield", "Fake"))
+        assembly.add(_buildTestBlock("fuel", "Fake"))
+        assembly.add(_buildTestBlock("fuel", "Fake"))
+        assembly.add(_buildTestBlock("plenum", "Fake"))
+        assembly.add(_buildTestBlock("aclp", "Fake"))  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("plenum", "Fake"))
+        assembly.add(_buildDummySodium())
+        assembly.calculateZCoords()
+        assembly.reestablishBlockOrder()
+
+        ## get zCoords for aclp
+        aclp = assembly.getChildrenWithFlags(Flags.ACLP)[0]
+        aclpZTop = aclp.p.ztop
+        aclpZBottom = aclp.p.zbottom
+
+        ## expand fuel
+        # get fuel components
+        cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
+        # 10% growth of fuel components
+        pList = zeros(len(cList)) + 0.01
+        chngr = AxialExpansionChanger(converterSettings={})
+        chngr.setAssembly(assembly)
+        chngr.expansionData.setExpansionFactors(cList, pList)
+        chngr.axiallyExpandAssembly()
+
+        ## do assertion
+        self.assertEqual(
+            aclpZBottom,
+            aclp.p.zbottom,
+            msg="ACLP zbottom has changed. It should not with fuel component only expansion!",
+        )
+        self.assertEqual(
+            aclpZTop,
+            aclp.p.ztop,
+            msg="ACLP ztop has changed. It should not with fuel component only expansion!",
+        )
+
 
 class TestExceptions(Base, unittest.TestCase):
     """Verify exceptions are caught"""
