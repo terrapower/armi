@@ -190,8 +190,6 @@ class TestReportInterface(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             repInt.interactEOL()
-            self.assertIn("Interface Creation", mock._outputStream)
-            self.assertIn("TIMER REPORTS", mock._outputStream)
             self.assertIn("Comprehensive Core Report", mock._outputStream)
             self.assertIn("Assembly Area Fractions", mock._outputStream)
 
