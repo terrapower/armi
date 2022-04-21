@@ -27,7 +27,7 @@ class AxialExpansionChanger:
 
     Attributes
     ----------
-    linked : :py:class:`AssemblyAxialLinkage <armi.reactor.converters.axialExpansionChanger.AssemblyAxialLinkage>` object. # pylint: disable=line-too-long
+    linked : :py:class:`AssemblyAxialLinkage` object.
         establishes object containing axial linkage information
     expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.ExpansionData>` object.
         establishes object to store and access relevant expansion data
