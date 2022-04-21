@@ -126,9 +126,6 @@ class TestReport(unittest.TestCase):
 
 
 class TestReportInterface(unittest.TestCase):
-    def setUp(self):
-        self.test_group = data.Table(settings.getMasterCs(), "banana")
-
     def test_printReports(self):
         """testing printReports method"""
         repInt = reportInterface.ReportInterface(None, None)
