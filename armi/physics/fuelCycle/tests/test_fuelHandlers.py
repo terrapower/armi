@@ -23,6 +23,8 @@ import copy
 import os
 import unittest
 
+import numpy as np
+
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import settings
 from armi.reactor import assemblies
@@ -472,6 +474,48 @@ class TestFuelHandler(ArmiTestHelper):
         fh.simpleAssemblyRotation()
         fh.simpleAssemblyRotation()
         self.assertEqual(b.getRotationNum(), rotNum + 2)
+
+    def test_linPowByPin(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        b = assem.getBlocks(Flags.FUEL)[0]
+
+        b.p.linPowByPin = [1, 2, 3]
+        self.assertEqual(type(b.p.linPowByPin), np.ndarray)
+
+        b.p.linPowByPin = np.array([1, 2, 3])
+        self.assertEqual(type(b.p.linPowByPin), np.ndarray)
+
+    def test_linPowByPinNeutron(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        b = assem.getBlocks(Flags.FUEL)[0]
+
+        b.p.linPowByPinNeutron = [1, 2, 3]
+        self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
+
+        b.p.linPowByPinNeutron = np.array([1, 2, 3])
+        self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
+
+    def test_linPowByPinGamma(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        b = assem.getBlocks(Flags.FUEL)[0]
+
+        b.p.linPowByPinGamma = [1, 2, 3]
+        self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
+
+        b.p.linPowByPinGamma = np.array([1, 2, 3])
+        self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
 
     def test_buReducingAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)

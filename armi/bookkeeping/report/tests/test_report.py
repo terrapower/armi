@@ -94,6 +94,17 @@ class TestReport(unittest.TestCase):
             self.assertIn("No rate information", mock._outputStream)
             mock._outputStream = ""
 
+            r.core.getFirstBlock().p.rateCap = 1.0
+            r.core.getFirstBlock().p.rateProdFis = 1.02
+            r.core.getFirstBlock().p.rateFis = 1.01
+            r.core.getFirstBlock().p.rateAbs = 1.0
+            setNeutronBalancesReport(r.core)
+            self.assertIn("Fission", mock._outputStream)
+            self.assertIn("Capture", mock._outputStream)
+            self.assertIn("Absorption", mock._outputStream)
+            self.assertIn("Leakage", mock._outputStream)
+            mock._outputStream = ""
+
             summarizePinDesign(r.core)
             self.assertIn("Assembly Design Summary", mock._outputStream)
             self.assertIn("Design & component information", mock._outputStream)

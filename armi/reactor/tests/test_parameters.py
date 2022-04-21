@@ -13,6 +13,7 @@
 # limitations under the License.
 """ tests of the Parameters class """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+import copy
 import traceback
 import unittest
 
@@ -182,8 +183,69 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(22, mock.nPlus1)
         self.assertTrue(all(pd.assigned for pd in mock.paramDefs))
 
-    def test_cannotDefineParameterWithSameName(self):
+    def test_setterGetterBasics(self):
+        class Mock(parameters.ParameterCollection):
+            pDefs = parameters.ParameterDefinitionCollection()
+            with pDefs.createBuilder() as pb:
 
+                def n(self, value):
+                    self._p_n = value
+                    self._p_nPlus1 = value + 1
+
+                pb.defParam("n", "units", "description", "location", setter=n)
+
+                def nPlus1(self, value):
+                    self._p_nPlus1 = value
+                    self._p_n = value - 1
+
+                pb.defParam("nPlus1", "units", "description", "location", setter=nPlus1)
+
+        mock = Mock()
+        mock.n = 15
+        mock.nPlus1 = 22
+
+        # basic tests of setters and getters
+        self.assertEqual(mock["n"], 21)
+        self.assertEqual(mock["nPlus1"], 22)
+        with self.assertRaises(parameters.exceptions.UnknownParameterError):
+            _ = mock["fake"]
+        with self.assertRaises(KeyError):
+            _ = mock[123]
+
+        # basic test of __delitem__ method
+        del mock["n"]
+        with self.assertRaises(parameters.exceptions.UnknownParameterError):
+            _ = mock["n"]
+
+        # basic tests of __in__ method
+        self.assertFalse("n" in mock)
+        self.assertTrue("nPlus1" in mock)
+
+        # basic tests of __eq__ method
+        mock2 = copy.deepcopy(mock)
+        self.assertTrue(mock == mock)
+        self.assertFalse(mock == mock2)
+
+        # basic tests of get() method
+        self.assertEqual(mock.get("nPlus1"), 22)
+        self.assertIsNone(mock.get("fake"))
+        self.assertEqual(mock.get("fake", default=333), 333)
+
+        # basic test of values() method
+        vals = mock.values()
+        self.assertEqual(len(vals), 2)
+        self.assertEqual(vals[0], 22)
+
+        # basic test of update() method
+        mock.update({"nPlus1": 100})
+        self.assertEqual(mock.get("nPlus1"), 100)
+
+        # basic test of getSyncData() method
+        data = mock.getSyncData()
+        self.assertEqual(data["n"], 99)
+        self.assertEqual(data["nPlus1"], 100)
+
+    def test_cannotDefineParameterWithSameName(self):
         with self.assertRaises(parameters.ParameterDefinitionError):
 
             class MockParamCollection(parameters.ParameterCollection):
