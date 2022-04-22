@@ -552,7 +552,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0.0,
             label="Reactor Thermal Power (W)",
             description="Nameplate thermal power of the reactor. Can be varied by "
-            "setting the powerFraction setting.",
+            "setting the powerFractions setting.",
         ),
         setting.Setting(
             CONF_REMOVE_PER_CYCLE, default=3, label="Move per cycle", description="None"
