@@ -449,7 +449,7 @@ def setNeutronBalancesReport(core):
         report.NEUT_LOSS,
     )
 
-    runLog.info(report.ALL[report.NEUT_PROD])  # TODO: print in "lite"
+    runLog.info(report.ALL[report.NEUT_PROD])
     runLog.info(report.ALL[report.NEUT_LOSS])
 
 

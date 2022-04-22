@@ -307,6 +307,4 @@ do not use ``super``
     ``__init__``, use ``ParentClass.__init__(self, plus, additional, arguments)``.
 
 do not leave ``TODO`` statements in production code
-    NQA-1 requires that the code be "complete", and a ``TODO`` statement leaves the code looking incomplete.
-    Therefore, do not leave ``TODO`` statements within production code. Instead, open a ticket.
     If your ``TODO`` statement is important, perhaps it should be a GitHub Issue.

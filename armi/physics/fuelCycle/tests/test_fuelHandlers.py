@@ -523,6 +523,7 @@ class TestFuelHandler(ArmiTestHelper):
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+
         # apply dummy pin-level data to allow intelligent rotation
         for b in assem.getBlocks(Flags.FUEL):
             b.breakFuelComponentsIntoIndividuals()
@@ -530,6 +531,7 @@ class TestFuelHandler(ArmiTestHelper):
             b.p.percentBuMaxPinLocation = 10
             b.p.percentBuMax = 5
             b.p.linPowByPin = list(reversed(range(b.getNumPins())))
+
         addSomeDetailAssemblies(hist, [assem])
         rotNum = b.getRotationNum()
         fh.buReducingAssemblyRotation()
