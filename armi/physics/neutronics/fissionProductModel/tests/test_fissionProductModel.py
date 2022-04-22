@@ -29,7 +29,7 @@ class TestFissionProductModel(unittest.TestCase):
     """
 
     def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
+        o = buildOperatorOfEmptyHexBlocks({"cycleLength": 365, "burnSteps": 4})
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         o.removeAllInterfaces()
         o.addInterface(self.fpModel)

@@ -107,6 +107,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
         cs = settings.Settings()
+        cs = cs.modified(newSettings={"burnSteps": 4})
         _o, r = test_reactors.loadTestReactor()
         gfi = MockGlobalFluxInterface(r, cs)
         gfi.interactBOC()
@@ -116,6 +117,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
 
     def test_getIOFileNames(self):
         cs = settings.Settings()
+        cs = cs.modified(newSettings={"burnSteps": 4})
         gfi = MockGlobalFluxInterface(MockReactor(), cs)
         inf, _outf, _stdname = gfi.getIOFileNames(1, 2, 1)
         self.assertEqual(inf, "armi001_2_001.GlobalFlux.inp")
@@ -127,6 +129,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
+        cs = cs.modified(newSettings={"burnSteps": 4})
         _o, cls.r = test_reactors.loadTestReactor()
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)

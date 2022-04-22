@@ -53,6 +53,9 @@ def getSimpleDBOperator(cs):
     newSettings["runType"] = "Standard"
     newSettings["geomFile"] = "geom1Assem.xml"
     newSettings["nCycles"] = 2
+    newSettings["cycleLengths"] = []
+    newSettings["powerFractions"] = []
+    newSettings["availabilityFactors"] = [1.0, 1.0]
     newSettings[CONF_FORCE_DB_PARAMS] = [
         "baseBu",
     ]
@@ -213,8 +216,11 @@ class TestDatabaseReading(unittest.TestCase):
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
-        newSettings["nCycles"] = 2
+        newSettings["nCycles"] = 3
         newSettings["burnSteps"] = 3
+        newSettings["cycleLengths"] = [365.242199, 365.242199, 365.242199]
+        newSettings["powerFractions"] = []
+        newSettings["availabilityFactors"] = [1.0, 1.0, 1.0]
         o, _r = test_reactors.loadTestReactor(customSettings=newSettings)
 
         settings.setMasterCs(o.cs)

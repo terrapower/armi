@@ -235,7 +235,9 @@ class TestSystemLayoutInput(unittest.TestCase):
         os.remove(out)
 
     def testReadReactor(self):
-        reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
+        reactor = test_reactors.buildOperatorOfEmptyHexBlocks(
+            customSettings={"burnSteps": 4, "cycleLength": 365}
+        ).r
         reactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
         )
