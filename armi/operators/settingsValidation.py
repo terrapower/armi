@@ -569,8 +569,8 @@ class Inspector:
         )
 
         def _correctCycles():
-            newSettings = {"nCycles": 1, "burnSteps": 0}
-            self.cs = self.cs.modified(newSettings=newSettings)
+            self._assigcCS("nCycles", 1)
+            self._assignCS("burnSteps", 0)
 
         self.addQuery(
             lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,
