@@ -17,8 +17,8 @@ r""" Tests for the Database3 class
 import subprocess
 import unittest
 
-import numpy
 import h5py
+import numpy
 
 from armi.bookkeeping.db import database3
 from armi.reactor import grids
@@ -34,9 +34,8 @@ class TestDatabase3(unittest.TestCase):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
-        cs = self.o.cs
 
-        self.dbi = database3.DatabaseInterface(self.r, cs)
+        self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: db.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
@@ -244,7 +243,7 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.db.genAuxiliaryData((-1, -1))
 
-    # TODO: This definitely needs some work
+    # TODO: This should be expanded.
     def test_replaceNones(self):
         """Super basic test that we handle Nones correctly in database read/writes"""
         data3 = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
@@ -417,7 +416,7 @@ class TestDatabase3(unittest.TestCase):
     def test_deleting(self):
         self.assertEqual(type(self.db), database3.Database3)
         del self.db
-
+        self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database
 
 

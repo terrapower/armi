@@ -16,25 +16,27 @@ r""" Tests of the Database Interface
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import os
-import unittest
 import types
+import unittest
 
 import h5py
 import numpy
 from numpy.testing import assert_allclose, assert_equal
 
-from armi.reactor.flags import Flags
-from armi import interfaces
-from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
-from armi import settings
-from armi.tests import TEST_ROOT
 from armi import __version__ as version
-from armi.cases import case
-from armi.utils import directoryChangers
+from armi import interfaces
 from armi import runLog
-from armi.reactor.tests import test_reactors
+from armi import settings
+from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
+from armi.cases import case
+from armi.cases import case
+from armi.context import ROOT
 from armi.reactor import grids
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_reactors
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
+from armi.tests import TEST_ROOT
+from armi.utils import directoryChangers
 
 
 def getSimpleDBOperator(cs):
@@ -81,6 +83,73 @@ class MockInterface(interfaces.Interface):
     def interactEveryNode(self, cycle, node):
         self.r.core.getFirstBlock().p.baseBu = 5.0
         self.action(cycle, node)
+
+
+class TestDatabaseInterface(unittest.TestCase):
+    r"""Tests for the DatabaseInterface class"""
+
+    def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
+        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.db: db.Database3 = self.dbi.database
+        self.stateRetainer = self.r.retainState().__enter__()
+
+    def tearDown(self):
+        self.db.close()
+        self.stateRetainer.__exit__()
+        self.td.__exit__(None, None, None)
+
+    def test_interactBOL(self):
+        self.assertTrue(self.dbi._db is not None)
+        self.dbi.interactBOL()
+
+        self.dbi._db = None
+        self.assertTrue(self.dbi._db is None)
+        self.dbi.interactBOL()
+        self.assertTrue(self.dbi._db is not None)
+
+    def test_distributable(self):
+        self.assertEqual(self.dbi.distributable(), 4)
+        self.dbi.interactDistributeState()
+        self.assertEqual(self.dbi.distributable(), 4)
+
+    def test_loadState(self):
+        # build paths to test file
+        tutorial_dir = os.path.join(ROOT, "tests", "tutorials")
+        case_title = "anl-afci-177"
+        case_path = os.path.join(tutorial_dir, case_title)
+
+        # build a settings file, pointing to the test YAML
+        cs = settings.Settings(case_path + ".yaml")
+        newSettings = {}
+        newSettings["db"] = True
+        newSettings["reloadDBName"] = f"{case_path}.h5"
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["detailAssemLocationsBOL"] = ["001-001"]
+        newSettings["startNode"] = 1
+        cs = cs.modified(newSettings=newSettings)
+
+        # build an operator and grab a DatabaseInterface
+        case2 = case.Case(cs).clone(title="armiRun")
+        settings.setMasterCs(case2.cs)
+        o = case2.initializeOperator()
+        o.getInterface("main").interactBOL()
+        dbi = o.getInterface("database")
+
+        # Get to the database state at the end of stack of time node 1.
+        self.assertEqual(o.r.core.p.maxAssemNum, 111)
+        o.r.core.p.maxAssemNum = 0
+        dbi.loadState(0, 1)
+        self.assertEqual(o.r.core.p.maxAssemNum, 111)
+
+        # Get the state at the start, and use the generated H5 file
+        o.r.core.p.maxAssemNum = 0
+        dbi.loadState(0, 0, fileName=f"{case_path}.h5")
+        self.assertEqual(o.r.core.p.maxAssemNum, 111)
 
 
 class TestDatabaseWriter(unittest.TestCase):
@@ -461,5 +530,4 @@ class TestStandardFollowOn(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
     unittest.main()
