@@ -59,8 +59,7 @@ class CompareIsotxsLibraries(EntryPoint):
 
         runLog.setVerbosity(0)
         refIsotxs = isotxs.readBinary(self.args.reference)
-        # flux = read_broad_group_flux(refIsotxs.neutronEnergyGroups)
+
         for fname in self.args.comparisonFiles:
             cmpIsotxs = isotxs.readBinary(fname)
-            xsLibraries.compare(refIsotxs, cmpIsotxs)  # , flux)
-
+            xsLibraries.compare(refIsotxs, cmpIsotxs)
