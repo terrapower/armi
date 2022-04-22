@@ -98,6 +98,30 @@ class Magnesium_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
+class MagnesiumOxide_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.MgO
+
+    def test_density(self):
+        cur = self.mat.density(923)
+        ref = 3.48887
+        delta = ref * 0.05
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(1390)
+        ref = 3.418434
+        delta = ref * 0.05
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_linearExpansionPercent(self):
+        cur = self.mat.linearExpansionPercent(Tc=100)
+        ref = 0.00110667
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+        cur = self.mat.linearExpansionPercent(Tc=400)
+        ref = 0.0049909
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+
 class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Molybdenum
 
@@ -113,24 +137,59 @@ class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=delta)
 
 
+class NiobiumZirconium_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.NZ
+
+    def test_density(self):
+        cur = self.mat.density(Tk=100)
+        ref = 8.66
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+        cur = self.mat.density(Tk=1390)
+        ref = 8.66
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+
 class Potassium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Potassium
 
     def test_density(self):
-        cur = self.mat.density(333)
+        cur = self.mat.density(Tk=333)
         ref = 0.828
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-        cur = self.mat.density(500)
+        cur = self.mat.density(Tk=500)
         ref = 0.7909
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-        cur = self.mat.density(750)
+        cur = self.mat.density(Tk=750)
         ref = 0.732
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
+
+
+class ScandiumOxide_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Sc2O3
+
+    def test_density(self):
+        cur = self.mat.density(Tc=100)
+        ref = 3.86
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+        cur = self.mat.density(Tc=400)
+        ref = 3.86
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+    def test_linearExpansionPercent(self):
+        cur = self.mat.linearExpansionPercent(Tc=100)
+        ref = 0.0623499
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+        cur = self.mat.linearExpansionPercent(Tc=400)
+        ref = 0.28322
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
 class Sodium_TestCase(_Material_Test, unittest.TestCase):
