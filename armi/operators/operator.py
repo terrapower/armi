@@ -329,7 +329,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._burnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
-        # self._checkReactorCycleAttrs()
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
