@@ -434,6 +434,16 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.db.open()
 
+    def test_loadCS(self):
+        cs = self.db.loadCS()
+        self.assertEqual(cs["numProcessors"], 1)
+        self.assertEqual(cs["nCycles"], 3)
+
+    def test_loadBlueprints(self):
+        bp = self.db.loadBlueprints()
+        self.assertIsNone(bp.nuclideFlags)
+        self.assertEqual(len(bp.assemblies), 0)
+
 
 class TestLocationPacking(unittest.TestCase):
     r"""Tests for database location"""
@@ -459,7 +469,7 @@ class TestLocationPacking(unittest.TestCase):
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
         self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
 
-    def test_locationPackingOlderVerions(self):
+    def test_locationPackingOlderVersions(self):
         # pylint: disable=protected-access
         for version in [1, 2]:
             loc1 = grids.IndexLocation(1, 2, 3, None)
@@ -481,6 +491,30 @@ class TestLocationPacking(unittest.TestCase):
             self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
             self.assertEqual(unpackedData[2][0].tolist(), [7, 8, 9])
             self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
+
+    def test_locationPackingOldVersion(self):
+        # pylint: disable=protected-access
+        version = 3
+
+        loc1 = grids.IndexLocation(1, 2, 3, None)
+        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
+        loc3 = grids.MultiIndexLocation(None)
+        loc3.append(grids.IndexLocation(7, 8, 9, None))
+        loc3.append(grids.IndexLocation(10, 11, 12, None))
+
+        locs = [loc1, loc2, loc3]
+        tp, data = database3._packLocations(locs, minorVersion=version)
+
+        self.assertEqual(tp[0], "I")
+        self.assertEqual(tp[1], "C")
+        self.assertEqual(tp[2], "M:2")
+
+        unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
+
+        self.assertEqual(unpackedData[0], (1, 2, 3))
+        self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
+        self.assertEqual(unpackedData[2][0], (7, 8, 9))
+        self.assertEqual(unpackedData[2][1], (10, 11, 12))
 
 
 if __name__ == "__main__":
