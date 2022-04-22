@@ -45,7 +45,8 @@ class DirectoryChanger:
     filesToMove : list of str, optional
         Filenames to bring from the CWD into the destination
     filesToRetrieve : list of str, optional
-        Filenames to bring back from the destination to the cwd
+        Filenames to bring back from the destination to the cwd. Note that if any of these
+        files do not exist then the file will be skipped and a warning will be provided.
     dumpOnException : bool, optional
         Flag to tell system to retrieve the entire directory if an exception
         is raised within a the context manager.
