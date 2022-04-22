@@ -490,12 +490,11 @@ class Inspector:
                         self.cs["availabilityFactor"] == None
                         and self.cs["availabilityFactors"] == None
                     )
-                    or self.cs["powerFractions"] == None
                 )
                 and self.cs["cycles"] == []
             ),
             "Either the full suite of simple cycle inputs (`cycleLength(s)`,"
-            " `burnSteps`, `availabilityFactor(s)`, and `powerFractions`) or the"
+            " `burnSteps`, and `availabilityFactor(s)`) or the"
             " detailed cycle input `cycles` must be entered.",
             "Add defaults for missing simple cycle inputs?",
             _fillOutSimpleCyclesDefaults,
