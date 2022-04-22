@@ -745,7 +745,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLES,
             default=[],
             label="Cycle information",
-            description="YAML input defining the cycle history of the case.",
+            description="YAML input defining the cycle history of the case."
+            " If specified, do not use any of cycleLength(s), availabilityFactor(s)",
+            " powerFractions, or burnSteps. Must also specify nCycles.",
             schema=vol.Schema(
                 [
                     vol.All(
