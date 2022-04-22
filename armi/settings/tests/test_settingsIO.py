@@ -57,6 +57,20 @@ class SettingsFailureTests(unittest.TestCase):
             )
 
 
+class SettingsReaderTests(unittest.TestCase):
+    def setUp(self):
+        self.cs = settings.caseSettings.Settings()
+
+    def test_basicSettingsReader(self):
+        reader = settingsIO.SettingsReader(self.cs)
+
+        self.assertEqual(reader["numProcessors"], 1)
+        self.assertEqual(reader["nCycles"], 1)
+
+        self.assertFalse(getattr(reader, "filelessBP"))
+        self.assertEqual(getattr(reader, "path"), "")
+
+
 class SettingsRenameTests(unittest.TestCase):
     testSettings = [
         setting.Setting(
@@ -123,6 +137,10 @@ class SettingsWriterTests(unittest.TestCase):
         self.cs.writeToYamlFile(self.filepathYaml)
         self.cs.loadFromInputFile(self.filepathYaml)
         self.assertEqual(self.cs["nCycles"], 55)
+
+    def test_errorSettingsWriter(self):
+        with self.assertRaises(ValueError):
+            _ = settingsIO.SettingsWriter(self.cs, "wrong")
 
 
 class MockEntryPoint(entryPoint.EntryPoint):

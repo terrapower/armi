@@ -60,19 +60,6 @@ class TestReport(unittest.TestCase):
         self.assertEqual(filled_instance["banana_2"], ["sundae", "vanilla"])
         self.assertEqual(filled_instance["banana_3"], ["sundae", "chocolate"])
 
-    def test_printReports(self):
-        """testing printReports method"""
-        repInt = reportInterface.ReportInterface(None, None)
-        rep = repInt.printReports()
-
-        self.assertIn("REPORTS BEGIN", rep)
-        self.assertIn("REPORTS END", rep)
-
-    def test_writeReports(self):
-        """Test writing html reports."""
-        repInt = reportInterface.ReportInterface(None, None)
-        repInt.writeReports()
-
     def test_reactorSpecificReporting(self):
         """Test a number of reporting utils that require reactor/core information"""
         o, r = loadTestReactor()
@@ -136,6 +123,72 @@ class TestReport(unittest.TestCase):
             # this report won't do much for the test reactor - improve test reactor
             summarizePowerPeaking(r.core)
             self.assertTrue(len(mock._outputStream) == 0)
+
+
+class TestReportInterface(unittest.TestCase):
+    def test_printReports(self):
+        """testing printReports method"""
+        repInt = reportInterface.ReportInterface(None, None)
+        rep = repInt.printReports()
+
+        self.assertIn("REPORTS BEGIN", rep)
+        self.assertIn("REPORTS END", rep)
+
+    def test_writeReports(self):
+        """Test writing html reports."""
+        repInt = reportInterface.ReportInterface(None, None)
+        repInt.writeReports()
+
+    def test_distributableReportInt(self):
+        repInt = reportInterface.ReportInterface(None, None)
+        self.assertEqual(repInt.distributable(), 4)
+
+    def test_interactBOLReportInt(self):
+        o, r = loadTestReactor()
+        repInt = reportInterface.ReportInterface(r, o.cs)
+
+        with mockRunLogs.BufferLog() as mock:
+            repInt.interactBOL()
+            self.assertIn("Writing assem layout", mock._outputStream)
+            self.assertIn("BOL Assembly", mock._outputStream)
+            self.assertIn("wetMass", mock._outputStream)
+            self.assertIn("moveable plenum", mock._outputStream)
+
+    def test_interactEveryNode(self):
+        o, r = loadTestReactor()
+        repInt = reportInterface.ReportInterface(r, o.cs)
+
+        with mockRunLogs.BufferLog() as mock:
+            repInt.interactEveryNode(0, 0)
+            self.assertIn("Cycle 0", mock._outputStream)
+            self.assertIn("node 0", mock._outputStream)
+            self.assertIn("keff=", mock._outputStream)
+
+    def test_interactBOC(self):
+        o, r = loadTestReactor()
+        repInt = reportInterface.ReportInterface(r, o.cs)
+
+        self.assertEqual(repInt.fuelCycleSummary["bocFissile"], 0.0)
+        repInt.interactBOC(1)
+        self.assertEqual(repInt.fuelCycleSummary["bocFissile"], 0.0)
+
+    def test_interactEOC(self):
+        o, r = loadTestReactor()
+        repInt = reportInterface.ReportInterface(r, o.cs)
+
+        with mockRunLogs.BufferLog() as mock:
+            repInt.interactEOC(0)
+            self.assertIn("Cycle 0", mock._outputStream)
+            self.assertIn("TIMER REPORTS", mock._outputStream)
+
+    def test_interactEOL(self):
+        o, r = loadTestReactor()
+        repInt = reportInterface.ReportInterface(r, o.cs)
+
+        with mockRunLogs.BufferLog() as mock:
+            repInt.interactEOL()
+            self.assertIn("Comprehensive Core Report", mock._outputStream)
+            self.assertIn("Assembly Area Fractions", mock._outputStream)
 
 
 if __name__ == "__main__":

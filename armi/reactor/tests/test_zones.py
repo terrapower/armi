@@ -15,9 +15,11 @@
 """Test for Zones"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
-import unittest
+import logging
 import os
+import unittest
 
+from armi import runLog
 from armi.reactor import assemblies
 from armi.reactor import blueprints
 from armi.reactor import geometry
@@ -27,6 +29,7 @@ from armi.reactor import zones
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings.fwSettings import globalSettings
+from armi.tests import mockRunLogs
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -376,7 +379,28 @@ class Zones_InRZReactor(unittest.TestCase):
         self.assertEqual(hotCount, 1)
         self.assertEqual(normalCount, 2)
 
+    def test_zoneSummary(self):
+        o, r = test_reactors.loadTestReactor()
+
+        r.core.buildZones(o.cs)
+        daZones = r.core.zones
+
+        # make sure we have a couple of zones to test on
+        for name0 in ["ring-1-radial-shield-5", "ring-1-feed-fuel-5"]:
+            self.assertIn(name0, daZones.names)
+
+        with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_zoneSummary")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            self.assertEqual("", mock._outputStream)
+
+            daZones.summary()
+
+            self.assertIn("Zone Summary", mock._outputStream)
+            self.assertIn("Zone Power", mock._outputStream)
+            self.assertIn("Zone Average Flow", mock._outputStream)
+
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Zones_InReactor.test_buildRingZones']
     unittest.main()

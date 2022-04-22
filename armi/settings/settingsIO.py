@@ -364,17 +364,11 @@ def prompt(statement, question, *options):
         import wx  # pylint: disable=import-error
 
         msg = statement + "\n\n\n" + question
-        if len(msg) < 300:
-            style = wx.CENTER
-            for opt in options:
-                style |= getattr(wx, opt)
-            dlg = wx.MessageDialog(None, msg, style=style)
-        else:
-            # for shame. Might make sense to move the styles stuff back into the
-            # Framework
-            from tparmi.gui.styles import dialogues
+        style = wx.CENTER
+        for opt in options:
+            style |= getattr(wx, opt)
+        dlg = wx.MessageDialog(None, msg, style=style)
 
-            dlg = dialogues.ScrolledMessageDialog(None, msg, "Prompt")
         response = dlg.ShowModal()
         dlg.Destroy()
         if response == wx.ID_CANCEL:
@@ -401,7 +395,7 @@ def prompt(statement, question, *options):
         if "NO" in responses:
             responses.append("N")
 
-        # TODO: Using the logger is strange. Perhaps this is a rare use-case for bare print? Or something bespoke.
+        # Use the logger tools to handle user prompts (runLog supports this).
         while response not in responses:
             runLog.LOG.log("prompt", statement)
             runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))
