@@ -339,14 +339,24 @@ class Operator:  # pylint: disable=too-many-public-methods
     def burnSteps(self):
         if not self._burnSteps:
             self._burnSteps = getBurnSteps(self.cs)
-            self._checkReactorCycleAttrs({"burnSteps": self._burnSteps})
+            if self._burnSteps == [] and self.cs["nCycles"] == 1:
+                # it is possible for there to be one cycle with zero burn up,
+                # in which case burnSteps is an empty list
+                pass
+            else:
+                self._checkReactorCycleAttrs({"burnSteps": self._burnSteps})
         return self._burnSteps
 
     @property
     def stepLengths(self):
         if not self._stepLengths:
             self._stepLengths = getStepLengths(self.cs)
-            self._checkReactorCycleAttrs({"Step lengths": self._stepLengths})
+            if self._stepLengths == [] and self.cs["nCycles"] == 1:
+                # it is possible for there to be one cycle with zero burn up,
+                # in which case stepLengths is an empty list
+                pass
+            else:
+                self._checkReactorCycleAttrs({"Step lengths": self._stepLengths})
         return self._stepLengths
 
     @property
