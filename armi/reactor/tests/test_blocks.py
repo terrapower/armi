@@ -1163,7 +1163,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertListEqual(actual, expected)
 
     def test_getNumComponents(self):
-
         cur = self.Block.getNumComponents(Flags.FUEL)
         ref = self.Block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
@@ -1173,7 +1172,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(1, self.Block.getNumComponents(Flags.DUCT))
 
     def test_getNumPins(self):
-
         cur = self.Block.getNumPins()
         ref = self.Block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
@@ -1182,7 +1180,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
     def test_setPinPowers(self):
-
         numPins = self.Block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
@@ -1273,7 +1270,6 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test106_getAreaFractions(self):
-
         cur = self.Block.getVolumeFractions()
         tot = 0.0
         areas = []

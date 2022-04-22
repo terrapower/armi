@@ -8,8 +8,8 @@ $control
     l_gamma                 = T 
 /
 $library
-     c_mcclibdir  ="\\albert\apps\prod\mc2\3.2.2\libraries\endfb-vii.0\lib.mcc.e70"
-     c_gammalibdir = "\\albert\apps\prod\mc2\3.2.2\libraries\endfb-vii.0\lib.gamma.e70"
+     c_mcclibdir  ="\\path\to\mc2\3.2.2\libraries\endfb-vii.0\lib.mcc.e70"
+     c_gammalibdir = "\\path\to\mc2\3.2.2\libraries\endfb-vii.0\lib.gamma.e70"
 /
 $material
     t_composition(:,1) = U235_7   "U235AB"    1.10000E-03   873.000  !   Fuel
