@@ -23,6 +23,11 @@ from armi.utils import plotting
 from armi.utils import units
 from armi.utils import iterables
 from armi.materials import custom
+from armi.operators.operator import (
+    getAvailabilityFactors,
+    getCycleLengths,
+    getStepLengths,
+)
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
@@ -218,10 +223,10 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         ["Core Power", "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW)]
     )
     coreDesignTable.addRow(
-        ["Base Capacity Factor", "{}".format(cs["availabilityFactor"])],
+        ["Base Capacity Factor", "{}".format(getAvailabilityFactors(cs))],
     )
     coreDesignTable.addRow(
-        ["Cycle Length", "{} days".format(cs["cycleLength"])],
+        ["Cycle Length", "{} days".format(getCycleLengths(cs))],
     )
     coreDesignTable.addRow(
         ["Burnup Cycles", "{}".format(cs["nCycles"])],
@@ -229,8 +234,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     coreDesignTable.addRow(
         [
             "Burnup Steps per Cycle",
-            "{}".format(cs["burnSteps"]),
-        ],  # TODO does this need to be changed?
+            "{}".format([len(steps) for steps in getStepLengths(cs)]),
+        ],
     )
     corePowerMult = int(core.powerMultiplier)
     coreDesignTable.addRow(
@@ -410,7 +415,7 @@ def insertSettingsData(cs, report):
     report[COMPREHENSIVE_REPORT][BURNUP_GROUPS] = newReports.Table("Burn Up Groups")
     for key in [
         "nCycles",
-        "burnSteps",  # TODO?
+        "burnSteps",
         "skipCycles",
         "cycleLength",
         "numProcessors",

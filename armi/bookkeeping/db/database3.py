@@ -89,6 +89,7 @@ from armi import interfaces
 from armi import meta
 from armi import runLog
 from armi import settings
+from armi.operators.operator import getStepLengths
 from armi.reactor import parameters
 from armi.reactor.parameters import parameterCollections
 from armi.reactor.parameters import parameterDefinitions
@@ -313,17 +314,20 @@ class DatabaseInterface(interfaces.Interface):
         with Database3(reloadDBName, "r") as inputDB:
             loadDbCs = inputDB.loadCS()
 
-            # Not beginning or end of cycle so burnSteps matter to get consistent time.
-            # TODO replace the burnSteps instances here
-            isMOC = self.cs["startNode"] not in (0, loadDbCs["burnSteps"])
-            if loadDbCs["burnSteps"] != self.cs["burnSteps"] and isMOC:
+            # check specified node time is the same between original and restart cases
+            dbStepLengths = getStepLengths(loadDbCs)
+            restartStepLengths = getStepLengths(self.cs)
+
+            dbCumulativeTime = sum(dbStepLengths[dbCycle][:dbNode])
+            restartCumulativeTime = sum(restartStepLengths[dbCycle][:dbNode])
+
+            if dbCumulativeTime != restartCumulativeTime:
                 raise ValueError(
-                    "Time nodes per cycle are inconsistent between loadDB and "
-                    "current case settings. This will create a mismatch in the "
-                    "total time per cycle for the load cycle. Change current case "
-                    "settings to {0} steps per node, or set `startNode` == 0 or {0} "
-                    "so that it loads the BOC or EOC of the load database."
-                    "".format(loadDbCs["burnSteps"])
+                    f"The cumulative time into cycle {dbCycle} at node {dbNode}"
+                    f" from the database load ({dbCumulativeTime} days) is not equal"
+                    f" to the cumulative time at the same node of the restart load"
+                    f" ({restartCumulativeTime} days). A restart must take place on"
+                    f" a time node that overlaps between both cases."
                 )
 
             self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])

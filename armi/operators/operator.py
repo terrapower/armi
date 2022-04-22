@@ -44,6 +44,213 @@ from armi.utils import pathTools
 from armi.utils.mathematics import expandRepeatedFloats
 
 
+def getPowerFractions(cs):
+    """
+    Return the power fractions for each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    powerFractions : 2-list
+        A list with nCycles elements, where each element is itself a list of the
+        power fractions at each step of the cycle.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    if cs["cycles"] != []:
+        return [
+            expandRepeatedFloats(cycle["power fractions"]) for cycle in cs["cycles"]
+        ]
+    else:
+        valuePerCycle = (
+            expandRepeatedFloats(cs["powerFractions"])
+            if cs["powerFractions"] not in [None, []]
+            else [1.0] * cs["nCycles"]
+        )
+
+        return [[value] * cs["burnSteps"] for value in valuePerCycle]
+
+
+def getCycleNames(cs):
+    """
+    Return the names of each cycle. If a name is omitted, it is `None`.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    cycleNames : list
+        A list of the availability factors.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    if cs["cycles"] != []:
+        return [
+            (cycle["name"] if "name" in cycle.keys() else None)
+            for cycle in cs["cycles"]
+        ]
+    else:
+        return [None] * cs["nCycles"]
+
+
+def getAvailabilityFactors(cs):
+    """
+    Return the availability factors for each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    availabilityFactors : list
+        A list of the availability factors.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    if cs["cycles"] != []:
+        availabilityFactors = []
+        for cycle in cs["cycles"]:
+            if "availability factor" in cycle.keys():
+                availabilityFactors.append(cycle["availability factor"])
+            else:
+                availabilityFactors.append(1)
+        return availabilityFactors
+    else:
+        return (
+            expandRepeatedFloats(cs["availabilityFactors"])
+            if cs["availabilityFactors"] not in [None, []]
+            else [cs["availabilityFactor"]] * cs["nCycles"]
+        )
+
+
+def _getStepAndCycleLengths(cs):
+    """
+    These need to be gotten together because it is a chicken/egg depending on which
+    style of cycles input the user employs.
+
+    Note that using this method directly is more effecient than calling `getStepLengths`
+    and `getCycleLengths` separately, but it is probably more clear to the user
+    to call each of them separately.
+    """
+    stepLengths = []
+    if cs["cycles"] != []:
+        for cycle in cs["cycles"]:
+            if "step days" in cycle.keys():
+                stepLengths.append(expandRepeatedFloats(cycle["step days"]))
+            elif "cumulative days" in cycle.keys():
+                cumulativeDays = cycle["cumulative days"]
+                stepLengths.append(
+                    [cumulativeDays[0]]
+                    + [
+                        (cumulativeDays[i] - cumulativeDays[i - 1])
+                        for i in range(1, len(cumulativeDays))
+                    ]
+                )
+        cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
+    else:
+        cycleLengths = (
+            expandRepeatedFloats(cs["cycleLengths"])
+            if cs["cycleLengths"] not in [None, []]
+            else [cs["cycleLength"]] * cs["nCycles"]
+        )
+        stepLengths = (
+            [
+                [cycleLength / cs["burnSteps"]] * cs["burnSteps"]
+                for cycleLength in cycleLengths
+            ]
+            if cs["burnSteps"] != 0
+            else []
+        )
+
+    return stepLengths, cycleLengths
+
+
+def getStepLengths(cs):
+    """
+    Return the length of each step in each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    stepLengths : 2-list
+        A list with elements for each cycle, where each element itself is a list
+        containing the step lengths in days.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    return _getStepAndCycleLengths(cs)[0]
+
+
+def getCycleLengths(cs):
+    """
+    Return the lengths of each cycle in days.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    cycleLengths : list
+        A list of the cycle lengths in days.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    return _getStepAndCycleLengths(cs)[1]
+
+
+def getBurnSteps(cs):
+    """
+    Return the number of burn steps for each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    burnSteps : list
+        A list of the number of burn steps.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    stepLengths = getStepLengths(cs)
+    return [len(steps) for steps in stepLengths]
+
+
 class Operator:  # pylint: disable=too-many-public-methods
     """
     Orchestrates an ARMI run, building all the pieces, looping through the interfaces, and manipulating the reactor.
@@ -116,17 +323,62 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
-        self.cycleNames = self._getCycleNames()
-        self.stepLengths, self.cycleLengths = self._getStepAndCycleLengths()
-        self.burnSteps = [len(steps) for steps in self.stepLengths]
-        self.powerFractions = self._getPowerFractions()
-        self.availabilityFactors = self._getAvailabilityFactors()
-        self._checkReactorCycleAttrs()
+        self._cycleNames = None
+        self._stepLengths = None
+        self._cycleLengths = None
+        self._burnSteps = None
+        self._powerFractions = None
+        self._availabilityFactors = None
+        # self._checkReactorCycleAttrs()
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
 
         self._initFastPath()
+
+    @property
+    def burnSteps(self):
+        if not self._burnSteps:
+            self._burnSteps = getBurnSteps(self.cs)
+            self._checkReactorCycleAttrs({"burnSteps": self._burnSteps})
+        return self._burnSteps
+
+    @property
+    def stepLengths(self):
+        if not self._stepLengths:
+            self._stepLengths = getStepLengths(self.cs)
+            self._checkReactorCycleAttrs({"Step lengths": self._stepLengths})
+        return self._stepLengths
+
+    @property
+    def cycleLengths(self):
+        if not self._cycleLengths:
+            self._cycleLengths = getCycleLengths(self.cs)
+            self._checkReactorCycleAttrs({"cycleLengths": self._cycleLengths})
+        return self._cycleLengths
+
+    @property
+    def powerFractions(self):
+        if not self._powerFractions:
+            self._powerFractions = getPowerFractions(self.cs)
+            self._checkReactorCycleAttrs({"powerFractions": self._powerFractions})
+        return self._powerFractions
+
+    @property
+    def availabilityFactors(self):
+        if not self._availabilityFactors:
+            self._availabilityFactors = getAvailabilityFactors(self.cs)
+            self._checkReactorCycleAttrs(
+                {"availabilityFactors": self._availabilityFactors}
+            )
+        return self._availabilityFactors
+
+    @property
+    def cycleNames(self):
+        if not self._cycleNames:
+            self._cycleNames = getCycleNames(self.cs)
+            self._checkReactorCycleAttrs({"Cycle names": self._cycleNames})
+        return self._cycleNames
 
     @staticmethod
     def _initFastPath():
@@ -157,86 +409,8 @@ class Operator:  # pylint: disable=too-many-public-methods
                 # if it actually doesn't exist, that's an actual error. Raise
                 raise
 
-<<<<<<< HEAD
-    def _getCycleNames(self):
-        """Return cycle names that are defined. Those undefined will be `None`."""
-        if self.cs["cycles"] != []:
-            return [
-                (cycle["name"] if "name" in cycle.keys() else None)
-                for cycle in self.cs["cycles"]
-            ]
-        else:
-            return [None] * self.cs["nCycles"]
-
-    def _getStepAndCycleLengths(self):
-        """Return intra-cycle steps and cycle lengths."""
-        stepLengths = []
-        if self.cs["cycles"] != []:
-            for cycle in self.cs["cycles"]:
-                if "step days" in cycle.keys():
-                    stepLengths.append(utils.expandRepeatedFloats(cycle["step days"]))
-                elif "cumulative days" in cycle.keys():
-                    cumulativeDays = cycle["cumulative days"]
-                    stepLengths.append(
-                        [cumulativeDays[0]]
-                        + [
-                            (cumulativeDays[i] - cumulativeDays[i - 1])
-                            for i in range(1, len(cumulativeDays))
-                        ]
-                    )
-            cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
-        else:
-            cycleLengths = (
-                utils.expandRepeatedFloats(self.cs["cycleLengths"])
-                or [self.cs["cycleLength"]] * self.cs["nCycles"]
-            )
-            stepLengths = (
-                [
-                    [cycleLength / self.cs["burnSteps"]] * self.cs["burnSteps"]
-                    for cycleLength in cycleLengths
-                ]
-                if self.cs["burnSteps"] != 0
-                else []
-            )
-
-        return stepLengths, cycleLengths
-
-    def _getAvailabilityFactors(self):
-        """Return the availability factors (capacity factor) for each cycle of the system as a list."""
-        if self.cs["cycles"] != []:
-            availabilityFactors = []
-            for cycle in self.cs["cycles"]:
-                if "availability factor" in cycle.keys():
-                    availabilityFactors.append(cycle["availability factor"])
-                else:
-                    availabilityFactors.append(1)
-            return availabilityFactors
-        else:
-            return expandRepeatedFloats(self.cs["availabilityFactors"]) or (
-                [self.cs["availabilityFactor"]] * self.cs["nCycles"]
-            )
-
-    def _getPowerFractions(self):
-        """Return the power fractions for each cycle of the system as a list."""
-        if self.cs["cycles"] != []:
-            return [
-                expandRepeatedFloats(cycle["power fractions"])
-                for cycle in self.cs["cycles"]
-            ]
-        else:
-            valuePerCycle = expandRepeatedFloats(self.cs["powerFractions"]) or (
-                [1.0 for _cl in self.cycleLengths]
-            )
-
-            return [[value] * self.cs["burnSteps"] for value in valuePerCycle]
-
-    def _checkReactorCycleAttrs(self):
-        operatingParams = {
-            "Cycle Lengths:": self.cycleLengths,
-            "Availability Factors:": self.availabilityFactors,
-            "Power Fractions:": self.powerFractions,
-        }
-        for name, param in operatingParams.items():
+    def _checkReactorCycleAttrs(self, attrsDict):
+        for name, param in attrsDict.items():
             if len(param) != self.cs["nCycles"]:
                 raise ValueError(
                     "The `{}` setting did not have a length consistent with the number of cycles.\n"
@@ -336,14 +510,12 @@ class Operator:  # pylint: disable=too-many-public-methods
             return False
 
         for timeNode in range(startingNode, int(self.burnSteps[cycle])):
-            print(self.powerFractions[cycle][timeNode])
             self.r.core.p.power = (
                 self.powerFractions[cycle][timeNode] * self.cs["power"]
             )
-            print(self.r.core.p.power)
             self.r.p.capacityFactor = (
                 self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
-            )  # TODO what is this used for? is it being used correctly now?
+            )
 
             self._timeNodeLoop(cycle, timeNode)
         else:  # do one last node at the end using the same power as the previous node

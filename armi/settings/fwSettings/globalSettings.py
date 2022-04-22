@@ -29,10 +29,6 @@ import voluptuous as vol
 from armi import context
 from armi.settings import setting
 
-# track if any of the case settings of the simple cycles input style have been used
-global SIMPLE_CYCLES_INPUT_ENTERED
-SIMPLE_CYCLES_INPUT_ENTERED = False
-
 
 # Framework settings
 CONF_NUM_PROCESSORS = "numProcessors"
@@ -214,7 +210,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_CYCLE_LENGTH,
-            default=365.242199,
+            default=None,
             label="Cycle Length",
             description="Duration of one single cycle in days. If availability factor is below "
             "1, the reactor will be at power less than this. If variable, use "
@@ -222,21 +218,21 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("burnTime", None),
             ],
-            schema=_registerSimpleCyclesInput,
+            schema=(vol.Any(float, int, None)),
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
-            default=[],
+            default=None,
             label="Cycle durations",
             description="List of durations of each cycle in days. The at-power "
             "duration will be affected by the availability factor. R is repeat. For "
             "example [100, 150, '9R'] is 1 100 day cycle followed by 10 150 day "
             "cycles. Empty list is constant duration set by 'cycleLength'.",
-            schema=vol.All(vol.Schema([vol.Coerce(str)]), _registerSimpleCyclesInput),
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTOR,
-            default=1.0,
+            default=None,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
             "time that the plant is operating. If variable, use availabilityFactors "
@@ -244,37 +240,37 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("capacityFactor", None),
             ],
-            schema=_registerSimpleCyclesInput,
+            schema=(vol.Any(float, int, None)),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
-            default=[],
+            default=None,
             label="Availability factors",
             description="List of availability factor of each cycle as a fraction "
             "(fraction of time plant is not in an outage). R is repeat. For example "
             "[0.5, 1.0, '9R'] is 1 50% CF followed by 10 100 CF. Empty list is "
             "constant duration set by 'availabilityFactor'.",
-            schema=vol.All(vol.Schema([vol.Coerce(str)]), _registerSimpleCyclesInput),
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_POWER_FRACTIONS,
-            default=[],
+            default=None,
             label="Power fractions",
             description="List of power fractions at each cycle (fraction of rated "
             "thermal power the plant achieves). R is repeat. For example [0.5, 1.0, "
             "'9R'] is 1 50% PF followed by 10 100% PF. Specify zeros to indicate "
             "decay-only cycles (i.e. for decay heat analysis). Empty list implies "
             "always full rated power.",
-            schema=vol.All(vol.Schema([vol.Coerce(str)]), _registerSimpleCyclesInput),
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_BURN_STEPS,
-            default=4,
+            default=None,
             label="Burnup Steps per Cycle",
             description="Number of depletion substeps, n, in one cycle. Note: There "
             "will be n+1 time nodes and the burnup step time will be computed as cycle "
             "length/n.",
-            schema=_registerSimpleCyclesInput,
+            schema=(vol.Any(int, None)),
         ),
         setting.Setting(
             CONF_BETA,
@@ -777,7 +773,7 @@ def _monotonicIncreasing(inputList):
 
 def _mutuallyExclusiveCyclesInputs(cycle):
     cycleKeys = cycle.keys()
-    if ('cumulative days' in cycleKeys and 'step days' in cycleKeys) or (
+    if ("cumulative days" in cycleKeys and "step days" in cycleKeys) or (
         "cumulative days" not in cycleKeys and "step days" not in cycleKeys
     ):
         baseErrMsg = (
@@ -791,9 +787,3 @@ def _mutuallyExclusiveCyclesInputs(cycle):
             else baseErrMsg
         )
     return cycle
-
-
-def _registerSimpleCyclesInput(userInput):
-    global SIMPLE_CYCLES_INPUT_ENTERED
-    SIMPLE_CYCLES_INPUT_ENTERED = True
-    return userInput

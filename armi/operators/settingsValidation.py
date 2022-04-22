@@ -456,6 +456,70 @@ class Inspector:
             lambda: self._assignCS("numCoupledIterations", 0),
         )
 
+        def _makeSimpleCyclesInputsUnavailable():
+            for s in [
+                "cycleLength",
+                "cycleLengths",
+                "burnSteps",
+                "availabilityFactor",
+                "availabilityFactors",
+                "powerFractions",
+            ]:
+                self._assignCS(s, None)
+
+        def _fillOutSimpleCyclesDefaults():
+            defaultSimpleCyclesSettings = {
+                "cycleLength": 365.242199,
+                "cycleLengths": [],
+                "burnSteps": 4,
+                "availabilityFactor": 1.0,
+                "availabilityFactors": [],
+                "powerFractions": [],
+            }
+            for setting, default in defaultSimpleCyclesSettings.items():
+                if self.cs[setting] == None:
+                    self._assignCS(setting, default)
+            self._assignCS("availabilityFactors", [])
+
+        self.addQuery(
+            lambda: (
+                (
+                    (self.cs["cycleLength"] == None and self.cs["cycleLengths"] == None)
+                    or self.cs["burnSteps"] == None
+                    or (
+                        self.cs["availabilityFactor"] == None
+                        and self.cs["availabilityFactors"] == None
+                    )
+                    or self.cs["powerFractions"] == None
+                )
+                and self.cs["cycles"] == []
+            ),
+            "Either the full suite of simple cycle inputs (`cycleLength(s)`,"
+            " `burnSteps`, `availabilityFactor(s)`, and `powerFractions`) or the"
+            " detailed cycle input `cycles` must be entered.",
+            "Add defaults for missing simple cycle inputs?",
+            _fillOutSimpleCyclesDefaults,
+        )
+
+        self.addQuery(
+            lambda: (
+                (
+                    self.cs["cycleLength"]
+                    or self.cs["cycleLengths"]
+                    or self.cs["burnSteps"]
+                    or self.cs["availabilityFactor"]
+                    or self.cs["availabilityFactors"]
+                    or self.cs["powerFractions"]
+                )
+                and self.cs["cycles"]
+            ),
+            "If specifying detailed cycle history with `cycles`, you may not"
+            " also use any of the simple cycle history inputs `cycleLength(s)`,"
+            " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`.",
+            "Use detailed cycle history?",
+            _makeSimpleCyclesInputsUnavailable,
+        )
+
         def _factorsAreValid(factors, maxVal=1.0):
             try:
                 expandedList = expandRepeatedFloats(factors)
@@ -467,8 +531,11 @@ class Inspector:
             )
 
         self.addQuery(
-            lambda: self.cs["availabilityFactors"]
-            and not _factorsAreValid(self.cs["availabilityFactors"]),
+            lambda: (
+                self.cs["availabilityFactors"]
+                and not self.cs["cycles"]
+                and not _factorsAreValid(self.cs["availabilityFactors"])
+            ),
             "`availabilityFactors` was not set to a list compatible with the number of cycles. "
             "Please update input or use constant duration.",
             "Use constant availability factor specified in `availabilityFactor` setting?",
@@ -476,8 +543,11 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["powerFractions"]
-            and not _factorsAreValid(self.cs["powerFractions"]),
+            lambda: (
+                self.cs["powerFractions"]
+                and not self.cs["cycles"]
+                and not _factorsAreValid(self.cs["powerFractions"])
+            ),
             "`powerFractions` was not set to a compatible list. "
             "Please update input or use full power at all cycles.",
             "Use full power for all cycles?",
@@ -487,6 +557,7 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["cycleLengths"]
+                and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
             ),
             "The number of cycles defined in `cycleLengths` is not equal to the number of cycles in "
@@ -495,22 +566,6 @@ class Inspector:
             "{} days for all cycles.".format(self.cs["cycleLength"]),
             "Use {} days for all cycles?".format(self.cs["cycleLength"]),
             lambda: self._assignCS("cycleLengths", []),
-        )
-
-        def _simpleCyclesInputEntered():
-            from armi.settings.fwSettings.globalSettings import (
-                SIMPLE_CYCLES_INPUT_ENTERED,
-            )
-
-            return SIMPLE_CYCLES_INPUT_ENTERED
-
-        self.addQuery(
-            lambda: _simpleCyclesInputEntered() and self.cs["cycles"],
-            "If specifying detailed cycle history with `cycles`, you may not"
-            " also use any of the simple cycle history inputs `cycleLength(s)`,"
-            " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`.",
-            "Use detailed cycle history?",
-            self.NO_ACTION,
         )
 
         def _correctCycles():
@@ -556,6 +611,7 @@ class Inspector:
                 self.cs["cycleLengths"]
                 and self.cs["powerFractions"]
                 and decayCyclesHaveInputThatWillBeIgnored()
+                and not self.cs["cycles"]
             ),
             "At least one cycle has a non-zero power fraction but an availability of zero. Please "
             "update the input.",
@@ -579,6 +635,16 @@ class Inspector:
             "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
                 self.cs["runType"]
             ),
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: self.cs["runType"] == operators.RunTypes.EQUILIBRIUM
+            and self.cs["cycles"],
+            "Equilibrium cases cannot use the `cycles` case setting to define detailed"
+            " cycle information. Try instead using the simple cycle history inputs"
+            " `cycleLength(s)`, `burnSteps`, `availabilityFactor(s)`, and/or `powerFractions`",
             "",
             self.NO_ACTION,
         )
