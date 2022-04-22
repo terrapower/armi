@@ -137,7 +137,7 @@ class TestSpatialLocator(unittest.TestCase):
 
 
 class TestGrid(unittest.TestCase):
-    def testBasicPosition(self):
+    def test_basicPosition(self):
         """
         Ensure a basic Cartesian grid works as expected.
 
@@ -152,12 +152,12 @@ class TestGrid(unittest.TestCase):
         assert_allclose(grid.getCoordinates((0, 0, -1)), (0, 0, -1))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1, 0, 0))
 
-    def testNeighbors(self):
+    def test_neighbors(self):
         grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
         neighbs = grid.getNeighboringCellIndices(0, 0, 0)
         self.assertEqual(len(neighbs), 4)
 
-    def testLabel(self):
+    def test_label(self):
         grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
         self.assertEqual(grid.getLabel((1, 1, 2)), "001-001-002")
 
@@ -201,7 +201,7 @@ class TestHexGrid(unittest.TestCase):
        :link: REQ_REACTOR_MESH
     """
 
-    def testPositions(self):
+    def test_positions(self):
         grid = grids.HexGrid.fromPitch(1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
@@ -223,13 +223,13 @@ class TestHexGrid(unittest.TestCase):
         assert_allclose(grid.getCoordinates((1, 0, 0)), iDirection)
         assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
 
-    def testNeighbors(self):
+    def test_neighbors(self):
         grid = grids.HexGrid.fromPitch(1.0)
         neighbs = grid.getNeighboringCellIndices(0, 0, 0)
         self.assertEqual(len(neighbs), 6)
         self.assertIn((1, -1, 0), neighbs)
 
-    def testRingPosFromIndices(self):
+    def test_ringPosFromIndices(self):
         """Test conversion from<-->to ring/position based on hand-prepared right answers."""
         grid = grids.HexGrid.fromPitch(1.0)
         for indices, ringPos in [
@@ -251,7 +251,7 @@ class TestHexGrid(unittest.TestCase):
             self.assertEqual(indices, grid.getIndicesFromRingAndPos(*ringPos))
             self.assertEqual(ringPos, grid.getRingPos(indices))
 
-    def testLabel(self):
+    def test_label(self):
         grid = grids.HexGrid.fromPitch(1.0)
         indices = grid.getIndicesFromRingAndPos(12, 5)
         label1 = grid.getLabel(indices)
@@ -387,15 +387,15 @@ class TestHexGrid(unittest.TestCase):
 
 
 class TestBoundsDefinedGrid(unittest.TestCase):
-    def testPositions(self):
+    def test_positions(self):
         grid = grids.Grid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1.5, 15.0, 40.0))
 
-    def testBase(self):
+    def test_base(self):
         grid = grids.Grid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
         assert_allclose(grid.getCellBase((1, 1, 1)), (1.0, 10.0, 20.0))
 
-    def testPositionsMixedDefinition(self):
+    def test_positionsMixedDefinition(self):
         grid = grids.Grid(
             unitSteps=((1.0, 0.0), (0.0, 1.0)), bounds=(None, None, [0, 20, 60, 90])
         )
@@ -415,7 +415,7 @@ class TestThetaRZGrid(unittest.TestCase):
        :link: REQ_REACTOR_MESH
     """
 
-    def testPositions(self):
+    def test_positions(self):
         grid = grids.ThetaRZGrid(
             bounds=(numpy.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30])
         )
@@ -438,7 +438,7 @@ class TestCartesianGrid(unittest.TestCase):
        :link: REQ_REACTOR_MESH
     """
 
-    def testRingPosNoSplit(self):
+    def test_ringPosNoSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, isOffset=True)
 
         expectedRing = [
@@ -466,7 +466,7 @@ class TestCartesianGrid(unittest.TestCase):
                 self.assertEqual(ring, expectedRing[j + 3][i + 3])
                 self.assertEqual(pos, expectedPos[j + 3][i + 3])
 
-    def testRingPosSplit(self):
+    def test_ringPosSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
 
         expectedRing = [
@@ -496,7 +496,7 @@ class TestCartesianGrid(unittest.TestCase):
                 self.assertEqual(ring, expectedRing[j + 3][i + 3])
                 self.assertEqual(pos, expectedPos[j + 3][i + 3])
 
-    def testSymmetry(self):
+    def test_symmetry(self):
         # PERIODIC, no split
         grid = grids.CartesianGrid.fromRectangle(
             1.0,

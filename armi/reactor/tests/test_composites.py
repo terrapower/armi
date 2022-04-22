@@ -91,7 +91,7 @@ class TestCompositePattern(unittest.TestCase):
         container.add(nested)
         self.container = container
 
-    def testComposite(self):
+    def test_Composite(self):
         container = self.container
 
         children = container.getChildren()
@@ -101,10 +101,10 @@ class TestCompositePattern(unittest.TestCase):
         allChildren = container.getChildren(deep=True)
         self.assertEqual(len(allChildren), 8)
 
-    def testIterComponents(self):
+    def test_iterComponents(self):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
-    def testGetChildren(self):
+    def test_getChildren(self):
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
         self.assertEqual(len(firstGen), 6)

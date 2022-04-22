@@ -705,7 +705,7 @@ class Inconel_TestCase(_Material_Test, unittest.TestCase):
 class Inconel600_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Inconel600
 
-    def test00_setDefaultMassFracs(self):
+    def test_00_setDefaultMassFracs(self):
         massFracNameList = ["NI", "CR", "FE", "C", "MN55", "S", "SI", "CU"]
         massFracRefValList = [
             0.7541,
@@ -723,7 +723,7 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
             ref = frac
             self.assertAlmostEqual(cur, ref)
 
-    def test01_linearExpansionPercent(self):
+    def test_01_linearExpansionPercent(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             0.105392,
@@ -744,7 +744,7 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test02_linearExpansion(self):
+    def test_02_linearExpansion(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             1.3774400000000001e-05,
@@ -765,7 +765,7 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test03_density(self):
+    def test_03_density(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             8.452174779681522,
@@ -790,7 +790,7 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
 class Inconel625_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Inconel625
 
-    def test00_setDefaultMassFracs(self):
+    def test_00_setDefaultMassFracs(self):
         massFracNameList = [
             "NI",
             "CR",
@@ -827,7 +827,7 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
             ref = frac
             self.assertAlmostEqual(cur, ref)
 
-    def test01_linearExpansionPercent(self):
+    def test_01_linearExpansionPercent(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             0.09954299999999999,
@@ -848,7 +848,7 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test02_linearExpansion(self):
+    def test_02_linearExpansion(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             1.22666e-05,
@@ -869,7 +869,7 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test03_density(self):
+    def test_03_density(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             8.423222197446128,
@@ -894,7 +894,7 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
 class InconelX750_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.InconelX750
 
-    def test00_setDefaultMassFracs(self):
+    def test_00_setDefaultMassFracs(self):
         massFracNameList = [
             "NI",
             "CR",
@@ -929,7 +929,7 @@ class InconelX750_TestCase(_Material_Test, unittest.TestCase):
             ref = frac
             self.assertAlmostEqual(cur, ref)
 
-    def test01_linearExpansionPercent(self):
+    def test_01_linearExpansionPercent(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             0.09927680000000001,
@@ -950,7 +950,7 @@ class InconelX750_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test02_linearExpansion(self):
+    def test_02_linearExpansion(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             1.1927560000000001e-05,
@@ -971,7 +971,7 @@ class InconelX750_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
-    def test03_density(self):
+    def test_03_density(self):
         TcList = [100, 200, 300, 400, 500, 600, 700, 800]
         refList = [
             8.263584211566972,
@@ -1093,7 +1093,7 @@ class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
 class TZM_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.TZM
 
-    def test00_applyInputParams(self):
+    def test_00_applyInputParams(self):
         massFracNameList = ["C", "TI", "ZR", "MO"]
         massFracRefValList = [2.50749e-05, 0.002502504, 0.000761199, 0.996711222]
 
@@ -1104,12 +1104,12 @@ class TZM_TestCase(_Material_Test, unittest.TestCase):
             ref = frac
             self.assertEqual(cur, ref)
 
-    def test01_density(self):
+    def test_01_density(self):
         ref = 10.16  # g/cc
         cur = self.mat.density()
         self.assertEqual(cur, ref)
 
-    def test02_linearExpansionPercent(self):
+    def test_02_linearExpansionPercent(self):
         TcList = [
             21.11,
             456.11,
