@@ -1816,16 +1816,6 @@ def _packLocationsV3(
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
     """
     Location packing implementation for minor version 4. See release notes above.
-    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    print(locations)
-    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    print(locations[0])
-    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    print(locations[1])
-    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    print(len(locations))
-    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    assert False
     """
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
