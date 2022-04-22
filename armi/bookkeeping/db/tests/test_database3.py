@@ -202,6 +202,10 @@ class TestDatabase3(unittest.TestCase):
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
+        # we shouldn't be able to set the fileName if a file is open
+        with self.assertRaises(RuntimeError):
+            self.db.fileName = "whatever.h5"
+
     def test_history(self):
         self.makeShuffleHistory()
 
@@ -351,6 +355,13 @@ class TestDatabase3(unittest.TestCase):
                 self.assertIn(meta_key, newDb.attrs)
                 self.assertTrue(newDb.attrs[meta_key] is not None)
 
+        # test an edge case - no DB to split
+        with self.assertRaises(ValueError):
+            self.db.h5db = None
+            self.db.splitDatabase(
+                [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
+            )
+
     def test_grabLocalCommitHash(self):
         """test of static method to grab a local commit hash with ARMI version"""
         # 1. test outside a Git repo
@@ -418,6 +429,10 @@ class TestDatabase3(unittest.TestCase):
         del self.db
         self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database
+
+    def test_open(self):
+        with self.assertRaises(ValueError):
+            self.db.open()
 
 
 class TestLocationPacking(unittest.TestCase):

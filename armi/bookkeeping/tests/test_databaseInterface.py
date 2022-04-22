@@ -189,7 +189,7 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("blueprints", h5["inputs"])
             self.assertIn("baseBu", h5["c01n02/HexBlock"])
 
-    def test_metaData_endFail(self):
+    def test_metaDataEndFail(self):
         def failMethod(cycle, node):  # pylint: disable=unused-argument
             if cycle == 1 and node == 1:
                 raise Exception("forcing failure")
