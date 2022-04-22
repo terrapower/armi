@@ -581,7 +581,7 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-                self.cs["runType"] == "Standard"
+                self.cs["runType"] == operators.RunTypes.STANDARD
                 and self.cs["burnSteps"] == 0
                 and (len(self.cs["cycleLengths"]) > 1 or self.cs["nCycles"] > 1)
             ),
