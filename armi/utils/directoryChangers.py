@@ -187,6 +187,10 @@ class DirectoryChanger:
 
             for fromName, destName in copies:
                 fromPath = os.path.join(initialPath, fromName)
+                if not os.path.exists(fromPath):
+                    runLog.warning(f"{fromPath} does not exist and will not be copied.")
+                    continue
+
                 toPath = os.path.join(destinationPath, destName)
                 runLog.extra("Copying {} to {}".format(fromPath, toPath))
                 shutil.copy(fromPath, toPath)
