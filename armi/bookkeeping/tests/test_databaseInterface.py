@@ -14,7 +14,6 @@
 r""" Tests of the Database Interface
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
 import os
 import types
 import unittest
@@ -29,8 +28,6 @@ from armi import runLog
 from armi import settings
 from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
 from armi.cases import case
-from armi.cases import case
-from armi.context import ROOT
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -116,40 +113,6 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertEqual(self.dbi.distributable(), 4)
         self.dbi.interactDistributeState()
         self.assertEqual(self.dbi.distributable(), 4)
-
-    def test_loadState(self):
-        # build paths to test file
-        tutorial_dir = os.path.join(ROOT, "tests", "tutorials")
-        case_title = "anl-afci-177"
-        case_path = os.path.join(tutorial_dir, case_title)
-
-        # build a settings file, pointing to the test YAML
-        cs = settings.Settings(case_path + ".yaml")
-        newSettings = {}
-        newSettings["db"] = True
-        newSettings["reloadDBName"] = f"{case_path}.h5"
-        newSettings["loadStyle"] = "fromDB"
-        newSettings["detailAssemLocationsBOL"] = ["001-001"]
-        newSettings["startNode"] = 1
-        cs = cs.modified(newSettings=newSettings)
-
-        # build an operator and grab a DatabaseInterface
-        case2 = case.Case(cs).clone(title="armiRun")
-        settings.setMasterCs(case2.cs)
-        o = case2.initializeOperator()
-        o.getInterface("main").interactBOL()
-        dbi = o.getInterface("database")
-
-        # Get to the database state at the end of stack of time node 1.
-        self.assertEqual(o.r.core.p.maxAssemNum, 111)
-        o.r.core.p.maxAssemNum = 0
-        dbi.loadState(0, 1)
-        self.assertEqual(o.r.core.p.maxAssemNum, 111)
-
-        # Get the state at the start, and use the generated H5 file
-        o.r.core.p.maxAssemNum = 0
-        dbi.loadState(0, 0, fileName=f"{case_path}.h5")
-        self.assertEqual(o.r.core.p.maxAssemNum, 111)
 
 
 class TestDatabaseWriter(unittest.TestCase):
