@@ -61,34 +61,34 @@ class TestThermalScattering(unittest.TestCase):
 
         self.assertIs(tsl[carbon12], ts.byNbAndCompound[carbon, ts.GRAPHITE_10P])
 
-    def testEndf8Compound(self):
+    def test_endf8Compound(self):
         si = nb.byName["SI"]
         o = nb.byName["O"]
         sio2 = ts.ThermalScattering((si, o), "SiO2-alpha")
         self.assertEqual(sio2._genENDFB8Label(), "tsl-SiO2-alpha.endf")
 
-    def testEndf8ElementInCompound(self):
+    def test_endf8ElementInCompound(self):
         hyd = nb.byName["H"]
         hInH2O = ts.ThermalScattering(hyd, "H2O")
         self.assertEqual(hInH2O._genENDFB8Label(), "tsl-HinH2O.endf")
 
-    def testEndf8Isotope(self):
+    def test_endf8Isotope(self):
         fe56 = nb.byName["FE56"]
         fe56tsl = ts.ThermalScattering(fe56)
         self.assertEqual(fe56tsl._genENDFB8Label(), "tsl-026_Fe_056.endf")
 
-    def testACECompound(self):
+    def test_ACECompound(self):
         si = nb.byName["SI"]
         o = nb.byName["O"]
         sio2 = ts.ThermalScattering((si, o), "SiO2-alpha")
         self.assertEqual(sio2._genACELabel(), "sio2")
 
-    def testACEElementInCompound(self):
+    def test_ACEElementInCompound(self):
         hyd = nb.byName["H"]
         hInH2O = ts.ThermalScattering(hyd, "H2O")
         self.assertEqual(hInH2O._genACELabel(), "h-h2o")
 
-    def testACEIsotope(self):
+    def test_ACEIsotope(self):
         fe56 = nb.byName["FE56"]
         fe56tsl = ts.ThermalScattering(fe56)
         self.assertEqual(fe56tsl._genACELabel(), "fe-56")

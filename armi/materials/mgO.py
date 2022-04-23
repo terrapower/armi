@@ -32,7 +32,7 @@ class MgO(Material):
         """THE COEFFICIENT OF EXPANSION OF MAGNESIUM OXIDE
         Milo A. Durand
 
-        Journal of Applied  Physics 7, 297 (1936); doi: 10.1063/1.174539
+        Journal of Applied Physics 7, 297 (1936); doi: 10.1063/1.174539
 
         This is based on a 3rd order polynomial fit of the data in Table I.
         """
@@ -50,7 +50,6 @@ class MgO(Material):
         self.checkTempRange(273, 1273, Tk, "density")
         dLL = self.linearExpansionPercent(Tk=Tk)
 
-        # runLog.debug('dLL: {0} m/m/K'.format(dLL))
         dRho = (1 - (1 + dLL) ** 3) / (1 + dLL) ** 3
         density = rho0 * (1 + dRho)
         return density

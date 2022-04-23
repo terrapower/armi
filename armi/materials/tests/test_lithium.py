@@ -48,6 +48,34 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
 
         self.assertEqual(self.Lithium_both.getMassFrac("LI6"), 0.8)
 
+    def test_density(self):
+        ref = self.mat.density(Tc=100)
+        cur = 0.512
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+        ref = self.mat.density(Tc=200)
+        cur = 0.512
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+    def test_meltingPoint(self):
+        ref = self.mat.meltingPoint()
+        cur = 453.69
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+    def test_boilingPoint(self):
+        ref = self.mat.boilingPoint()
+        cur = 1615.0
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+    def test_heatCapacity(self):
+        ref = self.mat.heatCapacity(Tc=100)
+        cur = 3570.0
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+        ref = self.mat.heatCapacity(Tc=200)
+        cur = 3570.0
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
 
 if __name__ == "__main__":
     unittest.main()
