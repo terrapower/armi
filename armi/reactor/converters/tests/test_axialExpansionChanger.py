@@ -423,7 +423,7 @@ class TestConservation(Base, unittest.TestCase):
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
         # 10% growth of fuel components
-        pList = zeros(len(cList)) + 0.01
+        pList = zeros(len(cList)) + 0.1
         chngr = AxialExpansionChanger(converterSettings={})
         chngr.setAssembly(assembly)
         chngr.expansionData.setExpansionFactors(cList, pList)
