@@ -23,7 +23,7 @@ Here is an excerpt from a settings file:
     :language: yaml
     :lines: 3-15
 
-A full listing of settings may be found in the :doc:`Table of all global settings </user/inputs/settings_report>`.
+A full listing of settings available in the framework may be found in the :doc:`Table of all global settings </user/inputs/settings_report>`.
 
 Many settings are provided by the ARMI Framework, and others are defined by various plugins.
 
@@ -132,3 +132,83 @@ These settings come with a few caveats:
        and their number of groups are consistent, then the effective delayed
        neutron fraction for the system is calculated as the summation of the
        group-wise delayed neutron fractions.
+
+Cycle History
+-------------
+The reactor cycle history may be specified using either the simple or detailed
+option.
+The simple cycle history consists of the following case settings, of which all must
+be specified:
+    
+    * ``nCycles``
+    * ``burnSteps``
+    * ``availabilityFactor(s)``
+    * ``cycleLength(s)``
+
+In addition, one may optionally use the ``powerFractions`` setting to change the reactor
+power between each cycle.
+With these settings, a user can define a history in which each cycle may vary
+in power, length, and uptime.
+The history is restricted, however, to each cycle having a constant power, to
+each cycle having the same number of burnup nodes, and to those burnup nodes being
+evenly spaced within each cycle.
+An example simple cycle history might look like::
+
+    nCycles: 3
+    burnSteps: 2
+    cycleLengths: [100, R2]
+    powerFractions: [1.0, 0.5, 1.0]
+    availabilityFactors: [0.9, 0.3, 0.93]
+
+Note the use of the special shorthand list notation, where repeated values in a list can be specified using an "R" followed by the number of times the value is to be repeated.
+
+The above scheme would represent 3 cycles of operation:
+    
+    1. 100% power for 90 days followed by 10 days shutdown (i.e. 90% capacity)
+
+    2. 50% power for 30 days followed by 70 days shutdown (i.e. 15% capacity)
+
+    3. 100% power for 93 days followed by 7 days shutdown (i.e. 93% capacity)
+
+In each cycle, criticality calculations will be performed at 3 nodes evenly-spaced through the uptime portion of the cycle (i.e. ``availabilityFactor``*``powerFraction``), without option for changing node spacing or frequency.
+This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
+
+To overcome these limitations, the detailed cycle history, consisting of the ``nCycles``
+and ``cycles`` settings may be specified instead.
+For each cycle, an entry to the ``cycles`` list is made with the following optional fields: 
+    
+    * ``name``
+    * ``power fractions``
+    * ``cumulative days`` or ``step days``
+    * ``availability factor``
+
+An example detailed cycle history employing all of these fields could look like::
+
+    nCycles: 3
+    cycles: 
+      - name: A
+        cumulative days: [1, 2, 98]
+        power fractions: [0.1, 0.2, 1]
+        availability factor: 0.1
+      - name: B
+        cumulative days: [2, 70, 6, 8]
+        power fractions: [0.2, 1.0, 0.95, 0.93]
+      - name: C
+        step days: [5, R5]
+        power fractions: [1, R5]
+
+Note that repeated values in a list may be again be entered using the shorthand notation.
+
+Such a scheme would define the following cycles:
+
+    1. A 3 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle
+    2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 15 days in the cycle
+    3. Constant full-power operation split into six even increments
+
+As can be seen, the detailed cycle history option provides much greated flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
+
+.. note:: Although the detailed cycle history option allows for powers to change within each cycle, it should be noted that the power over each step is still considered to be constant.
+
+.. note:: The detailed cycle history may not be used for equilibrium calculations at this time.
+
+.. note:: The ``name`` field of the detailed cycle history is not yet used for anything, but this information will still be accessible on the operator during runtime.
