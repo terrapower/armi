@@ -308,6 +308,35 @@ class Inspector:
 
             self.geomType, self.coreSymmetry = geom.geomType, geom.symmetry
 
+    def _fillOutSimpleCyclesDefaults(self):
+        defaultSimpleCyclesSettings = {
+            "cycleLength": 365.242199,
+            "cycleLengths": [],
+            "burnSteps": 4,
+            "availabilityFactor": 1.0,
+            "availabilityFactors": [],
+            "powerFractions": [],
+        }
+        for setting, default in defaultSimpleCyclesSettings.items():
+            if self.cs[setting] == None:
+                self._assignCS(setting, default)
+        self._assignCS("availabilityFactors", [])
+
+    def _makeSimpleCyclesInputsUnavailable(self):
+        for s in [
+            "cycleLength",
+            "cycleLengths",
+            "burnSteps",
+            "availabilityFactor",
+            "availabilityFactors",
+            "powerFractions",
+        ]:
+            self._assignCS(s, None)
+
+    def _correctCycles(self):
+        self._assignCS("nCycles", 1)
+        self._assignCS("burnSteps", 0)
+
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         # import here to avoid cyclic issues
@@ -456,31 +485,6 @@ class Inspector:
             lambda: self._assignCS("numCoupledIterations", 0),
         )
 
-        def _makeSimpleCyclesInputsUnavailable():
-            for s in [
-                "cycleLength",
-                "cycleLengths",
-                "burnSteps",
-                "availabilityFactor",
-                "availabilityFactors",
-                "powerFractions",
-            ]:
-                self._assignCS(s, None)
-
-        def _fillOutSimpleCyclesDefaults():
-            defaultSimpleCyclesSettings = {
-                "cycleLength": 365.242199,
-                "cycleLengths": [],
-                "burnSteps": 4,
-                "availabilityFactor": 1.0,
-                "availabilityFactors": [],
-                "powerFractions": [],
-            }
-            for setting, default in defaultSimpleCyclesSettings.items():
-                if self.cs[setting] == None:
-                    self._assignCS(setting, default)
-            self._assignCS("availabilityFactors", [])
-
         self.addQuery(
             lambda: (
                 (
@@ -497,7 +501,7 @@ class Inspector:
             " `burnSteps`, and `availabilityFactor(s)`) or the"
             " detailed cycle input `cycles` must be entered.",
             "Add defaults for missing simple cycle inputs?",
-            _fillOutSimpleCyclesDefaults,
+            self._fillOutSimpleCyclesDefaults,
         )
 
         self.addQuery(
@@ -516,7 +520,7 @@ class Inspector:
             " also use any of the simple cycle history inputs `cycleLength(s)`,"
             " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`.",
             "Use detailed cycle history?",
-            _makeSimpleCyclesInputsUnavailable,
+            self._makeSimpleCyclesInputsUnavailable,
         )
 
         def _factorsAreValid(factors, maxVal=1.0):
@@ -567,15 +571,11 @@ class Inspector:
             lambda: self._assignCS("cycleLengths", []),
         )
 
-        def _correctCycles():
-            self._assigcCS("nCycles", 1)
-            self._assignCS("burnSteps", 0)
-
         self.addQuery(
             lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,
             "Cannot run 0 cycles. Set burnSteps to 0 to activate a single time-independent case.",
             "Set 1 cycle and 0 burnSteps for single time-independent case?",
-            _correctCycles,
+            self._correctCycles,
         )
 
         self.addQuery(
