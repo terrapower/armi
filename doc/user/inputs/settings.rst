@@ -202,7 +202,9 @@ Note that repeated values in a list may be again be entered using the shorthand 
 Such a scheme would define the following cycles:
 
     1. A 3 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle
+
     2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 15 days in the cycle
+
     3. Constant full-power operation split into six even increments
 
 As can be seen, the detailed cycle history option provides much greated flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
