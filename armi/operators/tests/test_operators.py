@@ -26,6 +26,7 @@ from armi.operators.operator import (
     getStepLengths,
     getCycleLengths,
     getBurnSteps,
+    getMaxBurnSteps,
     Operator,
 )
 from armi.reactor.tests import test_reactors
@@ -146,6 +147,8 @@ settings:
     cycleLengthsSimpleSolution = [1, 2, 3]
     burnStepsDetailedSolution = [3, 5, 5]
     burnStepsSimpleSolution = [3, 3, 3]
+    maxBurnStepsDetailedSolution = 5
+    maxBurnStepsSimpleSolution = 3
 
     def setUp(self):
         self.standaloneDetailedCS = Settings()
@@ -250,6 +253,22 @@ settings:
             getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution
         )
         self.assertEqual(self.simpleOperator.burnSteps, self.burnStepsSimpleSolution)
+
+    def test_getMaxBurnSteps(self):
+        self.assertEqual(
+            getMaxBurnSteps(self.standaloneDetailedCS),
+            self.maxBurnStepsDetailedSolution,
+        )
+        self.assertEqual(
+            self.detailedOperator.maxBurnSteps, self.maxBurnStepsDetailedSolution
+        )
+
+        self.assertEqual(
+            getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution
+        )
+        self.assertEqual(
+            self.simpleOperator.maxBurnSteps, self.maxBurnStepsSimpleSolution
+        )
 
 
 if __name__ == "__main__":
