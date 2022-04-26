@@ -171,6 +171,7 @@ def _getStepAndCycleLengths(cs):
             if cs["cycleLengths"] not in [None, []]
             else [cs["cycleLength"]] * cs["nCycles"]
         )
+        availabilityFactors = getAvailabilityFactors(cs)
         cycleLengthsModifiedByAvailability = [length*availability for (length, availability) in zip(cycleLengths, availabilityFactors)]
         stepLengths = (
             [
