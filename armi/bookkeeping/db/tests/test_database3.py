@@ -129,6 +129,71 @@ class TestDatabase3(unittest.TestCase):
         roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
+    def test_prepRestartRun(self):
+        # This test is based on the armiRun.yaml case that is loaded during the `setUp`
+        # above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
+        # and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
+        # created here for this test.
+
+        # first successfully call to prepRestartRun
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        cs = o.cs
+        cs = cs.modified(
+            newSettings={
+                "burnSteps": None,
+                "cycleLength": None,
+                "nCycles": 3,
+                "cycles": [
+                    {"step days": [1000, 1000], "power fractions": [1, 1]},
+                    {"step days": [1000, 1000], "power fractions": [1, 1]},
+                    {"step days": [1000, 1000], "power fractions": [1, 1]},
+                ],
+                "reloadDBName": 'something_fake.h5',
+            }
+        )
+
+        # create a db based on the cs
+        dbi = database3.DatabaseInterface(r, cs)
+        dbi.initDB(fName="reloadingDB.h5")
+        db = dbi.database
+
+        # populate the db with something
+        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+            r.p.cycle = cycle
+            r.p.timeNode = node
+            r.p.cycleLength = 2000
+            db.writeToDB(r)
+        db.close()
+
+        self.dbi.prepRestartRun()  # should not raise error
+
+        # now make the cycle histories clash and confirm that an error is thrown
+        cs = cs.modified(
+            newSettings={
+                "cycles": [
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                ],
+            }
+        )
+
+        # create a db based on the cs
+        dbi = database3.DatabaseInterface(r, cs)
+        dbi.initDB(fName="reloadingDB.h5")
+        db = dbi.database
+
+        # populate the db with something
+        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+            r.p.cycle = cycle
+            r.p.timeNode = node
+            r.p.cycleLength = 2000
+            db.writeToDB(r)
+        db.close()
+
+        with self.assertRaises(ValueError):
+            self.dbi.prepRestartRun()
+
     def test_computeParents(self):
         # The below arrays represent a tree structure like this:
         #                 71 -----------------------.
