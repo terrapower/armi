@@ -171,10 +171,11 @@ def _getStepAndCycleLengths(cs):
             if cs["cycleLengths"] not in [None, []]
             else [cs["cycleLength"]] * cs["nCycles"]
         )
+        cycleLengthsModifiedByAvailability = [length*availability for (length, availability) in zip(cycleLengths, availabilityFactors)]
         stepLengths = (
             [
-                [cycleLength / cs["burnSteps"]] * cs["burnSteps"]
-                for cycleLength in cycleLengths
+                [length / cs["burnSteps"]] * cs["burnSteps"]
+                for length in cycleLengthsModifiedByAvailability
             ]
             if cs["burnSteps"] != 0
             else []
