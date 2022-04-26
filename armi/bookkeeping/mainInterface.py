@@ -85,24 +85,11 @@ class MainInterface(interfaces.Interface):
             # and the database contains the values from the run at the end of the
             # interface stack, which are what the start start cycle and start node
             # should begin with.
-            cycle = self.cs["startCycle"]
-            node = self.cs["startNode"]
-            dbCycle, dbNode = utils.getPreviousTimeStep(
-                cycle, node, self.o.burnSteps[cycle]
-            )
-            try:
-                # NOTE: this should be the responsibility of the database, but cannot
-                # because the Database is last in the stack and the MainInterface is
-                # first
-                dbi.prepRestartRun(dbCycle, dbNode)
-            except:
-                runLog.error(
-                    "Could not load the initial state as requested. DB `{}` does "
-                    "not exist or does not have enough time steps to load this time "
-                    "(cycle={}, tn={})"
-                    "".format(self.cs["reloadDBName"], dbCycle, dbNode)
-                )
-                raise
+
+            # NOTE: this should be the responsibility of the database, but cannot
+            # because the Database is last in the stack and the MainInterface is
+            # first
+            dbi.prepRestartRun()
             self.r.p.cycle = self.cs["startCycle"]
             self.r.p.timeNode = self.cs["startNode"]
 
