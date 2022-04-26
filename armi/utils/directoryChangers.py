@@ -37,6 +37,12 @@ class DirectoryChanger:
     """
     Utility to change directory.
 
+    Use with 'with' statements to execute code in a different dir, guaranteeing a clean
+    return to the original directory
+
+    >>> with DirectoryChanger('C:\\whatever')
+    ...     pass
+
     Parameters
     ----------
     destination : str
@@ -48,13 +54,6 @@ class DirectoryChanger:
     dumpOnException : bool, optional
         Flag to tell system to retrieve the entire directory if an exception
         is raised within a the context manager.
-
-    Use with 'with' statements to execute code in a different dir, guaranteeing a clean
-    return to the original directory
-
-    >>> with DirectoryChanger('C:\\whatever')
-    ...     pass
-
     """
 
     def __init__(
