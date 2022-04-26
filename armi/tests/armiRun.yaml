@@ -1,6 +1,7 @@
 metadata:
   version: uncontrolled
 settings:
+  availabilityFactor: 1
   beta: 0.003454
   BOL: true
   branchVerbosity: debug
