@@ -254,7 +254,7 @@ def getBurnSteps(cs):
 
 def getMaxBurnSteps(cs):
     burnSteps = getBurnSteps(cs)
-    return max(steps) if steps != [] else 0
+    return max(burnSteps) if burnSteps != [] else 0
 
 class Operator:  # pylint: disable=too-many-public-methods
     """
