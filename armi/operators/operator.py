@@ -252,7 +252,8 @@ def getBurnSteps(cs):
     return [len(steps) for steps in stepLengths]
 
 def getMaxBurnSteps(cs):
-    return max(getBurnSteps(cs))
+    burnSteps = getBurnSteps(cs)
+    return max(steps) if steps != [] else 0
 
 class Operator:  # pylint: disable=too-many-public-methods
     """
