@@ -66,7 +66,7 @@ GEOM_INPUT_YAML = """reactor:
 
 
 class TestGeomType(unittest.TestCase):
-    def testFromStr(self):
+    def test_fromStr(self):
         # note the bonkers case and extra whitespace to exercise the canonicalization
         self.assertEqual(geometry.GeomType.fromStr("HeX"), geometry.GeomType.HEX)
         self.assertEqual(
@@ -78,7 +78,7 @@ class TestGeomType(unittest.TestCase):
         with self.assertRaises(ValueError):
             geometry.GeomType.fromStr("what even is this?")
 
-    def testLabel(self):
+    def test_label(self):
         gt = geometry.GeomType.fromStr("hex")
         self.assertEqual(gt.label, "Hexagonal")
         gt = geometry.GeomType.fromStr("cartesian")
@@ -88,13 +88,13 @@ class TestGeomType(unittest.TestCase):
         gt = geometry.GeomType.fromStr("thetarz")
         self.assertEqual(gt.label, "R-Z-Theta")
 
-    def testStr(self):
+    def test_str(self):
         for geom in {geometry.HEX, geometry.CARTESIAN, geometry.RZ, geometry.RZT}:
             self.assertEqual(str(geometry.GeomType.fromStr(geom)), geom)
 
 
 class TestSymmetryType(unittest.TestCase):
-    def testFromStr(self):
+    def test_fromStr(self):
         # note the bonkers case and extra whitespace to exercise the canonicalization
         self.assertEqual(
             geometry.SymmetryType.fromStr("thiRd periodic ").domain,
@@ -107,7 +107,7 @@ class TestSymmetryType(unittest.TestCase):
         with self.assertRaises(ValueError):
             geometry.SymmetryType.fromStr("what even is this?")
 
-    def testFromAny(self):
+    def test_fromAny(self):
         st = geometry.SymmetryType.fromAny("eighth reflective through center assembly")
         self.assertTrue(st.isThroughCenterAssembly)
         self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
@@ -125,7 +125,7 @@ class TestSymmetryType(unittest.TestCase):
         self.assertEqual(newST.domain, geometry.DomainType.EIGHTH_CORE)
         self.assertEqual(newST.boundary, geometry.BoundaryType.REFLECTIVE)
 
-    def testBaseConstructor(self):
+    def test_baseConstructor(self):
         self.assertEqual(
             geometry.SymmetryType(
                 geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
@@ -141,7 +141,7 @@ class TestSymmetryType(unittest.TestCase):
             "",
         )
 
-    def testLabel(self):
+    def test_label(self):
         st = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
@@ -166,7 +166,7 @@ class TestSymmetryType(unittest.TestCase):
         )
         self.assertEqual(st.domain.label, "Sixteenth")
 
-    def testSymmetryFactor(self):
+    def test_SymmetryFactor(self):
         st = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
@@ -225,7 +225,7 @@ class TestSymmetryType(unittest.TestCase):
 
 
 class TestSystemLayoutInput(unittest.TestCase):
-    def testReadHexGeomXML(self):
+    def test_readHexGeomXML(self):
         geom = SystemLayoutInput()
         geom.readGeomFromFile(os.path.join(TEST_ROOT, "geom.xml"))
         self.assertEqual(str(geom.geomType), geometry.HEX)
@@ -234,7 +234,7 @@ class TestSystemLayoutInput(unittest.TestCase):
         geom.writeGeom(out)
         os.remove(out)
 
-    def testReadReactor(self):
+    def test_readReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
         reactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
@@ -294,7 +294,7 @@ class TestSystemLayoutInputTRZ(unittest.TestCase):
     because it can't auto-compute the area.
     """
 
-    def testReadTRZGeomXML(self):
+    def test_readTRZGeomXML(self):
         geom = SystemLayoutInput()
         geom.readGeomFromFile(os.path.join(TEST_ROOT, "trz_geom.xml"))
         self.assertEqual(str(geom.geomType), geometry.RZT)

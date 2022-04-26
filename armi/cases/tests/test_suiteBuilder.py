@@ -50,7 +50,7 @@ class LatinHyperCubeModifier(SamplingInputModifier):
 class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
     """Class to test LatinHyperCubeSuiteBuilder."""
 
-    def testInitialize(self):
+    def test_initialize(self):
         builder = LatinHyperCubeSuiteBuilder(case, size=20)
         assert builder.modifierSets == []
 

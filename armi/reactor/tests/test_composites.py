@@ -91,7 +91,7 @@ class TestCompositePattern(unittest.TestCase):
         container.add(nested)
         self.container = container
 
-    def testComposite(self):
+    def test_Composite(self):
         container = self.container
 
         children = container.getChildren()
@@ -101,10 +101,10 @@ class TestCompositePattern(unittest.TestCase):
         allChildren = container.getChildren(deep=True)
         self.assertEqual(len(allChildren), 8)
 
-    def testIterComponents(self):
+    def test_iterComponents(self):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
-    def testGetChildren(self):
+    def test_getChildren(self):
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
         self.assertEqual(len(firstGen), 6)
@@ -145,6 +145,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertTrue(c.nameContains("One"))
         self.assertTrue(c.nameContains("THREE"))
         self.assertFalse(c.nameContains("nope"))
+        self.assertFalse(c.nameContains(["nope"]))
         self.assertTrue(c.nameContains(["one", "TWO", "three"]))
         self.assertTrue(c.nameContains(["nope", "dope", "three"]))
 
@@ -199,6 +200,18 @@ class TestCompositePattern(unittest.TestCase):
     def test_getBoundingCirlceOuterDiameter(self):
         od = self.container.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(od, len(list(self.container.iterComponents())))
+
+    def test_getParamNames(self):
+        params = self.container.getParamNames()
+        self.assertEqual(len(params), 3)
+        self.assertIn("flags", params)
+        self.assertIn("serialNum", params)
+        self.assertIn("type", params)
+
+    def test_updateVolume(self):
+        self.assertAlmostEqual(self.container.getVolume(), 0)
+        self.container._updateVolume()
+        self.assertAlmostEqual(self.container.getVolume(), 0)
 
 
 class TestCompositeTree(unittest.TestCase):
@@ -293,6 +306,20 @@ class TestCompositeTree(unittest.TestCase):
         self.Block.spatialLocator = otherBlock.spatialLocator
         otherBlock.spatialLocator = locator
         self.assertTrue(otherBlock < self.Block)
+
+    def test_summing(self):
+        a = assemblies.Assembly("dummy")
+        a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
+        otherBlock = deepcopy(self.Block)
+        a.add(self.Block)
+        a.add(otherBlock)
+
+        b = self.Block + otherBlock
+        self.assertEqual(len(b), 26)
+        self.assertFalse(b[0].is3D)
+        self.assertIn("Circle", str(b[0]))
+        self.assertFalse(b[-1].is3D)
+        self.assertIn("Hexagon", str(b[-1]))
 
     def test_constituentReport(self):
         runLog.info(self.r.core.constituentReport())
@@ -536,5 +563,4 @@ class TestMiscMethods(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestCompositeTree.test_ordering']
     unittest.main()
