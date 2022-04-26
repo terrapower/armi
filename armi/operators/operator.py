@@ -250,6 +250,8 @@ def getBurnSteps(cs):
     stepLengths = getStepLengths(cs)
     return [len(steps) for steps in stepLengths]
 
+def getMaxBurnSteps(cs):
+    return max(getBurnSteps(cs))
 
 class Operator:  # pylint: disable=too-many-public-methods
     """
@@ -327,6 +329,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._stepLengths = None
         self._cycleLengths = None
         self._burnSteps = None
+        self._maxBurnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
 
@@ -346,6 +349,12 @@ class Operator:  # pylint: disable=too-many-public-methods
             else:
                 self._checkReactorCycleAttrs({"burnSteps": self._burnSteps})
         return self._burnSteps
+
+    @property
+    def maxBurnSteps(self):
+        if not self._maxBurnSteps:
+            self._maxBurnSteps = getMaxBurnSteps(self.cs)
+        return self._maxBurnSteps
 
     @property
     def stepLengths(self):

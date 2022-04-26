@@ -23,6 +23,7 @@ import scipy.integrate
 
 from armi import runLog
 from armi import interfaces
+from armi.operators.operator import getMaxBurnSteps
 from armi.utils import units
 from armi.utils import codeTiming
 from armi.reactor import geometry
@@ -58,17 +59,11 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.cycleFmt = "03d"  # produce ig001.inp
 
-        if self._getMaxBurnSteps() > 10:
+        if getMaxBurnSteps(self.cs) > 10:
             self.nodeFmt = "03d"  # produce ig001_001.inp
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
-
-    def _getMaxBurnSteps(self):
-        if self.cs["cycles"] != []:
-            return max([len(cycle["power fractions"]) for cycle in self.cs["cycles"]])
-        else:
-            return self.cs["burnSteps"]
 
     def getHistoryParams(self):
         """Return parameters that will be added to assembly versus time history printouts."""
