@@ -144,7 +144,7 @@ def loadTestReactor(
         for that key.
 
     inputFileName : str, default="armiRun.yaml"
-        Name of the input file to run.        
+        Name of the input file to run.
 
     Returns
     -------
