@@ -135,10 +135,13 @@ These settings come with a few caveats:
 
 Cycle History
 -------------
-The reactor cycle history may be specified using either the simple or detailed
+For all cases, ``nCycles`` must be specified by the user.
+In the case that only a single state is to be examined (i.e. no burnup), the user need only specify ``nCycles`` = 1.
+
+In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
 option.
 The simple cycle history consists of the following case settings, of which all must
-be specified:
+be specified for a burnup case:
     
     * ``nCycles``
     * ``burnSteps``

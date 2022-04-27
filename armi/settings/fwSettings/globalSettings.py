@@ -212,9 +212,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLE_LENGTH,
             default=None,
             label="Cycle Length",
-            description="Duration of one single cycle in days. If availability factor is below "
+            description="Duration of one single cycle in days. If `availabilityFactor` is below "
             "1, the reactor will be at power less than this. If variable, use "
-            "cycleLengths setting.",
+            "`cycleLengths` setting.",
             oldNames=[
                 ("burnTime", None),
             ],
@@ -225,9 +225,9 @@ def defineSettings() -> List[setting.Setting]:
             default=None,
             label="Cycle durations",
             description="List of durations of each cycle in days. The at-power "
-            "duration will be affected by the availability factor. R is repeat. For "
+            "duration will be affected by `availabilityFactor`. R is repeat. For "
             "example [100, 150, '9R'] is 1 100 day cycle followed by 10 150 day "
-            "cycles. Empty list is constant duration set by 'cycleLength'.",
+            "cycles. Empty list is constant duration set by `cycleLength`.",
             schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
@@ -235,7 +235,7 @@ def defineSettings() -> List[setting.Setting]:
             default=None,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
-            "time that the plant is operating. If variable, use availabilityFactors "
+            "time that the plant is operating. If variable, use `availabilityFactors` "
             "setting.",
             oldNames=[
                 ("capacityFactor", None),
@@ -248,8 +248,8 @@ def defineSettings() -> List[setting.Setting]:
             label="Availability factors",
             description="List of availability factor of each cycle as a fraction "
             "(fraction of time plant is not in an outage). R is repeat. For example "
-            "[0.5, 1.0, '9R'] is 1 50% CF followed by 10 100 CF. Empty list is "
-            "constant duration set by 'availabilityFactor'.",
+            "[0.5, 1.0, '9R'] is 1 50% followed by 10 100%. Empty list is "
+            "constant duration set by `availabilityFactor`.",
             schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
@@ -258,8 +258,8 @@ def defineSettings() -> List[setting.Setting]:
             label="Power fractions",
             description="List of power fractions at each cycle (fraction of rated "
             "thermal power the plant achieves). R is repeat. For example [0.5, 1.0, "
-            "'9R'] is 1 50% PF followed by 10 100% PF. Specify zeros to indicate "
-            "decay-only cycles (i.e. for decay heat analysis). Empty list implies "
+            "'9R'] is 1 50% followed by 10 100%. Specify zeros to indicate "
+            "decay-only cycles (i.e. for decay heat analysis). None implies "
             "always full rated power.",
             schema=vol.Any([vol.Coerce(str)], None),
         ),
@@ -269,7 +269,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Burnup Steps per Cycle",
             description="Number of depletion substeps, n, in one cycle. Note: There "
             "will be n+1 time nodes and the burnup step time will be computed as cycle "
-            "length/n.",
+            "length/n when the simple cycles input format is used.",
             schema=(vol.Any(int, None)),
         ),
         setting.Setting(
@@ -745,7 +745,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLES,
             default=[],
             label="Cycle information",
-            description="YAML list defining the cycle history of the case."
+            description="YAML list defining the cycle history of the case. Options"
+            " at each cycle include: `name`, `cumulative days`, `step days`, `availability"
+            " factor`, and `power fractions`."
             " If specified, do not use any of cycleLength(s), availabilityFactor(s)"
             " powerFractions, or burnSteps. Must also specify nCycles.",
             schema=vol.Schema(

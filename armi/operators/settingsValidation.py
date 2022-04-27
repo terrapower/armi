@@ -28,6 +28,7 @@ from armi import getPluginManagerOrFail
 from armi import runLog, settings, utils
 from armi.utils import pathTools
 from armi.utils.mathematics import expandRepeatedFloats
+from armi.utils.units import DAYS_PER_YEAR
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
@@ -310,7 +311,7 @@ class Inspector:
 
     def _fillOutSimpleCyclesDefaults(self):
         defaultSimpleCyclesSettings = {
-            "cycleLength": 365.242199,
+            "cycleLength": DAYS_PER_YEAR,
             "cycleLengths": [],
             "burnSteps": 4,
             "availabilityFactor": 1.0,
@@ -333,9 +334,17 @@ class Inspector:
         ]:
             self._assignCS(s, None)
 
-    def _correctCycles(self):
+    def _correctCyclesToZeroBurnup(self):
         self._assignCS("nCycles", 1)
         self._assignCS("burnSteps", 0)
+        self._assignCS("cycleLength", None)
+        self._assignCS("cycleLengths", None)
+        self._assignCS("availabilityFactor", None)
+        self._assignCS("availabilityFactors", None)
+        self._assignCS("cycles", [])
+
+    def _setBurnStepsToFour(self):
+        self._assignCS("burnSteps", 4)
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
@@ -486,10 +495,48 @@ class Inspector:
         )
 
         self.addQuery(
+            lambda: self.cs["nCycles"] in [0, None],
+            "Cannot run 0 cycles. Set burnSteps to 0 to activate a single time-independent case.",
+            "Set 1 cycle and 0 burnSteps for single time-independent case?",
+            self._correctCyclesToZeroBurnup,
+        )
+
+        # first test if it is a zero burnup case using either the simple or detailed cycles input
+        self.addQuery(
+            lambda: self.cs["nCycles"] == 1
+            and (self.cs["burnSteps"] in [0, None] and self.cs["cycles"] == [])
+            and (
+                self.cs["cycleLength"] != None
+                or self.cs["cycleLengths"] != None
+                or self.cs["availabilityFactor"] != None
+                or self.cs["availabilityFactors"] != None
+            ),
+            "If `nCycles` = 1, `burnSteps` = 0 or unspecified, and `cycles` is unspecified,"
+            " a zero burnup case is assumed. However, in this case other simple cycles"
+            " settings cannot be entered.",
+            "Unset `cycleLength(s)` and/or `availabilityFactor(s)` and continue"
+            " with a zero burnup case?",
+            self._correctCyclesToZeroBurnup,
+        )
+
+        # it must be burnup, make sure that burnSteps is set in the simple case
+        self.addQuery(
+            lambda: self.cs["nCycles"] > 1
+            and self.cs["burnSteps"] in [0, None]
+            and self.cs["cycles"] == [],
+            "If `nCycles` is greater than 1 and the simple cycles input is used,"
+            "  `burnSteps` must be set to a value greater than 0.",
+            "Set `burnSteps` to 4?",
+            self._setBurnStepsToFour,
+        )
+
+        # check for the full suite of the simple cycles input in the case that there is no detailed cycles input
+        # and it is a burnup case
+        self.addQuery(
             lambda: (
-                (
+                self.cs["burnSteps"] not in [0, None]
+                and (
                     (self.cs["cycleLength"] == None and self.cs["cycleLengths"] == None)
-                    or self.cs["burnSteps"] == None
                     or (
                         self.cs["availabilityFactor"] == None
                         and self.cs["availabilityFactors"] == None
@@ -499,11 +546,13 @@ class Inspector:
             ),
             "Either the full suite of simple cycle inputs (`cycleLength(s)`,"
             " `burnSteps`, and `availabilityFactor(s)`) or the"
-            " detailed cycle input `cycles` must be entered.",
-            "Add defaults for missing simple cycle inputs?",
+            " detailed cycle input `cycles` must be entered in burnup cases.",
+            f"Add defaults for missing simple cycle inputs (cycleLength: {DAYS_PER_YEAR}"
+            ", burnSteps: 4, availabilityFactor: 1.0)?",
             self._fillOutSimpleCyclesDefaults,
         )
 
+        # if the detailed cycles input is used, make sure none of the simple cycles inputs are entered
         self.addQuery(
             lambda: (
                 (
@@ -536,7 +585,7 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["availabilityFactors"]
-                and not self.cs["cycles"]
+                # and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["availabilityFactors"])
             ),
             "`availabilityFactors` was not set to a list compatible with the number of cycles. "
@@ -548,7 +597,7 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["powerFractions"]
-                and not self.cs["cycles"]
+                # and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["powerFractions"])
             ),
             "`powerFractions` was not set to a compatible list. "
@@ -560,7 +609,7 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["cycleLengths"]
-                and not self.cs["cycles"]
+                # and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
             ),
             "The number of cycles defined in `cycleLengths` is not equal to the number of cycles in "
@@ -572,17 +621,17 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,
-            "Cannot run 0 cycles. Set burnSteps to 0 to activate a single time-independent case.",
-            "Set 1 cycle and 0 burnSteps for single time-independent case?",
-            self._correctCycles,
-        )
-
-        self.addQuery(
             lambda: (
                 self.cs["runType"] == operators.RunTypes.STANDARD
                 and self.cs["burnSteps"] == 0
-                and (len(self.cs["cycleLengths"]) > 1 or self.cs["nCycles"] > 1)
+                and (
+                    (
+                        len(self.cs["cycleLengths"]) > 1
+                        if self.cs["cycleLengths"] != None
+                        else False
+                    )
+                    or self.cs["nCycles"] > 1
+                )
             ),
             "Cannot run multi-cycle standard cases with 0 burnSteps per cycle. Please update settings.",
             "",

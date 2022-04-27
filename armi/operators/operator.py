@@ -137,7 +137,11 @@ def getAvailabilityFactors(cs):
         return (
             expandRepeatedFloats(cs["availabilityFactors"])
             if cs["availabilityFactors"] not in [None, []]
-            else [cs["availabilityFactor"]] * cs["nCycles"]
+            else (
+                [cs["availabilityFactor"]] * cs["nCycles"]
+                if cs["availabilityFactor"] != None
+                else [1]
+            )
         )
 
 
@@ -169,17 +173,24 @@ def _getStepAndCycleLengths(cs):
         cycleLengths = (
             expandRepeatedFloats(cs["cycleLengths"])
             if cs["cycleLengths"] not in [None, []]
-            else [cs["cycleLength"]] * cs["nCycles"]
+            else (
+                [cs["cycleLength"]] * cs["nCycles"]
+                if cs["cycleLength"] != None
+                else [0]
+            )
         )
         availabilityFactors = getAvailabilityFactors(cs)
-        cycleLengthsModifiedByAvailability = [length*availability for (length, availability) in zip(cycleLengths, availabilityFactors)]
+        cycleLengthsModifiedByAvailability = [
+            length * availability
+            for (length, availability) in zip(cycleLengths, availabilityFactors)
+        ]
         stepLengths = (
             [
                 [length / cs["burnSteps"]] * cs["burnSteps"]
                 for length in cycleLengthsModifiedByAvailability
             ]
-            if cs["burnSteps"] != 0
-            else []
+            if cs["burnSteps"] not in [0, None]
+            else [[]]
         )
 
     return stepLengths, cycleLengths
@@ -252,9 +263,11 @@ def getBurnSteps(cs):
     stepLengths = getStepLengths(cs)
     return [len(steps) for steps in stepLengths]
 
+
 def getMaxBurnSteps(cs):
     burnSteps = getBurnSteps(cs)
-    return max(burnSteps) if burnSteps != [] else 0
+    return max(burnSteps)
+
 
 class Operator:  # pylint: disable=too-many-public-methods
     """
