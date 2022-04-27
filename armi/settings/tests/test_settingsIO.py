@@ -19,12 +19,12 @@ import io
 import os
 import unittest
 
-import armi
-from armi.cli import entryPoint
-from armi.utils import directoryChangers
+from armi import context
 from armi import settings
+from armi.cli import entryPoint
 from armi.settings import setting
 from armi.settings import settingsIO
+from armi.utils import directoryChangers
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
     NonexistentSetting,
@@ -55,6 +55,20 @@ class SettingsFailureTests(unittest.TestCase):
                 io.StringIO("useless:\n    should_fail"),
                 fmt=settingsIO.SettingsReader.SettingsInputFormat.YAML,
             )
+
+
+class SettingsReaderTests(unittest.TestCase):
+    def setUp(self):
+        self.cs = settings.caseSettings.Settings()
+
+    def test_basicSettingsReader(self):
+        reader = settingsIO.SettingsReader(self.cs)
+
+        self.assertEqual(reader["numProcessors"], 1)
+        self.assertEqual(reader["nCycles"], 1)
+
+        self.assertFalse(getattr(reader, "filelessBP"))
+        self.assertEqual(getattr(reader, "path"), "")
 
 
 class SettingsRenameTests(unittest.TestCase):
@@ -102,7 +116,7 @@ class SettingsWriterTests(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.init_mode = armi.CURRENT_MODE
+        self.init_mode = context.CURRENT_MODE
         self.filepathYaml = os.path.join(
             os.getcwd(), self._testMethodName + "test_setting_io.yaml"
         )
@@ -110,7 +124,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.cs = self.cs.modified(newSettings={"nCycles": 55})
 
     def tearDown(self):
-        armi.Mode.setMode(self.init_mode)
+        context.Mode.setMode(self.init_mode)
         self.td.__exit__(None, None, None)
 
     def test_writeShorthand(self):
@@ -123,6 +137,10 @@ class SettingsWriterTests(unittest.TestCase):
         self.cs.writeToYamlFile(self.filepathYaml)
         self.cs.loadFromInputFile(self.filepathYaml)
         self.assertEqual(self.cs["nCycles"], 55)
+
+    def test_errorSettingsWriter(self):
+        with self.assertRaises(ValueError):
+            _ = settingsIO.SettingsWriter(self.cs, "wrong")
 
 
 class MockEntryPoint(entryPoint.EntryPoint):

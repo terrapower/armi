@@ -1,6 +1,6 @@
 Reports in ARMI
 ================
-.. note::  The resulting report itself is an Html page with table of contents on the left.
+.. note::  The resulting report itself is an HTML page with table of contents on the left.
 
 ARMI provides the ability to make a variety of plots and tables describing the state of the reactor.
 Also, with ARMI's variety of plugins, some plots/analysis could be plugin dependent. If you have certain plugins installed, some new 
@@ -241,7 +241,7 @@ Here, only one label exists, so we only add one line for ``label[0]``. There are
 In summary, to add multiple lines (say, for different assembly types on a Peak DPA plot), the label would be the assembly type and the data would be the dpa at the time for that type.
 The ``uncertainty`` value --> which in general denotes an error bar on the graph---> would be None or 0, for each point if there is no uncertainty.
 
-Html Elements
+HTML Elements
 -------------
 One may also want to add just plain prose. To do this, Sections also allow for the addition of htmltree elements so you can add paragraphs,
 divs, etc, as outlined in htmltree. These parts however will not be titled unless wrapped within a Section, and similarily will not have a direct link

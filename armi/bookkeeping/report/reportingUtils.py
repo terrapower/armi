@@ -16,31 +16,31 @@ r"""
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports
 """
-import re
-import os
 import collections
+import os
 import pathlib
-import textwrap
+import re
 import sys
-import time
 import tabulate
+import textwrap
+import time
 from copy import copy
 
 import numpy
 
-import armi
+from armi import context
+from armi import interfaces
 from armi import runLog
+from armi.bookkeeping import report
+from armi.operators import RunTypes
+from armi.reactor.components import ComponentType
+from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
 from armi.utils import iterables
-from armi.utils import units
-from armi.utils import textProcessors
 from armi.utils import plotting
+from armi.utils import textProcessors
+from armi.utils import units
 from armi.utils.mathematics import findClosest
-from armi import interfaces
-from armi.bookkeeping import report
-from armi.reactor.flags import Flags
-from armi.reactor.components import ComponentType
-from armi.operators import RunTypes
 
 
 # Set to prevent the image and text from being too small to read.
@@ -74,13 +74,13 @@ def writeWelcomeHeaders(o, cs):
                 Operator_TypeOfRun,
                 "{} - {}".format(cs["runType"], o.__class__.__name__),
             ),
-            (Operator_CurrentUser, armi.USER),
-            (Operator_ArmiCodebase, armi.ROOT),
+            (Operator_CurrentUser, context.USER),
+            (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
             (Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
-            (Operator_NumProcessors, armi.MPI_SIZE),
-            (Operator_Date, armi.START_TIME),
+            (Operator_NumProcessors, context.MPI_SIZE),
+            (Operator_Date, context.START_TIME),
         ]
 
         runLog.header("=========== Case Information ===========")
@@ -155,8 +155,8 @@ def writeWelcomeHeaders(o, cs):
 
     def _writeMachineInformation():
         """Create a table that contains basic machine and rank information."""
-        if armi.MPI_SIZE > 1:
-            processorNames = armi.MPI_NODENAMES
+        if context.MPI_SIZE > 1:
+            processorNames = context.MPI_NODENAMES
             uniqueNames = set(processorNames)
             nodeMappingData = []
             for uniqueName in uniqueNames:
@@ -196,7 +196,7 @@ def writeWelcomeHeaders(o, cs):
         runLog.header("=========== Reactor Cycle Information ===========")
         runLog.info(tabulate.tabulate(operatingData, tablefmt="armi"))
 
-    if armi.MPI_RANK > 0:
+    if context.MPI_RANK > 0:
         return  # prevent the worker nodes from printing the same thing
 
     _writeCaseInformation(o, cs)
@@ -403,7 +403,6 @@ def setNeutronBalancesReport(core):
     core  : armi.reactor.reactors.Core
 
     """
-
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
             "No rate information (rateCap, rateAbs, etc.) available "
@@ -450,7 +449,7 @@ def setNeutronBalancesReport(core):
         report.NEUT_LOSS,
     )
 
-    runLog.info(report.ALL[report.NEUT_PROD])  # TODO: print in "lite"
+    runLog.info(report.ALL[report.NEUT_PROD])
     runLog.info(report.ALL[report.NEUT_LOSS])
 
 

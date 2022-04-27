@@ -30,7 +30,7 @@ import logging
 import os
 from copy import copy, deepcopy
 
-import armi
+from armi import context
 from armi import runLog
 from armi.settings import settingsIO
 from armi.settings.setting import Setting
@@ -80,9 +80,11 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
+        from armi import getApp  # pylint: disable=import-outside-toplevel
+
         self.path = ""
 
-        app = armi.getApp()
+        app = getApp()
         assert app is not None
         self.__settings = app.getSettings()
         if not Settings.instance:
@@ -170,7 +172,9 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        self.__settings = armi.getApp().getSettings()
+        from armi import getApp  # pylint: disable=import-outside-toplevel
+
+        self.__settings = getApp().getSettings()
 
         # restore non-setting instance attrs
         for key, val in state.items():
@@ -272,10 +276,14 @@ class Settings:
         if path:
             self.path = path  # can't set this before a chance to fail occurs
 
-    # TODO: At some point, much of the logging init will be moved to context, including this.
     def initLogVerbosity(self):
-        """Central location to init logging verbosity"""
-        if armi.MPI_RANK == 0:
+        """
+        Central location to init logging verbosity
+
+        NOTE: This means that creating a Settings object sets the global logging
+        level of the entire code base.
+        """
+        if context.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
         else:
             runLog.setVerbosity(self["branchVerbosity"])

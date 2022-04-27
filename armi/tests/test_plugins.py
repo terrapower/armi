@@ -18,9 +18,9 @@ from typing import Optional
 
 import yamlize
 
-import armi.settings
-from armi import plugins
 from armi import interfaces
+from armi import plugins
+from armi import settings
 
 
 class TestPlugin(unittest.TestCase):
@@ -56,7 +56,7 @@ class TestPlugin(unittest.TestCase):
         if not hasattr(self.plugin, "exposeInterfaces"):
             return
 
-        cs = armi.settings.getMasterCs()
+        cs = settings.getMasterCs()
         results = self.plugin.exposeInterfaces(cs)
         # each plugin should return a list
         self.assertIsInstance(results, list)
