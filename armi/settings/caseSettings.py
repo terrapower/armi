@@ -276,9 +276,13 @@ class Settings:
         if path:
             self.path = path  # can't set this before a chance to fail occurs
 
-    # TODO: At some point, much of the logging init will be moved to runLog, including this.
     def initLogVerbosity(self):
-        """Central location to init logging verbosity"""
+        """
+        Central location to init logging verbosity
+
+        NOTE: This means that creating a Settings object sets the global logging
+        level of the entire code base.
+        """
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
         else:

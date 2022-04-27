@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test Locationlabel migration"""
-import unittest
 import io
+import unittest
 
 from armi.settings import caseSettings
 from armi.scripts.migration.m0_1_6_locationLabels import (
@@ -23,7 +23,7 @@ from armi.settings.settingsIO import SettingsWriter, SettingsReader
 
 
 class TestMigration(unittest.TestCase):
-    def testLocationLabelMigration(self):
+    def test_locationLabelMigration(self):
         """Make a setting with an old value and make sure it migrates to expected new value."""
         cs = caseSettings.Settings()
         newSettings = {"detailAssemLocationsBOL": ["B1012"]}
@@ -42,4 +42,4 @@ class TestMigration(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    nittest.main()

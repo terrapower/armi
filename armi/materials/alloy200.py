@@ -99,7 +99,6 @@ class Alloy200(Material):
         -----
         It is assumed half the max composition for the impurities and the rest is Ni.
         """
-
         nickleMassFrac = 1.0
 
         for elementSymbol, massFrac in self.referenceMaxPercentImpurites:

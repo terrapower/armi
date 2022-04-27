@@ -146,7 +146,7 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.cs
         del self.r
 
-    def testConvert(self):
+    def test_convert(self):
         converterSettings = {
             "radialConversionType": "Ring Compositions",
             "axialConversionType": "Axial Coordinates",
