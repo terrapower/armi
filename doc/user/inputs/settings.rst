@@ -167,30 +167,29 @@ Note the use of the special shorthand list notation, where repeated values in a 
 
 The above scheme would represent 3 cycles of operation:
     
-    1. 100% power for 90 days followed by 10 days shutdown (i.e. 90% capacity)
+    1. 100% power for 90 days, split into two segments of 45 days each, followed by 10 days shutdown (i.e. 90% capacity)
 
-    2. 50% power for 30 days followed by 70 days shutdown (i.e. 15% capacity)
+    2. 50% power for 30 days, split into two segments of 15 days each, followed by 70 days shutdown (i.e. 15% capacity)
 
-    3. 100% power for 93 days followed by 7 days shutdown (i.e. 93% capacity)
+    3. 100% power for 93 days, split into two segments of 46.5 days each, followed by 7 days shutdown (i.e. 93% capacity)
 
 In each cycle, criticality calculations will be performed at 3 nodes evenly-spaced through the uptime portion of the cycle (i.e. ``availabilityFactor``*``powerFraction``), without option for changing node spacing or frequency.
 This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
 
-To overcome these limitations, the detailed cycle history, consisting of the ``nCycles``
-and ``cycles`` settings may be specified instead.
+To overcome these limitations, the detailed cycle history, consisting of the ``nCycles`` and ``cycles`` settings may be specified instead.
 For each cycle, an entry to the ``cycles`` list is made with the following optional fields: 
     
     * ``name``
     * ``power fractions``
-    * ``cumulative days`` or ``step days``
+    * ``cumulative days``, ``step days``, or ``burn steps`` + ``cycle length``
     * ``availability factor``
 
 An example detailed cycle history employing all of these fields could look like::
 
-    nCycles: 3
+    nCycles: 4
     cycles: 
       - name: A
-        cumulative days: [1, 2, 98]
+        cumulative days: [1, 1, 98]
         power fractions: [0.1, 0.2, 1]
         availability factor: 0.1
       - name: B
@@ -199,16 +198,21 @@ An example detailed cycle history employing all of these fields could look like:
       - name: C
         step days: [5, R5]
         power fractions: [1, R5]
+      - cycle length: 100
+        burn steps: 2
+        availability factor: 0.9
 
 Note that repeated values in a list may be again be entered using the shorthand notation.
 
 Such a scheme would define the following cycles:
 
-    1. A 3 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle
+    1. A 2 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle, followed by 900 days of shutdown
 
     2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 15 days in the cycle
 
-    3. Constant full-power operation split into six even increments
+    3. Constant full-power operation for 30 days split into six even increments
+
+    4. Constant full-power operation for 90 days, split into two equal-length 45 day segments, followed by 10 days of downtime
 
 As can be seen, the detailed cycle history option provides much greated flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
 
@@ -217,3 +221,5 @@ As can be seen, the detailed cycle history option provides much greated flexibil
 .. note:: The detailed cycle history may not be used for equilibrium calculations at this time.
 
 .. note:: The ``name`` field of the detailed cycle history is not yet used for anything, but this information will still be accessible on the operator during runtime.
+
+.. note:: Cycles without names will be given the name ``None``

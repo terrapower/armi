@@ -41,7 +41,7 @@ from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.utils import codeTiming
 from armi.utils import pathTools
-from armi.utils.mathematics import expandRepeatedFloats
+from armi.utils.mathematics import expandRepeatedFloats, getStepsFromValues
 
 
 def getPowerFractions(cs):
@@ -155,20 +155,36 @@ def _getStepAndCycleLengths(cs):
     to call each of them separately.
     """
     stepLengths = []
+    availabilityFactors = getAvailabilityFactors(cs)
     if cs["cycles"] != []:
-        for cycle in cs["cycles"]:
-            if "step days" in cycle.keys():
+        for cycleIdx, cycle in enumerate(cs["cycles"]):
+            cycleKeys = cycle.keys()
+
+            if "step days" in cycleKeys:
                 stepLengths.append(expandRepeatedFloats(cycle["step days"]))
-            elif "cumulative days" in cycle.keys():
+            elif "cumulative days" in cycleKeys:
                 cumulativeDays = cycle["cumulative days"]
+                stepLengths.append(getStepsFromValues(cumulativeDays))
+            elif "burn steps" in cycleKeys and "cycle length" in cycleKeys:
                 stepLengths.append(
-                    [cumulativeDays[0]]
-                    + [
-                        (cumulativeDays[i] - cumulativeDays[i - 1])
-                        for i in range(1, len(cumulativeDays))
+                    [
+                        cycle["cycle length"]
+                        * availabilityFactors[cycleIdx]
+                        / cycle["burn steps"]
                     ]
+                    * cycle["burn steps"]
                 )
+            else:
+                raise ValueError(
+                    f"No cycle time history is given in the detailed cycles history for cycle {cycleIdx}"
+                )
+
         cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
+        cycleLengths = [
+            cycleLength / aFactor
+            for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)
+        ]
+
     else:
         cycleLengths = (
             expandRepeatedFloats(cs["cycleLengths"])
@@ -179,7 +195,6 @@ def _getStepAndCycleLengths(cs):
                 else [0]
             )
         )
-        availabilityFactors = getAvailabilityFactors(cs)
         cycleLengthsModifiedByAvailability = [
             length * availability
             for (length, availability) in zip(cycleLengths, availabilityFactors)
@@ -568,6 +583,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             self.r.p.capacityFactor = (
                 self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
             )
+            self.r.p.stepLength = self.stepLengths[cycle][timeNode]
 
             self._timeNodeLoop(cycle, timeNode)
         else:  # do one last node at the end using the same power as the previous node

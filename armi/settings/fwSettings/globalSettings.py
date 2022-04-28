@@ -785,12 +785,19 @@ def _isMonotonicIncreasing(inputList):
 
 def _mutuallyExclusiveCyclesInputs(cycle):
     cycleKeys = cycle.keys()
-    if ("cumulative days" in cycleKeys and "step days" in cycleKeys) or (
-        "cumulative days" not in cycleKeys and "step days" not in cycleKeys
+    if (
+        sum(
+            [
+                "cumulative days" in cycleKeys,
+                "step days" in cycleKeys,
+                "cycle length" in cycleKeys or "burn steps" in cycleKeys,
+            ]
+        )
+        != 1
     ):
         baseErrMsg = (
-            "Must have exactly one of either 'cumulative days' or 'step days'"
-            " in each cycle definition."
+            "Must have exactly one of either 'cumulative days', 'step days', or"
+            " 'cycle length' + 'burn steps' in each cycle definition."
         )
 
         raise vol.Invalid(

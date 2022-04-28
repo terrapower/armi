@@ -107,8 +107,10 @@ settings:
       cumulative days: [1, 2, 3]
       power fractions: [0.1, 0.2, 0.3]
       availability factor: 0.1
-    - cumulative days: [2, 4, 6, 8, 10]
+    - cycle length: 10
+      burn steps: 5
       power fractions: [0.2, 0.2, 0.2, 0.2, 0]
+      availability factor: 0.5
     - name: ferret
       step days: [3, R4]
       power fractions: [0.3, R4]
@@ -135,15 +137,19 @@ settings:
     powerFractionsSimpleSolution = [[0.1, 0.1, 0.1], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]]
     cycleNamesDetailedSolution = ["dog", None, "ferret"]
     cycleNamesSimpleSolution = [None, None, None]
-    availabilityFactorsDetailedSolution = [0.1, 1, 1]
+    availabilityFactorsDetailedSolution = [0.1, 0.5, 1]
     availabilityFactorsSimpleSolution = [0.1, 0.1, 0.1]
-    stepLengthsDetailedSolution = [[1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3]]
-    stepLengthsSimpleSolution = [
-        [1 / 3, 1 / 3, 1 / 3],
-        [2 / 3, 2 / 3, 2 / 3],
+    stepLengthsDetailedSolution = [
         [1, 1, 1],
+        [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
+        [3, 3, 3, 3, 3],
     ]
-    cycleLengthsDetailedSolution = [3, 10, 15]
+    stepLengthsSimpleSolution = [
+        [1 / 0.1 / 3, 1 / 0.1 / 3, 1 / 0.1 / 3],
+        [2 / 0.1 / 3, 2 / 0.1 / 3, 2 / 0.1 / 3],
+        [1 / 0.1, 1 / 0.1, 1 / 0.1],
+    ]
+    cycleLengthsDetailedSolution = [30, 10, 15]
     cycleLengthsSimpleSolution = [1, 2, 3]
     burnStepsDetailedSolution = [3, 5, 5]
     burnStepsSimpleSolution = [3, 3, 3]
