@@ -28,6 +28,7 @@ import voluptuous as vol
 
 from armi import context
 from armi.settings import setting
+from armi.utils.mathematics import isMonotonic
 
 
 # Framework settings
@@ -755,7 +756,7 @@ def defineSettings() -> List[setting.Setting]:
                     vol.All(
                         {
                             "name": str,
-                            "cumulative days": vol.All([int], _monotonicIncreasing),
+                            "cumulative days": vol.All([int], _isMonotonicIncreasing),
                             "step days": [vol.Coerce(str)],
                             vol.Required("power fractions"): [vol.Coerce(str)],
                             "availability factor": float,
@@ -769,10 +770,11 @@ def defineSettings() -> List[setting.Setting]:
     return settings
 
 
-def _monotonicIncreasing(inputList):
-    if not all(x < y for x, y in zip(inputList, inputList[1:])):
-        raise vol.Invalid(f"Vector must be monotonically increasing: {inputList}")
-    return inputList
+def _isMonotonicIncreasing(inputList):
+    if isMonotonic(inputList, "increaseExclusive"):
+        return inputList
+    else:
+        raise vol.error.Invalid(f"List must be monotonicically increasing: {inputList}")
 
 
 def _mutuallyExclusiveCyclesInputs(cycle):
