@@ -407,7 +407,6 @@ class DatabaseInterface(interfaces.Interface):
             If fileName is not specified and neither the database in memory, nor the
             `cs["reloadDBName"]` have the time step specified.
         """
-
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
                 if loadDB.hasTimeStep(cycle, timeNode, statePointName=timeStepName):

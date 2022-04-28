@@ -522,7 +522,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Get all children that have given flags."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """

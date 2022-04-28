@@ -136,12 +136,15 @@ def loadTestReactor(
     Parameters
     ----------
     inputFilePath : str
-        Path to the directory of the armiRun.yaml input file.
+        Path to the directory of the input file.
 
     customSettings : dict with str keys and values of any type
         For each key in customSettings, the cs which is loaded from the
         armiRun.yaml will be overwritten to the value given in customSettings
         for that key.
+
+    inputFileName : str, default="armiRun.yaml"
+        Name of the input file to run.
 
     Returns
     -------
@@ -214,7 +217,7 @@ class HexReactorTests(ReactorTests):
     def setUp(self):
         self.o, self.r = loadTestReactor(self.directoryChanger.destination)
 
-    def testGetTotalParam(self):
+    def test_getTotalParam(self):
         # verify that the block params are being read.
         val = self.r.core.getTotalBlockParam("power")
         val2 = self.r.core.getTotalBlockParam("power", addSymmetricPositions=True)

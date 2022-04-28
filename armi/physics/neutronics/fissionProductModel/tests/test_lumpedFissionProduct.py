@@ -50,7 +50,7 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
     def setUp(self):
         self.fpd = getDummyLFPFile()
 
-    def testCreateLFPs(self):
+    def test_createLFPs(self):
         """Test of the fission product model creation"""
         lfps = self.fpd.createLFPsFromFile()
         xe135 = nuclideBases.fromName("XE135")
@@ -59,7 +59,7 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
         for lfp in lfps.values():
             self.assertIn(xe135, lfp)
 
-    def testCreateReferenceLFPs(self):
+    def test_createReferenceLFPs(self):
         """Test of the reference fission product model creation"""
         with open(REFERENCE_LUMPED_FISSION_PRODUCT_FILE, "r") as LFP_FILE:
             LFP_TEXT = LFP_FILE.read()
