@@ -254,10 +254,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
-            newAssem.r = self.convReactor
-            # would be nicer if this happened in add but there's  complication between
-            # moveTo and add precedence and location-already-filled-issues.
-            newAssem.parent = self.convReactor.core
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
             self.convReactor.core.add(newAssem, newLoc)
