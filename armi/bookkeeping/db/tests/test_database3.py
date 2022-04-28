@@ -502,7 +502,7 @@ class TestDatabase3(unittest.TestCase):
     def test_loadCS(self):
         cs = self.db.loadCS()
         self.assertEqual(cs["numProcessors"], 1)
-        self.assertEqual(cs["nCycles"], 3)
+        self.assertEqual(cs["nCycles"], 6)
 
     def test_loadBlueprints(self):
         bp = self.db.loadBlueprints()
