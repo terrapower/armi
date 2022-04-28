@@ -382,6 +382,7 @@ class Operator:  # pylint: disable=too-many-public-methods
                 pass
             else:
                 self._checkReactorCycleAttrs({"Step lengths": self._stepLengths})
+            self._consistentPowerFractionsAndStepLengths()
         return self._stepLengths
 
     @property
@@ -396,6 +397,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         if not self._powerFractions:
             self._powerFractions = getPowerFractions(self.cs)
             self._checkReactorCycleAttrs({"powerFractions": self._powerFractions})
+            self._consistentPowerFractionsAndStepLengths()
         return self._powerFractions
 
     @property
@@ -453,6 +455,21 @@ class Operator:  # pylint: disable=too-many-public-methods
                         name, self.cs["nCycles"], len(param), param
                     )
                 )
+
+    def _consistentPowerFractionsAndStepLengths(self):
+        """
+        Check that the internally-resolved _powerFractions and _stepLengths have
+        consistent shapes, if they both exist.
+        """
+        if self._powerFractions and self._stepLengths:
+            for cycleIdx in range(len(self._powerFractions)):
+                if len(self._powerFractions[cycleIdx]) != len(
+                    self._stepLengths[cycleIdx]
+                ):
+                    raise ValueError(
+                        "The number of entries in lists for subcycle power "
+                        f"fractions and sub-steps are inconsistent in cycle {cycleIdx}"
+                    )
 
     @property
     def atEOL(self):
