@@ -65,11 +65,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
-from armi.reactor import reactors
-from armi.reactor import blueprints
-from armi import operators
-from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO.cccc import isotxs
+from armi.reactor.reactors import Reactor
 
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
@@ -112,19 +108,20 @@ class UniformMeshGeometryConverter(GeometryConverter):
         sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             original reactor to be copied
         """
-        # create new operator
-        newOper = operators.factory(sourceReactor.o.cs)
+        # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
+        # attributes are set. Simply calling blueprints.loadFromCs() just initializes
+        # a blueprints object and may not set all necessary attributes. E.g., some
+        # attributes are set when assemblies are added in coreDesign.construct(), however
+        # since we skip that here, they never get set; therefore the need for the deepcopy.
+        bp = copy.deepcopy(sourceReactor.blueprints)
         # create new reactor from blueprints used to create sourceReactor
-        bp = blueprints.loadFromCs(sourceReactor.o.cs)
-        newReactor = reactors.Reactor(sourceReactor.o.cs.caseTitle, bp)
+        newReactor = Reactor(sourceReactor.o.cs.caseTitle, bp)
         # create core based on loaded blueprints and do not load the assemblies
         coreDesign = bp.systemDesigns["core"]
         coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
         # initialize the interfaces and set some values
-        newOper.initializeInterfaces(newReactor)
-        newOper.r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        newOper.r.core.p.keff = 1.0
-        return newOper.r
+        newReactor.core.lib = sourceReactor.core.lib
+        return newReactor
 
     def _computeAverageAxialMesh(self):
         """
