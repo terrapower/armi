@@ -20,6 +20,7 @@ import unittest
 from armi import settings
 from armi import operators
 from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
+from armi.utils.units import DAYS_PER_YEAR
 
 
 class TestInspector(unittest.TestCase):
@@ -109,7 +110,7 @@ class TestInspector(unittest.TestCase):
 
     def test_fillOutSimpleCyclesDefaults(self):
         defaultSimpleCyclesSettings = {
-            "cycleLength": 365.242199,
+            "cycleLength": DAYS_PER_YEAR,
             "cycleLengths": [],
             "burnSteps": 4,
             "availabilityFactor": 1.0,
@@ -161,14 +162,14 @@ class TestInspector(unittest.TestCase):
         for setting in defaultSimpleCyclesSettings.keys():
             self.assertEqual(self.inspector.cs[setting], None)
 
-    def test_correctCycles(self):
+    def test_correctCyclesToZeroBurnup(self):
         self.inspector._assignCS("nCycles", 666)
         self.inspector._assignCS("burnSteps", 666)
 
         self.assertEqual(self.inspector.cs["nCycles"], 666)
         self.assertEqual(self.inspector.cs["burnSteps"], 666)
 
-        self.inspector._correctCycles()
+        self.inspector._correctCyclesToZeroBurnup()
 
         self.assertEqual(self.inspector.cs["nCycles"], 1)
         self.assertEqual(self.inspector.cs["burnSteps"], 0)
