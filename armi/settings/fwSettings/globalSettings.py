@@ -759,7 +759,13 @@ def defineSettings() -> List[setting.Setting]:
                             "cumulative days": vol.All([int], _isMonotonicIncreasing),
                             "step days": [vol.Coerce(str)],
                             vol.Required("power fractions"): [vol.Coerce(str)],
-                            "availability factor": float,
+                            "availability factor": vol.All(
+                                float, vol.Range(min=0, max=1)
+                            ),
+                            "cycle length": vol.All(
+                                vol.Any(float, int), vol.Range(min=0)
+                            ),
+                            "burn steps": vol.All(int, vol.Range(min=0)),
                         },
                         _mutuallyExclusiveCyclesInputs,
                     )
