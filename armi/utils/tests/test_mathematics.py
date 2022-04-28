@@ -29,6 +29,7 @@ from armi.utils.mathematics import (
     fixThreeDigitExp,
     getFloat,
     getStepsFromValues,
+    isMonotonic,
     linearInterpolation,
     minimizeScalarFunc,
     newtonsMethod,
@@ -121,6 +122,22 @@ class TestMath(unittest.TestCase):
     def test_getStepsFromValues(self):
         steps = getStepsFromValues([1.0, 3.0, 6.0, 10.0], prevValue=0.0)
         self.assertListEqual(steps, [1.0, 2.0, 3.0, 4.0])
+
+    def test_isMonotonic(self):
+        self.assertEqual(True, isMonotonic([1, 2, 2, 3], "increaseOrEqual"))
+        self.assertEqual(False, isMonotonic([1, 2, 2, 1], "increaseOrEqual"))
+
+        self.assertEqual(True, isMonotonic([1, 2, 3], "increaseExclusive"))
+        self.assertEqual(False, isMonotonic([1, 2, 2], "increaseExclusive"))
+
+        self.assertEqual(True, isMonotonic([3, 2, 1, 1], "decreaseOrEqual"))
+        self.assertEqual(False, isMonotonic([3, 2, 1, 2], "decreaseOrEqual"))
+
+        self.assertEqual(True, isMonotonic([3, 2, 1], "decreaseExclusive"))
+        self.assertEqual(False, isMonotonic([3, 2, 2], "decreaseExclusive"))
+
+        with self.assertRaises(ValueError):
+            isMonotonic([1, 2, 3, 2], 'invalidRelation')
 
     def test_linearInterpolation(self):
         y = linearInterpolation(1.0, 2.0, 3.0, 4.0, targetX=20.0)
