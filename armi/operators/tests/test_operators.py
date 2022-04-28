@@ -19,16 +19,7 @@ import unittest
 
 from armi import settings
 from armi.interfaces import Interface
-from armi.operators.operator import (
-    getPowerFractions,
-    getCycleNames,
-    getAvailabilityFactors,
-    getStepLengths,
-    getCycleLengths,
-    getBurnSteps,
-    getMaxBurnSteps,
-    Operator,
-)
+from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
 
@@ -89,11 +80,7 @@ class OperatorTests(unittest.TestCase):
 
 class CyclesSettingsTests(unittest.TestCase):
     """
-    Check the various cycle history settings for both the detailed and simple input
-    options.
-
-    For each setting, check the information as it is pulled directly from a cs
-    object as well as pulling it from the operator itself.
+    Check that we can correctly access the various cycle settings from the operator.
     """
 
     detailedCyclesSettings = """
@@ -116,165 +103,53 @@ settings:
       power fractions: [0.3, R4]
   runType: Standard
 """
-    simpleCyclesSettings = """
-metadata:
-  version: uncontrolled
-settings:
-  power: 1000000000.0
-  nCycles: 3
-  availabilityFactors: [0.1, R2]
-  cycleLengths: [1, 2, 3]
-  powerFractions: [0.1, 0.2, R1]
-  burnSteps: 3
-  runType: Standard
-  """
 
-    powerFractionsDetailedSolution = [
+    powerFractionsSolution = [
         [0.1, 0.2, 0.3],
         [0.2, 0.2, 0.2, 0.2, 0],
         [0.3, 0.3, 0.3, 0.3, 0.3],
     ]
-    powerFractionsSimpleSolution = [[0.1, 0.1, 0.1], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]]
-    cycleNamesDetailedSolution = ["dog", None, "ferret"]
-    cycleNamesSimpleSolution = [None, None, None]
-    availabilityFactorsDetailedSolution = [0.1, 0.5, 1]
-    availabilityFactorsSimpleSolution = [0.1, 0.1, 0.1]
-    stepLengthsDetailedSolution = [
+    cycleNamesSolution = ["dog", None, "ferret"]
+    availabilityFactorsSolution = [0.1, 0.5, 1]
+    stepLengthsSolution = [
         [1, 1, 1],
         [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
         [3, 3, 3, 3, 3],
     ]
-    stepLengthsSimpleSolution = [
-        [1 * 0.1 / 3, 1 * 0.1 / 3, 1 * 0.1 / 3],
-        [2 * 0.1 / 3, 2 * 0.1 / 3, 2 * 0.1 / 3],
-        [3 * 0.1 / 3, 3 * 0.1 / 3, 3 * 0.1 / 3],
-    ]
-    cycleLengthsDetailedSolution = [30, 10, 15]
-    cycleLengthsSimpleSolution = [1, 2, 3]
-    burnStepsDetailedSolution = [3, 5, 5]
-    burnStepsSimpleSolution = [3, 3, 3]
-    maxBurnStepsDetailedSolution = 5
-    maxBurnStepsSimpleSolution = 3
+    cycleLengthsSolution = [30, 10, 15]
+    burnStepsSolution = [3, 5, 5]
+    maxBurnStepsSolution = 5
 
     def setUp(self):
         self.standaloneDetailedCS = Settings()
         self.standaloneDetailedCS.loadFromString(self.detailedCyclesSettings)
         self.detailedOperator = Operator(self.standaloneDetailedCS)
 
-        self.standaloneSimpleCS = Settings()
-        self.standaloneSimpleCS.loadFromString(self.simpleCyclesSettings)
-        self.simpleOperator = Operator(self.standaloneSimpleCS)
-
     def test_getPowerFractions(self):
         self.assertEqual(
-            getPowerFractions(self.standaloneDetailedCS),
-            self.powerFractionsDetailedSolution,
-        )
-        self.assertEqual(
-            self.detailedOperator.powerFractions, self.powerFractionsDetailedSolution
-        )
-
-        self.assertEqual(
-            getPowerFractions(self.standaloneSimpleCS),
-            self.powerFractionsSimpleSolution,
-        )
-        self.assertEqual(
-            self.simpleOperator.powerFractions, self.powerFractionsSimpleSolution
+            self.detailedOperator.powerFractions, self.powerFractionsSolution
         )
 
     def test_getCycleNames(self):
-        self.assertEqual(
-            getCycleNames(self.standaloneDetailedCS), self.cycleNamesDetailedSolution
-        )
-        self.assertEqual(
-            self.detailedOperator.cycleNames, self.cycleNamesDetailedSolution
-        )
-
-        self.assertEqual(
-            getCycleNames(self.standaloneSimpleCS), self.cycleNamesSimpleSolution
-        )
-        self.assertEqual(self.simpleOperator.cycleNames, self.cycleNamesSimpleSolution)
+        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
 
     def test_getAvailabilityFactors(self):
         self.assertEqual(
-            getAvailabilityFactors(self.standaloneDetailedCS),
-            self.availabilityFactorsDetailedSolution,
-        )
-        self.assertEqual(
             self.detailedOperator.availabilityFactors,
-            self.availabilityFactorsDetailedSolution,
-        )
-
-        self.assertEqual(
-            getAvailabilityFactors(self.standaloneSimpleCS),
-            self.availabilityFactorsSimpleSolution,
-        )
-        self.assertEqual(
-            self.simpleOperator.availabilityFactors,
-            self.availabilityFactorsSimpleSolution,
+            self.availabilityFactorsSolution,
         )
 
     def test_getStepLengths(self):
-        self.assertEqual(
-            getStepLengths(self.standaloneDetailedCS),
-            self.stepLengthsDetailedSolution,
-        )
-        self.assertEqual(
-            self.detailedOperator.stepLengths, self.stepLengthsDetailedSolution
-        )
-
-        self.assertEqual(
-            getStepLengths(self.standaloneSimpleCS),
-            self.stepLengthsSimpleSolution,
-        )
-        self.assertEqual(
-            self.simpleOperator.stepLengths, self.stepLengthsSimpleSolution
-        )
+        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
 
     def test_getCycleLengths(self):
-        self.assertEqual(
-            getCycleLengths(self.standaloneDetailedCS),
-            self.cycleLengthsDetailedSolution,
-        )
-        self.assertEqual(
-            self.detailedOperator.cycleLengths, self.cycleLengthsDetailedSolution
-        )
-
-        self.assertEqual(
-            getCycleLengths(self.standaloneSimpleCS), self.cycleLengthsSimpleSolution
-        )
-        self.assertEqual(
-            self.simpleOperator.cycleLengths, self.cycleLengthsSimpleSolution
-        )
+        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
 
     def test_getBurnSteps(self):
-        self.assertEqual(
-            getBurnSteps(self.standaloneDetailedCS), self.burnStepsDetailedSolution
-        )
-        self.assertEqual(
-            self.detailedOperator.burnSteps, self.burnStepsDetailedSolution
-        )
-
-        self.assertEqual(
-            getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution
-        )
-        self.assertEqual(self.simpleOperator.burnSteps, self.burnStepsSimpleSolution)
+        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
 
     def test_getMaxBurnSteps(self):
-        self.assertEqual(
-            getMaxBurnSteps(self.standaloneDetailedCS),
-            self.maxBurnStepsDetailedSolution,
-        )
-        self.assertEqual(
-            self.detailedOperator.maxBurnSteps, self.maxBurnStepsDetailedSolution
-        )
-
-        self.assertEqual(
-            getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution
-        )
-        self.assertEqual(
-            self.simpleOperator.maxBurnSteps, self.maxBurnStepsSimpleSolution
-        )
+        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
 
 
 if __name__ == "__main__":
