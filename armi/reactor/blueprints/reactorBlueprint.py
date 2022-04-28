@@ -96,7 +96,7 @@ class SystemBlueprint(yamlize.Object):
 
     def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
         """Build a core/IVS/EVST/whatever and fill it with children.
-        
+
         Parameters
         ----------
         cs : :py:class:`Settings <armi.settings.Settings>` object.
@@ -107,7 +107,7 @@ class SystemBlueprint(yamlize.Object):
             reactor to fill
         geom : optional
         loadAssems : bool, optional
-            whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in 
+            whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
             within the initNewReactor() class method.
 
