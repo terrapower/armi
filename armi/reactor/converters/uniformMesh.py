@@ -65,6 +65,11 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
+from armi.reactor import reactors
+from armi.reactor import blueprints
+from armi import operators
+from armi.tests import ISOAA_PATH
+from armi.nuclearDataIO.cccc import isotxs
 
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
@@ -100,14 +105,26 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     @staticmethod
     def initNewReactor(sourceReactor):
-        """Build an empty version of the new reactor"""
-        # XXX: this deepcopy is extremely wasteful because the assemblies copied
-        # are immediately removed. It's just laziness of getting the same class
-        # of reactor set up.
-        newReactor = copy.deepcopy(sourceReactor)
-        newReactor.core.removeAllAssemblies()
-        newReactor.core.regenAssemblyLists()
-        return newReactor
+        """Build a new, yet empty, reactor with the same settings as sourceReactor
+
+        Parameters
+        ----------
+        sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+            original reactor to be copied
+        """
+        # create new operator
+        newOper = operators.factory(sourceReactor.o.cs)
+        # create new reactor from blueprints used to create sourceReactor
+        bp = blueprints.loadFromCs(sourceReactor.o.cs)
+        newReactor = reactors.Reactor(sourceReactor.o.cs.caseTitle, bp)
+        # create core based on loaded blueprints and do not load the assemblies
+        coreDesign = bp.systemDesigns["core"]
+        coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
+        # initialize the interfaces and set some values
+        newOper.initializeInterfaces(newReactor)
+        newOper.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        newOper.r.core.p.keff = 1.0
+        return newOper.r
 
     def _computeAverageAxialMesh(self):
         """
