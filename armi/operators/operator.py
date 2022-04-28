@@ -446,6 +446,7 @@ class Operator:  # pylint: disable=too-many-public-methods
                 raise
 
     def _checkReactorCycleAttrs(self, attrsDict):
+        """Check that the list has nCycles number of elements."""
         for name, param in attrsDict.items():
             if len(param) != self.cs["nCycles"]:
                 raise ValueError(
