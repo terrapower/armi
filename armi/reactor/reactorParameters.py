@@ -537,6 +537,28 @@ def defineCoreParameters():
     ) as pb:
 
         pb.defParam(
+            "power",
+            units="W",
+            description="Rated thermal power of the reactor core. Corresponds to the "
+            "nuclear power generated in the core.",
+        )
+
+        pb.defParam(
+            "powerDecay",
+            units="W",
+            description="Decay power from decaying radionuclides",
+        )
+
+
+        pb.defParam("medAbsCore", units="?", description="?")
+
+        pb.defParam("medFluxCore", units="?", description="?")
+
+        pb.defParam("medSrcCore", units="?", description="?")
+
+        pb.defParam("pkFlux", units="?", description="?")
+
+        pb.defParam(
             "maxdetailedDpaPeak",
             units="dpa",
             description="Highest peak dpa of any block in the problem",
@@ -967,27 +989,6 @@ def defineCoreParameters():
             description="?",
             default=0.0,
             categories=["block-max"],
-        )
-
-        pb.defParam("medAbsCore", units="?", description="?")
-
-        pb.defParam("medFluxCore", units="?", description="?")
-
-        pb.defParam("medSrcCore", units="?", description="?")
-
-        pb.defParam("pkFlux", units="?", description="?")
-
-        pb.defParam(
-            "power",
-            units="W",
-            description="Rated thermal power of the reactor core. Corresponds to the "
-            "nuclear power generated in the core.",
-        )
-
-        pb.defParam(
-            "powerDecay",
-            units="W",
-            description="Decay power from decaying radionuclides",
         )
 
     return pDefs

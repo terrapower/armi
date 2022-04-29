@@ -58,6 +58,7 @@ import collections
 import gc
 import timeit
 import math
+from multiprocessing import Process, Queue
 
 from six.moves import cPickle
 import tabulate
@@ -701,3 +702,37 @@ def _diagnosePickleError(o):
     for interface in o.getInterfaces():
         runLog.info("Scanning {} for pickle errors".format(interface))
         checker(interface)
+
+
+class Multiprocessor:
+    """
+    This is useful for running a function in parallel using multiple available processors.
+    
+    Notes
+    -----
+    This solution is taken from https://stackoverflow.com/a/45829852
+    """
+
+    def __init__(self):
+        self.processes = []
+        self.queue = Queue()
+
+    @staticmethod
+    def _wrapper(func, queue, args, kwargs):
+        ret = func(*args, **kwargs)
+        queue.put(ret)
+
+    def run(self, func, *args, **kwargs):
+        args = [func, self.queue, args, kwargs]
+        p = Process(target=self._wrapper, args=args)
+        self.processes.append(p)
+        p.start()
+
+    def wait(self):
+        rets = []
+        for p in self.processes:
+            ret = self.queue.get()
+            rets.append(ret)
+        for p in self.processes:
+            p.join()
+        return rets

@@ -94,8 +94,30 @@ class SystemBlueprint(yamlize.Object):
 
         return cls
 
-    def construct(self, cs, bp, reactor, geom=None):
-        """Build a core/IVS/EVST/whatever and fill it with children."""
+    def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
+        """Build a core/IVS/EVST/whatever and fill it with children.
+
+        Parameters
+        ----------
+        cs : :py:class:`Settings <armi.settings.Settings>` object.
+            armi settings to apply
+        bp : :py:class:`Reactor <armi.reactor.blueprints.Blueprints>` object.
+            armi blueprints to apply
+        reactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+            reactor to fill
+        geom : optional
+        loadAssems : bool, optional
+            whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
+            :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
+            within the initNewReactor() class method.
+
+        Raises
+        ------
+        ValueError
+            input error, no grid design provided
+        ValueError
+            for 1/3 core maps, assemblies are defined outside the expected 1/3 core region
+        """
         from armi.reactor import reactors  # avoid circular import
 
         runLog.info("Constructing the `{}`".format(self.name))
@@ -139,20 +161,21 @@ class SystemBlueprint(yamlize.Object):
         # TODO: This is also pretty specific to Core-like things. We envision systems
         # with non-Core-like structure. Again, probably only doable with subclassing of
         # Blueprints
-        self._loadAssemblies(cs, system, gridDesign, gridDesign.gridContents, bp)
+        if loadAssems:
+            self._loadAssemblies(cs, system, gridDesign, gridDesign.gridContents, bp)
 
-        # TODO: This post-construction work is specific to Cores for now. We need to
-        # generalize this. Things to consider:
-        # - Should the Core be able to do geom modifications itself, since it already
-        # has the grid constructed from the grid design?
-        # - Should the summary be so specifically Material data? Should this be done for
-        # non-Cores? Like geom modifications, could this just be done in processLoading?
-        # Should it be invoked higher up, by whatever code is requesting the Reactor be
-        # built from Blueprints?
-        if isinstance(system, reactors.Core):
-            summarizeMaterialData(system)
-            self._modifyGeometry(system, gridDesign)
-            system.processLoading(cs)
+            # TODO: This post-construction work is specific to Cores for now. We need to
+            # generalize this. Things to consider:
+            # - Should the Core be able to do geom modifications itself, since it already
+            # has the grid constructed from the grid design?
+            # - Should the summary be so specifically Material data? Should this be done for
+            # non-Cores? Like geom modifications, could this just be done in processLoading?
+            # Should it be invoked higher up, by whatever code is requesting the Reactor be
+            # built from Blueprints?
+            if isinstance(system, reactors.Core):
+                summarizeMaterialData(system)
+                self._modifyGeometry(system, gridDesign)
+                system.processLoading(cs)
         return system
 
     # pylint: disable=no-self-use
