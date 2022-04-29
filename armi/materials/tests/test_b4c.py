@@ -17,9 +17,9 @@ Tests for boron carbide.
 
 import unittest
 
-from armi.materials.tests.test_materials import _Material_Test
 from armi.materials.b4c import B4C
 from armi.materials.b4c import DEFAULT_THEORETICAL_DENSITY_FRAC
+from armi.materials.tests.test_materials import _Material_Test
 
 
 class B4C_TestCase(_Material_Test, unittest.TestCase):

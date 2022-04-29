@@ -23,21 +23,22 @@ import unittest
 from ruamel.yaml import YAML
 import voluptuous as vol
 
-import armi
+from armi import configure
+from armi import getApp
+from armi import getPluginManagerOrFail
+from armi import plugins
+from armi import settings
+from armi.operators import settingsValidation
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.physics.neutronics import settings as neutronicsSettings
-from armi import settings
+from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
-from armi.operators import settingsValidation
 from armi.tests import TEST_ROOT
-from armi import plugins
 from armi.utils import directoryChangers
-from armi.reactor.flags import Flags
 from armi.utils.customExceptions import NonexistentSetting
 
 THIS_DIR = os.path.dirname(__file__)
-TEST_XML = os.path.join(THIS_DIR, "old_xml_settings_input.xml")
 
 
 class DummyPlugin1(plugins.ArmiPlugin):
@@ -108,7 +109,7 @@ class TestAddingOptions(unittest.TestCase):
 
     def test_addingOptions(self):
         # load in the plugin with extra, added options
-        pm = armi.getPluginManagerOrFail()
+        pm = getPluginManagerOrFail()
         pm.register(PluginAddsOptions)
 
         # modify the default/text settings YAML file to include neutronicsKernel
@@ -128,12 +129,12 @@ class TestSettings2(unittest.TestCase):
     def setUp(self):
         # We are going to be messing with the plugin manager, which is global ARMI
         # state, so we back it up and restore the original when we are done.
-        self._backupApp = copy.copy(armi._app)
+        self._backupApp = copy.copy(getApp())
 
     def tearDown(self):
-        armi._app = self._backupApp
+        configure(self._backupApp, permissive=True)
 
-    def testSchemaChecksType(self):
+    def test_schemaChecksType(self):
         newSettings = FuelHandlerPlugin.defineSettings()
 
         good_input = io.StringIO(
@@ -230,7 +231,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         )
 
     def test_pluginSettings(self):
-        pm = armi.getPluginManagerOrFail()
+        pm = getPluginManagerOrFail()
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
@@ -359,15 +360,6 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEquals(s2.name, "testCopy")
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
-
-
-class TestSettingsConversion(unittest.TestCase):
-    """Make sure we can convert from old XML type settings to new Yaml settings."""
-
-    def test_convert(self):
-        cs = caseSettings.Settings()
-        cs.loadFromInputFile(TEST_XML)
-        self.assertEqual(cs["buGroups"], [3, 10, 20, 100])
 
     def test_empty(self):
         cs = caseSettings.Settings()

@@ -17,7 +17,6 @@
 # pylint: disable=abstract-method,no-self-use,unused-argument
 import unittest
 
-import armi
 from armi import settings
 from armi.interfaces import Interface
 from armi.reactor.tests import test_reactors
@@ -58,7 +57,6 @@ class OperatorTests(unittest.TestCase):
 
         # 2) Now we have B which is a subclass of A,
         #    we want to not add A (but also not have an error)
-
         o.addInterface(interfaceA)
         self.assertEqual(o.getInterface("Second"), interfaceB)
         self.assertEqual(o.getInterface("First"), None)

@@ -14,27 +14,26 @@
 r""" Tests of the Database Interface
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
 import os
-import unittest
 import types
+import unittest
 
 import h5py
 import numpy
 from numpy.testing import assert_allclose, assert_equal
 
-from armi.reactor.flags import Flags
-from armi import interfaces
-from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
-from armi import settings
-from armi.tests import TEST_ROOT
 from armi import __version__ as version
-from armi.cases import case
-from armi.utils import directoryChangers
+from armi import interfaces
 from armi import runLog
-from armi.reactor.tests import test_reactors
+from armi import settings
+from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
+from armi.cases import case
 from armi.reactor import grids
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_reactors
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
+from armi.tests import TEST_ROOT
+from armi.utils import directoryChangers
 
 
 def getSimpleDBOperator(cs):
@@ -83,6 +82,39 @@ class MockInterface(interfaces.Interface):
         self.action(cycle, node)
 
 
+class TestDatabaseInterface(unittest.TestCase):
+    r"""Tests for the DatabaseInterface class"""
+
+    def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
+        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.db: db.Database3 = self.dbi.database
+        self.stateRetainer = self.r.retainState().__enter__()
+
+    def tearDown(self):
+        self.db.close()
+        self.stateRetainer.__exit__()
+        self.td.__exit__(None, None, None)
+
+    def test_interactBOL(self):
+        self.assertTrue(self.dbi._db is not None)
+        self.dbi.interactBOL()
+
+        self.dbi._db = None
+        self.assertTrue(self.dbi._db is None)
+        self.dbi.interactBOL()
+        self.assertTrue(self.dbi._db is not None)
+
+    def test_distributable(self):
+        self.assertEqual(self.dbi.distributable(), 4)
+        self.dbi.interactDistributeState()
+        self.assertEqual(self.dbi.distributable(), 4)
+
+
 class TestDatabaseWriter(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
@@ -120,7 +152,7 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("blueprints", h5["inputs"])
             self.assertIn("baseBu", h5["c01n02/HexBlock"])
 
-    def test_metaData_endFail(self):
+    def test_metaDataEndFail(self):
         def failMethod(cycle, node):  # pylint: disable=unused-argument
             if cycle == 1 and node == 1:
                 raise Exception("forcing failure")
@@ -246,6 +278,60 @@ class TestDatabaseReading(unittest.TestCase):
         cls.td.__exit__(None, None, None)
         del cls.r
         cls.r = None
+
+    def test_growToFullCore(self):
+        with Database3(self.dbName, "r") as db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(None)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
+    def test_growToFullCoreWithCS(self):
+        with Database3(self.dbName, "r") as db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(self.cs)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
+    def test_growToFullCoreFromFactory(self):
+        from armi.bookkeeping.db import databaseFactory
+
+        db = databaseFactory(self.dbName, "r")
+        with db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(None)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
+
+    def test_growToFullCoreFromFactoryWithCS(self):
+        from armi.bookkeeping.db import databaseFactory
+
+        db = databaseFactory(self.dbName, "r")
+        with db:
+            r = db.load(0, 0, allowMissing=True)
+
+        r.core.growToFullCore(self.cs)
+
+        self.assertEqual(r.core.numRings, 9)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 1085)
 
     def test_readWritten(self):
         with Database3(self.dbName, "r") as db:
@@ -407,5 +493,4 @@ class TestStandardFollowOn(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestStandardFollowOn.test_standardRestart"]
     unittest.main()

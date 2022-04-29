@@ -20,17 +20,17 @@ This invokes them according to command-line user input.
 """
 import sys
 
-import armi
 from armi import apps
-from armi.cli import ArmiCLI
+from armi import configure, isConfigured
 from armi import context
+from armi.cli import ArmiCLI
 
 
 def main():
     # Main entry point into ARMI
     try:
-        if not armi.isConfigured():
-            armi.configure(apps.App())
+        if not isConfigured():
+            configure(apps.App())
         code = ArmiCLI().run()
         # sys exit interprets None as 0
         sys.exit(code)
@@ -42,20 +42,20 @@ def main():
         # TODO: change to critical after critical no longer throws an exception.
         print(
             "[CRIT {:03} ] Unhandled exception in __main__ on {}.".format(
-                armi.MPI_RANK, armi.MPI_NODENAME
+                context.MPI_RANK, context.MPI_NODENAME
             ),
             file=sys.__stderr__,
         )
         print(
             "[CRIT {:03} ] Stack trace: {}".format(
-                armi.MPI_RANK, traceback.format_exc()
+                context.MPI_RANK, traceback.format_exc()
             ),
             file=sys.__stderr__,
         )
-        if armi.MPI_SIZE > 1:
+        if context.MPI_SIZE > 1:
             print(
                 "[CRIT {:03} ] killing all MPI tasks from __main__.\n".format(
-                    armi.MPI_RANK
+                    context.MPI_RANK
                 ),
                 file=sys.__stderr__,
             )
@@ -63,7 +63,7 @@ def main():
             # will not allow for @atexit.register or except/finally code to be called so calling here as well
             context.cleanTempDirs()
             # .Abort will not allow for @atexit.register or except/finally code to be called
-            armi.MPI_COMM.Abort(errorcode=-1)
+            context.MPI_COMM.Abort(errorcode=-1)
         raise SystemExit(1)
 
 

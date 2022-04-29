@@ -945,44 +945,6 @@ class Core(composites.Composite):
 
         return circularRingDict
 
-    def getPowerProductionMassFromFissionProducts(self):
-        """
-        Determines the power produced by Pu isotopes and Uranium isotopes by examining
-        the fission products in the block
-
-        The percentage of energy released adjusted mass produced by each LFP can be used to
-        determine the relative power production of each parent isotope.
-
-        Returns
-        -------
-        resultsEnergyCorrected : list of tuples
-            Contains the nuclide name, energy released adjusted mass
-        """
-        # get the energy in Joules from the ISOTXS
-        energyDict = {}
-        nuclides = ["U235", "U238", "PU239", "PU240", "PU241"]
-        fissionProducts = ["LFP35", "LFP38", "LFP39", "LFP40", "LFP41"]
-
-        # initialize the energy in each nuclide
-        totEnergy = 0.0
-        for nuc in nuclides:
-            n = self.lib.getNuclide(nuc)
-            energyDict[nuc] = n.isotxsMetadata["efiss"]
-            totEnergy += n.isotxsMetadata["efiss"]
-
-        fissPower = {}
-        for b in self.getBlocks(Flags.FUEL):
-            for nuc, lfp in zip(nuclides, fissionProducts):
-                energy = fissPower.get(nuc, 0.0)
-                energy += b.getMass(lfp) * energyDict[nuc]
-                fissPower[nuc] = energy
-
-        resultsEnergyCorrected = []
-        # scale the energy mass by energy to get the corrected energy mass of each isotope
-        for nuc in nuclides:
-            resultsEnergyCorrected.append(fissPower[nuc] / totEnergy)
-        return zip(nuclides, resultsEnergyCorrected)
-
     def _getAssembliesByName(self):
         """
         If the assembly name-to-assembly object map is deleted or out of date, then this will
@@ -2152,9 +2114,11 @@ class Core(composites.Composite):
             Geometry converter used to do the conversion.
 
         """
-        import armi.reactor.converters.geometryConverters as gc
+        from armi.reactor.converters.geometryConverters import (
+            ThirdCoreHexToFullCoreChanger,
+        )
 
-        converter = gc.ThirdCoreHexToFullCoreChanger(cs)
+        converter = ThirdCoreHexToFullCoreChanger(cs)
         converter.convert(self.r)
 
         return converter

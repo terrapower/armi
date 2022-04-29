@@ -272,7 +272,7 @@ DATASET=A.MCC2
 22          CM2455     7 202.55000
 22          CM2465     7 202.55000
 22          CM2475     7 202.55000
-01 ARMI generated \\albert\apps\dev\mc2\2.0\mc2.exe case for caseTitle mrtTWRP600v6rev3OS, block <twrp starter fuel B0064F at A8009F XS: B BU GP: A>
+01 ARMI generated \\path\to\mc2\2.0\mc2.exe case for caseTitle mrtTWRP600v6rev3OS, block <twrp starter fuel B0064F at A8009F XS: B BU GP: A>
 DATASET=A.DLAY                                                                  
 01    CREATE VERSION VI DLAYXS FILE FROM FUELI                                  
 03         1     0     0     0     0                                            

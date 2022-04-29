@@ -62,12 +62,12 @@ import io
 import itertools
 import os
 import pathlib
-from platform import uname
 import re
-import sys
-import time
 import shutil
 import subprocess
+import sys
+import time
+from platform import uname
 from typing import (
     Optional,
     Tuple,
@@ -80,12 +80,13 @@ from typing import (
     Generator,
 )
 
-import numpy
 import h5py
+import numpy
 
-import armi
 from armi import context
+from armi import getApp
 from armi import interfaces
+from armi import meta
 from armi import runLog
 from armi import settings
 from armi.reactor import parameters
@@ -294,7 +295,7 @@ class DatabaseInterface(interfaces.Interface):
         DB is created and managed by the master node only but we can still connect to it
         from workers to enable things like history tracking.
         """
-        if armi.MPI_RANK > 0:
+        if context.MPI_RANK > 0:
             # DB may not exist if distribute state is called early.
             if self._dbPath is not None and os.path.exists(self._dbPath):
                 self._db = Database3(self._dbPath, "r")
@@ -327,6 +328,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])
         self.loadState(dbCycle, dbNode)
 
+    # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
@@ -366,7 +368,6 @@ class DatabaseInterface(interfaces.Interface):
             If fileName is not specified and neither the database in memory, nor the
             `cs["reloadDBName"]` have the time step specified.
         """
-
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
                 if loadDB.hasTimeStep(cycle, timeNode, statePointName=timeStepName):
@@ -581,13 +582,13 @@ class Database3(database.Database):
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
         self.h5db = h5py.File(filePath, self._permission)
         self.h5db.attrs["successfulCompletion"] = False
-        self.h5db.attrs["version"] = armi.__version__
+        self.h5db.attrs["version"] = meta.__version__
         self.h5db.attrs["databaseVersion"] = self.version
-        self.h5db.attrs["user"] = armi.USER
+        self.h5db.attrs["user"] = context.USER
         self.h5db.attrs["python"] = sys.version
-        self.h5db.attrs["armiLocation"] = os.path.dirname(armi.ROOT)
-        self.h5db.attrs["startTime"] = armi.START_TIME
-        self.h5db.attrs["machines"] = numpy.array(armi.MPI_NODENAMES).astype("S")
+        self.h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
+        self.h5db.attrs["startTime"] = context.START_TIME
+        self.h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
         # store platform data
         platform_data = uname()
         self.h5db.attrs["platform"] = platform_data.system
@@ -596,7 +597,7 @@ class Database3(database.Database):
         self.h5db.attrs["platformVersion"] = platform_data.version
         self.h5db.attrs["platformArch"] = platform_data.processor
         # store app and plugin data
-        app = armi.getApp()
+        app = getApp()
         self.h5db.attrs["appName"] = app.name
         plugins = app.pluginManager.list_name_plugin()
         ps = [
@@ -1095,7 +1096,12 @@ class Database3(database.Database):
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
         root = comps[0][0]
-        return root  # usually reactor object
+
+        # ensure the max assembly number is correct
+        updateGlobalAssemblyNum(root)
+
+        # usually a reactor object
+        return root
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):
@@ -1298,7 +1304,7 @@ class Database3(database.Database):
     def _readParams(h5group, compTypeName, comps, allowMissing=False):
         g = h5group[compTypeName]
 
-        renames = armi.getApp().getParamRenames()
+        renames = getApp().getParamRenames()
 
         pDefs = comps[0].pDefs
 

@@ -31,7 +31,8 @@ import threading
 import time
 import traceback
 
-import armi
+from armi import __name__ as armi_name
+from armi import __path__ as armi_path
 from armi import runLog
 from armi.utils import iterables
 from armi.utils.flags import Flag
@@ -288,7 +289,7 @@ def runFunctionFromAllModules(funcName, *args, **kwargs):
 
     """
     for _modImporter, name, _ispkg in pkgutil.walk_packages(
-        path=armi.__path__, prefix=armi.__name__ + "."
+        path=armi_path, prefix=armi_name + "."
     ):
         try:
             mod = importlib.import_module(name)

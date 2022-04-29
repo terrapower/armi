@@ -47,7 +47,7 @@ import logging
 import tabulate
 from typing import Optional
 
-import armi
+from armi import context
 from armi import interfaces
 from armi import mpiActions
 from armi import runLog
@@ -161,10 +161,8 @@ class MemoryProfiler(interfaces.Interface):
                 )
         runLog.important("SFP has {:4d} assemblies".format(len(self.r.core.sfp)))
 
-    def _checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """
-        Scans thorugh ARMI model for duplicate objects
-        """
+    def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
+        """Scans thorugh ARMI model for duplicate objects"""
         if self.r is None:
             return
         uniqueIds = set()
@@ -330,9 +328,7 @@ class MemoryProfiler(interfaces.Interface):
 
     @staticmethod
     def getReferrers(obj):
-        """
-        Print referrers in a useful way (as opposed to gigabytes of text
-        """
+        """Print referrers in a useful way (as opposed to gigabytes of text"""
         runLog.info("Printing first 100 character of first 100 referrers")
         for ref in gc.get_referrers(obj)[:100]:
             print("ref for {}: {}".format(obj, repr(ref)[:100]))
@@ -521,10 +517,10 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 
 class SystemAndProcessMemoryUsage:
     def __init__(self):
-        self.nodeName = armi.MPI_NODENAME
-        # no psutil, no memory diagnostics. TODO: Ideally, we could just cut
-        # MemoryProfiler out entirely, but it is referred to directly by the standard
-        # operator and reports, so easier said than done.
+        self.nodeName = context.MPI_NODENAME
+        # no psutil, no memory diagnostics.
+        # TODO: Ideally, we could cut MemoryProfiler entirely, but it is referred to
+        # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
         if _havePsutil:
@@ -636,10 +632,7 @@ def _getFunctionObject():
 
 
 def _walkReferrers(o, maxLevel=0, level=0, memo=None, whitelist=None):
-    """
-    Walk down the tree of objects that refer to the passed object, printing diagnostics along the
-    way.
-    """
+    """Walk the tree of objects that refer to the passed object, printing diagnostics."""
     if maxLevel and level > maxLevel:
         return
     if level == 0:

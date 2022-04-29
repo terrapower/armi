@@ -142,7 +142,7 @@ class DlayxsTests(unittest.TestCase):
         for dlayData in self.dlayxs3.values():
             self.assertAlmostEqual(6.0, dlayData.delayEmissionSpectrum.sum(), 6)
 
-    def testNuDelay(self):
+    def test_NuDelay(self):
         delay = self.dlayxs3
         # this data has NOT been compared to ENDF-V, it was created before modifying the read/write of DLAYXS and
         # was used to make sure the data wasn't accidentally transposed, hence there are two nuclides with two vectors

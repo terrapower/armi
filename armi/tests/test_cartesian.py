@@ -13,15 +13,15 @@
 # limitations under the License.
 
 """
-
+Tests for Cartesian reactors
 """
 import unittest
 
-from armi.utils import directoryChangers
-from armi.tests import TEST_ROOT
-from armi.reactor.flags import Flags
-import armi.reactor.tests.test_reactors
 from armi.reactor import geometry
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
+from armi.utils import directoryChangers
 
 
 class CartesianReactorTests(unittest.TestCase):
@@ -37,10 +37,8 @@ class CartesianReactorTests(unittest.TestCase):
         cls.directoryChanger.close()
 
     def setUp(self):
-        """
-        Use the related setup in the testFuelHandlers module.
-        """
-        self.o, self.r = armi.reactor.tests.test_reactors.loadTestReactor(
+        """Use the related setup in the testFuelHandlers module."""
+        self.o, self.r = test_reactors.loadTestReactor(
             self.directoryChanger.destination, inputFileName="refTestCartesian.yaml"
         )
 

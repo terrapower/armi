@@ -17,8 +17,8 @@ r""" Tests for the Database3 class
 import subprocess
 import unittest
 
-import numpy
 import h5py
+import numpy
 
 from armi.bookkeeping.db import database3
 from armi.reactor import grids
@@ -34,9 +34,8 @@ class TestDatabase3(unittest.TestCase):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
-        cs = self.o.cs
 
-        self.dbi = database3.DatabaseInterface(self.r, cs)
+        self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: db.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
@@ -193,7 +192,7 @@ class TestDatabase3(unittest.TestCase):
             database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
 
-    def test_load(self) -> None:
+    def test_load(self):
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
@@ -202,6 +201,10 @@ class TestDatabase3(unittest.TestCase):
 
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
+
+        # we shouldn't be able to set the fileName if a file is open
+        with self.assertRaises(RuntimeError):
+            self.db.fileName = "whatever.h5"
 
     def test_history(self):
         self.makeShuffleHistory()
@@ -244,7 +247,7 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.db.genAuxiliaryData((-1, -1))
 
-    # TODO: This definitely needs some work
+    # TODO: This should be expanded.
     def test_replaceNones(self):
         """Super basic test that we handle Nones correctly in database read/writes"""
         data3 = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
@@ -352,6 +355,13 @@ class TestDatabase3(unittest.TestCase):
                 self.assertIn(meta_key, newDb.attrs)
                 self.assertTrue(newDb.attrs[meta_key] is not None)
 
+        # test an edge case - no DB to split
+        with self.assertRaises(ValueError):
+            self.db.h5db = None
+            self.db.splitDatabase(
+                [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
+            )
+
     def test_grabLocalCommitHash(self):
         """test of static method to grab a local commit hash with ARMI version"""
         # 1. test outside a Git repo
@@ -391,8 +401,51 @@ class TestDatabase3(unittest.TestCase):
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
+    def test_fileName(self):
+        # test the file name getter
+        self.assertEqual(str(self.db.fileName), "test_fileName.h5")
 
-class Test_LocationPacking(unittest.TestCase):
+        # test the file name setter
+        self.db.close()
+        self.db.fileName = "thing.h5"
+        self.assertEqual(str(self.db.fileName), "thing.h5")
+
+    def test_readInputsFromDB(self):
+        inputs = self.db.readInputsFromDB()
+        self.assertEqual(len(inputs), 3)
+
+        self.assertGreater(len(inputs[0]), 100)
+        self.assertIn("metadata:", inputs[0])
+        self.assertIn("settings:", inputs[0])
+
+        self.assertEqual(len(inputs[1]), 0)
+
+        self.assertGreater(len(inputs[2]), 100)
+        self.assertIn("custom isotopics:", inputs[2])
+        self.assertIn("blocks:", inputs[2])
+
+    def test_deleting(self):
+        self.assertEqual(type(self.db), database3.Database3)
+        del self.db
+        self.assertFalse(hasattr(self, "db"))
+        self.db = self.dbi.database
+
+    def test_open(self):
+        with self.assertRaises(ValueError):
+            self.db.open()
+
+    def test_loadCS(self):
+        cs = self.db.loadCS()
+        self.assertEqual(cs["numProcessors"], 1)
+        self.assertEqual(cs["nCycles"], 3)
+
+    def test_loadBlueprints(self):
+        bp = self.db.loadBlueprints()
+        self.assertIsNone(bp.nuclideFlags)
+        self.assertEqual(len(bp.assemblies), 0)
+
+
+class TestLocationPacking(unittest.TestCase):
     r"""Tests for database location"""
 
     def test_locationPacking(self):
@@ -416,7 +469,7 @@ class Test_LocationPacking(unittest.TestCase):
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
         self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
 
-    def test_locationPackingOlderVerions(self):
+    def test_locationPackingOlderVersions(self):
         # pylint: disable=protected-access
         for version in [1, 2]:
             loc1 = grids.IndexLocation(1, 2, 3, None)
@@ -439,7 +492,30 @@ class Test_LocationPacking(unittest.TestCase):
             self.assertEqual(unpackedData[2][0].tolist(), [7, 8, 9])
             self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
 
+    def test_locationPackingOldVersion(self):
+        # pylint: disable=protected-access
+        version = 3
+
+        loc1 = grids.IndexLocation(1, 2, 3, None)
+        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
+        loc3 = grids.MultiIndexLocation(None)
+        loc3.append(grids.IndexLocation(7, 8, 9, None))
+        loc3.append(grids.IndexLocation(10, 11, 12, None))
+
+        locs = [loc1, loc2, loc3]
+        tp, data = database3._packLocations(locs, minorVersion=version)
+
+        self.assertEqual(tp[0], "I")
+        self.assertEqual(tp[1], "C")
+        self.assertEqual(tp[2], "M:2")
+
+        unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
+
+        self.assertEqual(unpackedData[0], (1, 2, 3))
+        self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
+        self.assertEqual(unpackedData[2][0], (7, 8, 9))
+        self.assertEqual(unpackedData[2][1], (10, 11, 12))
+
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestDatabase3.test_splitDatabase"]
     unittest.main()

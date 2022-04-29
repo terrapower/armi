@@ -29,9 +29,9 @@ analogy of the model to the physical nature of nuclear reactors.
 
 See Also: :doc:`/developer/index`.
 """
-import math
 import collections
 import itertools
+import math
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
@@ -39,20 +39,19 @@ import numpy
 import tabulate
 import six
 
-import armi
-from armi.reactor import parameters
-from armi.reactor.parameters import resolveCollections
-from armi.reactor.flags import Flags, TypeSpec
+from armi import context
 from armi import runLog
 from armi import utils
-from armi.utils import units
-from armi.utils import densityTools
-from armi.nucDirectory import nucDir, nuclideBases
 from armi.nucDirectory import elements
-from armi.reactor import grids
-
-from armi.physics.neutronics.fissionProductModel import fissionProductModel
+from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO import xsCollections
+from armi.physics.neutronics.fissionProductModel import fissionProductModel
+from armi.reactor import grids
+from armi.reactor import parameters
+from armi.reactor.flags import Flags, TypeSpec
+from armi.reactor.parameters import resolveCollections
+from armi.utils import densityTools
+from armi.utils import units
 from armi.utils.densityTools import calculateNumberDensity
 
 
@@ -523,7 +522,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Get all children that have given flags."""
-        return NotImplementedError
+        raise NotImplementedError
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
@@ -2866,7 +2865,7 @@ class Composite(ArmiObject):
         int
             number of parameters synchronized over all components
         """
-        if armi.MPI_SIZE == 1:
+        if context.MPI_SIZE == 1:
             return 0
 
         startTime = timeit.default_timer()
@@ -2876,9 +2875,9 @@ class Composite(ArmiObject):
         runLog.debug("syncMpiState has {} comps".format(len(allComps)))
 
         try:
-            armi.MPI_COMM.barrier()  # sync up
+            context.MPI_COMM.barrier()  # sync up
             allGatherTime = -timeit.default_timer()
-            allSyncData = armi.MPI_COMM.allgather(sendBuf)
+            allSyncData = context.MPI_COMM.allgather(sendBuf)
             allGatherTime += timeit.default_timer()
         except:
             msg = ["Failure while trying to allgather."]

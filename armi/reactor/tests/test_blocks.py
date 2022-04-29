@@ -469,7 +469,7 @@ class Block_TestCase(unittest.TestCase):
         ref = "BB"
         self.assertEqual(cur, ref)
 
-    def test27b_setBuGroup(self):
+    def test_27b_setBuGroup(self):
         type_ = "A"
         self.Block.p.buGroup = type_
         cur = self.Block.p.buGroupNum
@@ -1163,7 +1163,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertListEqual(actual, expected)
 
     def test_getNumComponents(self):
-
         cur = self.Block.getNumComponents(Flags.FUEL)
         ref = self.Block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
@@ -1173,7 +1172,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(1, self.Block.getNumComponents(Flags.DUCT))
 
     def test_getNumPins(self):
-
         cur = self.Block.getNumPins()
         ref = self.Block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
@@ -1182,7 +1180,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
     def test_setPinPowers(self):
-
         numPins = self.Block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
@@ -1241,13 +1238,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(ref, val)
         self.assertNotAlmostEqual(refWrong, val)
 
-    def test100_getPinPitch(self):
+    def test_100_getPinPitch(self):
         cur = self.Block.getPinPitch()
         ref = self.Block.getDim(Flags.CLAD, "od") + self.Block.getDim(Flags.WIRE, "od")
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-    def test101_getPitch(self):
+    def test_101_getPitch(self):
         cur = self.Block.getPitch(returnComp=True)
         ref = (
             self.Block.getDim(Flags.INTERCOOLANT, "op"),
@@ -1263,7 +1260,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertTrue(newb.getLargestComponent("op") is c2)
         self.assertTrue(p1 == p2)
 
-    def test102_setPitch(self):
+    def test_102_setPitch(self):
         pitch = 17.5
         self.Block.setPitch(pitch)
         cur = self.Block.getPitch()
@@ -1272,8 +1269,7 @@ class Block_TestCase(unittest.TestCase):
             self.Block.getComponent(Flags.INTERCOOLANT).getDimension("op"), pitch
         )
 
-    def test106_getAreaFractions(self):
-
+    def test_106_getAreaFractions(self):
         cur = self.Block.getVolumeFractions()
         tot = 0.0
         areas = []
@@ -1612,19 +1608,17 @@ class HexBlock_TestCase(unittest.TestCase):
     def test_getNumPins(self):
         self.assertEqual(self.HexBlock.getNumPins(), 169)
 
-    def testSymmetryFactor(self):
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[
-            2, 0, 0
-        ]  # full hex
+    def test_symmetryFactor(self):
+        # full hex
+        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[2, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(1.0, self.HexBlock.getSymmetryFactor())
         a0 = self.HexBlock.getArea()
         v0 = self.HexBlock.getVolume()
         m0 = self.HexBlock.getMass()
 
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[
-            0, 0, 0
-        ]  # 1/3 symmetric
+        # 1/3 symmetric
+        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[0, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(3.0, self.HexBlock.getSymmetryFactor())
         self.assertEqual(a0 / 3.0, self.HexBlock.getArea())

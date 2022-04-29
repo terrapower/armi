@@ -40,24 +40,18 @@ PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
 os.environ["PYTHONPATH"] = PYTHONPATH
-import armi
+
 from armi import apps
+from armi import configure as armi_configure
+from armi import context
+from armi import disableFutureConfigures
+from armi import meta
 from armi.bookkeeping import tests as bookkeepingTests
-from armi.context import RES
 from armi.utils.dochelpers import *
 
 # Configure the baseline framework "App" for framework doc building
-armi.configure(apps.App())
-
-# some examples have import armi;armi.configure() in them that are intended
-# to be copy/pasted by new users. However, armi will crash with param locks if it is
-# configured twice. We often use if armi.isConfigured() to guard against
-# issues here, but prefer not to highlight that somewhat confusing
-# conditional if a user is just copy pasting fresh code
-# ("How on Earth," they might wonder "would it already be configured!?"). Thus,
-# we tell armi to simply disable future configure calls with this advanced flag
-armi._ignoreConfigures = True
-
+armi_configure(apps.App())
+disableFutureConfigures()
 
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
@@ -141,6 +135,8 @@ autodoc_default_options = {
     "private-members": False,
 }
 autodoc_member_order = "bysource"
+# this line removes huge numbers of false and misleading, inherited docstrings
+autodoc_inherit_docstrings = False
 autoclass_content = "both"
 
 apidoc_module_dir = SOURCE_DIR
@@ -182,8 +178,8 @@ project = "ARMI"
 copyright = "2009-{}, TerraPower, LLC".format(datetime.datetime.now().year)
 
 # Use the pre-existing version definition.
-version = armi.__version__
-release = armi.__version__
+version = meta.__version__
+release = meta.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -332,7 +328,7 @@ sphinx_gallery_conf = {
         ]
     ),
     "within_subsection_order": FileNameSortKey,
-    "default_thumb_file": os.path.join(RES, "images", "TerraPowerLogo.png"),
+    "default_thumb_file": os.path.join(context.RES, "images", "TerraPowerLogo.png"),
 }
 
 suppress_warnings = ["autoapi.python_import_resolution"]

@@ -13,10 +13,11 @@
 # limitations under the License.
 """ tests of the Parameters class """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import unittest
+import copy
 import traceback
+import unittest
 
-import armi
+from armi import context
 from armi.reactor import parameters
 from armi.reactor import composites
 
@@ -182,8 +183,69 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(22, mock.nPlus1)
         self.assertTrue(all(pd.assigned for pd in mock.paramDefs))
 
-    def test_cannotDefineParameterWithSameName(self):
+    def test_setterGetterBasics(self):
+        class Mock(parameters.ParameterCollection):
+            pDefs = parameters.ParameterDefinitionCollection()
+            with pDefs.createBuilder() as pb:
 
+                def n(self, value):
+                    self._p_n = value
+                    self._p_nPlus1 = value + 1
+
+                pb.defParam("n", "units", "description", "location", setter=n)
+
+                def nPlus1(self, value):
+                    self._p_nPlus1 = value
+                    self._p_n = value - 1
+
+                pb.defParam("nPlus1", "units", "description", "location", setter=nPlus1)
+
+        mock = Mock()
+        mock.n = 15
+        mock.nPlus1 = 22
+
+        # basic tests of setters and getters
+        self.assertEqual(mock["n"], 21)
+        self.assertEqual(mock["nPlus1"], 22)
+        with self.assertRaises(parameters.exceptions.UnknownParameterError):
+            _ = mock["fake"]
+        with self.assertRaises(KeyError):
+            _ = mock[123]
+
+        # basic test of __delitem__ method
+        del mock["n"]
+        with self.assertRaises(parameters.exceptions.UnknownParameterError):
+            _ = mock["n"]
+
+        # basic tests of __in__ method
+        self.assertFalse("n" in mock)
+        self.assertTrue("nPlus1" in mock)
+
+        # basic tests of __eq__ method
+        mock2 = copy.deepcopy(mock)
+        self.assertTrue(mock == mock)
+        self.assertFalse(mock == mock2)
+
+        # basic tests of get() method
+        self.assertEqual(mock.get("nPlus1"), 22)
+        self.assertIsNone(mock.get("fake"))
+        self.assertEqual(mock.get("fake", default=333), 333)
+
+        # basic test of values() method
+        vals = mock.values()
+        self.assertEqual(len(vals), 2)
+        self.assertEqual(vals[0], 22)
+
+        # basic test of update() method
+        mock.update({"nPlus1": 100})
+        self.assertEqual(mock.get("nPlus1"), 100)
+
+        # basic test of getSyncData() method
+        data = mock.getSyncData()
+        self.assertEqual(data["n"], 99)
+        self.assertEqual(data["nPlus1"], 100)
+
+    def test_cannotDefineParameterWithSameName(self):
         with self.assertRaises(parameters.ParameterDefinitionError):
 
             class MockParamCollection(parameters.ParameterCollection):
@@ -387,7 +449,7 @@ class SynchronizationTests:
         self.r = makeComp("reactor")
         self.r.core = makeComp("core")
         self.r.add(self.r.core)
-        for ai in range(armi.MPI_SIZE * 4):
+        for ai in range(context.MPI_SIZE * 4):
             a = makeComp("assembly{}".format(ai))
             self.r.core.add(a)
             for bi in range(10):
@@ -400,7 +462,7 @@ class SynchronizationTests:
         del self.r
 
     def run(self, testNamePrefix="mpitest_"):
-        with open("mpitest{}.temp".format(armi.MPI_RANK), "w") as self.l:
+        with open("mpitest{}.temp".format(context.MPI_RANK), "w") as self.l:
             for methodName in sorted(dir(self)):
                 if methodName.startswith(testNamePrefix):
                     self.write("{}.{}".format(self.__class__.__name__, methodName))
@@ -449,51 +511,49 @@ class SynchronizationTests:
 
     def mpitest_noConflicts(self):
         for ci, comp in enumerate(self.comps):
-            if ci % armi.MPI_SIZE == armi.MPI_RANK:
-                comp.p.param1 = (armi.MPI_RANK + 1) * 30.0
+            if ci % context.MPI_SIZE == context.MPI_RANK:
+                comp.p.param1 = (context.MPI_RANK + 1) * 30.0
             else:
-                self.assertNotEqual((armi.MPI_RANK + 1) * 30.0, comp.p.param1)
+                self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param1)
 
-        # numUpdates = len(self.comps) // armi.MPI_SIZE + (len(self.comps) % armi.MPI_SIZE > armi.MPI_RANK)
         self.assertEqual(len(self.comps), self.r.syncMpiState())
 
         for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % armi.MPI_SIZE + 1) * 30.0, comp.p.param1)
+            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
 
     def mpitest_noConflicts_setByString(self):
         """Make sure params set by string also work with sync."""
         for ci, comp in enumerate(self.comps):
-            if ci % armi.MPI_SIZE == armi.MPI_RANK:
-                comp.p.param2 = (armi.MPI_RANK + 1) * 30.0
+            if ci % context.MPI_SIZE == context.MPI_RANK:
+                comp.p.param2 = (context.MPI_RANK + 1) * 30.0
             else:
-                self.assertNotEqual((armi.MPI_RANK + 1) * 30.0, comp.p.param2)
+                self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param2)
 
-        # numUpdates = len(self.comps) // armi.MPI_SIZE + (len(self.comps) % armi.MPI_SIZE > armi.MPI_RANK)
         self.assertEqual(len(self.comps), self.r.syncMpiState())
 
         for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % armi.MPI_SIZE + 1) * 30.0, comp.p.param2)
+            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param2)
 
     def mpitest_withConflicts(self):
-        self.r.core.p.param1 = (armi.MPI_RANK + 1) * 99.0
+        self.r.core.p.param1 = (context.MPI_RANK + 1) * 99.0
         with self.assertRaises(ValueError):
             self.r.syncMpiState()
 
     def mpitest_withConflictsButSameValue(self):
-        self.r.core.p.param1 = (armi.MPI_SIZE + 1) * 99.0
+        self.r.core.p.param1 = (context.MPI_SIZE + 1) * 99.0
         self.r.syncMpiState()
-        self.assertEqual((armi.MPI_SIZE + 1) * 99.0, self.r.core.p.param1)
+        self.assertEqual((context.MPI_SIZE + 1) * 99.0, self.r.core.p.param1)
 
     def mpitest_noConflictsMaintainWithStateRetainer(self):
         assigned = []
         with self.r.retainState(parameters.inCategory("cat1")):
             for ci, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * ci
-                if ci % armi.MPI_SIZE == armi.MPI_RANK:
-                    comp.p.param1 = (armi.MPI_RANK + 1) * 30.0
+                if ci % context.MPI_SIZE == context.MPI_RANK:
+                    comp.p.param1 = (context.MPI_RANK + 1) * 30.0
                     assigned.append(parameters.SINCE_ANYTHING)
                 else:
-                    self.assertNotEqual((armi.MPI_RANK + 1) * 30.0, comp.p.param1)
+                    self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param1)
                     assigned.append(parameters.NEVER)
 
             # 1st inside state retainer
@@ -508,12 +568,12 @@ class SynchronizationTests:
         self.assertEqual(len(self.comps), self.r.syncMpiState())
 
         for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % armi.MPI_SIZE + 1) * 30.0, comp.p.param1)
+            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
 
     def mpitest_conflictsMaintainWithStateRetainer(self):
         with self.r.retainState(parameters.inCategory("cat2")):
             for _, comp in enumerate(self.comps):
-                comp.p.param2 = 99 * armi.MPI_RANK
+                comp.p.param2 = 99 * context.MPI_RANK
 
         with self.assertRaises(ValueError):
             self.r.syncMpiState()
@@ -528,15 +588,15 @@ class SynchronizationTests:
                     self.r.p.param3 = "hi"
                     for c in self.comps:
                         c.p.param1 = (
-                            99 * armi.MPI_RANK
+                            99 * context.MPI_RANK
                         )  # this will get reset after state retainer
-                    a = self.r.core[passNum * armi.MPI_SIZE + armi.MPI_RANK]
-                    a.p.param2 = armi.MPI_RANK * 20.0
+                    a = self.r.core[passNum * context.MPI_SIZE + context.MPI_RANK]
+                    a.p.param2 = context.MPI_RANK * 20.0
                     for b in a:
-                        b.p.param2 = armi.MPI_RANK * 10.0
+                        b.p.param2 = context.MPI_RANK * 10.0
 
                     for ai, a2 in enumerate(self.r):
-                        if ai % armi.MPI_SIZE != armi.MPI_RANK:
+                        if ai % context.MPI_SIZE != context.MPI_RANK:
                             assert "param2" not in a2.p
 
                     self.assertEqual(parameters.SINCE_ANYTHING, param1.assigned)
@@ -579,8 +639,8 @@ class SynchronizationTests:
 
         def do_assert(passNum):
             # ensure all assemblies and blocks set values for param2, but param1 is empty
-            for rank in range(armi.MPI_SIZE):
-                a = self.r.core[passNum * armi.MPI_SIZE + rank]
+            for rank in range(context.MPI_SIZE):
+                a = self.r.core[passNum * context.MPI_SIZE + rank]
                 assert "param1" not in a.p
                 assert "param3" not in a.p
                 self.assertEqual(rank * 20, a.p.param2)
@@ -589,20 +649,20 @@ class SynchronizationTests:
                     assert "param1" not in b.p
                     assert "param3" not in b.p
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             with self.r.retainState(parameters.inCategory("cat2")):
-                armi.MPI_COMM.bcast(self.r)
+                context.MPI_COMM.bcast(self.r)
                 do()
                 [do_assert(passNum) for passNum in range(4)]
             [do_assert(passNum) for passNum in range(4)]
         else:
             del self.r
-            self.r = armi.MPI_COMM.bcast(None)
+            self.r = context.MPI_COMM.bcast(None)
             do()
 
 
 if __name__ == "__main__":
-    if armi.MPI_SIZE == 1:
+    if context.MPI_SIZE == 1:
         unittest.main()
     else:
         SynchronizationTests().run()

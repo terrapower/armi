@@ -26,12 +26,12 @@ mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 # pylint: disable=abstract-method,no-self-use,unused-argument
 from distutils.spawn import find_executable
 import os
-import unittest
 import subprocess
+import unittest
 
 import pytest
 
-import armi
+from armi import context
 from armi import mpiActions
 from armi import settings
 from armi.interfaces import Interface
@@ -78,7 +78,7 @@ class FailingInterface3(Interface):
         raise RuntimeError("Failing interface critical worker failure")
 
     def interactEveryNode(self, c, n):  # pylint:disable=unused-argument
-        armi.MPI_COMM.bcast("fail", root=0)
+        context.MPI_COMM.bcast("fail", root=0)
 
     def workerOperate(self, cmd):
         if cmd == "fail":
@@ -95,28 +95,28 @@ class MpiOperatorTests(unittest.TestCase):
         self.o = OperatorMPI(cs=self.old_op.cs)
         self.o.r = self.r
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_basicOperatorMPI(self):
         self.o.operate()
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_masterException(self):
         self.o.removeAllInterfaces()
         failer = FailingInterface1(self.o.r, self.o.cs)
         self.o.addInterface(failer)
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             self.assertRaises(RuntimeError, self.o.operate)
         else:
             self.o.operate()
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_masterCritical(self):
         self.o.removeAllInterfaces()
         failer = FailingInterface2(self.o.r, self.o.cs)
         self.o.addInterface(failer)
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             self.assertRaises(Exception, self.o.operate)
         else:
             self.o.operate()
@@ -128,14 +128,14 @@ class BcastAction1(mpiActions.MpiAction):
         nItems = 50
         results = [None] * nItems
         for objIndex in range(nItems):
-            if objIndex % armi.MPI_SIZE == armi.MPI_RANK:
+            if objIndex % context.MPI_SIZE == context.MPI_RANK:
                 results[objIndex] = objIndex
 
         allResults = self.gather(results)
 
         if allResults:
             # this is confounding!!!!
-            return [allResults[ai % armi.MPI_SIZE][ai] for ai in range(nItems)]
+            return [allResults[ai % context.MPI_SIZE][ai] for ai in range(nItems)]
 
 
 class BcastAction2(mpiActions.MpiAction):
@@ -161,13 +161,13 @@ class MpiDistributeStateTests(unittest.TestCase):
         self.action.o = self.o
         self.action.r = self.o.r
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_distributeSettings(self):
         """Under normal circumstances, we would not test "private" methods;
         however, distributeState is quite complicated.
         """
         self.action._distributeSettings()
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             self.assertEqual(self.cs, self.action.o.cs)
         else:
             self.assertNotEqual(self.cs, self.action.o.cs)
@@ -185,32 +185,32 @@ class MpiDistributeStateTests(unittest.TestCase):
             for key in original.keys():
                 self.assertEqual(original[key], current[key])
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_distributeReactor(self):
         """Under normal circumstances, we would not test "private" methods;
         however, distributeState is quite complicated.
         """
         original_reactor = self.action.r
         self.action._distributeReactor(self.cs)
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             self.assertEqual(original_reactor, self.action.r)
         else:
             self.assertNotEqual(original_reactor, self.action.r)
         self.assertIsNone(self.action.r.core.lib)
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_distributeInterfaces(self):
         """Under normal circumstances, we would not test "private" methods;
         however, distributeState is quite complicated.
         """
         original_interfaces = self.o.interfaces
         self.action._distributeInterfaces()
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             self.assertEqual(original_interfaces, self.o.interfaces)
         else:
             self.assertEqual(original_interfaces, self.o.interfaces)
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_distributeState(self):
         original_reactor = self.o.r
         original_lib = self.o.r.core.lib
@@ -218,7 +218,7 @@ class MpiDistributeStateTests(unittest.TestCase):
         original_bolassems = self.o.r.blueprints.assemblies
         self.action.invokeHook()
 
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             self.assertEqual(self.cs, self.o.cs)
             self.assertEqual(original_reactor, self.o.r)
             self.assertEqual(original_interfaces, self.o.interfaces)
@@ -236,14 +236,14 @@ class MpiDistributeStateTests(unittest.TestCase):
                 pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE
             )
 
-    @unittest.skipIf(armi.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_compileResults(self):
         action1 = BcastAction1()
-        armi.MPI_COMM.bcast(action1)
+        context.MPI_COMM.bcast(action1)
         results1 = action1.invoke(None, None, None)
 
         action2 = BcastAction2()
-        armi.MPI_COMM.bcast(action2)
+        context.MPI_COMM.bcast(action2)
         results2 = action2.invoke(None, None, None)
         self.assertEqual(results1, results2)
 
