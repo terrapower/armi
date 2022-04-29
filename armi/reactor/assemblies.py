@@ -1318,35 +1318,16 @@ class Assembly(composites.Composite):
         return self[0].getSymmetryFactor()
 
     def rotate(self, deg):
-        # note this can only rotate in 60 degree increments.
-        # as this is only called by growToFullCore which is strictly hex, the 60 degree restriction is acceptable
-        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
-        for b in self.getBlocks():
-            b.rotatePins(rotNum)
-            params = b.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-            params += b.p.paramDefs.atLocation(ParamLocation.EDGES).names
-            for param in params:
-                if isinstance(b.p[param], list):
-                    if len(b.p[param]) == 6:
-                        b.p[param] = b.p[param][-rotNum:] + b.p[param][:-rotNum]
-                    elif b.p[param] == []:
-                        # List hasn't been defined yet, no warning needed.
-                        pass
-                    else:
-                        runLog.warning(
-                            "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
-                                param
-                            )
-                        )
-                else:
-                    # this is a scalar and there shouldn't be any rotation.
-                    pass
+        """Rotates the spatial variables on an assembly the specified angle.
 
-            dispx = b.p.get("displacementX")
-            dispy = b.p.get("displacementY")
-            if (dispx is not None) and (dispy is not None):
-                b.p["displacementX"] = dispx * math.cos(deg) - dispy * math.sin(deg)
-                b.p["displacementY"] = dispx * math.sin(deg) + dispy * math.cos(deg)
+        Each block on the assembly is rotated in turn.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation"""
+        for b in self.getBlocks():
+            b.rotate(deg)
 
 
 class HexAssembly(Assembly):

@@ -47,6 +47,7 @@ from armi.utils import hexagon
 from armi.utils import densityTools
 from armi.physics.neutronics import NEUTRON
 from armi.physics.neutronics import GAMMA
+from armi.reactor.parameters import ParamLocation
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -1573,6 +1574,15 @@ class Block(composites.Composite):
             # send it some zeros
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
 
+    def rotate(self, deg):
+        """Function for rotating a block's spatially varying variables by a specified angle.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation"""
+        raise NotImplementedError
+
 
 class HexBlock(Block):
 
@@ -1670,6 +1680,43 @@ class HexBlock(Block):
             self.p.pinPowers = self.p.pinPowersNeutron + self.p.pinPowersGamma
         else:
             self.p.pinPowers = self.p.pinPowersNeutron
+
+    def rotate(self, deg):
+        """Function for rotating a block's spatially varying variables by a specified angle.
+
+        Rotates the pins and then also any parameters that defined on the corners or edges.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation"""
+
+        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
+        self.rotatePins(rotNum)
+        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for param in params:
+            if isinstance(self.p[param], list):
+                if len(self.p[param]) == 6:
+                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
+                elif self.p[param] == []:
+                    # List hasn't been defined yet, no warning needed.
+                    pass
+                else:
+                    runLog.warning(
+                        "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
+                            param
+                        )
+                    )
+            else:
+                # this is a scalar and there shouldn't be any rotation.
+                pass
+        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
+        dispx = self.p.get("displacementX")
+        dispy = self.p.get("displacementY")
+        if (dispx is not None) and (dispy is not None):
+            self.p.displacementX = dispx * math.cos(deg) - dispy * math.sin(deg)
+            self.p.displacementY = dispx * math.sin(deg) + dispy * math.cos(deg)
 
     def rotatePins(self, rotNum, justCompute=False):
         """
