@@ -33,6 +33,10 @@ from armi.utils import (
     getCycleLengths,
     getBurnSteps,
     getMaxBurnSteps,
+    getNodesPerCycle,
+    getCycleNode,
+    getPreviousTimeNode,
+    getTimeStepNum,
 )
 
 
@@ -223,6 +227,8 @@ settings:
     cycleLengthsSimpleSolution = [1, 2, 3]
     burnStepsDetailedSolution = [3, 5, 5]
     burnStepsSimpleSolution = [3, 3, 3]
+    nodesPerCycleDetailedSolution = [4, 6, 6]
+    nodesPerCycleSimpleSolution = [4, 4, 4]
     maxBurnStepsDetailedSolution = 5
     maxBurnStepsSimpleSolution = 3
 
@@ -303,6 +309,34 @@ settings:
         self.assertEqual(
             getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution
         )
+
+    def test_getNodesPerCycle(self):
+        self.assertEqual(
+            getNodesPerCycle(self.standaloneDetailedCS),
+            self.nodesPerCycleDetailedSolution,
+        )
+
+        self.assertEqual(
+            getNodesPerCycle(self.standaloneSimpleCS), self.nodesPerCycleSimpleSolution
+        )
+
+    def test_getCycleNode(self):
+        self.assertEqual(getCycleNode(8, self.standaloneDetailedCS), (1, 4))
+        self.assertEqual(getCycleNode(12, self.standaloneDetailedCS), (2, 3))
+
+        self.assertEqual(getCycleNode(4, self.standaloneSimpleCS), (1, 0))
+        self.assertEqual(getCycleNode(8, self.standaloneSimpleCS), (2, 1))
+
+    def test_getPreviousTimeNode(self):
+        with self.assertRaises(ValueError):
+            getPreviousTimeNode(0, 0, 'foo')
+
+        self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 4))
+        self.assertEqual(getPreviousTimeNode(2, 4, self.standaloneDetailedCS), (2, 3))
+
+    # TODO
+    # def test_getTimeStepNum(self):
+    #     ...
 
 
 if __name__ == "__main__":

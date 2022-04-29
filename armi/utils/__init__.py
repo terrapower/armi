@@ -333,6 +333,8 @@ def getCycleNode(timeStepNum, cs):
     """
     Return the (cycle, node) corresponding to a cumulative time step number.
 
+    "Node" refers to the node at the start of the time step.
+
     Parameters
     ----------
     timeStepNum
@@ -340,37 +342,31 @@ def getCycleNode(timeStepNum, cs):
     cs
         A case Settings object to get the nodes-per-cycle from
     """
-    nodesPerCycle = getNodesPerCycle(cs)
+    stepsPerCycle = getBurnSteps(cs)
 
-    cNodes = 0  # cumulative nodes
-    for i in range(len(nodesPerCycle)):
-        cNodes += nodesPerCycle[i]
-        if timeStepNum < cNodes:
-            return (i, timeStepNum - (cNodes - nodesPerCycle[i]))
+    cSteps = 0  # cumulative steps
+    for i in range(len(stepsPerCycle)):
+        cSteps += stepsPerCycle[i]
+        if timeStepNum <= cSteps:
+            return (i, timeStepNum - (cSteps - stepsPerCycle[i]) - 1)
 
 
 def getNodesPerCycle(cs):
-    """Return the number of nodes per cycles for this case settings."""
-    if cs["cycles"] != []:
-        burnStepsPerCycle = [
-            len(utils.expandRepeatedFloats(cycle["power fractions"]))
-            for cycle in cs["cycles"]
-        ]
-        return [burnSteps + 1 for burnSteps in burnStepsPerCycles]
-    else:
-        return [cs["burnSteps"] + 1] * cs["nCycles"]
+    """Return the number of nodes per cycle for the case settings object."""
+    return [s + 1 for s in getBurnSteps(cs)]
 
 
-def getPreviousTimeStep(cycle, node, burnSteps):
-    """Return the time step before the specified time step"""
+def getPreviousTimeNode(cycle, node, cs):
+    """Return the (cycle, node) before the specified (cycle, node)"""
     if (cycle, node) == (0, 0):
-        raise ValueError("There is not Time step before (0, 0)")
+        raise ValueError("There is no time step before (0, 0)")
     if node != 0:
         return (cycle, node - 1)
     else:
         # index starts at zero, so the last node in a cycle is equal to the number of
         # burn steps.
-        return (cycle - 1, burnSteps)
+        nodesPerCycle = getNodesPerCycle(cs)
+        return (cycle - 1, nodesPerCycle[cycle - 1])
 
 
 def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):

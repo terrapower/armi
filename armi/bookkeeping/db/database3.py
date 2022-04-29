@@ -104,7 +104,7 @@ from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
-from armi.utils import getPreviousTimeStep
+from armi.utils import getPreviousTimeNode
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 from armi.settings.fwSettings.databaseSettings import (
@@ -331,10 +331,10 @@ class DatabaseInterface(interfaces.Interface):
             loadDbCs = inputDB.loadCS()
 
             # pull the history up to the cycle/node prior to `startCycle`/`startNode`
-            dbCycle, dbNode = getPreviousTimeStep(
+            dbCycle, dbNode = getPreviousTimeNode(
                 startCycle,
                 startNode,
-                self.o.burnSteps[startCycle],
+                self.cs,
             )
 
             # check that cycle histories are equivalent up to this point
