@@ -114,13 +114,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # attributes are set when assemblies are added in coreDesign.construct(), however
         # since we skip that here, they never get set; therefore the need for the deepcopy.
         bp = copy.deepcopy(sourceReactor.blueprints)
-        # create new reactor from blueprints used to create sourceReactor
         newReactor = Reactor(sourceReactor.o.cs.caseTitle, bp)
-        # create core based on loaded blueprints and do not load the assemblies
         coreDesign = bp.systemDesigns["core"]
         coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
-        # initialize the interfaces and set some values
         newReactor.core.lib = sourceReactor.core.lib
+        newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
         return newReactor
 
     def _computeAverageAxialMesh(self):
