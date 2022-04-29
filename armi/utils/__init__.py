@@ -107,7 +107,10 @@ def getPowerFractions(cs):
             else [1.0] * cs["nCycles"]
         )
 
-        return [[value] * cs["burnSteps"] for value in valuePerCycle]
+        return [
+            [value] * (cs["burnSteps"] if cs["burnSteps"] != None else 0)
+            for value in valuePerCycle
+        ]
 
 
 def getCycleNames(cs):
