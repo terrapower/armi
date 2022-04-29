@@ -223,12 +223,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         
         newAssem.reestablishBlockOrder()
         newAssem.calculateZCoords()
-        return sourceAssem, newAssem
+        return newAssem
 
     def _buildAllUniformAssemblies(self):
         """
         Loop through each new block for each mesh point and apply conservation of atoms.
-
         We use the submesh and allow blocks to be as small as the smallest submesh to
         avoid unnecessarily diffusing small blocks into huge ones (e.g. control blocks
         into plenum).
@@ -237,20 +236,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             f"Creating new assemblies from {self._sourceReactor.core} "
             f"with a uniform mesh of {self._uniformMesh}"
         )
-        
-        mp = Multiprocessor()
-        cores = multiprocessing.cpu_count()
-        assemblies = self._sourceReactor.core.getAssemblies()
-        chunks = collections.defaultdict(list)
-        for i in range(cores):
-            sourceAssem = assemblies.pop()
-            chunks[i].append((sourceAssem, self._uniformMesh))
-        
-        for i in range(cores):
-            mp.run(self.makeAssemWithUniformMesh, chunks[i])
-        newAssems = mp.wait()
-            
-        for sourceAssem, newAssem in newAssems:
+        for sourceAssem in self._sourceReactor.core:
+            newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
             self.convReactor.core.add(newAssem, newLoc)
