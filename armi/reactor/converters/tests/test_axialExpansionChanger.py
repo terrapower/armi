@@ -29,6 +29,13 @@ from armi.reactor.converters.axialExpansionChanger import (
     ExpansionData,
 )
 from armi.reactor.flags import Flags
+from armi import materials
+from armi.utils import units
+
+# set namespace order for materials so that fake HT9 material can be found
+materials.setMaterialNamespaceOrder(
+    ["armi.reactor.converters.tests.test_axialExpansionChanger", "armi.materials"]
+)
 
 
 class Base(unittest.TestCase):
@@ -275,7 +282,7 @@ class TestCoreExpansion(Base, unittest.TestCase):
             self.percents[a] = list(0.01 * ones(len(self.componentLst[a])))
 
     def test_axiallyExpandCoreThermal(self):
-        self.obj._converterSettings["detailedAxialExpansion"] = False
+        self.obj._converterSettings["detailedAxialExpansion"] = False #pylint: disable=protected-access
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCoreThermal(self.r, self.tempGrid, self.tempField)
         self.assertNotEqual(
@@ -285,7 +292,7 @@ class TestCoreExpansion(Base, unittest.TestCase):
         )
 
     def test_axiallyExpandCorePercent(self):
-        self.obj._converterSettings["detailedAxialExpansion"] = False
+        self.obj._converterSettings["detailedAxialExpansion"] = False #pylint: disable=protected-access
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCorePercent(self.r, self.componentLst, self.percents)
         self.assertNotEqual(
@@ -655,3 +662,45 @@ def _buildDummySodium():
     b.setType("dummy")
 
     return b
+
+
+class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
+    """Fake material used to verify armi.reactor.converters.axialExpansionChanger
+
+    Notes
+    -----
+    - specifically used TestAxialExpansionHeight to verify axialExpansionChanger produces
+      expected heights from hand calculation
+    - also used to verify mass and height conservation resulting from even amounts of expansion
+      and contraction. See TestConservation.
+    """
+
+    name = "Fake"
+
+    def __init__(self):
+        materials.ht9.HT9.__init__(self)
+
+    def linearExpansionPercent(self, Tk=None, Tc=None):
+        """ A fake linear expansion percent"""
+        Tc = units.getTc(Tc, Tk)
+        return 0.02 * Tc
+
+
+class FakeMatException(materials.ht9.HT9):  # pylint: disable=abstract-method
+    """Fake material used to verify TestExceptions
+
+    Notes
+    -----
+    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion factor
+      is higher to ensure that a negative block height is caught in TestExceptions:test_AssemblyAxialExpansionException.
+    """
+
+    name = "FakeException"
+
+    def __init__(self):
+        materials.ht9.HT9.__init__(self)
+
+    def linearExpansionPercent(self, Tk=None, Tc=None):
+        """ A fake linear expansion percent"""
+        Tc = units.getTc(Tc, Tk)
+        return 0.08 * Tc
