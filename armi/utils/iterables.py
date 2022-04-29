@@ -233,7 +233,6 @@ class Sequence:
 
                 newseq = seq.select(...).drop(...).transform(...)
         """
-        # self._iter = (i for i in self if pred(i))
         self._iter = filter(pred, self._iter)
         return self
 
@@ -244,7 +243,6 @@ class Sequence:
 
                 newseq = seq.select(...).drop(...).transform(...)
         """
-        # self._iter = (i for i in self if not pred(i))
         self._iter = filterfalse(pred, self._iter)
         return self
 
