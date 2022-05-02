@@ -290,7 +290,7 @@ class MasterTimer:
         _loc, labels = plt.yticks()
         for tick in labels:
             tick.set_fontsize(40)
-        # plt.grid(True, axis='x')
+
         plt.tight_layout()
 
         # plot content draw

@@ -33,7 +33,7 @@ class TestReportContentCreation(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def testTimeSeries(self):
+    def test_TimeSeries(self):
         """Test execution of TimeSeries object."""
         with directoryChangers.TemporaryDirectoryChanger():
             times = [0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3]
@@ -56,7 +56,7 @@ class TestReportContentCreation(unittest.TestCase):
             series.plot()
             self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
-    def testTableCreation(self):
+    def test_TableCreation(self):
         header = ["item", "value"]
         table = newReports.Table("Assembly Table", "table of assemblies", header)
 
@@ -66,7 +66,7 @@ class TestReportContentCreation(unittest.TestCase):
         result = table.render(0)
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
 
-    def testReportContents(self):
+    def test_ReportContents(self):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
 
@@ -85,7 +85,7 @@ class TestReportContentCreation(unittest.TestCase):
                 isinstance(reportTest.tableOfContents(), htmltree.HtmlElement)
             )
 
-    def testNeutronicsPlotFunctions(self):
+    def test_neutronicsPlotFunctions(self):
         reportTest = newReports.ReportContent("Test")
 
         neutronicsPlotting(self.r, reportTest, self.o.cs)
@@ -94,7 +94,7 @@ class TestReportContentCreation(unittest.TestCase):
             isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries)
         )
 
-    def testWriteReports(self):
+    def test_writeReports(self):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
             table = newReports.Table("Example")

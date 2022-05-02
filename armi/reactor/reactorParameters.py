@@ -49,8 +49,8 @@ def defineReactorParameters():
 
         pb.defParam(
             "cycleLength",
-            units="EFP days",
-            description="The cycle length of the reactor while power is being produced",
+            units="days",
+            description="Length of the cycle, including outage time described by availabilityFactor",
         )
 
         pb.defParam(

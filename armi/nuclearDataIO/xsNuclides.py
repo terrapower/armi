@@ -247,7 +247,7 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
         pyplot.show()
 
 
-def compareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
+def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
     """Compares scatter matrices graphically between libraries."""
     from matplotlib import pyplot
 

@@ -25,19 +25,6 @@ from armi.cli.entryPoint import EntryPoint
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 
-def _runInspectorOnSettings(cs):
-    from armi import operators
-
-    operator_class = operators.getOperatorClassFromSettings(cs)
-    inspector = operator_class.inspector(cs)
-    issues = [
-        query
-        for query in inspector.queries
-        if query and query.correction is not None and query._passed != True
-    ]  # pylint: disable=protected-access
-    return issues
-
-
 class ExpandBlueprints(EntryPoint):
     """
     Perform expansion of !include directives in a blueprint file.

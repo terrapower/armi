@@ -697,6 +697,8 @@ def plotAssemblyTypes(
     assems=None,
     maxAssems=None,
     showBlockAxMesh=True,
+    yAxisLabel=None,
+    title=None,
 ) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
@@ -718,22 +720,36 @@ def plotAssemblyTypes(
     showBlockAxMesh: bool
         if true, the axial mesh information will be displayed on the right side of the assembly plot.
 
+    yAxisLabel: str
+        Optionally, provide a label for the Y-axis.
+
+    title: str
+        Optionally, provide a title for the plot.
+
     Returns
     -------
     fig : plt.Figure
         The figure object created
     """
-
+    # handle defaults
     if assems is None:
         assems = list(blueprints.assemblies.values())
+
     if not isinstance(assems, (list, set, tuple)):
         assems = [assems]
+
     if maxAssems is not None and not isinstance(maxAssems, int):
         raise TypeError("Maximum assemblies should be an integer")
 
     numAssems = len(assems)
     if maxAssems is None:
         maxAssems = numAssems
+
+    if yAxisLabel is None:
+        yAxisLabel = "THERMALLY EXPANDED AXIAL HEIGHTS (CM)"
+
+    if title is None:
+        title = "Assembly Designs"
 
     # Set assembly/block size constants
     yBlockHeights = []
@@ -781,8 +797,8 @@ def plotAssemblyTypes(
     ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
-    ax.set_title("Assembly Designs", y=1.03)
-    ax.set_ylabel("Thermally Expanded Axial Heights (cm)".upper(), labelpad=20)
+    ax.set_title(title, y=1.03)
+    ax.set_ylabel(yAxisLabel, labelpad=20)
     ax.set_xlim([0.0, 0.5 + maxAssems * (assemWidth + assemSeparation)])
 
     # Plot and save figure
@@ -805,7 +821,6 @@ def _plotBlocksInAssembly(
     xAssemEndLoc,
     showBlockAxMesh,
 ):
-
     # Set dictionary of pre-defined block types and colors for the plot
     lightsage = "xkcd:light sage"
     blockTypeColorMap = collections.OrderedDict(

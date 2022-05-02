@@ -134,7 +134,7 @@ class TestSettings2(unittest.TestCase):
     def tearDown(self):
         configure(self._backupApp, permissive=True)
 
-    def testSchemaChecksType(self):
+    def test_schemaChecksType(self):
         newSettings = FuelHandlerPlugin.defineSettings()
 
         good_input = io.StringIO(
