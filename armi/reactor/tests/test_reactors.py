@@ -37,6 +37,7 @@ from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -746,7 +747,10 @@ class HexReactorTests(ReactorTests):
         # creation with modified enrichment on an expanded BOL assem.
         fuelComp = fuelBlock.getComponent(Flags.FUEL)
         bol = self.r.blueprints.assemblies[aOld.getType()]
-        bol.axiallyExpand(0.05, fuelComp.getNuclides())
+        changer = AxialExpansionChanger(converterSettings={})
+        changer.setAssembly(bol)
+        changer.expansionData.setExpansionFactors([fuelComp], [0.05])
+        changer.axiallyExpandAssembly()
         aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
