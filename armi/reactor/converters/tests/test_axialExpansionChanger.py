@@ -165,7 +165,6 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
     def setUp(self):
         Base.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="Fake")
-        self.obj.setAssembly(self.a)
 
         self.temp = Temperature(
             self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
@@ -177,11 +176,9 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         # do the axial expansion
         self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
         for idt in range(self.temp.tempSteps):
-            self.obj.expansionData.mapHotTempToComponents(
-                self.temp.tempGrid, self.temp.tempField[idt, :]
+            self.obj.thermalAxialExpansion(
+                self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
             )
-            self.obj.expansionData.computeThermalExpansionFactors()
-            self.obj.axiallyExpandAssembly()
             self._getConservationMetrics(self.a)
             self.axialMeshLocs[idt, :] = self.a.getAxialMesh()
 
@@ -282,7 +279,9 @@ class TestCoreExpansion(Base, unittest.TestCase):
             self.percents[a] = list(0.01 * ones(len(self.componentLst[a])))
 
     def test_axiallyExpandCoreThermal(self):
-        self.obj._converterSettings["detailedAxialExpansion"] = False #pylint: disable=protected-access
+        self.obj._converterSettings[
+            "detailedAxialExpansion"
+        ] = False  # pylint: disable=protected-access
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCoreThermal(self.r, self.tempGrid, self.tempField)
         self.assertNotEqual(
@@ -292,7 +291,9 @@ class TestCoreExpansion(Base, unittest.TestCase):
         )
 
     def test_axiallyExpandCorePercent(self):
-        self.obj._converterSettings["detailedAxialExpansion"] = False #pylint: disable=protected-access
+        self.obj._converterSettings[
+            "detailedAxialExpansion"
+        ] = False  # pylint: disable=protected-access
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCorePercent(self.r, self.componentLst, self.percents)
         self.assertNotEqual(
@@ -307,9 +308,7 @@ class TestConservation(Base, unittest.TestCase):
 
     def setUp(self):
         Base.setUp(self)
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-        self.a = self.r.core.refAssem
-        self.obj.setAssembly(self.a)
+        self.a = buildTestAssemblyWithFakeMaterial(name="Fake")
 
         # initialize class variables for conservation checks
         self.oldMass = {}
@@ -321,12 +320,10 @@ class TestConservation(Base, unittest.TestCase):
             self.a.getTotalHeight(), coldTemp=1.0, hotInletTemp=1000.0
         )
         for idt in range(self.temp.tempSteps):
-            self.obj.expansionData.mapHotTempToComponents(
-                self.temp.tempGrid, self.temp.tempField[idt, :]
+            self.obj.thermalAxialExpansion(
+                self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
             )
-            self.obj.expansionData.computeThermalExpansionFactors()
             self._getConservationMetrics(self.a)
-            self.obj.axiallyExpandAssembly()
 
     def test_ExpansionContractionConservation(self):
         """expand all components and then contract back to original state
@@ -339,7 +336,6 @@ class TestConservation(Base, unittest.TestCase):
         """
         a = buildTestAssemblyWithFakeMaterial(name="Fake")
         obj = AxialExpansionChanger(converterSettings={})
-        obj.setAssembly(a)
         oldMesh = a.getAxialMesh()
         componentLst = [c for b in a for c in b]
         for i in range(0, 10):
@@ -349,21 +345,10 @@ class TestConservation(Base, unittest.TestCase):
             else:
                 percents = -0.01 + zeros(len(componentLst))
             # set the expansion factors
-            oldMasses = [
-                c.getMass()
-                for b in a
-                for c in b
-                if obj.expansionData.isTargetComponent(c)
-            ]
-            obj.expansionData.setExpansionFactors(componentLst, percents)
+            oldMasses = [c.getMass() for b in a for c in b]
             # do the expansion
-            obj.axiallyExpandAssembly()
-            newMasses = [
-                c.getMass()
-                for b in a
-                for c in b
-                if obj.expansionData.isTargetComponent(c)
-            ]
+            obj.prescribedAxialExpansion(a, componentLst, percents, setFuel=True)
+            newMasses = [c.getMass() for b in a for c in b]
             for old, new in zip(oldMasses, newMasses):
                 self.assertAlmostEqual(old, new)
 
@@ -432,9 +417,7 @@ class TestConservation(Base, unittest.TestCase):
         # 10% growth of fuel components
         pList = zeros(len(cList)) + 0.1
         chngr = AxialExpansionChanger(converterSettings={})
-        chngr.setAssembly(assembly)
-        chngr.expansionData.setExpansionFactors(cList, pList)
-        chngr.axiallyExpandAssembly()
+        chngr.prescribedAxialExpansion(assembly, cList, pList, setFuel=True)
 
         ## do assertion
         self.assertEqual(
@@ -506,13 +489,6 @@ class TestExceptions(Base, unittest.TestCase):
                 )
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_computeThermalExpansionFactorsException(self):
-        with self.assertRaises(KeyError) as cm:
-            self.obj.expansionData.computeThermalExpansionFactors()
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -664,7 +640,7 @@ def _buildDummySodium():
     return b
 
 
-class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
+class Fake(materials.ht9.HT9):  # pylint: disable=abstract-method
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger
 
     Notes
@@ -686,7 +662,7 @@ class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
         return 0.02 * Tc
 
 
-class FakeMatException(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeException(materials.ht9.HT9):  # pylint: disable=abstract-method
     """Fake material used to verify TestExceptions
 
     Notes

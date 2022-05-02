@@ -91,6 +91,7 @@ class Block(composites.Composite):
         """
         composites.Composite.__init__(self, name)
         self.p.height = height
+        self.p.heightBOL = height
 
         self.p.orientation = numpy.array((0.0, 0.0, 0.0))
 

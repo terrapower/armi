@@ -47,6 +47,21 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
+    def prescribedAxialExpansion(
+        self, a, componentLst: list, percents: list, setFuel=True
+    ):
+        """do prescribed axial expansion of an assembly"""
+        self.setAssembly(a, setFuel)
+        self.expansionData.setExpansionFactors(componentLst, percents)
+        self.axiallyExpandAssembly(thermal=False)
+
+    def thermalAxialExpansion(self, a, tempGrid: list, tempField: list, setFuel=True):
+        """do thermal expansion for an assembly given an axial temperature grid and field"""
+        self.setAssembly(a, setFuel)
+        self.expansionData.mapHotTempToComponents(tempGrid, tempField)
+        self.expansionData.computeThermalExpansionFactors()
+        self.axiallyExpandAssembly(thermal=True)
+
     def reset(self):
         self.linked = None
         self.expansionData = None
@@ -87,11 +102,26 @@ class AxialExpansionChanger:
                     )
                     raise RuntimeError
 
-    def axiallyExpandAssembly(self):
-        """utilizes assembly linkage to do axial expansion"""
+    def axiallyExpandAssembly(self, thermal: bool = False):
+        """Utilizes assembly linkage to do axial expansion
+
+        Parameters
+        ----------
+        thermal : bool, optional
+            boolean to determine whether or not expansion is thermal or non-thermal driven
+
+        Notes
+        -----
+            The "thermal" parameter plays a role as thermal expansion is relative to the
+            BOL heights where non-thermal is relative to the most recent height.
+        """
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         for ib, b in enumerate(self.linked.a):
+            if thermal:
+                blockHeight = b.p.heightBOL
+            else:
+                blockHeight = b.p.height
             ## set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
@@ -101,9 +131,9 @@ class AxialExpansionChanger:
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
                     if growFrac >= 0.0:
-                        c.height = (1.0 + growFrac) * b.p.height
+                        c.height = (1.0 + growFrac) * blockHeight
                     else:
-                        c.height = (1.0 / (1.0 - growFrac)) * b.p.height
+                        c.height = (1.0 / (1.0 - growFrac)) * blockHeight
                     # align linked components
                     if ib == 0:
                         c.zbottom = 0.0
@@ -469,19 +499,7 @@ class ExpansionData:
 
         for b in self._a:
             for c in b:
-                try:
-                    self._expansionFactors[c] = (
-                        c.getThermalExpansionFactor(
-                            Tc=c.temperatureInC, T0=self._oldHotTemp[c]
-                        )
-                        - 1.0
-                    )
-                except KeyError:
-                    runLog.error(
-                        "Component {0} is not in self._oldHotTemp."
-                        "Did you assign temperatures to the components?".format(c)
-                    )
-                    raise
+                self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c
