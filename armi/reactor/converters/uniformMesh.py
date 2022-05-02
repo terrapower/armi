@@ -70,7 +70,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.reactor.reactors import Reactor
 
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
@@ -117,8 +117,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
         sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             original reactor to be copied
         """
+        # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
+        # attributes are set. Simply calling blueprints.loadFromCs() just initializes
+        # a blueprints object and may not set all necessary attributes. E.g., some
+        # attributes are set when assemblies are added in coreDesign.construct(), however
+        # since we skip that here, they never get set; therefore the need for the deepcopy.
         bp = copy.deepcopy(sourceReactor.blueprints)
-        newReactor = reactors.Reactor(sourceReactor.o.cs.caseTitle, bp)
+        newReactor = Reactor(sourceReactor.o.cs.caseTitle, bp)
         coreDesign = bp.systemDesigns["core"]
         coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
