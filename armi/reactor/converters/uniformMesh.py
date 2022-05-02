@@ -65,6 +65,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
+from armi.reactor.reactors import Reactor
 
 # unfortunate physics coupling, but still in the framework
 from armi.physics.neutronics.globalFlux import globalFluxInterface
@@ -100,13 +101,24 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     @staticmethod
     def initNewReactor(sourceReactor):
-        """Build an empty version of the new reactor"""
-        # XXX: this deepcopy is extremely wasteful because the assemblies copied
-        # are immediately removed. It's just laziness of getting the same class
-        # of reactor set up.
-        newReactor = copy.deepcopy(sourceReactor)
-        newReactor.core.removeAllAssemblies()
-        newReactor.core.regenAssemblyLists()
+        """Build a new, yet empty, reactor with the same settings as sourceReactor
+
+        Parameters
+        ----------
+        sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+            original reactor to be copied
+        """
+        # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
+        # attributes are set. Simply calling blueprints.loadFromCs() just initializes
+        # a blueprints object and may not set all necessary attributes. E.g., some
+        # attributes are set when assemblies are added in coreDesign.construct(), however
+        # since we skip that here, they never get set; therefore the need for the deepcopy.
+        bp = copy.deepcopy(sourceReactor.blueprints)
+        newReactor = Reactor(sourceReactor.o.cs.caseTitle, bp)
+        coreDesign = bp.systemDesigns["core"]
+        coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
+        newReactor.core.lib = sourceReactor.core.lib
+        newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
         return newReactor
 
     def _computeAverageAxialMesh(self):
@@ -237,10 +249,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
-            newAssem.r = self.convReactor
-            # would be nicer if this happened in add but there's  complication between
-            # moveTo and add precedence and location-already-filled-issues.
-            newAssem.parent = self.convReactor.core
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
             self.convReactor.core.add(newAssem, newLoc)
