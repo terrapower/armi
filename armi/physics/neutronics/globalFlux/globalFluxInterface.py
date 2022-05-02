@@ -766,8 +766,8 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         if timeNode <= 0:
             return
 
-        daysIntoCycle = sum(self.r.p.stepLengths[cycle][:timeNode])
-        cycleLength = self.r.p.cycleLengths[cycle]
+        daysIntoCycle = sum(self.r.o.stepLengths[cycle][:timeNode])
+        cycleLength = self.r.p.cycleLength
 
         maxDetailedDpaThisCycle = 0.0
         peakDoseAssem = None
