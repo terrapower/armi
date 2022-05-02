@@ -109,8 +109,8 @@ def buildTestAssemblies():
 
     interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
-    block = blocks.HexBlock("fuel", caseSetting)
-    block2 = blocks.HexBlock("fuel", caseSetting)
+    block = blocks.HexBlock("fuel")
+    block2 = blocks.HexBlock("fuel")
     block.setType("fuel")
     block.setHeight(10.0)
     block.add(fuelUZr)
@@ -256,7 +256,7 @@ class Assembly_TestCase(unittest.TestCase):
         # add some blocks with a component
         self.blockList = []
         for i in range(NUM_BLOCKS):
-            b = blocks.HexBlock("TestHexBlock", self.cs)
+            b = blocks.HexBlock("TestHexBlock")
             b.setHeight(self.height)
 
             self.hexDims = {
@@ -297,7 +297,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_append(self):
-        b = blocks.HexBlock("TestBlock", self.cs)
+        b = blocks.HexBlock("TestBlock")
         self.blockList.append(b)
         self.Assembly.append(b)
         cur = self.Assembly.getBlocks()
@@ -307,7 +307,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_extend(self):
         blockList = []
         for _ in range(2):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
             self.blockList.append(b)
             blockList.append(b)
 
@@ -381,7 +381,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for _ in range(assemNum2):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
             b.setHeight(height2)
             assembly2.add(b)
 
@@ -513,7 +513,7 @@ class Assembly_TestCase(unittest.TestCase):
             }
 
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b = blocks.HexBlock("fuel", self.cs)
+            b = blocks.HexBlock("fuel")
             b.setType("igniter fuel")
             b.add(h)
             b.setHeight(height2)
@@ -739,7 +739,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
 
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
@@ -789,7 +789,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
 
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
@@ -846,7 +846,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
 
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
@@ -926,7 +926,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for blockI in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
 
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
