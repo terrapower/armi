@@ -60,8 +60,6 @@ from timeit import default_timer as timer
 
 import numpy
 
-import armi
-from armi.mpiActions import Multiprocessor
 from armi import runLog
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
