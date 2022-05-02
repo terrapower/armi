@@ -955,10 +955,9 @@ class Assembly(composites.Composite):
                     blocksHere.append((b, heightHere))
 
         totalHeight = 0.0
+        allMeshPoints = sorted(allMeshPoints)
         # The expected height snaps to the minimum height that is requested
-        expectedHeight = min(
-            sorted(allMeshPoints)[-1] - sorted(allMeshPoints)[0], zUpper - zLower
-        )
+        expectedHeight = min(allMeshPoints[-1] - allMeshPoints[0], zUpper - zLower)
         for _b, height in blocksHere:
             totalHeight += height
 
@@ -967,40 +966,13 @@ class Assembly(composites.Composite):
         if abs(totalHeight - expectedHeight) > 1e-5:
             raise ValueError(
                 f"The cumulative height of {blocksHere} is {totalHeight} cm "
-                f"and does not equal the expected height of {expectedHeight} cm"
+                f"and does not equal the expected height of {expectedHeight} cm.\n"
+                f"All mesh points: {allMeshPoints}\n"
+                f"Upper mesh point: {zUpper} cm\n"
+                f"Lower mesh point: {zLower} cm\n"
             )
 
         return blocksHere
-
-    def getBlockLengthAboveAndBelowHeight(self, height):
-        """
-        Returns a tuple with the amount of a block above or below a given height in an assembly.
-
-        Used to determine what fraction of the block should be merged with a control
-        rod.
-
-        Parameters
-        ----------
-        height : float
-            The height of interest to grab a block (cm)
-
-        Returns
-        -------
-        distances : tuple
-            tuple containing the distance from height to top of block followed by
-            distance of height to bottom of block
-
-        """
-        for b in self:
-            if height > b.p.zbottom and height <= b.p.ztop:
-                distanceFromTop = abs(b.p.ztop - height)
-                distanceFromBottom = abs(height - b.p.zbottom)
-                break
-        else:
-            raise ValueError(
-                "There are no blocks in {} at a height of {} cm".format(self, height)
-            )
-        return (distanceFromTop, distanceFromBottom)
 
     def getParamValuesAtZ(
         self, param, elevations, interpType="linear", fillValue=numpy.NaN
