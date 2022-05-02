@@ -769,8 +769,15 @@ def copyInterfaceInputs(
         # guess. In future, it might be nice to have interfaces specify which
         # explicitly.
         for key, files in interfaceFileNames.items():
-            if not isinstance(key, settings.Setting):
-                key = cs.getSetting(key)
+            try:
+                if not isinstance(key, settings.Setting):
+                    key = cs.getSetting(key)
+            except ValueError:
+                runLog.error(
+                    "{} is not a valid setting. Ensure the relevant specifyInputs method is a correct setting name.".format(
+                        key
+                    )
+                )
             label = key.name
 
             for f in files:
