@@ -241,7 +241,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
             self.convReactor.core.add(newAssem, newLoc)
-        self.plotConvertedReactor()
 
     def plotConvertedReactor(self):
         bpAssems = list(self.convReactor.blueprints.assemblies.values())
@@ -258,6 +257,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         existingFiles = glob.glob(
             f"{self.convReactor.core.name}AssemblyTypes" + "*" + ".png"
         )
+        # This loops over the existing files for the assembly types outputs
+        # and makes a unique integer value so that plots are not overwritten. The
+        # regular expression here captures the first integer as AssemblyTypesX and
+        # then ensures that the numbering in the next enumeration below is 1 above that.
         for f in existingFiles:
             newStart = int(re.search(r"\d+", f).group())
             if newStart > start:
