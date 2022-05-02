@@ -63,10 +63,7 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
     def test_blueprintCopy(self):
-        """ensure that necessary blueprint attributes are set
-
-        see https://github.com/terrapower/armi/pull/645#discussion_r861210649
-        """
+        """Ensure that necessary blueprint attributes are set"""
         convReactor = self.converter.initNewReactor(self.converter._sourceReactor)
         converted = convReactor.blueprints
         original = self.converter._sourceReactor.blueprints
@@ -79,6 +76,8 @@ class TestUniformMeshComponents(unittest.TestCase):
         for attr in toCompare:
             for c, o in zip(getattr(converted, attr), getattr(original, attr)):
                 self.assertEqual(c, o)
+        # ensure that the assemblies were copied over
+        self.assertTrue(converted.assemblies, msg="Assembly objects not copied!")
 
 
 def applyNonUniformHeightDistribution(reactor):
