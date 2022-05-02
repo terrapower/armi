@@ -199,12 +199,12 @@ class TestParamConversion(unittest.TestCase):
             for b in self.sourceAssem:
                 b.p[pName] = 3
 
-        def setter(block, vals, _paramNames):
-            for pName, val in zip(paramList, vals):
+        def setter(block, vals, paramNames):
+            for pName, val in zip(paramNames, vals):
                 block.p[pName] = val
 
-        def getter(block, _paramNames):
-            return numpy.array([block.p[pName] for pName in paramList])
+        def getter(block, paramNames):
+            return numpy.array([block.p[pName] for pName in paramNames])
 
         # pylint: disable=protected-access
         uniformMesh._setStateFromOverlaps(
