@@ -97,11 +97,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._computeAverageAxialMesh()
         self._buildAllUniformAssemblies()
         self._clearStateOnReactor(self.convReactor)
-        self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)        
+        self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
         self.convReactor.core.updateAxialMesh()
         self._checkConversion()
         completeEndTime = timer()
-        runLog.extra(f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds")
+        runLog.extra(
+            f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
+        )
         return self.convReactor
 
     def _checkConversion(self):
@@ -165,7 +167,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
-        
+
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
@@ -220,7 +222,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo)
             newAssem.add(block)
             bottom = topMeshPoint
-        
+
         newAssem.reestablishBlockOrder()
         newAssem.calculateZCoords()
         return newAssem
@@ -305,7 +307,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._clearStateOnReactor(self._sourceReactor)
         self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
         completeEndTime = timer()
-        runLog.extra(f"Parameter remapping time: {completeEndTime-completeStartTime} seconds")
+        runLog.extra(
+            f"Parameter remapping time: {completeEndTime-completeStartTime} seconds"
+        )
 
     def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
         """
@@ -504,6 +508,7 @@ def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
             )
     block.setNumberDensities(totalDensities)
 
+
 def _setStateFromOverlaps(
     sourceAssembly, destinationAssembly, setter, getter, paramNames
 ):
@@ -593,9 +598,7 @@ def _setStateFromOverlaps(
             sourceBlockVals = getter(sourceBlock, paramNames)
             sourceBlockHeight = sourceBlock.getHeight()
 
-            for paramName, sourceBlockVal in zip(
-                paramNames, sourceBlockVals
-            ):
+            for paramName, sourceBlockVal in zip(paramNames, sourceBlockVals):
                 # The value can be `None` if it has not been set yet. In this case,
                 # the mapping should be skipped.
                 if sourceBlockVal is None:
@@ -609,15 +612,15 @@ def _setStateFromOverlaps(
                 # If the parameter is volume integrated (e.g., flux, linear power)
                 # then calculate the fractional contribution from the source block.
                 if isVolIntegrated:
-                    integrationFactor = (
-                        sourceBlockOverlapHeight / sourceBlockHeight
-                    )
+                    integrationFactor = sourceBlockOverlapHeight / sourceBlockHeight
 
                 # If the parameter is not volume integrated (e.g., volumetric reaction rate)
                 # then calculate the fraction contribution on the destination block.
                 # This smears the parameter over the destination block.
                 else:
-                    integrationFactor = sourceBlockOverlapHeight / destinationBlockHeight
+                    integrationFactor = (
+                        sourceBlockOverlapHeight / destinationBlockHeight
+                    )
 
                 updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 

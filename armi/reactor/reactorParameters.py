@@ -549,7 +549,6 @@ def defineCoreParameters():
             description="Decay power from decaying radionuclides",
         )
 
-
         pb.defParam("medAbsCore", units="?", description="?")
 
         pb.defParam("medFluxCore", units="?", description="?")

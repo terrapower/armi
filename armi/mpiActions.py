@@ -707,7 +707,7 @@ def _diagnosePickleError(o):
 class Multiprocessor:
     """
     This is useful for running a function in parallel using multiple available processors.
-    
+
     Notes
     -----
     This solution is taken from https://stackoverflow.com/a/45829852
