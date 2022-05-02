@@ -78,14 +78,11 @@ class Block(composites.Composite):
 
     pDefs = blockParameters.getBlockParameterDefinitions()
 
-    def __init__(self, name, height=1.0, location=None):
+    def __init__(self, name: str, height: float = 1.0):
         """
         Builds a new ARMI block
 
-        caseSettings : Settings object, optional
-            The settings object to use to build the block
-
-        name : str, optional
+        name : str
             The name of this block
 
         height : float, optional
@@ -95,9 +92,6 @@ class Block(composites.Composite):
         composites.Composite.__init__(self, name)
         self.p.height = height
 
-        if location:
-            k = location.axial
-            self.spatialLocator = grids.IndexLocation(0, 0, k, None)
         self.p.orientation = numpy.array((0.0, 0.0, 0.0))
 
         self.points = []
@@ -1562,8 +1556,8 @@ class HexBlock(Block):
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
-    def __init__(self, name, height=1.0, location=None):
-        Block.__init__(self, name, height, location)
+    def __init__(self, name, height=1.0):
+        Block.__init__(self, name, height)
 
     def coords(self, rotationDegreesCCW=0.0):
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
