@@ -56,7 +56,6 @@ import re
 import glob
 import copy
 import collections
-import multiprocessing
 from timeit import default_timer as timer
 
 import numpy
