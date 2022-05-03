@@ -23,9 +23,7 @@ import scipy.integrate
 
 from armi import runLog
 from armi import interfaces
-from armi.operators.operator import getMaxBurnSteps
-from armi.utils import units
-from armi.utils import codeTiming
+from armi.utils import units, codeTimeing, getMaxBurnSteps
 from armi.reactor import geometry
 from armi.reactor import reactors
 from armi.reactor.converters import uniformMesh
