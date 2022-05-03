@@ -98,7 +98,12 @@ def getPowerFractions(cs):
     """
     if cs["cycles"] != []:
         return [
-            expandRepeatedFloats(cycle["power fractions"]) for cycle in cs["cycles"]
+            expandRepeatedFloats(
+                (cycle["power fractions"])
+                if "power fractions" in cycle.keys()
+                else [1] * getBurnSteps(cs)[cycleIdx]
+            )
+            for (cycleIdx, cycle) in enumerate(cs["cycles"])
         ]
     else:
         valuePerCycle = (
