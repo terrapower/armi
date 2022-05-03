@@ -109,8 +109,8 @@ def buildTestAssemblies():
 
     interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
-    block = blocks.HexBlock("fuel", caseSetting)
-    block2 = blocks.HexBlock("fuel", caseSetting)
+    block = blocks.HexBlock("fuel")
+    block2 = blocks.HexBlock("fuel")
     block.setType("fuel")
     block.setHeight(10.0)
     block.add(fuelUZr)
@@ -256,7 +256,7 @@ class Assembly_TestCase(unittest.TestCase):
         # add some blocks with a component
         self.blockList = []
         for i in range(NUM_BLOCKS):
-            b = blocks.HexBlock("TestHexBlock", self.cs)
+            b = blocks.HexBlock("TestHexBlock")
             b.setHeight(self.height)
 
             self.hexDims = {
@@ -297,7 +297,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_append(self):
-        b = blocks.HexBlock("TestBlock", self.cs)
+        b = blocks.HexBlock("TestBlock")
         self.blockList.append(b)
         self.Assembly.append(b)
         cur = self.Assembly.getBlocks()
@@ -307,7 +307,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_extend(self):
         blockList = []
         for _ in range(2):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
             self.blockList.append(b)
             blockList.append(b)
 
@@ -381,7 +381,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for _ in range(assemNum2):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
             b.setHeight(height2)
             assembly2.add(b)
 
@@ -513,7 +513,7 @@ class Assembly_TestCase(unittest.TestCase):
             }
 
             h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b = blocks.HexBlock("fuel", self.cs)
+            b = blocks.HexBlock("fuel")
             b.setType("igniter fuel")
             b.add(h)
             b.setHeight(height2)
@@ -739,7 +739,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
 
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
@@ -789,7 +789,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
+            b = blocks.HexBlock("TestBlock")
 
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
@@ -832,166 +832,6 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.Assembly.countBlocksWithFlags(Flags.IGNITER | Flags.FUEL)
         self.assertEqual(cur, 3)
 
-    def test_axiallyExpandBlockHeights(self):
-        r"""heightList = list of floats.  Entry 0 represents the bottom fuel block closest to the grid plate.
-        Entry n represents the top fuel block closes to the plenum
-        adjust list = list of nuclides to modify"""
-
-        self.assemNum = 5
-
-        # Remake original assembly
-        self.r.core.removeAssembly(self.Assembly)
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
-        self.r.core.add(self.Assembly)
-
-        # add some blocks with a component
-        for i in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
-
-            # Set the 1st block to have higher params than the rest.
-            self.blockParamsTemp = {}
-            for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = val * (
-                    i + 1
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
-
-            b.setHeight(self.height)
-
-            self.hexDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "op": 0.76,
-                "ip": 0.0,
-                "mult": 1.0,
-            }
-
-            if (i == 0) or (i == 4):
-                b.setType("plenum")
-                h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-            else:
-                b.setType("fuel")
-                h = components.Hexagon("fuel", "UZr", **self.hexDims)
-
-            b.add(h)
-
-            self.Assembly.add(b)
-
-        expandFrac = 1.15
-        heightList = [self.height * expandFrac for x in range(self.assemNum - 2)]
-        adjustList = ["U238", "ZR", "U235"]
-
-        # Get the original block heights and densities to compare to later.
-        heights = {}  # Dictionary with keys of block number, values of block heights.
-        densities = (
-            {}
-        )  # Dictionary with keys of block number, values of dictionaries with keys of nuclide, values of block nuclide density
-        for i, b in enumerate(self.Assembly):
-            heights[i] = b.getHeight()
-            densities[i] = {}
-            for nuc, dens in b.getNumberDensities().items():
-                densities[i][nuc] = dens
-
-        self.Assembly.axiallyExpandBlockHeights(heightList, adjustList)
-
-        for i, b in enumerate(self.Assembly):
-            # Check height
-            if i == 0:
-                ref = heights[i]
-            elif i == 4:
-                ref = heights[i] - (expandFrac - 1) * 3 * heights[i]
-            else:
-                ref = heights[i] * expandFrac
-            cur = b.getHeight()
-            places = 6
-            self.assertAlmostEqual(cur, ref, places=places)
-
-            # Check densities
-            for nuc, dens in b.getNumberDensities().items():
-                if (i == 0) or (i == 4):
-                    ref = densities[i][nuc]
-                else:
-                    ref = densities[i][nuc] / expandFrac
-                cur = b.getNumberDensity(nuc)
-                places = 6
-                self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_axiallyExpand(self):
-        """Build an assembly, grow it, and check it."""
-        self.assemNum = 5
-
-        # Remake original assembly
-        self.r.core.removeAssembly(self.Assembly)
-        self.Assembly = makeTestAssembly(self.assemNum, self.assemNum, r=self.r)
-        self.r.core.add(self.Assembly)
-
-        # add some blocks with a component
-        for blockI in range(self.assemNum):
-            b = blocks.HexBlock("TestBlock", self.cs)
-
-            # Set the 1st block to have higher params than the rest.
-            self.blockParamsTemp = {}
-            for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = val * (
-                    blockI + 1
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
-            b.setHeight(self.height)
-            self.hexDims = {
-                "Tinput": 273.0,
-                "Thot": 273.0,
-                "op": 0.76,
-                "ip": 0.0,
-                "mult": 1.0,
-            }
-            if (blockI == 0) or (blockI == 4):
-                b.setType("plenum")
-                h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
-            else:
-                b.setType("fuel")
-                h = components.Hexagon("fuel", "UZr", **self.hexDims)
-            b.add(h)
-            self.Assembly.add(b)
-
-        expandFrac = 1.15
-        adjustList = ["U238", "ZR", "U235"]
-
-        # Get the original block heights and densities to compare to later.
-        heights = {}  # Dictionary with keys of block number, values of block heights.
-        densities = (
-            {}
-        )  # Dictionary with keys of block number, values of dictionaries with keys of nuclide, values of block nuclide density
-        for i, b in enumerate(self.Assembly):
-            heights[i] = b.getHeight()
-            densities[i] = {}
-            for nuc, dens in b.getNumberDensities().items():
-                densities[i][nuc] = dens
-
-        expandPercent = (expandFrac - 1) * 100
-        self.Assembly.axiallyExpand(expandPercent, adjustList)
-
-        for i, b in enumerate(self.Assembly):
-            # Check height
-            if i == 0:
-                # bottom block should be unchanged (because plenum)
-                ref = heights[i]
-            elif i == 4:
-                # plenum on top should have grown by 15% of the uniform height * 3 (for each fuel block)
-                ref = heights[i] - (expandFrac - 1) * 3 * heights[i]
-            else:
-                # each of the three fuel blocks should be 15% bigger.
-                ref = heights[i] * expandFrac
-            self.assertAlmostEqual(b.getHeight(), ref)
-
-            # Check densities
-            for nuc, dens in b.getNumberDensities().items():
-                if (i == 0) or (i == 4):
-                    # these blocks should be unchanged in mass/density.
-                    ref = densities[i][nuc]
-                else:
-                    # fuel blocks should have all three nuclides reduced.
-                    ref = densities[i][nuc] / expandFrac
-                places = 6
-                self.assertAlmostEqual(dens, ref, places=places)
-
     def test_getDim(self):
         cur = self.Assembly.getDim(Flags.FUEL, "op")
         ref = self.hexDims["op"]
@@ -1004,15 +844,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
         self.assertEqual(self.Assembly.getDominantMaterial().getName(), ref)
-
-    def test_getBlockLengthAboveAndBelowHeight(self):
-        above, below = self.Assembly.getBlockLengthAboveAndBelowHeight(1)
-        self.assertEqual(above, 9.0)
-        self.assertEqual(below, 1.0)
-
-        above, below = self.Assembly.getBlockLengthAboveAndBelowHeight(5)
-        self.assertEqual(above, 5.0)
-        self.assertEqual(below, 5.0)
 
     def test_iteration(self):
         r"""

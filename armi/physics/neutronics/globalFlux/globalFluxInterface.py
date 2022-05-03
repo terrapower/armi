@@ -447,7 +447,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         meshConverter = self.geomConverters.get("axial")
         if meshConverter:
-            meshConverter.applyStateToOriginal()
+            if self.options.applyResultsToReactor:
+                meshConverter.applyStateToOriginal()
             self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
 
         nAssemsBeforeConversion = [

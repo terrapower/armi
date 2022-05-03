@@ -173,6 +173,52 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(
+        location="N/A", default=0.0, categories=["control rods"]
+    ) as pb:
+
+        pb.defParam(
+            "crCriticalFraction",
+            units="",
+            description=(
+                "The insertion fraction when the control rod assembly is in its critical configuration. "
+                "Note that the default of -1.0 is a trigger for this value not being set yet."
+            ),
+            saveToDB=True,
+            default=-1.0,
+        )
+
+        pb.defParam(
+            "crCurrentElevation",
+            units="cm",
+            description="The current elevation of the bottom of the moveable section of a control rod assembly.",
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crEndingElevation",
+            units="cm",
+            description="The final elevation of the bottom of the control material when fully inserted.",
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crRodLength",
+            units="cm",
+            description="length of the control material within the control rod",
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "crStartingElevation",
+            units="cm",
+            description="The initial starting elevation of the moveable section of a control rod assembly when fully withdrawn.",
+            categories=[parameters.Category.assignInBlueprints],
+            saveToDB=True,
+        )
+
+    with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
 
@@ -232,39 +278,6 @@ def getAssemblyParameterDefinitions():
             units=None,
             description="orifice zone for assembly; should be location specific",
             default=0,  # integer default
-        )
-
-    with pDefs.createBuilder(
-        location="N/A", default=0.0, categories=["control rods"]
-    ) as pb:
-
-        pb.defParam(
-            "crCurrentHeight",
-            units="cm",
-            description="The current height of the bottom of the control material from the 0 point in the reactor model",
-        )
-
-        pb.defParam(
-            "crEndingHeight",
-            units="cm",
-            description="The final position of the bottom of the control material when "
-            "starting control operations as measured from the 0 point in the reactor model",
-        )
-
-        pb.defParam(
-            "crRodLength",
-            units="cm",
-            description="length of the control material within the control rod",
-        )
-
-        pb.defParam(
-            "crStartingHeight",
-            units="cm",
-            description="The initial starting position of the bottom of the control "
-            "material when starting control operations as measured from the 0 point in the "
-            "reactor model. Note that the starting height is taken to be a maximum withdrawn "
-            "location for the control rod for determining the position when the control rod "
-            "is fully withdrawn.",
         )
 
     with pDefs.createBuilder() as pb:
