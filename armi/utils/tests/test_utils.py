@@ -37,7 +37,7 @@ from armi.utils import (
     getCycleNodeFromCumulativeStep,
     getCycleNodeFromCumulativeNode,
     getPreviousTimeNode,
-    getTimeStepNum,
+    getCumulativeNodeNum,
 )
 
 
@@ -358,9 +358,12 @@ settings:
         self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 4))
         self.assertEqual(getPreviousTimeNode(2, 4, self.standaloneDetailedCS), (2, 3))
 
-    # TODO
-    # def test_getTimeStepNum(self):
-    #     ...
+    def test_getCumulativeNodeNum(self):
+        self.assertEqual(getCumulativeNodeNum(2, 0, self.standaloneSimpleCS), 8)
+        self.assertEqual(getCumulativeNodeNum(1, 2, self.standaloneSimpleCS), 6)
+
+        self.assertEqual(getCumulativeNodeNum(2, 0, self.standaloneDetailedCS), 10)
+        self.assertEqual(getCumulativeNodeNum(1, 0, self.standaloneDetailedCS), 4)
 
 
 if __name__ == "__main__":

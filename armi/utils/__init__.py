@@ -324,17 +324,23 @@ def getMaxBurnSteps(cs):
     return max(burnSteps)
 
 
-def getTimeStepNum(cycleNumber, subcycleNumber, cs):
-    """Return the timestep associated with cycle and tn.
+def getCumulativeNodeNum(cycle, node, cs):
+    """
+    Return the cumulative node number associated with a cycle and time node.
+
+    Note that a cycle with n time steps has n+1 nodes, and for cycle m with n steps, nodes
+    (m, n+1) and (m+1, 0) are counted separately.
 
     Parameters
     ----------
-    cycleNumber : int, The cycle number
-    subcycleNumber : int, The intra-cycle time node (0 for BOC, etc.)
+    cycle : int
+        The cycle number
+    node : int
+        The intra-cycle time node (0 for BOC, etc.)
     cs : Settings object
-
     """
-    return cycleNumber * getNodesPerCycle(cs)[cycleNumber] + subcycleNumber
+    nodesPerCycle = getNodesPerCycle(cs)
+    return sum(nodesPerCycle[:cycle]) + node
 
 
 def getCycleNodeFromCumulativeStep(timeStepNum, cs):
