@@ -1689,7 +1689,13 @@ class HexBlock(Block):
         Parameters
         ----------
         deg - float
-            number specifying the angle of counter clockwise rotation"""
+            number specifying the angle of counter clockwise rotation
+
+        See Also
+        --------
+        rotatePins : rotates the pins only and not the duct
+
+        """
 
         rotNum = round((deg % (2 * math.pi)) / math.radians(60))
         self.rotatePins(rotNum)
@@ -1720,7 +1726,8 @@ class HexBlock(Block):
 
     def rotatePins(self, rotNum, justCompute=False):
         """
-        Rotate an assembly, which means rotating the indexing of pins.
+        Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
+        not rotate all block quantities.
 
         Notes
         -----
@@ -1761,6 +1768,11 @@ class HexBlock(Block):
             The pin indexing is 1-D (not ring,pos or GEODST).
             The "ARMI pin ordering" is used for location, which is counter-clockwise from 3 o'clock.
             Pin numbers start at 1, pin locations also start at 1.
+
+        See Also
+        --------
+        rotate : rotates the entire block (pins and spatial quantities). Generally rotatePins should be
+                 called via the rotate function.
 
         Examples
         --------
