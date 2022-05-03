@@ -62,6 +62,23 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.assertEqual(refMesh[0], avgMesh[0])
         self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
+    def test_blueprintCopy(self):
+        """Ensure that necessary blueprint attributes are set"""
+        convReactor = self.converter.initNewReactor(self.converter._sourceReactor)
+        converted = convReactor.blueprints
+        original = self.converter._sourceReactor.blueprints
+        toCompare = [
+            "activeNuclides",
+            "allNuclidesInProblem",
+            "elementsToExpand",
+            "inertNuclides",
+        ]  # note, items within toCompare must be list or "list-like", like an ordered set
+        for attr in toCompare:
+            for c, o in zip(getattr(converted, attr), getattr(original, attr)):
+                self.assertEqual(c, o)
+        # ensure that the assemblies were copied over
+        self.assertTrue(converted.assemblies, msg="Assembly objects not copied!")
+
 
 def applyNonUniformHeightDistribution(reactor):
     """Modifies some assemblies to have non-uniform axial meshes"""
@@ -182,12 +199,12 @@ class TestParamConversion(unittest.TestCase):
             for b in self.sourceAssem:
                 b.p[pName] = 3
 
-        def setter(block, vals, _paramNames):
-            for pName, val in zip(paramList, vals):
+        def setter(block, vals, paramNames):
+            for pName, val in zip(paramNames, vals):
                 block.p[pName] = val
 
-        def getter(block, _paramNames):
-            return numpy.array([block.p[pName] for pName in paramList])
+        def getter(block, paramNames):
+            return numpy.array([block.p[pName] for pName in paramNames])
 
         # pylint: disable=protected-access
         uniformMesh._setStateFromOverlaps(

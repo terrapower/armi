@@ -89,7 +89,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     for dummyNuclide in dummyNuclides:
         dummyKey = dummyNuclide.nucLabel
         if len(lib.xsIDs):
-            dummyKey += xsIDs[0]
+            dummyKey += lib.xsIDs[0]
         if dummyKey in lib:
             continue
 

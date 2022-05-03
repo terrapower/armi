@@ -39,7 +39,10 @@ class TestGamiso(unittest.TestCase):
     def test_addDummyNuclidesToLibrary(self):
         dummyNuclides = [XSNuclide(None, "U238AA")]
         before = self.xsLib.getNuclides("")
+        self.assertEqual(len(self.xsLib.xsIDs), 0)
         self.assertTrue(gamiso.addDummyNuclidesToLibrary(self.xsLib, dummyNuclides))
+        self.assertEqual(len(self.xsLib.xsIDs), 1)
+        self.assertEqual(list(self.xsLib.xsIDs)[0], "38")
 
         after = self.xsLib.getNuclides("")
         self.assertGreater(len(after), len(before))

@@ -168,6 +168,51 @@ def defineCoreParameters():
 
         pb.defParam("numMoves", units="", description="numMoves", default=0)
 
+    with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
+
+        pb.defParam(
+            "crMostValuablePrimaryRodLocation",
+            default="",
+            units=None,
+            saveToDB=True,
+            description=(
+                "Core assembly location for the most valuable primary control rod."
+            ),
+        )
+        pb.defParam(
+            "crMostValuableSecondaryRodLocation",
+            default="",
+            units=None,
+            saveToDB=True,
+            description=(
+                "Core assembly location for the most valuable secondary control rod."
+            ),
+        )
+        pb.defParam(
+            "crWorthRequiredPrimary",
+            default=0.0,
+            units="pcm",
+            saveToDB=True,
+            description="Worth requirement for the primary control rods in the reactor core to achieve safe shutdown.",
+        )
+        pb.defParam(
+            "crWorthRequiredSecondary",
+            default=0.0,
+            units="pcm",
+            saveToDB=True,
+            description="Worth requirement for the secondary control rods in the reactor core to achieve safe shutdown.",
+        )
+        pb.defParam(
+            "crTransientOverpowerWorth",
+            default=0.0,
+            units="pcm",
+            saveToDB=True,
+            description=(
+                "Reactivity worth introduced by removal of the highest worth primary "
+                "control rod from the core, starting from its critical position"
+            ),
+        )
+
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(
@@ -175,18 +220,6 @@ def defineCoreParameters():
             units="N/A",
             description="Ratio of fissile Burned and discharged to fissile discharged",
             saveToDB=False,
-        )
-
-        pb.defParam(
-            "crWorthRequiredPrimary",
-            units="$",
-            description="The total worth in $ required for primary control rods to shutdown reactor accounting for uncertainties and margins",
-        )
-
-        pb.defParam(
-            "crWorthRequiredSecondary",
-            units="$",
-            description="The total worth in $ required for secondary control rods to shutdown reactor accounting for uncertainties and margins",
         )
 
         pb.defParam(
@@ -224,7 +257,15 @@ def defineCoreParameters():
             description="The item index of the inner matrix in an optimization case",
         )
 
-        pb.defParam("keffUnc", units=None, description="Uncontrolled keff")
+        pb.defParam(
+            "keffUnc",
+            units=None,
+            saveToDB=True,
+            default=0.0,
+            description=(
+                "Uncontrolled k-effective for the reactor core (with control rods fully removed).."
+            ),
+        )
 
         pb.defParam(
             "lastKeff",
@@ -408,12 +449,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "topInitiator",
-            units="$",
-            description="Worth in $ of most valuable rod in critical position",
-        )
-
-        pb.defParam(
             "totalIntrinsicSource",
             units="neutrons/s",
             description="Full core intrinsic neutron source from spontaneous fissions before a decay period",
@@ -500,6 +535,27 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["neutronics"]
     ) as pb:
+
+        pb.defParam(
+            "power",
+            units="W",
+            description="Rated thermal power of the reactor core. Corresponds to the "
+            "nuclear power generated in the core.",
+        )
+
+        pb.defParam(
+            "powerDecay",
+            units="W",
+            description="Decay power from decaying radionuclides",
+        )
+
+        pb.defParam("medAbsCore", units="?", description="?")
+
+        pb.defParam("medFluxCore", units="?", description="?")
+
+        pb.defParam("medSrcCore", units="?", description="?")
+
+        pb.defParam("pkFlux", units="?", description="?")
 
         pb.defParam(
             "maxdetailedDpaPeak",
@@ -932,27 +988,6 @@ def defineCoreParameters():
             description="?",
             default=0.0,
             categories=["block-max"],
-        )
-
-        pb.defParam("medAbsCore", units="?", description="?")
-
-        pb.defParam("medFluxCore", units="?", description="?")
-
-        pb.defParam("medSrcCore", units="?", description="?")
-
-        pb.defParam("pkFlux", units="?", description="?")
-
-        pb.defParam(
-            "power",
-            units="W",
-            description="Rated thermal power of the reactor core. Corresponds to the "
-            "nuclear power generated in the core.",
-        )
-
-        pb.defParam(
-            "powerDecay",
-            units="W",
-            description="Decay power from decaying radionuclides",
         )
 
     return pDefs
