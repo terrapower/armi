@@ -337,7 +337,7 @@ def getTimeStepNum(cycleNumber, subcycleNumber, cs):
     return cycleNumber * getNodesPerCycle(cs)[cycleNumber] + subcycleNumber
 
 
-def getCycleNode(timeStepNum, cs):
+def getCycleNodeFromCumulativeStep(timeStepNum, cs):
     """
     Return the (cycle, node) corresponding to a cumulative time step number.
 
@@ -345,18 +345,61 @@ def getCycleNode(timeStepNum, cs):
 
     Parameters
     ----------
-    timeStepNum
+    timeStepNum : int
         The cumulative number of time steps since the beginning
-    cs
-        A case Settings object to get the nodes-per-cycle from
+    cs : case settings object
+        A case settings object to get the steps-per-cycle from
+
+    Notes
+    -----
+    Time steps are the spaces between time nodes, and are 1-indexed.
+
+    To get the (cycle, node) from a cumulative time node, see instead
+    getCycleNodeFromCumulativeNode.
     """
     stepsPerCycle = getBurnSteps(cs)
+
+    if timeStepNum < 1:
+        raise ValueError(f"Cumulative time step cannot be less than 1.")
 
     cSteps = 0  # cumulative steps
     for i in range(len(stepsPerCycle)):
         cSteps += stepsPerCycle[i]
         if timeStepNum <= cSteps:
             return (i, timeStepNum - (cSteps - stepsPerCycle[i]) - 1)
+
+
+def getCycleNodeFromCumulativeNode(timeNodeNum, cs):
+    """
+    Return the (cycle, node) corresponding to a cumulative time node number.
+
+    Parameters
+    ----------
+    timeNodeNum : int
+        The cumulative number of time nodes since the beginning
+    cs : case settings object
+        A case settings object to get the nodes-per-cycle from
+
+    Notes
+    -----
+    Time nodes are the start/end of time steps, and are 0-indexed. For a cycle
+    with n steps, there will be n+1 nodes (one at the start of the cycle and another
+    at the end, plus those separating the steps). For cycle m with n steps, nodes
+    (m, n+1) and (m+1, 0) are counted separately.
+
+    To get the (cycle, node) from a cumulative time step, see instead
+    getCycleNodeFromCumulativeStep.
+    """
+    nodesPerCycle = getNodesPerCycle(cs)
+
+    if timeNodeNum < 0:
+        raise ValueError(f"Cumulative time node cannot be less than 0.")
+
+    cNodes = 0  # cumulative nodes
+    for i in range(len(nodesPerCycle)):
+        cNodes += nodesPerCycle[i]
+        if timeNodeNum < cNodes:
+            return (i, timeNodeNum - (cNodes - nodesPerCycle[i]))
 
 
 def getNodesPerCycle(cs):

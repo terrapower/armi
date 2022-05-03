@@ -34,7 +34,8 @@ from armi.utils import (
     getBurnSteps,
     getMaxBurnSteps,
     getNodesPerCycle,
-    getCycleNode,
+    getCycleNodeFromCumulativeStep,
+    getCycleNodeFromCumulativeNode,
     getPreviousTimeNode,
     getTimeStepNum,
 )
@@ -320,12 +321,35 @@ settings:
             getNodesPerCycle(self.standaloneSimpleCS), self.nodesPerCycleSimpleSolution
         )
 
-    def test_getCycleNode(self):
-        self.assertEqual(getCycleNode(8, self.standaloneDetailedCS), (1, 4))
-        self.assertEqual(getCycleNode(12, self.standaloneDetailedCS), (2, 3))
+    def test_getCycleNodeFromCumulativeStep(self):
+        self.assertEqual(
+            getCycleNodeFromCumulativeStep(8, self.standaloneDetailedCS), (1, 4)
+        )
+        self.assertEqual(
+            getCycleNodeFromCumulativeStep(12, self.standaloneDetailedCS), (2, 3)
+        )
 
-        self.assertEqual(getCycleNode(4, self.standaloneSimpleCS), (1, 0))
-        self.assertEqual(getCycleNode(8, self.standaloneSimpleCS), (2, 1))
+        self.assertEqual(
+            getCycleNodeFromCumulativeStep(4, self.standaloneSimpleCS), (1, 0)
+        )
+        self.assertEqual(
+            getCycleNodeFromCumulativeStep(8, self.standaloneSimpleCS), (2, 1)
+        )
+
+    def test_getCycleNodeFromCumulativeNode(self):
+        self.assertEqual(
+            getCycleNodeFromCumulativeNode(8, self.standaloneDetailedCS), (1, 4)
+        )
+        self.assertEqual(
+            getCycleNodeFromCumulativeNode(12, self.standaloneDetailedCS), (2, 2)
+        )
+
+        self.assertEqual(
+            getCycleNodeFromCumulativeNode(3, self.standaloneSimpleCS), (0, 3)
+        )
+        self.assertEqual(
+            getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0)
+        )
 
     def test_getPreviousTimeNode(self):
         with self.assertRaises(ValueError):
