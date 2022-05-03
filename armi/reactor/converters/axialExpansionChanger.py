@@ -23,14 +23,18 @@ class AxialExpansionChanger:
     """
     Axially expand or contract assemblies or an entire core.
 
-    Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
-
     Attributes
     ----------
     linked : :py:class:`AssemblyAxialLinkage` object.
         establishes object containing axial linkage information
     expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.ExpansionData>` object.
         establishes object to store and access relevant expansion data
+
+    Notes
+    -----
+    - Is designed to work with general, vertically oriented, pin-type assembly designs. It is not set up to account
+      for any other assembly type.
+    - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
 
     def __init__(self, converterSettings: dict):
