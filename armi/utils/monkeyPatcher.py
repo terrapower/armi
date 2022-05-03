@@ -48,7 +48,31 @@ import importlib.util
 
 from armi.settings import caseSettings
 from armi.utils import getFileSHA1Hash
-# from unittest.mock import patch
+
+# TODO: add logging
+
+
+def checkPatchFlag(f):
+    """
+    This checks if the patchFlag is True. This is used to build in a short-
+    circuit for the patcher, where the patcher will return to the main ARMI
+    process if no patchfile was provided.
+
+    The reason for including this is to keep modifications to the main ARMI
+    code to a minimum, so this effectively handles the check of whether there
+    is a patch to apply or not. This is formatted as a decorator since the
+    operation is applied to all the patch hooks.
+    """
+
+    def newfunc(*args, **kwargs):
+        self_arg = args[0]
+        if self_arg.patchFlag:
+            return f(*args, **kwargs)
+        else:
+            return
+
+    return newfunc
+
 
 class Patcher:
     """
@@ -57,71 +81,69 @@ class Patcher:
 
     def __init__(self, cs: caseSettings):
         self.patchPath = cs["patchFilePath"]
+        self.patchFlag = True
         if self.patchPath == "":
             print("No custom patch file provided.")
+            self.patchFlag = False
             return
         if not os.path.isfile(self.patchPath):
+            self.patchFlag = False
             raise IOError("The provided path to the patch file is invalid.")
         self.hash = getFileSHA1Hash(self.patchPath)
-        #TODO: log the hash somewhere.
+        # TODO: log the hash somewhere.
         spec = importlib.util.spec_from_file_location("userPatch", self.patchPath)
         self.userPatch = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(self.userPatch) 
+        spec.loader.exec_module(self.userPatch)
 
+    @checkPatchFlag
     def applyPreOpPatch(self):
         """
         Attempt to apply the pre-operator patch specified in the user patch file.
         """
-        # Short circuit calls to the patcher here to keep the ARMI codebase clean
-        if self.patchPath == "":
-            return
         try:
             self.userPatch.preOpPatch()
         except Exception as err:
             print("Error while applying preOpPatch.")
             raise err
 
+    @checkPatchFlag
     def applyPostOpPatch(self):
         """
         Attempt to apply the post-operator patch specified in the user patch file.
         """
-        # Short circuit calls to the patcher here to keep the ARMI codebase clean
-        if self.patchPath == "":
-            return
         try:
             self.userPatch.postOpPatch()
         except Exception as err:
             print("Error while applying postOpPatch.")
             raise err
 
+    @checkPatchFlag
     def applyPostInterfacePatch(self):
         """
         Attempt to apply the post-interface patch specified in the user patch file.
         """
-        # Short circuit calls to the patcher here to keep the ARMI codebase clean
-        if self.patchPath == "":
-            return
         try:
             self.userPatch.postInterfacePatch()
         except Exception as err:
             print("Error while applying postInterfacePatch.")
             raise err
 
+    @checkPatchFlag
     def applyPostRestartLoadPatch(self):
         """
         Attempt to apply the post-restart-load patch specified in the user patch file.
         """
-        # Short circuit calls to the patcher here to keep the ARMI codebase clean
-        if self.patchPath == "":
-            return
         try:
             self.userPatch.postRestartLoadPatch()
         except Exception as err:
             print("Error while applying postRestartLoadPatch.")
             raise err
 
+
 if __name__ == "__main__":
-    patcher = Patcher({"patchFilePath":"C:\\Users\\bsculac\\codes\\testpatch\\testpatch.py"})
+    patcher = Patcher(
+        {"patchFilePath": "C:\\Users\\bsculac\\codes\\testpatch\\testpatch.py"}
+    )
     patcher.applyPreOpPatch()
     patcher.applyPostOpPatch()
     patcher.applyPostInterfacePatch()
