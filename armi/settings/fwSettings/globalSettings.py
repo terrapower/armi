@@ -106,6 +106,7 @@ CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
+CONF_PATCH_FILE_PATH = "patchFilePath"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -736,6 +737,13 @@ def defineSettings() -> List[setting.Setting]:
             description="Should block blueprints attempt to auto-generate a spatial "
             "grid upon construction? This feature makes heavy use of multi-index "
             "locations, which are not yet universally supported.",
+        ),
+        setting.Setting(
+            CONF_PATCH_FILE_PATH,
+            default="",
+            label="String path to custom patch file",
+            description="Describes the path to the custom patch file that will be run"
+            "at specific points in the job. See armi.utils.monkeyPatcher for details.",
         ),
     ]
     return settings

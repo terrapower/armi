@@ -29,6 +29,7 @@ from armi import utils
 from armi.utils import pathTools
 from armi import operators
 from armi.utils.customExceptions import InputError
+from armi.utils.monkeyPatcher import Patcher
 from armi.bookkeeping.db.database3 import Database3
 
 
@@ -93,6 +94,8 @@ class MainInterface(interfaces.Interface):
                 # because the Database is last in the stack and the MainInterface is
                 # first
                 dbi.prepRestartRun(dbCycle, dbNode)
+                # Customize run using arbitrary code
+                Patcher(self.cs["patchFilePath"]).applyPostRestartLoadPatch()
             except:
                 runLog.error(
                     "Could not load the initial state as requested. DB `{}` does "
