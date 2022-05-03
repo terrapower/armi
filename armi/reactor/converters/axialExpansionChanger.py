@@ -47,16 +47,48 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
-    def prescribedAxialExpansion(
+    def performPrescribedAxialExpansion(
         self, a, componentLst: list, percents: list, setFuel=True
     ):
-        """do prescribed axial expansion of an assembly"""
+        """Perform axial expansion of an assembly given prescribed expansion percentages
+
+        Parameters
+        ----------
+        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+            ARMI assembly to be changed
+        componentList : :py:class:`Component <armi.reactor.components.component.Component>`, list
+            list of :py:class:`Component <armi.reactor.components.component.Component>` objects to be expanded
+        percents : float, list
+            list of expansion percentages for each component listed in componentList
+        setFuel : boolean, optional
+            Boolean to determine whether or not fuel blocks should have their target components set
+            This is useful when target components within a fuel block need to be determined on-the-fly.
+
+        Notes
+        -----
+        - percents may be positive (expansion) or negative (contraction)
+        """
         self.setAssembly(a, setFuel)
         self.expansionData.setExpansionFactors(componentLst, percents)
         self.axiallyExpandAssembly(thermal=False)
 
-    def thermalAxialExpansion(self, a, tempGrid: list, tempField: list, setFuel=True):
-        """do thermal expansion for an assembly given an axial temperature grid and field"""
+    def performThermalAxialExpansion(
+        self, a, tempGrid: list, tempField: list, setFuel=True
+    ):
+        """Perform thermal expansion for an assembly given an axial temperature grid and field
+
+        Parameters
+        ----------
+        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+            ARMI assembly to be changed
+        tempGrid : float, list
+            Axial temperature grid (in cm) (i.e., physical locations where temp is stored)
+        tempField : float, list
+            Temperature values (in C) along grid
+        setFuel : boolean, optional
+            Boolean to determine whether or not fuel blocks should have their target components set
+            This is useful when target components within a fuel block need to be determined on-the-fly.
+        """
         self.setAssembly(a, setFuel)
         self.expansionData.mapHotTempToComponents(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
@@ -73,6 +105,9 @@ class AxialExpansionChanger:
         ----------
          a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
             ARMI assembly to be changed
+        setFuel : boolean, optional
+            Boolean to determine whether or not fuel blocks should have their target components set
+            This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(a, setFuel)
