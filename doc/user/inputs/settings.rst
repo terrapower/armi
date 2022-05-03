@@ -192,11 +192,11 @@ An example detailed cycle history employing all of these fields could look like:
     nCycles: 4
     cycles: 
       - name: A
-        cumulative days: [1, 1, 98]
+        step days: [1, 1, 98]
         power fractions: [0.1, 0.2, 1]
         availability factor: 0.1
       - name: B
-        cumulative days: [2, 70, 6, 8]
+        cumulative days: [2, 72, 78, 86]
         power fractions: [0.2, 1.0, 0.95, 0.93]
       - name: C
         step days: [5, R5]
@@ -205,13 +205,13 @@ An example detailed cycle history employing all of these fields could look like:
         burn steps: 2
         availability factor: 0.9
 
-Note that repeated values in a list may be again be entered using the shorthand notation.
+Note that repeated values in a list may be again be entered using the shorthand notation for ``step days``, ``power fractions``, and ``availability factors`` (though not ``cumulative days`` because entries must be monotonically increasing).
 
 Such a scheme would define the following cycles:
 
     1. A 2 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle, followed by 900 days of shutdown
 
-    2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 15 days in the cycle
+    2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 14 days in the cycle
 
     3. Constant full-power operation for 30 days split into six even increments
 
