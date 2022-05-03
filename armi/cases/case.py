@@ -55,6 +55,7 @@ from armi.utils import pathTools
 from armi.utils import textProcessors
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
+from armi.utils.customExceptions import NonexistentSetting
 
 # change from default .coverage to help with Windows dotfile issues.
 # Must correspond with data_file entry in `coveragerc`!!
@@ -769,15 +770,12 @@ def copyInterfaceInputs(
         # guess. In future, it might be nice to have interfaces specify which
         # explicitly.
         for key, files in interfaceFileNames.items():
-            try:
-                if not isinstance(key, settings.Setting):
+
+            if not isinstance(key, settings.Setting):
+                try:
                     key = cs.getSetting(key)
-            except ValueError:
-                runLog.error(
-                    "{} is not a valid setting. Ensure the relevant specifyInputs method is a correct setting name.".format(
-                        key
-                    )
-                )
+                except NonexistentSetting(key):
+                    pass
             label = key.name
 
             for f in files:
