@@ -89,7 +89,6 @@ from armi import interfaces
 from armi import meta
 from armi import runLog
 from armi import settings
-from armi.operators.operator import getStepLengths
 from armi.reactor import parameters
 from armi.reactor.parameters import parameterCollections
 from armi.reactor.parameters import parameterDefinitions
@@ -104,7 +103,7 @@ from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
-from armi.utils import getPreviousTimeNode
+from armi.utils import getPreviousTimeNode, getStepLengths
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 from armi.settings.fwSettings.databaseSettings import (
