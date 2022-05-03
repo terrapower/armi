@@ -585,7 +585,6 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["availabilityFactors"]
-                # and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["availabilityFactors"])
             ),
             "`availabilityFactors` was not set to a list compatible with the number of cycles. "
@@ -597,7 +596,6 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["powerFractions"]
-                # and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["powerFractions"])
             ),
             "`powerFractions` was not set to a compatible list. "
@@ -609,7 +607,6 @@ class Inspector:
         self.addQuery(
             lambda: (
                 self.cs["cycleLengths"]
-                # and not self.cs["cycles"]
                 and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
             ),
             "The number of cycles defined in `cycleLengths` is not equal to the number of cycles in "
