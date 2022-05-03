@@ -748,9 +748,10 @@ def defineSettings() -> List[setting.Setting]:
             label="Cycle information",
             description="YAML list defining the cycle history of the case. Options"
             " at each cycle include: `name`, `cumulative days`, `step days`, `availability"
-            " factor`, and `power fractions`."
-            " If specified, do not use any of cycleLength(s), availabilityFactor(s)"
-            " powerFractions, or burnSteps. Must also specify nCycles.",
+            " factor`, `cycle length`, `burn steps`, and `power fractions`."
+            " If specified, do not use any of the case settings `cycleLength(s)`,"
+            " `availabilityFactor(s)`, `powerFractions`, or `burnSteps`. Must also"
+            " specify `nCycles` and `power`.",
             schema=vol.Schema(
                 [
                     vol.All(
