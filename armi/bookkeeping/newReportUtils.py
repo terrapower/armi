@@ -19,15 +19,15 @@ from armi.reactor.components import component
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.bookkeeping import newReports
-from armi.utils import plotting
-from armi.utils import units
-from armi.utils import iterables
-from armi.materials import custom
-from armi.operators.operator import (
+from armi.utils import (
+    units,
+    plotting,
+    iterables,
     getAvailabilityFactors,
     getCycleLengths,
     getStepLengths,
 )
+from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
