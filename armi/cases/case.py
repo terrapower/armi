@@ -775,7 +775,11 @@ def copyInterfaceInputs(
                 try:
                     key = cs.getSetting(key)
                 except NonexistentSetting(key):
-                    pass
+                    raise ValueError(
+                        "{} is not a valid setting. Ensure the relevant specifyInputs method uses a correct setting name.".format(
+                            key
+                        )
+                    )
             label = key.name
 
             for f in files:
