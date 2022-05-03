@@ -137,7 +137,7 @@ class TestMath(unittest.TestCase):
         self.assertEqual(False, isMonotonic([3, 2, 2], "decreaseExclusive"))
 
         with self.assertRaises(ValueError):
-            isMonotonic([1, 2, 3, 2], 'invalidRelation')
+            isMonotonic([1, 2, 3, 2], "invalidRelation")
 
     def test_linearInterpolation(self):
         y = linearInterpolation(1.0, 2.0, 3.0, 4.0, targetX=20.0)

@@ -147,7 +147,7 @@ class TestDatabase3(unittest.TestCase):
                     {"step days": [1000, 1000], "power fractions": [1, 1]},
                     {"step days": [1000, 1000], "power fractions": [1, 1]},
                 ],
-                "reloadDBName": 'something_fake.h5',
+                "reloadDBName": "something_fake.h5",
             }
         )
 

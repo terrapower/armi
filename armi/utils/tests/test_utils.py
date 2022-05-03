@@ -329,7 +329,7 @@ settings:
 
     def test_getPreviousTimeNode(self):
         with self.assertRaises(ValueError):
-            getPreviousTimeNode(0, 0, 'foo')
+            getPreviousTimeNode(0, 0, "foo")
 
         self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 4))
         self.assertEqual(getPreviousTimeNode(2, 4, self.standaloneDetailedCS), (2, 3))
