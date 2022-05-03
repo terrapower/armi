@@ -14,7 +14,7 @@
 
 """Various math utilities"""
 import math
-import operator
+import operator  # the python package, not the ARMI module
 import re
 
 import numpy as np
