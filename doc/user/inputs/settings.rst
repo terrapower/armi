@@ -135,14 +135,15 @@ These settings come with a few caveats:
 
 Cycle History
 -------------
-For all cases, ``nCycles`` must be specified by the user.
-In the case that only a single state is to be examined (i.e. no burnup), the user need only specify ``nCycles`` = 1.
+For all cases, ``nCycles`` and ``power`` must be specified by the user.
+In the case that only a single state is to be examined (i.e. no burnup), the user need only additionally specify ``nCycles = 1``.
 
 In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
 option.
 The simple cycle history consists of the following case settings, of which all must
 be specified for a burnup case:
     
+    * ``power``
     * ``nCycles``
     * ``burnSteps``
     * ``availabilityFactor(s)``
@@ -157,6 +158,7 @@ each cycle having the same number of burnup nodes, and to those burnup nodes bei
 evenly spaced within each cycle.
 An example simple cycle history might look like::
 
+    power: 1000000
     nCycles: 3
     burnSteps: 2
     cycleLengths: [100, R2]
@@ -176,7 +178,7 @@ The above scheme would represent 3 cycles of operation:
 In each cycle, criticality calculations will be performed at 3 nodes evenly-spaced through the uptime portion of the cycle (i.e. ``availabilityFactor``*``powerFraction``), without option for changing node spacing or frequency.
 This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
 
-To overcome these limitations, the detailed cycle history, consisting of the ``nCycles`` and ``cycles`` settings may be specified instead.
+To overcome these limitations, the detailed cycle history, consisting of the ``cycles`` setting may be specified instead.
 For each cycle, an entry to the ``cycles`` list is made with the following optional fields: 
     
     * ``name``
@@ -186,6 +188,7 @@ For each cycle, an entry to the ``cycles`` list is made with the following optio
 
 An example detailed cycle history employing all of these fields could look like::
 
+    power: 1000000
     nCycles: 4
     cycles: 
       - name: A
