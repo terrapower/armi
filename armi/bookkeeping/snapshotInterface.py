@@ -30,7 +30,7 @@ Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defau
 from armi import interfaces
 from armi import runLog
 from armi import operators
-from armi.operators.operator import getStepLengths
+from armi.utils import getStepLengths
 
 
 ORDER = interfaces.STACK_ORDER.POSTPROCESSING
