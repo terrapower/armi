@@ -1,0 +1,17 @@
+!include refSmallReactorBase.yaml
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+    sfp:
+        grid name: sfp
+        origin:
+            x: 5000.0
+            y: 5000.0
+            z: 6000.0
+grids:
+    !include ../refSmallCoreGrid.yaml
+    !include ../refSmallSfpGrid.yaml
