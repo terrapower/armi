@@ -433,8 +433,12 @@ class Interface:
         absolute paths, relative paths, or glob patterns that will be interpolated
         relative to the input directory. Absolute paths will not be copied anywhere.
 
-        The returned dictionary should be keyed off of a Setting object, so the source
-        CaseSettings object is updated to the new file location.
+
+        The returned dictionary will enable the source CaseSettings object to
+        be updated to the new file location. While the dictionary keys are
+        recommended to be Setting objects, the name of the setting as a string,
+        e.g., "shuffleLogic", is still interpreted. If the string name does not
+        point to a valid setting then this will lead to a failure.
 
         Note
         ----
