@@ -285,8 +285,7 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         See Also
         --------
-        :py:meth:`terrapower.physics.neutronics.mc2.mc2Writers.Mc2V2Writer.write`
-        :py:meth:`armi.physics.neutronics.latticePhysics.serpentWriters.SerpentWriter.write`
+        terrapower.physics.neutronics.mc2.mc2Writers.Mc2V2Writer.write
         """
         returnedFromWriters = []
         baseList = set(baseList or [])
