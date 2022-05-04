@@ -37,30 +37,61 @@ class AxialExpansionChanger:
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
 
-    def __init__(self, converterSettings: dict):
+    def __init__(self, detailedAxialExpansion: bool = False):
         """
         Build an axial expansion converter.
 
         Parameters
         ----------
-        converterSettings : dict
-            A set of str, value settings used in mesh conversion. Required
-            settings are implementation specific.
+        detailedAxialExpansion : bool, optional
+            A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
         """
-        self._converterSettings = converterSettings
+        self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
 
-    def prescribedAxialExpansion(
+    def performPrescribedAxialExpansion(
         self, a, componentLst: list, percents: list, setFuel=True
     ):
-        """do prescribed axial expansion of an assembly"""
+        """Perform axial expansion of an assembly given prescribed expansion percentages
+
+        Parameters
+        ----------
+        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+            ARMI assembly to be changed
+        componentList : :py:class:`Component <armi.reactor.components.component.Component>`, list
+            list of :py:class:`Component <armi.reactor.components.component.Component>` objects to be expanded
+        percents : float, list
+            list of expansion percentages for each component listed in componentList
+        setFuel : boolean, optional
+            Boolean to determine whether or not fuel blocks should have their target components set
+            This is useful when target components within a fuel block need to be determined on-the-fly.
+
+        Notes
+        -----
+        - percents may be positive (expansion) or negative (contraction)
+        """
         self.setAssembly(a, setFuel)
         self.expansionData.setExpansionFactors(componentLst, percents)
         self.axiallyExpandAssembly(thermal=False)
 
-    def thermalAxialExpansion(self, a, tempGrid: list, tempField: list, setFuel=True):
-        """do thermal expansion for an assembly given an axial temperature grid and field"""
+    def performThermalAxialExpansion(
+        self, a, tempGrid: list, tempField: list, setFuel=True
+    ):
+        """Perform thermal expansion for an assembly given an axial temperature grid and field
+
+        Parameters
+        ----------
+        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+            ARMI assembly to be changed
+        tempGrid : float, list
+            Axial temperature grid (in cm) (i.e., physical locations where temp is stored)
+        tempField : float, list
+            Temperature values (in C) along grid
+        setFuel : boolean, optional
+            Boolean to determine whether or not fuel blocks should have their target components set
+            This is useful when target components within a fuel block need to be determined on-the-fly.
+        """
         self.setAssembly(a, setFuel)
         self.expansionData.mapHotTempToComponents(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
@@ -77,6 +108,9 @@ class AxialExpansionChanger:
         ----------
          a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
             ARMI assembly to be changed
+        setFuel : boolean, optional
+            Boolean to determine whether or not fuel blocks should have their target components set
+            This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(a, setFuel)
@@ -98,13 +132,10 @@ class AxialExpansionChanger:
                 "Top most block will be artificially chopped "
                 "to preserve assembly height".format(self.linked.a)
             )
-            if "detailedAxialExpansion" in self._converterSettings:  # avoid KeyError
-                if self._converterSettings["detailedAxialExpansion"]:
-                    runLog.error(
-                        "Cannot run detailedAxialExpansion without a dummy block"
-                        "at the top of the assembly!"
-                    )
-                    raise RuntimeError
+            if self._detailedAxialExpansion:
+                msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
+                runLog.error(msg)
+                raise RuntimeError(msg)
 
     def axiallyExpandAssembly(self, thermal: bool = False):
         """Utilizes assembly linkage to do axial expansion
@@ -232,7 +263,7 @@ class AxialExpansionChanger:
         - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
         - update average core mesh values with call to r.core.updateAxialMesh()
         """
-        if not self._converterSettings["detailedAxialExpansion"]:
+        if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             refAssem = r.core.refAssem
             axMesh = refAssem.getAxialMesh()
