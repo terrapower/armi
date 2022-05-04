@@ -33,17 +33,16 @@ class AxialExpansionChanger:
         establishes object to store and access relevant expansion data
     """
 
-    def __init__(self, converterSettings: dict):
+    def __init__(self, detailedAxialExpansion: bool = False):
         """
         Build an axial expansion converter.
 
         Parameters
         ----------
-        converterSettings : dict
-            A set of str, value settings used in mesh conversion. Required
-            settings are implementation specific.
+        detailedAxialExpansion : bool, optional
+            A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
         """
-        self._converterSettings = converterSettings
+        self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
 
@@ -129,13 +128,10 @@ class AxialExpansionChanger:
                 "Top most block will be artificially chopped "
                 "to preserve assembly height".format(self.linked.a)
             )
-            if "detailedAxialExpansion" in self._converterSettings:  # avoid KeyError
-                if self._converterSettings["detailedAxialExpansion"]:
-                    runLog.error(
-                        "Cannot run detailedAxialExpansion without a dummy block"
-                        "at the top of the assembly!"
-                    )
-                    raise RuntimeError
+            if self._detailedAxialExpansion:
+                msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
+                runLog.error(msg)
+                raise RuntimeError(msg)
 
     def axiallyExpandAssembly(self, thermal: bool = False):
         """Utilizes assembly linkage to do axial expansion
@@ -263,7 +259,7 @@ class AxialExpansionChanger:
         - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
         - update average core mesh values with call to r.core.updateAxialMesh()
         """
-        if not self._converterSettings["detailedAxialExpansion"]:
+        if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             refAssem = r.core.refAssem
             axMesh = refAssem.getAxialMesh()

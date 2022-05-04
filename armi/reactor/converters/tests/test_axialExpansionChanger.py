@@ -53,8 +53,7 @@ class Base(unittest.TestCase):
     ]
 
     def setUp(self):
-        self._converterSettings = {}
-        self.obj = AxialExpansionChanger(self._converterSettings)
+        self.obj = AxialExpansionChanger()
         self.massAndDens = {}
         self.steelMass = []
         self.blockHeights = {}
@@ -176,7 +175,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         # do the axial expansion
         self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
         for idt in range(self.temp.tempSteps):
-            self.obj.thermalAxialExpansion(
+            self.obj.performThermalAxialExpansion(
                 self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
             )
             self._getConservationMetrics(self.a)
@@ -279,9 +278,6 @@ class TestCoreExpansion(Base, unittest.TestCase):
             self.percents[a] = list(0.01 * ones(len(self.componentLst[a])))
 
     def test_axiallyExpandCoreThermal(self):
-        self.obj._converterSettings[
-            "detailedAxialExpansion"
-        ] = False  # pylint: disable=protected-access
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCoreThermal(self.r, self.tempGrid, self.tempField)
         self.assertNotEqual(
@@ -291,9 +287,6 @@ class TestCoreExpansion(Base, unittest.TestCase):
         )
 
     def test_axiallyExpandCorePercent(self):
-        self.obj._converterSettings[
-            "detailedAxialExpansion"
-        ] = False  # pylint: disable=protected-access
         oldMesh = self.r.core.p.axialMesh
         self.obj.axiallyExpandCorePercent(self.r, self.componentLst, self.percents)
         self.assertNotEqual(
@@ -320,7 +313,7 @@ class TestConservation(Base, unittest.TestCase):
             self.a.getTotalHeight(), coldTemp=1.0, hotInletTemp=1000.0
         )
         for idt in range(self.temp.tempSteps):
-            self.obj.thermalAxialExpansion(
+            self.obj.performThermalAxialExpansion(
                 self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
             )
             self._getConservationMetrics(self.a)
@@ -335,7 +328,7 @@ class TestConservation(Base, unittest.TestCase):
         - assertion on if original axial mesh matches the final axial mesh
         """
         a = buildTestAssemblyWithFakeMaterial(name="Fake")
-        obj = AxialExpansionChanger(converterSettings={})
+        obj = AxialExpansionChanger()
         oldMesh = a.getAxialMesh()
         componentLst = [c for b in a for c in b]
         for i in range(0, 10):
@@ -347,7 +340,7 @@ class TestConservation(Base, unittest.TestCase):
             # set the expansion factors
             oldMasses = [c.getMass() for b in a for c in b]
             # do the expansion
-            obj.prescribedAxialExpansion(a, componentLst, percents, setFuel=True)
+            obj.performPrescribedAxialExpansion(a, componentLst, percents, setFuel=True)
             newMasses = [c.getMass() for b in a for c in b]
             for old, new in zip(oldMasses, newMasses):
                 self.assertAlmostEqual(old, new)
@@ -416,8 +409,8 @@ class TestConservation(Base, unittest.TestCase):
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
         # 10% growth of fuel components
         pList = zeros(len(cList)) + 0.1
-        chngr = AxialExpansionChanger(converterSettings={})
-        chngr.prescribedAxialExpansion(assembly, cList, pList, setFuel=True)
+        chngr = AxialExpansionChanger()
+        chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
 
         ## do assertion
         self.assertEqual(
@@ -449,7 +442,7 @@ class TestExceptions(Base, unittest.TestCase):
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
-        obj = AxialExpansionChanger({"detailedAxialExpansion": True})
+        obj = AxialExpansionChanger(detailedAxialExpansion=True)
         with self.assertRaises(RuntimeError) as cm:
             obj.setAssembly(assembly)
             the_exception = cm.exception
