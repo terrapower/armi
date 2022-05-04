@@ -23,6 +23,7 @@ Bug fixes
 #. Fixed issue with docs not correctly loading their Git submodule in TOX.
 #. Fixed issue with ``_swapFluxParams`` failing for assemblies with different blocks (`#566 <https://github.com/terrapower/armi/issues/566>`_)
 #. Multiple bug fixes in ``growToFullCore``.
+#. ``Block.getWettedPerim`` was moved to ``HexBlock``, as that was more accurate.
 #. TBD
 
 

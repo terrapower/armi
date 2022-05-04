@@ -521,6 +521,24 @@ The ``origin`` defines the point of origin in global space
 in units of cm. This allows you to define the relative position of the various structures.
 The ``grid name`` inputs are string mappings to the grid definitions described below.
 
+Plugin Behavior
+---------------
+
+The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided
+by plugins to control how ARMI converts the ``systems`` section into ``Composite``\ s
+to be modeled. By default, the ``type`` field is used to determine what object is created.
+The default :class:`armi.reactor.ReactorPlugin` provides the following mapping:
+
+==================  ==================================================
+``type`` Value      Builds
+==================  ==================================================
+``core`` (default)  :class:`~armi.reactor.reactors.Core`
+``sfp``             :class:`~armi.reactor.assemblyLists.SpentFuelPool`
+==================  ==================================================
+
+Plugins are able to provide a superset (e.g., include ``core`` and ``sfp``)
+and new mappings of values to builders.
+
 .. _grids:
 
 Grids

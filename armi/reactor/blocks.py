@@ -47,6 +47,7 @@ from armi.utils import hexagon
 from armi.utils import densityTools
 from armi.physics.neutronics import NEUTRON
 from armi.physics.neutronics import GAMMA
+from armi.reactor.parameters import ParamLocation
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -183,7 +184,7 @@ class Block(composites.Composite):
 
         core = self.core
         if core is None:
-            return None
+            return self.getAncestor(lambda o: isinstance(o, Reactor))
 
         if not isinstance(core.parent, Reactor):
             raise TypeError(
@@ -506,19 +507,7 @@ class Block(composites.Composite):
             self.parent.calculateZCoords()
 
     def getWettedPerimeter(self):
-        """Return wetted perimeter per pin with duct averaged in."""
-        duct = self.getComponent(Flags.DUCT)
-        clad = self.getComponent(Flags.CLAD)
-        wire = self.getComponent(Flags.WIRE)
-        if not (duct and clad):
-            raise ValueError(
-                "Wetted perimeter cannot be computed in {}. No duct and clad components exist.".format(
-                    self
-                )
-            )
-        return math.pi * (
-            clad.getDimension("od") + wire.getDimension("od")
-        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+        raise NotImplementedError
 
     def getFlowAreaPerPin(self):
         """
@@ -540,22 +529,7 @@ class Block(composites.Composite):
             )
 
     def getHydraulicDiameter(self):
-        """
-        Return the hydraulic diameter in this block in cm.
-
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
-
-        To convert the inner hex pitch into a perimeter, first convert to side, then
-        multiply by 6.
-
-        p=sqrt(3)*s
-         l = 6*p/sqrt(3)
-        """
-
-        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+        raise NotImplementedError
 
     def adjustUEnrich(self, newEnrich):
         """
@@ -1552,6 +1526,15 @@ class Block(composites.Composite):
             # send it some zeros
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
 
+    def rotate(self, deg):
+        """Function for rotating a block's spatially varying variables by a specified angle.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation"""
+        raise NotImplementedError
+
 
 class HexBlock(Block):
 
@@ -1650,9 +1633,53 @@ class HexBlock(Block):
         else:
             self.p.pinPowers = self.p.pinPowersNeutron
 
+    def rotate(self, deg):
+        """Function for rotating a block's spatially varying variables by a specified angle.
+
+        Rotates the pins and then also any parameters that defined on the corners or edges.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation
+
+        See Also
+        --------
+        rotatePins : rotates the pins only and not the duct
+
+        """
+
+        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
+        self.rotatePins(rotNum)
+        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for param in params:
+            if isinstance(self.p[param], list):
+                if len(self.p[param]) == 6:
+                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
+                elif self.p[param] == []:
+                    # List hasn't been defined yet, no warning needed.
+                    pass
+                else:
+                    runLog.warning(
+                        "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
+                            param
+                        )
+                    )
+            else:
+                # this is a scalar and there shouldn't be any rotation.
+                pass
+        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
+        dispx = self.p.get("displacementX")
+        dispy = self.p.get("displacementY")
+        if (dispx is not None) and (dispy is not None):
+            self.p.displacementX = dispx * math.cos(deg) - dispy * math.sin(deg)
+            self.p.displacementY = dispx * math.sin(deg) + dispy * math.cos(deg)
+
     def rotatePins(self, rotNum, justCompute=False):
         """
-        Rotate an assembly, which means rotating the indexing of pins.
+        Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
+        not rotate all block quantities.
 
         Notes
         -----
@@ -1693,6 +1720,11 @@ class HexBlock(Block):
             The pin indexing is 1-D (not ring,pos or GEODST).
             The "ARMI pin ordering" is used for location, which is counter-clockwise from 3 o'clock.
             Pin numbers start at 1, pin locations also start at 1.
+
+        See Also
+        --------
+        rotate : rotates the entire block (pins and spatial quantities). Generally rotatePins should be
+                 called via the rotate function.
 
         Examples
         --------
@@ -2044,6 +2076,39 @@ class HexBlock(Block):
                 )
             )
 
+    def getWettedPerimeter(self):
+        """Return wetted perimeter per pin with duct averaged in."""
+        duct = self.getComponent(Flags.DUCT)
+        clad = self.getComponent(Flags.CLAD)
+        wire = self.getComponent(Flags.WIRE)
+        if not duct or not clad:
+            raise ValueError(
+                "Wetted perimeter cannot be computed in {}. No duct or clad components exist.".format(
+                    self
+                )
+            )
+
+        return math.pi * (
+            clad.getDimension("od") + wire.getDimension("od")
+        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+
+    def getHydraulicDiameter(self):
+        """
+        Return the hydraulic diameter in this block in cm.
+
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
+        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
+        inside of the duct. The flow area is the inner area of the duct minus the area of the
+        pins and the wire.
+
+        To convert the inner hex pitch into a perimeter, first convert to side, then
+        multiply by 6.
+
+        p = sqrt(3)*s
+        l = 6*p/sqrt(3)
+        """
+        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+
 
 class CartesianBlock(Block):
 
@@ -2155,9 +2220,15 @@ class Point(Block):
             self.p[param] = 0.0
 
     def getVolume(self):
-        return (
-            1.0  # points have no volume scaling; point flux are not volume-integrated
-        )
+        """points have no volume scaling; point flux are not volume-integrated"""
+        return 1.0
 
     def getBurnupPeakingFactor(self):
-        return 1.0  # peaking makes no sense for points
+        """peaking makes no sense for points"""
+        return 1.0
+
+    def getWettedPerimeter(self):
+        return 0.0
+
+    def getHydraulicDiameter(self):
+        return 0.0

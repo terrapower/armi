@@ -431,11 +431,14 @@ class Interface:
         The files returned by an implementation should be those that one would want
         copied to a target location when cloning a Case or CaseSuite. These can be
         absolute paths, relative paths, or glob patterns that will be interpolated
-        relative to the input directory. Aboslute paths will not be copied anywhere.
+        relative to the input directory. Absolute paths will not be copied anywhere.
 
-        The returned dictionary should be keyed off of a descriptive string, or an
-        actual Setting object. If a Setting is used, then the source CaseSettings object
-        will be updated to the new file location.
+
+        The returned dictionary will enable the source CaseSettings object to
+        be updated to the new file location. While the dictionary keys are
+        recommended to be Setting objects, the name of the setting as a string,
+        e.g., "shuffleLogic", is still interpreted. If the string name does not
+        point to a valid setting then this will lead to a failure.
 
         Note
         ----
