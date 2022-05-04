@@ -1194,6 +1194,18 @@ class Assembly(composites.Composite):
         """Return the symmetry factor of this assembly."""
         return self[0].getSymmetryFactor()
 
+    def rotate(self, deg):
+        """Rotates the spatial variables on an assembly the specified angle.
+
+        Each block on the assembly is rotated in turn.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation"""
+        for b in self.getBlocks():
+            b.rotate(deg)
+
 
 class HexAssembly(Assembly):
     pass

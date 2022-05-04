@@ -1004,6 +1004,24 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assertEqual(averagePlenumTemp, self.Assembly.getAveragePlenumTemperature())
 
+    def test_rotate(self):
+        """
+        Test rotation of an assembly spatial objects
+        """
+        a = makeTestAssembly(1, 1)
+        b = blocks.HexBlock("TestBlock")
+        b.p.THcornTemp = [400, 450, 500, 550, 600, 650]
+        rotTemp = [600, 650, 400, 450, 500, 550]
+        b.p.displacementX = 0
+        b.p.displacementY = 1
+        rotX = -math.sqrt(3) / 2
+        rotY = -0.5
+        a.add(b)
+        a.rotate(math.radians(120))
+        self.assertEqual(a.getBlocks()[0].p.THcornTemp, rotTemp)
+        self.assertAlmostEqual(a.getBlocks()[0].p.displacementX, rotX)
+        self.assertAlmostEqual(a.getBlocks()[0].p.displacementY, rotY)
+
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
     @classmethod
