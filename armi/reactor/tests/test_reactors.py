@@ -747,8 +747,8 @@ class HexReactorTests(ReactorTests):
         # creation with modified enrichment on an expanded BOL assem.
         fuelComp = fuelBlock.getComponent(Flags.FUEL)
         bol = self.r.blueprints.assemblies[aOld.getType()]
-        changer = AxialExpansionChanger(converterSettings={})
-        changer.prescribedAxialExpansion(bol, [fuelComp], [0.05])
+        changer = AxialExpansionChanger()
+        changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
         aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
