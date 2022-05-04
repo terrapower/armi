@@ -507,19 +507,7 @@ class Block(composites.Composite):
             self.parent.calculateZCoords()
 
     def getWettedPerimeter(self):
-        """Return wetted perimeter per pin with duct averaged in."""
-        duct = self.getComponent(Flags.DUCT)
-        clad = self.getComponent(Flags.CLAD)
-        wire = self.getComponent(Flags.WIRE)
-        if not (duct and clad):
-            raise ValueError(
-                "Wetted perimeter cannot be computed in {}. No duct and clad components exist.".format(
-                    self
-                )
-            )
-        return math.pi * (
-            clad.getDimension("od") + wire.getDimension("od")
-        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+        raise NotImplementedError
 
     def getFlowAreaPerPin(self):
         """
@@ -541,22 +529,7 @@ class Block(composites.Composite):
             )
 
     def getHydraulicDiameter(self):
-        """
-        Return the hydraulic diameter in this block in cm.
-
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
-
-        To convert the inner hex pitch into a perimeter, first convert to side, then
-        multiply by 6.
-
-        p=sqrt(3)*s
-         l = 6*p/sqrt(3)
-        """
-
-        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+        raise NotImplementedError
 
     def adjustUEnrich(self, newEnrich):
         """
@@ -2103,6 +2076,39 @@ class HexBlock(Block):
                 )
             )
 
+    def getWettedPerimeter(self):
+        """Return wetted perimeter per pin with duct averaged in."""
+        duct = self.getComponent(Flags.DUCT)
+        clad = self.getComponent(Flags.CLAD)
+        wire = self.getComponent(Flags.WIRE)
+        if not duct or not clad:
+            raise ValueError(
+                "Wetted perimeter cannot be computed in {}. No duct or clad components exist.".format(
+                    self
+                )
+            )
+
+        return math.pi * (
+            clad.getDimension("od") + wire.getDimension("od")
+        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+
+    def getHydraulicDiameter(self):
+        """
+        Return the hydraulic diameter in this block in cm.
+
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
+        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
+        inside of the duct. The flow area is the inner area of the duct minus the area of the
+        pins and the wire.
+
+        To convert the inner hex pitch into a perimeter, first convert to side, then
+        multiply by 6.
+
+        p = sqrt(3)*s
+        l = 6*p/sqrt(3)
+        """
+        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+
 
 class CartesianBlock(Block):
 
@@ -2214,9 +2220,15 @@ class Point(Block):
             self.p[param] = 0.0
 
     def getVolume(self):
-        return (
-            1.0  # points have no volume scaling; point flux are not volume-integrated
-        )
+        """points have no volume scaling; point flux are not volume-integrated"""
+        return 1.0
 
     def getBurnupPeakingFactor(self):
-        return 1.0  # peaking makes no sense for points
+        """peaking makes no sense for points"""
+        return 1.0
+
+    def getWettedPerimeter(self):
+        return 0.0
+
+    def getHydraulicDiameter(self):
+        return 0.0

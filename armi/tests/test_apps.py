@@ -80,18 +80,29 @@ class TestApps(unittest.TestCase):
         context.APP_NAME = "armi"
 
     def test_getParamRenames(self):
+        # a basic test of the method
         app = getApp()
         app.pluginManager.register(TestPlugin1)
         app.pluginManager.register(TestPlugin4)
         app._paramRenames = None  # need to implement better cache invalidation rules
 
         renames = app.getParamRenames()
+
         self.assertIn("oldType", renames)
         self.assertEqual(renames["oldType"], "type")
-
         self.assertIn("arealPD", renames)
         self.assertEqual(renames["arealPD"], "arealPowerDensity")
 
+        # test an invalid param manager situation
+        app._paramRenames[0][1] = -3
+        renames = app.getParamRenames()
+
+        self.assertIn("oldType", renames)
+        self.assertEqual(renames["oldType"], "type")
+        self.assertIn("arealPD", renames)
+        self.assertEqual(renames["arealPD"], "arealPowerDensity")
+
+        # test the exceptions that get raised
         app.pluginManager.register(TestPlugin2)
         app._paramRenames = None  # need to implement better cache invalidation rules
         with self.assertRaisesRegex(
