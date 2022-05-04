@@ -70,10 +70,10 @@ class Base(unittest.TestCase):
         mass = 0.0
         for b in a:
             for c in b:
-                ## store mass and density of target component
+                # store mass and density of target component
                 if self.obj.expansionData.isTargetComponent(c):
                     self._storeTargetComponentMassAndDensity(c)
-                ## store steel mass for assembly
+                # store steel mass for assembly
                 if c.p.flags in self.Steel_Component_Lst:
                     mass += c.getMass()
 
@@ -143,7 +143,7 @@ class Temperature:
         - temperature grid : physical locations in which
                             temperature is measured
         """
-        ## Generate temp field
+        # Generate temp field
         self.tempField[0, :] = coldTemp
         if not uniform:
             for i in range(1, self.tempSteps):
@@ -399,12 +399,12 @@ class TestConservation(Base, unittest.TestCase):
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
 
-        ## get zCoords for aclp
+        # get zCoords for aclp
         aclp = assembly.getChildrenWithFlags(Flags.ACLP)[0]
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
-        ## expand fuel
+        # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
         # 10% growth of fuel components
@@ -412,7 +412,7 @@ class TestConservation(Base, unittest.TestCase):
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
 
-        ## do assertion
+        # do assertion
         self.assertEqual(
             aclpZBottom,
             aclp.p.zbottom,
