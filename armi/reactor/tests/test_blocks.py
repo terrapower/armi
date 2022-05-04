@@ -391,7 +391,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.Block.hasFlags(Flags.PLENUM, exact=True))
 
     def test_hasFlags(self):
-
         self.Block.setType("feed fuel")
 
         cur = self.Block.hasFlags(Flags.FEED | Flags.FUEL)
@@ -401,7 +400,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(cur)
 
     def test_setType(self):
-
         self.Block.setType("igniter fuel")
 
         self.assertEqual("igniter fuel", self.Block.getType())
@@ -415,7 +413,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.Block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-
         Block2 = copy.deepcopy(self.Block)
         originalComponents = self.Block.getComponents()
         newComponents = Block2.getComponents()
@@ -566,7 +563,6 @@ class Block_TestCase(unittest.TestCase):
             self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getNumberDensity(self):
-
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -637,7 +633,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setMass(self):
-
         self.Block.setHeight(100.0)
 
         mass = 100.0
@@ -687,9 +682,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_replaceBlockWithBlock(self):
-        r"""
-        Tests conservation of mass flag in replaceBlockWithBlock
-        """
+        r"""Tests conservation of mass flag in replaceBlockWithBlock"""
         block = self.Block
         ductBlock = block.__class__("duct")
         ductBlock.add(block.getComponent(Flags.COOLANT, exact=True))
@@ -1904,10 +1897,18 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.ThRZBlock.verifyBlockDims()
 
     def test_getThetaRZGrid(self):
+        """Since not applicable to ThetaRZ Grids"""
         b = self.ThRZBlock
         with self.assertRaises(NotImplementedError):
             b.autoCreateSpatialGrids()
-        # Since not applicable to Cartesian Grids.
+
+    def test_getWettedPerimeter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.ThRZBlock.getWettedPerimeter()
+
+    def test_getHydraulicDiameter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.ThRZBlock.getHydraulicDiameter()
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
@@ -2003,19 +2004,33 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
 
     def test_getCartesianGrid(self):
+        """Since not applicable to Cartesian Grids"""
         b = self.cartesianBlock
         with self.assertRaises(NotImplementedError):
             b.autoCreateSpatialGrids()
-        # Since not applicable to Cartesian Grids.
+
+    def test_getWettedPerimeter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.cartesianBlock.getWettedPerimeter()
+
+    def test_getHydraulicDiameter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.cartesianBlock.getHydraulicDiameter()
 
 
 class PointTests(unittest.TestCase):
     def setUp(self):
-        self.Point = blocks.Point()
+        self.point = blocks.Point()
 
     def test_getters(self):
-        self.assertEqual(1.0, self.Point.getVolume())
-        self.assertEqual(1.0, self.Point.getBurnupPeakingFactor())
+        self.assertEqual(1.0, self.point.getVolume())
+        self.assertEqual(1.0, self.point.getBurnupPeakingFactor())
+
+    def test_getWettedPerimeter(self):
+        self.assertEqual(0.0, self.point.getWettedPerimeter())
+
+    def test_getHydraulicDiameter(self):
+        self.assertEqual(0.0, self.point.getHydraulicDiameter())
 
 
 class MassConservationTests(unittest.TestCase):
