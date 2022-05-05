@@ -568,7 +568,16 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
     def test_coldHeight(self):
-        """block heights are cold and should be expanded"""
+        """block heights are cold and should be expanded
+
+        Notes
+        -----
+        Two assertions here:
+            1. total assembly height should be preserved (through use of top dummy block)
+            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
+               Thot > Tinput resulting in a non-zero DeltaT. Each block in the
+               expanded case should therefore be a different height than that of the standard case.
+        """
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             {"inputHeightsConsideredHot": False},
