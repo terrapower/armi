@@ -96,45 +96,45 @@ class Patcher:
         spec.loader.exec_module(self.userPatch)
 
     @checkPatchFlag
-    def applyPreOpPatch(self):
+    def applyPreOpPatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the pre-operator patch specified in the user patch file.
         """
         try:
-            self.userPatch.preOpPatch()
+            self.userPatch.preOpPatch(upper_globals, upper_locals)
         except Exception as err:
             print("Error while applying preOpPatch.")
             raise err
 
     @checkPatchFlag
-    def applyPostOpPatch(self):
+    def applyPostOpPatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the post-operator patch specified in the user patch file.
         """
         try:
-            self.userPatch.postOpPatch()
+            self.userPatch.postOpPatch(upper_globals, upper_locals)
         except Exception as err:
             print("Error while applying postOpPatch.")
             raise err
 
     @checkPatchFlag
-    def applyPostInterfacePatch(self):
+    def applyPostInterfacePatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the post-interface patch specified in the user patch file.
         """
         try:
-            self.userPatch.postInterfacePatch()
+            self.userPatch.postInterfacePatch(upper_globals, upper_locals)
         except Exception as err:
             print("Error while applying postInterfacePatch.")
             raise err
 
     @checkPatchFlag
-    def applyPostRestartLoadPatch(self):
+    def applyPostRestartLoadPatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the post-restart-load patch specified in the user patch file.
         """
         try:
-            self.userPatch.postRestartLoadPatch()
+            self.userPatch.postRestartLoadPatch(upper_globals, upper_locals)
         except Exception as err:
             print("Error while applying postRestartLoadPatch.")
             raise err
