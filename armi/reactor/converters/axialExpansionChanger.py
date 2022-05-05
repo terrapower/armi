@@ -157,11 +157,11 @@ class AxialExpansionChanger:
                 blockHeight = b.p.heightBOL
             else:
                 blockHeight = b.p.height
-            ## set bottom of block equal to top of block below it
+            # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
-            ## if not in the dummy block, get expansion factor, do alignment, and modify block
+            # if not in the dummy block, get expansion factor, do alignment, and modify block
             if ib < (numOfBlocks - 1):
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
@@ -186,14 +186,14 @@ class AxialExpansionChanger:
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
 
-            ## see also b.setHeight()
+            # see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
             oldComponentVolumes = [c.getVolume() for c in b]
             oldHeight = b.getHeight()
             b.p.height = b.p.ztop - b.p.zbottom
             _checkBlockHeight(b)
             _conserveComponentMass(b, oldHeight, oldComponentVolumes)
-            ## set block mid point and redo mesh
+            # set block mid point and redo mesh
             # - functionality based on assembly.calculateZCoords()
             b.p.z = b.p.zbottom + b.p.height / 2.0
             mesh.append(b.p.ztop)
