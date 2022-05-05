@@ -484,8 +484,10 @@ class Block(composites.Composite):
 
         See Also
         --------
-        reactors.Core.updateAxialMesh : May need to be called after this.
-        assemblies.Assembly.calculateZCoords : Recalculates z-coords, automatically called by this.
+        armi.reactor.reactors.Core.updateAxialMesh
+            May need to be called after this.
+        armi.reactor.assemblies.Assembly.calculateZCoords
+            Recalculates z-coords, automatically called by this.
         """
         originalHeight = self.getHeight()  # get before modifying
         if modifiedHeight < 0.0:
@@ -514,11 +516,12 @@ class Block(composites.Composite):
         Return the flowing coolant area in cm^2.
 
         NumPins looks for max number of fuel, clad, control, etc.
+
         See Also
         --------
-        getNumPins :  figures out numPins.
+        armi.reactor.blocks.Block.getNumPins
+            figures out numPins
         """
-
         numPins = self.getNumPins()
         try:
             return self.getComponent(Flags.COOLANT, exact=True).getArea() / numPins
@@ -621,8 +624,8 @@ class Block(composites.Composite):
 
         See Also
         --------
-        getMaxArea : return the full area of the physical assembly disregarding model symmetry
-
+        armi.reactor.blocks.Block.getMaxArea
+            return the full area of the physical assembly disregarding model symmetry
         """
         # this caching requires that you clear the cache every time you adjust anything
         # including temperature and dimensions.
@@ -670,8 +673,7 @@ class Block(composites.Composite):
 
         See Also
         --------
-        armi.reactor.reactors.Core.addEdgeAssemblies
-        terrapower.physics.neutronics.dif3d.dif3dInterface.Dif3dReader.scaleParamsRelatedToSymmetry
+        armi.reactor.converters.geometryConverter.EdgeAssemblyChanger.scaleParamsRelatedToSymmetry
         """
         return 1.0
 
@@ -1400,7 +1402,6 @@ class Block(composites.Composite):
 
         The fuel will become fuel001 through fuel169 if there are 169 pins.
         """
-
         fuels = self.getChildrenWithFlags(Flags.FUEL)
         if len(fuels) != 1:
             runLog.error(
@@ -1410,6 +1411,7 @@ class Block(composites.Composite):
                 "Cannot break {0} into multiple fuel components b/c there is not a single fuel"
                 " component.".format(self)
             )
+
         fuel = fuels[0]
         fuelFlags = fuel.p.flags
         nPins = self.getNumPins()
@@ -1532,7 +1534,8 @@ class Block(composites.Composite):
         Parameters
         ----------
         deg - float
-            number specifying the angle of counter clockwise rotation"""
+            number specifying the angle of counter clockwise rotation
+        """
         raise NotImplementedError
 
 
@@ -1645,10 +1648,9 @@ class HexBlock(Block):
 
         See Also
         --------
-        rotatePins : rotates the pins only and not the duct
-
+        armi.reactor.blocks.HexBlock.rotatePins
+            Rotates the pins only and not the duct.
         """
-
         rotNum = round((deg % (2 * math.pi)) / math.radians(60))
         self.rotatePins(rotNum)
         params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
@@ -1723,8 +1725,8 @@ class HexBlock(Block):
 
         See Also
         --------
-        rotate : rotates the entire block (pins and spatial quantities). Generally rotatePins should be
-                 called via the rotate function.
+        armi.reactor.blocks.HexBlock.rotate
+            Rotates the entire block (pins, ducts, and spatial quantities).
 
         Examples
         --------
@@ -1743,9 +1745,8 @@ class HexBlock(Block):
         rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
-        for pinNum in range(
-            2, numPins + 1
-        ):  # start at 2 because pin 1 never changes (it's in the center!)
+        # start at 2 because pin 1 never changes (it's in the center!)
+        for pinNum in range(2, numPins + 1):
             if rotNum == 0:
                 # rotation to reference orientation. Pin locations are pin IDs.
                 pass
@@ -1767,6 +1768,7 @@ class HexBlock(Block):
 
         if not justCompute:
             self.setRotationNum(rotNum)
+
         return rotateIndexLookup
 
     def verifyBlockDims(self):
