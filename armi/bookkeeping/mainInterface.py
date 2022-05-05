@@ -95,7 +95,9 @@ class MainInterface(interfaces.Interface):
                 # first
                 dbi.prepRestartRun(dbCycle, dbNode)
                 # Customize run using arbitrary code
-                Patcher(self.cs["patchFilePath"]).applyPostRestartLoadPatch()
+                Patcher(self.cs["patchFilePath"]).applyPostRestartLoadPatch(
+                    globals(), locals()
+                )
             except:
                 runLog.error(
                     "Could not load the initial state as requested. DB `{}` does "

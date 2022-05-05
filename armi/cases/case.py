@@ -427,13 +427,15 @@ class Case:
         """Creates and returns an Operator."""
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             self._initBurnChain()
-            self.userPatch.applyPreOpPatch()  # custom code hook 1
+            self.userPatch.applyPreOpPatch(globals(), locals())  # custom code hook 1
             o = operators.factory(self.cs)
             if not r:
                 r = reactors.factory(self.cs, self.bp)
-            self.userPatch.applyPostOpPatch()  # custom code hook 2
+            self.userPatch.applyPostOpPatch(globals(), locals())  # custom code hook 2
             o.initializeInterfaces(r)
-            self.userPatch.applyPostInterfacePatch()  # custom code hook 3
+            self.userPatch.applyPostInterfacePatch(
+                globals(), locals()
+            )  # custom code hook 3
             # Set this here to make sure the full duration of initialization is properly captured.
             # Cannot be done in reactors since the above self.bp call implicitly initializes blueprints.
             r.core.timeOfStart = self._startTime
