@@ -530,47 +530,55 @@ class Inspector:
             self._setBurnStepsToFour,
         )
 
-        # check for the full suite of the simple cycles input in the case that there is no detailed cycles input
-        # and it is a burnup case
-        self.addQuery(
-            lambda: (
-                self.cs["burnSteps"] not in [0, None]
-                and (
-                    (self.cs["cycleLength"] == None and self.cs["cycleLengths"] == None)
-                    or (
-                        self.cs["availabilityFactor"] == None
-                        and self.cs["availabilityFactors"] == None
-                    )
-                )
-                and self.cs["cycles"] == []
-            ),
-            "Either the full suite of simple cycle inputs (`cycleLength(s)`,"
-            " `burnSteps`, and `availabilityFactor(s)`) or the"
-            " detailed cycle input `cycles` must be entered in burnup cases.",
-            f"Add defaults for missing simple cycle inputs (cycleLength: {DAYS_PER_YEAR}"
-            ", burnSteps: 4, availabilityFactor: 1.0)?",
-            self._fillOutSimpleCyclesDefaults,
-        )
+        # # check for the full suite of the simple cycles input in the case that there is no detailed cycles input
+        # # and it is a burnup case
+        # self.addQuery(
+        #     lambda: (
+        #         self.cs["burnSteps"] not in [0, None]
+        #         and (
+        #             (self.cs["cycleLength"] == None and self.cs["cycleLengths"] == None)
+        #             or (
+        #                 self.cs["availabilityFactor"] == None
+        #                 and self.cs["availabilityFactors"] == None
+        #             )
+        #         )
+        #         and self.cs["cycles"] == []
+        #     ),
+        #     "Either the full suite of simple cycle inputs (`cycleLength(s)`,"
+        #     " `burnSteps`, and `availabilityFactor(s)`) or the"
+        #     " detailed cycle input `cycles` must be entered in burnup cases.",
+        #     f"Add defaults for missing simple cycle inputs (cycleLength: {DAYS_PER_YEAR}"
+        #     ", burnSteps: 4, availabilityFactor: 1.0)?",
+        #     self._fillOutSimpleCyclesDefaults,
+        # )
 
-        # if the detailed cycles input is used, make sure none of the simple cycles inputs are entered
-        self.addQuery(
-            lambda: (
-                (
-                    self.cs["cycleLength"]
-                    or self.cs["cycleLengths"]
-                    or self.cs["burnSteps"]
-                    or self.cs["availabilityFactor"]
-                    or self.cs["availabilityFactors"]
-                    or self.cs["powerFractions"]
-                )
-                and self.cs["cycles"]
-            ),
-            "If specifying detailed cycle history with `cycles`, you may not"
-            " also use any of the simple cycle history inputs `cycleLength(s)`,"
-            " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`.",
-            "Use detailed cycle history?",
-            self._makeSimpleCyclesInputsUnavailable,
-        )
+        # def _checkForBothSimpleAndDetailedCyclesInputs():
+        #     bothCyclesInputTypesPresent = (
+        #                                    (
+        #             self.cs["cycleLength"]
+        #             or self.cs["cycleLengths"]
+        #             or self.cs["burnSteps"]
+        #             or self.cs["availabilityFactor"]
+        #             or self.cs["availabilityFactors"]
+        #             or self.cs["powerFractions"]
+        #         )
+        #         and self.cs["cycles"])
+
+        #     if bothCyclesInputTypesPresent:
+        #         self._makeSimpleCyclesInputsUnavailable()
+
+        #     return bothCyclesInputTypesPresent
+
+        # # if the detailed cycles input is used, make sure none of the simple cycles inputs are entered
+        # self.addQuery(
+        #     lambda: _checkForBothSimpleAndDetailedCyclesInputs,
+        #     "If specifying detailed cycle history with `cycles`, you may not"
+        #     " also use any of the simple cycle history inputs `cycleLength(s)`,"
+        #     " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`."
+        #     " Using the detailed cycle history.",
+        #     "",
+        #     self.NO_ACTION,
+        # )
 
         def _factorsAreValid(factors, maxVal=1.0):
             try:

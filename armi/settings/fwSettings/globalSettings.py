@@ -211,7 +211,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_CYCLE_LENGTH,
-            default=None,
+            default=365.242199,
             label="Cycle Length",
             description="Duration of one single cycle in days. If `availabilityFactor` is below "
             "1, the reactor will be at power less than this. If variable, use "
@@ -223,7 +223,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
-            default=None,
+            default=[],
             label="Cycle durations",
             description="List of durations of each cycle in days. The at-power "
             "duration will be affected by `availabilityFactor`. R is repeat. For "
@@ -233,7 +233,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTOR,
-            default=None,
+            default=1.0,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
             "time that the plant is operating. If variable, use `availabilityFactors` "
@@ -245,7 +245,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
-            default=None,
+            default=[],
             label="Availability factors",
             description="List of availability factor of each cycle as a fraction "
             "(fraction of time plant is not in an outage). R is repeat. For example "
@@ -255,7 +255,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_POWER_FRACTIONS,
-            default=None,
+            default=[],
             label="Power fractions",
             description="List of power fractions at each cycle (fraction of rated "
             "thermal power the plant achieves). R is repeat. For example [0.5, 1.0, "
@@ -266,7 +266,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_BURN_STEPS,
-            default=None,
+            default=4,
             label="Burnup Steps per Cycle",
             description="Number of depletion substeps, n, in one cycle. Note: There "
             "will be n+1 time nodes and the burnup step time will be computed as cycle "

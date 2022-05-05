@@ -39,6 +39,15 @@ from armi.utils.customExceptions import NonexistentSetting
 
 DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
 
+SIMPLE_CYCLES_INPUTS = [
+    "availabilityFactor",
+    "availabilityFactors",
+    "powerFractions",
+    "burnSteps",
+    "cycleLength",
+    "cycleLengths",
+]
+
 
 class Settings:
     """
@@ -135,11 +144,33 @@ class Settings:
             self.__class__.__name__, self.caseTitle, total, altered
         )
 
+    def _settingIsOkayToGrab(self, key):
+        """
+        A way to check if specific settings can be grabbed out of the case settings.
+
+        Could be updated with other specific instances as necessary.
+        """
+        if key not in self.__settings:
+            return False, NonexistentSetting(key)
+
+        if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
+            err = ValueError(
+                "Cannot grab simple cycles information from the case settings"
+                " when detailed cycles information is also entered.\n In general"
+                " cycles information should be pulled off the operator or parsed"
+                " using the appropriate getter in the utils."
+            )
+
+            return False, err
+
+        return True, None
+
     def __getitem__(self, key):
-        if key in self.__settings:
+        settingIsOkayToGrab, err = self._settingIsOkayToGrab(key)
+        if settingIsOkayToGrab:
             return self.__settings[key].value
         else:
-            raise NonexistentSetting(key)
+            raise err
 
     def getSetting(self, key, default=None):
         """
