@@ -13,27 +13,24 @@
 # limitations under the License.
 """
 Test the monkeyPatcher module.
+
+The file written by the setUp method test suite can also give users a jumpstart 
+on how to write an effective patch file.
 """
 
-from pathlib import Path
 import unittest
-import tempfile
 import os
 import io
 import contextlib
-import sys
+import numpy as np
 
 # from armi.utils import outputCache
 
 from armi.utils.monkeyPatcher import Patcher
 
-THIS_DIR = Path(__file__).parent
-testPatchPath = THIS_DIR / "resources/customPatchTest.py"
-
 
 class TestMonkeyPatcher(unittest.TestCase):
     def setUp(self):
-        # self.tf = tempfile.NamedTemporaryFile(dir=".")
         self.tf = open(r".\tempPatcherFile.py", "w")
         self.tf.write(
             """
@@ -53,6 +50,9 @@ def postOpPatch(upper_globals, upper_locals):
     upper_locals["operator"].testStaticMethod = testStaticMethod
     upper_locals["operator"].testAttribute = "eggs"
     upper_locals["operator"].testMethod = types.MethodType(testMethod, upper_locals["operator"])
+    upper_globals["np"].pi = 3  # Comply with Indiana bill #246
+    upper_globals["np"].testStaticMethod = testStaticMethod
+    upper_globals["np"].testMethod = types.MethodType(testMethod, upper_globals["np"])
     return
 
 def postInterfacePatch(upper_globals, upper_locals):
@@ -69,7 +69,6 @@ def postInterfacePatch(upper_globals, upper_locals):
     return
 
 def postRestartLoadPatch(upper_globals, upper_locals):
-    print(4)
     return
 """
         )
@@ -85,7 +84,11 @@ def postRestartLoadPatch(upper_globals, upper_locals):
         os.remove(self.tempPatchFileName)
         return
 
-    def test_simplePrint(self):
+    def test_SimplePrint(self):
+        """
+        This test covers very simple operations that do not modify objects in
+        the upper level scopes, like printing.
+        """
         capturedOut = io.StringIO()
         with contextlib.redirect_stdout(capturedOut):
             self.patcher.applyPreOpPatch(globals(), locals())
@@ -93,26 +96,101 @@ def postRestartLoadPatch(upper_globals, upper_locals):
         return
 
     def test_MethodInjection(self):
+        """
+        This test injects methods and attributes into preexisting classes.
+        """
         from armi.operators import operator
 
         self.patcher.applyPostOpPatch(globals(), locals())
+        # test local scope
         self.assertEqual(operator.testAttribute, "eggs")
         self.assertEqual(operator.testStaticMethod(), "spam")
         self.assertEqual(operator.testMethod(), "armi.operators.operator")
 
+        # Test global scope
+        self.assertEqual(np.pi, 3)
+        self.assertEqual(np.testStaticMethod(), "spam")
+        self.assertEqual(np.testMethod(), "numpy")
+
         return
 
     def test_ClassInjection(self):
+        """
+        Test that a new class can be injected
+        """
         self.patcher.applyPostInterfacePatch(globals(), locals())
         testClass = TestNewClass()
         self.assertEqual(testClass.testAttribute, "eggs")
         self.assertEqual(testClass.simpleMethod(), 2)
         return
 
-    def test_MethodSOMETHING(self):
-        from armi.operators import operator
+    def test_Empty(self):
+        """
+        Test that the empty case returns with None
+        """
+        self.assertEqual(
+            self.patcher.applyPostRestartLoadPatch(globals(), locals()), None
+        )
 
-        self.patcher.applyPostRestartLoadPatch(globals(), locals())
+    def test_NoInputFile(self):
+        """
+        Test if an error is raised when the target file does not exist.
+        """
+        self.assertRaises(
+            IOError,
+            Patcher,
+            {"patchFilePath": "./thisFileDoesNotExistasdffdsa123321.nope"},
+        )
+        return
+
+    def test_NoInputPath(self):
+        """
+        Test that the patcher returns when no input file is specified
+        """
+        patcher = Patcher({"patchFilePath": ""})
+        self.assertEqual(patcher.applyPreOpPatch(), None)
+        self.assertEqual(patcher.applyPostOpPatch(), None)
+        self.assertEqual(patcher.applyPostInterfacePatch(), None)
+        self.assertEqual(patcher.applyPostRestartLoadPatch(), None)
+        return
+
+    def test_RaisesErrors(self):
+        """
+        Test that errors from the patchfile are raised properly
+        """
+        patchFileWithErrors = """
+def preOpPatch(upper_globals, upper_locals):
+    # foo not defined
+    foo == "bar"
+    return
+
+def postOpPatch(upper_globals, upper_locals):
+    # foo not defined
+    foo == "bar"
+    return
+
+def postInterfacePatch(upper_globals, upper_locals):
+    # foo not defined
+    foo == "bar"
+    return
+
+def postRestartLoadPatch(upper_globals, upper_locals):
+    # foo not defined
+    foo == "bar"
+    return
+"""
+        with open("./tempPatchFileWithErrors.py", "w") as f:
+            f.write(patchFileWithErrors)
+        patcher = Patcher({"patchFilePath": "./tempPatchFileWithErrors.py"})
+        self.assertRaises(NameError, patcher.applyPreOpPatch, globals(), locals())
+        self.assertRaises(NameError, patcher.applyPostOpPatch, globals(), locals())
+        self.assertRaises(
+            NameError, patcher.applyPostInterfacePatch, globals(), locals()
+        )
+        self.assertRaises(
+            NameError, patcher.applyPostRestartLoadPatch, globals(), locals()
+        )
+        os.remove("./tempPatchFileWithErrors.py")
 
 
 if __name__ == "__main__":

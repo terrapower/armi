@@ -26,17 +26,32 @@ Use
 This module is activated when the user sets the "patchFilePath" parameter
 in the ARMI input yaml to a valid file path. The following hooks are then 
 active and will pull in the custom code as specified in the patch file:
-  - hook1
-  - hook2
-  - etc (update these)
+  - applyPreOpPatch
+  - applyPostOpPatch
+  - applyPostInterfacePatch
+  - applyPostRestartLoadPatch
+
+The easiest way to understand the hook locations is to grep the codebase for
+the calls listed above.
+
+If the patchFilePath parameter is not specified in the ARMI input yaml, the
+hooks will return immediately.
+
+The format of a patch file is almost entirely left to the end user, however
+there are some examples in the test module for anticipated uses of this module.
+Specifically, how to modify objects in higher levels of scope.
 
 Input
 -----
 The module requires a valid input file located at "patchFilePath" that 
-contains at least one function named:
-  - validname1
-  - validname2
-  - etc (update these)
+contains the functions:
+  - preOpPatch
+  - postOpPatch
+  - postInterfacePatch
+  - postRestartLoadPatch
+
+Each of these functions MUST be defined in the patchfile, even if they simply
+return on call.
 
 These functions are called in armi.cases.case.py and 
 armi.bookkeeping.mainInterface.py. In the event that no patch file path was
@@ -76,14 +91,22 @@ def checkPatchFlag(f):
 
 class Patcher:
     """
-    A controller object for patching ARMI at runtime.
+    A controller object for patching ARMI at runtime. See module docstring for
+    instructions on usage and patch file formatting.
+
+    Input
+    -----
+    cs : armi.settings.caseSettings
+        The case settings for the ARMI job. The path to the patch file is stored
+        in the case settings.
     """
 
     def __init__(self, cs: caseSettings):
         self.patchPath = cs["patchFilePath"]
         self.patchFlag = True
         if self.patchPath == "":
-            print("No custom patch file provided.")
+            # TODO: Log that no patch file was provided.
+            # print("No custom patch file provided.")
             self.patchFlag = False
             return
         if not os.path.isfile(self.patchPath):
@@ -102,9 +125,9 @@ class Patcher:
         """
         try:
             self.userPatch.preOpPatch(upper_globals, upper_locals)
-        except Exception as err:
-            print("Error while applying preOpPatch.")
-            raise err
+        except Exception:
+            # TODO: Log error here
+            raise
 
     @checkPatchFlag
     def applyPostOpPatch(self, upper_globals, upper_locals):
@@ -114,8 +137,8 @@ class Patcher:
         try:
             self.userPatch.postOpPatch(upper_globals, upper_locals)
         except Exception as err:
-            print("Error while applying postOpPatch.")
-            raise err
+            # TODO: Log error here
+            raise
 
     @checkPatchFlag
     def applyPostInterfacePatch(self, upper_globals, upper_locals):
@@ -125,8 +148,8 @@ class Patcher:
         try:
             self.userPatch.postInterfacePatch(upper_globals, upper_locals)
         except Exception as err:
-            print("Error while applying postInterfacePatch.")
-            raise err
+            # TODO: Log error here
+            raise
 
     @checkPatchFlag
     def applyPostRestartLoadPatch(self, upper_globals, upper_locals):
@@ -136,15 +159,5 @@ class Patcher:
         try:
             self.userPatch.postRestartLoadPatch(upper_globals, upper_locals)
         except Exception as err:
-            print("Error while applying postRestartLoadPatch.")
-            raise err
-
-
-if __name__ == "__main__":
-    patcher = Patcher(
-        {"patchFilePath": "C:\\Users\\bsculac\\codes\\testpatch\\testpatch.py"}
-    )
-    patcher.applyPreOpPatch()
-    patcher.applyPostOpPatch()
-    patcher.applyPostInterfacePatch()
-    patcher.applyPostRestartLoadPatch()
+            # TODO: Log error here
+            raise
