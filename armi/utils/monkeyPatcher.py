@@ -106,7 +106,6 @@ class Patcher:
         self.patchFlag = True
         if self.patchPath == "":
             # TODO: Log that no patch file was provided.
-            # print("No custom patch file provided.")
             self.patchFlag = False
             return
         if not os.path.isfile(self.patchPath):

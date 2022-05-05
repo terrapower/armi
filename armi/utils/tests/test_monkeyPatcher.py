@@ -24,8 +24,6 @@ import io
 import contextlib
 import numpy as np
 
-# from armi.utils import outputCache
-
 from armi.utils.monkeyPatcher import Patcher
 
 
