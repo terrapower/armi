@@ -14,6 +14,7 @@
 
 """Test axialExpansionChanger"""
 
+import os
 from statistics import mean
 import unittest
 from numpy import linspace, ones, array, vstack, zeros
@@ -553,6 +554,46 @@ class TestExceptions(Base, unittest.TestCase):
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestInputHeightsConsideredHot(unittest.TestCase):
+    """verify thermal expansion for process loading of core"""
+
+    def setUp(self):
+        """provide the base case"""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": True},
+        )
+        self.stdAssems = [a for a in r.core.getAssemblies()]
+
+    def test_coldHeight(self):
+        """block heights are cold and should be expanded"""
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": False},
+        )
+        testAssems = [a for a in rCold.core.getAssemblies()]
+
+        for aStd, aExp in zip(self.stdAssems, testAssems):
+            self.assertAlmostEqual(
+                aStd.getTotalHeight(),
+                aExp.getTotalHeight(),
+                msg="Std Assem {0} ({1}) and Exp Assem {2} ({3}) are not the same height!".format(
+                    aStd, aStd.getTotalHeight(), aExp, aExp.getTotalHeight()
+                ),
+            )
+            for bStd, bExp in zip(aStd, aExp):
+                self.assertNotEqual(
+                    bStd.getHeight(),
+                    bExp.getHeight(),
+                    msg="Std Block {0} ({1}) and Exp Block {2} ({3}) should have different heights!".format(
+                        bStd,
+                        bStd.getHeight(),
+                        bExp,
+                        bExp.getHeight(),
+                    ),
+                )
 
 
 def buildTestAssemblyWithFakeMaterial(name):

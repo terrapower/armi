@@ -55,6 +55,7 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 # init logger
 runLog = logging.getLogger(__name__)
@@ -2243,6 +2244,13 @@ class Core(composites.Composite):
             for a in self.getAssemblies(includeBolAssems=True):
                 # prepare for mesh snapping during axial expansion
                 a.makeAxialSnapList(refAssem)
+
+        if not cs["inputHeightsConsideredHot"]:
+            chngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+            for a in self.getAssemblies(includeBolAssems=True):
+                chngr.setAssembly(a)
+                chngr.expansionData.computeThermalExpansionFactors()
+                chngr.axiallyExpandAssembly()
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 

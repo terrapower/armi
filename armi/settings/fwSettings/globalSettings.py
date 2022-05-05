@@ -106,6 +106,7 @@ CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
+CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -156,6 +157,15 @@ def defineSettings() -> List[setting.Setting]:
             description=(
                 "Allow each assembly to expand independently of the others. Results in non-uniform "
                 "axial mesh. Neutronics kernel must be able to handle."
+            ),
+        ),
+        setting.Setting(
+            CONF_INPUT_HEIGHTS_HOT,
+            default=True,
+            label="Input Height Considered Hot",
+            description=(
+                "This is a flag to determine if block heights, as provided in blueprints, are at hot dimensions. "
+                "If false, block heights are at cold/as-built dimensions and will be thermally expanded as appropriate."
             ),
         ),
         setting.Setting(
