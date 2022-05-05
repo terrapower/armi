@@ -63,8 +63,7 @@ import importlib.util
 
 from armi.settings import caseSettings
 from armi.utils import getFileSHA1Hash
-
-# TODO: add logging
+from armi import runLog
 
 
 def checkPatchFlag(f):
@@ -105,14 +104,15 @@ class Patcher:
         self.patchPath = cs["patchFilePath"]
         self.patchFlag = True
         if self.patchPath == "":
-            # TODO: Log that no patch file was provided.
+            runLog.info("No patch file provided.")
             self.patchFlag = False
             return
         if not os.path.isfile(self.patchPath):
             self.patchFlag = False
+            runLog.error("The provided path to the patch file is invalid.")
             raise IOError("The provided path to the patch file is invalid.")
         self.hash = getFileSHA1Hash(self.patchPath)
-        # TODO: log the hash somewhere.
+        runLog.info(f"The patch file hash is: {self.hash}")
         spec = importlib.util.spec_from_file_location("userPatch", self.patchPath)
         self.userPatch = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.userPatch)
@@ -124,8 +124,8 @@ class Patcher:
         """
         try:
             self.userPatch.preOpPatch(upper_globals, upper_locals)
-        except Exception:
-            # TODO: Log error here
+        except Exception as err:
+            runLog.error(err)
             raise
 
     @checkPatchFlag
@@ -136,7 +136,7 @@ class Patcher:
         try:
             self.userPatch.postOpPatch(upper_globals, upper_locals)
         except Exception as err:
-            # TODO: Log error here
+            runLog.error(err)
             raise
 
     @checkPatchFlag
@@ -147,7 +147,7 @@ class Patcher:
         try:
             self.userPatch.postInterfacePatch(upper_globals, upper_locals)
         except Exception as err:
-            # TODO: Log error here
+            runLog.error(err)
             raise
 
     @checkPatchFlag
@@ -158,5 +158,5 @@ class Patcher:
         try:
             self.userPatch.postRestartLoadPatch(upper_globals, upper_locals)
         except Exception as err:
-            # TODO: Log error here
+            runLog.error(err)
             raise
