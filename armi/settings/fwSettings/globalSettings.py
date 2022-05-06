@@ -780,7 +780,7 @@ def defineSettings() -> List[setting.Setting]:
 
 
 def _isMonotonicIncreasing(inputList):
-    if isMonotonic(inputList, "increaseExclusive"):
+    if isMonotonic(inputList, "<"):
         return inputList
     else:
         raise vol.error.Invalid(f"List must be monotonicically increasing: {inputList}")

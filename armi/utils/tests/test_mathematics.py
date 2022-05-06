@@ -124,17 +124,17 @@ class TestMath(unittest.TestCase):
         self.assertListEqual(steps, [1.0, 2.0, 3.0, 4.0])
 
     def test_isMonotonic(self):
-        self.assertEqual(True, isMonotonic([1, 2, 2, 3], "increaseOrEqual"))
-        self.assertEqual(False, isMonotonic([1, 2, 2, 1], "increaseOrEqual"))
+        self.assertEqual(True, isMonotonic([1, 2, 2, 3], "<="))
+        self.assertEqual(False, isMonotonic([1, 2, 2, 1], "<="))
 
-        self.assertEqual(True, isMonotonic([1, 2, 3], "increaseExclusive"))
-        self.assertEqual(False, isMonotonic([1, 2, 2], "increaseExclusive"))
+        self.assertEqual(True, isMonotonic([1, 2, 3], "<"))
+        self.assertEqual(False, isMonotonic([1, 2, 2], "<"))
 
-        self.assertEqual(True, isMonotonic([3, 2, 1, 1], "decreaseOrEqual"))
-        self.assertEqual(False, isMonotonic([3, 2, 1, 2], "decreaseOrEqual"))
+        self.assertEqual(True, isMonotonic([3, 2, 1, 1], ">="))
+        self.assertEqual(False, isMonotonic([3, 2, 1, 2], ">="))
 
-        self.assertEqual(True, isMonotonic([3, 2, 1], "decreaseExclusive"))
-        self.assertEqual(False, isMonotonic([3, 2, 2], "decreaseExclusive"))
+        self.assertEqual(True, isMonotonic([3, 2, 1], ">"))
+        self.assertEqual(False, isMonotonic([3, 2, 2], ">"))
 
         with self.assertRaises(ValueError):
             isMonotonic([1, 2, 3, 2], "invalidRelation")

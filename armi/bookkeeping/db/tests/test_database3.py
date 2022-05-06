@@ -129,10 +129,12 @@ class TestDatabase3(unittest.TestCase):
         self._compareArrays(data, roundTrip)
 
     def test_prepRestartRun(self):
-        # This test is based on the armiRun.yaml case that is loaded during the `setUp`
-        # above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
-        # and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
-        # created here for this test.
+        """
+        This test is based on the armiRun.yaml case that is loaded during the `setUp`
+        above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
+        and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
+        created here for this test.
+        """
 
         # first successfully call to prepRestartRun
         o, r = test_reactors.loadTestReactor(TEST_ROOT)

@@ -291,34 +291,36 @@ def getStepsFromValues(values, prevValue=0.0):
     return steps
 
 
-def isMonotonic(inputList, relation):
+def isMonotonic(inputIter, relation):
     """
     Checks if an iterable contains elements that are monotonically increasing or
     decreasing, whatever that might mean for the specific types of the elements.
 
     Parameters
     ----------
-    inputList : list
+    inputIter : list
         Some list to check. Values in the list should have a defined relation to
         each other.
-    relation : {'increaseOrEqual', 'increaseExclusive', 'decreaseOrEqual', 'decreaseExclusive'}
-        The relation between the elements to check.
+    relation : {'<=', '<', '>=', '>'}
+        The relation between the elements to check, from left to right through
+        the iterable.
 
     Returns
     -------
     bool
     """
+    operatorDict = {
+        "<=": operator.le,
+        "<": operator.lt,
+        ">=": operator.ge,
+        ">": operator.gt,
+    }
     try:
-        op = {
-            "increaseOrEqual": operator.le,
-            "increaseExclusive": operator.lt,
-            "decreaseOrEqual": operator.ge,
-            "decreaseExclusive": operator.gt,
-        }[relation]
+        op = operatorDict[relation]
     except KeyError:
         raise ValueError(f"Valid relation not specified: {relation}")
 
-    if not all([op(x, y) for x, y in zip(inputList, inputList[1:])]):
+    if not all([op(x, y) for x, y in zip(inputIter, inputIter[1:])]):
         return False
     else:
         return True
