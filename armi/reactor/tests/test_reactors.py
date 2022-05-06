@@ -763,9 +763,7 @@ class HexReactorTests(ReactorTests):
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
-        self.o = buildOperatorOfEmptyCartesianBlocks(
-            {"cycleLength": 365, "burnSteps": 4}
-        )
+        self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
 
     def test_getAssemblyPitch(self):

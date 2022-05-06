@@ -139,8 +139,6 @@ class TestDatabase3(unittest.TestCase):
         cs = o.cs
         cs = cs.modified(
             newSettings={
-                "burnSteps": None,
-                "cycleLength": None,
                 "nCycles": 3,
                 "cycles": [
                     {"step days": [1000, 1000], "power fractions": [1, 1]},

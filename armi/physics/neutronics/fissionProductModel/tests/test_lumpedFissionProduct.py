@@ -185,7 +185,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         self.assertEqual(v1, v2)
 
     def test_getNumberDensities(self):
-        o = buildOperatorOfEmptyHexBlocks({"cycleLength": 365, "burnSteps": 4})
+        o = buildOperatorOfEmptyHexBlocks()
         assems = o.r.core.getAssemblies(Flags.FUEL)
         blocks = assems[0].getBlocks(Flags.FUEL)
         b = blocks[0]
