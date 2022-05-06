@@ -140,14 +140,13 @@ In the case that only a single state is to be examined (i.e. no burnup), the use
 
 In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
 option.
-The simple cycle history consists of the following case settings, of which all must
-be specified for a burnup case:
+The simple cycle history consists of the following case settings:
     
     * ``power``
-    * ``nCycles``
-    * ``burnSteps``
-    * ``availabilityFactor(s)``
-    * ``cycleLength(s)``
+    * ``nCycles`` (default = 1)
+    * ``burnSteps`` (default = 4)
+    * ``availabilityFactor(s)`` (default = 1.0)
+    * ``cycleLength(s)`` (default = 365.2425)
 
 In addition, one may optionally use the ``powerFractions`` setting to change the reactor
 power between each cycle.
