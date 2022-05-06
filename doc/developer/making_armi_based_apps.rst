@@ -99,8 +99,20 @@ somehow in a cohesive package. Packaging Python projects is beyond the scope of 
 document, but see `this page <https://docs.python-guide.org/writing/structure/>`_ for
 some guidance.
 
-Once you have a plugin together, continue reading to see how to plug it into the ARMI
-Framework as part of an Application.
+Once you have a plugin together, you may either rest it out as a User Plugin
+or (highly recommended) build an ARMI-based Application. 
+
+Activating your Plugin as a User Plugin
+---------------------------------------
+You may activate one or more Plugins as User Plugins by referring to them
+on an environmental variable called ``ARMI_USER_PLUGINS``. The Plugin code
+must reside in a location that is importable (e.g. in your ``PYTHONPATH``). 
+The format for the value of the varaible may be found in :py:meth:`armi.apps.App._registerUserPlugins`.
+
+This capability is intended to be useful for early prototyping and testing. 
+
+Continue reading to see how to plug it into the ARMI Framework as part of an
+Application as recommended.
 
 -----------------------
 ARMI-Based Applications

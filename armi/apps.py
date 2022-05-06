@@ -30,6 +30,8 @@ customizing much of the Framework's behavior.
 """
 from typing import Dict, Optional, Tuple, List
 import collections
+import importlib
+import os
 
 from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters
@@ -74,6 +76,7 @@ class App:
         self._pm = plugins.getNewPluginManager()
 
         self._registerFrameworkPlugins()
+        self._registerUserPlugins()
 
         self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
 
@@ -83,13 +86,69 @@ class App:
 
         for plugin in getDefaultPlugins():
             self._pm.register(plugin)
+
+    def _registerUserPlugins(self):
+        """
+        Register additional plugins passed in by importable paths.
+
+        These plugins may be provided e.g. by an application during startup
+        based on user input.
+
+        Format expected to be a list of full namespaces to plugin classes.
+        There should be a comma between individual plugins and dots representing
+        the importable python namespace.
+        e.g. ``myplugins.plugindir.pluginMod.pluginCls,myplugins.plugMod2.plugCls2``.
+
+        The user plugins must be importable (i.e. in the run dir or PYTHONPATH)
+
+        Notes
+        -----
+        How exactly user input gets into here is complicated. In some sense, a
+        user setting would be ideal. However, ARMI Apps lock down the plugin manager
+        during ``configure()`` which happens before any user settings are read
+        in. This order is necessary since plugins often define settings that are
+        read during input processing.
+
+        Another option could be to use environment variables, allowing users to
+        set e.g. ``ARMI_USER_PLUGINS`` to a list of their favorite plugins. That
+        would be convenient from a user perspective and may work nicely here
+        as well.
+
+        We use dots all the way to the class as opposed to the ``:`` used in
+        material classes because ENV variables uses ``:`` as separators on some
+        OSs.
+        """
+        userPluginInput = os.environ.get("ARMI_USER_PLUGINS", "")
+        print(userPluginInput)
+        if not userPluginInput:
+            return
+        for pluginSpec in userPluginInput.split(","):
+            print(pluginSpec)
+            names = pluginSpec.split(".")
+            print(names)
+            modPath = ".".join(names[:-1])
+            clsName = names[-1]
+            print(modPath, clsName)
+            mod = importlib.import_module(modPath)
+            plugin = getattr(mod, clsName)
+            self._pm.register(plugin)
+
     @property
     def version(self) -> str:
         """Grab the version of this app (defaults to ARMI version).
 
         NOTE: This is designed to be over-ridable by Application developers.
+
+        If user plugins are defined, we indicate it here simliar to the
+        git-informed ``-dirty`` so that it's clear that the runtime
+        behavior of the code may be different from a different tagged
+        version.
         """
-        return meta.__version__
+        userPluginInput = os.environ.get("ARMI_USER_PLUGINS")
+        version = meta.__version__
+        if userPluginInput:
+            version += "-userplugins"
+        return version
 
     @property
     def pluginManager(self) -> pluginManager.ArmiPluginManager:

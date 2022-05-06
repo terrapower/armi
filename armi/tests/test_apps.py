@@ -15,11 +15,13 @@
 """Tests for the App class."""
 import copy
 import unittest
+import os
 
 from armi import cli
 from armi import configure
 from armi import context
 from armi import getApp
+from armi import apps
 from armi import getDefaultPluginManager
 from armi import meta
 from armi import plugins
@@ -173,3 +175,20 @@ class TestArmi(unittest.TestCase):
     def test_main(self):
         with self.assertRaises(SystemExit):
             main()
+
+
+class UserPlugin1:
+    pass
+
+
+class TestAppWithUserPlugins(unittest.TestCase):
+    """Test the ability to load in userplugins"""
+
+    def test_userPlugin(self):
+
+        os.environ["ARMI_USER_PLUGINS"] = "armi.tests.test_apps.UserPlugin1"
+        app = apps.App()
+        configure(app, permissive=True)
+
+        ver = app.version
+        self.assertIn("userplugin", ver)
