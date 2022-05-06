@@ -23,6 +23,25 @@ from armi import context, runLog
 from armi.tests import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
+# CONSTANTS FOR TESTING
+TEST_DIR1 = "test_createLogDir"
+
+
+class TestCreateLogDir(unittest.TestCase):
+    def tearDown(self):
+        # clean up any existing test directories
+        testDirs = [TEST_DIR1]
+        for testDir in testDirs:
+            if os.path.exists(testDir):
+                rmtree(testDir, ignore_errors=True)
+
+    def test_createLogDir(self):
+        """Test the createLogDir() method"""
+        logDir = TEST_DIR1
+        self.assertFalse(os.path.exists(logDir))
+        runLog.createLogDir(0, logDir)
+        self.assertTrue(os.path.exists(logDir))
+
 
 class TestRunLog(unittest.TestCase):
     def test_setVerbosityFromInteger(self):
@@ -68,7 +87,7 @@ class TestRunLog(unittest.TestCase):
         # init the _RunLog object
         log = runLog.LOG = runLog._RunLog(0)
         log.startLog("test_parentRunLogging")
-        context.createLogDir(0)
+        runLog.createLogDir(0)
         log.setVerbosity(logging.INFO)
 
         # divert the logging to a stream, to make testing easier
@@ -94,7 +113,7 @@ class TestRunLog(unittest.TestCase):
         # create the logger and do some logging
         log = runLog.LOG = runLog._RunLog(321)
         log.startLog("test_warningReport")
-        context.createLogDir(0)
+        runLog.createLogDir(0)
 
         # divert the logging to a stream, to make testing easier
         stream = StringIO()
@@ -142,7 +161,7 @@ class TestRunLog(unittest.TestCase):
 
         # start the logging for real
         log.startLog("test_closeLogging")
-        context.createLogDir(0)
+        runLog.createLogDir(0)
         validate_loggers(log)
 
         # close() and test that we have correctly nullified our loggers
@@ -260,7 +279,7 @@ class TestRunLog(unittest.TestCase):
             logDir = "test_concatenateLogs"
             if os.path.exists(logDir):
                 rmtree(logDir)
-            context.createLogDir(0, logDir)
+            runLog.createLogDir(0, logDir)
 
             # create as stdout file
             stdoutFile1 = os.path.join(

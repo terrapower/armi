@@ -63,6 +63,7 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
 _WHITE_SPACE = " " * 6
+LOG_DIR = os.path.join(os.getcwd(), "logs")
 SEP = "|"
 STDERR_LOGGER_NAME = "ARMI_ERROR"
 STDOUT_LOGGER_NAME = "ARMI"
@@ -259,7 +260,7 @@ class _RunLog:
         if self._mpiRank != 0:
             # init stderr intercepting logging
             filePath = os.path.join(
-                context.LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
+                LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
             )
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
             h = logging.FileHandler(filePath, delay=True)
@@ -302,7 +303,7 @@ def concatenateLogs(logDir=None):
     Should only ever be called by parent.
     """
     if logDir is None:
-        logDir = context.LOG_DIR
+        logDir = LOG_DIR
 
     # find all the logging-module-based log files
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
@@ -485,7 +486,7 @@ class RunLogger(logging.Logger):
             self.setLevel(logging.INFO)
         else:
             filePath = os.path.join(
-                context.LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
+                LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
             )
             handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
@@ -503,6 +504,8 @@ class RunLogger(logging.Logger):
         In this situation, we do the mangling needed to get the log level to the correct number.
         And we do some custom string manipulation so we can handle de-duplicating warnings.
         """
+        if not os.path.exists(LOG_DIR):
+            createLogDir(context.MPI_RANK, LOG_DIR)
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
@@ -611,6 +614,24 @@ class NullLogger(RunLogger):
 # Setting the default logging class to be ours
 logging.RunLogger = RunLogger
 logging.setLoggerClass(RunLogger)
+
+
+# ============ begin logging support ============
+
+
+def createLogDir(mpiRank: int = 1, logDir: str = None) -> None:
+    """A helper method to create the log directory"""
+    # the usual case is the user does not pass in a log dir path, so we use the global one
+    if logDir is None:
+        logDir = LOG_DIR
+
+    # create the directory
+    if not os.path.exists(logDir):
+        try:
+            os.makedirs(logDir)
+        except FileExistsError:
+            # If we hit this race condition, we still win.
+            pass
 
 
 # ---------------------------------------
