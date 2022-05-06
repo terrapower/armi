@@ -188,16 +188,20 @@ def getDefaultPlugins() -> List[Type[plugins.ArmiPlugin]]:
     from armi import cli
     from armi import bookkeeping
     from armi.physics import fuelCycle
+    from armi.physics import fuelPerformance
     from armi.physics import neutronics
     from armi.physics import safety
+    from armi.physics import thermalHydraulics
     from armi import reactor
 
     defaultPlugins = [
         cli.EntryPointsPlugin,
         bookkeeping.BookkeepingPlugin,
         fuelCycle.FuelHandlerPlugin,
+        fuelPerformance.FuelPerformancePlugin,
         neutronics.NeutronicsPlugin,
         safety.SafetyPlugin,
+        thermalHydraulics.ThermalHydraulicsPlugin,
         reactor.ReactorPlugin,
     ]
 

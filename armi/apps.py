@@ -71,30 +71,18 @@ class App:
         For a description of the things that an ARMI plugin can do, see the
         :py:mod:`armi.plugins` module.
         """
-        from armi import cli
-        from armi import bookkeeping
-        from armi.physics import fuelCycle
-        from armi.physics import fuelPerformance
-        from armi.physics import neutronics
-        from armi.physics import safety
-        from armi.physics import thermalHydraulics
-        from armi import reactor
-
         self._pm = plugins.getNewPluginManager()
-        for plugin in (
-            cli.EntryPointsPlugin,
-            bookkeeping.BookkeepingPlugin,
-            fuelCycle.FuelHandlerPlugin,
-            fuelPerformance.FuelPerformancePlugin,
-            neutronics.NeutronicsPlugin,
-            safety.SafetyPlugin,
-            thermalHydraulics.ThermalHydraulicsPlugin,
-            reactor.ReactorPlugin,
-        ):
-            self._pm.register(plugin)
+
+        self._registerFrameworkPlugins()
 
         self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
 
+    def _registerFrameworkPlugins(self):
+        """Register all the hard-coded Framework plugins."""
+        from armi import getDefaultPlugins  # avoid circular import
+
+        for plugin in getDefaultPlugins():
+            self._pm.register(plugin)
     @property
     def version(self) -> str:
         """Grab the version of this app (defaults to ARMI version).
