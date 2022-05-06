@@ -119,16 +119,12 @@ class App:
         OSs.
         """
         userPluginInput = os.environ.get("ARMI_USER_PLUGINS", "")
-        print(userPluginInput)
         if not userPluginInput:
             return
         for pluginSpec in userPluginInput.split(","):
-            print(pluginSpec)
             names = pluginSpec.split(".")
-            print(names)
             modPath = ".".join(names[:-1])
             clsName = names[-1]
-            print(modPath, clsName)
             mod = importlib.import_module(modPath)
             plugin = getattr(mod, clsName)
             self._pm.register(plugin)
