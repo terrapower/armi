@@ -23,25 +23,6 @@ from armi import context, runLog
 from armi.tests import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
-# CONSTANTS FOR TESTING
-TEST_DIR1 = "test_createLogDir"
-
-
-class TestCreateLogDir(unittest.TestCase):
-    def tearDown(self):
-        # clean up any existing test directories
-        testDirs = [TEST_DIR1]
-        for testDir in testDirs:
-            if os.path.exists(testDir):
-                rmtree(testDir, ignore_errors=True)
-
-    def test_createLogDir(self):
-        """Test the createLogDir() method"""
-        logDir = TEST_DIR1
-        self.assertFalse(os.path.exists(logDir))
-        runLog.createLogDir(0, logDir)
-        self.assertTrue(os.path.exists(logDir))
-
 
 class TestRunLog(unittest.TestCase):
     def test_setVerbosityFromInteger(self):
@@ -161,7 +142,7 @@ class TestRunLog(unittest.TestCase):
 
         # start the logging for real
         log.startLog("test_closeLogging")
-        runLog.createLogDir(0)
+        runLog.createLogDir()
         validate_loggers(log)
 
         # close() and test that we have correctly nullified our loggers
@@ -279,7 +260,7 @@ class TestRunLog(unittest.TestCase):
             logDir = "test_concatenateLogs"
             if os.path.exists(logDir):
                 rmtree(logDir)
-            runLog.createLogDir(0, logDir)
+            runLog.createLogDir(logDir)
 
             # create as stdout file
             stdoutFile1 = os.path.join(
@@ -315,6 +296,14 @@ class TestRunLog(unittest.TestCase):
             self.assertFalse(os.path.exists(stdoutFile1))
             self.assertFalse(os.path.exists(stdoutFile2))
             self.assertFalse(os.path.exists(stderrFile))
+
+    def test_createLogDir(self):
+        """Test the createLogDir() method"""
+        with TemporaryDirectoryChanger():
+            logDir = "test_createLogDir"
+            self.assertFalse(os.path.exists(logDir))
+            runLog.createLogDir(logDir)
+            self.assertTrue(os.path.exists(logDir))
 
 
 if __name__ == "__main__":
