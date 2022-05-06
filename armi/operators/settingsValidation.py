@@ -501,84 +501,36 @@ class Inspector:
             self._correctCyclesToZeroBurnup,
         )
 
-        # first test if it is a zero burnup case using either the simple or detailed cycles input
+        def _checkForBothSimpleAndDetailedCyclesInputs():
+            """
+            Note that we must bypass the `Settings` getter and reach directly
+            into the underlying `__settings` dict to avoid triggering an error
+            at this stage in the run. Otherwise an error will inherently be raised
+            if the detailed cycles input is used because the simple cycles inputs
+            have defaults. We don't care that those defaults are there, we only
+            have a problem with those defaults being _used_, which will be caught
+            later on.
+            """
+            bothCyclesInputTypesPresent = (
+                self.cs._Settings__settings["cycleLength"]
+                or self.cs._Settings__settings["cycleLengths"]
+                or self.cs._Settings__settings["burnSteps"]
+                or self.cs._Settings__settings["availabilityFactor"]
+                or self.cs._Settings__settings["availabilityFactors"]
+                or self.cs._Settings__settings["powerFractions"]
+            ) and self.cs["cycles"] != []
+
+            return bothCyclesInputTypesPresent
+
         self.addQuery(
-            lambda: self.cs["nCycles"] == 1
-            and (self.cs["burnSteps"] in [0, None] and self.cs["cycles"] == [])
-            and (
-                self.cs["cycleLength"] != None
-                or self.cs["cycleLengths"] != None
-                or self.cs["availabilityFactor"] != None
-                or self.cs["availabilityFactors"] != None
-            ),
-            "If `nCycles` = 1, `burnSteps` = 0 or unspecified, and `cycles` is unspecified,"
-            " a zero burnup case is assumed. However, in this case other simple cycles"
-            " settings cannot be entered.",
-            "Unset `cycleLength(s)` and/or `availabilityFactor(s)` and continue"
-            " with a zero burnup case?",
-            self._correctCyclesToZeroBurnup,
+            _checkForBothSimpleAndDetailedCyclesInputs,
+            "If specifying detailed cycle history with `cycles`, you may not"
+            " also use any of the simple cycle history inputs `cycleLength(s)`,"
+            " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`."
+            " Using the detailed cycle history.",
+            "",
+            self.NO_ACTION,
         )
-
-        # it must be burnup, make sure that burnSteps is set in the simple case
-        self.addQuery(
-            lambda: self.cs["nCycles"] > 1
-            and self.cs["burnSteps"] in [0, None]
-            and self.cs["cycles"] == [],
-            "If `nCycles` is greater than 1 and the simple cycles input is used,"
-            "  `burnSteps` must be set to a value greater than 0.",
-            "Set `burnSteps` to 4?",
-            self._setBurnStepsToFour,
-        )
-
-        # # check for the full suite of the simple cycles input in the case that there is no detailed cycles input
-        # # and it is a burnup case
-        # self.addQuery(
-        #     lambda: (
-        #         self.cs["burnSteps"] not in [0, None]
-        #         and (
-        #             (self.cs["cycleLength"] == None and self.cs["cycleLengths"] == None)
-        #             or (
-        #                 self.cs["availabilityFactor"] == None
-        #                 and self.cs["availabilityFactors"] == None
-        #             )
-        #         )
-        #         and self.cs["cycles"] == []
-        #     ),
-        #     "Either the full suite of simple cycle inputs (`cycleLength(s)`,"
-        #     " `burnSteps`, and `availabilityFactor(s)`) or the"
-        #     " detailed cycle input `cycles` must be entered in burnup cases.",
-        #     f"Add defaults for missing simple cycle inputs (cycleLength: {DAYS_PER_YEAR}"
-        #     ", burnSteps: 4, availabilityFactor: 1.0)?",
-        #     self._fillOutSimpleCyclesDefaults,
-        # )
-
-        # def _checkForBothSimpleAndDetailedCyclesInputs():
-        #     bothCyclesInputTypesPresent = (
-        #                                    (
-        #             self.cs["cycleLength"]
-        #             or self.cs["cycleLengths"]
-        #             or self.cs["burnSteps"]
-        #             or self.cs["availabilityFactor"]
-        #             or self.cs["availabilityFactors"]
-        #             or self.cs["powerFractions"]
-        #         )
-        #         and self.cs["cycles"])
-
-        #     if bothCyclesInputTypesPresent:
-        #         self._makeSimpleCyclesInputsUnavailable()
-
-        #     return bothCyclesInputTypesPresent
-
-        # # if the detailed cycles input is used, make sure none of the simple cycles inputs are entered
-        # self.addQuery(
-        #     lambda: _checkForBothSimpleAndDetailedCyclesInputs,
-        #     "If specifying detailed cycle history with `cycles`, you may not"
-        #     " also use any of the simple cycle history inputs `cycleLength(s)`,"
-        #     " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`."
-        #     " Using the detailed cycle history.",
-        #     "",
-        #     self.NO_ACTION,
-        # )
 
         def _factorsAreValid(factors, maxVal=1.0):
             try:
@@ -590,87 +542,86 @@ class Inspector:
                 and len(expandedList) == self.cs["nCycles"]
             )
 
-        self.addQuery(
-            lambda: (
-                self.cs["availabilityFactors"]
-                and not _factorsAreValid(self.cs["availabilityFactors"])
-            ),
-            "`availabilityFactors` was not set to a list compatible with the number of cycles. "
-            "Please update input or use constant duration.",
-            "Use constant availability factor specified in `availabilityFactor` setting?",
-            lambda: self._assignCS("availabilityFactors", []),
-        )
-
-        self.addQuery(
-            lambda: (
-                self.cs["powerFractions"]
-                and not _factorsAreValid(self.cs["powerFractions"])
-            ),
-            "`powerFractions` was not set to a compatible list. "
-            "Please update input or use full power at all cycles.",
-            "Use full power for all cycles?",
-            lambda: self._assignCS("powerFractions", []),
-        )
-
-        self.addQuery(
-            lambda: (
-                self.cs["cycleLengths"]
-                and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
-            ),
-            "The number of cycles defined in `cycleLengths` is not equal to the number of cycles in "
-            "the run `nCycles`."
-            "Please ensure that there is exactly one duration for each cycle in the run or use "
-            "{} days for all cycles.".format(self.cs["cycleLength"]),
-            "Use {} days for all cycles?".format(self.cs["cycleLength"]),
-            lambda: self._assignCS("cycleLengths", []),
-        )
-
-        self.addQuery(
-            lambda: (
-                self.cs["runType"] == operators.RunTypes.STANDARD
-                and self.cs["burnSteps"] == 0
-                and (
-                    (
-                        len(self.cs["cycleLengths"]) > 1
-                        if self.cs["cycleLengths"] != None
-                        else False
-                    )
-                    or self.cs["nCycles"] > 1
-                )
-            ),
-            "Cannot run multi-cycle standard cases with 0 burnSteps per cycle. Please update settings.",
-            "",
-            self.NO_ACTION,
-        )
-
-        def decayCyclesHaveInputThatWillBeIgnored():
-            """Check if there is any decay-related input that will be ignored."""
-            try:
-                powerFracs = expandRepeatedFloats(self.cs["powerFractions"])
-                availabilities = expandRepeatedFloats(
+        if self.cs["cycles"] == []:
+            self.addQuery(
+                lambda: (
                     self.cs["availabilityFactors"]
-                ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-            except:  # pylint: disable=bare-except
-                return True
+                    and not _factorsAreValid(self.cs["availabilityFactors"])
+                ),
+                "`availabilityFactors` was not set to a list compatible with the number of cycles. "
+                "Please update input or use constant duration.",
+                "Use constant availability factor specified in `availabilityFactor` setting?",
+                lambda: self._assignCS("availabilityFactors", []),
+            )
 
-            for pf, af in zip(powerFracs, availabilities):
-                if pf > 0.0 and af == 0.0:
-                    # this will be a full decay step and any power fraction will be ignored. May be ok, but warn.
+            self.addQuery(
+                lambda: (
+                    self.cs["powerFractions"]
+                    and not _factorsAreValid(self.cs["powerFractions"])
+                ),
+                "`powerFractions` was not set to a compatible list. "
+                "Please update input or use full power at all cycles.",
+                "Use full power for all cycles?",
+                lambda: self._assignCS("powerFractions", []),
+            )
+
+            self.addQuery(
+                lambda: (
+                    self.cs["cycleLengths"]
+                    and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
+                ),
+                "`cycleLengths` was not set to a list compatible with the number of cycles."
+                " Please update input or use constant duration.",
+                "Use constant cycle length specified in `cycleLength` setting?",
+                lambda: self._assignCS("cycleLengths", []),
+            )
+
+            self.addQuery(
+                lambda: (
+                    self.cs["runType"] == operators.RunTypes.STANDARD
+                    and self.cs["burnSteps"] == 0
+                    and (
+                        (
+                            len(self.cs["cycleLengths"]) > 1
+                            if self.cs["cycleLengths"] != None
+                            else False
+                        )
+                        or self.cs["nCycles"] > 1
+                    )
+                ),
+                "Cannot run multi-cycle standard cases with 0 burnSteps per cycle. Please update settings.",
+                "",
+                self.NO_ACTION,
+            )
+
+            def decayCyclesHaveInputThatWillBeIgnored():
+                """Check if there is any decay-related input that will be ignored."""
+                try:
+                    powerFracs = expandRepeatedFloats(self.cs["powerFractions"])
+                    availabilities = expandRepeatedFloats(
+                        self.cs["availabilityFactors"]
+                    ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
+                except:  # pylint: disable=bare-except
                     return True
-            return False
 
-        self.addQuery(
-            lambda: (
-                self.cs["cycleLengths"]
-                and self.cs["powerFractions"]
-                and decayCyclesHaveInputThatWillBeIgnored()
-                and not self.cs["cycles"]
-            ),
-            "At least one cycle has a non-zero power fraction but an availability of zero. Please "
-            "update the input.",
-            "",
-            self.NO_ACTION,
-        )
+                for pf, af in zip(powerFracs, availabilities):
+                    if pf > 0.0 and af == 0.0:
+                        # this will be a full decay step and any power fraction will be ignored. May be ok, but warn.
+                        return True
+                return False
+
+            self.addQuery(
+                lambda: (
+                    self.cs["cycleLengths"]
+                    and self.cs["powerFractions"]
+                    and decayCyclesHaveInputThatWillBeIgnored()
+                    and not self.cs["cycles"]
+                ),
+                "At least one cycle has a non-zero power fraction but an availability of zero. Please "
+                "update the input.",
+                "",
+                self.NO_ACTION,
+            )
 
         self.addQuery(
             lambda: self.cs["operatorLocation"]
