@@ -88,6 +88,21 @@ def checkPatchFlag(f):
     return newfunc
 
 
+def logError(f):
+    """
+    Apply a try:except block to the function to log errors.
+    """
+
+    def newfunc(*args, **kwargs):
+        try:
+            f(*args, **kwargs)
+        except Exception as err:
+            runLog.error(err)
+            raise
+
+    return newfunc
+
+
 class Patcher:
     """
     A controller object for patching ARMI at runtime. See module docstring for
@@ -118,45 +133,33 @@ class Patcher:
         spec.loader.exec_module(self.userPatch)
 
     @checkPatchFlag
+    @logError
     def applyPreOpPatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the pre-operator patch specified in the user patch file.
         """
-        try:
-            self.userPatch.preOpPatch(upper_globals, upper_locals)
-        except Exception as err:
-            runLog.error(err)
-            raise
+        self.userPatch.preOpPatch(upper_globals, upper_locals)
 
     @checkPatchFlag
+    @logError
     def applyPostOpPatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the post-operator patch specified in the user patch file.
         """
-        try:
-            self.userPatch.postOpPatch(upper_globals, upper_locals)
-        except Exception as err:
-            runLog.error(err)
-            raise
+        self.userPatch.postOpPatch(upper_globals, upper_locals)
 
     @checkPatchFlag
+    @logError
     def applyPostInterfacePatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the post-interface patch specified in the user patch file.
         """
-        try:
-            self.userPatch.postInterfacePatch(upper_globals, upper_locals)
-        except Exception as err:
-            runLog.error(err)
-            raise
+        self.userPatch.postInterfacePatch(upper_globals, upper_locals)
 
     @checkPatchFlag
+    @logError
     def applyPostRestartLoadPatch(self, upper_globals, upper_locals):
         """
         Attempt to apply the post-restart-load patch specified in the user patch file.
         """
-        try:
-            self.userPatch.postRestartLoadPatch(upper_globals, upper_locals)
-        except Exception as err:
-            runLog.error(err)
-            raise
+        self.userPatch.postRestartLoadPatch(upper_globals, upper_locals)
