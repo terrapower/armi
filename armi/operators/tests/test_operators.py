@@ -130,7 +130,15 @@ settings:
             self.detailedOperator.powerFractions, self.powerFractionsSolution
         )
 
+        self.detailedOperator._powerFractions = None
+        self.assertEqual(
+            self.detailedOperator.powerFractions, self.powerFractionsSolution
+        )
+
     def test_getCycleNames(self):
+        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+
+        self.detailedOperator._cycleNames = None
         self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
 
     def test_getAvailabilityFactors(self):
@@ -139,16 +147,34 @@ settings:
             self.availabilityFactorsSolution,
         )
 
+        self.detailedOperator._availabilityFactors = None
+        self.assertEqual(
+            self.detailedOperator.availabilityFactors,
+            self.availabilityFactorsSolution,
+        )
+
     def test_getStepLengths(self):
+        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+
+        self.detailedOperator._stepLength = None
         self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
 
     def test_getCycleLengths(self):
         self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
 
+        self.detailedOperator._cycleLengths = None
+        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+
     def test_getBurnSteps(self):
         self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
 
+        self.detailedOperator._burnSteps = None
+        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+
     def test_getMaxBurnSteps(self):
+        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
+
+        self.detailedOperator._maxBurnSteps = None
         self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
 
 
