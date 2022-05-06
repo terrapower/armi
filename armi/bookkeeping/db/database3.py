@@ -337,34 +337,41 @@ class DatabaseInterface(interfaces.Interface):
             )
 
             # check that cycle histories are equivalent up to this point
-            dbStepLengths = getStepLengths(loadDbCs)
-            currentCaseStepLengths = getStepLengths(self.cs)
-            dbStepHistory = []
-            currentCaseStepHistory = []
-            try:
-                for cycleIdx in range(dbCycle + 1):
-                    if cycleIdx == dbCycle:
-                        # truncate it at dbNode
-                        dbStepHistory.append(dbStepLengths[cycleIdx][:dbNode])
-                        currentCaseStepHistory.append(
-                            currentCaseStepLengths[cycleIdx][:dbNode]
-                        )
-                    else:
-                        dbStepHistory.append(dbStepLengths[cycleIdx])
-                        currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
-            except IndexError:
-                runLog.error(
-                    f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}"
-                )
-                raise
-
-            if dbStepHistory != currentCaseStepHistory:
-                raise ValueError(
-                    "The cycle history up to the restart cycle/node must be equivalent."
-                )
+            self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
+                loadDbCs, dbCycle, dbNode
+            )
 
             self._db.mergeHistory(inputDB, startCycle, startNode)
         self.loadState(dbCycle, dbNode)
+
+    def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
+        self, loadDbCs, dbCycle, dbNode
+    ):
+        dbStepLengths = getStepLengths(loadDbCs)
+        currentCaseStepLengths = getStepLengths(self.cs)
+        dbStepHistory = []
+        currentCaseStepHistory = []
+        try:
+            for cycleIdx in range(dbCycle + 1):
+                if cycleIdx == dbCycle:
+                    # truncate it at dbNode
+                    dbStepHistory.append(dbStepLengths[cycleIdx][:dbNode])
+                    currentCaseStepHistory.append(
+                        currentCaseStepLengths[cycleIdx][:dbNode]
+                    )
+                else:
+                    dbStepHistory.append(dbStepLengths[cycleIdx])
+                    currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
+        except IndexError:
+            runLog.error(
+                f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}"
+            )
+            raise
+
+        if dbStepHistory != currentCaseStepHistory:
+            raise ValueError(
+                "The cycle history up to the restart cycle/node must be equivalent."
+            )
 
     # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
