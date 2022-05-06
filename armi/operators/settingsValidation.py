@@ -309,31 +309,6 @@ class Inspector:
 
             self.geomType, self.coreSymmetry = geom.geomType, geom.symmetry
 
-    def _fillOutSimpleCyclesDefaults(self):
-        defaultSimpleCyclesSettings = {
-            "cycleLength": DAYS_PER_YEAR,
-            "cycleLengths": [],
-            "burnSteps": 4,
-            "availabilityFactor": 1.0,
-            "availabilityFactors": [],
-            "powerFractions": [],
-        }
-        for setting, default in defaultSimpleCyclesSettings.items():
-            if self.cs[setting] == None:
-                self._assignCS(setting, default)
-        self._assignCS("availabilityFactors", [])
-
-    def _makeSimpleCyclesInputsUnavailable(self):
-        for s in [
-            "cycleLength",
-            "cycleLengths",
-            "burnSteps",
-            "availabilityFactor",
-            "availabilityFactors",
-            "powerFractions",
-        ]:
-            self._assignCS(s, None)
-
     def _correctCyclesToZeroBurnup(self):
         self._assignCS("nCycles", 1)
         self._assignCS("burnSteps", 0)

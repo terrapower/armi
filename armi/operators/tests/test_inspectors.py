@@ -108,60 +108,6 @@ class TestInspector(unittest.TestCase):
             "<Query: Setting numProcessors points to a nonexistent location:\n1>",
         )
 
-    def test_fillOutSimpleCyclesDefaults(self):
-        defaultSimpleCyclesSettings = {
-            "cycleLength": DAYS_PER_YEAR,
-            "cycleLengths": [],
-            "burnSteps": 4,
-            "availabilityFactor": 1.0,
-            "availabilityFactors": [],
-            "powerFractions": [],
-        }
-
-        # a case where none of the settings have values beforehand
-        for setting in defaultSimpleCyclesSettings.keys():
-            self.assertEqual(self.inspector.cs[setting], None)
-
-        self.inspector._fillOutSimpleCyclesDefaults()
-
-        for setting, default in defaultSimpleCyclesSettings.items():
-            self.assertEqual(self.inspector.cs[setting], default)
-
-        # a case where some of the settings already have non-default values
-        self.inspector._assignCS("cycleLength", 666)
-        for setting in defaultSimpleCyclesSettings.keys():
-            if setting != "cycleLength":
-                self.inspector._assignCS(setting, None)
-
-        self.inspector._fillOutSimpleCyclesDefaults()
-
-        for setting, default in defaultSimpleCyclesSettings.items():
-            if setting == "cycleLength":
-                self.assertEqual(self.inspector.cs[setting], 666)
-            else:
-                self.assertEqual(self.inspector.cs[setting], default)
-
-    def test_makeSimpleCyclesInputsUnavailable(self):
-        defaultSimpleCyclesSettings = {
-            "cycleLength": 365.242199,
-            "cycleLengths": [],
-            "burnSteps": 4,
-            "availabilityFactor": 1.0,
-            "availabilityFactors": [],
-            "powerFractions": [],
-        }
-
-        for setting, val in defaultSimpleCyclesSettings.items():
-            self.inspector._assignCS(setting, val)
-
-        for setting in defaultSimpleCyclesSettings.keys():
-            self.assertNotEqual(self.inspector.cs[setting], None)
-
-        self.inspector._makeSimpleCyclesInputsUnavailable()
-
-        for setting in defaultSimpleCyclesSettings.keys():
-            self.assertEqual(self.inspector.cs[setting], None)
-
     def test_correctCyclesToZeroBurnup(self):
         self.inspector._assignCS("nCycles", 666)
         self.inspector._assignCS("burnSteps", 666)
