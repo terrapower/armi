@@ -304,6 +304,8 @@ class TestRunLog(unittest.TestCase):
             self.assertFalse(os.path.exists(logDir))
             runLog.createLogDir(logDir)
             self.assertTrue(os.path.exists(logDir))
+            runLog.createLogDir(logDir)
+            self.assertTrue(os.path.exists(logDir))
 
 
 if __name__ == "__main__":
