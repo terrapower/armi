@@ -765,6 +765,29 @@ class HexReactorTests(ReactorTests):
         t2 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT, Flags.FUEL])
         self.assertAlmostEqual(t2, 521.95269, delta=0.01)
 
+    def test_getScalarEvolution(self):
+        self.r.core.scalarVals["fake"] = 123
+        x = self.r.core.getScalarEvolution("fake")
+        self.assertEqual(x, 123)
+
+    def test_ifMissingSpatialGrid(self):
+        self.r.core.spatialGrid = None
+
+        with self.assertRaises(ValueError):
+            self.r.core.symmetry
+
+        with self.assertRaises(ValueError):
+            self.r.core.geomType
+
+    def test_removeAllAssemblies(self):
+        self.assertGreater(len(self.r.core.blocksByName), 100)
+        self.assertGreater(len(self.r.core.assembliesByName), 12)
+
+        self.r.core.removeAllAssemblies()
+
+        self.assertEqual(0, len(self.r.core.blocksByName))
+        self.assertEqual(0, len(self.r.core.assembliesByName))
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
