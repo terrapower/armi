@@ -1,4 +1,4 @@
-name: Coverage
+name: Coverage1
 
 on: [push, pull_request]
 
