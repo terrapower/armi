@@ -252,7 +252,7 @@ class MpiDistributeStateTests(unittest.TestCase):
 
 class MpiPathToolsTests(unittest.TestCase):
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def xxxx_cleanPathMpi(self):
+    def test_cleanPathMpi(self):
         # """Simple tests of cleanPath(), in the MPI scenario"""
         # Test 0: File is not safe to delete, due to name pathing
         with TemporaryDirectoryChanger():
@@ -261,7 +261,7 @@ class MpiPathToolsTests(unittest.TestCase):
 
             self.assertTrue(os.path.exists(filePath0))
             with self.assertRaises(Exception):
-                pathTools.cleanPath(filePath0, mpiRank=0)
+                pathTools.cleanPath(filePath0, mpiRank=context.MPI_RANK)
 
         # Test 1: Delete a single file
         with TemporaryDirectoryChanger():
@@ -269,7 +269,7 @@ class MpiPathToolsTests(unittest.TestCase):
             open(filePath1, "w").write("something")
 
             self.assertTrue(os.path.exists(filePath1))
-            pathTools.cleanPath(filePath1, mpiRank=0)
+            pathTools.cleanPath(filePath1, mpiRank=context.MPI_RANK)
             self.assertFalse(os.path.exists(filePath1))
 
         # Test 2: Delete an empty directory
@@ -278,7 +278,7 @@ class MpiPathToolsTests(unittest.TestCase):
             os.mkdir(dir2)
 
             self.assertTrue(os.path.exists(dir2))
-            pathTools.cleanPath(dir2, mpiRank=0)
+            pathTools.cleanPath(dir2, mpiRank=context.MPI_RANK)
             self.assertFalse(os.path.exists(dir2))
 
         # Test 3: Delete a directory with two files inside
@@ -295,7 +295,7 @@ class MpiPathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(dir3))
             self.assertTrue(os.path.exists(os.path.join(dir3, "file1.txt")))
             self.assertTrue(os.path.exists(os.path.join(dir3, "file2.txt")))
-            pathTools.cleanPath(dir3, mpiRank=0)
+            pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
             self.assertFalse(os.path.exists(dir3))
 
 
