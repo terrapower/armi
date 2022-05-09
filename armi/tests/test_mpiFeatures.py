@@ -42,6 +42,8 @@ from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.utils import pathTools
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and MPI is installed
 MPI_EXE = None
@@ -246,6 +248,55 @@ class MpiDistributeStateTests(unittest.TestCase):
         context.MPI_COMM.bcast(action2)
         results2 = action2.invoke(None, None, None)
         self.assertEqual(results1, results2)
+
+
+class MpiPathToolsTests(unittest.TestCase):
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_cleanPathMpi(self):
+        """Simple tests of cleanPath(), in the MPI scenario"""
+        # Test 0: File is not safe to delete, due to name pathing
+        with TemporaryDirectoryChanger():
+            filePath0 = "test0_cleanPathNoMpi"
+            open(filePath0, "w").write("something")
+
+            self.assertTrue(os.path.exists(filePath0))
+            with self.assertRaises(Exception):
+                pathTools.cleanPath(filePath0, mpiRank=0)
+
+        # Test 1: Delete a single file
+        with TemporaryDirectoryChanger():
+            filePath1 = "test1_cleanPathNoMpi_mongoose"
+            open(filePath1, "w").write("something")
+
+            self.assertTrue(os.path.exists(filePath1))
+            pathTools.cleanPath(filePath1, mpiRank=0)
+            self.assertFalse(os.path.exists(filePath1))
+
+        # Test 2: Delete an empty directory
+        with TemporaryDirectoryChanger():
+            dir2 = "mongoose"
+            os.mkdir(dir2)
+
+            self.assertTrue(os.path.exists(dir2))
+            pathTools.cleanPath(dir2, mpiRank=0)
+            self.assertFalse(os.path.exists(dir2))
+
+        # Test 3: Delete a directory with two files inside
+        with TemporaryDirectoryChanger():
+            # create directory
+            dir3 = "mongoose"
+            os.mkdir(dir3)
+
+            # throw in a couple of simple text files
+            open(os.path.join(dir3, "file1.txt"), "w").write("something1")
+            open(os.path.join(dir3, "file2.txt"), "w").write("something2")
+
+            # delete the directory and test
+            self.assertTrue(os.path.exists(dir3))
+            self.assertTrue(os.path.exists(os.path.join(dir3, "file1.txt")))
+            self.assertTrue(os.path.exists(os.path.join(dir3, "file2.txt")))
+            pathTools.cleanPath(dir3, mpiRank=0)
+            self.assertFalse(os.path.exists(dir3))
 
 
 if __name__ == "__main__":
