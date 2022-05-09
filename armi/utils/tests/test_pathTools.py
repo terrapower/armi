@@ -75,8 +75,8 @@ class PathToolsTests(unittest.TestCase):
     @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_cleanPathNoMpi(self):
         """Simple tests of cleanPath(), in the no-MPI scenario"""
-        # Test 0: File is not safe to delete, due to name pathing
         with TemporaryDirectoryChanger():
+            # TEST 0: File is not safe to delete, due to name pathing
             filePath0 = "test0_cleanPathNoMpi"
             open(filePath0, "w").write("something")
 
@@ -84,8 +84,7 @@ class PathToolsTests(unittest.TestCase):
             with self.assertRaises(Exception):
                 pathTools.cleanPath(filePath0, mpiRank=0)
 
-        # Test 1: Delete a single file
-        with TemporaryDirectoryChanger():
+            # TEST 1: Delete a single file
             filePath1 = "test1_cleanPathNoMpi_mongoose"
             open(filePath1, "w").write("something")
 
@@ -93,8 +92,7 @@ class PathToolsTests(unittest.TestCase):
             pathTools.cleanPath(filePath1, mpiRank=0)
             self.assertFalse(os.path.exists(filePath1))
 
-        # Test 2: Delete an empty directory
-        with TemporaryDirectoryChanger():
+            # TEST 2: Delete an empty directory
             dir2 = "mongoose"
             os.mkdir(dir2)
 
@@ -102,8 +100,7 @@ class PathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir2, mpiRank=0)
             self.assertFalse(os.path.exists(dir2))
 
-        # Test 3: Delete a directory with two files inside
-        with TemporaryDirectoryChanger():
+            # TEST 3: Delete a directory with two files inside
             # create directory
             dir3 = "mongoose"
             os.mkdir(dir3)
