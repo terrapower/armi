@@ -274,7 +274,7 @@ def cleanPath(path, mpiRank=0):
     maxLoops = 6
     waitTime = 0.5
     loopCounter = 0
-    while os.path.exists(path) and loopCounter < maxLoops:
+    while os.path.exists(path) or loopCounter < maxLoops:
         loopCounter += 1
         sleep(waitTime)
 
