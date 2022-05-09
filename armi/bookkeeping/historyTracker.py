@@ -301,7 +301,11 @@ class HistoryTrackerInterface(interfaces.Interface):
 
             params = self.getTrackedParams()
             blocks = [
-                b for bi, b in enumerate(a) if bi not in self.cs["stationaryBlocks"]
+                b
+                for b in a
+                if not any(
+                    b.hasFlags(sbf) for sbf in self.r.core.stationaryBlockFlagsList
+                )
             ]
             blockHistories = dbi.getHistories(blocks, params)
 

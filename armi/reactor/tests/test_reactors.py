@@ -182,7 +182,6 @@ def loadTestReactor(
         runLog.setVerbosity("error")
 
     newSettings = {}
-    newSettings["stationaryBlocks"] = []
     newSettings["nCycles"] = 3
     cs = cs.modified(newSettings=newSettings)
     settings.setMasterCs(cs)

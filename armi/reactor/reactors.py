@@ -2248,19 +2248,13 @@ class Core(composites.Composite):
 
         self.getNuclideCategories()
 
-        # some blocks will not move in the core like grid plates... Find them and fix them in place
-        stationaryBlocks = []
-        # look for blocks that should not be shuffled in an assembly.  It is assumed that the
-        # reference assembly has all the fixed block information and it is the same for all assemblies
-        for i, b in enumerate(refAssem):
-            if b.hasFlags(Flags.GRID_PLATE):
-                stationaryBlocks.append(i)
-                # TODO: remove hard-coded assumption of grid plates (T3019)
-                runLog.extra(
-                    "Detected a grid plate {}.  Adding to stationary blocks".format(b)
-                )
+        # Generate list of flags that are to be stationary during assembly shuffling
+        stationaryBlockFlags = []
 
-        cs["stationaryBlocks"] = stationaryBlocks
+        for stationaryBlockFlagString in cs["stationaryBlockFlags"]:
+            stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
+
+        self.stationaryBlockFlagsList = stationaryBlockFlags
 
         # Perform initial zoning task
         self.buildZones(cs)

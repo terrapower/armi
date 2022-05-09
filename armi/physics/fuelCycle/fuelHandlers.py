@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from _operator import index
+from _ast import Or
 
 """
 This module handles fuel management operations such as shuffling, rotation, and
@@ -1172,17 +1174,43 @@ class FuelHandler:
 
         These blocks in effect are not moved at all.
         """
-        for index in self.cs["stationaryBlocks"]:
-            # this block swap is designed to ensure that all blocks have the
-            # correct parents and children structure at the end of the swaps.
-            tempBlock1 = assembly1[index]
-            assembly1.remove(tempBlock1)
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
 
-            tempBlock2 = assembly2[index]
-            assembly2.remove(tempBlock2)
+        # identify stationary blocks for assembly 1
+        a1StationaryBlocks = [
+            [block, block.spatialLocator.k]
+            for block in assembly1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+        # identify stationary blocks for assembly 2
+        a2StationaryBlocks = [
+            [block, block.spatialLocator.k]
+            for block in assembly2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
 
-            assembly1.insert(index, tempBlock2)
-            assembly2.insert(index, tempBlock1)
+        # check for any inconsistencies in stationary blocks and ensure alignment
+        if [block[1] for block in a1StationaryBlocks] != [
+            block[1] for block in a2StationaryBlocks
+        ]:
+            raise ValueError(
+                """Different number and/or locations of stationary blocks 
+                 between {} and {}.""".format(
+                    assembly1, assembly2
+                )
+            )
+
+        # swap stationary blocks
+        for blocksAssembly1, blocksAssembly2 in zip(
+            a1StationaryBlocks, a2StationaryBlocks
+        ):
+            # remove stationary blocks
+            assembly1.remove(blocksAssembly1[0])
+            assembly2.remove(blocksAssembly2[0])
+            # insert stationary blocks
+            assembly1.insert(blocksAssembly1[1], blocksAssembly2[0])
+            assembly2.insert(blocksAssembly2[1], blocksAssembly1[0])
 
     def dischargeSwap(self, incoming, outgoing):
         r"""
@@ -1243,6 +1271,10 @@ class FuelHandler:
         incoming, outgoing : Assembly
             Assembly objects to be swapped
         """
+
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
         # Find the block-based mesh points for each assembly
         meshIn = self.r.core.findAllAxialMeshPoints([incoming], False)
         meshOut = self.r.core.findAllAxialMeshPoints([outgoing], False)
@@ -1293,7 +1325,9 @@ class FuelHandler:
 
         # Since the axial mesh points match, do the simple swap
         for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
-            if bi in self.cs["stationaryBlocks"]:
+            if any(bIncoming.hasFlags(sbf) for sbf in sBFList) or any(
+                bOutgoing.hasFlags(sbf) for sbf in sBFList
+            ):
                 # stationary blocks are already swapped
                 continue
 
