@@ -1549,6 +1549,14 @@ class Block_TestCase(unittest.TestCase):
         dims = self.block.getDimensions("od")
         self.assertIn(self.block.getComponent(Flags.FUEL).p.od, dims)
 
+    def test_getPlenumPin(self):
+        pin = self.block.getPlenumPin()
+        self.assertIsNone(pin)
+
+    def test_hasPinPitch(self):
+        hasPitch = self.block.hasPinPitch()
+        self.assertTrue(hasPitch)
+
 
 class Test_NegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
