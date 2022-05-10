@@ -39,14 +39,14 @@ from armi.utils.customExceptions import NonexistentSetting
 
 DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
 
-SIMPLE_CYCLES_INPUTS = [
+SIMPLE_CYCLES_INPUTS = {
     "availabilityFactor",
     "availabilityFactors",
     "powerFractions",
     "burnSteps",
     "cycleLength",
     "cycleLengths",
-]
+}
 
 
 class Settings:
@@ -144,11 +144,21 @@ class Settings:
             self.__class__.__name__, self.caseTitle, total, altered
         )
 
-    def _settingIsOkayToGrab(self, key):
+    def _directAccessOfSettingAllowed(self, key):
         """
         A way to check if specific settings can be grabbed out of the case settings.
 
         Could be updated with other specific instances as necessary.
+
+        Notes
+        -----
+        Checking the validity of grabbing specific settings at this point,
+        as is done for the SIMPLE_CYCLES_INPUT's, feels
+        a bit intrusive and out of place. In particular, the fact that the check
+        is done every time that a setting is reached for, no matter if it is the
+        setting in question, is quite clunky. In the future, it would be desirable
+        if the settings system were more flexible to control this type of thing
+        at a deeper level.
         """
         if key not in self.__settings:
             return False, NonexistentSetting(key)
@@ -166,7 +176,7 @@ class Settings:
         return True, None
 
     def __getitem__(self, key):
-        settingIsOkayToGrab, err = self._settingIsOkayToGrab(key)
+        settingIsOkayToGrab, err = self._directAccessOfSettingAllowed(key)
         if settingIsOkayToGrab:
             return self.__settings[key].value
         else:

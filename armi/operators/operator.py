@@ -73,25 +73,27 @@ class Operator:  # pylint: disable=too-many-public-methods
     cs : CaseSettings object
             Global settings that define the run.
 
-    cycleNames : list
+    cycleNames : list of str
         The name of each cycle. Cycles without a name are `None`.
 
-    stepLengths : list
+    stepLengths : list of list of float
         A two-tiered list, where primary indices correspond to cycle and
         secondary indices correspond to the length of each intra-cycle step (in days).
 
-    cycleLengths : list
+    cycleLengths : list of float
         The duration of each individual cycle in a run (in days). This is the entire cycle,
         from startup to startup and includes outage time.
 
-    burnSteps : list
+    burnSteps : list of int
         The number of sub-cycles in each cycle.
 
-    availabilityFactors : list
+    availabilityFactors : list of float
         The fraction of time in a cycle that the plant is producing power. Note that capacity factor
         is always less than or equal to this, depending on the power fraction achieved during each cycle.
+        Note that this is not a two-tiered list like stepLengths or powerFractions,
+        because each cycle can have only one availabilityFactor.
 
-    powerFractions : list
+    powerFractions : list of list of float
         A two-tiered list, where primary indices correspond to cycles and secondary
         indices correspond to the fraction of full rated capacity that the plant achieves
         during that step of the cycle.

@@ -90,7 +90,7 @@ settings:
   power: 1000000000.0
   nCycles: 3
   cycles:
-    - name: dog
+    - name: startup sequence
       cumulative days: [1, 2, 3]
       power fractions: [0.1, 0.2, 0.3]
       availability factor: 0.1
@@ -98,7 +98,7 @@ settings:
       burn steps: 5
       power fractions: [0.2, 0.2, 0.2, 0.2, 0]
       availability factor: 0.5
-    - name: ferret
+    - name: prepare for shutdown
       step days: [3, R4]
       power fractions: [0.3, R4]
   runType: Standard
@@ -109,7 +109,7 @@ settings:
         [0.2, 0.2, 0.2, 0.2, 0],
         [0.3, 0.3, 0.3, 0.3, 0.3],
     ]
-    cycleNamesSolution = ["dog", None, "ferret"]
+    cycleNamesSolution = ["startup sequence", None, "prepare for shutdown"]
     availabilityFactorsSolution = [0.1, 0.5, 1]
     stepLengthsSolution = [
         [1, 1, 1],
