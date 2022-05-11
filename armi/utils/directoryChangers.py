@@ -259,7 +259,14 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
     def __exit__(self, exc_type, exc_value, traceback):
         DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
-        pathTools.cleanPath(self.destination)
+        try:
+            pathTools.cleanPath(self.destination)
+        except PermissionError:
+            if os.name == "nt":
+                runLog.warning(
+                    "There is a known issue, where you cannot create private directories inside temporary directories. "
+                    "For instance, the TempDirChanger cannot handle creating '.git' folders."
+                )
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):

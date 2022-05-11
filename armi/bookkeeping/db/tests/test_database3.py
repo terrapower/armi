@@ -410,9 +410,15 @@ class TestDatabase3(unittest.TestCase):
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
-        # nuke the .git directory
+        # delete the .git directory
         code = subprocess.run(
-            ["rm", "-rf", ".git"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            ["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).returncode
+        self.assertEqual(code, 0)
+        code = subprocess.run(
+            ["git", "clean", "-f", "-d"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         ).returncode
         self.assertEqual(code, 0)
 
