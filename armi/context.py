@@ -129,10 +129,13 @@ except ImportError:
     pass
 
 try:
+    # trying a windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
+    APP_DATA = APP_DATA.replace("/", "\\")
 except:  # pylint: disable=bare-except
     # non-windows
     APP_DATA = os.path.expanduser("~/.armi")
+
 if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
@@ -183,6 +186,8 @@ def activateLocalFastPath() -> None:
             datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
         ),
     )
+    print("context.APP_DATA 3", APP_DATA)
+    print("ccccccccccccccccontext 2 _FAST_PATH", _FAST_PATH)
     _FAST_PATH_IS_TEMPORARY = True
 
 
