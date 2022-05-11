@@ -609,31 +609,38 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        return list(self.p.numberDensities.keys())
-
-    def getNumberDensity(self, nucName):
-        """
-        Get the number density of nucName, return zero if it does not exist here.
-
-        Parameters
-        ----------
-        nucName : str
-            Nuclide name
-
-        Returns
-        -------
-        number density : float
-            number density in atoms/bn-cm.
-        """
-        return self.p.numberDensities.get(nucName, 0.0)
+        nucs = set(self.p.numberDensities.keys())
+        if self._children:
+            childNuclides = set(composites.Composite.getNuclides(self))
+            nucs |= childNuclides
+        return nucs
 
     def getNuclideNumberDensities(self, nucNames):
-        """Return a list of number densities for the nuc names requested."""
-        return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
+        """
+        Return a list of number densities for the nuc names requested.
 
-    def _getNdensHelper(self):
-        return dict(self.p.numberDensities)
+        If this Component has children, then homogenize their number densities in.
 
+        Component ndens is unique in that it combines its own actual composition
+        with that of its potential children
+        """
+        
+        if self._children:
+            childDens = composites.Composite.getNuclideNumberDensities(self, nucNames)
+            childVol = composites.Composite.getVolume(self)
+            totalVol = self.getVolume()
+            childFrac = childVol / totalVol
+            selfFrac = 1.0 - childFrac
+            return [
+                self.p.numberDensities.get(nucName, 0.0) * selfFrac
+                + childDens.get(nucName, 0, 0) * childFrac
+                for nucName in nucNames
+            ]
+        else:
+            return [
+                self.p.numberDensities.get(nucName, 0.0)
+                for nucName in nucNames
+            ]
     def setName(self, name):
         """Components use name for type and name."""
         composites.Composite.setName(self, name)
@@ -1019,8 +1026,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             )
 
     def iterComponents(self, typeSpec=None, exact=False):
-        if self.hasFlags(typeSpec, exact):
-            yield self
+        if self._children:
+            return composites.Composite.iterComponents(self, typeSpec, exact)
+        else:
+            if self.hasFlags(typeSpec, exact):
+                yield self
 
     def backUp(self):
         """
