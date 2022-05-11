@@ -269,6 +269,9 @@ def cleanPath(path, mpiRank=0):
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxx 1 xxxxxxxxxxxxxxx", path
             )  # TODO: JOHN! TESTING!
             shutil.rmtree(path)
+            print(
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxx 2 xxxxxxxxxxxxxxx", path
+            )  # TODO: JOHN! TESTING!
         elif not os.path.isdir(path):
             # it's just a file. Delete it.
             os.remove(path)

@@ -52,12 +52,11 @@ class TestDatabase3(unittest.TestCase):
     def tearDown(self):
         import os  # TODO: JOHN! TESTING!
 
-        print("=============> 4 =======", os.getcwd())
         self.db.close()
-        print("=============> 5 =======", os.getcwd())
         self.stateRetainer.__exit__()
+        print("=============> 4 =======", os.getcwd())
         self.td.__exit__(None, None, None)
-        print("=============> 6 =======", os.getcwd())
+        print("=============> 5 =======", os.getcwd())
 
     def makeHistory(self):
         """Walk the reactor through a few time steps and write them to the db."""
@@ -410,6 +409,12 @@ class TestDatabase3(unittest.TestCase):
         # test that we recover the correct commit hash
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
+
+        # nuke the .git directory
+        code = subprocess.run(
+            ["rm", "-rf", ".git"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).returncode
+        self.assertEqual(code, 0)
 
     def test_fileName(self):
         # test the file name getter
