@@ -51,7 +51,7 @@ class TestDatabase3(unittest.TestCase):
 
     def tearDown(self):
         import os  # TODO: JOHN! TESTING!
-        
+
         print("=============> 4 =======", os.getcwd())
         self.db.close()
         print("=============> 5 =======", os.getcwd())
