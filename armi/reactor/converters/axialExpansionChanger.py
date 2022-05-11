@@ -153,6 +153,7 @@ class AxialExpansionChanger:
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         for ib, b in enumerate(self.linked.a):
+            runLog.debug(msg="Block {0}".format(b))
             if thermal:
                 blockHeight = b.p.heightBOL
             else:
@@ -165,6 +166,7 @@ class AxialExpansionChanger:
             if ib < (numOfBlocks - 1):
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
+                    runLog.debug(msg="    Component {0}, growFrac = {1:.4e}".format(c,growFrac))
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
@@ -184,6 +186,7 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
+                        runLog.debug("    Component {0} is target component".format(c))
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
@@ -332,7 +335,7 @@ class AssemblyAxialLinkage:
                    see also: self._getLinkedComponents
     """
 
-    _TOLERANCE = 1.0e-03
+    _TOLERANCE = 0.1 # 10% difference
 
     def __init__(self, StdAssem):
         self.a = StdAssem
@@ -382,6 +385,25 @@ class AssemblyAxialLinkage:
 
         self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
 
+        if lowerLinkedBlock is None:
+            runLog.debug(
+                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
+                "is not linked to a block below!".format(
+                    str(self.a.getName()),
+                    str(self.a.getLocation()),
+                    str(b.p.flags),
+                )
+            )
+        if upperLinkedBlock is None:
+            runLog.debug(
+                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
+                "is not linked to a block above!".format(
+                    str(self.a.getName()),
+                    str(self.a.getLocation()),
+                    str(b.p.flags),
+                )
+            )
+
     def _getLinkedComponents(self, b, c):
         """retrieve the axial linkage for component c
 
@@ -399,7 +421,7 @@ class AssemblyAxialLinkage:
                     if isinstance(
                         otherC, type(c)
                     ):  # equivalent to type(otherC) == type(c)
-                        area_diff = abs(otherC.getArea() - c.getArea())
+                        area_diff = abs(otherC.getArea() - c.getArea())/c.getArea()
                         if area_diff < self._TOLERANCE:
                             lstLinkedC[ib] = otherC
 
@@ -548,7 +570,6 @@ class ExpansionData:
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
         else:
-            runLog.debug("No expansion factor for {}! Setting to 0.0".format(c))
             value = 0.0
         return value
 
