@@ -65,6 +65,7 @@ class DirectoryChanger:
         self.destination = None
         if destination is not None:
             self.destination = pathTools.armiAbsPath(destination)
+        print("x===================> DIrChanger.dest 000", self.destination)
         self._filesToMove = filesToMove or []
         self._filesToRetrieve = filesToRetrieve or []
         self._dumpOnException = dumpOnException
@@ -223,12 +224,14 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         # regardless of location.
         if root is None:
             root = context.getFastPath()
+            print("x===================> TempDIrChanger.root 25", root)
             # ARMIs temp dirs are in an context.APP_DATA directory: validate this is a temp dir.
             if pathlib.Path(context.APP_DATA) not in pathlib.Path(root).parents:
                 raise ValueError(
                     "Temporary directory not in a safe location for deletion."
                 )
 
+        print("x===================> TempDIrChanger.dest 100", self.destination)
         # make the tmp dir, if necessary
         if not os.path.exists(root):
             try:
@@ -239,7 +242,9 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
         # init the important path attributes
         self.initial = os.path.abspath(os.getcwd())
+        print("x===================> TempDIrChanger.root 111", root)
         self.destination = TemporaryDirectoryChanger.GetRandomDirectory(root)
+        print("x===================> TempDIrChanger.dest 222", self.destination)
         while os.path.exists(self.destination):
             self.destination = TemporaryDirectoryChanger.GetRandomDirectory(root)
 
