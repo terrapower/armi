@@ -31,8 +31,13 @@ class TestDatabase3(unittest.TestCase):
     r"""Tests for the Database3 class"""
 
     def setUp(self):
+        import os  # TODO: JOHN! TESTING!
+
+        print("=============> 1 =======", os.getcwd())
         self.td = TemporaryDirectoryChanger()
+        print("=============> 2 =======", os.getcwd())
         self.td.__enter__()
+        print("=============> 3 =======", os.getcwd())
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
         self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
@@ -45,9 +50,12 @@ class TestDatabase3(unittest.TestCase):
         self.centralTopBlockSerialNums = []
 
     def tearDown(self):
+        print("=============> 4 =======", os.getcwd())
         self.db.close()
+        print("=============> 5 =======", os.getcwd())
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
+        print("=============> 6 =======", os.getcwd())
 
     def makeHistory(self):
         """Walk the reactor through a few time steps and write them to the db."""
