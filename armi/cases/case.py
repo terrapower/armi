@@ -812,7 +812,12 @@ def copyInterfaceInputs(
                         if not sourceFullPath:
                             continue
                         sourceName = os.path.basename(sourceFullPath.name)
+                        print("xxxxxxxxxxxxxxxxxxxxxxx")  # TODO: JOHN
+                        print(destPath)
+                        print(sourceName)
                         destFilePath = os.path.abspath(destPath / sourceName)
+                        print(destFilePath)
+                        print("xxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyy")  # TODO: JOHN
                         pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
                     if len(srcFiles) == 0:
                         runLog.warning(

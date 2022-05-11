@@ -264,8 +264,9 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         except PermissionError:
             if os.name == "nt":
                 runLog.warning(
-                    "There is a known issue, where you cannot create private directories inside temporary directories. "
-                    "For instance, the TempDirChanger cannot handle creating '.git' folders."
+                    "There is an issue where Windows will not agree to delete private directories."
+                    "That is, if you create a directory with a name starting with a period, the "
+                    "TempDirChanger will not be able to clean it (for instance, a '.git' dir)."
                 )
 
 
