@@ -150,6 +150,10 @@ class SystemLayoutInput:
         There are two formats of geometry: yaml and xml. This tries
         xml first (legacy), and if it fails it tries yaml.
         """
+        # Warn the user that this feature is schedule for deletion.
+        warn = "XML Geom Files are scheduled to be removed from ARMI, please use blueprint files."
+        runLog.important(warn)
+
         try:
             self._readXml(stream)
         except ET.ParseError:

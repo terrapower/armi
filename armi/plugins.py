@@ -120,12 +120,18 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
    user settings. This also predated the plugin infrastructure, and may one day be
    replaced with plugin-based fuel handler logic.
 """
-from typing import Dict, Union
+from typing import Dict, Union, Callable, TYPE_CHECKING
 
 import pluggy
 
 from armi import pluginManager
 from armi.utils import flags
+
+# Not used during runtime so we could have a coverage drop here. Add the
+# pragma line to tell coverage.py to skip this
+# https://coverage.readthedocs.io/en/stable/excluding.html
+if TYPE_CHECKING:  # pragma: no cover
+    from armi.reactor.composites import Composite
 
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
@@ -560,6 +566,37 @@ class ArmiPlugin:
 
         blueprint : Blueprint, optional
             for a reactor (if None, only partial contents created)
+        """
+
+    @staticmethod
+    @HOOKSPEC
+    def defineSystemBuilders() -> Dict[str, Callable[[str], "Composite"]]:
+        """
+        Convert a user-string from the systems section into a valid composite builder
+
+        Parameters
+        ----------
+        name : str
+            Name of the system type defined by the user, e.g., ``"core"``
+
+        Returns
+        -------
+        dict
+            Dictionary that maps a grid type from the input file (e.g., ``"core"``)
+            to a function responsible for building a grid of that type, e.g.,
+
+            .. code::
+
+                {
+                    "core": armi.reactor.reactors.Core,
+                    "sfp": armi.reactor.assemblyLists.SpentFuelPool,
+                }
+
+        Notes
+        -----
+        The default :class:`~armi.reactor.ReactorPlugin` defines a ``"core"`` lookup
+        and a ``"sfp"`` lookup, triggered to run after all other hooks have been run.
+
         """
 
 

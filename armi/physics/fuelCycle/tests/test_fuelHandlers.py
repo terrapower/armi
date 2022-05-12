@@ -60,7 +60,7 @@ class TestFuelHandler(ArmiTestHelper):
         but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
-            self.directoryChanger.destination
+            self.directoryChanger.destination, customSettings={"nCycles": 3}
         )
         blockList = self.r.core.getBlocks()
         for bi, b in enumerate(blockList):
@@ -91,7 +91,7 @@ class TestFuelHandler(ArmiTestHelper):
         interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
         # generate a block
-        self.block = blocks.HexBlock("TestHexBlock", self.o.cs)
+        self.block = blocks.HexBlock("TestHexBlock")
         self.block.setType("fuel")
         self.block.setHeight(10.0)
         self.block.add(fuel)

@@ -1223,9 +1223,13 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         for a in r.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
             otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
+            angle = 2 * math.pi / (len(otherLocs) + 1)
+            count = 1
             for i, j in otherLocs:
                 newAssem = copy.deepcopy(a)
                 newAssem.makeUnique()
+                newAssem.rotate(count * angle)
+                count = count + 1
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 

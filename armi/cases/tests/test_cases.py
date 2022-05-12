@@ -272,6 +272,21 @@ class TestExtraInputWriting(unittest.TestCase):
             self.assertTrue(os.path.exists(cs["shuffleLogic"]))
 
 
+class TestCopyInterfaceInputs(unittest.TestCase):
+    """Ensure filepath is updated properly."""
+
+    def test_copyInterfaceInputs(self):
+        testSetting = "shuffleLogic"
+        cs = settings.Settings(ARMI_RUN_PATH)
+        shuffleFile = cs[testSetting]
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:  # ensure we are not in IN_USE_TEST_ROOT
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            newFilepath = os.path.join(newDir.destination, shuffleFile)
+            self.assertEqual(newSettings[testSetting], str(newFilepath))
+
+
 if __name__ == "__main__":
     # import sys; sys.argv = ['', 'TestArmiCase.test_independentVariables']
     unittest.main()

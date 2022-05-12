@@ -55,6 +55,7 @@ from armi.utils import pathTools
 from armi.utils import textProcessors
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
+from armi.utils.customExceptions import NonexistentSetting
 
 # change from default .coverage to help with Windows dotfile issues.
 # Must correspond with data_file entry in `coveragerc`!!
@@ -563,8 +564,8 @@ class Case:
             )
 
         newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
-        for settingName, value in newSettings.items():
-            clone.cs[settingName] = value
+        newCs = clone.cs.modified(newSettings=newSettings)
+        clone.cs = newCs
 
         runLog.important("writing settings file {}".format(clone.cs.path))
         clone.cs.writeToYamlFile(clone.cs.path)
@@ -769,10 +770,17 @@ def copyInterfaceInputs(
         # guess. In future, it might be nice to have interfaces specify which
         # explicitly.
         for key, files in interfaceFileNames.items():
-            if isinstance(key, settings.Setting):
-                label = key.name
-            else:
-                label = key
+
+            if not isinstance(key, settings.Setting):
+                try:
+                    key = cs.getSetting(key)
+                except NonexistentSetting(key):
+                    raise ValueError(
+                        "{} is not a valid setting. Ensure the relevant specifyInputs method uses a correct setting name.".format(
+                            key
+                        )
+                    )
+            label = key.name
 
             for f in files:
                 path = pathlib.Path(f)
@@ -803,13 +811,9 @@ def copyInterfaceInputs(
                     for sourceFullPath in srcFiles:
                         if not sourceFullPath:
                             continue
-                        _sourceDir, sourceName = os.path.split(sourceFullPath)
-                        sourceName = sourceFullPath.name
-                        destFile = (destPath / sourceName).relative_to(destPath)
-                        pathTools.copyOrWarn(
-                            label, sourceFullPath, destPath / sourceName
-                        )
-
+                        sourceName = os.path.basename(sourceFullPath.name)
+                        destFilePath = os.path.abspath(destPath / sourceName)
+                        pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
                     if len(srcFiles) == 0:
                         runLog.warning(
                             f"No input files for `{label}` could be resolved "
@@ -821,7 +825,7 @@ def copyInterfaceInputs(
                             f"than one file; cannot update settings safely. "
                             f"Discovered input files: {srcFiles}"
                         )
-                    elif len(srcFiles) == 1 and isinstance(key, settings.Setting):
-                        newSettings[key.name] = str(destFile)
+                    elif len(srcFiles) == 1:
+                        newSettings[label] = str(destFilePath)
 
     return newSettings
