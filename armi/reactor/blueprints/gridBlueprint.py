@@ -116,6 +116,7 @@ from ruamel.yaml import scalarstring
 
 from armi.utils.customExceptions import InputError
 from armi.utils import asciimaps
+from armi.utils.mathematics import isMonotonic
 from armi.reactor import geometry, grids
 from armi.reactor import blueprints
 from armi import runLog
@@ -283,7 +284,7 @@ class GridBlueprint(yamlize.Object):
             theta = numpy.array(self.gridBounds["theta"])
             radii = numpy.array(self.gridBounds["r"])
             for l, name in ((theta, "theta"), (radii, "radii")):
-                if not _isMonotonicUnique(l):
+                if not isMonotonic(l, "<"):
                     raise InputError(
                         "Grid bounds for {}:{} is not sorted or contains "
                         "duplicates. Check blueprints.".format(self.name, name)
@@ -463,24 +464,6 @@ class GridBlueprint(yamlize.Object):
 class Grids(yamlize.KeyedList):
     item_type = GridBlueprint
     key_attr = GridBlueprint.name
-
-
-def _isMonotonicUnique(l: Sequence[float]) -> bool:
-    """
-    Check that the provided sequence increases monotonically, and has no duplicates.
-    """
-    # we want to safely compare for equality. numpy/list semantics are different
-    l = list(l)
-    if len(set(l)) != len(l):
-        # Duplicates
-        return False
-
-    # Assuming that we are going to fail anyways if this returns False, so be lazy and
-    # compare to sorted list. Fast happy path.
-    if sorted(l) != l:
-        return False
-
-    return True
 
 
 def _getGridSize(idx) -> Tuple[int, int]:

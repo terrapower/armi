@@ -19,9 +19,14 @@ from armi.reactor.components import component
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.bookkeeping import newReports
-from armi.utils import plotting
-from armi.utils import units
-from armi.utils import iterables
+from armi.utils import (
+    units,
+    plotting,
+    iterables,
+    getAvailabilityFactors,
+    getCycleLengths,
+    getStepLengths,
+)
 from armi.materials import custom
 
 
@@ -218,16 +223,19 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         ["Core Power", "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW)]
     )
     coreDesignTable.addRow(
-        ["Base Capacity Factor", "{}".format(cs["availabilityFactor"])],
+        ["Base Capacity Factor", "{}".format(getAvailabilityFactors(cs))],
     )
     coreDesignTable.addRow(
-        ["Cycle Length", "{} days".format(cs["cycleLength"])],
+        ["Cycle Length", "{} days".format(getCycleLengths(cs))],
     )
     coreDesignTable.addRow(
         ["Burnup Cycles", "{}".format(cs["nCycles"])],
     )
     coreDesignTable.addRow(
-        ["Burnup Steps per Cycle", "{}".format(cs["burnSteps"])],
+        [
+            "Burnup Steps per Cycle",
+            "{}".format([len(steps) for steps in getStepLengths(cs)]),
+        ],
     )
     corePowerMult = int(core.powerMultiplier)
     coreDesignTable.addRow(

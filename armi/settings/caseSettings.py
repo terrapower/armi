@@ -39,6 +39,15 @@ from armi.utils.customExceptions import NonexistentSetting
 
 DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
 
+SIMPLE_CYCLES_INPUTS = {
+    "availabilityFactor",
+    "availabilityFactors",
+    "powerFractions",
+    "burnSteps",
+    "cycleLength",
+    "cycleLengths",
+}
+
 
 class Settings:
     """
@@ -135,11 +144,43 @@ class Settings:
             self.__class__.__name__, self.caseTitle, total, altered
         )
 
+    def _directAccessOfSettingAllowed(self, key):
+        """
+        A way to check if specific settings can be grabbed out of the case settings.
+
+        Could be updated with other specific instances as necessary.
+
+        Notes
+        -----
+        Checking the validity of grabbing specific settings at this point,
+        as is done for the SIMPLE_CYCLES_INPUT's, feels
+        a bit intrusive and out of place. In particular, the fact that the check
+        is done every time that a setting is reached for, no matter if it is the
+        setting in question, is quite clunky. In the future, it would be desirable
+        if the settings system were more flexible to control this type of thing
+        at a deeper level.
+        """
+        if key not in self.__settings:
+            return False, NonexistentSetting(key)
+
+        if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
+            err = ValueError(
+                "Cannot grab simple cycles information from the case settings"
+                " when detailed cycles information is also entered.\n In general"
+                " cycles information should be pulled off the operator or parsed"
+                " using the appropriate getter in the utils."
+            )
+
+            return False, err
+
+        return True, None
+
     def __getitem__(self, key):
-        if key in self.__settings:
+        settingIsOkayToGrab, err = self._directAccessOfSettingAllowed(key)
+        if settingIsOkayToGrab:
             return self.__settings[key].value
         else:
-            raise NonexistentSetting(key)
+            raise err
 
     def getSetting(self, key, default=None):
         """

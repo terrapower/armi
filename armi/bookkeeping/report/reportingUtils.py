@@ -188,6 +188,7 @@ def writeWelcomeHeaders(o, cs):
             "Cycle Lengths:": o.cycleLengths,
             "Availability Factors:": o.availabilityFactors,
             "Power Fractions:": o.powerFractions,
+            "Step Lengths (days):": o.stepLengths,
         }
 
         for name, param in operatingParams.items():
@@ -765,13 +766,13 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         "{}".format(cs["availabilityFactor"]),
         coreDesignTable,
         report.DESIGN,
-    )
+    )  # note this doesn't consider availabilityFactors
     report.setData(
         "Cycle Length",
         "{} days".format(cs["cycleLength"]),
         coreDesignTable,
         report.DESIGN,
-    )
+    )  # note this doesn't consider cycleLengths
     report.setData(
         "Burnup Cycles", "{}".format(cs["nCycles"]), coreDesignTable, report.DESIGN
     )
@@ -780,7 +781,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         "{}".format(cs["burnSteps"]),
         coreDesignTable,
         report.DESIGN,
-    )
+    )  # note this doesn't consider the detailed cycle input option
     corePowerMult = int(core.powerMultiplier)
     report.setData(
         "Core Total Volume",
