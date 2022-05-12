@@ -179,6 +179,7 @@ def activateLocalFastPath() -> None:
     """
     global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA  # pylint: disable=global-statement
 
+    # Try to fix pathing issues in Windows.
     if os.name == "nt":
         APP_DATA = APP_DATA.replace("/", "\\")
 
