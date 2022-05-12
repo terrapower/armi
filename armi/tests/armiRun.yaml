@@ -1,6 +1,7 @@
 metadata:
   version: uncontrolled
 settings:
+  availabilityFactor: 1
   beta: 0.003454
   BOL: true
   branchVerbosity: debug
@@ -36,7 +37,8 @@ settings:
   fuelHandlerName: EquilibriumShuffler
   jumpRingNum: 9
   loadingFile: refSmallReactor.yaml
-  startNode: 1
+  startCycle: 1
+  startNode: 2
   loadPadElevation: 200.0
   max2SigmaCladIDT: 630.0
   genReports: false
@@ -51,6 +53,7 @@ settings:
   percentNaReduction: 10.0
   power: 100000000.0
   refType: inner igniter fuel
+  reloadDBName: reloadingDB.h5
   shuffleLogic: refSmallReactorShuffleLogic.py
   summarizeAssemDesign: false
   targetK: 1.002

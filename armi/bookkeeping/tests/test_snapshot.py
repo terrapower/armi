@@ -33,6 +33,7 @@ class TestSnapshotInterface(unittest.TestCase):
         newSettings = {}
         newSettings["nCycles"] = 30
         newSettings["burnSteps"] = 2
+        newSettings["cycleLength"] = 365
         self.si.cs = self.si.cs.modified(newSettings=newSettings)
         self.cs = self.si.cs
 
@@ -45,6 +46,7 @@ class TestSnapshotInterface(unittest.TestCase):
         newSettings = {}
         newSettings["nCycles"] = 17
         newSettings["burnSteps"] = 5
+        newSettings["cycleLength"] = 365
         self.si.cs = self.si.cs.modified(newSettings=newSettings)
         self.cs = self.si.cs
 
