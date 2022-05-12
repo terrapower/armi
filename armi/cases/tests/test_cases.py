@@ -283,7 +283,6 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            print("XXXXXXXXXXxxxxxxxxx", newDir.destination)  # TODO: JOHN TESTING!
             newFilepath = os.path.join(newDir.destination, shuffleFile)
             self.assertEqual(newSettings[testSetting], str(newFilepath))
 
