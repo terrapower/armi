@@ -13,7 +13,7 @@ bin/*
 /bin
 dist/
 dist-*/
-doc/*.png
+*.png
 doc/_build
 doc/user/tutorials
 doc/tutorials/anl-afci-177*
@@ -53,6 +53,7 @@ venv*/
 **/__pycache__
 **/.coverage*
 **/logs/*
+*.png
 
 # Misc. exclusions
 *.html

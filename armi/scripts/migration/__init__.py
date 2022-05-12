@@ -33,7 +33,6 @@ like happens in mainstream applications like word processors and spreadsheets.
 """
 
 from . import (
-    m0_1_0_settings,
     m0_1_3,
     m0_1_0_newDbFormat,
     crossSectionBlueprintsToSettings,
@@ -41,7 +40,6 @@ from . import (
 )
 
 ACTIVE_MIGRATIONS = [
-    m0_1_0_settings.ConvertXmlSettingsToYaml,
     m0_1_0_newDbFormat.ConvertDB2toDB3,
     m0_1_3.RemoveCentersFromBlueprints,
     m0_1_3.UpdateElementalNuclides,

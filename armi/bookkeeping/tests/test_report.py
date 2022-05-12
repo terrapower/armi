@@ -13,26 +13,27 @@
 # limitations under the License.
 
 """Test reports."""
-import os
 import collections
+import os
 import unittest
 
 import htmltree
 
-import armi
-from armi.tests import TEST_ROOT
-from armi.reactor.tests import test_reactors
+from armi import getPluginManagerOrFail
 from armi.bookkeeping import newReports
-from armi.utils import directoryChangers
+from armi.bookkeeping.report import data
 from armi.physics.neutronics.reports import neutronicsPlotting
-import armi.bookkeeping.newReports
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
+from armi.tests import mockRunLogs
+from armi.utils import directoryChangers
 
 
 class TestReportContentCreation(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def testTimeSeries(self):
+    def test_TimeSeries(self):
         """Test execution of TimeSeries object."""
         with directoryChangers.TemporaryDirectoryChanger():
             times = [0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3]
@@ -55,8 +56,7 @@ class TestReportContentCreation(unittest.TestCase):
             series.plot()
             self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
-    def testTableCreation(self):
-
+    def test_TableCreation(self):
         header = ["item", "value"]
         table = newReports.Table("Assembly Table", "table of assemblies", header)
 
@@ -66,11 +66,11 @@ class TestReportContentCreation(unittest.TestCase):
         result = table.render(0)
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
 
-    def testReportContents(self):
+    def test_ReportContents(self):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
 
-            armi.getPluginManagerOrFail().hook.getReportContents(
+            getPluginManagerOrFail().hook.getReportContents(
                 r=self.r,
                 cs=self.o.cs,
                 report=reportTest,
@@ -85,8 +85,7 @@ class TestReportContentCreation(unittest.TestCase):
                 isinstance(reportTest.tableOfContents(), htmltree.HtmlElement)
             )
 
-    def testNeutronicsPlotFunctions(self):
-
+    def test_neutronicsPlotFunctions(self):
         reportTest = newReports.ReportContent("Test")
 
         neutronicsPlotting(self.r, reportTest, self.o.cs)
@@ -95,7 +94,7 @@ class TestReportContentCreation(unittest.TestCase):
             isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries)
         )
 
-    def testWriteReports(self):
+    def test_writeReports(self):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
             table = newReports.Table("Example")
@@ -112,6 +111,32 @@ class TestReportContentCreation(unittest.TestCase):
                     if "<tr>" in line:
                         times = times + 1
             self.assertTrue(times == 2)
+
+    def test_reportBasics(self):
+        env = data.Report("Environment", "ARMI Env Info")
+
+        s = str(env)
+        self.assertIn("Environment", s)
+        self.assertIn("Env Info", s)
+
+        gro = env._groupRenderOrder
+        self.assertEqual(len(gro), 0)
+
+        self.assertIsNone(env["Environment"])
+
+    def test_reportLogs(self):
+        env = data.Report("Environment", "ARMI Env Info")
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock._outputStream)
+            _ = env["badStuff"]
+            self.assertIn("Cannot locate group", mock._outputStream)
+
+            mock._outputStream = ""
+            self.assertEqual("", mock._outputStream)
+            env.writeHTML()
+            self.assertIn("Writing HTML document", mock._outputStream)
+            self.assertIn("[info] HTML document", mock._outputStream)
 
 
 if __name__ == "__main__":

@@ -142,3 +142,19 @@ class TestDirectoryChangers(unittest.TestCase):
         self.assertTrue(os.path.exists(f("file2.txt")))
         os.remove(f("file1.txt"))
         os.remove(f("file2.txt"))
+
+    def test_file_retrieval_missing_file(self):
+        """Tests that the directory changer still returns a subset of files even if all do not exist."""
+
+        def f(name):
+            """Utility to avoid test clashes during cleanups"""
+            return self._testMethodName + name
+
+        with directoryChangers.TemporaryDirectoryChanger(
+            filesToRetrieve=[f("file1.txt"), f("file2.txt")]
+        ):
+            Path(f("file1.txt")).touch()
+
+        self.assertTrue(os.path.exists(f("file1.txt")))
+        self.assertFalse(os.path.exists(f("file2.txt")))
+        os.remove(f("file1.txt"))

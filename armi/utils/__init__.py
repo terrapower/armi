@@ -31,7 +31,8 @@ import threading
 import time
 import traceback
 
-import armi
+from armi import __name__ as armi_name
+from armi import __path__ as armi_path
 from armi import runLog
 from armi.utils import iterables
 from armi.utils.flags import Flag
@@ -75,50 +76,354 @@ def copyWithoutBlocking(src, dest):
     return t
 
 
-def getTimeStepNum(cycleNumber, subcycleNumber, cs):
-    """Return the timestep associated with cycle and tn.
+def getPowerFractions(cs):
+    """
+    Return the power fractions for each cycle.
 
     Parameters
     ----------
-    cycleNumber : int, The cycle number
-    subcycleNumber : int, The intra-cycle time node (0 for BOC, etc.)
-    cs : Settings object
+    cs : case settings object
 
+    Returns
+    -------
+    powerFractions : 2-list
+        A list with nCycles elements, where each element is itself a list of the
+        power fractions at each step of the cycle.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
     """
-    return cycleNumber * getNodesPerCycle(cs) + subcycleNumber
+    if cs["cycles"] != []:
+        return [
+            expandRepeatedFloats(
+                (cycle["power fractions"])
+                if "power fractions" in cycle.keys()
+                else [1] * getBurnSteps(cs)[cycleIdx]
+            )
+            for (cycleIdx, cycle) in enumerate(cs["cycles"])
+        ]
+    else:
+        valuePerCycle = (
+            expandRepeatedFloats(cs["powerFractions"])
+            if cs["powerFractions"] not in [None, []]
+            else [1.0] * cs["nCycles"]
+        )
+
+        return [
+            [value] * (cs["burnSteps"] if cs["burnSteps"] != None else 0)
+            for value in valuePerCycle
+        ]
 
 
-def getCycleNode(timeStepNum, cs):
+def getCycleNames(cs):
+    """
+    Return the names of each cycle. If a name is omitted, it is `None`.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    cycleNames : list
+        A list of the availability factors.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    if cs["cycles"] != []:
+        return [
+            (cycle["name"] if "name" in cycle.keys() else None)
+            for cycle in cs["cycles"]
+        ]
+    else:
+        return [None] * cs["nCycles"]
+
+
+def getAvailabilityFactors(cs):
+    """
+    Return the availability factors for each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    availabilityFactors : list
+        A list of the availability factors.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    if cs["cycles"] != []:
+        availabilityFactors = []
+        for cycle in cs["cycles"]:
+            if "availability factor" in cycle.keys():
+                availabilityFactors.append(cycle["availability factor"])
+            else:
+                availabilityFactors.append(1)
+        return availabilityFactors
+    else:
+        return (
+            expandRepeatedFloats(cs["availabilityFactors"])
+            if cs["availabilityFactors"] not in [None, []]
+            else (
+                [cs["availabilityFactor"]] * cs["nCycles"]
+                if cs["availabilityFactor"] != None
+                else [1]
+            )
+        )
+
+
+def _getStepAndCycleLengths(cs):
+    """
+    These need to be gotten together because it is a chicken/egg depending on which
+    style of cycles input the user employs.
+
+    Note that using this method directly is more effecient than calling `getStepLengths`
+    and `getCycleLengths` separately, but it is probably more clear to the user
+    to call each of them separately.
+    """
+    stepLengths = []
+    availabilityFactors = getAvailabilityFactors(cs)
+    if cs["cycles"] != []:
+        for cycleIdx, cycle in enumerate(cs["cycles"]):
+            cycleKeys = cycle.keys()
+
+            if "step days" in cycleKeys:
+                stepLengths.append(expandRepeatedFloats(cycle["step days"]))
+            elif "cumulative days" in cycleKeys:
+                cumulativeDays = cycle["cumulative days"]
+                stepLengths.append(getStepsFromValues(cumulativeDays))
+            elif "burn steps" in cycleKeys and "cycle length" in cycleKeys:
+                stepLengths.append(
+                    [
+                        cycle["cycle length"]
+                        * availabilityFactors[cycleIdx]
+                        / cycle["burn steps"]
+                    ]
+                    * cycle["burn steps"]
+                )
+            else:
+                raise ValueError(
+                    f"No cycle time history is given in the detailed cycles history for cycle {cycleIdx}"
+                )
+
+        cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
+        cycleLengths = [
+            cycleLength / aFactor
+            for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)
+        ]
+
+    else:
+        cycleLengths = (
+            expandRepeatedFloats(cs["cycleLengths"])
+            if cs["cycleLengths"] not in [None, []]
+            else (
+                [cs["cycleLength"]] * cs["nCycles"]
+                if cs["cycleLength"] != None
+                else [0]
+            )
+        )
+        cycleLengthsModifiedByAvailability = [
+            length * availability
+            for (length, availability) in zip(cycleLengths, availabilityFactors)
+        ]
+        stepLengths = (
+            [
+                [length / cs["burnSteps"]] * cs["burnSteps"]
+                for length in cycleLengthsModifiedByAvailability
+            ]
+            if cs["burnSteps"] not in [0, None]
+            else [[]]
+        )
+
+    return stepLengths, cycleLengths
+
+
+def getStepLengths(cs):
+    """
+    Return the length of each step in each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    stepLengths : 2-list
+        A list with elements for each cycle, where each element itself is a list
+        containing the step lengths in days.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    return _getStepAndCycleLengths(cs)[0]
+
+
+def getCycleLengths(cs):
+    """
+    Return the lengths of each cycle in days.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    cycleLengths : list
+        A list of the cycle lengths in days.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    return _getStepAndCycleLengths(cs)[1]
+
+
+def getBurnSteps(cs):
+    """
+    Return the number of burn steps for each cycle.
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    burnSteps : list
+        A list of the number of burn steps.
+
+    Notes
+    -----
+    This is stored outside of the Operator class so that it can be easily called
+    to resolve case settings objects in other contexts (i.e. in the preparation
+    of restart runs).
+    """
+    stepLengths = getStepLengths(cs)
+    return [len(steps) for steps in stepLengths]
+
+
+def getMaxBurnSteps(cs):
+    burnSteps = getBurnSteps(cs)
+    return max(burnSteps)
+
+
+def getCumulativeNodeNum(cycle, node, cs):
+    """
+    Return the cumulative node number associated with a cycle and time node.
+
+    Note that a cycle with n time steps has n+1 nodes, and for cycle m with n steps, nodes
+    (m, n+1) and (m+1, 0) are counted separately.
+
+    Parameters
+    ----------
+    cycle : int
+        The cycle number
+    node : int
+        The intra-cycle time node (0 for BOC, etc.)
+    cs : Settings object
+    """
+    nodesPerCycle = getNodesPerCycle(cs)
+    return sum(nodesPerCycle[:cycle]) + node
+
+
+def getCycleNodeFromCumulativeStep(timeStepNum, cs):
     """
     Return the (cycle, node) corresponding to a cumulative time step number.
 
+    "Node" refers to the node at the start of the time step.
+
     Parameters
     ----------
-    timeStepNum
+    timeStepNum : int
         The cumulative number of time steps since the beginning
-    cs
-        A case Settings object to get the nodes-per-cycle from
+    cs : case settings object
+        A case settings object to get the steps-per-cycle from
+
+    Notes
+    -----
+    Time steps are the spaces between time nodes, and are 1-indexed.
+
+    To get the (cycle, node) from a cumulative time node, see instead
+    getCycleNodeFromCumulativeNode.
+    """
+    stepsPerCycle = getBurnSteps(cs)
+
+    if timeStepNum < 1:
+        raise ValueError(f"Cumulative time step cannot be less than 1.")
+
+    cSteps = 0  # cumulative steps
+    for i in range(len(stepsPerCycle)):
+        cSteps += stepsPerCycle[i]
+        if timeStepNum <= cSteps:
+            return (i, timeStepNum - (cSteps - stepsPerCycle[i]) - 1)
+
+
+def getCycleNodeFromCumulativeNode(timeNodeNum, cs):
+    """
+    Return the (cycle, node) corresponding to a cumulative time node number.
+
+    Parameters
+    ----------
+    timeNodeNum : int
+        The cumulative number of time nodes since the beginning
+    cs : case settings object
+        A case settings object to get the nodes-per-cycle from
+
+    Notes
+    -----
+    Time nodes are the start/end of time steps, and are 0-indexed. For a cycle
+    with n steps, there will be n+1 nodes (one at the start of the cycle and another
+    at the end, plus those separating the steps). For cycle m with n steps, nodes
+    (m, n+1) and (m+1, 0) are counted separately.
+
+    To get the (cycle, node) from a cumulative time step, see instead
+    getCycleNodeFromCumulativeStep.
     """
     nodesPerCycle = getNodesPerCycle(cs)
 
-    return (timeStepNum // nodesPerCycle, timeStepNum % nodesPerCycle)
+    if timeNodeNum < 0:
+        raise ValueError(f"Cumulative time node cannot be less than 0.")
+
+    cNodes = 0  # cumulative nodes
+    for i in range(len(nodesPerCycle)):
+        cNodes += nodesPerCycle[i]
+        if timeNodeNum < cNodes:
+            return (i, timeNodeNum - (cNodes - nodesPerCycle[i]))
 
 
 def getNodesPerCycle(cs):
-    """Return the number of nodes per cycles for this case settings."""
-    return cs["burnSteps"] + 1
+    """Return the number of nodes per cycle for the case settings object."""
+    return [s + 1 for s in getBurnSteps(cs)]
 
 
-def getPreviousTimeStep(cycle, node, burnSteps):
-    """Return the time step before the specified time step"""
+def getPreviousTimeNode(cycle, node, cs):
+    """Return the (cycle, node) before the specified (cycle, node)"""
     if (cycle, node) == (0, 0):
-        raise ValueError("There is not Time step before (0, 0)")
+        raise ValueError("There is no time step before (0, 0)")
     if node != 0:
         return (cycle, node - 1)
     else:
         # index starts at zero, so the last node in a cycle is equal to the number of
         # burn steps.
-        return (cycle - 1, burnSteps)
+        nodesPerCycle = getNodesPerCycle(cs)
+        return (cycle - 1, nodesPerCycle[cycle - 1])
 
 
 def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):
@@ -288,7 +593,7 @@ def runFunctionFromAllModules(funcName, *args, **kwargs):
 
     """
     for _modImporter, name, _ispkg in pkgutil.walk_packages(
-        path=armi.__path__, prefix=armi.__name__ + "."
+        path=armi_path, prefix=armi_name + "."
     ):
         try:
             mod = importlib.import_module(name)

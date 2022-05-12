@@ -26,12 +26,11 @@ the end of plant life.
    :id: IMPL_EVOLVING_STATE_0
    :links: REQ_EVOLVING_STATE
 """
-import time
-import shutil
-import re
 import os
+import re
+import shutil
+import time
 
-import armi
 from armi import context
 from armi import interfaces
 from armi import runLog
@@ -41,8 +40,16 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.utils import codeTiming
-from armi.utils import pathTools
-from armi.utils.mathematics import expandRepeatedFloats
+from armi.utils import (
+    pathTools,
+    getPowerFractions,
+    getAvailabilityFactors,
+    getStepLengths,
+    getCycleLengths,
+    getBurnSteps,
+    getMaxBurnSteps,
+    getCycleNames,
+)
 
 
 class Operator:  # pylint: disable=too-many-public-methods
@@ -66,16 +73,30 @@ class Operator:  # pylint: disable=too-many-public-methods
     cs : CaseSettings object
             Global settings that define the run.
 
-    cycleLengths : list
+    cycleNames : list of str
+        The name of each cycle. Cycles without a name are `None`.
+
+    stepLengths : list of list of float
+        A two-tiered list, where primary indices correspond to cycle and
+        secondary indices correspond to the length of each intra-cycle step (in days).
+
+    cycleLengths : list of float
         The duration of each individual cycle in a run (in days). This is the entire cycle,
         from startup to startup and includes outage time.
 
-    availabilityFactors : list
+    burnSteps : list of int
+        The number of sub-cycles in each cycle.
+
+    availabilityFactors : list of float
         The fraction of time in a cycle that the plant is producing power. Note that capacity factor
         is always less than or equal to this, depending on the power fraction achieved during each cycle.
+        Note that this is not a two-tiered list like stepLengths or powerFractions,
+        because each cycle can have only one availabilityFactor.
 
-    powerFractions : list
-        The fraction of full rated capacity that the plant achieves while it is online in each cycle.
+    powerFractions : list of list of float
+        A two-tiered list, where primary indices correspond to cycles and secondary
+        indices correspond to the fraction of full rated capacity that the plant achieves
+        during that step of the cycle.
         Zero power fraction can indicate decay-only cycles.
 
     interfaces : list
@@ -105,15 +126,80 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
-        self.cycleLengths = self._getCycleLengths()
-        self.availabilityFactors = self._getAvailabilityFactors()
-        self.powerFractions = self._getPowerFractions()
-        self._checkReactorCycleAttrs()
+        self._cycleNames = None
+        self._stepLengths = None
+        self._cycleLengths = None
+        self._burnSteps = None
+        self._maxBurnSteps = None
+        self._powerFractions = None
+        self._availabilityFactors = None
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
 
         self._initFastPath()
+
+    @property
+    def burnSteps(self):
+        if not self._burnSteps:
+            self._burnSteps = getBurnSteps(self.cs)
+            if self._burnSteps == [] and self.cs["nCycles"] == 1:
+                # it is possible for there to be one cycle with zero burn up,
+                # in which case burnSteps is an empty list
+                pass
+            else:
+                self._checkReactorCycleAttrs({"burnSteps": self._burnSteps})
+        return self._burnSteps
+
+    @property
+    def maxBurnSteps(self):
+        if not self._maxBurnSteps:
+            self._maxBurnSteps = getMaxBurnSteps(self.cs)
+        return self._maxBurnSteps
+
+    @property
+    def stepLengths(self):
+        if not self._stepLengths:
+            self._stepLengths = getStepLengths(self.cs)
+            if self._stepLengths == [] and self.cs["nCycles"] == 1:
+                # it is possible for there to be one cycle with zero burn up,
+                # in which case stepLengths is an empty list
+                pass
+            else:
+                self._checkReactorCycleAttrs({"Step lengths": self._stepLengths})
+            self._consistentPowerFractionsAndStepLengths()
+        return self._stepLengths
+
+    @property
+    def cycleLengths(self):
+        if not self._cycleLengths:
+            self._cycleLengths = getCycleLengths(self.cs)
+            self._checkReactorCycleAttrs({"cycleLengths": self._cycleLengths})
+        return self._cycleLengths
+
+    @property
+    def powerFractions(self):
+        if not self._powerFractions:
+            self._powerFractions = getPowerFractions(self.cs)
+            self._checkReactorCycleAttrs({"powerFractions": self._powerFractions})
+            self._consistentPowerFractionsAndStepLengths()
+        return self._powerFractions
+
+    @property
+    def availabilityFactors(self):
+        if not self._availabilityFactors:
+            self._availabilityFactors = getAvailabilityFactors(self.cs)
+            self._checkReactorCycleAttrs(
+                {"availabilityFactors": self._availabilityFactors}
+            )
+        return self._availabilityFactors
+
+    @property
+    def cycleNames(self):
+        if not self._cycleNames:
+            self._cycleNames = getCycleNames(self.cs)
+            self._checkReactorCycleAttrs({"Cycle names": self._cycleNames})
+        return self._cycleNames
 
     @staticmethod
     def _initFastPath():
@@ -144,31 +230,9 @@ class Operator:  # pylint: disable=too-many-public-methods
                 # if it actually doesn't exist, that's an actual error. Raise
                 raise
 
-    def _getCycleLengths(self):
-        """Return the cycle length for each cycle of the system as a list."""
-        return expandRepeatedFloats(self.cs["cycleLengths"]) or (
-            [self.cs["cycleLength"]] * self.cs["nCycles"]
-        )
-
-    def _getAvailabilityFactors(self):
-        """Return the availability factors (capacity factor) for each cycle of the system as a list."""
-        return expandRepeatedFloats(self.cs["availabilityFactors"]) or (
-            [self.cs["availabilityFactor"]] * self.cs["nCycles"]
-        )
-
-    def _getPowerFractions(self):
-        """Return the power fractions for each cycle of the system as a list."""
-        return expandRepeatedFloats(self.cs["powerFractions"]) or (
-            [1.0 for _cl in self.cycleLengths]
-        )
-
-    def _checkReactorCycleAttrs(self):
-        operatingParams = {
-            "Cycle Lengths:": self.cycleLengths,
-            "Availability Factors:": self.availabilityFactors,
-            "Power Fractions:": self.powerFractions,
-        }
-        for name, param in operatingParams.items():
+    def _checkReactorCycleAttrs(self, attrsDict):
+        """Check that the list has nCycles number of elements."""
+        for name, param in attrsDict.items():
             if len(param) != self.cs["nCycles"]:
                 raise ValueError(
                     "The `{}` setting did not have a length consistent with the number of cycles.\n"
@@ -177,6 +241,21 @@ class Operator:  # pylint: disable=too-many-public-methods
                         name, self.cs["nCycles"], len(param), param
                     )
                 )
+
+    def _consistentPowerFractionsAndStepLengths(self):
+        """
+        Check that the internally-resolved _powerFractions and _stepLengths have
+        consistent shapes, if they both exist.
+        """
+        if self._powerFractions and self._stepLengths:
+            for cycleIdx in range(len(self._powerFractions)):
+                if len(self._powerFractions[cycleIdx]) != len(
+                    self._stepLengths[cycleIdx]
+                ):
+                    raise ValueError(
+                        "The number of entries in lists for subcycle power "
+                        f"fractions and sub-steps are inconsistent in cycle {cycleIdx}"
+                    )
 
     @property
     def atEOL(self):
@@ -206,7 +285,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
-            if armi.MPI_RANK == 0:
+            if context.MPI_RANK == 0:
                 runLog.header("=========== Interface Stack Summary  ===========")
                 runLog.info(reportingUtils.getInterfaceStackSummary(self))
                 self.interactAllInit()
@@ -256,10 +335,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         """Run the portion of the main loop that happens each cycle."""
         self.r.p.cycleLength = self.cycleLengths[cycle]
         self.r.p.availabilityFactor = self.availabilityFactors[cycle]
-        self.r.core.p.power = self.powerFractions[cycle] * self.cs["power"]
-        self.r.p.capacityFactor = (
-            self.r.p.availabilityFactor * self.powerFractions[cycle]
-        )
         self.r.p.cycle = cycle
         self.r.core.p.coupledIteration = 0
         if cycle == startingCycle:
@@ -271,7 +346,18 @@ class Operator:  # pylint: disable=too-many-public-methods
         if halt:
             return False
 
-        for timeNode in range(startingNode, int(self.cs["burnSteps"]) + 1):
+        for timeNode in range(startingNode, int(self.burnSteps[cycle])):
+            self.r.core.p.power = (
+                self.powerFractions[cycle][timeNode] * self.cs["power"]
+            )
+            self.r.p.capacityFactor = (
+                self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
+            )
+            self.r.p.stepLength = self.stepLengths[cycle][timeNode]
+
+            self._timeNodeLoop(cycle, timeNode)
+        else:  # do one last node at the end using the same power as the previous node
+            timeNode = self.burnSteps[cycle]
             self._timeNodeLoop(cycle, timeNode)
 
         self.interactAllEOC(self.r.p.cycle)

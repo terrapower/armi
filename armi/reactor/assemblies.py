@@ -148,7 +148,6 @@ class Assembly(composites.Composite):
         self.p.assemNum = incrementAssemNum()
         self.name = self.makeNameFromAssemNum(self.p.assemNum)
         for bi, b in enumerate(self):
-            b.makeUnique()
             b.setName(b.makeName(self.p.assemNum, bi))
 
     @staticmethod
@@ -956,10 +955,9 @@ class Assembly(composites.Composite):
                     blocksHere.append((b, heightHere))
 
         totalHeight = 0.0
+        allMeshPoints = sorted(allMeshPoints)
         # The expected height snaps to the minimum height that is requested
-        expectedHeight = min(
-            sorted(allMeshPoints)[-1] - sorted(allMeshPoints)[0], zUpper - zLower
-        )
+        expectedHeight = min(allMeshPoints[-1] - allMeshPoints[0], zUpper - zLower)
         for _b, height in blocksHere:
             totalHeight += height
 
@@ -968,40 +966,13 @@ class Assembly(composites.Composite):
         if abs(totalHeight - expectedHeight) > 1e-5:
             raise ValueError(
                 f"The cumulative height of {blocksHere} is {totalHeight} cm "
-                f"and does not equal the expected height of {expectedHeight} cm"
+                f"and does not equal the expected height of {expectedHeight} cm.\n"
+                f"All mesh points: {allMeshPoints}\n"
+                f"Upper mesh point: {zUpper} cm\n"
+                f"Lower mesh point: {zLower} cm\n"
             )
 
         return blocksHere
-
-    def getBlockLengthAboveAndBelowHeight(self, height):
-        """
-        Returns a tuple with the amount of a block above or below a given height in an assembly.
-
-        Used to determine what fraction of the block should be merged with a control
-        rod.
-
-        Parameters
-        ----------
-        height : float
-            The height of interest to grab a block (cm)
-
-        Returns
-        -------
-        distances : tuple
-            tuple containing the distance from height to top of block followed by
-            distance of height to bottom of block
-
-        """
-        for b in self:
-            if height > b.p.zbottom and height <= b.p.ztop:
-                distanceFromTop = abs(b.p.ztop - height)
-                distanceFromBottom = abs(height - b.p.zbottom)
-                break
-        else:
-            raise ValueError(
-                "There are no blocks in {} at a height of {} cm".format(self, height)
-            )
-        return (distanceFromTop, distanceFromBottom)
 
     def getParamValuesAtZ(
         self, param, elevations, interpType="linear", fillValue=numpy.NaN
@@ -1197,100 +1168,6 @@ class Assembly(composites.Composite):
         """
         return len(self.getBlocks(blockTypeSpec))
 
-    def axiallyExpandBlockHeights(self, heightList, nucNamesToConserveMass):
-        """
-        Takes a list of new fuel block heights and then scales the fuel blocks to the
-        new heights, adjusting densities to preserve mass
-
-        Adjusts the height of the lowest plenum block to keep total assembly height
-        constant.
-
-        Parameters
-        ----------
-        heightList : list of floats
-            Entry 0 represents the height (in cm) of the bottom fuel block closest to
-            the grid plate Entry n represents the height (in cm) of the top fuel block
-            closest to the plenum
-        nucNamesToConserveMass : list
-            The nuclides to conserve mass of
-
-        See Also
-        --------
-        axiallyExpand : expands blocks uniformly. could be combined.
-
-        """
-        if self.countBlocksWithFlags(Flags.FUEL) != len(heightList):
-            raise RuntimeError(
-                "number of blocks {} and len of height list {} not equal in "
-                "assembly {}. Cannot axially expand".format(
-                    self.countBlocksWithFlags(Flags.FUEL), len(heightList), self
-                )
-            )
-
-        initialHeight = self.getHeight()
-
-        cumulativeHeightAdded = 0.0
-        for b, newHeight in zip(self.getBlocks(Flags.FUEL), heightList):
-            originalHeight = b.getHeight()
-            b.setHeight(newHeight, conserveMass=True, adjustList=nucNamesToConserveMass)
-            cumulativeHeightAdded += newHeight - originalHeight
-
-        # shrink/grow plenum accordingly to keep T/H parameters, etc. consistent.
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
-        if not plenumBlocks:
-            runLog.warning(
-                "No plenum blocks found in {0}. Axial expansion is modifying the "
-                "total assembly height and volume.".format(self)
-            )
-            # Alter assembly number density to account conserve attoms during volume
-            # change.
-            # This is analogous to what happens to component/block number density
-            # during `armi.reactor.blocks.Block.adjustDensity`, which gets called when
-            # block heights change.
-            if self.p.detailedNDens is not None:
-                self.p.detailedNDens *= initialHeight / (
-                    initialHeight + cumulativeHeightAdded
-                )
-        else:
-            plenumBlock = plenumBlocks[-1]  # adjust the top plenum block
-            plenumHeight = plenumBlock.getHeight()
-            if cumulativeHeightAdded < plenumHeight:
-                plenumBlock.setHeight(plenumHeight - cumulativeHeightAdded)
-            else:
-                raise RuntimeError(
-                    "Cannot subtract {0} cm from plenum block "
-                    "that is only {1} tall.".format(cumulativeHeightAdded, plenumHeight)
-                )
-
-    def axiallyExpand(self, percent, adjustList):
-        """
-        Axially expands an entire assembly.
-
-        Parameters
-        ----------
-        percent : float
-            Number from 0 to 100 to make this assembly grow by that much.
-            If you pass a negative number, the code will actually shrink the assembly by
-            that percent.
-        adjustList : list
-            Nuclides to modify. Omit things like sodium to let it flow.
-
-        See Also
-        --------
-        axiallyExpandBlockHeights : allows non-uniform expansions. Does the work.
-        """
-        growFrac = percent / 100.0
-        fuelBlockHeights = []
-        for b in self.getBlocks(Flags.FUEL):
-            heightOriginal = b.getHeight()
-            if growFrac > 0:
-                fuelBlockHeights.append(heightOriginal * (1.0 + growFrac))
-            else:
-                # NOTICE THE SIGN SWITCH! SINCE WE GAVE NEGATIVE NUMBER AS AN INDICATOR!
-                fuelBlockHeights.append(heightOriginal * (1.0 / (1.0 - growFrac)))
-
-        self.axiallyExpandBlockHeights(fuelBlockHeights, adjustList)
-
     def getDim(self, typeSpec, dimName):
         """
         Search through blocks in this assembly and find the first component of compName.
@@ -1316,6 +1193,18 @@ class Assembly(composites.Composite):
     def getSymmetryFactor(self):
         """Return the symmetry factor of this assembly."""
         return self[0].getSymmetryFactor()
+
+    def rotate(self, deg):
+        """Rotates the spatial variables on an assembly the specified angle.
+
+        Each block on the assembly is rotated in turn.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation"""
+        for b in self.getBlocks():
+            b.rotate(deg)
 
 
 class HexAssembly(Assembly):

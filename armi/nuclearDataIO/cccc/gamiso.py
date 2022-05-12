@@ -77,27 +77,34 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     if not dummyNuclides:
         runLog.important("No dummy nuclide data provided to be added to {}".format(lib))
         return False
-    if len(lib.xsIDs) > 1:
+    elif len(lib.xsIDs) > 1:
         runLog.warning(
             "Cannot add dummy nuclide data to GAMISO library {} containing data for more than 1 XS ID.".format(
                 lib
             )
         )
         return False
+
     dummyNuclideKeysAddedToLibrary = []
     for dummyNuclide in dummyNuclides:
-        dummyKey = dummyNuclide.nucLabel + lib.xsIDs[0]
+        dummyKey = dummyNuclide.nucLabel
+        if len(lib.xsIDs):
+            dummyKey += lib.xsIDs[0]
         if dummyKey in lib:
             continue
+
         runLog.debug("Adding {} nuclide data to {}".format(dummyKey, lib))
         newDummy = xsNuclides.XSNuclide(lib, dummyKey)
+
         # Copy gamiso metadata from the isotxs metadata of the given dummy nuclide
         for kk, vv in dummyNuclide.isotxsMetadata.items():
-            if vv in ["jj", "jband"]:
-                newDummy.gamisoMetadata[vv] = {}
-                for mm in dummyNuclide.isotxsMetadata[vv]:
-                    newDummy.gamisoMetadata[vv][mm] = 1
-            newDummy.gamisoMetadata[kk] = dummyNuclide.isotxsMetadata[kk]
+            if kk in ["jj", "jband"]:
+                newDummy.gamisoMetadata[kk] = {}
+                for mm in vv:
+                    newDummy.gamisoMetadata[kk][mm] = 1
+            else:
+                newDummy.gamisoMetadata[kk] = vv
+
         lib[dummyKey] = newDummy
         dummyNuclideKeysAddedToLibrary.append(dummyKey)
 

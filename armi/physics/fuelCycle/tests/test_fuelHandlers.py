@@ -23,6 +23,8 @@ import copy
 import os
 import unittest
 
+import numpy as np
+
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import settings
 from armi.reactor import assemblies
@@ -58,7 +60,7 @@ class TestFuelHandler(ArmiTestHelper):
         but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
-            self.directoryChanger.destination
+            self.directoryChanger.destination, customSettings={"nCycles": 3}
         )
         blockList = self.r.core.getBlocks()
         for bi, b in enumerate(blockList):
@@ -89,7 +91,7 @@ class TestFuelHandler(ArmiTestHelper):
         interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
         # generate a block
-        self.block = blocks.HexBlock("TestHexBlock", self.o.cs)
+        self.block = blocks.HexBlock("TestHexBlock")
         self.block.setType("fuel")
         self.block.setHeight(10.0)
         self.block.add(fuel)
@@ -473,12 +475,55 @@ class TestFuelHandler(ArmiTestHelper):
         fh.simpleAssemblyRotation()
         self.assertEqual(b.getRotationNum(), rotNum + 2)
 
+    def test_linPowByPin(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        b = assem.getBlocks(Flags.FUEL)[0]
+
+        b.p.linPowByPin = [1, 2, 3]
+        self.assertEqual(type(b.p.linPowByPin), np.ndarray)
+
+        b.p.linPowByPin = np.array([1, 2, 3])
+        self.assertEqual(type(b.p.linPowByPin), np.ndarray)
+
+    def test_linPowByPinNeutron(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        b = assem.getBlocks(Flags.FUEL)[0]
+
+        b.p.linPowByPinNeutron = [1, 2, 3]
+        self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
+
+        b.p.linPowByPinNeutron = np.array([1, 2, 3])
+        self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
+
+    def test_linPowByPinGamma(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        hist = self.o.getInterface("history")
+        newSettings = {"assemblyRotationStationary": True}
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+        b = assem.getBlocks(Flags.FUEL)[0]
+
+        b.p.linPowByPinGamma = [1, 2, 3]
+        self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
+
+        b.p.linPowByPinGamma = np.array([1, 2, 3])
+        self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
+
     def test_buReducingAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
         hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
+
         # apply dummy pin-level data to allow intelligent rotation
         for b in assem.getBlocks(Flags.FUEL):
             b.breakFuelComponentsIntoIndividuals()
@@ -486,6 +531,7 @@ class TestFuelHandler(ArmiTestHelper):
             b.p.percentBuMaxPinLocation = 10
             b.p.percentBuMax = 5
             b.p.linPowByPin = list(reversed(range(b.getNumPins())))
+
         addSomeDetailAssemblies(hist, [assem])
         rotNum = b.getRotationNum()
         fh.buReducingAssemblyRotation()

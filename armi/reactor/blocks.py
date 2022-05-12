@@ -47,6 +47,7 @@ from armi.utils import hexagon
 from armi.utils import densityTools
 from armi.physics.neutronics import NEUTRON
 from armi.physics.neutronics import GAMMA
+from armi.reactor.parameters import ParamLocation
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -78,14 +79,11 @@ class Block(composites.Composite):
 
     pDefs = blockParameters.getBlockParameterDefinitions()
 
-    def __init__(self, name, height=1.0, location=None):
+    def __init__(self, name: str, height: float = 1.0):
         """
         Builds a new ARMI block
 
-        caseSettings : Settings object, optional
-            The settings object to use to build the block
-
-        name : str, optional
+        name : str
             The name of this block
 
         height : float, optional
@@ -93,12 +91,9 @@ class Block(composites.Composite):
             `getVolume` assumes unit height.
         """
         composites.Composite.__init__(self, name)
-        self.makeUnique()
         self.p.height = height
+        self.p.heightBOL = height
 
-        if location:
-            k = location.axial
-            self.spatialLocator = grids.IndexLocation(0, 0, k, None)
         self.p.orientation = numpy.array((0.0, 0.0, 0.0))
 
         self.points = []
@@ -189,7 +184,7 @@ class Block(composites.Composite):
 
         core = self.core
         if core is None:
-            return None
+            return self.getAncestor(lambda o: isinstance(o, Reactor))
 
         if not isinstance(core.parent, Reactor):
             raise TypeError(
@@ -218,21 +213,6 @@ class Block(composites.Composite):
         """
         self.p.assemNum = assemNum
         return "B{0:04d}-{1:03d}".format(assemNum, axialIndex)
-
-    def makeUnique(self):
-        """
-        Assign a unique id (integer value) for each block.
-
-        This should be called whenever creating a block that is intended to be treated
-        as a unique object. For example, if you were to broadcast or pickle a block it
-        should have the same ID across all nodes. Likewise, if you deepcopy a block for
-        a temporary purpose to it should have the same ID.  However, ARMI's assembly
-        construction also uses deepcopy, and in order to keep that functionality, this
-        method needs to be called after creating a fresh assembly (from deepcopy).
-        """
-
-        self.p.id = self.__class__.uniqID
-        self.__class__.uniqID += 1
 
     def getSmearDensity(self, cold=True):
         """
@@ -504,8 +484,10 @@ class Block(composites.Composite):
 
         See Also
         --------
-        reactors.Core.updateAxialMesh : May need to be called after this.
-        assemblies.Assembly.calculateZCoords : Recalculates z-coords, automatically called by this.
+        armi.reactor.reactors.Core.updateAxialMesh
+            May need to be called after this.
+        armi.reactor.assemblies.Assembly.calculateZCoords
+            Recalculates z-coords, automatically called by this.
         """
         originalHeight = self.getHeight()  # get before modifying
         if modifiedHeight < 0.0:
@@ -527,30 +509,19 @@ class Block(composites.Composite):
             self.parent.calculateZCoords()
 
     def getWettedPerimeter(self):
-        """Return wetted perimeter per pin with duct averaged in."""
-        duct = self.getComponent(Flags.DUCT)
-        clad = self.getComponent(Flags.CLAD)
-        wire = self.getComponent(Flags.WIRE)
-        if not (duct and clad):
-            raise ValueError(
-                "Wetted perimeter cannot be computed in {}. No duct and clad components exist.".format(
-                    self
-                )
-            )
-        return math.pi * (
-            clad.getDimension("od") + wire.getDimension("od")
-        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+        raise NotImplementedError
 
     def getFlowAreaPerPin(self):
         """
         Return the flowing coolant area in cm^2.
 
         NumPins looks for max number of fuel, clad, control, etc.
+
         See Also
         --------
-        getNumPins :  figures out numPins.
+        armi.reactor.blocks.Block.getNumPins
+            figures out numPins
         """
-
         numPins = self.getNumPins()
         try:
             return self.getComponent(Flags.COOLANT, exact=True).getArea() / numPins
@@ -561,22 +532,7 @@ class Block(composites.Composite):
             )
 
     def getHydraulicDiameter(self):
-        """
-        Return the hydraulic diameter in this block in cm.
-
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
-
-        To convert the inner hex pitch into a perimeter, first convert to side, then
-        multiply by 6.
-
-        p=sqrt(3)*s
-         l = 6*p/sqrt(3)
-        """
-
-        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+        raise NotImplementedError
 
     def adjustUEnrich(self, newEnrich):
         """
@@ -668,8 +624,8 @@ class Block(composites.Composite):
 
         See Also
         --------
-        getMaxArea : return the full area of the physical assembly disregarding model symmetry
-
+        armi.reactor.blocks.Block.getMaxArea
+            return the full area of the physical assembly disregarding model symmetry
         """
         # this caching requires that you clear the cache every time you adjust anything
         # including temperature and dimensions.
@@ -717,8 +673,7 @@ class Block(composites.Composite):
 
         See Also
         --------
-        armi.reactor.reactors.Core.addEdgeAssemblies
-        terrapower.physics.neutronics.dif3d.dif3dInterface.Dif3dReader.scaleParamsRelatedToSymmetry
+        armi.reactor.converters.geometryConverter.EdgeAssemblyChanger.scaleParamsRelatedToSymmetry
         """
         return 1.0
 
@@ -1447,7 +1402,6 @@ class Block(composites.Composite):
 
         The fuel will become fuel001 through fuel169 if there are 169 pins.
         """
-
         fuels = self.getChildrenWithFlags(Flags.FUEL)
         if len(fuels) != 1:
             runLog.error(
@@ -1457,6 +1411,7 @@ class Block(composites.Composite):
                 "Cannot break {0} into multiple fuel components b/c there is not a single fuel"
                 " component.".format(self)
             )
+
         fuel = fuels[0]
         fuelFlags = fuel.p.flags
         nPins = self.getNumPins()
@@ -1573,13 +1528,23 @@ class Block(composites.Composite):
             # send it some zeros
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
 
+    def rotate(self, deg):
+        """Function for rotating a block's spatially varying variables by a specified angle.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation
+        """
+        raise NotImplementedError
+
 
 class HexBlock(Block):
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
-    def __init__(self, name, height=1.0, location=None):
-        Block.__init__(self, name, height, location)
+    def __init__(self, name, height=1.0):
+        Block.__init__(self, name, height)
 
     def coords(self, rotationDegreesCCW=0.0):
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
@@ -1671,9 +1636,52 @@ class HexBlock(Block):
         else:
             self.p.pinPowers = self.p.pinPowersNeutron
 
+    def rotate(self, deg):
+        """Function for rotating a block's spatially varying variables by a specified angle.
+
+        Rotates the pins and then also any parameters that defined on the corners or edges.
+
+        Parameters
+        ----------
+        deg - float
+            number specifying the angle of counter clockwise rotation
+
+        See Also
+        --------
+        armi.reactor.blocks.HexBlock.rotatePins
+            Rotates the pins only and not the duct.
+        """
+        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
+        self.rotatePins(rotNum)
+        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for param in params:
+            if isinstance(self.p[param], list):
+                if len(self.p[param]) == 6:
+                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
+                elif self.p[param] == []:
+                    # List hasn't been defined yet, no warning needed.
+                    pass
+                else:
+                    runLog.warning(
+                        "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
+                            param
+                        )
+                    )
+            else:
+                # this is a scalar and there shouldn't be any rotation.
+                pass
+        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
+        dispx = self.p.get("displacementX")
+        dispy = self.p.get("displacementY")
+        if (dispx is not None) and (dispy is not None):
+            self.p.displacementX = dispx * math.cos(deg) - dispy * math.sin(deg)
+            self.p.displacementY = dispx * math.sin(deg) + dispy * math.cos(deg)
+
     def rotatePins(self, rotNum, justCompute=False):
         """
-        Rotate an assembly, which means rotating the indexing of pins.
+        Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
+        not rotate all block quantities.
 
         Notes
         -----
@@ -1715,6 +1723,11 @@ class HexBlock(Block):
             The "ARMI pin ordering" is used for location, which is counter-clockwise from 3 o'clock.
             Pin numbers start at 1, pin locations also start at 1.
 
+        See Also
+        --------
+        armi.reactor.blocks.HexBlock.rotate
+            Rotates the entire block (pins, ducts, and spatial quantities).
+
         Examples
         --------
         rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
@@ -1732,9 +1745,8 @@ class HexBlock(Block):
         rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
-        for pinNum in range(
-            2, numPins + 1
-        ):  # start at 2 because pin 1 never changes (it's in the center!)
+        # start at 2 because pin 1 never changes (it's in the center!)
+        for pinNum in range(2, numPins + 1):
             if rotNum == 0:
                 # rotation to reference orientation. Pin locations are pin IDs.
                 pass
@@ -1756,6 +1768,7 @@ class HexBlock(Block):
 
         if not justCompute:
             self.setRotationNum(rotNum)
+
         return rotateIndexLookup
 
     def verifyBlockDims(self):
@@ -2065,6 +2078,39 @@ class HexBlock(Block):
                 )
             )
 
+    def getWettedPerimeter(self):
+        """Return wetted perimeter per pin with duct averaged in."""
+        duct = self.getComponent(Flags.DUCT)
+        clad = self.getComponent(Flags.CLAD)
+        wire = self.getComponent(Flags.WIRE)
+        if not duct or not clad:
+            raise ValueError(
+                "Wetted perimeter cannot be computed in {}. No duct or clad components exist.".format(
+                    self
+                )
+            )
+
+        return math.pi * (
+            clad.getDimension("od") + wire.getDimension("od")
+        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+
+    def getHydraulicDiameter(self):
+        """
+        Return the hydraulic diameter in this block in cm.
+
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
+        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
+        inside of the duct. The flow area is the inner area of the duct minus the area of the
+        pins and the wire.
+
+        To convert the inner hex pitch into a perimeter, first convert to side, then
+        multiply by 6.
+
+        p = sqrt(3)*s
+        l = 6*p/sqrt(3)
+        """
+        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+
 
 class CartesianBlock(Block):
 
@@ -2176,9 +2222,15 @@ class Point(Block):
             self.p[param] = 0.0
 
     def getVolume(self):
-        return (
-            1.0  # points have no volume scaling; point flux are not volume-integrated
-        )
+        """points have no volume scaling; point flux are not volume-integrated"""
+        return 1.0
 
     def getBurnupPeakingFactor(self):
-        return 1.0  # peaking makes no sense for points
+        """peaking makes no sense for points"""
+        return 1.0
+
+    def getWettedPerimeter(self):
+        return 0.0
+
+    def getHydraulicDiameter(self):
+        return 0.0

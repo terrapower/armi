@@ -23,10 +23,12 @@ is impossible. Would you like to switch to ___?"
 """
 import os
 
-import armi
+from armi import context
+from armi import getPluginManagerOrFail
 from armi import runLog, settings, utils
 from armi.utils import pathTools
 from armi.utils.mathematics import expandRepeatedFloats
+from armi.utils.units import DAYS_PER_YEAR
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
@@ -90,7 +92,7 @@ class Query:
 
     def resolve(self):
         """Standard i/o prompt for resolution of an individual query"""
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return
 
         if self.condition():
@@ -166,7 +168,7 @@ class Inspector:
 
         # Gather and attach validators from all plugins
         # This runs on all registered plugins, not just active ones.
-        pluginQueries = armi.getPluginManagerOrFail().hook.defineSettingsValidators(
+        pluginQueries = getPluginManagerOrFail().hook.defineSettingsValidators(
             inspector=self
         )
         for queries in pluginQueries:
@@ -186,7 +188,7 @@ class Inspector:
         RuntimeError
             When a programming error causes queries to loop.
         """
-        if armi.MPI_RANK != 0:
+        if context.MPI_RANK != 0:
             return False
 
         # the following attribute changes will alter what the queries investigate when
@@ -307,17 +309,22 @@ class Inspector:
 
             self.geomType, self.coreSymmetry = geom.geomType, geom.symmetry
 
+    def _correctCyclesToZeroBurnup(self):
+        self._assignCS("nCycles", 1)
+        self._assignCS("burnSteps", 0)
+        self._assignCS("cycleLength", None)
+        self._assignCS("cycleLengths", None)
+        self._assignCS("availabilityFactor", None)
+        self._assignCS("availabilityFactors", None)
+        self._assignCS("cycles", [])
+
+    def _setBurnStepsToFour(self):
+        self._assignCS("burnSteps", 4)
+
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         # import here to avoid cyclic issues
         from armi import operators
-
-        self.addQuery(
-            lambda: self.cs.path.endswith(".xml"),
-            "Your settings were loaded from a XML file. These are being converted to yaml files.",
-            "Would you like to auto-convert it to YAML?",
-            lambda: settings.convertSettingsFromXMLToYaml(self.cs),
-        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -462,6 +469,44 @@ class Inspector:
             lambda: self._assignCS("numCoupledIterations", 0),
         )
 
+        self.addQuery(
+            lambda: self.cs["nCycles"] in [0, None],
+            "Cannot run 0 cycles. Set burnSteps to 0 to activate a single time-independent case.",
+            "Set 1 cycle and 0 burnSteps for single time-independent case?",
+            self._correctCyclesToZeroBurnup,
+        )
+
+        def _checkForBothSimpleAndDetailedCyclesInputs():
+            """
+            Note that we must bypass the `Settings` getter and reach directly
+            into the underlying `__settings` dict to avoid triggering an error
+            at this stage in the run. Otherwise an error will inherently be raised
+            if the detailed cycles input is used because the simple cycles inputs
+            have defaults. We don't care that those defaults are there, we only
+            have a problem with those defaults being _used_, which will be caught
+            later on.
+            """
+            bothCyclesInputTypesPresent = (
+                self.cs._Settings__settings["cycleLength"]
+                or self.cs._Settings__settings["cycleLengths"]
+                or self.cs._Settings__settings["burnSteps"]
+                or self.cs._Settings__settings["availabilityFactor"]
+                or self.cs._Settings__settings["availabilityFactors"]
+                or self.cs._Settings__settings["powerFractions"]
+            ) and self.cs["cycles"] != []
+
+            return bothCyclesInputTypesPresent
+
+        self.addQuery(
+            _checkForBothSimpleAndDetailedCyclesInputs,
+            "If specifying detailed cycle history with `cycles`, you may not"
+            " also use any of the simple cycle history inputs `cycleLength(s)`,"
+            " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`."
+            " Using the detailed cycle history.",
+            "",
+            self.NO_ACTION,
+        )
+
         def _factorsAreValid(factors, maxVal=1.0):
             try:
                 expandedList = expandRepeatedFloats(factors)
@@ -472,83 +517,93 @@ class Inspector:
                 and len(expandedList) == self.cs["nCycles"]
             )
 
-        self.addQuery(
-            lambda: self.cs["availabilityFactors"]
-            and not _factorsAreValid(self.cs["availabilityFactors"]),
-            "`availabilityFactors` was not set to a list compatible with the number of cycles. "
-            "Please update input or use constant duration.",
-            "Use constant availability factor specified in `availabilityFactor` setting?",
-            lambda: self._assignCS("availabilityFactors", []),
-        )
-
-        self.addQuery(
-            lambda: self.cs["powerFractions"]
-            and not _factorsAreValid(self.cs["powerFractions"]),
-            "`powerFractions` was not set to a compatible list. "
-            "Please update input or use full power at all cycles.",
-            "Use full power for all cycles?",
-            lambda: self._assignCS("powerFractions", []),
-        )
-
-        self.addQuery(
-            lambda: (
-                self.cs["cycleLengths"]
-                and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
-            ),
-            "The number of cycles defined in `cycleLengths` is not equal to the number of cycles in "
-            "the run `nCycles`."
-            "Please ensure that there is exactly one duration for each cycle in the run or use "
-            "{} days for all cycles.".format(self.cs["cycleLength"]),
-            "Use {} days for all cycles?".format(self.cs["cycleLength"]),
-            lambda: self._assignCS("cycleLengths", []),
-        )
-
-        def _correctCycles():
-            newSettings = {"nCycles": 1, "burnSteps": 0}
-            self.cs = self.cs.modified(newSettings=newSettings)
-
-        self.addQuery(
-            lambda: not self.cs["cycleLengths"] and self.cs["nCycles"] == 0,
-            "Cannot run 0 cycles. Set burnSteps to 0 to activate a single time-independent case.",
-            "Set 1 cycle and 0 burnSteps for single time-independent case?",
-            _correctCycles,
-        )
-
-        self.addQuery(
-            lambda: (
-                self.cs["runType"] == "Standard"
-                and self.cs["burnSteps"] == 0
-                and (len(self.cs["cycleLengths"]) > 1 or self.cs["nCycles"] > 1)
-            ),
-            "Cannot run multi-cycle standard cases with 0 burnSteps per cycle. Please update settings.",
-            "",
-            self.NO_ACTION,
-        )
-
-        def decayCyclesHaveInputThatWillBeIgnored():
-            """Check if there is any decay-related input that will be ignored."""
-            try:
-                powerFracs = expandRepeatedFloats(self.cs["powerFractions"])
-                availabilities = expandRepeatedFloats(
+        if self.cs["cycles"] == []:
+            self.addQuery(
+                lambda: (
                     self.cs["availabilityFactors"]
-                ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-            except:  # pylint: disable=bare-except
-                return True
+                    and not _factorsAreValid(self.cs["availabilityFactors"])
+                ),
+                "`availabilityFactors` was not set to a list compatible with the number of cycles. "
+                "Please update input or use constant duration.",
+                "Use constant availability factor specified in `availabilityFactor` setting?",
+                lambda: self._assignCS("availabilityFactors", []),
+            )
 
-            for pf, af in zip(powerFracs, availabilities):
-                if pf > 0.0 and af == 0.0:
-                    # this will be a full decay step and any power fraction will be ignored. May be ok, but warn.
+            self.addQuery(
+                lambda: (
+                    self.cs["powerFractions"]
+                    and not _factorsAreValid(self.cs["powerFractions"])
+                ),
+                "`powerFractions` was not set to a compatible list. "
+                "Please update input or use full power at all cycles.",
+                "Use full power for all cycles?",
+                lambda: self._assignCS("powerFractions", []),
+            )
+
+            self.addQuery(
+                lambda: (
+                    self.cs["cycleLengths"]
+                    and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
+                ),
+                "`cycleLengths` was not set to a list compatible with the number of cycles."
+                " Please update input or use constant duration.",
+                "Use constant cycle length specified in `cycleLength` setting?",
+                lambda: self._assignCS("cycleLengths", []),
+            )
+
+            self.addQuery(
+                lambda: (
+                    self.cs["runType"] == operators.RunTypes.STANDARD
+                    and self.cs["burnSteps"] == 0
+                    and (
+                        (
+                            len(self.cs["cycleLengths"]) > 1
+                            if self.cs["cycleLengths"] != None
+                            else False
+                        )
+                        or self.cs["nCycles"] > 1
+                    )
+                ),
+                "Cannot run multi-cycle standard cases with 0 burnSteps per cycle. Please update settings.",
+                "",
+                self.NO_ACTION,
+            )
+
+            def decayCyclesHaveInputThatWillBeIgnored():
+                """Check if there is any decay-related input that will be ignored."""
+                try:
+                    powerFracs = expandRepeatedFloats(self.cs["powerFractions"])
+                    availabilities = expandRepeatedFloats(
+                        self.cs["availabilityFactors"]
+                    ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
+                except:  # pylint: disable=bare-except
                     return True
-            return False
+
+                for pf, af in zip(powerFracs, availabilities):
+                    if pf > 0.0 and af == 0.0:
+                        # this will be a full decay step and any power fraction will be ignored. May be ok, but warn.
+                        return True
+                return False
+
+            self.addQuery(
+                lambda: (
+                    self.cs["cycleLengths"]
+                    and self.cs["powerFractions"]
+                    and decayCyclesHaveInputThatWillBeIgnored()
+                    and not self.cs["cycles"]
+                ),
+                "At least one cycle has a non-zero power fraction but an availability of zero. Please "
+                "update the input.",
+                "",
+                self.NO_ACTION,
+            )
 
         self.addQuery(
-            lambda: (
-                self.cs["cycleLengths"]
-                and self.cs["powerFractions"]
-                and decayCyclesHaveInputThatWillBeIgnored()
+            lambda: self.cs["operatorLocation"]
+            and self.cs["runType"] != operators.RunTypes.STANDARD,
+            "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
+                self.cs["runType"]
             ),
-            "At least one cycle has a non-zero power fraction but an availability of zero. Please "
-            "update the input.",
             "",
             self.NO_ACTION,
         )
@@ -564,11 +619,11 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["operatorLocation"]
-            and self.cs["runType"] != operators.RunTypes.STANDARD,
-            "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
-                self.cs["runType"]
-            ),
+            lambda: self.cs["runType"] == operators.RunTypes.EQUILIBRIUM
+            and self.cs["cycles"],
+            "Equilibrium cases cannot use the `cycles` case setting to define detailed"
+            " cycle information. Try instead using the simple cycle history inputs"
+            " `cycleLength(s)`, `burnSteps`, `availabilityFactor(s)`, and/or `powerFractions`",
             "",
             self.NO_ACTION,
         )

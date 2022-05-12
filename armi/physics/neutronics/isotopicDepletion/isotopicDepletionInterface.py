@@ -116,7 +116,7 @@ class AbstractIsotopicDepleter:
 
         comm = MPI.COMM_SELF.Spawn(sys.executable,args=['cpi.py'],maxprocs=5)
         """
-        return NotImplementedError
+        raise NotImplementedError
 
 
 def makeXsecTable(

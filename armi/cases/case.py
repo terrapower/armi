@@ -39,22 +39,23 @@ import tabulate
 import six
 import coverage
 
-import armi
 from armi import context
-from armi import settings
+from armi import getPluginManager
+from armi import interfaces
 from armi import operators
 from armi import runLog
-from armi import interfaces
-from armi.cli import reportsEntryPoint
-from armi.reactor import blueprints
-from armi.reactor import systemLayoutInput
-from armi.reactor import reactors
+from armi import settings
 from armi.bookkeeping.db import compareDatabases
+from armi.cli import reportsEntryPoint
+from armi.nucDirectory import nuclideBases
+from armi.reactor import blueprints
+from armi.reactor import reactors
+from armi.reactor import systemLayoutInput
 from armi.utils import pathTools
+from armi.utils import textProcessors
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
-from armi.utils import textProcessors
-from armi.nucDirectory import nuclideBases
+from armi.utils.customExceptions import NonexistentSetting
 
 # change from default .coverage to help with Windows dotfile issues.
 # Must correspond with data_file entry in `coveragerc`!!
@@ -184,7 +185,7 @@ class Case:
         """
         dependencies = set()
         if self._caseSuite is not None:
-            pm = armi.getPluginManager()
+            pm = getPluginManager()
             if pm is not None:
                 for pluginDependencies in pm.hook.defineCaseDependencies(
                     case=self, suite=self._caseSuite
@@ -226,6 +227,10 @@ class Case:
         """
         Get a parent case based on a setting value and a pattern.
 
+        This is a convenient way for a plugin to express a dependency. It uses the
+        ``match.groupdict`` functionality to pull the directory and case name out of a
+        specific setting value an regular expression.
+
         Parameters
         ----------
         settingValue : str
@@ -236,10 +241,6 @@ class Case:
             If the ``settingValue`` matches the passed pattern, this function will
             attempt to extract the ``dirName`` and ``title`` groups to find the
             dependency.
-
-        This is a convenient way for a plugin to express a dependency. It uses the
-        ``match.groupdict`` functionality to pull the directory and case name out of a
-        specific setting value an regular expression.
         """
         m = re.match(filePattern, settingValue, re.IGNORECASE)
         deps = self._getPotentialDependencies(**m.groupdict()) if m else set()
@@ -343,7 +344,7 @@ class Case:
         # can be configured based on the user settings for the rest of the
         # run.
         runLog.LOG.startLog(self.cs.caseTitle)
-        if armi.MPI_RANK == 0:
+        if context.MPI_RANK == 0:
             runLog.setVerbosity(self.cs["verbosity"])
         else:
             runLog.setVerbosity(self.cs["branchVerbosity"])
@@ -351,7 +352,7 @@ class Case:
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
-                config_file=os.path.join(armi.RES, "coveragerc"), debug=["dataio"]
+                config_file=os.path.join(context.RES, "coveragerc"), debug=["dataio"]
             )
             if context.MPI_SIZE > 1:
                 # interestingly, you cannot set the parallel flag in the constructor
@@ -370,7 +371,7 @@ class Case:
         o = self.initializeOperator()
 
         with o:
-            if self.cs["trace"] and armi.MPI_RANK == 0:
+            if self.cs["trace"] and context.MPI_RANK == 0:
                 # only trace master node.
                 tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
                 tracer.runctx("o.operate()", globals(), locals())
@@ -379,15 +380,15 @@ class Case:
 
         if profiler is not None:
             profiler.disable()
-            profiler.dump_stats("profiler.{:0>3}.stats".format(armi.MPI_RANK))
+            profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
             statsStream = six.StringIO()
             summary = pstats.Stats(profiler, stream=statsStream).sort_stats(
                 "cumulative"
             )
             summary.print_stats()
-            if armi.MPI_SIZE > 0:
-                allStats = armi.MPI_COMM.gather(statsStream.getvalue(), root=0)
-                if armi.MPI_RANK == 0:
+            if context.MPI_SIZE > 0:
+                allStats = context.MPI_COMM.gather(statsStream.getvalue(), root=0)
+                if context.MPI_RANK == 0:
                     for rank, statsString in enumerate(allStats):
                         # using print statements because the logger has been turned off
                         print("=" * 100)
@@ -405,14 +406,15 @@ class Case:
             cov.stop()
             cov.save()
 
-            if armi.MPI_SIZE > 1:
-                armi.MPI_COMM.barrier()  # force waiting for everyone to finish
+            if context.MPI_SIZE > 1:
+                context.MPI_COMM.barrier()  # force waiting for everyone to finish
 
-            if armi.MPI_RANK == 0 and armi.MPI_SIZE > 1:
+            if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
                 # combine all the parallel coverage data files into one and make
                 # the XML and HTML reports for the whole run.
                 combinedCoverage = coverage.Coverage(
-                    config_file=os.path.join(armi.RES, "coveragerc"), debug=["dataio"]
+                    config_file=os.path.join(context.RES, "coveragerc"),
+                    debug=["dataio"],
                 )
                 combinedCoverage.config.parallel = True
                 # combine does delete the files it merges
@@ -461,7 +463,7 @@ class Case:
             operatorClass = operators.getOperatorClassFromSettings(self.cs)
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
-            if armi.CURRENT_MODE == armi.Mode.INTERACTIVE:
+            if context.CURRENT_MODE == context.Mode.INTERACTIVE:
                 # if interactive, ask user to deal with settings issues
                 inspector.run()
             else:
@@ -480,7 +482,7 @@ class Case:
                         )
                     )
 
-                if queryData and armi.MPI_RANK == 0:
+                if queryData and context.MPI_RANK == 0:
                     runLog.header("=========== Settings Input Queries ===========")
                     runLog.info(
                         tabulate.tabulate(
@@ -518,9 +520,8 @@ class Case:
         command += "{} -u ".format(python)
         if not __debug__:
             command += " -O "
-        command += ' -m {} run "{}.yaml"'.format(
-            armi.context.APP_NAME, self.cs.caseTitle
-        )
+
+        command += ' -m {} run "{}.yaml"'.format(context.APP_NAME, self.cs.caseTitle)
 
         return command
 
@@ -563,8 +564,8 @@ class Case:
             )
 
         newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
-        for settingName, value in newSettings.items():
-            clone.cs[settingName] = value
+        newCs = clone.cs.modified(newSettings=newSettings)
+        clone.cs = newCs
 
         runLog.important("writing settings file {}".format(clone.cs.path))
         clone.cs.writeToYamlFile(clone.cs.path)
@@ -769,10 +770,17 @@ def copyInterfaceInputs(
         # guess. In future, it might be nice to have interfaces specify which
         # explicitly.
         for key, files in interfaceFileNames.items():
-            if isinstance(key, settings.Setting):
-                label = key.name
-            else:
-                label = key
+
+            if not isinstance(key, settings.Setting):
+                try:
+                    key = cs.getSetting(key)
+                except NonexistentSetting(key):
+                    raise ValueError(
+                        "{} is not a valid setting. Ensure the relevant specifyInputs method uses a correct setting name.".format(
+                            key
+                        )
+                    )
+            label = key.name
 
             for f in files:
                 path = pathlib.Path(f)
@@ -803,13 +811,9 @@ def copyInterfaceInputs(
                     for sourceFullPath in srcFiles:
                         if not sourceFullPath:
                             continue
-                        _sourceDir, sourceName = os.path.split(sourceFullPath)
-                        sourceName = sourceFullPath.name
-                        destFile = (destPath / sourceName).relative_to(destPath)
-                        pathTools.copyOrWarn(
-                            label, sourceFullPath, destPath / sourceName
-                        )
-
+                        sourceName = os.path.basename(sourceFullPath.name)
+                        destFilePath = os.path.abspath(destPath / sourceName)
+                        pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
                     if len(srcFiles) == 0:
                         runLog.warning(
                             f"No input files for `{label}` could be resolved "
@@ -821,7 +825,7 @@ def copyInterfaceInputs(
                             f"than one file; cannot update settings safely. "
                             f"Discovered input files: {srcFiles}"
                         )
-                    elif len(srcFiles) == 1 and isinstance(key, settings.Setting):
-                        newSettings[key.name] = str(destFile)
+                    elif len(srcFiles) == 1:
+                        newSettings[label] = str(destFilePath)
 
     return newSettings

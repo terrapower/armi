@@ -30,7 +30,17 @@ The key classes of the reactor package are shown below:
 See :doc:`/developer/index`.
 """
 
+from typing import Dict, Callable, Union, TYPE_CHECKING
+
 from armi import plugins
+
+# Provide type checking but avoid circular imports
+# Not used during runtime so we could have a coverage drop here. Add the
+# pragma line to tell coverage.py to skip this
+# https://coverage.readthedocs.io/en/stable/excluding.html
+if TYPE_CHECKING:  # pragma: no cover
+    from armi.reactor.reactors import Core
+    from armi.reactor.assemblyLists import SpentFuelPool
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
@@ -66,3 +76,16 @@ class ReactorPlugin(plugins.ArmiPlugin):
             (CartesianBlock, CartesianAssembly),
             (ThRZBlock, ThRZAssembly),
         ]
+
+    @staticmethod
+    @plugins.HOOKIMPL(trylast=True)
+    def defineSystemBuilders() -> Dict[
+        str, Callable[[str], Union["Core", "SpentFuelPool"]]
+    ]:
+        from armi.reactor.reactors import Core
+        from armi.reactor.assemblyLists import SpentFuelPool
+
+        return {
+            "core": Core,
+            "sfp": SpentFuelPool,
+        }

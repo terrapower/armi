@@ -29,6 +29,8 @@ from armi.cli.modify import ModifyCaseSettingsCommand
 from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
+from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
+from armi.tests import mockRunLogs
 
 
 class TestCheckInputEntryPoint(unittest.TestCase):
@@ -91,6 +93,13 @@ class TestConvertDB(unittest.TestCase):
         self.assertEqual(cdb.name, "convert-db")
         self.assertIsNone(cdb.args.nodes)
 
+        # Since the file is fake, invoke() should exit early.
+        with mockRunLogs.BufferLog() as mock:
+            cdb.args.nodes = [1, 2, 3]
+            with self.assertRaises(ValueError):
+                cdb.invoke()
+            self.assertIn("Converting the", mock._outputStream)
+
 
 class TestCopyDB(unittest.TestCase):
     def test_copyDBBasics(self):
@@ -106,12 +115,18 @@ class TestCopyDB(unittest.TestCase):
 
 class TestExpandBlueprints(unittest.TestCase):
     def test_expandBlueprintsBasics(self):
-        eb = ExpandBlueprints()
-        eb.addOptions()
-        eb.parse_args(["/path/to/fake.yaml"])
+        ebp = ExpandBlueprints()
+        ebp.addOptions()
+        ebp.parse_args(["/path/to/fake.yaml"])
 
-        self.assertEqual(eb.name, "expand-bp")
-        self.assertEqual(eb.args.blueprints, "/path/to/fake.yaml")
+        self.assertEqual(ebp.name, "expand-bp")
+        self.assertEqual(ebp.args.blueprints, "/path/to/fake.yaml")
+
+        # Since the file is fake, invoke() should exit early.
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock._outputStream)
+            ebp.invoke()
+            self.assertIn("does not exist", mock._outputStream)
 
 
 class TestExtractInputs(unittest.TestCase):
@@ -164,6 +179,18 @@ class TestReportsEntryPoint(unittest.TestCase):
         self.assertEqual(rep.settingsArgument, "optional")
 
 
+class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
+    def test_compareIsotxsLibsBasics(self):
+        com = CompareIsotxsLibraries()
+        com.addOptions()
+        com.parse_args(
+            ["--fluxFile", "/path/to/fluxfile.txt", "reference", "comparisonFiles"]
+        )
+
+        self.assertEqual(com.name, "diff-isotxs")
+        self.assertIsNone(com.settingsArgument)
+
+
 class TestRunEntryPoint(unittest.TestCase):
     def test_runEntryPointBasics(self):
         rep = RunEntryPoint()
@@ -173,12 +200,23 @@ class TestRunEntryPoint(unittest.TestCase):
         self.assertEqual(rep.name, "run")
         self.assertEqual(rep.settingsArgument, "required")
 
-    def test_runCommand(self):
+    def test_runCommandHelp(self):
         """Ensure main entry point with no args completes."""
         with self.assertRaises(SystemExit) as excinfo:
-            sys.argv = [""]  # have to override the pytest args
+            # have to override the pytest args
+            sys.argv = [""]
             main()
         self.assertEqual(excinfo.exception.code, 0)
+
+    def test_executeCommand(self):
+        """use executeCommand to call run,
+        But we expect it to fail because we provide a fictional settings YAML
+        """
+        with self.assertRaises(SystemExit) as excinfo:
+            # override the pytest args
+            sys.argv = ["run", "path/to/fake.yaml"]
+            main()
+        self.assertEqual(excinfo.exception.code, 1)
 
 
 class TestRunSuiteCommand(unittest.TestCase):

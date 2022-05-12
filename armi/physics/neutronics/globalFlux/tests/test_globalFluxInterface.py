@@ -172,11 +172,14 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         mapper.updateDpaRate()
         block = r.core.getFirstBlock()
         self.assertGreater(block.p.detailedDpaRate, 0)
-
         self.assertEqual(block.p.detailedDpa, 0)
+
+        # Test DoseResultsMapper. Pass in full list of blocks to apply() in order
+        # to exercise blockList option (does not change behavior, since this is what
+        # apply() does anyway)
         opts = globalFluxInterface.GlobalFluxOptions("test")
         dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        dosemapper.apply(r)
+        dosemapper.apply(r, blockList=r.core.getBlocks())
         self.assertGreater(block.p.detailedDpa, 0)
 
         mapper.clearFlux()

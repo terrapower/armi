@@ -17,10 +17,11 @@
 # pylint: disable=abstract-method,no-self-use,unused-argument
 import unittest
 
-import armi
 from armi import settings
 from armi.interfaces import Interface
+from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
+from armi.settings.caseSettings import Settings
 
 
 class InterfaceA(Interface):
@@ -58,7 +59,6 @@ class OperatorTests(unittest.TestCase):
 
         # 2) Now we have B which is a subclass of A,
         #    we want to not add A (but also not have an error)
-
         o.addInterface(interfaceA)
         self.assertEqual(o.getInterface("Second"), interfaceB)
         self.assertEqual(o.getInterface("First"), None)
@@ -76,6 +76,106 @@ class OperatorTests(unittest.TestCase):
         o.addInterface(interfaceC)
         self.assertEqual(o.getInterface("Second"), interfaceB)
         self.assertEqual(o.getInterface("Third"), interfaceC)
+
+
+class CyclesSettingsTests(unittest.TestCase):
+    """
+    Check that we can correctly access the various cycle settings from the operator.
+    """
+
+    detailedCyclesSettings = """
+metadata:
+  version: uncontrolled
+settings:
+  power: 1000000000.0
+  nCycles: 3
+  cycles:
+    - name: startup sequence
+      cumulative days: [1, 2, 3]
+      power fractions: [0.1, 0.2, 0.3]
+      availability factor: 0.1
+    - cycle length: 10
+      burn steps: 5
+      power fractions: [0.2, 0.2, 0.2, 0.2, 0]
+      availability factor: 0.5
+    - name: prepare for shutdown
+      step days: [3, R4]
+      power fractions: [0.3, R4]
+  runType: Standard
+"""
+
+    powerFractionsSolution = [
+        [0.1, 0.2, 0.3],
+        [0.2, 0.2, 0.2, 0.2, 0],
+        [0.3, 0.3, 0.3, 0.3, 0.3],
+    ]
+    cycleNamesSolution = ["startup sequence", None, "prepare for shutdown"]
+    availabilityFactorsSolution = [0.1, 0.5, 1]
+    stepLengthsSolution = [
+        [1, 1, 1],
+        [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
+        [3, 3, 3, 3, 3],
+    ]
+    cycleLengthsSolution = [30, 10, 15]
+    burnStepsSolution = [3, 5, 5]
+    maxBurnStepsSolution = 5
+
+    def setUp(self):
+        self.standaloneDetailedCS = Settings()
+        self.standaloneDetailedCS.loadFromString(self.detailedCyclesSettings)
+        self.detailedOperator = Operator(self.standaloneDetailedCS)
+
+    def test_getPowerFractions(self):
+        self.assertEqual(
+            self.detailedOperator.powerFractions, self.powerFractionsSolution
+        )
+
+        self.detailedOperator._powerFractions = None
+        self.assertEqual(
+            self.detailedOperator.powerFractions, self.powerFractionsSolution
+        )
+
+    def test_getCycleNames(self):
+        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+
+        self.detailedOperator._cycleNames = None
+        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+
+    def test_getAvailabilityFactors(self):
+        self.assertEqual(
+            self.detailedOperator.availabilityFactors,
+            self.availabilityFactorsSolution,
+        )
+
+        self.detailedOperator._availabilityFactors = None
+        self.assertEqual(
+            self.detailedOperator.availabilityFactors,
+            self.availabilityFactorsSolution,
+        )
+
+    def test_getStepLengths(self):
+        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+
+        self.detailedOperator._stepLength = None
+        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+
+    def test_getCycleLengths(self):
+        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+
+        self.detailedOperator._cycleLengths = None
+        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+
+    def test_getBurnSteps(self):
+        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+
+        self.detailedOperator._burnSteps = None
+        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+
+    def test_getMaxBurnSteps(self):
+        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
+
+        self.detailedOperator._maxBurnSteps = None
+        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
 
 
 if __name__ == "__main__":

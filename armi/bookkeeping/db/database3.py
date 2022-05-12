@@ -62,12 +62,12 @@ import io
 import itertools
 import os
 import pathlib
-from platform import uname
 import re
-import sys
-import time
 import shutil
 import subprocess
+import sys
+import time
+from platform import uname
 from typing import (
     Optional,
     Tuple,
@@ -80,12 +80,13 @@ from typing import (
     Generator,
 )
 
-import numpy
 import h5py
+import numpy
 
-import armi
 from armi import context
+from armi import getApp
 from armi import interfaces
+from armi import meta
 from armi import runLog
 from armi import settings
 from armi.reactor import parameters
@@ -102,6 +103,7 @@ from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
+from armi.utils import getPreviousTimeNode, getStepLengths
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 from armi.settings.fwSettings.databaseSettings import (
@@ -246,7 +248,7 @@ class DatabaseInterface(interfaces.Interface):
         DBs should receive the state information of the run at each node.
         """
         # skip writing for last burn step since it will be written at interact EOC
-        if node < self.cs["burnSteps"]:
+        if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
             ) / 60.0
@@ -294,7 +296,7 @@ class DatabaseInterface(interfaces.Interface):
         DB is created and managed by the master node only but we can still connect to it
         from workers to enable things like history tracking.
         """
-        if armi.MPI_RANK > 0:
+        if context.MPI_RANK > 0:
             # DB may not exist if distribute state is called early.
             if self._dbPath is not None and os.path.exists(self._dbPath):
                 self._db = Database3(self._dbPath, "r")
@@ -303,30 +305,75 @@ class DatabaseInterface(interfaces.Interface):
     def distributable(self):
         return self.Distribute.SKIP
 
-    def prepRestartRun(self, dbCycle, dbNode):
-        """Load the data history from the database being restarted from."""
+    def prepRestartRun(self):
+        """
+        Load the data history from the database requested in the case setting
+        `reloadDBName`.
+
+        Reactor state is put at the cycle/node requested in the case settings
+        `startCycle` and `startNode`, having loaded the state from all cycles prior
+        to that in the requested database.
+
+        Notes
+        -----
+        Mixing the use of simple vs detailed cycles settings is allowed, provided
+        that the cycle histories prior to `startCycle`/`startNode` are equivalent.
+        """
         reloadDBName = self.cs["reloadDBName"]
         runLog.info(
             f"Merging database history from {reloadDBName} for restart analysis."
         )
+        startCycle = self.cs["startCycle"]
+        startNode = self.cs["startNode"]
+
         with Database3(reloadDBName, "r") as inputDB:
             loadDbCs = inputDB.loadCS()
 
-            # Not beginning or end of cycle so burnSteps matter to get consistent time.
-            isMOC = self.cs["startNode"] not in (0, loadDbCs["burnSteps"])
-            if loadDbCs["burnSteps"] != self.cs["burnSteps"] and isMOC:
-                raise ValueError(
-                    "Time nodes per cycle are inconsistent between loadDB and "
-                    "current case settings. This will create a mismatch in the "
-                    "total time per cycle for the load cycle. Change current case "
-                    "settings to {0} steps per node, or set `startNode` == 0 or {0} "
-                    "so that it loads the BOC or EOC of the load database."
-                    "".format(loadDbCs["burnSteps"])
-                )
+            # pull the history up to the cycle/node prior to `startCycle`/`startNode`
+            dbCycle, dbNode = getPreviousTimeNode(
+                startCycle,
+                startNode,
+                self.cs,
+            )
 
-            self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])
+            # check that cycle histories are equivalent up to this point
+            self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
+                loadDbCs, dbCycle, dbNode
+            )
+
+            self._db.mergeHistory(inputDB, startCycle, startNode)
         self.loadState(dbCycle, dbNode)
 
+    def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
+        self, loadDbCs, dbCycle, dbNode
+    ):
+        dbStepLengths = getStepLengths(loadDbCs)
+        currentCaseStepLengths = getStepLengths(self.cs)
+        dbStepHistory = []
+        currentCaseStepHistory = []
+        try:
+            for cycleIdx in range(dbCycle + 1):
+                if cycleIdx == dbCycle:
+                    # truncate it at dbNode
+                    dbStepHistory.append(dbStepLengths[cycleIdx][:dbNode])
+                    currentCaseStepHistory.append(
+                        currentCaseStepLengths[cycleIdx][:dbNode]
+                    )
+                else:
+                    dbStepHistory.append(dbStepLengths[cycleIdx])
+                    currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
+        except IndexError:
+            runLog.error(
+                f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}"
+            )
+            raise
+
+        if dbStepHistory != currentCaseStepHistory:
+            raise ValueError(
+                "The cycle history up to the restart cycle/node must be equivalent."
+            )
+
+    # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
@@ -366,7 +413,6 @@ class DatabaseInterface(interfaces.Interface):
             If fileName is not specified and neither the database in memory, nor the
             `cs["reloadDBName"]` have the time step specified.
         """
-
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
                 if loadDB.hasTimeStep(cycle, timeNode, statePointName=timeStepName):
@@ -581,13 +627,13 @@ class Database3(database.Database):
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
         self.h5db = h5py.File(filePath, self._permission)
         self.h5db.attrs["successfulCompletion"] = False
-        self.h5db.attrs["version"] = armi.__version__
+        self.h5db.attrs["version"] = meta.__version__
         self.h5db.attrs["databaseVersion"] = self.version
-        self.h5db.attrs["user"] = armi.USER
+        self.h5db.attrs["user"] = context.USER
         self.h5db.attrs["python"] = sys.version
-        self.h5db.attrs["armiLocation"] = os.path.dirname(armi.ROOT)
-        self.h5db.attrs["startTime"] = armi.START_TIME
-        self.h5db.attrs["machines"] = numpy.array(armi.MPI_NODENAMES).astype("S")
+        self.h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
+        self.h5db.attrs["startTime"] = context.START_TIME
+        self.h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
         # store platform data
         platform_data = uname()
         self.h5db.attrs["platform"] = platform_data.system
@@ -596,7 +642,7 @@ class Database3(database.Database):
         self.h5db.attrs["platformVersion"] = platform_data.version
         self.h5db.attrs["platformArch"] = platform_data.processor
         # store app and plugin data
-        app = armi.getApp()
+        app = getApp()
         self.h5db.attrs["appName"] = app.name
         plugins = app.pluginManager.list_name_plugin()
         ps = [
@@ -1095,7 +1141,12 @@ class Database3(database.Database):
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
         root = comps[0][0]
-        return root  # usually reactor object
+
+        # ensure the max assembly number is correct
+        updateGlobalAssemblyNum(root)
+
+        # usually a reactor object
+        return root
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):
@@ -1298,7 +1349,7 @@ class Database3(database.Database):
     def _readParams(h5group, compTypeName, comps, allowMissing=False):
         g = h5group[compTypeName]
 
-        renames = armi.getApp().getParamRenames()
+        renames = getApp().getParamRenames()
 
         pDefs = comps[0].pDefs
 

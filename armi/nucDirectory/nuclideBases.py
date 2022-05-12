@@ -95,16 +95,16 @@ U235_7
 
 """
 
+import glob
 import os
 import pathlib
-import glob
 
 from ruamel import yaml
 
-import armi
+from armi import context
+from armi import runLog
 from armi.nucDirectory import elements
 from armi.nucDirectory import transmutations
-from armi import runLog
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
 # used to prevent multiple applications of burn chains, which would snowball
@@ -275,7 +275,7 @@ def __readRiplNuclides():
 
     elements.clearNuclideBases()
     for z, a, symbol, mass, _err in ripl.readFRDMMassFile(
-        os.path.join(armi.context.RES, "ripl-mass-frdm95.dat")
+        os.path.join(context.RES, "ripl-mass-frdm95.dat")
     ):
         if z == 0 and a == 1:
             # skip the neutron
@@ -292,7 +292,7 @@ def __readRiplAbundance():
     """
     from armi.nuclearDataIO import ripl
 
-    with open(os.path.join(armi.context.RES, "ripl-abundance.dat")) as ripl_abundance:
+    with open(os.path.join(context.RES, "ripl-abundance.dat")) as ripl_abundance:
         for _z, a, sym, percent, _err in ripl.readAbundanceFile(ripl_abundance):
             nb = byName[sym + "{}".format(a)]
             nb.abundance = percent / 100.0
@@ -307,7 +307,7 @@ def __readMc2Nuclides():
     This assigns MC2 labels and often adds metastable versions of nuclides
     that have already been added from RIPL.
     """
-    with open(os.path.join(armi.context.RES, "mc2Nuclides.yaml"), "r") as mc2Nucs:
+    with open(os.path.join(context.RES, "mc2Nuclides.yaml"), "r") as mc2Nucs:
         mc2Nuclides = yaml.load(mc2Nucs, yaml.RoundTripLoader)
 
     # now add the mc2 specific nuclideBases, and correct the mc2Ids when a > 0 and state = 0

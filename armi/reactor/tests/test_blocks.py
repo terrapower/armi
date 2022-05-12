@@ -308,25 +308,25 @@ def getComponentDataFromBlock(component, block):
 
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
-        self.Block = loadTestBlock()
+        self.block = loadTestBlock()
         self._hotBlock = loadTestBlock(cold=False)
-        self.r = self.Block.r
+        self.r = self.block.r
 
     def test_getSmearDensity(self):
-        cur = self.Block.getSmearDensity()
+        cur = self.block.getSmearDensity()
         ref = (
-            self.Block.getDim(Flags.FUEL, "od") ** 2
-            - self.Block.getDim(Flags.FUEL, "id") ** 2
-        ) / self.Block.getDim(Flags.LINER, "id") ** 2
+            self.block.getDim(Flags.FUEL, "od") ** 2
+            - self.block.getDim(Flags.FUEL, "id") ** 2
+        ) / self.block.getDim(Flags.LINER, "id") ** 2
         places = 10
         self.assertAlmostEqual(cur, ref, places=places)
 
         # test with liner instead of clad
         ref = (
-            self.Block.getDim(Flags.FUEL, "od") ** 2
-            - self.Block.getDim(Flags.FUEL, "id") ** 2
-        ) / self.Block.getDim(Flags.LINER, "id") ** 2
-        cur = self.Block.getSmearDensity()
+            self.block.getDim(Flags.FUEL, "od") ** 2
+            - self.block.getDim(Flags.FUEL, "id") ** 2
+        ) / self.block.getDim(Flags.LINER, "id") ** 2
+        cur = self.block.getSmearDensity()
         self.assertAlmostEqual(
             cur,
             ref,
@@ -347,10 +347,10 @@ class Block_TestCase(unittest.TestCase):
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
 
         ref = (
-            self.Block.getDim(Flags.FUEL, "od") ** 2
-            - self.Block.getDim(Flags.FUEL, "id") ** 2
-        ) / self.Block.getDim(Flags.LINER, "id") ** 2
-        cur = self.Block.getSmearDensity()
+            self.block.getDim(Flags.FUEL, "od") ** 2
+            - self.block.getDim(Flags.FUEL, "id") ** 2
+        ) / self.block.getDim(Flags.LINER, "id") ** 2
+        cur = self.block.getSmearDensity()
         self.assertAlmostEqual(
             cur,
             ref,
@@ -362,62 +362,59 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getSmearDensityMultipleLiner(self):
         numLiners = sum(
-            1 for c in self.Block if "liner" in c.name and "gap" not in c.name
+            1 for c in self.block if "liner" in c.name and "gap" not in c.name
         )
         self.assertEqual(
             numLiners,
             2,
-            "self.Block needs at least 2 liners for this test to be functional.",
+            "self.block needs at least 2 liners for this test to be functional.",
         )
-        cur = self.Block.getSmearDensity()
+        cur = self.block.getSmearDensity()
         ref = (
-            self.Block.getDim(Flags.FUEL, "od") ** 2
-            - self.Block.getDim(Flags.FUEL, "id") ** 2
-        ) / self.Block.getDim(Flags.INNER | Flags.LINER, "id") ** 2
+            self.block.getDim(Flags.FUEL, "od") ** 2
+            - self.block.getDim(Flags.FUEL, "id") ** 2
+        ) / self.block.getDim(Flags.INNER | Flags.LINER, "id") ** 2
         self.assertAlmostEqual(cur, ref, places=10)
 
     def test_timeNodeParams(self):
-        self.Block.p["avgFuelTemp", 3] = 2.0
-        self.assertEqual(2.0, self.Block.p[("avgFuelTemp", 3)])
+        self.block.p["avgFuelTemp", 3] = 2.0
+        self.assertEqual(2.0, self.block.p[("avgFuelTemp", 3)])
 
     def test_getType(self):
         ref = "plenum pin"
-        self.Block.setType(ref)
-        cur = self.Block.getType()
+        self.block.setType(ref)
+        cur = self.block.getType()
         self.assertEqual(cur, ref)
-        self.assertTrue(self.Block.hasFlags(Flags.PLENUM))
-        self.assertTrue(self.Block.hasFlags(Flags.PLENUM | Flags.PIN))
-        self.assertTrue(self.Block.hasFlags(Flags.PLENUM | Flags.PIN, exact=True))
-        self.assertFalse(self.Block.hasFlags(Flags.PLENUM, exact=True))
+        self.assertTrue(self.block.hasFlags(Flags.PLENUM))
+        self.assertTrue(self.block.hasFlags(Flags.PLENUM | Flags.PIN))
+        self.assertTrue(self.block.hasFlags(Flags.PLENUM | Flags.PIN, exact=True))
+        self.assertFalse(self.block.hasFlags(Flags.PLENUM, exact=True))
 
     def test_hasFlags(self):
+        self.block.setType("feed fuel")
 
-        self.Block.setType("feed fuel")
-
-        cur = self.Block.hasFlags(Flags.FEED | Flags.FUEL)
+        cur = self.block.hasFlags(Flags.FEED | Flags.FUEL)
         self.assertTrue(cur)
 
-        cur = self.Block.hasFlags(Flags.PLENUM)
+        cur = self.block.hasFlags(Flags.PLENUM)
         self.assertFalse(cur)
 
     def test_setType(self):
+        self.block.setType("igniter fuel")
 
-        self.Block.setType("igniter fuel")
+        self.assertEqual("igniter fuel", self.block.getType())
+        self.assertTrue(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
-        self.assertEqual("igniter fuel", self.Block.getType())
-        self.assertTrue(self.Block.hasFlags(Flags.IGNITER | Flags.FUEL))
+        self.block.adjustUEnrich(0.0001)
+        self.block.setType("feed fuel")
 
-        self.Block.adjustUEnrich(0.0001)
-        self.Block.setType("feed fuel")
-
-        self.assertTrue(self.Block.hasFlags(Flags.FEED | Flags.FUEL))
-        self.assertTrue(self.Block.hasFlags(Flags.FUEL))
-        self.assertFalse(self.Block.hasFlags(Flags.IGNITER | Flags.FUEL))
+        self.assertTrue(self.block.hasFlags(Flags.FEED | Flags.FUEL))
+        self.assertTrue(self.block.hasFlags(Flags.FUEL))
+        self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-
-        Block2 = copy.deepcopy(self.Block)
-        originalComponents = self.Block.getComponents()
+        Block2 = copy.deepcopy(self.block)
+        originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
             self.assertEqual(c1.getName(), c2.getName())
@@ -435,17 +432,17 @@ class Block_TestCase(unittest.TestCase):
                     self.assertNotIn(dim[0], originalComponents)
                     self.assertIn(dim[0], newComponents)
 
-        ref = self.Block.getMass()
+        ref = self.block.getMass()
         cur = Block2.getMass()
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
 
-        ref = self.Block.getArea()
+        ref = self.block.getArea()
         cur = Block2.getArea()
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
 
-        ref = self.Block.getHeight()
+        ref = self.block.getHeight()
         cur = Block2.getHeight()
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
@@ -455,8 +452,8 @@ class Block_TestCase(unittest.TestCase):
         newSettings = {"loadingFile": os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
         self.cs = self.cs.modified(newSettings=newSettings)
 
-        self.Block.p.xsType = "B"
-        cur = self.Block.p.xsType
+        self.block.p.xsType = "B"
+        cur = self.block.p.xsType
         ref = "B"
         self.assertEqual(cur, ref)
 
@@ -464,21 +461,21 @@ class Block_TestCase(unittest.TestCase):
         newSettings = {"buGroups": [100]}
         self.cs = self.cs.modified(newSettings=newSettings)
 
-        self.Block.p.xsType = "BB"
-        cur = self.Block.p.xsType
+        self.block.p.xsType = "BB"
+        cur = self.block.p.xsType
         ref = "BB"
         self.assertEqual(cur, ref)
 
-    def test27b_setBuGroup(self):
+    def test_27b_setBuGroup(self):
         type_ = "A"
-        self.Block.p.buGroup = type_
-        cur = self.Block.p.buGroupNum
+        self.block.p.buGroup = type_
+        cur = self.block.p.buGroupNum
         ref = ord(type_) - 65
         self.assertEqual(cur, ref)
 
         typeNumber = 25
-        self.Block.p.buGroupNum = typeNumber
-        cur = self.Block.p.buGroup
+        self.block.p.buGroupNum = typeNumber
+        cur = self.block.p.buGroup
         ref = chr(typeNumber + 65)
         self.assertEqual(cur, ref)
 
@@ -557,16 +554,15 @@ class Block_TestCase(unittest.TestCase):
             b.getVolumeFraction()
 
     def test_clearDensity(self):
-        self.Block.clearNumberDensities()
+        self.block.clearNumberDensities()
 
-        for nuc in self.Block.getNuclides():
-            cur = self.Block.getNumberDensity(nuc)
+        for nuc in self.block.getNuclides():
+            cur = self.block.getNumberDensity(nuc)
             ref = 0.0
             places = 5
             self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getNumberDensity(self):
-
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -577,25 +573,38 @@ class Block_TestCase(unittest.TestCase):
             "ZR": 0.00709003962772,
         }
 
-        self.Block.setNumberDensities(refDict)
+        self.block.setNumberDensities(refDict)
 
         for nucKey, nucItem in refDict.items():
-            cur = self.Block.getNumberDensity(nucKey)
+            cur = self.block.getNumberDensity(nucKey)
             ref = nucItem
             places = 6
             self.assertAlmostEqual(ref, cur, places=places)
 
+    def test_getMasses(self):
+        masses = sorted(self.block.getMasses())
+        self.assertEqual(len(masses), 13)
+        self.assertEqual(masses[0], "C")
+
+    def test_removeMass(self):
+        mass0 = self.block.getMass("U238")
+        self.assertGreater(mass0, 0.1)
+        self.block.removeMass("U238", 0.1)
+        mass1 = self.block.getMass("U238")
+        self.assertGreater(mass1, 0)
+        self.assertGreater(mass0, mass1)
+
     def test_setNumberDensity(self):
         ref = 0.05
-        self.Block.setNumberDensity("U235", ref)
+        self.block.setNumberDensity("U235", ref)
 
-        cur = self.Block.getNumberDensity("U235")
+        cur = self.block.getNumberDensity("U235")
         places = 5
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setNumberDensities(self):
         """Make sure we can set multiple number densities at once."""
-        b = self.Block
+        b = self.block
         b.setNumberDensity("NA", 0.5)
         refDict = {
             "U235": 0.00275173784234,
@@ -607,7 +616,7 @@ class Block_TestCase(unittest.TestCase):
         b.setNumberDensities(refDict)
 
         for nucKey, nucItem in refDict.items():
-            cur = self.Block.getNumberDensity(nucKey)
+            cur = self.block.getNumberDensity(nucKey)
             ref = nucItem
             places = 6
             self.assertAlmostEqual(cur, ref, places=places)
@@ -623,34 +632,33 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(b.getNumberDensity("NA23"), 0.0)
 
     def test_getMass(self):
-        self.Block.setHeight(100.0)
+        self.block.setHeight(100.0)
 
         nucName = "U235"
-        d = self.Block.getNumberDensity(nucName)
-        v = self.Block.getVolume()
+        d = self.block.getNumberDensity(nucName)
+        v = self.block.getVolume()
         A = nucDir.getAtomicWeight(nucName)
 
         ref = d * v * A / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-        cur = self.Block.getMass(nucName)
+        cur = self.block.getMass(nucName)
 
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setMass(self):
-
-        self.Block.setHeight(100.0)
+        self.block.setHeight(100.0)
 
         mass = 100.0
         nuc = "U238"
-        self.Block.setMass(nuc, mass)
+        self.block.setMass(nuc, mass)
 
-        cur = self.Block.getMass(nuc)
+        cur = self.block.getMass(nuc)
         ref = mass
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-        cur = self.Block.getNumberDensity(nuc)
-        v = self.Block.getVolume()
+        cur = self.block.getNumberDensity(nuc)
+        v = self.block.getVolume()
         A = nucDir.getAtomicWeight(nuc)
         ref = MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * mass / (v * A)
 
@@ -658,9 +666,9 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getTotalMass(self):
-        self.Block.setHeight(100.0)
+        self.block.setHeight(100.0)
 
-        self.Block.clearNumberDensities()
+        self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -670,9 +678,9 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(refDict)
+        self.block.setNumberDensities(refDict)
 
-        cur = self.Block.getMass()
+        cur = self.block.getMass()
 
         tot = 0.0
         for nucName, nucItem in refDict.items():
@@ -680,17 +688,15 @@ class Block_TestCase(unittest.TestCase):
             A = nucDir.getAtomicWeight(nucName)
             tot += d * A
 
-        v = self.Block.getVolume()
+        v = self.block.getVolume()
         ref = tot * v / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
         places = 9
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_replaceBlockWithBlock(self):
-        r"""
-        Tests conservation of mass flag in replaceBlockWithBlock
-        """
-        block = self.Block
+        r"""Tests conservation of mass flag in replaceBlockWithBlock"""
+        block = self.block
         ductBlock = block.__class__("duct")
         ductBlock.add(block.getComponent(Flags.COOLANT, exact=True))
         ductBlock.add(block.getComponent(Flags.DUCT, exact=True))
@@ -712,38 +718,38 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(block.p.height, refHeight)
 
     def test_getWettedPerimeter(self):
-        cur = self.Block.getWettedPerimeter()
+        cur = self.block.getWettedPerimeter()
         ref = math.pi * (
-            self.Block.getDim(Flags.CLAD, "od") + self.Block.getDim(Flags.WIRE, "od")
-        ) + 6 * self.Block.getDim(Flags.DUCT, "ip") / math.sqrt(3) / self.Block.getDim(
+            self.block.getDim(Flags.CLAD, "od") + self.block.getDim(Flags.WIRE, "od")
+        ) + 6 * self.block.getDim(Flags.DUCT, "ip") / math.sqrt(3) / self.block.getDim(
             Flags.CLAD, "mult"
         )
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowAreaPerPin(self):
-        area = self.Block.getComponent(Flags.COOLANT).getArea()
-        nPins = self.Block.getNumPins()
-        cur = self.Block.getFlowAreaPerPin()
+        area = self.block.getComponent(Flags.COOLANT).getArea()
+        nPins = self.block.getNumPins()
+        cur = self.block.getFlowAreaPerPin()
         ref = area / nPins
         self.assertAlmostEqual(cur, ref)
 
     def test_getHydraulicDiameter(self):
-        cur = self.Block.getHydraulicDiameter()
-        ref = 4.0 * self.Block.getFlowAreaPerPin() / self.Block.getWettedPerimeter()
+        cur = self.block.getHydraulicDiameter()
+        ref = 4.0 * self.block.getFlowAreaPerPin() / self.block.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
     def test_adjustUEnrich(self):
-        self.Block.setHeight(100.0)
+        self.block.setHeight(100.0)
 
         ref = 0.25
-        self.Block.adjustUEnrich(ref)
+        self.block.adjustUEnrich(ref)
 
-        cur = self.Block.getComponent(Flags.FUEL).getEnrichment()
+        cur = self.block.getComponent(Flags.FUEL).getEnrichment()
         places = 5
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setLocation(self):
-        b = self.Block
+        b = self.block
         # a bit obvious, but location is a property now...
         i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
         b.spatialLocator = b.core.spatialGrid[i, j, 0]
@@ -776,20 +782,20 @@ class Block_TestCase(unittest.TestCase):
     def test_setBuLimitInfo(self):
         cs = settings.getMasterCs()
 
-        self.Block.adjustUEnrich(0.1)
-        self.Block.setType("igniter fuel")
+        self.block.adjustUEnrich(0.1)
+        self.block.setType("igniter fuel")
 
-        self.Block.setBuLimitInfo(cs)
+        self.block.setBuLimitInfo(cs)
 
-        cur = self.Block.p.buLimit
+        cur = self.block.p.buLimit
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_getTotalNDens(self):
 
-        self.Block.setType("fuel")
+        self.block.setType("fuel")
 
-        self.Block.clearNumberDensities()
+        self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -799,13 +805,13 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(refDict)
+        self.block.setNumberDensities(refDict)
 
-        cur = self.Block.getTotalNDens()
+        cur = self.block.getTotalNDens()
 
         tot = 0.0
         for nucName in refDict.keys():
-            ndens = self.Block.getNumberDensity(nucName)
+            ndens = self.block.getNumberDensity(nucName)
             tot += ndens
 
         ref = tot
@@ -814,8 +820,8 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getHMDens(self):
 
-        self.Block.setType("fuel")
-        self.Block.clearNumberDensities()
+        self.block.setType("fuel")
+        self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -825,15 +831,15 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(refDict)
+        self.block.setNumberDensities(refDict)
 
-        cur = self.Block.getHMDens()
+        cur = self.block.getHMDens()
 
         hmDens = 0.0
         for nuclide in refDict.keys():
             if nucDir.isHeavyMetal(nuclide):
                 # then nuclide is a HM
-                hmDens += self.Block.getNumberDensity(nuclide)
+                hmDens += self.block.getNumberDensity(nuclide)
 
         ref = hmDens
 
@@ -843,10 +849,10 @@ class Block_TestCase(unittest.TestCase):
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
-        self.Block.add(self.fuelComponent)
-        self.Block.setHeight(100.0)
+        self.block.add(self.fuelComponent)
+        self.block.setHeight(100.0)
 
-        self.Block.clearNumberDensities()
+        self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -856,35 +862,35 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(refDict)
+        self.block.setNumberDensities(refDict)
 
-        cur = self.Block.getFissileMassEnrich()
+        cur = self.block.getFissileMassEnrich()
 
-        ref = self.Block.getFissileMass() / self.Block.getHMMass()
+        ref = self.block.getFissileMass() / self.block.getHMMass()
         places = 4
         self.assertAlmostEqual(cur, ref, places=places)
-        self.Block.remove(self.fuelComponent)
+        self.block.remove(self.fuelComponent)
 
     def test_getUraniumMassEnrich(self):
 
-        self.Block.adjustUEnrich(0.25)
+        self.block.adjustUEnrich(0.25)
 
         ref = 0.25
 
-        self.Block.adjustUEnrich(ref)
-        cur = self.Block.getUraniumMassEnrich()
+        self.block.adjustUEnrich(ref)
+        cur = self.block.getUraniumMassEnrich()
 
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getUraniumNumEnrich(self):
 
-        self.Block.adjustUEnrich(0.25)
+        self.block.adjustUEnrich(0.25)
 
-        cur = self.Block.getUraniumNumEnrich()
+        cur = self.block.getUraniumNumEnrich()
 
-        u8 = self.Block.getNumberDensity("U238")
-        u5 = self.Block.getNumberDensity("U235")
+        u8 = self.block.getNumberDensity("U238")
+        u5 = self.block.getNumberDensity("U235")
         ref = u5 / (u8 + u5)
 
         places = 6
@@ -892,7 +898,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getNumberOfAtoms(self):
 
-        self.Block.clearNumberDensities()
+        self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -902,21 +908,21 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(refDict)
+        self.block.setNumberDensities(refDict)
 
         nucName = "U238"
         moles = (
-            self.Block.getNumberOfAtoms(nucName) / units.AVOGADROS_NUMBER
+            self.block.getNumberOfAtoms(nucName) / units.AVOGADROS_NUMBER
         )  # about 158 moles
         refMoles = (
             refDict["U238"]
-            * self.Block.getVolume()
+            * self.block.getVolume()
             / (units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM)
         )
         self.assertAlmostEqual(moles, refMoles)
 
     def test_getPuN(self):
-        fuel = self.Block.getComponent(Flags.FUEL)
+        fuel = self.block.getComponent(Flags.FUEL)
         vFrac = fuel.getVolumeFraction()
         refDict = {
             "AM241": 2.695633500634074e-05,
@@ -931,12 +937,12 @@ class Block_TestCase(unittest.TestCase):
         }
         fuel.setNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
 
-        cur = self.Block.getPuN()
+        cur = self.block.getPuN()
 
         ndens = 0.0
         for nucName in refDict.keys():
             if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                ndens += self.Block.getNumberDensity(nucName)
+                ndens += self.block.getNumberDensity(nucName)
         ref = ndens
 
         places = 6
@@ -944,7 +950,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getPuMass(self):
 
-        fuel = self.Block.getComponent(Flags.FUEL)
+        fuel = self.block.getComponent(Flags.FUEL)
         refDict = {
             "AM241": 2.695633500634074e-05,
             "U238": 0.015278429635341755,
@@ -957,31 +963,31 @@ class Block_TestCase(unittest.TestCase):
             "PU242": 2.3078961257395204e-05,
         }
         fuel.setNumberDensities(refDict)
-        cur = self.Block.getPuMass()
+        cur = self.block.getPuMass()
         pu = 0.0
         for nucName in refDict.keys():
             if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                pu += self.Block.getMass(nucName)
+                pu += self.block.getMass(nucName)
         self.assertAlmostEqual(cur, pu)
 
     def test_adjustDensity(self):
 
         u235Dens = 0.003
         u238Dens = 0.010
-        self.Block.setNumberDensity("U235", u235Dens)
-        self.Block.setNumberDensity("U238", u238Dens)
-        mass1 = self.Block.getMass(["U235", "U238"])
+        self.block.setNumberDensity("U235", u235Dens)
+        self.block.setNumberDensity("U238", u238Dens)
+        mass1 = self.block.getMass(["U235", "U238"])
         densAdj = 0.9
         nucList = ["U235", "U238"]
-        massDiff = self.Block.adjustDensity(densAdj, nucList, returnMass=True)
-        mass2 = self.Block.getMass(["U235", "U238"])
+        massDiff = self.block.adjustDensity(densAdj, nucList, returnMass=True)
+        mass2 = self.block.getMass(["U235", "U238"])
 
-        cur = self.Block.getNumberDensity("U235")
+        cur = self.block.getNumberDensity("U235")
         ref = densAdj * u235Dens
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-        cur = self.Block.getNumberDensity("U238")
+        cur = self.block.getNumberDensity("U238")
         ref = densAdj * u238Dens
         self.assertAlmostEqual(cur, ref, places=places)
 
@@ -989,12 +995,12 @@ class Block_TestCase(unittest.TestCase):
 
     def test_completeInitialLoading(self):
 
-        area = self.Block.getArea()
+        area = self.block.getArea()
         height = 2.0
-        self.Block.setHeight(height)
+        self.block.setHeight(height)
 
-        self.Block.clearNumberDensities()
-        self.Block.setNumberDensities(
+        self.block.clearNumberDensities()
+        self.block.setNumberDensities(
             {
                 "U238": 0.018518936996911595,
                 "ZR": 0.006040713762820692,
@@ -1003,36 +1009,36 @@ class Block_TestCase(unittest.TestCase):
             }
         )
 
-        self.Block.completeInitialLoading()
+        self.block.completeInitialLoading()
 
-        cur = self.Block.p.molesHmBOL
-        ref = self.Block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area
+        cur = self.block.p.molesHmBOL
+        ref = self.block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_add(self):
 
-        numComps = len(self.Block.getComponents())
+        numComps = len(self.block.getComponents())
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
 
         newComp = components.Circle("fuel", "UZr", **fuelDims)
-        self.Block.add(newComp)
-        self.assertEqual(numComps + 1, len(self.Block.getComponents()))
+        self.block.add(newComp)
+        self.assertEqual(numComps + 1, len(self.block.getComponents()))
 
-        self.assertIn(newComp, self.Block.getComponents())
-        self.Block.remove(newComp)
+        self.assertIn(newComp, self.block.getComponents())
+        self.block.remove(newComp)
 
     def test_hasComponents(self):
-        self.assertTrue(self.Block.hasComponents([Flags.FUEL, Flags.CLAD]))
-        self.assertTrue(self.Block.hasComponents(Flags.FUEL))
+        self.assertTrue(self.block.hasComponents([Flags.FUEL, Flags.CLAD]))
+        self.assertTrue(self.block.hasComponents(Flags.FUEL))
         self.assertFalse(
-            self.Block.hasComponents([Flags.FUEL, Flags.CLAD, Flags.DUMMY])
+            self.block.hasComponents([Flags.FUEL, Flags.CLAD, Flags.DUMMY])
         )
 
     def test_getComponentNames(self):
 
-        cur = self.Block.getComponentNames()
+        cur = self.block.getComponentNames()
         ref = set(
             [
                 "annular void",
@@ -1053,40 +1059,40 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getComponents(self):
-        cur = self.Block.getComponents(Flags.FUEL)
+        cur = self.block.getComponents(Flags.FUEL)
         self.assertEqual(len(cur), 1)
 
-        comps = self.Block.getComponents(Flags.FUEL) + self.Block.getComponents(
+        comps = self.block.getComponents(Flags.FUEL) + self.block.getComponents(
             Flags.CLAD
         )
         self.assertEqual(len(comps), 2)
 
-        inter = self.Block.getComponents(Flags.INTERCOOLANT)
+        inter = self.block.getComponents(Flags.INTERCOOLANT)
         self.assertEqual(len(inter), 1)
 
-        inter = self.Block.getComponents(
+        inter = self.block.getComponents(
             Flags.INTERCOOLANT, exact=True
         )  # case insensitive
-        self.assertEqual(inter, [self.Block.getComponent(Flags.INTERCOOLANT)])
+        self.assertEqual(inter, [self.block.getComponent(Flags.INTERCOOLANT)])
 
-        cool = self.Block.getComponents(Flags.COOLANT, exact=True)
+        cool = self.block.getComponents(Flags.COOLANT, exact=True)
         self.assertEqual(len(cool), 1)
 
     def test_getComponent(self):
-        cur = self.Block.getComponent(Flags.FUEL)
+        cur = self.block.getComponent(Flags.FUEL)
         self.assertIsInstance(cur, components.Component)
 
-        inter = self.Block.getComponent(Flags.INTERCOOLANT)
+        inter = self.block.getComponent(Flags.INTERCOOLANT)
         self.assertIsInstance(inter, components.Component)
 
         with self.assertRaises(KeyError):
             # this really isnt the responsibility of block, more of Flags, but until this refactor
             # is over...
-            inter = self.Block.getComponent(
+            inter = self.block.getComponent(
                 Flags.fromString("intercoolantlala"), exact=True
             )
 
-        cool = self.Block.getComponent(Flags.COOLANT, exact=True)
+        cool = self.block.getComponent(Flags.COOLANT, exact=True)
         self.assertIsInstance(cool, components.Component)
 
     def test_getComponentsOfShape(self):
@@ -1101,34 +1107,34 @@ class Block_TestCase(unittest.TestCase):
             "gap3",
             "clad",
         ]
-        cur = [c.name for c in self.Block.getComponentsOfShape(components.Circle)]
+        cur = [c.name for c in self.block.getComponentsOfShape(components.Circle)]
         self.assertEqual(sorted(ref), sorted(cur))
 
     def test_getComponentsOfMaterial(self):
-        cur = self.Block.getComponentsOfMaterial(materials.UZr())
-        ref = self.Block.getComponent(Flags.FUEL)
+        cur = self.block.getComponentsOfMaterial(materials.UZr())
+        ref = self.block.getComponent(Flags.FUEL)
         self.assertEqual(cur[0], ref)
 
         self.assertEqual(
-            self.Block.getComponentsOfMaterial(materials.HT9()),
+            self.block.getComponentsOfMaterial(materials.HT9()),
             [
-                self.Block.getComponent(Flags.OUTER | Flags.LINER),
-                self.Block.getComponent(Flags.CLAD),
-                self.Block.getComponent(Flags.WIRE),
-                self.Block.getComponent(Flags.DUCT),
+                self.block.getComponent(Flags.OUTER | Flags.LINER),
+                self.block.getComponent(Flags.CLAD),
+                self.block.getComponent(Flags.WIRE),
+                self.block.getComponent(Flags.DUCT),
             ],
         )
 
     def test_getComponentByName(self):
         self.assertIsNone(
-            self.Block.getComponentByName("not the droid youre looking for")
+            self.block.getComponentByName("not the droid youre looking for")
         )
-        self.assertIsNotNone(self.Block.getComponentByName("annular void"))
+        self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
     def test_getSortedComponentsInsideOfComponent(self):
         """Test that components can be sorted within a block and returned in the correct order."""
         expected = [
-            self.Block.getComponentByName(c)
+            self.block.getComponentByName(c)
             for c in [
                 "annular void",
                 "bond",
@@ -1140,13 +1146,13 @@ class Block_TestCase(unittest.TestCase):
                 "gap3",
             ]
         ]
-        clad = self.Block.getComponent(Flags.CLAD)
-        actual = self.Block.getSortedComponentsInsideOfComponent(clad)
+        clad = self.block.getComponent(Flags.CLAD)
+        actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
     def test_getSortedComponentsInsideOfComponentSpecifiedTypes(self):
         expected = [
-            self.Block.getComponentByName(c)
+            self.block.getComponentByName(c)
             for c in [
                 "annular void",
                 "bond",
@@ -1158,38 +1164,35 @@ class Block_TestCase(unittest.TestCase):
                 "gap3",
             ]
         ]
-        clad = self.Block.getComponent(Flags.CLAD)
-        actual = self.Block.getSortedComponentsInsideOfComponent(clad)
+        clad = self.block.getComponent(Flags.CLAD)
+        actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
     def test_getNumComponents(self):
-
-        cur = self.Block.getNumComponents(Flags.FUEL)
-        ref = self.Block.getDim(Flags.FUEL, "mult")
+        cur = self.block.getNumComponents(Flags.FUEL)
+        ref = self.block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
 
-        self.assertEqual(ref, self.Block.getNumComponents(Flags.CLAD))
+        self.assertEqual(ref, self.block.getNumComponents(Flags.CLAD))
 
-        self.assertEqual(1, self.Block.getNumComponents(Flags.DUCT))
+        self.assertEqual(1, self.block.getNumComponents(Flags.DUCT))
 
     def test_getNumPins(self):
-
-        cur = self.Block.getNumPins()
-        ref = self.Block.getDim(Flags.FUEL, "mult")
+        cur = self.block.getNumPins()
+        ref = self.block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
     def test_setPinPowers(self):
-
-        numPins = self.Block.getNumPins()
+        numPins = self.block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
         totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
         imax = 9  # hexagonal rings of pins
         jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
-        self.Block.setPinPowers(
+        self.block.setPinPowers(
             neutronPower,
             numPins,
             imax,
@@ -1198,7 +1201,7 @@ class Block_TestCase(unittest.TestCase):
             removeSixCornerPins=False,
             powerKeySuffix=NEUTRON,
         )
-        self.Block.setPinPowers(
+        self.block.setPinPowers(
             gammaPower,
             numPins,
             imax,
@@ -1207,9 +1210,9 @@ class Block_TestCase(unittest.TestCase):
             removeSixCornerPins=False,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.Block.p.pinPowersNeutron, numpy.array(neutronPower))
-        assert_allclose(self.Block.p.pinPowersGamma, numpy.array(gammaPower))
-        assert_allclose(self.Block.p.pinPowers, numpy.array(totalPower))
+        assert_allclose(self.block.p.pinPowersNeutron, numpy.array(neutronPower))
+        assert_allclose(self.block.p.pinPowersGamma, numpy.array(gammaPower))
+        assert_allclose(self.block.p.pinPowers, numpy.array(totalPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
@@ -1220,18 +1223,18 @@ class Block_TestCase(unittest.TestCase):
                         tFrac += frac
             return tFrac
 
-        self.Block.setHeight(2.0)
+        self.block.setHeight(2.0)
 
         refList = [Flags.BOND, Flags.COOLANT]
-        cur = self.Block.getComponentAreaFrac(refList)
-        fracs = self.Block.getVolumeFractions()
+        cur = self.block.getComponentAreaFrac(refList)
+        fracs = self.block.getVolumeFractions()
 
         ref = calcFracManually(("bond", "coolant"))
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
         # allow inexact for things like fuel1, fuel2 or clad vs. cladding
-        val = self.Block.getComponentAreaFrac(
+        val = self.block.getComponentAreaFrac(
             [Flags.COOLANT, Flags.INTERCOOLANT], exact=False
         )
         ref = calcFracManually(["coolant", "interCoolant"])
@@ -1241,43 +1244,42 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(ref, val)
         self.assertNotAlmostEqual(refWrong, val)
 
-    def test100_getPinPitch(self):
-        cur = self.Block.getPinPitch()
-        ref = self.Block.getDim(Flags.CLAD, "od") + self.Block.getDim(Flags.WIRE, "od")
+    def test_100_getPinPitch(self):
+        cur = self.block.getPinPitch()
+        ref = self.block.getDim(Flags.CLAD, "od") + self.block.getDim(Flags.WIRE, "od")
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-    def test101_getPitch(self):
-        cur = self.Block.getPitch(returnComp=True)
+    def test_101_getPitch(self):
+        cur = self.block.getPitch(returnComp=True)
         ref = (
-            self.Block.getDim(Flags.INTERCOOLANT, "op"),
-            self.Block.getComponent(Flags.INTERCOOLANT),
+            self.block.getDim(Flags.INTERCOOLANT, "op"),
+            self.block.getComponent(Flags.INTERCOOLANT),
         )
         self.assertEqual(cur, ref)
 
-        newb = copy.deepcopy(self.Block)
-        p1, c1 = self.Block.getPitch(returnComp=True)
+        newb = copy.deepcopy(self.block)
+        p1, c1 = self.block.getPitch(returnComp=True)
         p2, c2 = newb.getPitch(returnComp=True)
 
         self.assertTrue(c1 is not c2)
         self.assertTrue(newb.getLargestComponent("op") is c2)
         self.assertTrue(p1 == p2)
 
-    def test102_setPitch(self):
+    def test_102_setPitch(self):
         pitch = 17.5
-        self.Block.setPitch(pitch)
-        cur = self.Block.getPitch()
+        self.block.setPitch(pitch)
+        cur = self.block.getPitch()
         self.assertEqual(cur, pitch)
         self.assertEqual(
-            self.Block.getComponent(Flags.INTERCOOLANT).getDimension("op"), pitch
+            self.block.getComponent(Flags.INTERCOOLANT).getDimension("op"), pitch
         )
 
-    def test106_getAreaFractions(self):
-
-        cur = self.Block.getVolumeFractions()
+    def test_106_getAreaFractions(self):
+        cur = self.block.getVolumeFractions()
         tot = 0.0
         areas = []
-        for c in self.Block.iterComponents():
+        for c in self.block.iterComponents():
             a = c.getArea()
             tot += a
             areas.append((c, a))
@@ -1292,7 +1294,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 
     def test_rotatePins(self):
-        b = self.Block
+        b = self.block
         b.setRotationNum(0)
         index = b.rotatePins(0, justCompute=True)
         self.assertEqual(b.getRotationNum(), 0)
@@ -1319,26 +1321,56 @@ class Block_TestCase(unittest.TestCase):
         self.assertRaises((ValueError, TypeError), b.rotatePins, "a")
 
     def test_expandElementalToIsotopics(self):
-        r"""
-        Tests the expand to elementals capability.
-        """
-
+        r"""Tests the expand to elementals capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
         for elemental in elementals:
-            initialN[elemental] = self.Block.getNumberDensity(
+            initialN[elemental] = self.block.getNumberDensity(
                 elemental.name
             )  # homogenized
-            initialM[elemental] = self.Block.getMass(elemental.name)
+            initialM[elemental] = self.block.getMass(elemental.name)
 
         for elemental in elementals:
-            self.Block.expandElementalToIsotopics(elemental)
+            self.block.expandElementalToIsotopics(elemental)
             newDens = 0.0
             newMass = 0.0
             for natNuc in elemental.getNaturalIsotopics():
-                newDens += self.Block.getNumberDensity(natNuc.name)
-                newMass += self.Block.getMass(natNuc.name)
+                newDens += self.block.getNumberDensity(natNuc.name)
+                newMass += self.block.getMass(natNuc.name)
+
+            self.assertAlmostEqual(
+                initialN[elemental],
+                newDens,
+                msg="Isotopic {2} ndens does not add up to {0}. It adds to {1}"
+                "".format(initialN[elemental], newDens, elemental),
+            )
+            self.assertAlmostEqual(
+                initialM[elemental],
+                newMass,
+                msg="Isotopic {2} mass does not add up to {0} g. "
+                "It adds to {1}".format(initialM[elemental], newMass, elemental),
+            )
+
+    def test_expandAllElementalsToIsotopics(self):
+        r"""Tests the expand all elementals simlutaneously capability."""
+        initialN = {}
+        initialM = {}
+        elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
+        for elemental in elementals:
+            initialN[elemental] = self.block.getNumberDensity(
+                elemental.name
+            )  # homogenized
+            initialM[elemental] = self.block.getMass(elemental.name)
+
+        self.block.expandAllElementalsToIsotopics()
+
+        for elemental in elementals:
+            newDens = 0.0
+            newMass = 0.0
+            for natNuc in elemental.getNaturalIsotopics():
+                newDens += self.block.getNumberDensity(natNuc.name)
+                newMass += self.block.getMass(natNuc.name)
 
             self.assertAlmostEqual(
                 initialN[elemental],
@@ -1359,7 +1391,7 @@ class Block_TestCase(unittest.TestCase):
 
         Needed to verify fix to Issue #165.
         """
-        b = self.Block
+        b = self.block
         moles1 = b.p.molesHmBOL
         b.setPitch(17.5)
         moles2 = b.p.molesHmBOL
@@ -1370,16 +1402,16 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getMfp(self):
         """Test mean free path."""
-        applyDummyData(self.Block)
+        applyDummyData(self.block)
         # These are unverified numbers, just the result of this calculation.
-        mfp, mfpAbs, diffusionLength = self.Block.getMfp()
+        mfp, mfpAbs, diffusionLength = self.block.getMfp()
         # no point testing these number to high accuracy.
         assert_allclose(3.9, mfp, rtol=0.1)
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
     def test_consistentMassDensityVolumeBetweenColdBlockAndColdComponents(self):
-        block = self.Block
+        block = self.block
         expectedData = []
         actualData = []
         for c in block:
@@ -1428,56 +1460,56 @@ class Block_TestCase(unittest.TestCase):
         --------
         armi.reactor.blocks.Block.getVolumeFractions
         """
-        numFE56 = self.Block.getNumberOfAtoms("FE56")
-        numU235 = self.Block.getNumberOfAtoms("U235")
-        for c in self.Block:
+        numFE56 = self.block.getNumberOfAtoms("FE56")
+        numU235 = self.block.getNumberOfAtoms("U235")
+        for c in self.block:
             c.setTemperature(800)
-        hasNegativeArea = any(c.getArea() < 0 for c in self.Block)
+        hasNegativeArea = any(c.getArea() < 0 for c in self.block)
         self.assertTrue(hasNegativeArea)
-        self.Block.getVolumeFractions()  # sets coolant area
+        self.block.getVolumeFractions()  # sets coolant area
         self._testDimensionsAreLinked()  # linked dimensions are needed for this test to work
 
-        blockPitch = self.Block.getPitch()
+        blockPitch = self.block.getPitch()
         self.assertAlmostEqual(
-            blockPitch, self.Block.getComponent(Flags.INTERCOOLANT).getDimension("op")
+            blockPitch, self.block.getComponent(Flags.INTERCOOLANT).getDimension("op")
         )
         totalHexArea = blockPitch ** 2 * math.sqrt(3) / 2.0
 
-        clad = self.Block.getComponent(Flags.CLAD)
+        clad = self.block.getComponent(Flags.CLAD)
         pinArea = (
             math.pi / 4.0 * clad.getDimension("od") ** 2 * clad.getDimension("mult")
         )
         ref = (
             totalHexArea
-            - self.Block.getComponent(Flags.INTERCOOLANT).getArea()
-            - self.Block.getComponent(Flags.DUCT).getArea()
-            - self.Block.getComponent(Flags.WIRE).getArea()
+            - self.block.getComponent(Flags.INTERCOOLANT).getArea()
+            - self.block.getComponent(Flags.DUCT).getArea()
+            - self.block.getComponent(Flags.WIRE).getArea()
             - pinArea
         )
 
-        self.assertAlmostEqual(totalHexArea, self.Block.getArea())
-        self.assertAlmostEqual(ref, self.Block.getComponent(Flags.COOLANT).getArea())
+        self.assertAlmostEqual(totalHexArea, self.block.getArea())
+        self.assertAlmostEqual(ref, self.block.getComponent(Flags.COOLANT).getArea())
 
-        self.assertTrue(numpy.allclose(numFE56, self.Block.getNumberOfAtoms("FE56")))
-        self.assertTrue(numpy.allclose(numU235, self.Block.getNumberOfAtoms("U235")))
+        self.assertTrue(numpy.allclose(numFE56, self.block.getNumberOfAtoms("FE56")))
+        self.assertTrue(numpy.allclose(numU235, self.block.getNumberOfAtoms("U235")))
 
     def _testDimensionsAreLinked(self):
         prevC = None
-        for c in self.Block.getComponentsOfShape(components.Circle):
+        for c in self.block.getComponentsOfShape(components.Circle):
             if prevC:
                 self.assertAlmostEqual(prevC.getDimension("od"), c.getDimension("id"))
             prevC = c
         self.assertAlmostEqual(
-            self.Block.getComponent(Flags.DUCT).getDimension("op"),
-            self.Block.getComponent(Flags.INTERCOOLANT).getDimension("ip"),
+            self.block.getComponent(Flags.DUCT).getDimension("op"),
+            self.block.getComponent(Flags.INTERCOOLANT).getDimension("ip"),
         )
 
     def test_breakFuelComponentsIntoIndividuals(self):
-        fuel = self.Block.getComponent(Flags.FUEL)
+        fuel = self.block.getComponent(Flags.FUEL)
         mult = fuel.getDimension("mult")
         self.assertGreater(mult, 1.0)
-        self.Block.completeInitialLoading()
-        self.Block.breakFuelComponentsIntoIndividuals()
+        self.block.completeInitialLoading()
+        self.block.breakFuelComponentsIntoIndividuals()
         self.assertEqual(fuel.getDimension("mult"), 1.0)
 
     def test_pinMgFluxes(self):
@@ -1485,38 +1517,37 @@ class Block_TestCase(unittest.TestCase):
         Test setting/getting of pin-wise fluxes.
 
         .. warning:: This will likely be pushed to the component level.
-
         """
         fluxes = numpy.ones((33, 10))
-        self.Block.setPinMgFluxes(fluxes, 10)
-        self.Block.setPinMgFluxes(fluxes * 2, 10, adjoint=True)
-        self.Block.setPinMgFluxes(fluxes * 3, 10, gamma=True)
-        self.assertEqual(self.Block.p.pinMgFluxes[0][2], 1.0)
-        self.assertEqual(self.Block.p.pinMgFluxesAdj[0][2], 2.0)
-        self.assertEqual(self.Block.p.pinMgFluxesGamma[0][2], 3.0)
+        self.block.setPinMgFluxes(fluxes, 10)
+        self.block.setPinMgFluxes(fluxes * 2, 10, adjoint=True)
+        self.block.setPinMgFluxes(fluxes * 3, 10, gamma=True)
+        self.assertEqual(self.block.p.pinMgFluxes[0][2], 1.0)
+        self.assertEqual(self.block.p.pinMgFluxesAdj[0][2], 2.0)
+        self.assertEqual(self.block.p.pinMgFluxesGamma[0][2], 3.0)
 
     def test_getComponentsInLinkedOrder(self):
-        comps = self.Block.getComponentsInLinkedOrder()
-        self.assertEqual(len(comps), len(self.Block))
+        comps = self.block.getComponentsInLinkedOrder()
+        self.assertEqual(len(comps), len(self.block))
 
         comps.pop(0)
         with self.assertRaises(RuntimeError):
-            _ = self.Block.getComponentsInLinkedOrder(comps)
+            _ = self.block.getComponentsInLinkedOrder(comps)
 
     def test_mergeWithBlock(self):
-        fuel1 = self.Block.getComponent(Flags.FUEL)
+        fuel1 = self.block.getComponent(Flags.FUEL)
         fuel1.setNumberDensity("CM246", 0.0)
         block2 = loadTestBlock()
         fuel2 = block2.getComponent(Flags.FUEL)
         fuel2.setNumberDensity("CM246", 0.02)
-        self.assertEqual(self.Block.getNumberDensity("CM246"), 0.0)
-        self.Block.mergeWithBlock(block2, 0.1)
-        self.assertGreater(self.Block.getNumberDensity("CM246"), 0.0)
-        self.assertLess(self.Block.getNumberDensity("CM246"), 0.02)
+        self.assertEqual(self.block.getNumberDensity("CM246"), 0.0)
+        self.block.mergeWithBlock(block2, 0.1)
+        self.assertGreater(self.block.getNumberDensity("CM246"), 0.0)
+        self.assertLess(self.block.getNumberDensity("CM246"), 0.02)
 
     def test_getDimensions(self):
-        dims = self.Block.getDimensions("od")
-        self.assertIn(self.Block.getComponent(Flags.FUEL).p.od, dims)
+        dims = self.block.getDimensions("od")
+        self.assertIn(self.block.getComponent(Flags.FUEL).p.od, dims)
 
 
 class Test_NegativeVolume(unittest.TestCase):
@@ -1612,19 +1643,17 @@ class HexBlock_TestCase(unittest.TestCase):
     def test_getNumPins(self):
         self.assertEqual(self.HexBlock.getNumPins(), 169)
 
-    def testSymmetryFactor(self):
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[
-            2, 0, 0
-        ]  # full hex
+    def test_symmetryFactor(self):
+        # full hex
+        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[2, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(1.0, self.HexBlock.getSymmetryFactor())
         a0 = self.HexBlock.getArea()
         v0 = self.HexBlock.getVolume()
         m0 = self.HexBlock.getMass()
 
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[
-            0, 0, 0
-        ]  # 1/3 symmetric
+        # 1/3 symmetric
+        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[0, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(3.0, self.HexBlock.getSymmetryFactor())
         self.assertEqual(a0 / 3.0, self.HexBlock.getArea())
@@ -1910,10 +1939,18 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.ThRZBlock.verifyBlockDims()
 
     def test_getThetaRZGrid(self):
+        """Since not applicable to ThetaRZ Grids"""
         b = self.ThRZBlock
         with self.assertRaises(NotImplementedError):
             b.autoCreateSpatialGrids()
-        # Since not applicable to Cartesian Grids.
+
+    def test_getWettedPerimeter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.ThRZBlock.getWettedPerimeter()
+
+    def test_getHydraulicDiameter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.ThRZBlock.getHydraulicDiameter()
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
@@ -2009,19 +2046,33 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
 
     def test_getCartesianGrid(self):
+        """Since not applicable to Cartesian Grids"""
         b = self.cartesianBlock
         with self.assertRaises(NotImplementedError):
             b.autoCreateSpatialGrids()
-        # Since not applicable to Cartesian Grids.
+
+    def test_getWettedPerimeter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.cartesianBlock.getWettedPerimeter()
+
+    def test_getHydraulicDiameter(self):
+        with self.assertRaises(NotImplementedError):
+            _ = self.cartesianBlock.getHydraulicDiameter()
 
 
 class PointTests(unittest.TestCase):
     def setUp(self):
-        self.Point = blocks.Point()
+        self.point = blocks.Point()
 
     def test_getters(self):
-        self.assertEqual(1.0, self.Point.getVolume())
-        self.assertEqual(1.0, self.Point.getBurnupPeakingFactor())
+        self.assertEqual(1.0, self.point.getVolume())
+        self.assertEqual(1.0, self.point.getBurnupPeakingFactor())
+
+    def test_getWettedPerimeter(self):
+        self.assertEqual(0.0, self.point.getWettedPerimeter())
+
+    def test_getHydraulicDiameter(self):
+        self.assertEqual(0.0, self.point.getHydraulicDiameter())
 
 
 class MassConservationTests(unittest.TestCase):
@@ -2199,9 +2250,7 @@ class MassConservationTests(unittest.TestCase):
         )
 
     def test_massConsistency(self):
-        r"""
-        Verify that the sum of the component masses equals the total mass.
-        """
+        r"""Verify that the sum of the component masses equals the total mass."""
         tMass = 0.0
         for child in self.b:
             tMass += child.getMass()
