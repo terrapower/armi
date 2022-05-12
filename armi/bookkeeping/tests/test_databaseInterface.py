@@ -245,7 +245,7 @@ class TestDatabaseReading(unittest.TestCase):
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
-        newSettings["nCycles"] = 2
+        newSettings["nCycles"] = 3
         newSettings["burnSteps"] = 3
         o, _r = test_reactors.loadTestReactor(customSettings=newSettings)
 

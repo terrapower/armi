@@ -53,6 +53,8 @@ def defineReactorParameters():
             description="Length of the cycle, including outage time described by availabilityFactor",
         )
 
+        pb.defParam("stepLength", units="days", description="Length of current step")
+
         pb.defParam(
             "availabilityFactor",
             units="fraction",
@@ -74,7 +76,7 @@ def defineReactorParameters():
         pb.defParam(
             "time",
             units="yr",
-            description="time of reactor life from BOL to current time node",
+            description="Time of reactor life from BOL to current time node",
             categories=["depletion"],
         )
 
