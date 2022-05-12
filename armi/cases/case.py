@@ -754,7 +754,6 @@ def copyInterfaceInputs(
     it.
 
     """
-    print("xxxxxxxxxxxxxxxxx ====> destination:", destination)
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
     sourceDirPath = pathlib.Path(sourceDir)

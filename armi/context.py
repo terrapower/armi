@@ -190,8 +190,7 @@ def activateLocalFastPath() -> None:
             datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
         ),
     )
-    print("context.APP_DATA 3", APP_DATA)
-    print("ccccccccccccccccontext 2 _FAST_PATH", _FAST_PATH)
+
     _FAST_PATH_IS_TEMPORARY = True
 
 
