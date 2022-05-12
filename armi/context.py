@@ -177,7 +177,11 @@ def activateLocalFastPath() -> None:
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY  # pylint: disable=global-statement
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA  # pylint: disable=global-statement
+
+    if os.name == "nt":
+        APP_DATA = APP_DATA.replace("/", "\\")
+
     _FAST_PATH = os.path.join(
         APP_DATA,
         "{}{}-{}".format(
