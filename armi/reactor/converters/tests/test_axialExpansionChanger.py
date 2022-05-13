@@ -23,10 +23,17 @@ from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape
-from armi.reactor.components.basicShapes import Circle, Hexagon
+from armi.reactor.components.basicShapes import (
+    Circle,
+    Hexagon,
+    Rectangle,
+    Square,
+)
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
+    _determineLinked,
 )
 from armi.reactor.flags import Flags
 from armi import materials
@@ -553,6 +560,83 @@ class TestExceptions(Base, unittest.TestCase):
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestLinkage(unittest.TestCase):
+    """test axial linkage between components
+
+    In the following tests, shapeA and shapeB are assumed to be
+    stacked vertically on each other.
+    """
+
+    def setUp(self):
+        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+        # self.rectangle = Rectangle(
+        #     *common,
+        #     lengthOuter=1.0,
+        #     lengthInner=0.0,
+        #     widthOuter=1.0,
+        #     widthInner=0.0,
+        #     mult=mult
+        # )
+        # self.Helix = Helix(
+        #     *common, od=1.0, axialPitch=1.0, helixDiameter=0.1, mult=mult, id=0.0
+        # )
+
+    def test_overlappingSolidPins(self):
+        circleA = Circle(*self.common, od=0.5, id=0.0)
+        circleB = Circle(*self.common, od=1.0, id=0.0)
+        self.assertTrue(_determineLinked(circleA, circleB))
+        self.assertTrue(_determineLinked(circleB, circleA))
+
+    def test_differentMultNotOverlapping(self):
+        circleA = Circle(*self.common, od=0.5, id=0.0, mult=10)
+        circleB = Circle(*self.common, od=0.5, id=0.0, mult=20)
+        self.assertFalse(_determineLinked(circleA, circleB))
+        self.assertFalse(_determineLinked(circleB, circleA))
+
+    def test_solidPinNotOverlappingAnnulus(self):
+        circleA = Circle(*self.common, od=0.5, id=0.0)
+        circleB = Circle(*self.common, od=1.0, id=0.6)
+        self.assertFalse(_determineLinked(circleA, circleB))
+        self.assertFalse(_determineLinked(circleB, circleA))
+
+    def test_solidPinOverlappingWithAnnulus(self):
+        circleA = Circle(*self.common, od=0.7, id=0.0)
+        circleB = Circle(*self.common, od=1.0, id=0.6)
+        self.assertTrue(_determineLinked(circleA, circleB))
+        self.assertTrue(_determineLinked(circleB, circleA))
+
+    def test_annularPinNotOverlappingWithAnnulus(self):
+        circleA = Circle(*self.common, od=0.6, id=0.3)
+        circleB = Circle(*self.common, od=1.0, id=0.6)
+        self.assertFalse(_determineLinked(circleA, circleB))
+        self.assertFalse(_determineLinked(circleB, circleA))
+
+    def test_annularPinOverlappingWithAnnuls(self):
+        circleA = Circle(*self.common, od=0.7, id=0.3)
+        circleB = Circle(*self.common, od=1.0, id=0.6)
+        self.assertTrue(_determineLinked(circleA, circleB))
+        self.assertTrue(_determineLinked(circleB, circleA))
+
+    def test_thinAnnularPinOverlappingWithThickAnnulus(self):
+        circleA = Circle(*self.common, od=0.7, id=0.3)
+        circleB = Circle(*self.common, od=0.6, id=0.5)
+        self.assertTrue(_determineLinked(circleA, circleB))
+        self.assertTrue(_determineLinked(circleB, circleA))
+
+    def test_AnnularHexOverlappingThickAnnularHex(self):
+        hexagonA = Hexagon(*self.common, op=1.0, ip=0.8)
+        hexagonB = Hexagon(*self.common, op=1.2, ip=0.8)
+        self.assertTrue(_determineLinked(hexagonA, hexagonB))
+        self.assertTrue(_determineLinked(hexagonB, hexagonA))
+
+    def test_liquids(self):
+        liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
+        hexagonA = Hexagon(*liquid, op=1.0, ip=0.0)
+        hexagonB = Hexagon(*liquid, op=1.0, ip=0.0)
+        self.assertFalse(_determineLinked(hexagonA, hexagonB))
+        self.assertFalse(_determineLinked(hexagonB, hexagonA))
 
 
 def buildTestAssemblyWithFakeMaterial(name):

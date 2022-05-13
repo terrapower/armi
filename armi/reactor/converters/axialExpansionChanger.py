@@ -335,8 +335,6 @@ class AssemblyAxialLinkage:
                    see also: self._getLinkedComponents
     """
 
-    _TOLERANCE = 0.1 # 10% difference
-
     def __init__(self, StdAssem):
         self.a = StdAssem
         self.linkedBlocks = {}
@@ -418,12 +416,12 @@ class AssemblyAxialLinkage:
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in linkdBlk.getChildren():
-                    if isinstance(
-                        otherC, type(c)
-                    ):  # equivalent to type(otherC) == type(c)
-                        area_diff = abs(otherC.getArea() - c.getArea())/c.getArea()
-                        if area_diff < self._TOLERANCE:
-                            lstLinkedC[ib] = otherC
+                    if _determineLinked(c, otherC):
+                        if lstLinkedC[ib] is not None:
+                            runLog.warning(
+                                msg="There is already something linked here!"
+                            )
+                        lstLinkedC[ib] = otherC
 
         self.linkedComponents[c] = lstLinkedC
 
@@ -447,6 +445,54 @@ class AssemblyAxialLinkage:
                     str(c.p.flags),
                 )
             )
+
+
+def _determineLinked(componentA, componentB):
+    """determine axial component linkage for two components
+
+    Parameters
+    ----------
+    componentA : :py:class:`Component <armi.reactor.components.component.Component>`
+        component of interest
+    componentB : :py:class:`Component <armi.reactor.components.component.Component>`
+        component to compare and see if is linked to componentA
+
+    Notes
+    -----
+    - Requires that shapes have the getBoundingCircleInnerDiameter and getBoundingCircleOuterDiameter defined
+    - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet inner
+      and outer diameter requirements.
+
+    Returns
+    -------
+    linked : bool
+        status is componentA and componentB are axially linked to one another
+    """
+    if (
+        (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
+        and isinstance(componentA, type(componentB))
+        and (componentA.getDimension("mult") == componentB.getDimension("mult"))
+    ):
+        idA, odA = (
+            componentA.getBoundingCircleInnerDiameter(),
+            componentA.getBoundingCircleOuterDiameter(),
+        )
+        idB, odB = (
+            componentB.getBoundingCircleInnerDiameter(),
+            componentB.getBoundingCircleOuterDiameter(),
+        )
+
+        biggerID = max(idA, idB)
+        smallerOD = min(odA, odB)
+        if biggerID >= smallerOD:
+            linked = False
+        else:
+            linked = True
+
+    else:
+        linked = False
+
+    return linked
 
 
 class ExpansionData:

@@ -783,6 +783,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
         raise NotImplementedError
 
+    def getBoundingCircleInnerDiameter(self, Tc=None, cold=False):
+        """Abstract inner bounding circle method that should be overwritten by each shape subclass."""
+        raise NotImplementedError
+
     def dimensionIsLinked(self, key):
         """True if a the specified dimension is linked to another dimension."""
         return key in self.p and isinstance(self.p[key], _DimensionLink)
