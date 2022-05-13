@@ -466,6 +466,18 @@ class TestDatabase3(unittest.TestCase):
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
+        # delete the .git directory
+        code = subprocess.run(
+            ["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).returncode
+        self.assertEqual(code, 0)
+        code = subprocess.run(
+            ["git", "clean", "-f", "-d"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        self.assertEqual(code, 0)
+
     def test_fileName(self):
         # test the file name getter
         self.assertEqual(str(self.db.fileName), "test_fileName.h5")
