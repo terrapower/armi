@@ -71,10 +71,10 @@ class Base(unittest.TestCase):
         mass = 0.0
         for b in a:
             for c in b:
-                ## store mass and density of target component
+                # store mass and density of target component
                 if self.obj.expansionData.isTargetComponent(c):
                     self._storeTargetComponentMassAndDensity(c)
-                ## store steel mass for assembly
+                # store steel mass for assembly
                 if c.p.flags in self.Steel_Component_Lst:
                     mass += c.getMass()
 
@@ -144,7 +144,7 @@ class Temperature:
         - temperature grid : physical locations in which
                             temperature is measured
         """
-        ## Generate temp field
+        # Generate temp field
         self.tempField[0, :] = coldTemp
         if not uniform:
             for i in range(1, self.tempSteps):
@@ -164,7 +164,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
 
     def setUp(self):
         Base.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name="Fake")
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
 
         self.temp = Temperature(
             self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
@@ -216,7 +216,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
 
     def _generateComponentWiseExpectedHeight(self):
         """calculate the expected height, external of AssemblyAxialExpansion()"""
-        assem = buildTestAssemblyWithFakeMaterial(name="Fake")
+        assem = buildTestAssemblyWithFakeMaterial(name="FakeMat")
         aveBlockTemp = zeros((len(assem), self.temp.tempSteps))
         self.trueZtop = zeros((len(assem), self.temp.tempSteps))
         self.trueHeight = zeros((len(assem), self.temp.tempSteps))
@@ -302,7 +302,7 @@ class TestConservation(Base, unittest.TestCase):
 
     def setUp(self):
         Base.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name="Fake")
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
 
         # initialize class variables for conservation checks
         self.oldMass = {}
@@ -328,7 +328,7 @@ class TestConservation(Base, unittest.TestCase):
         - 10 total expansion steps: 5 at +1%, and 5 at -1%
         - assertion on if original axial mesh matches the final axial mesh
         """
-        a = buildTestAssemblyWithFakeMaterial(name="Fake")
+        a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
         obj = AxialExpansionChanger()
         oldMesh = a.getAxialMesh()
         componentLst = [c for b in a for c in b]
@@ -390,22 +390,22 @@ class TestConservation(Base, unittest.TestCase):
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
         assembly.spatialGrid.armiObject = assembly
-        assembly.add(_buildTestBlock("shield", "Fake"))
-        assembly.add(_buildTestBlock("fuel", "Fake"))
-        assembly.add(_buildTestBlock("fuel", "Fake"))
-        assembly.add(_buildTestBlock("plenum", "Fake"))
-        assembly.add(_buildTestBlock("aclp", "Fake"))  # "aclp plenum" also works
-        assembly.add(_buildTestBlock("plenum", "Fake"))
+        assembly.add(_buildTestBlock("shield", "FakeMat"))
+        assembly.add(_buildTestBlock("fuel", "FakeMat"))
+        assembly.add(_buildTestBlock("fuel", "FakeMat"))
+        assembly.add(_buildTestBlock("plenum", "FakeMat"))
+        assembly.add(_buildTestBlock("aclp", "FakeMat"))  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("plenum", "FakeMat"))
         assembly.add(_buildDummySodium())
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
 
-        ## get zCoords for aclp
+        # get zCoords for aclp
         aclp = assembly.getChildrenWithFlags(Flags.ACLP)[0]
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
-        ## expand fuel
+        # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
         # 10% growth of fuel components
@@ -413,7 +413,7 @@ class TestConservation(Base, unittest.TestCase):
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
 
-        ## do assertion
+        # do assertion
         self.assertEqual(
             aclpZBottom,
             aclp.p.zbottom,
@@ -431,7 +431,7 @@ class TestExceptions(Base, unittest.TestCase):
 
     def setUp(self):
         Base.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name="FakeException")
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
 
     def test_isTopDummyBlockPresent(self):
@@ -439,7 +439,7 @@ class TestExceptions(Base, unittest.TestCase):
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
         assembly.spatialGrid.armiObject = assembly
-        assembly.add(_buildTestBlock("shield", "Fake"))
+        assembly.add(_buildTestBlock("shield", "FakeMat"))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
@@ -492,8 +492,8 @@ class TestExceptions(Base, unittest.TestCase):
         b = HexBlock("test", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
         cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        mainType = Circle("main", "Fake", **fuelDims)
-        clad = Circle("clad", "Fake", **cladDims)
+        mainType = Circle("main", "FakeMat", **fuelDims)
+        clad = Circle("clad", "FakeMat", **cladDims)
         b.add(mainType)
         b.add(clad)
         b.setType("test")
@@ -510,8 +510,8 @@ class TestExceptions(Base, unittest.TestCase):
         b = HexBlock("test", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
         cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        mainType = Circle("test", "Fake", **fuelDims)
-        clad = Circle("test", "Fake", **cladDims)
+        mainType = Circle("test", "FakeMat", **fuelDims)
+        clad = Circle("test", "FakeMat", **cladDims)
         b.add(mainType)
         b.add(clad)
         b.setType("test")
@@ -533,8 +533,8 @@ class TestExceptions(Base, unittest.TestCase):
             "id": 0.77,
             "mult": 127.0,
         }
-        fuel = Circle("fuel", "Fake", **fuelDims)
-        fuel2 = Circle("fuel", "Fake", **fuel2Dims)
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        fuel2 = Circle("fuel", "FakeMat", **fuel2Dims)
         b_TwoFuel.add(fuel)
         b_TwoFuel.add(fuel2)
         b_TwoFuel.setType("test")
@@ -547,7 +547,7 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
         b_NoFuel = HexBlock("fuel", height=10.0)
-        shield = Circle("shield", "Fake", **fuelDims)
+        shield = Circle("shield", "FakeMat", **fuelDims)
         b_NoFuel.add(shield)
         with self.assertRaises(RuntimeError) as cm:
             expdata._isFuelLocked(b_NoFuel)  # pylint: disable=protected-access
@@ -683,7 +683,7 @@ def _buildDummySodium():
     return b
 
 
-class Fake(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger
 
     Notes
@@ -694,7 +694,7 @@ class Fake(materials.ht9.HT9):  # pylint: disable=abstract-method
       and contraction. See TestConservation.
     """
 
-    name = "Fake"
+    name = "FakeMat"
 
     def __init__(self):
         materials.ht9.HT9.__init__(self)
@@ -705,7 +705,7 @@ class Fake(materials.ht9.HT9):  # pylint: disable=abstract-method
         return 0.02 * Tc
 
 
-class FakeException(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMatException(materials.ht9.HT9):  # pylint: disable=abstract-method
     """Fake material used to verify TestExceptions
 
     Notes
@@ -714,7 +714,7 @@ class FakeException(materials.ht9.HT9):  # pylint: disable=abstract-method
       is higher to ensure that a negative block height is caught in TestExceptions:test_AssemblyAxialExpansionException.
     """
 
-    name = "FakeException"
+    name = "FakeMatException"
 
     def __init__(self):
         materials.ht9.HT9.__init__(self)

@@ -68,7 +68,7 @@ class TestRunLog(unittest.TestCase):
         # init the _RunLog object
         log = runLog.LOG = runLog._RunLog(0)
         log.startLog("test_parentRunLogging")
-        context.createLogDir(0)
+        runLog.createLogDir(0)
         log.setVerbosity(logging.INFO)
 
         # divert the logging to a stream, to make testing easier
@@ -94,7 +94,7 @@ class TestRunLog(unittest.TestCase):
         # create the logger and do some logging
         log = runLog.LOG = runLog._RunLog(321)
         log.startLog("test_warningReport")
-        context.createLogDir(0)
+        runLog.createLogDir(0)
 
         # divert the logging to a stream, to make testing easier
         stream = StringIO()
@@ -142,7 +142,7 @@ class TestRunLog(unittest.TestCase):
 
         # start the logging for real
         log.startLog("test_closeLogging")
-        context.createLogDir(0)
+        runLog.createLogDir()
         validate_loggers(log)
 
         # close() and test that we have correctly nullified our loggers
@@ -260,7 +260,7 @@ class TestRunLog(unittest.TestCase):
             logDir = "test_concatenateLogs"
             if os.path.exists(logDir):
                 rmtree(logDir)
-            context.createLogDir(0, logDir)
+            runLog.createLogDir(logDir)
 
             # create as stdout file
             stdoutFile1 = os.path.join(
@@ -296,6 +296,16 @@ class TestRunLog(unittest.TestCase):
             self.assertFalse(os.path.exists(stdoutFile1))
             self.assertFalse(os.path.exists(stdoutFile2))
             self.assertFalse(os.path.exists(stderrFile))
+
+    def test_createLogDir(self):
+        """Test the createLogDir() method"""
+        with TemporaryDirectoryChanger():
+            logDir = "test_createLogDir"
+            self.assertFalse(os.path.exists(logDir))
+            runLog.createLogDir(logDir)
+            self.assertTrue(os.path.exists(logDir))
+            runLog.createLogDir(logDir)
+            self.assertTrue(os.path.exists(logDir))
 
 
 if __name__ == "__main__":

@@ -28,6 +28,7 @@ import voluptuous as vol
 
 from armi import context
 from armi.settings import setting
+from armi.utils.mathematics import isMonotonic
 
 
 # Framework settings
@@ -107,6 +108,7 @@ CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
+CONF_CYCLES = "cycles"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -221,33 +223,35 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLE_LENGTH,
             default=365.242199,
             label="Cycle Length",
-            description="Duration of one single cycle in days. If availability factor is below "
+            description="Duration of one single cycle in days. If `availabilityFactor` is below "
             "1, the reactor will be at power less than this. If variable, use "
-            "cycleLengths setting.",
+            "`cycleLengths` setting.",
             oldNames=[
                 ("burnTime", None),
             ],
+            schema=(vol.Any(float, int, None)),
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
             default=[],
             label="Cycle durations",
             description="List of durations of each cycle in days. The at-power "
-            "duration will be affected by the availability factor. R is repeat. For "
+            "duration will be affected by `availabilityFactor`. R is repeat. For "
             "example [100, 150, '9R'] is 1 100 day cycle followed by 10 150 day "
-            "cycles. Empty list is constant duration set by 'cycleLength'.",
-            schema=vol.Schema([vol.Coerce(str)]),
+            "cycles. Empty list is constant duration set by `cycleLength`.",
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTOR,
             default=1.0,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
-            "time that the plant is operating. If variable, use availabilityFactors "
+            "time that the plant is operating. If variable, use `availabilityFactors` "
             "setting.",
             oldNames=[
                 ("capacityFactor", None),
             ],
+            schema=(vol.Any(float, int, None)),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
@@ -255,9 +259,9 @@ def defineSettings() -> List[setting.Setting]:
             label="Availability factors",
             description="List of availability factor of each cycle as a fraction "
             "(fraction of time plant is not in an outage). R is repeat. For example "
-            "[0.5, 1.0, '9R'] is 1 50% CF followed by 10 100 CF. Empty list is "
-            "constant duration set by 'availabilityFactor'.",
-            schema=vol.Schema([vol.Coerce(str)]),
+            "[0.5, 1.0, '9R'] is 1 50% followed by 10 100%. Empty list is "
+            "constant duration set by `availabilityFactor`.",
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_POWER_FRACTIONS,
@@ -265,10 +269,10 @@ def defineSettings() -> List[setting.Setting]:
             label="Power fractions",
             description="List of power fractions at each cycle (fraction of rated "
             "thermal power the plant achieves). R is repeat. For example [0.5, 1.0, "
-            "'9R'] is 1 50% PF followed by 10 100% PF. Specify zeros to indicate "
-            "decay-only cycles (i.e. for decay heat analysis). Empty list implies "
+            "'9R'] is 1 50% followed by 10 100%. Specify zeros to indicate "
+            "decay-only cycles (i.e. for decay heat analysis). None implies "
             "always full rated power.",
-            schema=vol.Schema([vol.Coerce(str)]),
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_BURN_STEPS,
@@ -276,7 +280,8 @@ def defineSettings() -> List[setting.Setting]:
             label="Burnup Steps per Cycle",
             description="Number of depletion substeps, n, in one cycle. Note: There "
             "will be n+1 time nodes and the burnup step time will be computed as cycle "
-            "length/n.",
+            "length/n when the simple cycles input format is used.",
+            schema=(vol.Any(int, None)),
         ),
         setting.Setting(
             CONF_BETA,
@@ -558,7 +563,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0.0,
             label="Reactor Thermal Power (W)",
             description="Nameplate thermal power of the reactor. Can be varied by "
-            "setting the powerFraction setting.",
+            "setting the powerFractions setting.",
         ),
         setting.Setting(
             CONF_REMOVE_PER_CYCLE, default=3, label="Move per cycle", description="None"
@@ -747,5 +752,70 @@ def defineSettings() -> List[setting.Setting]:
             "grid upon construction? This feature makes heavy use of multi-index "
             "locations, which are not yet universally supported.",
         ),
+        setting.Setting(
+            CONF_CYCLES,
+            default=[],
+            label="Cycle information",
+            description="YAML list defining the cycle history of the case. Options"
+            " at each cycle include: `name`, `cumulative days`, `step days`, `availability"
+            " factor`, `cycle length`, `burn steps`, and `power fractions`."
+            " If specified, do not use any of the case settings `cycleLength(s)`,"
+            " `availabilityFactor(s)`, `powerFractions`, or `burnSteps`. Must also"
+            " specify `nCycles` and `power`.",
+            schema=vol.Schema(
+                [
+                    vol.All(
+                        {
+                            "name": str,
+                            "cumulative days": vol.All(
+                                [vol.Any(float, int)], _isMonotonicIncreasing
+                            ),
+                            "step days": [vol.Coerce(str)],
+                            "power fractions": [vol.Coerce(str)],
+                            "availability factor": vol.All(
+                                vol.Any(float, int), vol.Range(min=0, max=1)
+                            ),
+                            "cycle length": vol.All(
+                                vol.Any(float, int), vol.Range(min=0)
+                            ),
+                            "burn steps": vol.All(int, vol.Range(min=0)),
+                        },
+                        _mutuallyExclusiveCyclesInputs,
+                    )
+                ]
+            ),
+        ),
     ]
     return settings
+
+
+def _isMonotonicIncreasing(inputList):
+    if isMonotonic(inputList, "<"):
+        return inputList
+    else:
+        raise vol.error.Invalid(f"List must be monotonicically increasing: {inputList}")
+
+
+def _mutuallyExclusiveCyclesInputs(cycle):
+    cycleKeys = cycle.keys()
+    if (
+        sum(
+            [
+                "cumulative days" in cycleKeys,
+                "step days" in cycleKeys,
+                "cycle length" in cycleKeys or "burn steps" in cycleKeys,
+            ]
+        )
+        != 1
+    ):
+        baseErrMsg = (
+            "Must have exactly one of either 'cumulative days', 'step days', or"
+            " 'cycle length' + 'burn steps' in each cycle definition."
+        )
+
+        raise vol.Invalid(
+            (baseErrMsg + " Check cycle {}.".format(cycle["name"]))
+            if "name" in cycleKeys
+            else baseErrMsg
+        )
+    return cycle

@@ -147,9 +147,10 @@ class MacroXSGenerationInterface(interfaces.Interface):
             either "micros" for neutron XS or "gammaXS" for gamma XS.
 
         """
+        cycle = self.r.p.cycle
         self.macrosLastBuiltAt = (
-            self.cs["burnSteps"] + 1
-        ) * self.r.p.cycle + self.r.p.timeNode
+            sum([self.r.p.burnSteps[i] + 1 for i in range(cycle)]) + self.r.p.timeNode
+        )
 
         runLog.important("Building macro XS")
         xsGen = MacroXSGenerator(
