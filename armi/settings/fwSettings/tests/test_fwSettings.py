@@ -42,13 +42,21 @@ class TestSchema(unittest.TestCase):
                 "invalid": 0,
                 "error": vol.error.RangeInvalid,
             },
-            "cycleLength": {"valid": 0, "invalid": -1, "error": vol.error.RangeInvalid},
+            "cycleLength": {
+                "valid": 1,
+                "invalid": -1,
+                "error": vol.error.MultipleInvalid,
+            },
             "availabilityFactor": {
                 "valid": 0,
                 "invalid": -1,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
-            "burnSteps": {"valid": 0, "invalid": -1, "error": vol.error.RangeInvalid},
+            "burnSteps": {
+                "valid": 0,
+                "invalid": -1,
+                "error": vol.error.MultipleInvalid,
+            },
             "beta": {
                 "valid": [0.5, 0.5],
                 "invalid": [0.5, 2],
@@ -56,7 +64,7 @@ class TestSchema(unittest.TestCase):
             },
             "decayConstants": {
                 "valid": [1, 1],
-                "invalid": [0, 1],
+                "invalid": [-1, 1],
                 "error": vol.error.AnyInvalid,
             },
             "decayConstants": {
@@ -117,6 +125,7 @@ class TestSchema(unittest.TestCase):
     def test_schema(self):
         # first test that a valid case goes through without error
         for setting in self.settings.keys():
+            # breakpoint()
             validOption = self.settings[setting]["valid"]
             self.cs = self.cs.modified(newSettings={setting: validOption})
 

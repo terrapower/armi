@@ -222,7 +222,12 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("burnTime", None),
             ],
-            schema=(vol.Any(vol.All(vol.Any(float, int), vol.Range(min=0)), None)),
+            schema=(
+                vol.Any(
+                    vol.All(vol.Any(float, int), vol.Range(min=0, min_included=False)),
+                    None,
+                )
+            ),
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
@@ -282,9 +287,9 @@ def defineSettings() -> List[setting.Setting]:
             label="Delayed Neutron Fraction",
             description="Individual precursor group delayed neutron fractions",
             schema=vol.Any(
-                [vol.Range(min=0, min_included=True, max=1)],
+                [vol.Range(min=0, min_included=True, max=1, max_included=True)],
                 None,
-                vol.Range(min=0, min_included=True, max=1),
+                vol.Range(min=0, min_included=True, max=1, max_included=True),
                 msg="Expected NoneType, float, or list of floats.",
             ),
             oldNames=[
