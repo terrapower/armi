@@ -143,16 +143,14 @@ class TestHistoryTracker(ArmiTestHelper):
             duration or 1.0 for duration in hti.getTimeSteps()
         ]  # duration is None in this DB
         timeStepsToRead = [
-            utils.getCycleNode(i, self.o.cs) for i in range(len(timesInYears))
+            utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
+            for i in range(len(timesInYears))
         ]
         hti.preloadBlockHistoryVals([bName], ["mgFlux"], timeStepsToRead)
 
         mgFluence = None
         for ts, years in enumerate(timesInYears):
-            cycle, node = utils.getCycleNode(ts, self.o.cs)
-            # get coverage for getTimeStepNum by checking against getcycleNode
-            testTS = utils.getTimeStepNum(cycle, node, self.o.cs)
-            self.assertEqual(ts, testTS)
+            cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
             mgFlux = (
                 hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             )  #  b.p.mgFlux is vol integrated
