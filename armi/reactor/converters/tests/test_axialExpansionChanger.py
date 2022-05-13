@@ -563,80 +563,164 @@ class TestExceptions(Base, unittest.TestCase):
 
 
 class TestLinkage(unittest.TestCase):
-    """test axial linkage between components
-
-    In the following tests, shapeA and shapeB are assumed to be
-    stacked vertically on each other.
-    """
+    """test axial linkage between components"""
 
     def setUp(self):
+        """contains common dimensions for all component class types"""
         self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
-        # self.rectangle = Rectangle(
-        #     *common,
-        #     lengthOuter=1.0,
-        #     lengthInner=0.0,
-        #     widthOuter=1.0,
-        #     widthInner=0.0,
-        #     mult=mult
-        # )
-        # self.Helix = Helix(
-        #     *common, od=1.0, axialPitch=1.0, helixDiameter=0.1, mult=mult, id=0.0
-        # )
+
+    def runTest(
+        self,
+        componentsToTest: dict,
+        assertionBool: bool,
+        name: str,
+        commonArgs: tuple = None,
+    ):
+        """runs various linkage tests
+
+        Parameters
+        ----------
+        componentsToTest : dict
+            keys --> component class type; values --> dimensions specific to key
+        assertionBool : boolean
+            expected truth value for test
+        name : str
+            the name of the test
+        commonArgs : tuple, optional
+            arguments common to all Component class types
+
+        Notes
+        -----
+        - components "typeA" and "typeB" are assumed to be vertically stacked
+        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component to "typeB"
+        - the different assertions are particularly useful for comparing two annuli
+        - to add Component class types to a test:
+            Add dictionary entry with following:
+              {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
+        """
+        if commonArgs is None:
+            common = self.common
+        else:
+            common = commonArgs
+        for method, dims in componentsToTest.items():
+            typeA = method(*common, **dims[0])
+            typeB = method(*common, **dims[1])
+            if assertionBool:
+                self.assertTrue(
+                    _determineLinked(typeA, typeB),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+                self.assertTrue(
+                    _determineLinked(typeB, typeA),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+            else:
+                self.assertFalse(
+                    _determineLinked(typeA, typeB),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+                self.assertFalse(
+                    _determineLinked(typeB, typeA),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
 
     def test_overlappingSolidPins(self):
-        circleA = Circle(*self.common, od=0.5, id=0.0)
-        circleB = Circle(*self.common, od=1.0, id=0.0)
-        self.assertTrue(_determineLinked(circleA, circleB))
-        self.assertTrue(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.0}],
+            Hexagon: [{"op": 0.5, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
+            Rectangle: [
+                {
+                    "lengthOuter": 0.5,
+                    "lengthInner": 0.0,
+                    "widthOuter": 0.5,
+                    "widthInner": 0.0,
+                },
+                {
+                    "lengthOuter": 1.0,
+                    "lengthInner": 0.0,
+                    "widthOuter": 1.0,
+                    "widthInner": 0.0,
+                },
+            ],
+            Helix: [
+                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0},
+                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0},
+            ],
+        }
+        self.runTest(componentTypesToTest, True, "test_overlappingSolidPins")
 
     def test_differentMultNotOverlapping(self):
-        circleA = Circle(*self.common, od=0.5, id=0.0, mult=10)
-        circleB = Circle(*self.common, od=0.5, id=0.0, mult=20)
-        self.assertFalse(_determineLinked(circleA, circleB))
-        self.assertFalse(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
+            Hexagon: [{"op": 0.5, "mult": 10}, {"op": 1.0, "mult": 20}],
+            Rectangle: [
+                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 10},
+                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 20},
+            ],
+            Helix: [
+                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 10},
+                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 20},
+            ],
+        }
+        self.runTest(componentTypesToTest, False, "test_differentMultNotOverlapping")
 
     def test_solidPinNotOverlappingAnnulus(self):
-        circleA = Circle(*self.common, od=0.5, id=0.0)
-        circleB = Circle(*self.common, od=1.0, id=0.6)
-        self.assertFalse(_determineLinked(circleA, circleB))
-        self.assertFalse(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(componentTypesToTest, False, "test_solidPinNotOverlappingAnnulus")
 
     def test_solidPinOverlappingWithAnnulus(self):
-        circleA = Circle(*self.common, od=0.7, id=0.0)
-        circleB = Circle(*self.common, od=1.0, id=0.6)
-        self.assertTrue(_determineLinked(circleA, circleB))
-        self.assertTrue(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.7, "id": 0.0}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(componentTypesToTest, True, "test_solidPinOverlappingWithAnnulus")
 
     def test_annularPinNotOverlappingWithAnnulus(self):
-        circleA = Circle(*self.common, od=0.6, id=0.3)
-        circleB = Circle(*self.common, od=1.0, id=0.6)
-        self.assertFalse(_determineLinked(circleA, circleB))
-        self.assertFalse(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.6, "id": 0.3}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(
+            componentTypesToTest, False, "test_annularPinNotOverlappingWithAnnulus"
+        )
 
     def test_annularPinOverlappingWithAnnuls(self):
-        circleA = Circle(*self.common, od=0.7, id=0.3)
-        circleB = Circle(*self.common, od=1.0, id=0.6)
-        self.assertTrue(_determineLinked(circleA, circleB))
-        self.assertTrue(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.7, "id": 0.3}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(componentTypesToTest, True, "test_annularPinOverlappingWithAnnuls")
 
     def test_thinAnnularPinOverlappingWithThickAnnulus(self):
-        circleA = Circle(*self.common, od=0.7, id=0.3)
-        circleB = Circle(*self.common, od=0.6, id=0.5)
-        self.assertTrue(_determineLinked(circleA, circleB))
-        self.assertTrue(_determineLinked(circleB, circleA))
+        componentTypesToTest = {
+            Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
+        }
+        self.runTest(
+            componentTypesToTest, True, "test_thinAnnularPinOverlappingWithThickAnnulus"
+        )
 
     def test_AnnularHexOverlappingThickAnnularHex(self):
-        hexagonA = Hexagon(*self.common, op=1.0, ip=0.8)
-        hexagonB = Hexagon(*self.common, op=1.2, ip=0.8)
-        self.assertTrue(_determineLinked(hexagonA, hexagonB))
-        self.assertTrue(_determineLinked(hexagonB, hexagonA))
+        componentTypesToTest = {
+            Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]
+        }
+        self.runTest(
+            componentTypesToTest, True, "test_AnnularHexOverlappingThickAnnularHex"
+        )
 
     def test_liquids(self):
+        componentTypesToTest = {
+            Circle: [{"od": 1.0, "id": 0.0}, {"od": 1.0, "id": 0.0}],
+            Hexagon: [{"op": 1.0, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
+        }
         liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
-        hexagonA = Hexagon(*liquid, op=1.0, ip=0.0)
-        hexagonB = Hexagon(*liquid, op=1.0, ip=0.0)
-        self.assertFalse(_determineLinked(hexagonA, hexagonB))
-        self.assertFalse(_determineLinked(hexagonB, hexagonA))
+        self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
 
 
 def buildTestAssemblyWithFakeMaterial(name):
