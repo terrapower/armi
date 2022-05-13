@@ -14,7 +14,6 @@
 
 """Tests for the compareDB3 module"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import shutil
 import unittest
 
 import h5py
@@ -78,13 +77,18 @@ class TestCompareDB3(unittest.TestCase):
 
     def test_compareDatabaseDuplicate(self):
         """end-to-end test of compareDatabases() on a photocopy database"""
-        # build a super-simple H5 file for testing
+        # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
+
         dbi = database3.DatabaseInterface(r, o.cs)
         dbi.initDB(fName=self._testMethodName + ".h5")
         db = dbi.database
 
-        # validate the file exists, and isn't too crazy
+        dbi2 = database3.DatabaseInterface(r, o.cs)
+        dbi2.initDB(fName=self._testMethodName + "2.h5")
+        db2 = dbi2.database
+
+        # validate file 1 exists, and force it to be readable again
         b = h5py.File(db._fullPath, "r")
         self.assertEqual(list(b.keys()), ["inputs"])
         self.assertEqual(
@@ -92,11 +96,16 @@ class TestCompareDB3(unittest.TestCase):
         )
         b.close()
 
-        # copy the H5 file, so we have somethign to compare against
-        shutil.copyfile(db._fullPath, "test_compareDbEndToEnd2.h5")
+        # validate file 2 exists, and force it to be readable again
+        b2 = h5py.File(db2._fullPath, "r")
+        self.assertEqual(list(b2.keys()), ["inputs"])
+        self.assertEqual(
+            sorted(b2["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+        )
+        b2.close()
 
         # end-to-end validation that comparing a photocopy database works
-        diffs = compareDatabases(db._fullPath, "test_compareDbEndToEnd2.h5")
+        diffs = compareDatabases(db._fullPath, db2._fullPath)
         self.assertEqual(len(diffs.diffs), 0)
 
 
