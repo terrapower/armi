@@ -288,5 +288,4 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # import sys; sys.argv = ['', 'TestArmiCase.test_independentVariables']
     unittest.main()
