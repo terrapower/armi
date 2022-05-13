@@ -166,7 +166,9 @@ class AxialExpansionChanger:
             if ib < (numOfBlocks - 1):
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(msg="    Component {0}, growFrac = {1:.4e}".format(c,growFrac))
+                    runLog.debug(
+                        msg="    Component {0}, growFrac = {1:.4e}".format(c, growFrac)
+                    )
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
