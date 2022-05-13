@@ -545,7 +545,7 @@ class TestRectangle(TestShapedComponent):
         ref = math.sqrt(61.0)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
-    
+
     def test_getBoundingCircleInnerDiameter(self):
         cur = self.component.getBoundingCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(math.sqrt(25.0), cur)
