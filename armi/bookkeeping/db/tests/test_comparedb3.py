@@ -80,33 +80,83 @@ class TestCompareDB3(unittest.TestCase):
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
 
-        dbi = database3.DatabaseInterface(r, o.cs)
-        dbi.initDB(fName=self._testMethodName + ".h5")
-        db = dbi.database
+        # create two DBs, identical but for file names
+        dbs = []
+        for i in range(2):
+            # create the tests DB
+            dbi = database3.DatabaseInterface(r, o.cs)
+            dbi.initDB(fName=self._testMethodName + str(i) + ".h5")
+            db = dbi.database
 
-        dbi2 = database3.DatabaseInterface(r, o.cs)
-        dbi2.initDB(fName=self._testMethodName + "2.h5")
-        db2 = dbi2.database
+            # validate the file exists, and force it to be readable again
+            b = h5py.File(db._fullPath, "r")
+            self.assertEqual(list(b.keys()), ["inputs"])
+            self.assertEqual(
+                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+            )
+            b.close()
 
-        # validate file 1 exists, and force it to be readable again
-        b = h5py.File(db._fullPath, "r")
-        self.assertEqual(list(b.keys()), ["inputs"])
-        self.assertEqual(
-            sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-        )
-        b.close()
-
-        # validate file 2 exists, and force it to be readable again
-        b2 = h5py.File(db2._fullPath, "r")
-        self.assertEqual(list(b2.keys()), ["inputs"])
-        self.assertEqual(
-            sorted(b2["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-        )
-        b2.close()
+            # append to lists
+            dbs.append(db)
 
         # end-to-end validation that comparing a photocopy database works
-        diffs = compareDatabases(db._fullPath, db2._fullPath)
+        diffs = compareDatabases(dbs[0]._fullPath, dbs[1]._fullPath)
         self.assertEqual(len(diffs.diffs), 0)
+        self.assertEqual(diffs.nDiffs(), 0)
+
+    def test_compareDatabaseSim(self):
+        """end-to-end test of compareDatabases() on very simlar databases"""
+        # build two super-simple H5 files for testing
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        # create two DBs, identical but for file names
+        dbs = []
+        for nCycles in range(2):
+            # build some test data
+            days = 100 * nCycles
+            cycles = [
+                {"step days": [days, days], "power fractions": [1, 0.5]}
+            ] * nCycles
+            cs = o.cs.modified(
+                newSettings={
+                    "nCycles": nCycles,
+                    "cycles": cycles,
+                    "reloadDBName": "something_fake.h5",
+                }
+            )
+
+            # create the tests DB
+            dbi = database3.DatabaseInterface(r, cs)
+            dbi.initDB(fName=self._testMethodName + str(nCycles) + ".h5")
+            db = dbi.database
+
+            # populate the db with something
+            for cycle, node in (
+                (cycle, node) for cycle in range(nCycles + 1) for node in range(2)
+            ):
+                r.p.cycle = cycle
+                r.p.timeNode = node
+                r.p.cycleLength = days * 2
+                db.writeToDB(r)
+
+            # validate the file exists, and force it to be readable again
+            b = h5py.File(db._fullPath, "r")
+            dbKeys = sorted(b.keys())
+            self.assertEqual(len(dbKeys), 2 * (nCycles + 1) + 1)
+            self.assertIn("inputs", dbKeys)
+            self.assertIn("c00n00", dbKeys)
+            self.assertEqual(
+                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+            )
+            b.close()
+
+            # append to lists
+            dbs.append(db)
+
+        # end-to-end validation that comparing a photocopy database works
+        diffs = compareDatabases(dbs[0]._fullPath, dbs[1]._fullPath)
+        self.assertEqual(len(diffs.diffs), 456)
+        self.assertEqual(diffs.nDiffs(), 3)
 
 
 if __name__ == "__main__":
