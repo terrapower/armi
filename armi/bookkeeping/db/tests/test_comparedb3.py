@@ -16,7 +16,12 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
-from armi.bookkeeping.db.compareDB3 import DiffResults, OutputWriter
+import h5py
+
+from armi.bookkeeping.db import database3
+from armi.bookkeeping.db.compareDB3 import compareDatabases, DiffResults, OutputWriter
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -69,6 +74,39 @@ class TestCompareDB3(unittest.TestCase):
 
         # simple test of nDiffs
         self.assertEqual(dr.nDiffs(), 10)
+
+    def test_compareDatabaseDuplicate(self):
+        """end-to-end test of compareDatabases() on a photocopy database"""
+        # build two super-simple H5 files for testing
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        dbi = database3.DatabaseInterface(r, o.cs)
+        dbi.initDB(fName=self._testMethodName + ".h5")
+        db = dbi.database
+
+        dbi2 = database3.DatabaseInterface(r, o.cs)
+        dbi2.initDB(fName=self._testMethodName + "2.h5")
+        db2 = dbi2.database
+
+        # validate file 1 exists, and force it to be readable again
+        b = h5py.File(db._fullPath, "r")
+        self.assertEqual(list(b.keys()), ["inputs"])
+        self.assertEqual(
+            sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+        )
+        b.close()
+
+        # validate file 2 exists, and force it to be readable again
+        b2 = h5py.File(db2._fullPath, "r")
+        self.assertEqual(list(b2.keys()), ["inputs"])
+        self.assertEqual(
+            sorted(b2["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+        )
+        b2.close()
+
+        # end-to-end validation that comparing a photocopy database works
+        diffs = compareDatabases(db._fullPath, db2._fullPath)
+        self.assertEqual(len(diffs.diffs), 0)
 
 
 if __name__ == "__main__":
