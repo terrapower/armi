@@ -135,7 +135,6 @@ class TestDatabase3(unittest.TestCase):
         and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
         created here for this test.
         """
-
         # first successfully call to prepRestartRun
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         cs = o.cs
@@ -164,7 +163,7 @@ class TestDatabase3(unittest.TestCase):
             db.writeToDB(r)
         db.close()
 
-        self.dbi.prepRestartRun()  # should not raise error
+        self.dbi.prepRestartRun()
 
         # now make the cycle histories clash and confirm that an error is thrown
         cs = cs.modified(
