@@ -43,22 +43,21 @@ the parameters are expected to be different. Specifically the following:
   even if the code hasn't changed.
 
 """
+from typing import Sequence, Optional, Pattern, Tuple
 import collections
 import os
 import re
-from typing import Sequence, Optional, Pattern, Tuple
 
-import numpy
-import h5py
 from tabulate import tabulate
+import h5py
+import numpy
 
 from armi import runLog
-from armi.bookkeeping.db.permissions import Permissions
+from armi.bookkeeping.db import database3
+from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.factory import databaseFactory
+from armi.bookkeeping.db.permissions import Permissions
 from armi.reactor.composites import ArmiObject
-
-from . import database3
-from .database3 import Database3
 
 
 class OutputWriter:
@@ -75,7 +74,7 @@ class OutputWriter:
     def __exit__(self, *args):
         self._stream.close()
 
-    def writeln(self, msg):
+    def writeln(self, msg: str) -> None:
         runLog.info(msg)
         self._stream.write(msg)
         self._stream.write("\n")
