@@ -14,9 +14,9 @@
 """Tests of the runLog tooling"""
 # pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
 from io import StringIO
+from shutil import rmtree
 import logging
 import os
-from shutil import rmtree
 import unittest
 
 from armi import context, runLog
@@ -123,7 +123,47 @@ class TestRunLog(unittest.TestCase):
         streamVal = stream.getvalue()
         self.assertIn("test_warningReport", streamVal, msg=streamVal)
         self.assertIn("Final Warning Count", streamVal, msg=streamVal)
+        self.assertNotIn("invisible", streamVal, msg=streamVal)
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
+
+    def test_warningReportInvalid(self):
+        """A test of warningReport in an invalid situation"""
+        # create the logger and do some logging
+        testName = "test_warningReportInvalid"
+        log = runLog.LOG = runLog._RunLog(323)
+        log.startLog(testName)
+        runLog.createLogDir(0)
+
+        # divert the logging to a stream, to make testing easier
+        stream = StringIO()
+        handler = logging.StreamHandler(stream)
+        log.logger.handlers = [handler]
+
+        # log some things
+        log.setVerbosity(logging.INFO)
+        log.log("warning", testName, single=True, label=None)
+        log.log("debug", "invisible due to log level", single=False, label=None)
+        log.log("warning", testName, single=True, label=None)
+        log.log("error", "high level something", single=False, label=None)
+
+        # test that the logging found some duplicate outputs
+        def returnNone(*args, **kwargs):
+            return None
+
+        log.getDuplicatesFilter = returnNone
+        self.assertIsNone(log.getDuplicatesFilter())
+
+        # run the warning report
+        log.warningReport()
+        runLog.close(1)
+        runLog.close(0)
+
+        # test what was logged
+        streamVal = stream.getvalue()
+        self.assertIn(testName, streamVal, msg=streamVal)
+        self.assertNotIn("None Found", streamVal, msg=streamVal)
+        self.assertNotIn("invisible", streamVal, msg=streamVal)
+        self.assertEqual(streamVal.count(testName), 2, msg=streamVal)
 
     def test_closeLogging(self):
         """A basic test of the close() functionality"""
@@ -306,6 +346,19 @@ class TestRunLog(unittest.TestCase):
             self.assertTrue(os.path.exists(logDir))
             runLog.createLogDir(logDir)
             self.assertTrue(os.path.exists(logDir))
+
+
+class TestRunLogger(unittest.TestCase):
+    def setUp(self):
+        # pass
+        self.rl = runLog.RunLogger("ARMI|things_and_stuff|0")
+
+    def test_getDuplicatesFilter(self):
+        df = self.rl.getDuplicatesFilter()
+        self.assertEqual(type(df), runLog.DeduplicationFilter)
+
+        self.rl.filters = []
+        self.assertIsNone(self.rl.getDuplicatesFilter())
 
 
 if __name__ == "__main__":
