@@ -487,6 +487,7 @@ def _determineLinked(componentA, componentB):
         biggerID = max(idA, idB)
         smallerOD = min(odA, odB)
         if biggerID >= smallerOD:
+            # one object fits inside the other
             linked = False
         else:
             linked = True
