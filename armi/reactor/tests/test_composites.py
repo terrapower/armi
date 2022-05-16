@@ -21,7 +21,9 @@ from armi import runLog
 from armi import settings
 from armi.nucDirectory import nucDir, nuclideBases
 from armi import utils
-
+from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
+    getDummyLFPFile,
+)
 from armi.reactor import components
 from armi.reactor import composites
 from armi.reactor import assemblies
@@ -30,7 +32,6 @@ from armi.reactor import grids
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
-
 from armi.reactor.tests.test_blocks import loadTestBlock
 
 
@@ -212,6 +213,39 @@ class TestCompositePattern(unittest.TestCase):
         self.assertAlmostEqual(self.container.getVolume(), 0)
         self.container._updateVolume()
         self.assertAlmostEqual(self.container.getVolume(), 0)
+
+    def test_expandLFPs(self):
+        # simple test, with no lumped fission product mappings
+        numDens = {"NA23": 1.0}
+        numDens = self.container._expandLFPs(numDens)
+        self.assertEqual(len(numDens), 1)
+
+        # set the lumped fission product mapping
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.container.setLumpedFissionProducts(lfps)
+
+        # get back the lumped fission product mapping, just to check
+        lfp = self.container.getLumpedFissionProductCollection()
+        self.assertEqual(len(lfp), 3)
+        self.assertIn("LFP35", lfp)
+        self.assertIn("LFP38", lfp)
+        self.assertIn("LFP39", lfp)
+
+        # quick test WITH some lumped fission products in the mix
+        numDens = {"NA23": 1.0, "LFP35": 2.0}
+        numDens = self.container._expandLFPs(numDens)
+        self.assertEqual(len(numDens), 9)
+        self.assertEqual(numDens["MO99"], 0)
+
+    def test_getIntegratedMgFlux(self):
+        mgFlux = self.container.getIntegratedMgFlux()
+        self.assertEqual(mgFlux, [0.0])
+
+    def test_getReactionRates(self):
+        rRates = self.container.getReactionRates("U235")
+        self.assertEqual(len(rRates), 6)
+        self.assertEqual(sum([r for r in rRates.values()]), 0)
 
 
 class TestCompositeTree(unittest.TestCase):

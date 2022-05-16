@@ -16,7 +16,6 @@ r""" Testing some utility functions
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
 from collections import defaultdict
-import math
 import unittest
 
 import numpy as np

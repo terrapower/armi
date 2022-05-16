@@ -44,9 +44,7 @@ The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
   in computer graphics.
 
 """
-
 import colorsys
-import copy
 import enum
 import io
 import os
@@ -69,7 +67,6 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import blueprints
 from armi.reactor.flags import Flags
-import armi.reactor.blueprints
 from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
 from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
