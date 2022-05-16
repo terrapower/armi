@@ -349,7 +349,6 @@ class TestRunLog(unittest.TestCase):
 
 class TestRunLogger(unittest.TestCase):
     def setUp(self):
-        # pass
         self.rl = runLog.RunLogger("ARMI|things_and_stuff|0")
 
     def test_getDuplicatesFilter(self):
@@ -358,6 +357,18 @@ class TestRunLogger(unittest.TestCase):
 
         self.rl.filters = []
         self.assertIsNone(self.rl.getDuplicatesFilter())
+
+    def test_allowStopDuplicates(self):
+        # the usual case, where the DeduplicateFilter already exists
+        self.assertEqual(len(self.rl.filters), 1)
+        self.rl.allowStopDuplicates()
+        self.assertEqual(len(self.rl.filters), 1)
+
+        # the unusual case, where the DeduplicateFilter isn't there
+        self.rl.filters = []
+        self.assertEqual(len(self.rl.filters), 0)
+        self.rl.allowStopDuplicates()
+        self.assertEqual(len(self.rl.filters), 1)
 
 
 if __name__ == "__main__":
