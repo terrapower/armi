@@ -370,6 +370,20 @@ class TestRunLogger(unittest.TestCase):
         self.rl.allowStopDuplicates()
         self.assertEqual(len(self.rl.filters), 1)
 
+    def test_write(self):
+        # divert the logging to a stream, to make testing easier
+        stream = StringIO()
+        handler = logging.StreamHandler(stream)
+        self.rl.handlers = [handler]
+
+        # log some things
+        testName = "test_write"
+        self.rl.write(testName)
+
+        # test what was logged
+        streamVal = stream.getvalue()
+        self.assertIn(testName, streamVal, msg=streamVal)
+
 
 if __name__ == "__main__":
     unittest.main()
