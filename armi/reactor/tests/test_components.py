@@ -385,8 +385,8 @@ class TestCircle(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getBoundingCircleInnerDiameter(self):
-        cur = self.component.getBoundingCircleInnerDiameter(cold=True)
+    def test_getCircleInnerDiameter(self):
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(self._id, cur)
 
     def test_dimensionThermallyExpands(self):
@@ -546,8 +546,8 @@ class TestRectangle(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getBoundingCircleInnerDiameter(self):
-        cur = self.component.getBoundingCircleInnerDiameter(cold=True)
+    def test_getCircleInnerDiameter(self):
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(math.sqrt(25.0), cur)
 
     def test_getArea(self):
@@ -656,9 +656,9 @@ class TestSquare(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getBoundingCircleInnerDiameter(self):
+    def test_getCircleInnerDiameter(self):
         ref = math.sqrt(8.0)
-        cur = self.component.getBoundingCircleInnerDiameter(cold=True)
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
@@ -760,9 +760,9 @@ class TestHexagon(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getBoundingCircleInnerDiameter(self):
+    def test_getCircleInnerDiameter(self):
         ref = 2.0 * 5.0 / math.sqrt(3)
-        cur = self.component.getBoundingCircleInnerDiameter(cold=True)
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
@@ -923,9 +923,9 @@ class TestHelix(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getBoundingCircleInnerDiameter(self, Tc=None, cold=False):
+    def test_getCircleInnerDiameter(self, Tc=None, cold=False):
         ref = 0.1 + 2.0
-        cur = self.component.getBoundingCircleInnerDiameter(cold=True)
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):

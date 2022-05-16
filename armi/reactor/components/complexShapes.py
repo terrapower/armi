@@ -234,7 +234,7 @@ class Helix(ShapedComponent):
             "helixDiameter", Tc, cold=cold
         )
 
-    def getBoundingCircleInnerDiameter(self, Tc=None, cold=False):
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
         return self.getDimension("id", Tc, cold) + self.getDimension(
             "helixDiameter", Tc, cold=cold
         )

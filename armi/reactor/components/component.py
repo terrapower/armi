@@ -783,7 +783,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
         raise NotImplementedError
 
-    def getBoundingCircleInnerDiameter(self, Tc=None, cold=False):
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
         """Abstract inner bounding circle method that should be overwritten by each shape subclass."""
         raise NotImplementedError
 

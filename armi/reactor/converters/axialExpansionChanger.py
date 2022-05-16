@@ -461,7 +461,7 @@ def _determineLinked(componentA, componentB):
 
     Notes
     -----
-    - Requires that shapes have the getBoundingCircleInnerDiameter and getBoundingCircleOuterDiameter defined
+    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter defined
     - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet inner
       and outer diameter requirements.
 
@@ -476,11 +476,11 @@ def _determineLinked(componentA, componentB):
         and (componentA.getDimension("mult") == componentB.getDimension("mult"))
     ):
         idA, odA = (
-            componentA.getBoundingCircleInnerDiameter(),
+            componentA.getCircleInnerDiameter(),
             componentA.getBoundingCircleOuterDiameter(),
         )
         idB, odB = (
-            componentB.getBoundingCircleInnerDiameter(),
+            componentB.getCircleInnerDiameter(),
             componentB.getBoundingCircleOuterDiameter(),
         )
 
