@@ -135,7 +135,6 @@ class TestDatabase3(unittest.TestCase):
         and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
         created here for this test.
         """
-
         # first successfully call to prepRestartRun
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         cs = o.cs
@@ -164,7 +163,7 @@ class TestDatabase3(unittest.TestCase):
             db.writeToDB(r)
         db.close()
 
-        self.dbi.prepRestartRun()  # should not raise error
+        self.dbi.prepRestartRun()
 
         # now make the cycle histories clash and confirm that an error is thrown
         cs = cs.modified(
@@ -465,6 +464,18 @@ class TestDatabase3(unittest.TestCase):
         # test that we recover the correct commit hash
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
+
+        # delete the .git directory
+        code = subprocess.run(
+            ["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).returncode
+        self.assertEqual(code, 0)
+        code = subprocess.run(
+            ["git", "clean", "-f", "-d"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        self.assertEqual(code, 0)
 
     def test_fileName(self):
         # test the file name getter
