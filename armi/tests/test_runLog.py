@@ -342,10 +342,9 @@ class TestRunLog(unittest.TestCase):
         with TemporaryDirectoryChanger():
             logDir = "test_createLogDir"
             self.assertFalse(os.path.exists(logDir))
-            runLog.createLogDir(logDir)
-            self.assertTrue(os.path.exists(logDir))
-            runLog.createLogDir(logDir)
-            self.assertTrue(os.path.exists(logDir))
+            for _ in range(10):
+                runLog.createLogDir(logDir)
+                self.assertTrue(os.path.exists(logDir))
 
 
 class TestRunLogger(unittest.TestCase):
