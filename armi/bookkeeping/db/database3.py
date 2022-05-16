@@ -695,9 +695,7 @@ class Database3(database.Database):
             return unknown
 
     def close(self, completedSuccessfully=False):
-        """
-        Close the DB and perform cleanups and auto-conversions.
-        """
+        """Close the DB and perform cleanups and auto-conversions."""
         self._openCount = 0
         if self.h5db is None:
             return

@@ -2037,7 +2037,9 @@ class HexBlock(Block):
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
-        return self.getComponent(Flags.CLAD) and self.getComponent(Flags.WIRE)
+        return (self.getComponent(Flags.CLAD) is not None) and (
+            self.getComponent(Flags.WIRE) is not None
+        )
 
     def getPinPitch(self, cold=False):
         """

@@ -16,11 +16,13 @@
 Unit tests for pathTools.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
-import unittest
 import os
 import types
+import unittest
 
+from armi import context
 from armi.utils import pathTools
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -69,6 +71,50 @@ class PathToolsTests(unittest.TestCase):
         self.assertFalse(pathTools.moduleAndAttributeExist(thisFile + ":doesntExist"))
         self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":THIS_DIR"))
         self.assertTrue(pathTools.moduleAndAttributeExist(thisFile + ":PathToolsTests"))
+
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
+    def test_cleanPathNoMpi(self):
+        """Simple tests of cleanPath(), in the no-MPI scenario"""
+        with TemporaryDirectoryChanger():
+            # TEST 0: File is not safe to delete, due to name pathing
+            filePath0 = "test0_cleanPathNoMpi"
+            open(filePath0, "w").write("something")
+
+            self.assertTrue(os.path.exists(filePath0))
+            with self.assertRaises(Exception):
+                pathTools.cleanPath(filePath0, mpiRank=0)
+
+            # TEST 1: Delete a single file
+            filePath1 = "test1_cleanPathNoMpi_mongoose"
+            open(filePath1, "w").write("something")
+
+            self.assertTrue(os.path.exists(filePath1))
+            pathTools.cleanPath(filePath1, mpiRank=0)
+            self.assertFalse(os.path.exists(filePath1))
+
+            # TEST 2: Delete an empty directory
+            dir2 = "mongoose"
+            os.mkdir(dir2)
+
+            self.assertTrue(os.path.exists(dir2))
+            pathTools.cleanPath(dir2, mpiRank=0)
+            self.assertFalse(os.path.exists(dir2))
+
+            # TEST 3: Delete a directory with two files inside
+            # create directory
+            dir3 = "mongoose"
+            os.mkdir(dir3)
+
+            # throw in a couple of simple text files
+            open(os.path.join(dir3, "file1.txt"), "w").write("something1")
+            open(os.path.join(dir3, "file2.txt"), "w").write("something2")
+
+            # delete the directory and test
+            self.assertTrue(os.path.exists(dir3))
+            self.assertTrue(os.path.exists(os.path.join(dir3, "file1.txt")))
+            self.assertTrue(os.path.exists(os.path.join(dir3, "file2.txt")))
+            pathTools.cleanPath(dir3, mpiRank=0)
+            self.assertFalse(os.path.exists(dir3))
 
 
 if __name__ == "__main__":
