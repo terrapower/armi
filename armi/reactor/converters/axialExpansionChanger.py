@@ -152,8 +152,12 @@ class AxialExpansionChanger:
         """
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
+        runLog.debug(
+            "Printing component expansion information (growth percentage and 'target component')"
+            "for each block in assembly {0}.".format(self.linked.a)
+        )
         for ib, b in enumerate(self.linked.a):
-            runLog.debug(msg="Block {0}".format(b))
+            runLog.debug(msg="  Block {0}".format(b))
             if thermal:
                 blockHeight = b.p.heightBOL
             else:
@@ -167,7 +171,7 @@ class AxialExpansionChanger:
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(
-                        msg="    Component {0}, growFrac = {1:.4e}".format(c, growFrac)
+                        msg="      Component {0}, growFrac = {1:.4e}".format(c, growFrac)
                     )
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
@@ -188,7 +192,7 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        runLog.debug("    Component {0} is target component".format(c))
+                        runLog.debug("      Component {0} is target component".format(c))
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
