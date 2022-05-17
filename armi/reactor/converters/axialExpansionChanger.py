@@ -417,6 +417,11 @@ class AssemblyAxialLinkage:
             key to access blocks containing linked components
         c : :py:class:`Component <armi.reactor.components.component.Component>` object
             component to determine axial linkage for
+        
+        Raises
+        ------
+        RuntimeError
+            multiple candidate components are found to be axially linked to a component
         """
         lstLinkedC = [None, None]
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
@@ -424,13 +429,15 @@ class AssemblyAxialLinkage:
                 for otherC in linkdBlk.getChildren():
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
-                            runLog.warning(
-                                msg="Multiple component axial linkages have been found for "
-                                "Component {0}; Block {1}. This Component will be axially linked "
-                                "to Component {2}; Block {3}.".format(
-                                    c, b, otherC, linkdBlk
+                            errMsg = (
+                                "Multiple component axial linkages have been found for Component {0}; Block {1}."
+                                " This is indicative of an error in the blueprints! Linked components found are"
+                                "{2} and {3}".format(
+                                    c, b, lstLinkedC[ib], otherC
                                 )
                             )
+                            runLog.error(msg=errMsg)
+                            raise RuntimeError(errMsg)
                         lstLinkedC[ib] = otherC
 
         self.linkedComponents[c] = lstLinkedC
