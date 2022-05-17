@@ -234,6 +234,11 @@ class Helix(ShapedComponent):
             "helixDiameter", Tc, cold=cold
         )
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        return self.getDimension("id", Tc, cold) + self.getDimension(
+            "helixDiameter", Tc, cold=cold
+        )
+
     def getComponentArea(self, cold=False):
         """Computes the area for the helix in cm^2."""
         ap = self.getDimension("axialPitch", cold=cold)

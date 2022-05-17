@@ -71,6 +71,9 @@ class Circle(ShapedComponent):
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         return max(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        return min(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
+
     def getComponentArea(self, cold=False):
         """Computes the area for the circle component in cm^2."""
         idiam = self.getDimension("id", cold=cold)
@@ -126,6 +129,10 @@ class Hexagon(ShapedComponent):
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         sideLength = self.getDimension("op", Tc, cold) / math.sqrt(3)
+        return 2.0 * sideLength
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        sideLength = self.getDimension("ip", Tc, cold) / math.sqrt(3)
         return 2.0 * sideLength
 
     def getComponentArea(self, cold=False):
@@ -212,6 +219,11 @@ class Rectangle(ShapedComponent):
         lengthO = self.getDimension("lengthOuter", Tc, cold=cold)
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
         return math.sqrt(widthO ** 2 + lengthO ** 2)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        lengthI = self.getDimension("lengthInner", Tc, cold=cold)
+        widthI = self.getDimension("widthInner", Tc, cold=cold)
+        return math.sqrt(widthI ** 2 + lengthI ** 2)
 
     def getComponentArea(self, cold=False):
         """Computes the area of the rectangle in cm^2."""
@@ -348,6 +360,10 @@ class Square(Rectangle):
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
         return math.sqrt(widthO ** 2 + widthO ** 2)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        widthI = self.getDimension("widthInner", Tc, cold=cold)
+        return math.sqrt(widthI ** 2 + widthI ** 2)
 
     def getPitchData(self):
         """
