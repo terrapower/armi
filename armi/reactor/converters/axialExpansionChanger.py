@@ -171,7 +171,9 @@ class AxialExpansionChanger:
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(
-                        msg="      Component {0}, growFrac = {1:.4e}".format(c, growFrac)
+                        msg="      Component {0}, growFrac = {1:.4e}".format(
+                            c, growFrac
+                        )
                     )
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
@@ -192,7 +194,9 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        runLog.debug("      Component {0} is target component".format(c))
+                        runLog.debug(
+                            "      Component {0} is target component".format(c)
+                        )
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
@@ -417,7 +421,7 @@ class AssemblyAxialLinkage:
             key to access blocks containing linked components
         c : :py:class:`Component <armi.reactor.components.component.Component>` object
             component to determine axial linkage for
-        
+
         Raises
         ------
         RuntimeError
@@ -432,9 +436,7 @@ class AssemblyAxialLinkage:
                             errMsg = (
                                 "Multiple component axial linkages have been found for Component {0}; Block {1}."
                                 " This is indicative of an error in the blueprints! Linked components found are"
-                                "{2} and {3}".format(
-                                    c, b, lstLinkedC[ib], otherC
-                                )
+                                "{2} and {3}".format(c, b, lstLinkedC[ib], otherC)
                             )
                             runLog.error(msg=errMsg)
                             raise RuntimeError(errMsg)
