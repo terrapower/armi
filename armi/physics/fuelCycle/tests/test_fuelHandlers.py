@@ -60,7 +60,7 @@ class TestFuelHandler(ArmiTestHelper):
         but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
-            self.directoryChanger.destination
+            self.directoryChanger.destination, customSettings={"nCycles": 3}
         )
         blockList = self.r.core.getBlocks()
         for bi, b in enumerate(blockList):

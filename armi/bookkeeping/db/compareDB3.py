@@ -43,22 +43,21 @@ the parameters are expected to be different. Specifically the following:
   even if the code hasn't changed.
 
 """
+from typing import Sequence, Optional, Pattern, Tuple
 import collections
 import os
 import re
-from typing import Sequence, Optional, Pattern, Tuple
 
-import numpy
-import h5py
 from tabulate import tabulate
+import h5py
+import numpy
 
 from armi import runLog
-from armi.bookkeeping.db.permissions import Permissions
+from armi.bookkeeping.db import database3
+from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.factory import databaseFactory
+from armi.bookkeeping.db.permissions import Permissions
 from armi.reactor.composites import ArmiObject
-
-from . import database3
-from .database3 import Database3
 
 
 class OutputWriter:
@@ -75,7 +74,7 @@ class OutputWriter:
     def __exit__(self, *args):
         self._stream.close()
 
-    def writeln(self, msg):
+    def writeln(self, msg: str) -> None:
         runLog.info(msg)
         self._stream.write(msg)
         self._stream.write("\n")
@@ -111,10 +110,10 @@ class DiffResults:
         # diff doesn't exceed the tolerance, a None is inserted instead.
         self.diffs = collections.defaultdict(self._getDefault)
 
-    def addDiff(self, compType, paramName, absMean, mean, absMax):
-        """
-        Add a collection of diffs to the diff dictionary if they exceed the tolerance.
-        """
+    def addDiff(
+        self, compType: str, paramName: str, absMean: float, mean: float, absMax: float
+    ) -> None:
+        """Add a collection of diffs to the diff dictionary if they exceed the tolerance."""
         # compType = compType[compType.index("/", 2) + 1 :]
         absMean = absMean if absMean > self.tolerance else None
         self.diffs["{}/{} mean(abs(diff))".format(compType, paramName)].append(absMean)
@@ -125,17 +124,17 @@ class DiffResults:
         absMax = absMax if absMax > self.tolerance else None
         self.diffs["{}/{} max(abs(diff))".format(compType, paramName)].append(absMax)
 
-    def addStructureDiffs(self, nDiffs: int):
+    def addStructureDiffs(self, nDiffs: int) -> None:
         self._structureDiffs[-1] += nDiffs
 
-    def addTimeStep(self, tsName):
+    def addTimeStep(self, tsName: str) -> None:
         self._structureDiffs.append(0)
         self._columns.append(tsName)
 
-    def _getDefault(self):
+    def _getDefault(self) -> list:
         return [None] * (len(self._columns) - 1)
 
-    def reportDiffs(self, stream):
+    def reportDiffs(self, stream: OutputWriter) -> None:
         # filter out empty rows
         diffsToPrint = {
             key: value
@@ -204,10 +203,13 @@ def compareDatabases(
                 )
 
         diffResults.reportDiffs(out)
+
     return diffResults
 
 
-def _compareH5Groups(out, ref, src, name) -> Tuple[Sequence[str], int]:
+def _compareH5Groups(
+    out: OutputWriter, ref: h5py.Group, src: h5py.Group, name: str
+) -> Tuple[Sequence[str], int]:
     refGroups = set(ref.keys())
     srcGroups = set(src.keys())
 
@@ -217,7 +219,11 @@ def _compareH5Groups(out, ref, src, name) -> Tuple[Sequence[str], int]:
 
 
 def _compareTimeStep(
-    out, refGroup, srcGroup, diffResults, exclusions: Optional[Sequence[Pattern]] = None
+    out: OutputWriter,
+    refGroup: h5py.Group,
+    srcGroup: h5py.Group,
+    diffResults: DiffResults,
+    exclusions: Optional[Sequence[Pattern]] = None,
 ):
     groupNames, structDiffs = _compareH5Groups(
         out, refGroup, srcGroup, "composite objects/auxiliary data"
@@ -240,7 +246,13 @@ def _compareTimeStep(
         _compareAuxData(out, refGroup[aux], srcGroup[aux], diffResults, exclusions)
 
 
-def _compareAuxData(out, refGroup, srcGroup, diffResults, exclusions):
+def _compareAuxData(
+    out: OutputWriter,
+    refGroup: h5py.Group,
+    srcGroup: h5py.Group,
+    diffResults: DiffResults,
+    exclusions: Sequence[Pattern],
+):
     """
     Compare auxiliary datasets, which aren't stored as Parameters on the Composite model.
 
@@ -269,7 +281,9 @@ def _compareAuxData(out, refGroup, srcGroup, diffResults, exclusions):
         _diffSimpleData(refData[name], srcData[name], out, diffResults)
 
 
-def _compareSets(src, ref, out, name=None) -> int:
+def _compareSets(
+    src: set, ref: set, out: OutputWriter, name: Optional[str] = None
+) -> int:
     nDiffs = 0
     if ref - src:
         nDiffs += len(ref - src)
@@ -286,7 +300,12 @@ def _compareSets(src, ref, out, name=None) -> int:
     return nDiffs
 
 
-def _diffSpecialData(refData, srcData, out, diffResults):
+def _diffSpecialData(
+    refData: h5py.Dataset,
+    srcData: h5py.Dataset,
+    out: OutputWriter,
+    diffResults: DiffResults,
+):
     """
     Compare specially-formatted datasets.
 
@@ -431,7 +450,11 @@ def _diffSimpleData(
 
 
 def _compareComponentData(
-    out, refGroup, srcGroup, diffResults, exclusions: Optional[Sequence[Pattern]] = None
+    out: OutputWriter,
+    refGroup: h5py.Group,
+    srcGroup: h5py.Group,
+    diffResults: DiffResults,
+    exclusions: Optional[Sequence[Pattern]] = None,
 ):
     exclusions = exclusions or []
     compName = refGroup.name

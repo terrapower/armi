@@ -103,6 +103,7 @@ from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
+from armi.utils import getPreviousTimeNode, getStepLengths
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 from armi.settings.fwSettings.databaseSettings import (
@@ -247,7 +248,7 @@ class DatabaseInterface(interfaces.Interface):
         DBs should receive the state information of the run at each node.
         """
         # skip writing for last burn step since it will be written at interact EOC
-        if node < self.cs["burnSteps"]:
+        if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
             ) / 60.0
@@ -304,29 +305,73 @@ class DatabaseInterface(interfaces.Interface):
     def distributable(self):
         return self.Distribute.SKIP
 
-    def prepRestartRun(self, dbCycle, dbNode):
-        """Load the data history from the database being restarted from."""
+    def prepRestartRun(self):
+        """
+        Load the data history from the database requested in the case setting
+        `reloadDBName`.
+
+        Reactor state is put at the cycle/node requested in the case settings
+        `startCycle` and `startNode`, having loaded the state from all cycles prior
+        to that in the requested database.
+
+        Notes
+        -----
+        Mixing the use of simple vs detailed cycles settings is allowed, provided
+        that the cycle histories prior to `startCycle`/`startNode` are equivalent.
+        """
         reloadDBName = self.cs["reloadDBName"]
         runLog.info(
             f"Merging database history from {reloadDBName} for restart analysis."
         )
+        startCycle = self.cs["startCycle"]
+        startNode = self.cs["startNode"]
+
         with Database3(reloadDBName, "r") as inputDB:
             loadDbCs = inputDB.loadCS()
 
-            # Not beginning or end of cycle so burnSteps matter to get consistent time.
-            isMOC = self.cs["startNode"] not in (0, loadDbCs["burnSteps"])
-            if loadDbCs["burnSteps"] != self.cs["burnSteps"] and isMOC:
-                raise ValueError(
-                    "Time nodes per cycle are inconsistent between loadDB and "
-                    "current case settings. This will create a mismatch in the "
-                    "total time per cycle for the load cycle. Change current case "
-                    "settings to {0} steps per node, or set `startNode` == 0 or {0} "
-                    "so that it loads the BOC or EOC of the load database."
-                    "".format(loadDbCs["burnSteps"])
-                )
+            # pull the history up to the cycle/node prior to `startCycle`/`startNode`
+            dbCycle, dbNode = getPreviousTimeNode(
+                startCycle,
+                startNode,
+                self.cs,
+            )
 
-            self._db.mergeHistory(inputDB, self.cs["startCycle"], self.cs["startNode"])
+            # check that cycle histories are equivalent up to this point
+            self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
+                loadDbCs, dbCycle, dbNode
+            )
+
+            self._db.mergeHistory(inputDB, startCycle, startNode)
         self.loadState(dbCycle, dbNode)
+
+    def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
+        self, loadDbCs, dbCycle, dbNode
+    ):
+        dbStepLengths = getStepLengths(loadDbCs)
+        currentCaseStepLengths = getStepLengths(self.cs)
+        dbStepHistory = []
+        currentCaseStepHistory = []
+        try:
+            for cycleIdx in range(dbCycle + 1):
+                if cycleIdx == dbCycle:
+                    # truncate it at dbNode
+                    dbStepHistory.append(dbStepLengths[cycleIdx][:dbNode])
+                    currentCaseStepHistory.append(
+                        currentCaseStepLengths[cycleIdx][:dbNode]
+                    )
+                else:
+                    dbStepHistory.append(dbStepLengths[cycleIdx])
+                    currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
+        except IndexError:
+            runLog.error(
+                f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}"
+            )
+            raise
+
+        if dbStepHistory != currentCaseStepHistory:
+            raise ValueError(
+                "The cycle history up to the restart cycle/node must be equivalent."
+            )
 
     # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
@@ -650,9 +695,7 @@ class Database3(database.Database):
             return unknown
 
     def close(self, completedSuccessfully=False):
-        """
-        Close the DB and perform cleanups and auto-conversions.
-        """
+        """Close the DB and perform cleanups and auto-conversions."""
         self._openCount = 0
         if self.h5db is None:
             return

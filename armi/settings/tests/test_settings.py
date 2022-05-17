@@ -298,6 +298,14 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         with self.assertRaises(NonexistentSetting):
             _ = cs["missingFake"]
 
+    def test_settingIsOkayToGrab(self):
+        cs = caseSettings.Settings()
+        newSettings = {"cycles": [{"cumulative days": [1]}]}
+        cs = cs.modified(newSettings=newSettings)
+
+        with self.assertRaises(ValueError):
+            _ = cs["cycleLength"]
+
     def test_modified(self):
         """prove that using the modified() method does not mutate the original object"""
         # init settings

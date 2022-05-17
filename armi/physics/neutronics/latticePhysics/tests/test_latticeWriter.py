@@ -14,7 +14,6 @@
 
 """Test the Lattice Physics Writer"""
 
-import os
 import unittest
 
 from armi.physics.neutronics.const import CONF_CROSS_SECTION

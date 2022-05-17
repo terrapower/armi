@@ -128,6 +128,70 @@ class TestDatabase3(unittest.TestCase):
         roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
+    def test_prepRestartRun(self):
+        """
+        This test is based on the armiRun.yaml case that is loaded during the `setUp`
+        above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
+        and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
+        created here for this test.
+        """
+        # first successfully call to prepRestartRun
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        cs = o.cs
+        cs = cs.modified(
+            newSettings={
+                "nCycles": 3,
+                "cycles": [
+                    {"step days": [1000, 1000], "power fractions": [1, 1]},
+                    {"step days": [1000, 1000], "power fractions": [1, 1]},
+                    {"step days": [1000, 1000], "power fractions": [1, 1]},
+                ],
+                "reloadDBName": "something_fake.h5",
+            }
+        )
+
+        # create a db based on the cs
+        dbi = database3.DatabaseInterface(r, cs)
+        dbi.initDB(fName="reloadingDB.h5")
+        db = dbi.database
+
+        # populate the db with something
+        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+            r.p.cycle = cycle
+            r.p.timeNode = node
+            r.p.cycleLength = 2000
+            db.writeToDB(r)
+        db.close()
+
+        self.dbi.prepRestartRun()
+
+        # now make the cycle histories clash and confirm that an error is thrown
+        cs = cs.modified(
+            newSettings={
+                "cycles": [
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                ],
+            }
+        )
+
+        # create a db based on the cs
+        dbi = database3.DatabaseInterface(r, cs)
+        dbi.initDB(fName="reloadingDB.h5")
+        db = dbi.database
+
+        # populate the db with something
+        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+            r.p.cycle = cycle
+            r.p.timeNode = node
+            r.p.cycleLength = 2000
+            db.writeToDB(r)
+        db.close()
+
+        with self.assertRaises(ValueError):
+            self.dbi.prepRestartRun()
+
     def test_computeParents(self):
         # The below arrays represent a tree structure like this:
         #                 71 -----------------------.
@@ -401,6 +465,18 @@ class TestDatabase3(unittest.TestCase):
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
+        # delete the .git directory
+        code = subprocess.run(
+            ["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).returncode
+        self.assertEqual(code, 0)
+        code = subprocess.run(
+            ["git", "clean", "-f", "-d"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        self.assertEqual(code, 0)
+
     def test_fileName(self):
         # test the file name getter
         self.assertEqual(str(self.db.fileName), "test_fileName.h5")
@@ -437,7 +513,7 @@ class TestDatabase3(unittest.TestCase):
     def test_loadCS(self):
         cs = self.db.loadCS()
         self.assertEqual(cs["numProcessors"], 1)
-        self.assertEqual(cs["nCycles"], 3)
+        self.assertEqual(cs["nCycles"], 6)
 
     def test_loadBlueprints(self):
         bp = self.db.loadBlueprints()

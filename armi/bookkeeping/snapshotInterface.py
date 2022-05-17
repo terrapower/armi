@@ -30,6 +30,7 @@ Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defau
 from armi import interfaces
 from armi import runLog
 from armi import operators
+from armi.utils import getStepLengths
 
 
 ORDER = interfaces.STACK_ORDER.POSTPROCESSING
@@ -96,7 +97,8 @@ class SnapshotInterface(interfaces.Interface):
         if molCycle >= curCycle:
             snapTimeCycleNodePairs.append([molCycle, 0])
         if eolCycle >= curCycle:
-            snapTimeCycleNodePairs.append([eolCycle, self.cs["burnSteps"]])
+            eolCycleLastNode = len(getStepLengths(self.cs)[-1])
+            snapTimeCycleNodePairs.append([eolCycle, eolCycleLastNode])
         return snapTimeCycleNodePairs
 
 

@@ -172,17 +172,13 @@ def loadTestReactor(
 
     # Overwrite settings if desired
     if customSettings:
-        newSettings = {}
-        for settingKey, settingVal in customSettings.items():
-            newSettings[settingKey] = settingVal
-
-        cs = cs.modified(newSettings=newSettings)
+        cs = cs.modified(newSettings=customSettings)
 
     if "verbosity" not in customSettings:
         runLog.setVerbosity("error")
 
     newSettings = {}
-    newSettings["nCycles"] = 3
+    newSettings["stationaryBlocks"] = []
     cs = cs.modified(newSettings=newSettings)
     settings.setMasterCs(cs)
 

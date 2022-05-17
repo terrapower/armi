@@ -31,7 +31,6 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import itertools
-import math
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
