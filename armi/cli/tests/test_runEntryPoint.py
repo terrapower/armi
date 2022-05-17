@@ -19,6 +19,7 @@ import sys
 import unittest
 
 from armi.__main__ import main
+from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
@@ -91,6 +92,7 @@ class TestConvertDB(unittest.TestCase):
         cdb.parse_args(["/path/to/fake.h5"])
 
         self.assertEqual(cdb.name, "convert-db")
+        self.assertEqual(cdb.args.output_version, "3")
         self.assertIsNone(cdb.args.nodes)
 
         # Since the file is fake, invoke() should exit early.
@@ -99,6 +101,18 @@ class TestConvertDB(unittest.TestCase):
             with self.assertRaises(ValueError):
                 cdb.invoke()
             self.assertIn("Converting the", mock._outputStream)
+
+    def test_convertDbOutputVersion(self):
+        cdb = ConvertDB()
+        cdb.addOptions()
+        cdb.parse_args(["/path/to/fake.h5", "--output-version", "XtView"])
+        self.assertEqual(cdb.args.output_version, "2")
+
+    def test_convertDbOutputNodes(self):
+        cdb = ConvertDB()
+        cdb.addOptions()
+        cdb.parse_args(["/path/to/fake.h5", "--nodes", "(1,2)"])
+        self.assertEqual(cdb.args.nodes, [(1, 2)])
 
 
 class TestCopyDB(unittest.TestCase):
@@ -227,6 +241,16 @@ class TestRunSuiteCommand(unittest.TestCase):
 
         self.assertEqual(rs.name, "run-suite")
         self.assertIsNone(rs.settingsArgument)
+
+
+class TestVisFileEntryPointCommand(unittest.TestCase):
+    def test_visFileEntryPointBasics(self):
+        vf = VisFileEntryPoint()
+        vf.addOptions()
+        vf.parse_args(["/path/to/fake.h5"])
+
+        self.assertEqual(vf.name, "vis-file")
+        self.assertIsNone(vf.settingsArgument)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,6 @@
 
 """Test the Lattice Interface"""
 
-import os
 import unittest
 
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (

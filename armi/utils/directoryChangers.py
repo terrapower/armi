@@ -259,7 +259,15 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
     def __exit__(self, exc_type, exc_value, traceback):
         DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
-        pathTools.cleanPath(self.destination)
+        try:
+            pathTools.cleanPath(self.destination)
+        except PermissionError:
+            if os.name == "nt":
+                runLog.warning(
+                    "There is an issue where Windows will not agree to delete private directories."
+                    "That is, if you create a directory with a name starting with a period, the "
+                    "TempDirChanger will not be able to clean it (for instance, a '.git' dir)."
+                )
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):

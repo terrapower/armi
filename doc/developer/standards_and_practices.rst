@@ -192,14 +192,15 @@ functions and public classes.
 
 Unit tests
 ==========
-All ARMI developers are required to write unit tests. In particular, if you are adding new code to the code base, you
-are required to add unit tests for your new code.
+All ARMI developers are required to write unit tests.
+
+.. important ::
+    If you add a new function to the code base, you are required to add unit tests to cover that function.
 
 ARMI uses the ``pytest`` library to drive tests, therefore tests need to be runnable from the commandline by
 ``python -m pytest armi``. Furthermore, for consistency:
 
 * Each individual unit test should take under 10 seconds, on a modern laptop.
-* All unit tests together should take under 60 seconds, on a modern laptop.
 * All unit tests should be placed into a separate module from production code that is prefixed with ``test_``.
 * All unit tests should be written in object-oriented fashion, inheriting from ``unittest.TestCase``.
 * All test method names should start with ``test_``.

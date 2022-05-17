@@ -68,12 +68,10 @@ Specifying blocks and assemblies to track
 See :ref:`detail-assems`.
 
 """
-import re
-import os
 from collections import OrderedDict
 from typing import Tuple
+import re
 
-import numpy
 from matplotlib import pyplot
 import tabulate
 
@@ -81,9 +79,9 @@ from armi import interfaces
 from armi import runLog
 from armi import utils
 from armi import operators
-from armi.utils import textProcessors
 from armi.reactor.flags import Flags
 from armi.reactor import grids
+from armi.utils import textProcessors
 
 ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 

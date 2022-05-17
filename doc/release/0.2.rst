@@ -24,6 +24,7 @@ Bug fixes
 #. Fixed issue with ``_swapFluxParams`` failing for assemblies with different blocks (`#566 <https://github.com/terrapower/armi/issues/566>`_)
 #. Multiple bug fixes in ``growToFullCore``.
 #. ``Block.getWettedPerim`` was moved to ``HexBlock``, as that was more accurate.
+#. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
 #. TBD
 
 

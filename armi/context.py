@@ -26,7 +26,6 @@ import enum
 import gc
 import getpass
 import os
-import shutil
 import sys
 import time
 
@@ -129,10 +128,13 @@ except ImportError:
     pass
 
 try:
+    # trying a windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
+    APP_DATA = APP_DATA.replace("/", "\\")
 except:  # pylint: disable=bare-except
     # non-windows
     APP_DATA = os.path.expanduser("~/.armi")
+
 if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
@@ -174,7 +176,12 @@ def activateLocalFastPath() -> None:
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY  # pylint: disable=global-statement
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA  # pylint: disable=global-statement
+
+    # Try to fix pathing issues in Windows.
+    if os.name == "nt":
+        APP_DATA = APP_DATA.replace("/", "\\")
+
     _FAST_PATH = os.path.join(
         APP_DATA,
         "{}{}-{}".format(
@@ -183,6 +190,7 @@ def activateLocalFastPath() -> None:
             datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"),
         ),
     )
+
     _FAST_PATH_IS_TEMPORARY = True
 
 
