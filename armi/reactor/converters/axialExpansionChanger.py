@@ -421,7 +421,11 @@ class AssemblyAxialLinkage:
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             runLog.warning(
-                                msg="There is already something linked here!"
+                                msg="Multiple component axial linkages have been found for "
+                                "Component {0}; Block {1}. This Component will be axially linked "
+                                "to Component {2}; Block {3}.".format(
+                                    c, b, otherC, linkdBlk
+                                )
                             )
                         lstLinkedC[ib] = otherC
 
