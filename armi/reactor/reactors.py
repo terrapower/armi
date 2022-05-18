@@ -221,6 +221,7 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
+        self._inputHeightsConsideredHot = False
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -231,6 +232,7 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
+        self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
