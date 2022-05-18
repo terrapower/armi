@@ -738,7 +738,7 @@ class TestFuelHandler(ArmiTestHelper):
 
     def test_transferStationaryBlocks(self):
         """
-        Test the _transferStationaryBlocks method.
+        Test the _transferStationaryBlocks method .
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -747,8 +747,8 @@ class TestFuelHandler(ArmiTestHelper):
         assems = self.r.core.getAssemblies(Flags.FUEL)
 
         # grab two arbitrary assemblies
-        a1 = copy.deepcopy(assems[1])
-        a2 = copy.deepcopy(assems[2])
+        a1 = assems[1]
+        a2 = assems[2]
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
@@ -780,9 +780,6 @@ class TestFuelHandler(ArmiTestHelper):
             if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
-        print(a1PostSwapStationaryBlocks)
-        print(a2PostSwapStationaryBlocks)
-
         # validate the stationary blocks have swapped locations and are aligned
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
@@ -800,8 +797,8 @@ class TestFuelHandler(ArmiTestHelper):
         assems = self.r.core.getAssemblies(Flags.FUEL)
 
         # grab two arbitrary assemblies
-        a1 = copy.deepcopy(assems[1])
-        a2 = copy.deepcopy(assems[2])
+        a1 = assems[1]
+        a2 = assems[2]
 
         # change a block in assembly 1 to be flagged as a stationary block
         for block in a1:
@@ -818,8 +815,10 @@ class TestFuelHandler(ArmiTestHelper):
             fh._transferStationaryBlocks(a1, a2)
 
         # re-initialize assemblies
-        a1 = copy.deepcopy(assems[1])
-        a2 = copy.deepcopy(assems[2])
+        self.setUp()
+        assems = self.r.core.getAssemblies(Flags.FUEL)
+        a1 = assems[1]
+        a2 = assems[2]
 
         # move location of a stationary flag in assembly 1
         for block in a1:
@@ -853,9 +852,122 @@ class TestFuelHandler(ArmiTestHelper):
                 break
 
         # try to swap stationary blocks between assembly 1 and 2
-        fh = fuelHandlers.FuelHandler(self.o)
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
+
+    def test_dischargeSwap(self):
+        """
+        Test the dischargeSwap method.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab an arbitrary fuel assembly from the core and from the SFP
+        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+
+        # grab the stationary blocks pre swap
+        a1PreSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        a2PreSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        # test discharging assembly 1 and replacing with assembly 2
+        fh = fuelHandlers.FuelHandler(self.o)
+        fh.dischargeSwap(a2, a1)
+        self.assertTrue(a1.getLocation() in a1.NOT_IN_CORE)
+        self.assertTrue(a2.getLocation() not in a2.NOT_IN_CORE)
+
+        # grab the stationary blocks post swap
+        a1PostSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        a2PostSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        # validate the stationary blocks have swapped locations correctly and are aligned
+        self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
+        self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
+
+    def test_dischargeSwapIncompatibleStationaryBlocks(self):
+        """
+        Test the _transferStationaryBlocks method
+        for the case where the input assemblies have
+        different numbers as well as unaligned locations of stationary blocks.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab an arbitrary fuel assembly from the core and from the SFP
+        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+
+        # change a block in assembly 1 to be flagged as a stationary block
+        for block in a1:
+            if not any(block.hasFlags(sbf) for sbf in sBFList):
+                a1[block.spatialLocator.k].setType(
+                    a1[block.spatialLocator.k].p.type, sBFList[0]
+                )
+                self.assertTrue(any(block.hasFlags(sbf) for sbf in sBFList))
+                break
+
+        # try to discharge assembly 1 and replace with assembly 2
+        fh = fuelHandlers.FuelHandler(self.o)
+        with self.assertRaises(ValueError):
+            fh.dischargeSwap(a2, a1)
+
+        # re-initialize assemblies
+        self.setUp()
+        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+
+        # move location of a stationary flag in assembly 1
+        for block in a1:
+            if any(block.hasFlags(sbf) for sbf in sBFList):
+                # change flag of first identified stationary block to fuel
+                a1[block.spatialLocator.k].setType(
+                    a1[block.spatialLocator.k].p.type, Flags.FUEL
+                )
+                self.assertTrue(a1[block.spatialLocator.k].hasFlags(Flags.FUEL))
+                # change next or previous block flag to stationary flag
+                try:
+                    a1[block.spatialLocator.k + 1].setType(
+                        a1[block.spatialLocator.k + 1].p.type, sBFList[0]
+                    )
+                    self.assertTrue(
+                        any(
+                            a1[block.spatialLocator.k + 1].hasFlags(sbf)
+                            for sbf in sBFList
+                        )
+                    )
+                except:
+                    a1[block.spatialLocator.k - 1].setType(
+                        a1[block.spatialLocator.k - 1].p.type, sBFList[0]
+                    )
+                    self.assertTrue(
+                        any(
+                            a1[block.spatialLocator.k - 1].hasFlags(sbf)
+                            for sbf in sBFList
+                        )
+                    )
+                break
+
+        # try to discharge assembly 1 and replace with assembly 2
+        with self.assertRaises(ValueError):
+            fh.dischargeSwap(a2, a1)
 
 
 class TestFuelPlugin(unittest.TestCase):

@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from _operator import index
-from _ast import Or
 
 """
 This module handles fuel management operations such as shuffling, rotation, and
@@ -31,21 +29,15 @@ import math
 import os
 import re
 import warnings
-import logging
 
 import numpy
 
-from armi import interfaces
+from armi import runLog
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
-from armi.operators import RunTypes
-from armi.utils import directoryChangers, pathTools
-from armi.utils import plotting
 from armi.utils.mathematics import findClosest, resampleStepwise
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
-
-runLog = logging.getLogger(__name__)
 
 
 class FuelHandler:
