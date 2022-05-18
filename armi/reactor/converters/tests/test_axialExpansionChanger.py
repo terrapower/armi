@@ -611,6 +611,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     ),
                 )
 
+
 class TestLinkage(unittest.TestCase):
     """test axial linkage between components"""
 
