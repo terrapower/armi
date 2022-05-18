@@ -43,6 +43,7 @@ from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
 class SystemBlueprint(yamlize.Object):
@@ -72,6 +73,7 @@ class SystemBlueprint(yamlize.Object):
         self.name = name
         self.gridName = gridName
         self.origin = origin
+        self.axialExpChngr = None
 
     @staticmethod
     def _resolveSystemType(typ: str):
@@ -127,6 +129,7 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.info("Constructing the `{}`".format(self.name))
 
+        self.axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
         # TODO: We should consider removing automatic geom file migration.
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
@@ -167,7 +170,7 @@ class SystemBlueprint(yamlize.Object):
         # with non-Core-like structure. Again, probably only doable with subclassing of
         # Blueprints
         if loadAssems:
-            self._loadAssemblies(cs, system, gridDesign, gridDesign.gridContents, bp)
+            self._loadAssemblies(cs, system, gridDesign.gridContents, bp)
 
             # TODO: This post-construction work is specific to Cores for now. We need to
             # generalize this. Things to consider:
@@ -184,13 +187,17 @@ class SystemBlueprint(yamlize.Object):
         return system
 
     # pylint: disable=no-self-use
-    def _loadAssemblies(self, cs, container, gridDesign, gridContents, bp):
+    def _loadAssemblies(self, cs, container, gridContents, bp):
         runLog.header(
             "=========== Adding Assemblies to {} ===========".format(container)
         )
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
+            if not cs["inputHeightsConsideredHot"]:
+                self.axialExpChngr.setAssembly(newAssembly)
+                self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+                self.axialExpChngr.axiallyExpandAssembly(thermal=True)
 
             i, j = locationInfo
             loc = container.spatialGrid[i, j, 0]

@@ -117,6 +117,18 @@ class BlockBlueprint(yamlize.KeyedList):
                 materialInput, componentDesign
             )
             c = componentDesign.construct(blueprint, filteredMaterialInput)
+            if cs["inputHeightsConsideredHot"]:
+                if "group" in c.name:
+                    for component in c:
+                        component.applyHotHeightDensityReduction()
+                        componentBlueprint._insertDepletableNuclideKeys(
+                            component, blueprint
+                        )  # pylint: disable=protected-access
+                else:
+                    c.applyHotHeightDensityReduction()
+                    componentBlueprint._insertDepletableNuclideKeys(
+                        c, blueprint
+                    )  # pylint: disable=protected-access
             components[c.name] = c
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
