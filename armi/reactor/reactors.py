@@ -2247,13 +2247,6 @@ class Core(composites.Composite):
                 # prepare for mesh snapping during axial expansion
                 a.makeAxialSnapList(refAssem)
 
-        if not cs["inputHeightsConsideredHot"]:
-            chngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
-            for a in self.getAssemblies(includeBolAssems=True):
-                chngr.setAssembly(a)
-                chngr.expansionData.computeThermalExpansionFactors()
-                chngr.axiallyExpandAssembly()
-
         self.numRings = self.getNumRings()  # TODO: why needed?
 
         self.getNuclideCategories()

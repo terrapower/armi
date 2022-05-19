@@ -44,6 +44,7 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.flags import Flags
 
 
 class SystemBlueprint(yamlize.Object):
@@ -195,9 +196,10 @@ class SystemBlueprint(yamlize.Object):
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
             if not cs["inputHeightsConsideredHot"]:
-                self.axialExpChngr.setAssembly(newAssembly)
-                self.axialExpChngr.expansionData.computeThermalExpansionFactors()
-                self.axialExpChngr.axiallyExpandAssembly(thermal=True)
+                if not newAssembly.hasFlags(Flags.CONTROL):
+                    self.axialExpChngr.setAssembly(newAssembly)
+                    self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+                    self.axialExpChngr.axiallyExpandAssembly(thermal=True)
 
             i, j = locationInfo
             loc = container.spatialGrid[i, j, 0]
