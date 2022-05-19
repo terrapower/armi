@@ -221,7 +221,7 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
-        self._inputHeightsConsideredHot = False
+        self._inputHeightsConsideredHot = True
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
