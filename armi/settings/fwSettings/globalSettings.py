@@ -219,7 +219,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("burnTime", None),
             ],
-            schema=(vol.Any(float, int, None)),
+            schema=(vol.Any(vol.Coerce(float), None)),
         ),
         setting.Setting(
             CONF_CYCLE_LENGTHS,
@@ -241,7 +241,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("capacityFactor", None),
             ],
-            schema=(vol.Any(float, int, None)),
+            schema=(vol.Any(vol.Coerce(float), None)),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,

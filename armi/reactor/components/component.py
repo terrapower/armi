@@ -783,6 +783,18 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
         raise NotImplementedError
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """Abstract inner circle method that should be overwritten by each shape subclass.
+
+        Notes
+        -----
+        The inner circle is meaningful for annular shapes, i.e., circle with non-zero ID,
+        hexagon with non-zero IP, etc. For shapes with corners (e.g., hexagon, rectangle, etc)
+        the inner circle intersects the corners of the inner bound, opposed to intersecting
+        the "flats".
+        """
+        raise NotImplementedError
+
     def dimensionIsLinked(self, key):
         """True if a the specified dimension is linked to another dimension."""
         return key in self.p and isinstance(self.p[key], _DimensionLink)

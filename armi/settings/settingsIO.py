@@ -16,15 +16,12 @@
 :py:class:`~armi.settings.caseSettings.Settings`, and the contained
 :py:class:`~armi.settings.setting.Setting`.
 """
-import ast
+from typing import Dict, Tuple, Set
 import collections
 import datetime
 import enum
 import os
-import re
-from typing import Dict, Tuple, Set
 import sys
-import warnings
 
 from ruamel.yaml import YAML
 import ruamel.yaml.comments
