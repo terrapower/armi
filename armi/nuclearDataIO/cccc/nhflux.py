@@ -20,7 +20,7 @@ Examples
 >>> NhfluxStream.writeAscii(nhfluxData, "nhflux.ascii")
 
 """
-import numpy
+import numpy as np
 
 from armi.nuclearDataIO import cccc
 
@@ -132,13 +132,16 @@ class NHFLUX(cccc.DataContainer):
         self.metadata["numDataSetsToRead"] = numDataSetsToRead
 
         # Initialize class array variables.
-        self.geodstCoordMap: numpy.ndarray = numpy.array([])
-        self.externalCurrentPointers: numpy.ndarray = numpy.array([])
-        self.fluxMoments: numpy.ndarray = numpy.array([])
-        self.partialCurrentsHex: numpy.ndarray = numpy.array([])
-        self.partialCurrentsHex_ext: numpy.ndarray = numpy.array([])
-        self.partialCurrentsZ: numpy.ndarray = numpy.array([])
-        self.incomingPointersToAllAssemblies: numpy.ndarray = numpy.array([])
+        self.geodstCoordMap: np.ndarray = np.array([])
+        self.externalCurrentPointers: np.ndarray = np.array([])
+        self.fluxMoments: np.ndarray = np.array([])
+        self.partialCurrentsHex: np.ndarray = np.array([])
+        self.partialCurrentsHex_ext: np.ndarray = np.array([])
+        self.partialCurrentsZ: np.ndarray = np.array([])
+        self.incomingPointersToAllAssemblies: np.ndarray = np.array([])
+        if self.metadata["variantFlag"]:
+            self.outgoingPCSymSecPointers: np.ndarray = np.array([])
+            self.ingoingPCSymSecPointers: np.ndarray = np.array([])
 
 
 class NhfluxStream(cccc.StreamWithDataContainer):
@@ -184,26 +187,29 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         # Number of XY partial currents. Note that for the same model, this number is not
         # the same between Nodal and VARIANT; VARIANT has more, and it appears that the
-        # extra currents come from the internal reflective boundary (for 1/3-core symmetry).
+        # extra currents come from the internal reflective boundary.
         numPartialCurrentsHex_ext = (
             self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
         )
 
         # Note: All flux and current data has units of n/cm^2/s
         if self._data.fluxMoments.size == 0:
+            assert self._metadata["iwnhfl"] != 2
+
             # initialize using metadata info for reading
-            self._data.fluxMoments = numpy.zeros(
+            self._data.fluxMoments = np.zeros(
                 (self._metadata["nintxy"], nz, self._metadata["nMom"], ng)
             )
-            self._data.partialCurrentsHex = numpy.zeros(
-                (self._metadata["nintxy"], nz, self._metadata["nSurf"], ng)
-            )
-            self._data.partialCurrentsHex_ext = numpy.zeros(
-                (numPartialCurrentsHex_ext, nz, ng)
-            )
-            self._data.partialCurrentsZ = numpy.zeros(
-                (self._metadata["nintxy"], nz + 1, 2, ng)
-            )
+            if self._metadata["iwnhfl"] != 1:
+                self._data.partialCurrentsHex = np.zeros(
+                    (self._metadata["nintxy"], nz, self._metadata["nSurf"], ng)
+                )
+                self._data.partialCurrentsHex_ext = np.zeros(
+                    (numPartialCurrentsHex_ext, nz, ng)
+                )
+                self._data.partialCurrentsZ = np.zeros(
+                    (self._metadata["nintxy"], nz + 1, 2, ng)
+                )
 
         for _n in range(self._metadata["numDataSetsToRead"]):
 
@@ -222,22 +228,24 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                     self._data.fluxMoments[:, z, :, gEff] = self._rwFluxMoments3D(
                         self._data.fluxMoments[:, z, :, gEff]
                     )
-                for z in range(nz):  # loop through axial nodes
-                    (
-                        self._data.partialCurrentsHex[:, z, :, gEff],
-                        self._data.partialCurrentsHex_ext[:, z, gEff],
-                    ) = self._rwHexPartialCurrents4D(
-                        self._data.partialCurrentsHex[:, z, :, gEff],
-                        self._data.partialCurrentsHex_ext[:, z, gEff],
-                    )
 
-                for z in range(nz + 1):
-                    # loop through axial surfaces (NOT axial nodes, because there is a "+1")
-                    self._data.partialCurrentsZ[
-                        :, z, :, gEff
-                    ] = self._rwZPartialCurrents5D(
-                        self._data.partialCurrentsZ[:, z, :, gEff]
-                    )
+                if self._metadata["iwnhfl"] != 1:
+                    for z in range(nz):  # loop through axial nodes
+                        (
+                            self._data.partialCurrentsHex[:, z, :, gEff],
+                            self._data.partialCurrentsHex_ext[:, z, gEff],
+                        ) = self._rwHexPartialCurrents4D(
+                            self._data.partialCurrentsHex[:, z, :, gEff],
+                            self._data.partialCurrentsHex_ext[:, z, gEff],
+                        )
+
+                    for z in range(nz + 1):
+                        # loop through axial surfaces (NOT axial nodes, because there is a "+1")
+                        self._data.partialCurrentsZ[
+                            :, z, :, gEff
+                        ] = self._rwZPartialCurrents5D(
+                            self._data.partialCurrentsZ[:, z, :, gEff]
+                        )
 
     def _getNumOuterSurfacesHex(self):
         """
@@ -250,8 +258,13 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         if self._metadata["variantFlag"]:
             numOuterSurfacesHex = self._metadata["npcbdy"]
         else:
+            # Nodal does not have an "npcbdy" metadata parameter, so numOuterSurfacesHex
+            # must be calculated differently. Performing this same calculation in VARIANT,
+            # which is possible, will return a different (larger) number, so that is why
+            # we cannot use the same formula for both codes.
             numOuterSurfacesHex = (
-                self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
+                self._metadata["npcxy"]
+                - self._metadata["nintxy"] * self._metadata["nSurf"]
             )
 
         return numOuterSurfacesHex
@@ -273,7 +286,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.)
         """
         if self._metadata["variantFlag"]:
-            keys = FILE_SPEC_1D_KEYS + FILE_SPEC_1D_KEYS_VARIANT11  + ("IDUM",) * 6
+            keys = FILE_SPEC_1D_KEYS + FILE_SPEC_1D_KEYS_VARIANT11 + ("IDUM",) * 6
         else:
             keys = FILE_SPEC_1D_KEYS + ("IDUM",) * 11
 
@@ -289,12 +302,16 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         This DIF3D GEODST indexing is different than (but similar to) the MCNP GEODST hex ordering.
         See TP1-1.9.31-RPT-0010 for more details on hex ordering.
 
-        Let N be the number of assemblies. Let M be the number of "external hex surfaces" exposed to
-        the outer reactor boundary (usually vacuum). M does NOT include reflective surfaces!
+        For Nodal, let N be the number of assemblies. Let M be the number of
+        "external hex surfaces" exposed tothe outer reactor boundary (usually vacuum). M
+        does NOT include reflective surfaces!
 
         N = self._metadata['nintxy']
         M = self._metadata['npcxy'] - self._metadata['nintxy']*6
         N*6 + M = self._metadata['npcxy']
+
+        For VARIANT in hexagonal geometry, there are two additional datasets for outgoing
+        and ingoing partial currents on the symmetric and sector xy-plane boundary.
 
         Examples
         --------
@@ -319,7 +336,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
             numExternalSurfaces = self._getNumOuterSurfacesHex()
 
-            # Initialize numpy arrays to store all hex ordering (and hex surface ordering)
+            # Initialize np arrays to store all hex ordering (and hex surface ordering)
             # data. We don't actually use incomingPointersToAllAssemblies (basically
             # equivalent to nearest neighbors indices), but it's here in case someone
             # needs it in the future.
@@ -327,15 +344,15 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # initialize data size when reading
             if self._data.incomingPointersToAllAssemblies.size == 0:
                 # Index pointers to INCOMING partial currents on assemblies
-                self._data.incomingPointersToAllAssemblies = numpy.zeros(
+                self._data.incomingPointersToAllAssemblies = np.zeros(
                     (nSurf, nAssem), dtype=int
                 )
                 # Index pointers to OUTGOING partial currents on core outer boundary
-                self._data.externalCurrentPointers = numpy.zeros(
+                self._data.externalCurrentPointers = np.zeros(
                     (numExternalSurfaces), dtype=int
                 )
                 # Index pointers to DIF3D GEODST ordering of each assembly
-                self._data.geodstCoordMap = numpy.zeros(nAssem, dtype=int)
+                self._data.geodstCoordMap = np.zeros(nAssem, dtype=int)
 
             self._data.incomingPointersToAllAssemblies = record.rwIntMatrix(
                 self._data.incomingPointersToAllAssemblies, nAssem, nSurf
@@ -349,19 +366,19 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                 self._data.geodstCoordMap, "int", nAssem
             )
 
-            # TODO: Need to add this data to the object as an attribute and deal with
-            # TODO: writing
             if self._metadata["variantFlag"]:
                 # Number of symmetry and sector surface pointers
                 npcsto = self._metadata["npcsym"] + self._metadata["npcsec"]
 
-                outgoingPCSymSecPointers = numpy.zeros(npcsto, dtype=int)
-                incomingPCSymSecPointers = numpy.zeros(npcsto, dtype=int)
-                outgoingPCSymSecPointers = (
-                    record.rwList(outgoingPCSymSecPointers, "int", npcsto)
+                if self._data.outgoingPCSymSecPointers.size == 0:
+                    self._data.outgoingPCSymSecPointers = np.zeros(npcsto, dtype=int)
+                    self._data.ingoingPCSymSecPointers = np.zeros(npcsto, dtype=int)
+
+                self._data.outgoingPCSymSecPointers = record.rwList(
+                    self._data.outgoingPCSymSecPointers, "int", npcsto
                 )
-                incomingPCSymSecPointers = (
-                    record.rwList(incomingPCSymSecPointers, "int", npcsto)
+                self._data.ingoingPCSymSecPointers = record.rwList(
+                    self._data.ingoingPCSymSecPointers, "int", npcsto
                 )
 
     def _rwFluxMoments3D(self, contents):
@@ -381,6 +398,8 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # TODO: currently being done). For P1 transport with P0 scattering, this code will
         # TODO: still work anyway because nMoms happens to be zero. In general, though,
         # TODO: this is broken.
+        if self._metadata["variantFlag"]:
+            assert self._metadata["nMoms"] == 0
         with self.createRecord() as record:
             fluxMoments = record.rwDoubleMatrix(
                 contents.T,
@@ -431,7 +450,8 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             nscoef = self._metadata["nscoef"]
 
             numPartialCurrentsHex_ext = (
-                self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
+                self._metadata["npcxy"]
+                - self._metadata["nintxy"] * self._metadata["nSurf"]
             )
 
             # Loop through all lateral hex surfaces of all assemblies
