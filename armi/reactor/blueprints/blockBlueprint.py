@@ -121,14 +121,12 @@ class BlockBlueprint(yamlize.KeyedList):
                 if "group" in c.name:
                     for component in c:
                         component.applyHotHeightDensityReduction()
-                        componentBlueprint._insertDepletableNuclideKeys(
+                        componentBlueprint.insertDepletableNuclideKeys(
                             component, blueprint
-                        )  # pylint: disable=protected-access
+                        )
                 else:
                     c.applyHotHeightDensityReduction()
-                    componentBlueprint._insertDepletableNuclideKeys(
-                        c, blueprint
-                    )  # pylint: disable=protected-access
+                    componentBlueprint.insertDepletableNuclideKeys(c, blueprint)
             components[c.name] = c
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
