@@ -670,7 +670,7 @@ class ExpansionData:
         Notes
         -----
         - if flagOfInterest is None, finds the component within b that contains flags that
-          are defined in b.p.flags
+          are defined in a preferred order of flags, or barring that, in b.p.flags 
         - if flagOfInterest is not None, finds the component that contains the flagOfInterest.
 
         Raises

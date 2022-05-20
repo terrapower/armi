@@ -530,6 +530,20 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+    def test_specifyTargetComponentBlockWithMultipleFlags(self):
+        # build block for testing
+        b = HexBlock("fuel poison", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
+        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        poison = Circle("poison", "FakeMat", **poisonDims)
+        b.add(fuel)
+        b.add(poison)
+        try:
+            self.obj.expansionData.specifyTargetComponent(b)
+        except RuntimeError:
+            self.fail()
+
     def test_isFuelLocked(self):
         b_TwoFuel = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
