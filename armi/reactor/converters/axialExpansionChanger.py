@@ -680,10 +680,25 @@ class ExpansionData:
         RuntimeError
             multiple target components found
         """
+
         if flagOfInterest is None:
             componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
+        if len(componentWFlag) > 1:
+            # Follow expansion of most neutronically important component, fuel first then control/poison
+            targetFlagsInPreferedOrder = [
+                Flags.FUEL,
+                Flags.CONTROL,
+                Flags.POISON,
+                Flags.SHIELD,
+            ]
+            for targetFlag in targetFlagsInPreferedOrder:
+                for c in componentWFlag:
+                    if targetFlag in c.p.flags:
+                        componentWFlag = [c]
+                    if len(componentWFlag) == 1:
+                        break
         if len(componentWFlag) == 0:
             raise RuntimeError("No target component found!\n   Block {0}".format(b))
         if len(componentWFlag) > 1:
