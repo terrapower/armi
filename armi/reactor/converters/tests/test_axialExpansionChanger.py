@@ -14,6 +14,7 @@
 
 """Test axialExpansionChanger"""
 
+import os
 from statistics import mean
 import unittest
 from numpy import linspace, ones, array, vstack, zeros
@@ -560,6 +561,66 @@ class TestExceptions(Base, unittest.TestCase):
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestInputHeightsConsideredHot(unittest.TestCase):
+    """verify thermal expansion for process loading of core"""
+
+    def setUp(self):
+        """provide the base case"""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": True},
+        )
+        self.stdAssems = [a for a in r.core.getAssemblies()]
+
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": False},
+        )
+        self.testAssems = [a for a in rCold.core.getAssemblies()]
+
+    def test_coldAssemblyHeight(self):
+        """block heights are cold and should be expanded
+
+        Notes
+        -----
+        Two assertions here:
+            1. total assembly height should be preserved (through use of top dummy block)
+            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
+               Thot > Tinput resulting in a non-zero DeltaT. Each block in the
+               expanded case should therefore be a different height than that of the standard case.
+               - The one exception is for control assemblies. These designs can be unique from regular
+                 pin type assemblies by allowing downward expansion. Because of this, they are skipped
+                 for axial expansion.
+        """
+        for aStd, aExp in zip(self.stdAssems, self.testAssems):
+            self.assertAlmostEqual(
+                aStd.getTotalHeight(),
+                aExp.getTotalHeight(),
+                msg="Std Assem {0} ({1}) and Exp Assem {2} ({3}) are not the same height!".format(
+                    aStd, aStd.getTotalHeight(), aExp, aExp.getTotalHeight()
+                ),
+            )
+            for bStd, bExp in zip(aStd, aExp):
+                if aStd.hasFlags(Flags.CONTROL):
+                    checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
+                else:
+                    checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
+
+
+def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
+    assertType(
+        bStd.getHeight(),
+        bExp.getHeight(),
+        msg="Std Block {0} ({1}) and Exp Block {2} ({3}) should have {4:s} heights!".format(
+            bStd,
+            bStd.getHeight(),
+            bExp,
+            bExp.getHeight(),
+            strForAssertion,
+        ),
+    )
 
 
 class TestLinkage(unittest.TestCase):

@@ -55,6 +55,7 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 # init logger
 runLog = logging.getLogger(__name__)
@@ -220,6 +221,7 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
+        self._inputHeightsConsideredHot = True
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -230,6 +232,7 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
+        self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
