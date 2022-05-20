@@ -171,13 +171,13 @@ class ComponentBlueprint(yamlize.Object):
                 # override free component multiplicity if it's set based on the group definition
                 component.setDimension("mult", groupedComponent.mult)
                 _setComponentFlags(component, self.flags, blueprint)
-                _insertDepletableNuclideKeys(component, blueprint)
+                insertDepletableNuclideKeys(component, blueprint)
                 constructedObject.add(component)
 
         else:
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
-            _insertDepletableNuclideKeys(constructedObject, blueprint)
+            insertDepletableNuclideKeys(constructedObject, blueprint)
         return constructedObject
 
     def _conformKwargs(self, blueprint, matMods):
@@ -285,7 +285,7 @@ def expandElementals(mat, blueprint):
     )
 
 
-def _insertDepletableNuclideKeys(c, blueprint):
+def insertDepletableNuclideKeys(c, blueprint):
     """
     Auto update number density keys on all DEPLETABLE components.
 

@@ -215,6 +215,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         )
 
         # show that area expansion is consistent with the density change in the material
+        self.component.applyHotHeightDensityReduction()
         hotDensity = self.component.density()
         hotArea = self.component.getArea()
         thermalExpansionFactor = self.component.getThermalExpansionFactor(
@@ -230,6 +231,7 @@ class TestUnshapedComponent(TestGeneralComponents):
                 area=math.pi,
             )
         )
+        coldComponent.applyHotHeightDensityReduction()
         coldDensity = coldComponent.density()
         coldArea = coldComponent.getArea()
 
