@@ -670,7 +670,7 @@ class ExpansionData:
         Notes
         -----
         - if flagOfInterest is None, finds the component within b that contains flags that
-          are defined in a preferred order of flags, or barring that, in b.p.flags 
+          are defined in a preferred order of flags, or barring that, in b.p.flags
         - if flagOfInterest is not None, finds the component that contains the flagOfInterest.
 
         Raises
@@ -691,13 +691,13 @@ class ExpansionData:
             ]
             for targetFlag in targetFlagsInPreferedOrder:
                 componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
-                if componentWFlag != []:  # or just `if componentWFlag`
+                if componentWFlag != []:
                     break
+            # some blocks/components are not included in the above list but should still be found
+            if not componentWFlag:
+                componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
-        # some blocks/components are not included in the above list but should still be found
-        if not componentWFlag:
-            componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         if len(componentWFlag) == 0:
             raise RuntimeError("No target component found!\n   Block {0}".format(b))
         if len(componentWFlag) > 1:
