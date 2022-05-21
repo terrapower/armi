@@ -75,6 +75,15 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     """Manually exclude certain methods/functions from docs"""
     # exclude special methods from unittest
     excludes = ["setUp", "setUpClass", "tearDown", "tearDownClass"]
+
+    try:
+        # special logic to fix inherited docstrings from yamlize.Attribute
+        s = str(obj).strip()
+        if s.startswith("<Attribute") and "_yamlized_" in s:
+            return True
+    except:
+        pass
+
     return name.startswith("_") or name in excludes
 
 
