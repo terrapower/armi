@@ -331,16 +331,7 @@ class MemoryProfiler(interfaces.Interface):
         """Print referrers in a useful way (as opposed to gigabytes of text"""
         runLog.info("Printing first 100 character of first 100 referrers")
         for ref in gc.get_referrers(obj)[:100]:
-            print("ref for {}: {}".format(obj, repr(ref)[:100]))
-
-    @staticmethod
-    def discussSkipped(skipped, errors):
-        runLog.warning("Skipped {} objects".format(skipped))
-        runLog.warning(
-            "errored out on {0} objects:\n {1}".format(
-                len(errors), "\n".join([repr(ei)[:30] for ei in errors])
-            )
-        )
+            runLog.important("ref for {}: {}".format(obj, repr(ref)[:100]))
 
 
 class KlassCounter:

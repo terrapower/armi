@@ -64,6 +64,25 @@ class MemoryProfilerTests(unittest.TestCase):
             # do some basic testing
             self.assertIn("End Memory Usage Report", mock._outputStream)
 
+    def test_getReferrers(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock._outputStream)
+            testName = "test_getReferrers"
+            runLog.LOG.startLog(testName)
+            runLog.LOG.setVerbosity(logging.DEBUG)
+
+            # grab the referrers
+            self.memPro.getReferrers(self.r)
+            memLog = mock._outputStream
+
+        # test the results
+        self.assertGreater(memLog.count("ref for"), 10)
+        self.assertLess(memLog.count("ref for"), 50)
+        self.assertIn(testName, memLog)
+        self.assertIn("Reactor", memLog)
+        self.assertIn("core", memLog)
+
 
 class KlassCounterTests(unittest.TestCase):
     def get_containers(self):
