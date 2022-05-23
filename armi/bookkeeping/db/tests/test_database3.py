@@ -391,10 +391,10 @@ class TestDatabase3(unittest.TestCase):
         self.db.close()
 
         with h5py.File("test_splitDatabase.h5", "r") as newDb:
-            self.assertTrue(newDb["c00n00/Reactor/cycle"][()] == 0)
-            self.assertTrue(newDb["c00n00/Reactor/cycleLength"][()] == 1)
-            self.assertTrue("c02n00" not in newDb)
-            self.assertTrue(newDb.attrs["databaseVersion"] == database3.DB_VERSION)
+            self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
+            self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()], 1)
+            self.assertNotIn("c02n00", newDb)
+            self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
 
             # validate that the min set of meta data keys exists
             meta_data_keys = [
@@ -417,7 +417,7 @@ class TestDatabase3(unittest.TestCase):
             ]
             for meta_key in meta_data_keys:
                 self.assertIn(meta_key, newDb.attrs)
-                self.assertTrue(newDb.attrs[meta_key] is not None)
+                self.assertIsNotNone(newDb.attrs[meta_key])
 
         # test an edge case - no DB to split
         with self.assertRaises(ValueError):
