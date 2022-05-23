@@ -83,6 +83,28 @@ class MemoryProfilerTests(unittest.TestCase):
         self.assertIn("Reactor", memLog)
         self.assertIn("core", memLog)
 
+    def test_checkForDuplicateObjectsOnArmiModel(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock._outputStream)
+            testName = "test_checkForDuplicateObjectsOnArmiModel"
+            runLog.LOG.startLog(testName)
+            runLog.LOG.setVerbosity(logging.IMPORTANT)
+
+            # check for duplicates
+            with self.assertRaises(RuntimeError):
+                self.memPro.checkForDuplicateObjectsOnArmiModel("cs", self.r.core)
+
+            # validate the outputs are as we expect
+            self.assertIn(
+                "There are 2 unique objects stored as `.cs`", mock._outputStream
+            )
+            self.assertIn("Expected id", mock._outputStream)
+            self.assertIn("Expected object", mock._outputStream)
+            self.assertIn("These types of objects", mock._outputStream)
+            self.assertIn("MemoryProfiler", mock._outputStream)
+            self.assertIn("MainInterface", mock._outputStream)
+
 
 class KlassCounterTests(unittest.TestCase):
     def get_containers(self):
