@@ -265,68 +265,6 @@ class MemoryProfiler(interfaces.Interface):
             operator.reattach(reactor, cs)
 
     @staticmethod
-    def getSpecificReferrers(klass, ancestorKlass):
-        """Try to determine some useful information about the structure of ArmiObjects and potential
-        orphans.
-
-        This takes a class and an expected/nominal parent class, which should both be instances of
-        ArmiObject. It will then locate all instances of klass that are tracked by the GC, igoring
-        those that have an ancestor of ancestorKlass type. A report will be generated containing
-        the counts of the instances of klass that are _not_ part of the ancestor_class along with
-        their referrer class.
-
-        This is useful for diagnosing memory leaks, as it points to unexpected referrers to
-        ArmiObjects.
-        """
-        if not issubclass(klass, ArmiObject) or not issubclass(
-            ancestorKlass, ArmiObject
-        ):
-            raise TypeError(
-                "klass and ancestorKlass should be subclasses of ArmiObject"
-            )
-
-        # info will be a list containing a tuple for every instance of klass that does not have an
-        # ancestorKlass somewhere in its chain of parents. Each tuple contains its parent object
-        # and the set of classes of objects that refer to it
-        info = []
-        nominalCount = 0
-        exampleObj = None
-        maxObjects = 100
-        objectsSoFar = 0
-        for obj in (o for o in gc.get_objects() if isinstance(o, klass)):
-            if objectsSoFar > maxObjects:
-                break
-
-            isNominal = False
-            o2 = obj
-            while o2.parent is not None:
-                if isinstance(o2.parent, ancestorKlass):
-                    isNominal = True
-                    break
-                o2 = o2.parent
-            runLog.important("isNominal: {} parent: {}".format(isNominal, obj.parent))
-            if isNominal:
-                nominalCount += 1
-            else:
-                exampleObj = obj
-                objectsSoFar += 1
-                referrers = gc.get_referrers(obj)
-                referrerClasses = {type(o) for o in referrers}
-                info.append((obj.parent, referrerClasses))
-
-        if exampleObj is not None:
-            runLog.important("Walking referrers for {}".format(exampleObj))
-            _walkReferrers(exampleObj, maxLevel=8)
-            raise RuntimeError("All done")
-
-        runLog.important(
-            "List of {} orphaned ArmiObjects (obj.parent, {{referring object "
-            "classes}})".format(len(info))
-        )
-        for item in info:
-            runLog.important("{}".format(item))
-
-    @staticmethod
     def getReferrers(obj):
         """Print referrers in a useful way (as opposed to gigabytes of text"""
         runLog.info("Printing first 100 character of first 100 referrers")
