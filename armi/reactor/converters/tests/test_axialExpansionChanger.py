@@ -531,7 +531,8 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_specifyTargetComponentBlockWithMultipleFlags(self):
-        # build block for testing
+        # build a block that has two flags as well as a component matching each
+        # flag
         b = HexBlock("fuel poison", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
         poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
