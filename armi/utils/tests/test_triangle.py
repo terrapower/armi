@@ -18,7 +18,7 @@ import unittest
 from armi.utils import triangle
 
 
-class triangleTests(unittest.TestCase):
+class TestTriangle(unittest.TestCase):
     def test_getTriangleArea(self):
         """Test that getTriangleArea correctly calculates the area of a right triangle."""
         x1 = 0.0
