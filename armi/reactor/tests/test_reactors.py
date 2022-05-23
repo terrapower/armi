@@ -225,7 +225,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(val2 / self.r.core.powerMultiplier, val)
 
     def test_geomType(self):
-        self.assertTrue(self.r.core.geomType == geometry.GeomType.HEX)
+        self.assertEqual(self.r.core.geomType, geometry.GeomType.HEX)
 
     def test_growToFullCore(self):
         nAssemThird = len(self.r.core)
@@ -504,10 +504,10 @@ class HexReactorTests(ReactorTests):
         newA = copy.deepcopy(a)
         newA.name = None
         self.r.p.cycle = 1
-        self.assertTrue(len(list(self.r.core.genAssembliesAddedThisCycle())) == 0)
+        self.assertEqual(len(list(self.r.core.genAssembliesAddedThisCycle())), 0)
         self.r.core.removeAssembly(a)
         self.r.core.add(newA)
-        self.assertTrue(next(self.r.core.genAssembliesAddedThisCycle()) is newA)
+        self.assertEqual(next(self.r.core.genAssembliesAddedThisCycle()), newA)
 
     def test_getAssemblyPitch(self):
         self.assertEqual(self.r.core.getAssemblyPitch(), 16.75)
