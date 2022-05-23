@@ -545,16 +545,3 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                 tablefmt="armi",
             )
         )
-
-
-def _getFunctionObject():
-    """Return the function object of the calling function. Useful for debugging"""
-    from inspect import currentframe, getframeinfo
-
-    caller = currentframe().f_back
-    func_name = getframeinfo(caller)[2]
-    caller = caller.f_back
-
-    func = caller.f_locals.get(func_name, caller.f_globals.get(func_name))
-
-    return func
