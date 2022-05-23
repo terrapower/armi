@@ -558,35 +558,3 @@ def _getFunctionObject():
     func = caller.f_locals.get(func_name, caller.f_globals.get(func_name))
 
     return func
-
-
-def _walkReferrers(o, maxLevel=0, level=0, memo=None, whitelist=None):
-    """Walk the tree of objects that refer to the passed object, printing diagnostics."""
-    if maxLevel and level > maxLevel:
-        return
-    if level == 0:
-        gc.collect()
-        whitelist = {id(obj) for obj in gc.get_objects()}
-        whitelist.remove(id(_getFunctionObject()))
-        whitelist.remove(id(_getFunctionObject))
-
-    if memo is None:
-        memo = set()
-    gc.collect()
-    referrers = [
-        (referrer, id(referrer), id(referrer) in memo)
-        for referrer in gc.get_referrers(o)
-        if referrer.__class__.__name__ != "frame" and id(referrer) in whitelist
-    ]
-    memo.update({oid for (_obj, oid, _seen) in referrers})
-    for (obj, _, seen) in referrers:
-        runLog.important(
-            "{}{}    {} at {:x} seen: {}".format(
-                "-" * level, type(obj), "{}".format(obj)[:100], id(obj), seen
-            )
-        )
-        if seen:
-            return
-        _walkReferrers(
-            obj, maxLevel=maxLevel, level=level + 1, memo=memo, whitelist=whitelist
-        )
