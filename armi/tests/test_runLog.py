@@ -110,7 +110,7 @@ class TestRunLog(unittest.TestCase):
 
         # test that the logging found some duplicate outputs
         dupsFilter = log.getDuplicatesFilter()
-        self.assertTrue(dupsFilter is not None)
+        self.assertIsNotNone(dupsFilter)
         warnings = dupsFilter.singleWarningMessageCounts
         self.assertGreater(len(warnings), 0)
 

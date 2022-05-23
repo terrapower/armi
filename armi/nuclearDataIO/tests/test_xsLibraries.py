@@ -243,7 +243,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                 lib = xsLibraries.IsotxsLibrary()
                 with self.assertRaises(OSError):
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
-                self.assertTrue(dummyFileName in log.getStdoutValue())
+                self.assertIn(dummyFileName, log.getStdoutValue())
         finally:
             os.remove(dummyFileName)
 
@@ -258,9 +258,9 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
             with mockRunLogs.BufferLog() as log:
                 lib = xsLibraries.IsotxsLibrary()
                 xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                self.assertTrue(
-                    f"Ignoring file {dummyFileName} in the merging of ISOXX files"
-                    in log.getStdoutValue()
+                self.assertIn(
+                    f"Ignoring file {dummyFileName} in the merging of ISOXX files",
+                    log.getStdoutValue(),
                 )
         finally:
             os.remove(dummyFileName)

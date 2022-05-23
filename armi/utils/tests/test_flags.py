@@ -84,9 +84,9 @@ class TestFlag(unittest.TestCase):
 
     def test_inclusion(self):
         f = ExampleFlag.FOO | ExampleFlag.BAZ
-        self.assertTrue(ExampleFlag.FOO in f)
-        self.assertTrue(ExampleFlag.BAZ in f)
-        self.assertFalse(ExampleFlag.BAR in f)
+        self.assertIn(ExampleFlag.FOO, f)
+        self.assertIn(ExampleFlag.BAZ, f)
+        self.assertNotIn(ExampleFlag.BAR, f)
 
     def test_bitwise(self):
         """Make sure that bitwise operators work right"""
@@ -101,7 +101,7 @@ class TestFlag(unittest.TestCase):
 
         # OR in BAZ
         f |= ExampleFlag.BAZ
-        self.assertTrue(ExampleFlag.BAZ in f)
+        self.assertIn(ExampleFlag.BAZ, f)
 
         # XOR them. Should turn off FOO, since they both have it
         f2 = ExampleFlag.FOO | ExampleFlag.BAR
