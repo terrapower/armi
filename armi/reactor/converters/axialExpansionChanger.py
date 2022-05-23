@@ -18,6 +18,13 @@ from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
 
+TARGET_FLAGS_IN_PREFERRED_ORDER = [
+    Flags.FUEL,
+    Flags.CONTROL,
+    Flags.POISON,
+    Flags.SHIELD,
+]
+
 
 class AxialExpansionChanger:
     """
@@ -683,13 +690,7 @@ class ExpansionData:
 
         if flagOfInterest is None:
             # Follow expansion of most neutronically important component, fuel first then control/poison
-            targetFlagsInPreferedOrder = [
-                Flags.FUEL,
-                Flags.CONTROL,
-                Flags.POISON,
-                Flags.SHIELD,
-            ]
-            for targetFlag in targetFlagsInPreferedOrder:
+            for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
                 componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
                 if componentWFlag != []:
                     break
