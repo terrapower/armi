@@ -530,21 +530,6 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_specifyTargetComponentBlockWithMultipleFlags(self):
-        # build a block that has two flags as well as a component matching each
-        # flag
-        b = HexBlock("fuel poison", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
-        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
-        fuel = Circle("fuel", "FakeMat", **fuelDims)
-        poison = Circle("poison", "FakeMat", **poisonDims)
-        b.add(fuel)
-        b.add(poison)
-        try:
-            self.obj.expansionData.specifyTargetComponent(b)
-        except RuntimeError:
-            self.fail()
-
     def test_isFuelLocked(self):
         b_TwoFuel = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -576,6 +561,50 @@ class TestExceptions(Base, unittest.TestCase):
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestSpecifyTargetComponent(unittest.TestCase):
+    """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
+
+    def setUp(self):
+        Base.setUp(self)
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
+        self.obj.setAssembly(self.a)
+
+    def test_specifyTargetComponent(self):
+        initialComponentDeterminesBlockHeight = (
+            self.obj.expansionData._componentDeterminesBlockHeight.copy()
+        )
+        # build a test block
+        b = HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        clad = Circle("clad", "FakeMat", **cladDims)
+        b.add(fuel)
+        b.add(clad)
+        # call method, and check that _componentDeterminesBlockHeight has been updated
+        self.obj.expansionData.specifyTargetComponent(b)
+        newEntry = dict(
+            set(self.obj.expansionData._componentDeterminesBlockHeight.items())
+            - set(initialComponentDeterminesBlockHeight.items())
+        )
+        self.assertEqual(newEntry, {fuel: True})
+
+    def test_specifyTargetComponentBlockWithMultipleFlags(self):
+        # build a block that has two flags as well as a component matching each
+        # flag
+        b = HexBlock("fuel poison", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
+        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        poison = Circle("poison", "FakeMat", **poisonDims)
+        b.add(fuel)
+        b.add(poison)
+        try:
+            self.obj.expansionData.specifyTargetComponent(b)
+        except RuntimeError:
+            self.fail()
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
