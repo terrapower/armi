@@ -25,7 +25,7 @@ from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs, TEST_ROOT
 
 
-class MemoryProfilerTests(unittest.TestCase):
+class TestMemoryProfiler(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, {"debugMem": True})
         self.memPro = self.o.getInterface("memoryProfiler")
@@ -104,6 +104,10 @@ class MemoryProfilerTests(unittest.TestCase):
             self.assertIn("These types of objects", mock._outputStream)
             self.assertIn("MemoryProfiler", mock._outputStream)
             self.assertIn("MainInterface", mock._outputStream)
+
+    def test_profileMemoryUsageAction(self):
+        pmua = memoryProfiler.ProfileMemoryUsageAction("timeDesc")
+        self.assertEqual(pmua.timeDescription, "timeDesc")
 
 
 class KlassCounterTests(unittest.TestCase):
