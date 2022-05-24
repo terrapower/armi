@@ -86,12 +86,12 @@ class NHFLUX(cccc.DataContainer):
         of the 1D data block on the file.
 
     incomingPointersToAllAssemblies: 2-D list of floats
-        This is an index map for the "internal surfaces" between DIF3D "four color" nodal
+        This is an index map for the "internal surfaces" between DIF3D nodal
         indexing and DIF3D GEODST indexing. It can be used to process incoming partial
         currents. This uses the same ordering as the geodstCoordMap attribute.
 
     externalCurrentPointers : list of ints
-        This is an index map for the "external surfaces" between DIF3D "four color" nodal
+        This is an index map for the "external surfaces" between DIF3D nodal
         indexing and DIF3D GEODST indexing. "External surfaces" are important because they
         contain the INCOMING partial currents from the outer reactor boundary. This uses
         the same ordering as geodstCoordMap, except that each assembly now has multiple
@@ -100,9 +100,10 @@ class NHFLUX(cccc.DataContainer):
         of that surface is N*6 + k + 1.
 
     geodstCoordMap : list of ints
-        This is an index map between DIF3D "four color" nodal and DIF3D GEODST. It is
+        This is an index map between DIF3D nodal and DIF3D GEODST. It is
         necessary for interpreting the ordering of flux and partial current data in the
-        NHFLUX file.
+        NHFLUX file. Note that this mapping between DIF3D-Nodal and DIF3D-VARIANT is not
+        the same.
 
     outgoingPCSymSeCPointers: list of ints
         This is an index map for the outpgoing partial currents on the symmetric and sector
@@ -177,7 +178,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Read everything from the DIF3D binary file NHFLUX.
 
         Read all surface-averaged partial currents, all planar moments, and the DIF3D
-        "four color" nodal coordinate mapping system.
+        nodal coordinate mapping system.
 
         Notes
         -----
@@ -197,10 +198,19 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         self._rwFileID()
         self._rwBasicFileData1D()
 
-        # Read the hex ordering map between DIF3D "four color" nodal and DIF3D GEODST
-        # Also read index pointers to incoming partial currents on outer reactor surface
-        # (these don't belong to any assembly). Incoming partial currents are non-zero due
-        # to flux extrapolation
+        # This control info only exists for VARIANT. We can only process entries with 0
+        # or 1.
+        if self._metadata["variantFlag"] and self._metadata["iwnhfl"] == 2:
+            msg = (
+                "This reader can only read VARIANT NHFLUX files where 'iwnhfl'=0 (both "
+                "fluxes and currents are present) or 'iwnhfl'=1 (only fluxes are present). "
+            )
+            raise ValueError(msg)
+
+        # Read the hex ordering map between DIF3D nodal and DIF3D GEODST. Also read index
+        # pointers to incoming partial currents on outer reactor surface (these don't
+        # belong to any assembly). Incoming partial currents are non-zero due to flux
+        # extrapolation
         self._rwGeodstCoordMap2D()
 
         # Number of energy groups
@@ -219,12 +229,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # an NHFLUX file produced by VARPOW (where 'iwnhfl'=1), the flux-only data has units
         # of W/cc (there is no current data written to the file).
         if self._data.fluxMoments.size == 0:
-            if self._metadata["iwnhfl"] == 2:
-                msg = (
-                    "This reader can only read NHFLUX files where 'iwnhlf'=0 (both fluxes "
-                    "and currents are present) or 'iwnhlf'=1 (only fluxes are present). "
-                )
-                raise ValueError(msg)
 
             # Initialize using metadata info for reading
             self._data.fluxMoments = np.zeros(
@@ -292,7 +296,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         else:
             # Nodal does not have an "npcbdy" metadata parameter, so numOuterSurfacesHex
             # must be calculated differently. Performing the same calculation below in VARIANT,
-            # which is possible to do, will return a different (larger) number, so that is why
+            # which is possible to do, can return a different number, so that is why
             # we cannot use the same calculation for both codes.
             numOuterSurfacesHex = (
                 self._metadata["npcxy"]
@@ -330,7 +334,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Read/write core geometry indexing from the NHFLUX 2D block.
 
         This reads the 2-D (x,y) indexing for assemblies. geodstCoordMap maps DIF3D
-        "four color" nodal hex indexing to DIF3D GEODST indexing.
+        nodal hex indexing to DIF3D GEODST indexing.
         This DIF3D GEODST indexing is different than (but similar to) the MCNP GEODST ordering.
         See TP1-1.9.31-RPT-0010 for more details on hex ordering.
 
@@ -347,7 +351,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         Examples
         --------
-        geodstCoordMap[fourColorNodalIndex] = geodstIndex
+        geodstCoordMap[NodalIndex] = geodstIndex
 
         See Also
         --------
