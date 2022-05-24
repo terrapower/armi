@@ -221,8 +221,8 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # Number of axial nodes (same for each assembly in DIF3D)
         nz = self._metadata["nintk"]
 
-        # Number of XY partial currents. Note that for the same model, this number is not
-        # the same between Nodal and VARIANT; VARIANT has more.
+        # Number of XY partial currents on the boundary. Note that for the same model, this
+        # number is not the same between Nodal and VARIANT; VARIANT has more.
         numPartialCurrentsHex_ext = (
             self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
         )
