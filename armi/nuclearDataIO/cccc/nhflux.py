@@ -59,7 +59,9 @@ FILE_SPEC_1D_KEYS_VARIANT11 = (
 class NHFLUX(cccc.DataContainer):
     """
     An abstraction of a NHFLUX file. This format is defined in the DIF3D manual. Note
-    that the format for DIF3D-Nodal and DIF3D-VARIANT are not the same.
+    that the format for DIF3D-Nodal and DIF3D-VARIANT are not the same. The VARIANT
+    NHFLUX format has recently changed, so this reader is only compatible with files
+    produced by v11.0 of the solver.
 
     .. warning::
         This class was originally written for DIF3D-Nodal, and so it is not currently set
