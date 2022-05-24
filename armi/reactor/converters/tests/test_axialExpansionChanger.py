@@ -567,14 +567,11 @@ class TestSpecifyTargetComponent(unittest.TestCase):
     """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
-        Base.setUp(self)
+        self.obj = AxialExpansionChanger()
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
 
     def test_specifyTargetComponent(self):
-        initialComponentDeterminesBlockHeight = (
-            self.obj.expansionData._componentDeterminesBlockHeight.copy()
-        )
         # build a test block
         b = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -583,13 +580,14 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         clad = Circle("clad", "FakeMat", **cladDims)
         b.add(fuel)
         b.add(clad)
-        # call method, and check that _componentDeterminesBlockHeight has been updated
+        # call method, and check that target component is correct
         self.obj.expansionData.specifyTargetComponent(b)
-        newEntry = dict(
-            set(self.obj.expansionData._componentDeterminesBlockHeight.items())
-            - set(initialComponentDeterminesBlockHeight.items())
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
         )
-        self.assertEqual(newEntry, {fuel: True})
 
     def test_specifyTargetComponentBlockWithMultipleFlags(self):
         # build a block that has two flags as well as a component matching each
@@ -601,10 +599,14 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         poison = Circle("poison", "FakeMat", **poisonDims)
         b.add(fuel)
         b.add(poison)
-        try:
-            self.obj.expansionData.specifyTargetComponent(b)
-        except RuntimeError:
-            self.fail()
+        # call method, and check that target component is correct
+        self.obj.expansionData.specifyTargetComponent(b)
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
+        )
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
