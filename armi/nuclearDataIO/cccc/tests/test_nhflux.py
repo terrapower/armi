@@ -20,7 +20,7 @@ import subprocess
 import tempfile
 import unittest
 
-import numpy
+import numpy as np
 
 from armi import settings
 from armi.nuclearDataIO.cccc import nhflux
@@ -124,7 +124,7 @@ class TestNhflux(unittest.TestCase):
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
         iz, ig = 2, 1  # zero based
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 self.nhf.fluxMoments[i, iz, :, ig],
                 [1.424926e08, -2.018375e-01, 2.018375e-01, -2.018374e-01, 1.758205e06],
             )
@@ -137,7 +137,7 @@ class TestNhflux(unittest.TestCase):
         )  # 20 = 3*5 + 4 + 1 => (i=4, j=3)
         iz, ig = 5, 0  # zero based
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 self.nhf.fluxMoments[i, iz, :, ig],
                 [7.277324e06, -1.453915e06, -1.453915e06, 2.362100e-02, -8.626439e05],
             )
@@ -217,7 +217,7 @@ class TestNhfluxVariant(unittest.TestCase):
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
         iz, ig = 2, 1
         fluxMoments = self.nhf.fluxMoments[i, iz, :, ig]
-        numZeroFluxMoments = fluxMoments[fluxMoments == 0.0].shape[0]
+        iZeroFluxMoments = fluxMoments[fluxMoments == 0.0].shape[0]
         self.assertTrue(numZeroFluxMoments == 23)
         actualNonzeroFluxMoments = fluxMoments[fluxMoments != 0.0]
         expectedNonzeroFluxMoments = [
@@ -235,7 +235,7 @@ class TestNhfluxVariant(unittest.TestCase):
             1.05852790e04,
         ]
         self.assertTrue(
-            numpy.allclose(actualNonzeroFluxMoments, expectedNonzeroFluxMoments)
+            np.allclose(actualNonzeroFluxMoments, expectedNonzeroFluxMoments)
         )
 
     def test_write(self):
