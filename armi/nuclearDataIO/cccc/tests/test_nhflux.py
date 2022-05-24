@@ -210,10 +210,39 @@ class TestNhfluxVariant(unittest.TestCase):
         self.assertEqual(self.nhf.metadata["iwnhfl"], 0)
         self.assertEqual(self.nhf.metadata["nMoms"], 0)
 
+    def test_fluxMoments(self):
+        """"""
+        # node 1 (ring=1, position=1), axial=3, group=2
+        i = 0
+        self.assertEqual(self.nhf.geodstCoordMap[i], 13)
+        iz, ig = 2, 1
+        fluxMoments = self.nhf.fluxMoments[i, iz, :, ig]
+        numZeroFluxMoments = fluxMoments[fluxMoments == 0.0].shape[0]
+        self.assertTrue(numZeroFluxMoments == 23)
+        actualNonzeroFluxMoments = fluxMoments[fluxMoments != 0.0]
+        expectedNonzeroFluxMoments = [
+            1.42816534e08,
+            -5.97642574e06,
+            -1.54354423e06,
+            -2.15736929e06,
+            -1.53415481e06,
+            5.54278533e04,
+            7.74699855e04,
+            2.38133712e04,
+            6.69907176e03,
+            5.49027950e03,
+            9.01170812e03,
+            1.05852790e04,
+        ]
+        self.assertTrue(
+            numpy.allclose(actualNonzeroFluxMoments, expectedNonzeroFluxMoments)
+        )
+
     def test_write(self):
         """
         Verify binary equivalence of written binary file. This test is not currently
-        possible because all of the partial current moments are not stored by the reader.
+        possible because all of the partial current moments are not stored by the reader,
+        so the missing moments cannot be written to the file.
         """
         pass
 
