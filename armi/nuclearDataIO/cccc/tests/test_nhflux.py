@@ -217,7 +217,7 @@ class TestNhfluxVariant(unittest.TestCase):
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
         iz, ig = 2, 1
         fluxMoments = self.nhf.fluxMoments[i, iz, :, ig]
-        iZeroFluxMoments = fluxMoments[fluxMoments == 0.0].shape[0]
+        numZeroFluxMoments = fluxMoments[fluxMoments == 0.0].shape[0]
         self.assertTrue(numZeroFluxMoments == 23)
         actualNonzeroFluxMoments = fluxMoments[fluxMoments != 0.0]
         expectedNonzeroFluxMoments = [
