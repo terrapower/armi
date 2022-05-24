@@ -23,6 +23,7 @@ TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.CONTROL,
     Flags.POISON,
     Flags.SHIELD,
+    Flags.SLUG,
 ]
 
 
