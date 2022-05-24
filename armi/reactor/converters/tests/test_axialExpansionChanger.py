@@ -571,7 +571,9 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
         # need an empty dictionary because we want to test for the added component only
-        self.obj.expansionData._componentDeterminesBlockHeight = {}
+        self.obj.expansionData._componentDeterminesBlockHeight = (
+            {}
+        )  # pylint: disable=protected-access
 
     def test_specifyTargetComponent(self):
         # build a test block
