@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Test axialExpansionChanger"""
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import os
 from statistics import mean
 import unittest
@@ -548,7 +548,7 @@ class TestExceptions(Base, unittest.TestCase):
         expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_TwoFuel)  # pylint: disable=protected-access
+            expdata._isFuelLocked(b_TwoFuel)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -557,7 +557,7 @@ class TestExceptions(Base, unittest.TestCase):
         shield = Circle("shield", "FakeMat", **fuelDims)
         b_NoFuel.add(shield)
         with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_NoFuel)  # pylint: disable=protected-access
+            expdata._isFuelLocked(b_NoFuel)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -567,14 +567,13 @@ class TestSpecifyTargetComponent(unittest.TestCase):
     """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
-        Base.setUp(self)
+        self.obj = AxialExpansionChanger()
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
+        # need an empty dictionary because we want to test for the added component only
+        self.obj.expansionData._componentDeterminesBlockHeight = {}
 
     def test_specifyTargetComponent(self):
-        initialComponentDeterminesBlockHeight = (
-            self.obj.expansionData._componentDeterminesBlockHeight.copy()
-        )
         # build a test block
         b = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -583,13 +582,14 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         clad = Circle("clad", "FakeMat", **cladDims)
         b.add(fuel)
         b.add(clad)
-        # call method, and check that _componentDeterminesBlockHeight has been updated
+        # call method, and check that target component is correct
         self.obj.expansionData.specifyTargetComponent(b)
-        newEntry = dict(
-            set(self.obj.expansionData._componentDeterminesBlockHeight.items())
-            - set(initialComponentDeterminesBlockHeight.items())
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
         )
-        self.assertEqual(newEntry, {fuel: True})
 
     def test_specifyTargetComponentBlockWithMultipleFlags(self):
         # build a block that has two flags as well as a component matching each
@@ -601,10 +601,14 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         poison = Circle("poison", "FakeMat", **poisonDims)
         b.add(fuel)
         b.add(poison)
-        try:
-            self.obj.expansionData.specifyTargetComponent(b)
-        except RuntimeError:
-            self.fail()
+        # call method, and check that target component is correct
+        self.obj.expansionData.specifyTargetComponent(b)
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
+        )
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
@@ -906,7 +910,7 @@ def _buildDummySodium():
     return b
 
 
-class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMat(materials.ht9.HT9):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger
 
     Notes
@@ -928,7 +932,7 @@ class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
         return 0.02 * Tc
 
 
-class FakeMatException(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMatException(materials.ht9.HT9):
     """Fake material used to verify TestExceptions
 
     Notes
