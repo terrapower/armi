@@ -39,9 +39,6 @@ class MpiDirectoryChanger(directoryChangers.DirectoryChanger):
         ----------
         destination : str
             destination directory
-
-        op : :py:class:`armi.operators.Operator`
-            operator to send command
         """
         directoryChangers.DirectoryChanger.__init__(self, destination)
 
