@@ -260,7 +260,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     def __exit__(self, exc_type, exc_value, traceback):
         DirectoryChanger.__exit__(self, exc_type, exc_value, traceback)
         try:
-            pathTools.cleanPath(self.destination)
+            pathTools.cleanPath(self.destination, context.MPI_RANK)
         except PermissionError:
             if os.name == "nt":
                 runLog.warning(
@@ -271,9 +271,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):
-    """
-    Creates the directory tree necessary to reach your desired destination
-    """
+    """Creates the directory tree necessary to reach your desired destination"""
 
     def __init__(
         self,
