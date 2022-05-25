@@ -159,9 +159,7 @@ class Interface:
         return "<Interface {0}>".format(self.name)
 
     def _checkSettings(self):
-        """
-        Raises an exception if interface settings requirements are not met
-        """
+        """Raises an exception if interface settings requirements are not met"""
         pass
 
     def nameContains(self, name):
@@ -190,9 +188,7 @@ class Interface:
         return {}
 
     def postDistributeState(self, toRestore):  # pylint: disable=no-self-use
-        """
-        Restore non-distributable attributes after a distributeState
-        """
+        """Restore non-distributable attributes after a distributeState"""
         pass
 
     def attachReactor(self, o, r):
