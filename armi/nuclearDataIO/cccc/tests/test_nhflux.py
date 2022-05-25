@@ -14,12 +14,13 @@
 
 """Test reading/writing of NHFLUX dataset."""
 import os
+import re
 import shutil
 import subprocess
 import tempfile
 import unittest
 
-import numpy
+import numpy as np
 
 from armi import settings
 from armi.nuclearDataIO.cccc import nhflux
@@ -27,13 +28,16 @@ from armi.nuclearDataIO.cccc import nhflux
 
 THIS_DIR = os.path.dirname(__file__)
 
-SIMPLE_HEXZ_INP = os.path.join(THIS_DIR, "simple_hexz.inp")
+SIMPLE_HEXZ_INP = os.path.join(THIS_DIR, "../../tests", "simple_hexz.inp")
 SIMPLE_HEXZ_NHFLUX = os.path.join(THIS_DIR, "fixtures", "simple_hexz.nhflux")
+SIMPLE_HEXZ_NHFLUX_VARIANT = os.path.join(
+    THIS_DIR, "fixtures", "simple_hexz.nhflux.variant"
+)
 
 
-def createSIMPLE_HEXZ_NHFLUX():
+def createSIMPLE_HEXZ_NHFLUX(runVariant=False):
     """
-    Create NHFLUX file.
+    Create NHFLUX file for storage into *fixtures* directory.
 
     In order to test the reading of NHFLUX file, there is a need to provide one such
     file for testing. This function runs the provided DIF3D input, and generates an
@@ -58,19 +62,32 @@ def createSIMPLE_HEXZ_NHFLUX():
         require these extra dependencies. Also, if you don't have them you can ask
         someone that does and maybe they can hook you up.
     """
-    DIF3D_EXE = settings.getMasterCs().settings["dif3d"].value
+    DIF3D_EXE = settings.getMasterCs()["dif3d"]
 
     runDir = tempfile.mkdtemp()
-    shutil.copy(SIMPLE_HEXZ_INP, os.path.join(runDir, "input"))
-    process = subprocess.Popen(
-        "{} < input > output".format(DIF3D_EXE), cwd=runDir, shell=True
-    )
-    process.communicate()
-    shutil.copy(os.path.join(runDir, "NHFLUX"), SIMPLE_HEXZ_NHFLUX)
+    tempInputPath = os.path.join(runDir, "input")
+    shutil.copy(SIMPLE_HEXZ_INP, tempInputPath)
+
+    # If running VARIANT, include a Card 12 on A.DIF3D. Runs P1P0 with isotropic cross
+    # sections.
+    if runVariant:
+        with open(tempInputPath, "r") as fIn:
+            dif3dInput = fIn.read()
+        oldString = "UNFORM=A.NIP3"
+        newString = "12  40601  10101  0  0  0  -1  0  0  0  1  0\n" + oldString
+        dif3dInput = re.sub(oldString, newString, dif3dInput, count=1)
+        with open(tempInputPath, "w") as fOut:
+            fOut.write(dif3dInput)
+
+    with open(tempInputPath, "r") as fIn:
+        _process = subprocess.run(DIF3D_EXE, cwd=runDir, capture_output=True, stdin=fIn)
+
+    copyName = SIMPLE_HEXZ_NHFLUX if not runVariant else SIMPLE_HEXZ_NHFLUX_VARIANT
+    shutil.copy(os.path.join(runDir, "NHFLUX"), copyName)
     shutil.rmtree(runDir)
 
 
-class TestNHFLUX(unittest.TestCase):
+class TestNhflux(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Load NHFLUX data from binary file."""
@@ -90,6 +107,10 @@ class TestNHFLUX(unittest.TestCase):
         self.assertEqual(self.nhf.metadata["iaprx"], 4)
         self.assertEqual(self.nhf.metadata["iaprxz"], 3)
 
+        variantControlInfo = nhflux.FILE_SPEC_1D_KEYS_VARIANT11
+        for info in variantControlInfo:
+            self.assertTrue(info not in self.nhf.metadata)
+
     def test_fluxMoments(self):
         """
         Verify that the flux moments are properly read.
@@ -103,7 +124,7 @@ class TestNHFLUX(unittest.TestCase):
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
         iz, ig = 2, 1  # zero based
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 self.nhf.fluxMoments[i, iz, :, ig],
                 [1.424926e08, -2.018375e-01, 2.018375e-01, -2.018374e-01, 1.758205e06],
             )
@@ -116,7 +137,7 @@ class TestNHFLUX(unittest.TestCase):
         )  # 20 = 3*5 + 4 + 1 => (i=4, j=3)
         iz, ig = 5, 0  # zero based
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 self.nhf.fluxMoments[i, iz, :, ig],
                 [7.277324e06, -1.453915e06, -1.453915e06, 2.362100e-02, -8.626439e05],
             )
@@ -166,6 +187,64 @@ class TestNHFLUX(unittest.TestCase):
         for expected, actual in zip(expectedData, actualData):
             self.assertEqual(expected, actual)
         os.remove("NHFLUX2")
+
+
+class TestNhfluxVariant(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Load NHFLUX data from binary file. This file was produced using VARIANT v11.0."""
+        cls.nhf = nhflux.NhfluxStreamVariant.readBinary(SIMPLE_HEXZ_NHFLUX_VARIANT)
+
+    def test_fc(self):
+        """Verify the file control info."""
+        # These entries exist for both Nodal and VARIANT, but have different values
+        # for the same model
+        print(self.nhf.metadata.items())
+        self.assertEqual(self.nhf.metadata["nMom"], 35)
+        self.assertEqual(self.nhf.metadata["nscoef"], 3)
+
+        # These entries are only for VARIANT
+        self.assertEqual(self.nhf.metadata["npcbdy"], 30)
+        self.assertEqual(self.nhf.metadata["npcsym"], 0)
+        self.assertEqual(self.nhf.metadata["npcsec"], 0)
+        self.assertEqual(self.nhf.metadata["iwnhfl"], 0)
+        self.assertEqual(self.nhf.metadata["nMoms"], 0)
+
+    def test_fluxMoments(self):
+        """"""
+        # node 1 (ring=1, position=1), axial=3, group=2
+        i = 0
+        self.assertEqual(self.nhf.geodstCoordMap[i], 13)
+        iz, ig = 2, 1
+        fluxMoments = self.nhf.fluxMoments[i, iz, :, ig]
+        numZeroFluxMoments = fluxMoments[fluxMoments == 0.0].shape[0]
+        self.assertTrue(numZeroFluxMoments == 23)
+        actualNonzeroFluxMoments = fluxMoments[fluxMoments != 0.0]
+        expectedNonzeroFluxMoments = [
+            1.42816534e08,
+            -5.97642574e06,
+            -1.54354423e06,
+            -2.15736929e06,
+            -1.53415481e06,
+            5.54278533e04,
+            7.74699855e04,
+            2.38133712e04,
+            6.69907176e03,
+            5.49027950e03,
+            9.01170812e03,
+            1.05852790e04,
+        ]
+        self.assertTrue(
+            np.allclose(actualNonzeroFluxMoments, expectedNonzeroFluxMoments)
+        )
+
+    def test_write(self):
+        """
+        Verify binary equivalence of written binary file. This test is not currently
+        possible because all of the partial current moments are not stored by the reader,
+        so the missing moments cannot be written to the file.
+        """
+        pass
 
 
 if __name__ == "__main__":
