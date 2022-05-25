@@ -469,8 +469,6 @@ def _buildZonesByOrifice(core, cs):
         b = a.getFirstBlock(Flags.FUEL)
         cFuel = b.getComponent(Flags.FUEL)
         fuelMaterial = cFuel.getProperties()
-        #if "lta" in a.getType():
-        #    orificeSetting = "lta" + str((orificeSetting))
         if "Oxide" in fuelMaterial.getName():
             orificeSetting = "Oxide" + str((orificeSetting))
         if orificeSetting not in orificeZones.names:
@@ -482,13 +480,8 @@ def _buildZonesByOrifice(core, cs):
         b = a.getFirstBlock(Flags.FUEL)
         cFuel = b.getComponent(Flags.FUEL)
         fuelMaterial = cFuel.getProperties()
-        # get channel for lta
-        #if "lta" in a.getType():
-        #    orificeZones["lta" + str(orificeSetting)].append(a.getLocation())
-        # account for oxide fuel
         if "Oxide" in fuelMaterial.getName():
             orificeZones["Oxide" + str(orificeSetting)].append(a.getLocation())
-        # account for LTA
         else:
             orificeZones[orificeSetting].append(a.getLocation())
 
