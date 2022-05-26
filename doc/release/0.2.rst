@@ -14,6 +14,7 @@ What's new in ARMI
 #. Minor code re-org, moving math utilities into their own module.
 #. Removed the ``PyYaml`` dependency.
 #. Removed all bare ``import armi`` statements, for code clarity.
+#. Renamed control rod assembly parameters for generic implementations of control rod handling.
 #. TBD
 
 Bug fixes
