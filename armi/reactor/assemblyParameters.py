@@ -198,8 +198,10 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "crInsertedElevation",
             units="cm",
-            description=("The final elevation of the bottom of the control material when fully inserted. Note that this should "
-                        "be considered a lower elevation than the ``crWithdrawnElevation`` by definition and modeling semantics."),
+            description=(
+                "The final elevation of the bottom of the control material when fully inserted. Note that this should "
+                "be considered a lower elevation than the ``crWithdrawnElevation`` by definition and modeling semantics."
+            ),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
         )
@@ -214,8 +216,10 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "crWithdrawnElevation",
             units="cm",
-            description=("The initial starting elevation of the moveable section of a control rod assembly when fully withdrawn.  Note that this should "
-                         "be considered a higher elevation than the ``crInsertedElevation`` by definition and modeling semantics."),
+            description=(
+                "The initial starting elevation of the moveable section of a control rod assembly when fully withdrawn.  Note that this should "
+                "be considered a higher elevation than the ``crInsertedElevation`` by definition and modeling semantics."
+            ),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
         )
