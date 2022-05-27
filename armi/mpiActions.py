@@ -300,7 +300,6 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
     call MPI operations without being blocked by tasks which are not doing the same thing.
     """
     if not context.MPI_DISTRIBUTABLE or serial:
-        runLog.debug("MPI_RANK = {}, MPI_SIZE = {},  MPI_DISTRIBUTABLE = {}, serial = {}".format(context.MPI_RANK, context.MPI_SIZE, context.MPI_DISTRIBUTABLE, serial))
         return runActionsInSerial(o, r, cs, actions)
 
     useForComputation = [True] * context.MPI_SIZE
@@ -440,7 +439,7 @@ class DistributionAction(MpiAction):
             context.MPI_RANK = mpiRank
             context.MPI_SIZE = mpiSize
             context.MPI_NODENAMES = mpiNodeNames
-            
+
         return actionResult
 
 
