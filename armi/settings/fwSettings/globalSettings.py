@@ -126,7 +126,7 @@ def defineSettings() -> List[setting.Setting]:
             default=1,
             label="CPUs",
             description="Number of CPUs to request on the cluster",
-            schema=vol.Range(min=1),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
         ),
         setting.Setting(
             CONF_BURN_CHAIN_FILE_NAME,
@@ -151,7 +151,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Axial Mesh Refinement Factor",
             description="Multiplicative factor on the Global Flux number of mesh per "
             "block. Used for axial mesh refinement.",
-            schema=vol.Range(min=0, min_included=False),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False)),
         ),
         setting.Setting(
             CONF_DETAILED_AXIAL_EXPANSION,
@@ -210,7 +210,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Minimum Mesh Size Ratio",
             description="This is the minimum ratio of mesh sizes (dP1/(dP1 + dP2)) "
             "allowable -- only active if automaticVariableMesh flag is set to True",
-            schema=vol.Range(min=0, min_included=False),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False)),
         ),
         setting.Setting(
             CONF_CYCLE_LENGTH,
@@ -224,7 +224,7 @@ def defineSettings() -> List[setting.Setting]:
             ],
             schema=(
                 vol.Any(
-                    vol.All(vol.Any(float, int), vol.Range(min=0, min_included=False)),
+                    vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False)),
                     None,
                 )
             ),
@@ -249,7 +249,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("capacityFactor", None),
             ],
-            schema=(vol.Any(vol.All(vol.Any(float, int), vol.Range(min=0)), None)),
+            schema=(vol.Any(vol.All(vol.Coerce(float), vol.Range(min=0)), None)),
         ),
         setting.Setting(
             CONF_AVAILABILITY_FACTORS,
@@ -279,7 +279,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of depletion substeps, n, in one cycle. Note: There "
             "will be n+1 time nodes and the burnup step time will be computed as cycle "
             "length/n when the simple cycles input format is used.",
-            schema=(vol.Any(vol.All(int, vol.Range(min=0)), None)),
+            schema=(vol.Any(vol.All(vol.Coerce(int), vol.Range(min=0)), None)),
         ),
         setting.Setting(
             CONF_BETA,
@@ -287,9 +287,17 @@ def defineSettings() -> List[setting.Setting]:
             label="Delayed Neutron Fraction",
             description="Individual precursor group delayed neutron fractions",
             schema=vol.Any(
-                [vol.Range(min=0, min_included=True, max=1, max_included=True)],
+                [
+                    vol.All(
+                        vol.Coerce(float),
+                        vol.Range(min=0, min_included=True, max=1, max_included=True),
+                    )
+                ],
                 None,
-                vol.Range(min=0, min_included=True, max=1, max_included=True),
+                vol.All(
+                    vol.Coerce(float),
+                    vol.Range(min=0, min_included=True, max=1, max_included=True),
+                ),
                 msg="Expected NoneType, float, or list of floats.",
             ),
             oldNames=[
@@ -302,9 +310,9 @@ def defineSettings() -> List[setting.Setting]:
             label="Decay Constants",
             description="Individual precursor group delayed neutron decay constants",
             schema=vol.Any(
-                [vol.Range(min=0, min_included=True)],
+                [vol.All(vol.Coerce(float), vol.Range(min=0, min_included=True))],
                 None,
-                vol.Range(min=0, min_included=True),
+                vol.All(vol.Coerce(float), vol.Range(min=0, min_included=True)),
                 msg="Expected NoneType, float, or list of floats.",
             ),
         ),
@@ -337,14 +345,20 @@ def defineSettings() -> List[setting.Setting]:
             label="Burnup Groups",
             description="The range of burnups where cross-sections will be the same "
             "for a given assembly type (units of %FIMA)",
-            schema=vol.Schema([vol.Range(min=0, min_included=False, max=100)]),
+            schema=vol.Schema(
+                [
+                    vol.All(
+                        vol.Coerce(int), vol.Range(min=0, min_included=False, max=100)
+                    )
+                ]
+            ),
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,
             default=0.0,
             label="Burn-up Peaking Factor",
             description="None",
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_CIRCULAR_RING_PITCH,
@@ -476,7 +490,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("loadCycle", None),
             ],
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_LOADING_FILE,
@@ -494,7 +508,7 @@ def defineSettings() -> List[setting.Setting]:
             oldNames=[
                 ("loadNode", None),
             ],
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_LOAD_STYLE,
@@ -508,7 +522,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0.05,
             label="Low-power Region Fraction",
             description="Description needed",
-            schema=vol.Range(min=0, max=1),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
         ),
         setting.Setting(
             CONF_MEM_PER_NODE,
@@ -522,7 +536,7 @@ def defineSettings() -> List[setting.Setting]:
             label="MPI Tasks per Node",
             description="Number of independent processes that are allocated to each "
             "cluster node. 0 means 1 process per CPU.",
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_N_CYCLES,
@@ -531,7 +545,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of cycles that will be simulated. Fuel management "
             "happens at the beginning of each cycle. Can include active (full-power) "
             "cycles as well as post-shutdown decay-heat steps.",
-            schema=vol.Range(min=1),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
         ),
         setting.Setting(
             CONF_NUM_CONTROL_BLOCKS,
@@ -545,7 +559,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Tight Coupling Iterations",
             description="Number of tight coupled physics iterations to occur at each "
             "timestep",
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_OPERATOR_LOCATION,
@@ -573,7 +587,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Reactor Thermal Power (W)",
             description="Nameplate thermal power of the reactor. Can be varied by "
             "setting the powerFractions setting.",
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_REMOVE_PER_CYCLE, default=3, label="Move per Cycle", description="None"
@@ -601,7 +615,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of cycles to be skipped during the calculation. Note: "
             "This is typically used when repeating only a portion of a calculation or "
             "repeating a run.",
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_SMALL_RUN,
@@ -628,7 +642,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Criticality Search Target (k-effective)",
             description="Target criticality (k-effective) for cycle length, branch, "
             "and equilibrium search",
-            schema=vol.Range(min=0),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_TRACK_ASSEMS,
@@ -668,7 +682,7 @@ def defineSettings() -> List[setting.Setting]:
             description="The limit of error between a block's cross-"
             "sectional area and the reference block used during the assembly area "
             "consistency check",
-            schema=vol.Range(min=0, min_included=False),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False)),
         ),
         setting.Setting(
             CONF_RING_ZONES,
@@ -713,14 +727,14 @@ def defineSettings() -> List[setting.Setting]:
             default=360.0,
             label="Inlet Temperature",
             description="The inlet temperature of the reactor in C",
-            schema=vol.Range(min=-273.15),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=-273.15)),
         ),
         setting.Setting(
             CONF_T_OUT,
             default=510.0,
             label="Outlet Temperature",
             description="The outlet temperature of the reactor in C",
-            schema=vol.Range(min=-273.15),
+            schema=vol.All(vol.Coerce(float), vol.Range(min=-273.15)),
         ),
         setting.Setting(
             CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD,
@@ -796,12 +810,12 @@ def defineSettings() -> List[setting.Setting]:
                             "step days": [vol.Coerce(str)],
                             "power fractions": [vol.Coerce(str)],
                             "availability factor": vol.All(
-                                vol.Any(float, int), vol.Range(min=0, max=1)
+                                vol.Coerce(float), vol.Range(min=0, max=1)
                             ),
                             "cycle length": vol.All(
-                                vol.Any(float, int), vol.Range(min=0)
+                                vol.Coerce(float), vol.Range(min=0)
                             ),
-                            "burn steps": vol.All(int, vol.Range(min=0)),
+                            "burn steps": vol.All(vol.Coerce(int), vol.Range(min=0)),
                         },
                         _mutuallyExclusiveCyclesInputs,
                     )
