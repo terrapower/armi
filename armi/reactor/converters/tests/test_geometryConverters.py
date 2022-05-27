@@ -300,10 +300,10 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         converter.removeEdgeAssemblies(self.r.core)
         self.assertTrue(numAssems > len(self.r.core.getAssemblies()))
         converter.addEdgeAssemblies(self.r.core)
-        self.assertTrue(numAssems == len(self.r.core.getAssemblies()))
+        self.assertEqual(numAssems, len(self.r.core.getAssemblies()))
         # make sure it can be called twice.
         converter.addEdgeAssemblies(self.r.core)
-        self.assertTrue(numAssems == len(self.r.core.getAssemblies()))
+        self.assertEqual(numAssems, len(self.r.core.getAssemblies()))
 
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):

@@ -1,0 +1,47 @@
+metadata:
+  version: uncontrolled
+settings:
+  axialExpansion: true
+  detailedAxialExpansion: true
+  beta: 0.003454
+  branchVerbosity: debug
+  buGroups:
+    - 100
+  burnSteps: 2
+  comment: Simple test input with detailed axial expansion.
+  crossSectionControl:
+    DA:
+      geometry: 0D
+      blockRepresentation: Median
+      criticalBuckling: true
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+    XA:
+      fileLocation:
+        - ISOXA
+  cycleLength: 2000.0
+  db: false
+  detailAssemLocationsBOL:
+    - 002-001
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
+  freshFeedType: igniter fuel
+  fuelHandlerName: EquilibriumShuffler
+  jumpRingNum: 9
+  loadingFile: refSmallReactor.yaml
+  startNode: 1
+  loadPadElevation: 162.5
+  genReports: false
+  moduleVerbosity:
+    armi.reactor.reactors: info
+  nCycles: 6
+  numCoupledIterations: 0
+  outputFileExtension: png
+  power: 100000000.0
+  shuffleLogic: ../refSmallReactorShuffleLogic.py
+  summarizeAssemDesign: false
+  targetK: 1.002
+  verbosity: extra
+  zoneFlowSummary: false

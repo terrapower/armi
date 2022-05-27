@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """Test axialExpansionChanger"""
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+import os
 from statistics import mean
 import unittest
 from numpy import linspace, ones, array, vstack, zeros
@@ -547,7 +548,7 @@ class TestExceptions(Base, unittest.TestCase):
         expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_TwoFuel)  # pylint: disable=protected-access
+            expdata._isFuelLocked(b_TwoFuel)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -556,10 +557,118 @@ class TestExceptions(Base, unittest.TestCase):
         shield = Circle("shield", "FakeMat", **fuelDims)
         b_NoFuel.add(shield)
         with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_NoFuel)  # pylint: disable=protected-access
+            expdata._isFuelLocked(b_NoFuel)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestSpecifyTargetComponent(unittest.TestCase):
+    """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
+
+    def setUp(self):
+        self.obj = AxialExpansionChanger()
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
+        self.obj.setAssembly(self.a)
+        # need an empty dictionary because we want to test for the added component only
+        self.obj.expansionData._componentDeterminesBlockHeight = {}
+
+    def test_specifyTargetComponent(self):
+        # build a test block
+        b = HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        clad = Circle("clad", "FakeMat", **cladDims)
+        b.add(fuel)
+        b.add(clad)
+        # call method, and check that target component is correct
+        self.obj.expansionData.specifyTargetComponent(b)
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
+        )
+
+    def test_specifyTargetComponentBlockWithMultipleFlags(self):
+        # build a block that has two flags as well as a component matching each
+        # flag
+        b = HexBlock("fuel poison", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
+        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        poison = Circle("poison", "FakeMat", **poisonDims)
+        b.add(fuel)
+        b.add(poison)
+        # call method, and check that target component is correct
+        self.obj.expansionData.specifyTargetComponent(b)
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
+        )
+
+
+class TestInputHeightsConsideredHot(unittest.TestCase):
+    """verify thermal expansion for process loading of core"""
+
+    def setUp(self):
+        """provide the base case"""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": True},
+        )
+        self.stdAssems = [a for a in r.core.getAssemblies()]
+
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": False},
+        )
+        self.testAssems = [a for a in rCold.core.getAssemblies()]
+
+    def test_coldAssemblyHeight(self):
+        """block heights are cold and should be expanded
+
+        Notes
+        -----
+        Two assertions here:
+            1. total assembly height should be preserved (through use of top dummy block)
+            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
+               Thot > Tinput resulting in a non-zero DeltaT. Each block in the
+               expanded case should therefore be a different height than that of the standard case.
+               - The one exception is for control assemblies. These designs can be unique from regular
+                 pin type assemblies by allowing downward expansion. Because of this, they are skipped
+                 for axial expansion.
+        """
+        for aStd, aExp in zip(self.stdAssems, self.testAssems):
+            self.assertAlmostEqual(
+                aStd.getTotalHeight(),
+                aExp.getTotalHeight(),
+                msg="Std Assem {0} ({1}) and Exp Assem {2} ({3}) are not the same height!".format(
+                    aStd, aStd.getTotalHeight(), aExp, aExp.getTotalHeight()
+                ),
+            )
+            for bStd, bExp in zip(aStd, aExp):
+                if aStd.hasFlags(Flags.CONTROL):
+                    checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
+                else:
+                    checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
+
+
+def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
+    assertType(
+        bStd.getHeight(),
+        bExp.getHeight(),
+        msg="Std Block {0} ({1}) and Exp Block {2} ({3}) should have {4:s} heights!".format(
+            bStd,
+            bStd.getHeight(),
+            bExp,
+            bExp.getHeight(),
+            strForAssertion,
+        ),
+    )
 
 
 class TestLinkage(unittest.TestCase):
@@ -801,7 +910,7 @@ def _buildDummySodium():
     return b
 
 
-class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMat(materials.ht9.HT9):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger
 
     Notes
@@ -823,7 +932,7 @@ class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
         return 0.02 * Tc
 
 
-class FakeMatException(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMatException(materials.ht9.HT9):
     """Fake material used to verify TestExceptions
 
     Notes

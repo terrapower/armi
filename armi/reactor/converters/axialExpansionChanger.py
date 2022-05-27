@@ -18,6 +18,14 @@ from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
 
+TARGET_FLAGS_IN_PREFERRED_ORDER = [
+    Flags.FUEL,
+    Flags.CONTROL,
+    Flags.POISON,
+    Flags.SHIELD,
+    Flags.SLUG,
+]
+
 
 class AxialExpansionChanger:
     """
@@ -670,7 +678,7 @@ class ExpansionData:
         Notes
         -----
         - if flagOfInterest is None, finds the component within b that contains flags that
-          are defined in b.p.flags
+          are defined in a preferred order of flags, or barring that, in b.p.flags
         - if flagOfInterest is not None, finds the component that contains the flagOfInterest.
 
         Raises
@@ -680,8 +688,16 @@ class ExpansionData:
         RuntimeError
             multiple target components found
         """
+
         if flagOfInterest is None:
-            componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
+            # Follow expansion of most neutronically important component, fuel first then control/poison
+            for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
+                componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
+                if componentWFlag != []:
+                    break
+            # some blocks/components are not included in the above list but should still be found
+            if not componentWFlag:
+                componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:

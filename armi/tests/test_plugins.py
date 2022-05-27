@@ -44,7 +44,7 @@ class TestPlugin(unittest.TestCase):
 
         for result in results:
             self.assertIsInstance(result, tuple)
-            self.assertTrue(len(result) == 3)
+            self.assertEqual(len(result), 3)
             self.assertIsInstance(result[0], str)
             self.assertIsInstance(result[1], yamlize.Attribute)
             self.assertTrue(callable(result[2]))
@@ -64,7 +64,7 @@ class TestPlugin(unittest.TestCase):
             # Make sure that all elements in the list satisfy the constraints of the
             # hookspec
             self.assertIsInstance(result, tuple)
-            self.assertTrue(len(result) == 3)
+            self.assertEqual(len(result), 3)
 
             order, interface, kwargs = result
 

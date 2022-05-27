@@ -218,13 +218,13 @@ class ParameterTests(unittest.TestCase):
             _ = mock["n"]
 
         # basic tests of __in__ method
-        self.assertFalse("n" in mock)
-        self.assertTrue("nPlus1" in mock)
+        self.assertNotIn("n", mock)
+        self.assertIn("nPlus1", mock)
 
         # basic tests of __eq__ method
         mock2 = copy.deepcopy(mock)
-        self.assertTrue(mock == mock)
-        self.assertFalse(mock == mock2)
+        self.assertEqual(mock, mock)
+        self.assertNotEqual(mock, mock2)
 
         # basic tests of get() method
         self.assertEqual(mock.get("nPlus1"), 22)
@@ -405,9 +405,9 @@ class ParameterTests(unittest.TestCase):
 
         pc = MockPC()
 
-        self.assertTrue("_p_p0" in MockPC._slots)
+        self.assertIn("_p_p0", MockPC._slots)
         # Make sure we aren't making any weird copies of anything
-        self.assertTrue(pc._slots is MockPC._slots)
+        self.assertEqual(pc._slots, MockPC._slots)
         with self.assertRaises(AssertionError):
             pc.whatever = 33
 

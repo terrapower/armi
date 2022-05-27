@@ -149,7 +149,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
         """
         cycle = self.r.p.cycle
         self.macrosLastBuiltAt = (
-            sum([self.r.p.burnSteps[i] + 1 for i in range(cycle)]) + self.r.p.timeNode
+            sum([self.r.o.burnSteps[i] + 1 for i in range(cycle)]) + self.r.p.timeNode
         )
 
         runLog.important("Building macro XS")
