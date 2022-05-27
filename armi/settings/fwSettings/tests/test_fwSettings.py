@@ -30,17 +30,17 @@ class TestSchema(unittest.TestCase):
             "numProcessors": {
                 "valid": 1,
                 "invalid": -1,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
             "axialMeshRefinementFactor": {
                 "valid": 1,
                 "invalid": 0,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
             "minMeshSizeRatio": {
                 "valid": 1,
                 "invalid": 0,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
             "cycleLength": {
                 "valid": 1,
@@ -80,45 +80,61 @@ class TestSchema(unittest.TestCase):
             "burnupPeakingFactor": {
                 "valid": 0,
                 "invalid": -1,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
-            "startCycle": {"valid": 1, "invalid": -1, "error": vol.error.RangeInvalid},
-            "startNode": {"valid": 0, "invalid": -1, "error": vol.error.RangeInvalid},
+            "startCycle": {
+                "valid": 1,
+                "invalid": -1,
+                "error": vol.error.MultipleInvalid,
+            },
+            "startNode": {
+                "valid": 0,
+                "invalid": -1,
+                "error": vol.error.MultipleInvalid,
+            },
             "lowPowerRegionFraction": {
                 "valid": 0.5,
                 "invalid": 2,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
             "mpiTasksPerNode": {
                 "valid": 0,
                 "invalid": -1,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
-            "nCycles": {"valid": 1, "invalid": -1, "error": vol.error.RangeInvalid},
+            "nCycles": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
             "numCoupledIterations": {
                 "valid": 0,
                 "invalid": -1,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
-            "power": {"valid": 0, "invalid": -1, "error": vol.error.RangeInvalid},
-            "skipCycles": {"valid": 0, "invalid": -1, "error": vol.error.RangeInvalid},
-            "targetK": {"valid": 1, "invalid": -1, "error": vol.error.RangeInvalid},
+            "power": {"valid": 0, "invalid": -1, "error": vol.error.MultipleInvalid},
+            "skipCycles": {
+                "valid": 0,
+                "invalid": -1,
+                "error": vol.error.MultipleInvalid,
+            },
+            "targetK": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
             "acceptableBlockAreaError": {
                 "valid": 1,
                 "invalid": 0,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
-            "Tin": {"valid": -272, "invalid": -274, "error": vol.error.RangeInvalid},
-            "Tout": {"valid": -272, "invalid": -274, "error": vol.error.RangeInvalid},
+            "Tin": {"valid": -272, "invalid": -274, "error": vol.error.MultipleInvalid},
+            "Tout": {
+                "valid": -272,
+                "invalid": -274,
+                "error": vol.error.MultipleInvalid,
+            },
             "dbStorageAfterCycle": {
                 "valid": 0,
                 "invalid": -1,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
             "timelineInclusionCutoff": {
                 "valid": 1,
                 "invalid": 105,
-                "error": vol.error.RangeInvalid,
+                "error": vol.error.MultipleInvalid,
             },
         }
 
