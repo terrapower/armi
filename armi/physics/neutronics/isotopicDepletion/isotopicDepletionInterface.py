@@ -55,7 +55,7 @@ def isDepletable(obj: composites.ArmiObject):
 
     See Also
     --------
-    armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys
+    armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys
     """
 
     return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(

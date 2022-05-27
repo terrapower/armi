@@ -101,13 +101,13 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_interactBOL(self):
-        self.assertTrue(self.dbi._db is not None)
+        self.assertIsNotNone(self.dbi._db)
         self.dbi.interactBOL()
 
         self.dbi._db = None
-        self.assertTrue(self.dbi._db is None)
+        self.assertIsNone(self.dbi._db)
         self.dbi.interactBOL()
-        self.assertTrue(self.dbi._db is not None)
+        self.assertIsNotNone(self.dbi._db)
 
     def test_distributable(self):
         self.assertEqual(self.dbi.distributable(), 4)

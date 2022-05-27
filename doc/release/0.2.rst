@@ -15,6 +15,7 @@ What's new in ARMI
 #. Removed the ``PyYaml`` dependency.
 #. Removed all bare ``import armi`` statements, for code clarity.
 #. Replaced setting ``stationaryBlocks`` (now deprecated) with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`_)
+#. Renamed control rod assembly parameters for generic implementations of control rod handling.
 #. TBD
 
 Bug fixes

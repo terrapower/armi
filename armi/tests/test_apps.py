@@ -186,7 +186,7 @@ class TestArmi(unittest.TestCase):
         pm = getDefaultPluginManager()
         pm2 = getDefaultPluginManager()
 
-        self.assertTrue(pm is not pm2)
+        self.assertNotEqual(pm, pm2)
         self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
 
     def test_overConfigured(self):

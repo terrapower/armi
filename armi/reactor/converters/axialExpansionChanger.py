@@ -18,6 +18,14 @@ from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
 
+TARGET_FLAGS_IN_PREFERRED_ORDER = [
+    Flags.FUEL,
+    Flags.CONTROL,
+    Flags.POISON,
+    Flags.SHIELD,
+    Flags.SLUG,
+]
+
 
 class AxialExpansionChanger:
     """
@@ -152,7 +160,12 @@ class AxialExpansionChanger:
         """
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
+        runLog.debug(
+            "Printing component expansion information (growth percentage and 'target component')"
+            "for each block in assembly {0}.".format(self.linked.a)
+        )
         for ib, b in enumerate(self.linked.a):
+            runLog.debug(msg="  Block {0}".format(b))
             if thermal:
                 blockHeight = b.p.heightBOL
             else:
@@ -165,6 +178,11 @@ class AxialExpansionChanger:
             if ib < (numOfBlocks - 1):
                 for c in b:
                     growFrac = self.expansionData.getExpansionFactor(c)
+                    runLog.debug(
+                        msg="      Component {0}, growFrac = {1:.4e}".format(
+                            c, growFrac
+                        )
+                    )
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
@@ -184,6 +202,9 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
+                        runLog.debug(
+                            "      Component {0} is target component".format(c)
+                        )
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
@@ -332,8 +353,6 @@ class AssemblyAxialLinkage:
                    see also: self._getLinkedComponents
     """
 
-    _TOLERANCE = 1.0e-03
-
     def __init__(self, StdAssem):
         self.a = StdAssem
         self.linkedBlocks = {}
@@ -382,6 +401,25 @@ class AssemblyAxialLinkage:
 
         self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
 
+        if lowerLinkedBlock is None:
+            runLog.debug(
+                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
+                "is not linked to a block below!".format(
+                    str(self.a.getName()),
+                    str(self.a.getLocation()),
+                    str(b.p.flags),
+                )
+            )
+        if upperLinkedBlock is None:
+            runLog.debug(
+                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
+                "is not linked to a block above!".format(
+                    str(self.a.getName()),
+                    str(self.a.getLocation()),
+                    str(b.p.flags),
+                )
+            )
+
     def _getLinkedComponents(self, b, c):
         """retrieve the axial linkage for component c
 
@@ -391,17 +429,26 @@ class AssemblyAxialLinkage:
             key to access blocks containing linked components
         c : :py:class:`Component <armi.reactor.components.component.Component>` object
             component to determine axial linkage for
+
+        Raises
+        ------
+        RuntimeError
+            multiple candidate components are found to be axially linked to a component
         """
         lstLinkedC = [None, None]
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in linkdBlk.getChildren():
-                    if isinstance(
-                        otherC, type(c)
-                    ):  # equivalent to type(otherC) == type(c)
-                        area_diff = abs(otherC.getArea() - c.getArea())
-                        if area_diff < self._TOLERANCE:
-                            lstLinkedC[ib] = otherC
+                    if _determineLinked(c, otherC):
+                        if lstLinkedC[ib] is not None:
+                            errMsg = (
+                                "Multiple component axial linkages have been found for Component {0}; Block {1}."
+                                " This is indicative of an error in the blueprints! Linked components found are"
+                                "{2} and {3}".format(c, b, lstLinkedC[ib], otherC)
+                            )
+                            runLog.error(msg=errMsg)
+                            raise RuntimeError(errMsg)
+                        lstLinkedC[ib] = otherC
 
         self.linkedComponents[c] = lstLinkedC
 
@@ -425,6 +472,58 @@ class AssemblyAxialLinkage:
                     str(c.p.flags),
                 )
             )
+
+
+def _determineLinked(componentA, componentB):
+    """determine axial component linkage for two components
+
+    Parameters
+    ----------
+    componentA : :py:class:`Component <armi.reactor.components.component.Component>`
+        component of interest
+    componentB : :py:class:`Component <armi.reactor.components.component.Component>`
+        component to compare and see if is linked to componentA
+
+    Notes
+    -----
+    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter defined
+    - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet inner
+      and outer diameter requirements.
+    - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
+      at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
+      slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
+
+    Returns
+    -------
+    linked : bool
+        status is componentA and componentB are axially linked to one another
+    """
+    if (
+        (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
+        and isinstance(componentA, type(componentB))
+        and (componentA.getDimension("mult") == componentB.getDimension("mult"))
+    ):
+        idA, odA = (
+            componentA.getCircleInnerDiameter(cold=True),
+            componentA.getBoundingCircleOuterDiameter(cold=True),
+        )
+        idB, odB = (
+            componentB.getCircleInnerDiameter(cold=True),
+            componentB.getBoundingCircleOuterDiameter(cold=True),
+        )
+
+        biggerID = max(idA, idB)
+        smallerOD = min(odA, odB)
+        if biggerID >= smallerOD:
+            # one object fits inside the other
+            linked = False
+        else:
+            linked = True
+
+    else:
+        linked = False
+
+    return linked
 
 
 class ExpansionData:
@@ -548,7 +647,6 @@ class ExpansionData:
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
         else:
-            runLog.debug("No expansion factor for {}! Setting to 0.0".format(c))
             value = 0.0
         return value
 
@@ -580,7 +678,7 @@ class ExpansionData:
         Notes
         -----
         - if flagOfInterest is None, finds the component within b that contains flags that
-          are defined in b.p.flags
+          are defined in a preferred order of flags, or barring that, in b.p.flags
         - if flagOfInterest is not None, finds the component that contains the flagOfInterest.
 
         Raises
@@ -590,8 +688,16 @@ class ExpansionData:
         RuntimeError
             multiple target components found
         """
+
         if flagOfInterest is None:
-            componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
+            # Follow expansion of most neutronically important component, fuel first then control/poison
+            for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
+                componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
+                if componentWFlag != []:
+                    break
+            # some blocks/components are not included in the above list but should still be found
+            if not componentWFlag:
+                componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:

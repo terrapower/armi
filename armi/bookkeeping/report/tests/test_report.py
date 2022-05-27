@@ -112,17 +112,17 @@ class TestReport(unittest.TestCase):
 
             # this report won't do much for the test reactor - improve test reactor
             summarizeZones(r.core, o.cs)
-            self.assertTrue(len(mock._outputStream) == 0)
+            self.assertEqual(len(mock._outputStream), 0)
             mock._outputStream = ""
 
             # this report won't do much for the test reactor - improve test reactor
             makeBlockDesignReport(r)
-            self.assertTrue(len(mock._outputStream) == 0)
+            self.assertEqual(len(mock._outputStream), 0)
             mock._outputStream = ""
 
             # this report won't do much for the test reactor - improve test reactor
             summarizePowerPeaking(r.core)
-            self.assertTrue(len(mock._outputStream) == 0)
+            self.assertEqual(len(mock._outputStream), 0)
 
 
 class TestReportInterface(unittest.TestCase):

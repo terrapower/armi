@@ -110,7 +110,7 @@ class TestRunLog(unittest.TestCase):
 
         # test that the logging found some duplicate outputs
         dupsFilter = log.getDuplicatesFilter()
-        self.assertTrue(dupsFilter is not None)
+        self.assertIsNotNone(dupsFilter)
         warnings = dupsFilter.singleWarningMessageCounts
         self.assertGreater(len(warnings), 0)
 
@@ -150,8 +150,8 @@ class TestRunLog(unittest.TestCase):
         def returnNone(*args, **kwargs):
             return None
 
-        log.getDuplicatesFilter = returnNone
-        self.assertIsNone(log.getDuplicatesFilter())
+        log.logger.getDuplicatesFilter = returnNone
+        self.assertIsNone(log.logger.getDuplicatesFilter())
 
         # run the warning report
         log.warningReport()
@@ -161,9 +161,9 @@ class TestRunLog(unittest.TestCase):
         # test what was logged
         streamVal = stream.getvalue()
         self.assertIn(testName, streamVal, msg=streamVal)
-        self.assertNotIn("None Found", streamVal, msg=streamVal)
+        self.assertIn("None Found", streamVal, msg=streamVal)
         self.assertNotIn("invisible", streamVal, msg=streamVal)
-        self.assertEqual(streamVal.count(testName), 2, msg=streamVal)
+        self.assertEqual(streamVal.count(testName), 1, msg=streamVal)
 
     def test_closeLogging(self):
         """A basic test of the close() functionality"""

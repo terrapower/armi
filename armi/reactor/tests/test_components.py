@@ -215,6 +215,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         )
 
         # show that area expansion is consistent with the density change in the material
+        self.component.applyHotHeightDensityReduction()
         hotDensity = self.component.density()
         hotArea = self.component.getArea()
         thermalExpansionFactor = self.component.getThermalExpansionFactor(
@@ -230,6 +231,7 @@ class TestUnshapedComponent(TestGeneralComponents):
                 area=math.pi,
             )
         )
+        coldComponent.applyHotHeightDensityReduction()
         coldDensity = coldComponent.density()
         coldArea = coldComponent.getArea()
 
@@ -339,13 +341,14 @@ class TestDerivedShape(TestShapedComponent):
 
 class TestCircle(TestShapedComponent):
     componentCls = Circle
+    _id = 5.0
     _od = 10
     _coldTemp = 25.0
     componentDims = {
         "Tinput": _coldTemp,
         "Thot": 25.0,
         "od": _od,
-        "id": 5.0,
+        "id": _id,
         "mult": 1.5,
     }
 
@@ -383,6 +386,10 @@ class TestCircle(TestShapedComponent):
         ref = self._od
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
+
+    def test_getCircleInnerDiameter(self):
+        cur = self.component.getCircleInnerDiameter(cold=True)
+        self.assertAlmostEqual(self._id, cur)
 
     def test_dimensionThermallyExpands(self):
         expandedDims = ["od", "id", "mult"]
@@ -541,6 +548,10 @@ class TestRectangle(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
+    def test_getCircleInnerDiameter(self):
+        cur = self.component.getCircleInnerDiameter(cold=True)
+        self.assertAlmostEqual(math.sqrt(25.0), cur)
+
     def test_getArea(self):
         outerL = self.component.getDimension("lengthOuter")
         innerL = self.component.getDimension("lengthInner")
@@ -647,6 +658,11 @@ class TestSquare(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
+    def test_getCircleInnerDiameter(self):
+        ref = math.sqrt(8.0)
+        cur = self.component.getCircleInnerDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
     def test_getArea(self):
         outerW = self.component.getDimension("widthOuter")
         innerW = self.component.getDimension("widthInner")
@@ -744,6 +760,11 @@ class TestHexagon(TestShapedComponent):
     def test_getBoundingCircleOuterDiameter(self):
         ref = 2.0 * 10 / math.sqrt(3)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getCircleInnerDiameter(self):
+        ref = 2.0 * 5.0 / math.sqrt(3)
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
@@ -902,6 +923,11 @@ class TestHelix(TestShapedComponent):
     def test_getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         ref = 0.25 + 2.0
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getCircleInnerDiameter(self, Tc=None, cold=False):
+        ref = 0.1 + 2.0
+        cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
