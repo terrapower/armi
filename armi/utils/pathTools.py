@@ -240,6 +240,8 @@ def cleanPath(path, mpiRank=0):
     """
     valid = False
     if not os.path.exists(path):
+        if context.MPI_SIZE > 1:
+            context.MPI_COMM.barrier()
         return True
 
     for validPath in [
