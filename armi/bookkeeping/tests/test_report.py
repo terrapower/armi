@@ -79,8 +79,8 @@ class TestReportContentCreation(unittest.TestCase):
             )
 
             self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
-            self.assertTrue("Comprehensive Report" in reportTest.sections)
-            self.assertTrue("Neutronics" in reportTest.sections)
+            self.assertIn("Comprehensive Report", reportTest.sections)
+            self.assertIn("Neutronics", reportTest.sections)
             self.assertTrue(
                 isinstance(reportTest.tableOfContents(), htmltree.HtmlElement)
             )
@@ -89,7 +89,7 @@ class TestReportContentCreation(unittest.TestCase):
         reportTest = newReports.ReportContent("Test")
 
         neutronicsPlotting(self.r, reportTest, self.o.cs)
-        self.assertTrue("Neutronics" in reportTest.sections)
+        self.assertIn("Neutronics", reportTest.sections)
         self.assertTrue(
             isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries)
         )
@@ -110,7 +110,7 @@ class TestReportContentCreation(unittest.TestCase):
                 for line in f:
                     if "<tr>" in line:
                         times = times + 1
-            self.assertTrue(times == 2)
+            self.assertEqual(times, 2)
 
     def test_reportBasics(self):
         env = data.Report("Environment", "ARMI Env Info")

@@ -53,6 +53,7 @@ venv*/
 **/__pycache__
 **/.coverage*
 **/logs/*
+*.ascii
 *.png
 
 # Misc. exclusions

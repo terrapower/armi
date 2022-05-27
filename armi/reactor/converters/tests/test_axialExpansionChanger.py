@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """Test axialExpansionChanger"""
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+import os
 from statistics import mean
 import unittest
 from numpy import linspace, ones, array, vstack, zeros
@@ -23,10 +24,17 @@ from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape
-from armi.reactor.components.basicShapes import Circle, Hexagon
+from armi.reactor.components.basicShapes import (
+    Circle,
+    Hexagon,
+    Rectangle,
+    Square,
+)
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
+    _determineLinked,
 )
 from armi.reactor.flags import Flags
 from armi import materials
@@ -540,7 +548,7 @@ class TestExceptions(Base, unittest.TestCase):
         expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_TwoFuel)  # pylint: disable=protected-access
+            expdata._isFuelLocked(b_TwoFuel)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -549,10 +557,279 @@ class TestExceptions(Base, unittest.TestCase):
         shield = Circle("shield", "FakeMat", **fuelDims)
         b_NoFuel.add(shield)
         with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_NoFuel)  # pylint: disable=protected-access
+            expdata._isFuelLocked(b_NoFuel)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestSpecifyTargetComponent(unittest.TestCase):
+    """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
+
+    def setUp(self):
+        self.obj = AxialExpansionChanger()
+        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
+        self.obj.setAssembly(self.a)
+        # need an empty dictionary because we want to test for the added component only
+        self.obj.expansionData._componentDeterminesBlockHeight = {}
+
+    def test_specifyTargetComponent(self):
+        # build a test block
+        b = HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        clad = Circle("clad", "FakeMat", **cladDims)
+        b.add(fuel)
+        b.add(clad)
+        # call method, and check that target component is correct
+        self.obj.expansionData.specifyTargetComponent(b)
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
+        )
+
+    def test_specifyTargetComponentBlockWithMultipleFlags(self):
+        # build a block that has two flags as well as a component matching each
+        # flag
+        b = HexBlock("fuel poison", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
+        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        poison = Circle("poison", "FakeMat", **poisonDims)
+        b.add(fuel)
+        b.add(poison)
+        # call method, and check that target component is correct
+        self.obj.expansionData.specifyTargetComponent(b)
+        self.assertTrue(
+            self.obj.expansionData.isTargetComponent(fuel),
+            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+                fuel
+            ),
+        )
+
+
+class TestInputHeightsConsideredHot(unittest.TestCase):
+    """verify thermal expansion for process loading of core"""
+
+    def setUp(self):
+        """provide the base case"""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": True},
+        )
+        self.stdAssems = [a for a in r.core.getAssemblies()]
+
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            {"inputHeightsConsideredHot": False},
+        )
+        self.testAssems = [a for a in rCold.core.getAssemblies()]
+
+    def test_coldAssemblyHeight(self):
+        """block heights are cold and should be expanded
+
+        Notes
+        -----
+        Two assertions here:
+            1. total assembly height should be preserved (through use of top dummy block)
+            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
+               Thot > Tinput resulting in a non-zero DeltaT. Each block in the
+               expanded case should therefore be a different height than that of the standard case.
+               - The one exception is for control assemblies. These designs can be unique from regular
+                 pin type assemblies by allowing downward expansion. Because of this, they are skipped
+                 for axial expansion.
+        """
+        for aStd, aExp in zip(self.stdAssems, self.testAssems):
+            self.assertAlmostEqual(
+                aStd.getTotalHeight(),
+                aExp.getTotalHeight(),
+                msg="Std Assem {0} ({1}) and Exp Assem {2} ({3}) are not the same height!".format(
+                    aStd, aStd.getTotalHeight(), aExp, aExp.getTotalHeight()
+                ),
+            )
+            for bStd, bExp in zip(aStd, aExp):
+                if aStd.hasFlags(Flags.CONTROL):
+                    checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
+                else:
+                    checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
+
+
+def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
+    assertType(
+        bStd.getHeight(),
+        bExp.getHeight(),
+        msg="Std Block {0} ({1}) and Exp Block {2} ({3}) should have {4:s} heights!".format(
+            bStd,
+            bStd.getHeight(),
+            bExp,
+            bExp.getHeight(),
+            strForAssertion,
+        ),
+    )
+
+
+class TestLinkage(unittest.TestCase):
+    """test axial linkage between components"""
+
+    def setUp(self):
+        """contains common dimensions for all component class types"""
+        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+
+    def runTest(
+        self,
+        componentsToTest: dict,
+        assertionBool: bool,
+        name: str,
+        commonArgs: tuple = None,
+    ):
+        """runs various linkage tests
+
+        Parameters
+        ----------
+        componentsToTest : dict
+            keys --> component class type; values --> dimensions specific to key
+        assertionBool : boolean
+            expected truth value for test
+        name : str
+            the name of the test
+        commonArgs : tuple, optional
+            arguments common to all Component class types
+
+        Notes
+        -----
+        - components "typeA" and "typeB" are assumed to be vertically stacked
+        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component to "typeB"
+        - the different assertions are particularly useful for comparing two annuli
+        - to add Component class types to a test:
+            Add dictionary entry with following:
+              {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
+        """
+        if commonArgs is None:
+            common = self.common
+        else:
+            common = commonArgs
+        for method, dims in componentsToTest.items():
+            typeA = method(*common, **dims[0])
+            typeB = method(*common, **dims[1])
+            if assertionBool:
+                self.assertTrue(
+                    _determineLinked(typeA, typeB),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+                self.assertTrue(
+                    _determineLinked(typeB, typeA),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+            else:
+                self.assertFalse(
+                    _determineLinked(typeA, typeB),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+                self.assertFalse(
+                    _determineLinked(typeB, typeA),
+                    msg="Test {0:s} failed for component type {1:s}!".format(
+                        name, str(method)
+                    ),
+                )
+
+    def test_overlappingSolidPins(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.0}],
+            Hexagon: [{"op": 0.5, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
+            Rectangle: [
+                {
+                    "lengthOuter": 0.5,
+                    "lengthInner": 0.0,
+                    "widthOuter": 0.5,
+                    "widthInner": 0.0,
+                },
+                {
+                    "lengthOuter": 1.0,
+                    "lengthInner": 0.0,
+                    "widthOuter": 1.0,
+                    "widthInner": 0.0,
+                },
+            ],
+            Helix: [
+                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0},
+                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0},
+            ],
+        }
+        self.runTest(componentTypesToTest, True, "test_overlappingSolidPins")
+
+    def test_differentMultNotOverlapping(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
+            Hexagon: [{"op": 0.5, "mult": 10}, {"op": 1.0, "mult": 20}],
+            Rectangle: [
+                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 10},
+                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 20},
+            ],
+            Helix: [
+                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 10},
+                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 20},
+            ],
+        }
+        self.runTest(componentTypesToTest, False, "test_differentMultNotOverlapping")
+
+    def test_solidPinNotOverlappingAnnulus(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(componentTypesToTest, False, "test_solidPinNotOverlappingAnnulus")
+
+    def test_solidPinOverlappingWithAnnulus(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.7, "id": 0.0}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(componentTypesToTest, True, "test_solidPinOverlappingWithAnnulus")
+
+    def test_annularPinNotOverlappingWithAnnulus(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.6, "id": 0.3}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(
+            componentTypesToTest, False, "test_annularPinNotOverlappingWithAnnulus"
+        )
+
+    def test_annularPinOverlappingWithAnnuls(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.7, "id": 0.3}, {"od": 1.0, "id": 0.6}],
+        }
+        self.runTest(componentTypesToTest, True, "test_annularPinOverlappingWithAnnuls")
+
+    def test_thinAnnularPinOverlappingWithThickAnnulus(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
+        }
+        self.runTest(
+            componentTypesToTest, True, "test_thinAnnularPinOverlappingWithThickAnnulus"
+        )
+
+    def test_AnnularHexOverlappingThickAnnularHex(self):
+        componentTypesToTest = {
+            Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]
+        }
+        self.runTest(
+            componentTypesToTest, True, "test_AnnularHexOverlappingThickAnnularHex"
+        )
+
+    def test_liquids(self):
+        componentTypesToTest = {
+            Circle: [{"od": 1.0, "id": 0.0}, {"od": 1.0, "id": 0.0}],
+            Hexagon: [{"op": 1.0, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
+        }
+        liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
+        self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
 
 
 def buildTestAssemblyWithFakeMaterial(name):
@@ -633,7 +910,7 @@ def _buildDummySodium():
     return b
 
 
-class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMat(materials.ht9.HT9):
     """Fake material used to verify armi.reactor.converters.axialExpansionChanger
 
     Notes
@@ -655,7 +932,7 @@ class FakeMat(materials.ht9.HT9):  # pylint: disable=abstract-method
         return 0.02 * Tc
 
 
-class FakeMatException(materials.ht9.HT9):  # pylint: disable=abstract-method
+class FakeMatException(materials.ht9.HT9):
     """Fake material used to verify TestExceptions
 
     Notes

@@ -1262,9 +1262,9 @@ class Block_TestCase(unittest.TestCase):
         p1, c1 = self.block.getPitch(returnComp=True)
         p2, c2 = newb.getPitch(returnComp=True)
 
-        self.assertTrue(c1 is not c2)
-        self.assertTrue(newb.getLargestComponent("op") is c2)
-        self.assertTrue(p1 == p2)
+        self.assertNotEqual(c1, c2)
+        self.assertEqual(newb.getLargestComponent("op"), c2)
+        self.assertEqual(p1, p2)
 
     def test_102_setPitch(self):
         pitch = 17.5
@@ -1549,6 +1549,14 @@ class Block_TestCase(unittest.TestCase):
         dims = self.block.getDimensions("od")
         self.assertIn(self.block.getComponent(Flags.FUEL).p.od, dims)
 
+    def test_getPlenumPin(self):
+        pin = self.block.getPlenumPin()
+        self.assertIsNone(pin)
+
+    def test_hasPinPitch(self):
+        hasPitch = self.block.hasPinPitch()
+        self.assertTrue(hasPitch)
+
 
 class Test_NegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
@@ -1774,7 +1782,7 @@ class HexBlock_TestCase(unittest.TestCase):
         # The block should have a spatial grid at construction,
         # since it has mults = 1 or 169 from setup
         b.autoCreateSpatialGrids()
-        self.assertTrue(b.spatialGrid is not None)
+        self.assertIsNotNone(b.spatialGrid)
         for c in b:
             if c.getDimension("mult", cold=True) == 169:
                 # Then it's spatialLocator must be of size 169
@@ -1810,7 +1818,7 @@ class HexBlock_TestCase(unittest.TestCase):
         b.add(wire)
         with self.assertRaises(ValueError):
             b.autoCreateSpatialGrids()
-        self.assertTrue(b.spatialGrid is None)
+        self.assertIsNone(b.spatialGrid)
 
     def test_gridNotCreatedMultipleMultiplicities(self):
         wireDims = {
@@ -1828,7 +1836,7 @@ class HexBlock_TestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.HexBlock.autoCreateSpatialGrids()
 
-        self.assertTrue(self.HexBlock.spatialGrid is None)
+        self.assertIsNone(self.HexBlock.spatialGrid)
 
 
 class ThRZBlock_TestCase(unittest.TestCase):
@@ -2229,6 +2237,7 @@ class MassConservationTests(unittest.TestCase):
         and hot height.
         """
         fuel = self.b.getComponent(Flags.FUEL)
+        fuel.applyHotHeightDensityReduction()
         # set ref (input/cold) temperature.
         Thot = fuel.temperatureInC
         Tcold = fuel.inputTemperatureInC

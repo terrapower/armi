@@ -173,7 +173,7 @@ creates an ``Action`` and broadcasts it as appropriate.::
 .. warning::
 
     Currently, there is no guarantee that the reactor state is the same across all nodes. Consequently, the above code
-    should really contain a ``mpiActions.DistributeStateAction.invokeAsprimary`` call prior to broadcasting the
+    should really contain a ``mpiActions.DistributeStateAction.invokeAsMaster`` call prior to broadcasting the
     ``action``. See example below.
 
 
@@ -197,7 +197,7 @@ shows how different operations can be performed in parallel.::
             # this line any existing reactor on workers to ensure consistency
             distrib.invoke(self.o, self.r, self.cs)
             # the 3 lines above are equivalent to:
-            # mpiActions.DistributeStateAction.invokeAsprimary(self.o, self.r, self.cs)
+            # mpiActions.DistributeStateAction.invokeAsMaster(self.o, self.r, self.cs)
             
             results = mpiActions.runActions(self.o, self.r, self.cs, actions)
 
@@ -231,7 +231,7 @@ that the reactor state is synchronized across all nodes, and then use the reacto
             for opt in self.cs['someSetting']:
                 actions.append(factory(opt))
             
-            mpiActions.DistributeStateAction.invokeAsprimary(self.o, self.r, self.cs)
+            mpiActions.DistributeStateAction.invokeAsMaster(self.o, self.r, self.cs)
             results = mpiActions.runActions(self.o, self.r, self.cs, actions)
 
     class WhatAction(mpiActions.MpiAction):

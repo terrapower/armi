@@ -219,7 +219,7 @@ def moduleAndAttributeExist(pathAttr):
     return moduleAttributeName in userSpecifiedModule.__dict__
 
 
-def cleanPath(path):
+def cleanPath(path, mpiRank=0):
     """Recursively delete a path.
 
     !!! careful with this !!! It can delete the entire cluster.
@@ -237,10 +237,11 @@ def cleanPath(path):
     -------
     success : bool
         True if file was deleted. False if it was not.
-
     """
     valid = False
     if not os.path.exists(path):
+        if context.MPI_SIZE > 1:
+            context.MPI_COMM.barrier()
         return True
 
     for validPath in [
@@ -263,23 +264,27 @@ def cleanPath(path):
             "You tried to delete {0}, but it does not seem safe to do so.".format(path)
         )
 
-    for i in range(3):
-        try:
-            if os.path.exists(path) and os.path.isdir(path):
-                shutil.rmtree(path)
-            elif not os.path.isdir(path):
-                # it's just a file. Delete it.
-                os.remove(path)
-        except:
-            if i == 2:
-                pass
-            # in case the OS is behind or something
-            sleep(0.1)
+    # delete the file/directory from only one process
+    if context.MPI_RANK == mpiRank:
+        if os.path.exists(path) and os.path.isdir(path):
+            shutil.rmtree(path)
+        elif not os.path.isdir(path):
+            # it's just a file. Delete it.
+            os.remove(path)
 
-        sleep(0.3)
-        if not os.path.exists(path):
+    # Potentially, wait for the deletion to finish.
+    maxLoops = 6
+    waitTime = 0.5
+    loopCounter = 0
+    while os.path.exists(path):
+        loopCounter += 1
+        if loopCounter > maxLoops:
             break
-        sleep(0.3)
+        sleep(waitTime)
+
+    # Potentially, wait for all the processes to catch up.
+    if context.MPI_SIZE > 1:
+        context.MPI_COMM.barrier()
 
     if os.path.exists(path):
         return False

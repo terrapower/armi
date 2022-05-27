@@ -135,7 +135,6 @@ class TestDatabase3(unittest.TestCase):
         and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
         created here for this test.
         """
-
         # first successfully call to prepRestartRun
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         cs = o.cs
@@ -164,7 +163,7 @@ class TestDatabase3(unittest.TestCase):
             db.writeToDB(r)
         db.close()
 
-        self.dbi.prepRestartRun()  # should not raise error
+        self.dbi.prepRestartRun()
 
         # now make the cycle histories clash and confirm that an error is thrown
         cs = cs.modified(
@@ -392,10 +391,10 @@ class TestDatabase3(unittest.TestCase):
         self.db.close()
 
         with h5py.File("test_splitDatabase.h5", "r") as newDb:
-            self.assertTrue(newDb["c00n00/Reactor/cycle"][()] == 0)
-            self.assertTrue(newDb["c00n00/Reactor/cycleLength"][()] == 1)
-            self.assertTrue("c02n00" not in newDb)
-            self.assertTrue(newDb.attrs["databaseVersion"] == database3.DB_VERSION)
+            self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
+            self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()], 1)
+            self.assertNotIn("c02n00", newDb)
+            self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
 
             # validate that the min set of meta data keys exists
             meta_data_keys = [
@@ -418,7 +417,7 @@ class TestDatabase3(unittest.TestCase):
             ]
             for meta_key in meta_data_keys:
                 self.assertIn(meta_key, newDb.attrs)
-                self.assertTrue(newDb.attrs[meta_key] is not None)
+                self.assertIsNotNone(newDb.attrs[meta_key])
 
         # test an edge case - no DB to split
         with self.assertRaises(ValueError):
@@ -465,6 +464,18 @@ class TestDatabase3(unittest.TestCase):
         # test that we recover the correct commit hash
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
+
+        # delete the .git directory
+        code = subprocess.run(
+            ["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).returncode
+        self.assertEqual(code, 0)
+        code = subprocess.run(
+            ["git", "clean", "-f", "-d"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        self.assertEqual(code, 0)
 
     def test_fileName(self):
         # test the file name getter

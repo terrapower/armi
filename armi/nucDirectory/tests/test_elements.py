@@ -56,13 +56,13 @@ class TestElement(unittest.TestCase):
                 elements.Element(ee.z, ee.symbol, ee.name)
 
     def test_element_addedElementAppearsInElementList(self):
-        self.assertFalse("bacon" in elements.byName)
-        self.assertFalse(999 in elements.byZ)
-        self.assertFalse("BZ" in elements.bySymbol)
+        self.assertNotIn("bacon", elements.byName)
+        self.assertNotIn(999, elements.byZ)
+        self.assertNotIn("BZ", elements.bySymbol)
         elements.Element(999, "BZ", "bacon")
-        self.assertTrue("bacon" in elements.byName)
-        self.assertTrue(999 in elements.byZ)
-        self.assertTrue("BZ" in elements.bySymbol)
+        self.assertIn("bacon", elements.byName)
+        self.assertIn(999, elements.byZ)
+        self.assertIn("BZ", elements.bySymbol)
         # re-initialize the elements
         with mockRunLogs.BufferLog():
             elements.destroy()

@@ -106,7 +106,7 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(fuel.getDimension("mult"), 169)
 
     def test_traceNuclides(self):
-        """Ensure that armi.reactor.blueprints.componentBlueprint._insertDepletableNuclideKeys runs."""
+        """Ensure that armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys runs."""
         fuel = (
             self.blueprints.constructAssem(self.cs, "igniter fuel")
             .getFirstBlock(Flags.FUEL)

@@ -573,6 +573,14 @@ class TestFuelHandler(ArmiTestHelper):
         locSchedule = fh.buildEqRingSchedule([2, 1])
         self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
+        fh.cs["circularRingOrder"] = "distanceSmart"
+        locSchedule = fh.buildEqRingSchedule([2, 1])
+        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
+
+        fh.cs["circularRingOrder"] = "somethingCrazy"
+        locSchedule = fh.buildEqRingSchedule([2, 1])
+        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
+
     def test_swapFluxParamSameLength(self):
         """
         Test the _swapFluxParams method for the usual case,
