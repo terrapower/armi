@@ -279,7 +279,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
-                cleanPath(dirPath, MPI_RANK)
+                cleanPath(dirPath, MPI_RANK, barrier=False)
         except:  # pylint: disable=bare-except
             pass
 
