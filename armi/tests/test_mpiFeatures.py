@@ -28,6 +28,7 @@ from distutils.spawn import find_executable
 import os
 import unittest
 
+from armi import context
 from armi import mpiActions
 from armi import settings
 from armi.interfaces import Interface
