@@ -28,7 +28,6 @@ from distutils.spawn import find_executable
 import os
 import unittest
 
-from armi import context
 from armi import mpiActions
 from armi import settings
 from armi.interfaces import Interface
@@ -258,14 +257,14 @@ class MpiPathToolsTests(unittest.TestCase):
 
             self.assertTrue(os.path.exists(filePath0))
             with self.assertRaises(Exception):
-                pathTools.cleanPath(filePath0, mpiRank=context.MPI_RANK)
+                pathTools.cleanPath(filePath0)
 
             # TEST 1: Delete a single file
             filePath1 = "test1_cleanPathNoMpi_mongoose"
             open(filePath1, "w").write("something")
 
             self.assertTrue(os.path.exists(filePath1))
-            pathTools.cleanPath(filePath1, mpiRank=context.MPI_RANK)
+            pathTools.cleanPath(filePath1)
             self.assertFalse(os.path.exists(filePath1))
 
             # TEST 2: Delete an empty directory
@@ -273,7 +272,7 @@ class MpiPathToolsTests(unittest.TestCase):
             os.mkdir(dir2)
 
             self.assertTrue(os.path.exists(dir2))
-            pathTools.cleanPath(dir2, mpiRank=context.MPI_RANK)
+            pathTools.cleanPath(dir2)
             self.assertFalse(os.path.exists(dir2))
 
             # TEST 3: Delete a directory with two files inside
@@ -289,7 +288,7 @@ class MpiPathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(dir3))
             self.assertTrue(os.path.exists(os.path.join(dir3, "file1.txt")))
             self.assertTrue(os.path.exists(os.path.join(dir3, "file2.txt")))
-            pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
+            pathTools.cleanPath(dir3)
             self.assertFalse(os.path.exists(dir3))
 
 
