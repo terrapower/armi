@@ -600,10 +600,22 @@ class ArmiPlugin:
         """
 
 
+class UserPlugin(ArmiPlugin):
+    """TODO"""
+
+    @staticmethod
+    @HOOKSPEC
+    def defineParameterRenames():
+        pass  # TODO: Forbid changing this somehow...
+
+    @staticmethod
+    @HOOKSPEC
+    def defineSettings():
+        return []  # TODO: Forbid changing this somehow...
+
+
 def getNewPluginManager() -> pluginManager.ArmiPluginManager:
-    """
-    Return a new plugin manager with all of the hookspecs pre-registered.
-    """
+    """Return a new plugin manager with all of the hookspecs pre-registered."""
     pm = pluginManager.ArmiPluginManager("armi")
     pm.add_hookspecs(ArmiPlugin)
     return pm

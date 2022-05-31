@@ -221,6 +221,46 @@ class App:
             self._paramRenames = renames, self._pm.counter
         return renames
 
+    def registerUserPlugins(self, pluginPaths):
+        """
+        Register additional plugins passed in by importable paths.
+        These plugins may be provided e.g. by an application during startup
+        based on user input.
+        Format expected to be a list of full namespaces to plugin classes.
+        There should be a comma between individual plugins and dots representing
+        the importable python namespace.
+        e.g. ``myplugins.plugindir.pluginMod.pluginCls,myplugins.plugMod2.plugCls2``.
+        The user plugins must be importable (i.e. in the run dir or PYTHONPATH)
+
+        TODO: JOHN! REAAAAAAAAAAAAAAAAD THISSSSSSSSSSSSSSSSSSS!
+        TODO
+        TODO
+        TODO
+
+        Notes
+        -----
+        How exactly user input gets into here is complicated. In some sense, a
+        user setting would be ideal. However, ARMI Apps lock down the plugin manager
+        during ``configure()`` which happens before any user settings are read
+        in. This order is necessary since plugins often define settings that are
+        read during input processing.
+        Another option could be to use environment variables, allowing users to
+        set e.g. ``ARMI_USER_PLUGINS`` to a list of their favorite plugins. That
+        would be convenient from a user perspective and may work nicely here
+        as well.
+        We use dots all the way to the class as opposed to the ``:`` used in
+        material classes because ENV variables uses ``:`` as separators on some
+        OSs.
+        """
+        for pluginSpec in pluginPaths:
+            names = pluginSpec.strip().split(".")
+            modPath = ".".join(names[:-1])
+            clsName = names[-1]
+            mod = importlib.import_module(modPath)
+            plugin = getattr(mod, clsName)
+            assert issubclass(plugin, plugins.UserPlugin)
+            self._pm.register(plugin)
+
     @property
     def splashText(self):
         """
