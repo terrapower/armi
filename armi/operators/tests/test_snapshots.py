@@ -74,6 +74,9 @@ class TestSOperatorSnapshots(ArmiTestHelper):
         newSettings["runType"] = "Snapshots"
         newSettings["loadStyle"] = "fromDB"
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
+        newSettings["nCycles"] = 1
+        newSettings["burnSteps"] = 5
+        newSettings["cycleLength"] = 365
 
         reloadCs = reloadCs.modified(newSettings=newSettings)
         reloadCs.caseTitle = "armiRun"
@@ -86,25 +89,6 @@ class TestSOperatorSnapshots(ArmiTestHelper):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        """
-        cs = settings.Settings(f"{CASE_TITLE}.yaml")
-        newSettings = {}
-        newSettings["db"] = True
-        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        newSettings["loadStyle"] = "fromDB"
-        newSettings["detailAssemLocationsBOL"] = ["001-001"]
-        newSettings["startNode"] = 1
-        cs = cs.modified(newSettings=newSettings)
-
-        self.td = directoryChangers.TemporaryDirectoryChanger()
-        self.td.__enter__()
-
-        c = case.Case(cs)
-        case2 = c.clone(title="armiRun")
-        settings.setMasterCs(case2.cs)
-        self.o = case2.initializeOperator()
-        self.r = self.o.r
-        """
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
 
@@ -122,29 +106,21 @@ class TestSOperatorSnapshots(ArmiTestHelper):
         self.td.__exit__(None, None, None)
 
     def test_snapshotBasics(self):
-        print(self.o)
         snap = self.o.getInterface("snapshot")
-        print(snap)
-        print(type(snap))
-        # assert False
+        snap.cs["dumpSnapshot"] = ["000000"]
+        self.assertEqual(["000000"], snap.cs["dumpSnapshot"])
 
-        """
-        history = self.o.getInterface("history")
-        history.interactBOL()
-        history.interactEOL()
-        testLoc = self.o.r.core.spatialGrid[0, 0, 0]
-        testAssem = self.o.r.core.childrenByLocator[testLoc]
-        # pylint:disable=protected-access
-        fileName = history._getAssemHistoryFileName(testAssem)
-        actualFilePath = os.path.join(BK_DIR, fileName)
-        expectedFileName = os.path.join(BK_DIR, fileName.replace(".txt", "-ref.txt"))
-        # copy from fast path so the file is retrievable.
-        shutil.move(fileName, os.path.join(BK_DIR, fileName))
+        self.assertEqual(self.o.r.p.cycle, 0)
+        self.assertEqual(self.o.maxBurnSteps, 5)
+        self.assertEqual(self.o.burnSteps, [5])
+        self.assertEqual(snap.cs["nCycles"], 1)
 
-        self.compareFilesLineByLine(expectedFileName, actualFilePath)
-        # clean file created at interactEOL
-        os.remove("armiRun.locationHistory.txt")
-        """
+        self.o.operate()
+
+        self.assertEqual(self.o.r.p.cycle, 0)
+        self.assertEqual(self.o.maxBurnSteps, 5)
+        self.assertEqual(self.o.burnSteps, [5])
+        self.assertEqual(snap.cs["nCycles"], 1)
 
 
 if __name__ == "__main__":

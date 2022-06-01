@@ -25,7 +25,6 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
     These may add CR worth curves, rx coefficients, transient runs etc at these snapshots.
     This operator can be run as a restart, adding new physics to a previous run.
-
     """
 
     def createInterfaces(self):
@@ -37,8 +36,6 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
             if i:
                 i.enabled(False)
 
-        #########################assert False
-
     def _mainOperate(self):
         """
         General main loop for ARMI snapshot case.
@@ -48,7 +45,6 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         See Also
         --------
         Operator._mainOperate : The primary ARMI loop for non-restart cases.
-
         """
         runLog.important("---- Beginning Snapshot (restart) ARMI Operator Loop ------")
 
@@ -77,10 +73,11 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
                 ssCycle, ssNode, excludedInterfaceNames=("database",)
             )
 
-            self.interactAllEOC(self.r.p.cycle)
+            # database is excluded at last snapshot since it writes at EOL
+            exclude = ("database",) if (ssCycle, ssNode) == lastTimeStep else ()
+            self.interactAllEOC(self.r.p.cycle, excludedInterfaceNames=exclude)
 
-        # run things that happen at EOL
-        # like reports, plotters, etc.
+        # run things that happen at EOL, like reports, plotters, etc.
         self.interactAllEOL()
         runLog.important("Done with ARMI snapshots case.")
 
