@@ -90,4 +90,5 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
     @property
     def atEOL(self):
-        return self.r.p.cycle == self.cs["nCycles"]
+        """NOTE: This operator's atEOL method behaves very differently than other operators."""
+        return False
