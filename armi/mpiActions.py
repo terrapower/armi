@@ -420,6 +420,7 @@ class DistributionAction(MpiAction):
                         )
                     )
 
+        actionResult = None
         try:
             action = mpiComm.scatter(self._actions, root=0)
             # create a new communicator that only has these specific dudes running
@@ -430,7 +431,7 @@ class DistributionAction(MpiAction):
             context.MPI_SIZE = context.MPI_COMM.Get_size()
             context.MPI_NODENAMES = context.MPI_COMM.allgather(context.MPI_NODENAME)
             if hasAction:
-                return action.invoke(self.o, self.r, self.cs)
+                actionResult = action.invoke(self.o, self.r, self.cs)
         finally:
             # restore the global variables
             context.MPI_DISTRIBUTABLE = canDistribute
@@ -438,6 +439,8 @@ class DistributionAction(MpiAction):
             context.MPI_RANK = mpiRank
             context.MPI_SIZE = mpiSize
             context.MPI_NODENAMES = mpiNodeNames
+
+        return actionResult
 
 
 class MpiActionError(Exception):
