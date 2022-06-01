@@ -84,7 +84,8 @@ class SnapshotInterface(interfaces.Interface):
     def _getSnapTimesNormal(self):
         try:
             curCycle = self.r.p.cycle
-        except AttributeError:  # none has no attribute getParam (no reactor for whatever reason)
+        except AttributeError:
+            # none has no attribute getParam (no reactor for whatever reason)
             curCycle = 0
         eolCycle = self.cs["nCycles"] - 1
 
@@ -99,6 +100,7 @@ class SnapshotInterface(interfaces.Interface):
         if eolCycle >= curCycle:
             eolCycleLastNode = len(getStepLengths(self.cs)[-1])
             snapTimeCycleNodePairs.append([eolCycle, eolCycleLastNode])
+
         return snapTimeCycleNodePairs
 
 
@@ -126,5 +128,4 @@ def getCycleNodeStamp(cycle, node):
     isRequestedDetailPoint : compares a cycle,node to the dumpSnapshots list.
     extractCycleNodeFromStamp : does the opposite
     """
-    snapText = "{0:03d}{1:03d}".format(cycle, node)
-    return snapText
+    return "{0:03d}{1:03d}".format(cycle, node)

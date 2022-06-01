@@ -75,9 +75,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
                 ssCycle, ssNode, excludedInterfaceNames=("database",)
             )
 
-            # database is excluded at last snapshot since it writes at EOL
-            exclude = ("database",) if (ssCycle, ssNode) == lastTimeStep else ()
-            self.interactAllEOC(self.r.p.cycle, excludedInterfaceNames=exclude)
+            self.interactAllEOC(self.r.p.cycle)
 
         # run things that happen at EOL
         # like reports, plotters, etc.
@@ -90,3 +88,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         from armi.operators.runTypes import RunTypes
 
         return cs.modified(newSettings={"runType": RunTypes.STANDARD})
+
+    @property
+    def atEOL(self):
+        return self.r.p.cycle == self.cs["nCycles"]
