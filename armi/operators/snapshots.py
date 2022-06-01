@@ -37,6 +37,8 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
             if i:
                 i.enabled(False)
 
+        #########################assert False
+
     def _mainOperate(self):
         """
         General main loop for ARMI snapshot case.
