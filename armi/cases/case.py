@@ -428,7 +428,6 @@ class Case:
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             self._initBurnChain()
             o = operators.factory(self.cs)
-            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", o)
             if not r:
                 r = reactors.factory(self.cs, self.bp)
             o.initializeInterfaces(r)
