@@ -603,6 +603,18 @@ class ArmiPlugin:
 class UserPlugin(ArmiPlugin):
     """TODO"""
 
+    def __init__(self, *args, **kwargs):
+        ArmiPlugin.__init__(self, *args, **kwargs)
+        self.__validate()
+
+    def __validate(self):
+        """TODO"""
+        if issubclass(self.__class__, UserPlugin):
+            assert len(self.__class__.defineSettings()) == 0, "TODO"
+            # TODO: Explain this. JOHN
+            self.defineParameterRenames = lambda: None
+            self.defineSettings = lambda: []
+
     @staticmethod
     @HOOKSPEC
     def defineParameterRenames():

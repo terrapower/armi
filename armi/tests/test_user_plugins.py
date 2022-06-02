@@ -29,6 +29,16 @@ class UserPluginFlags(plugins.UserPlugin):
     def defineFlags():
         return {"FANCY": utils.flags.auto()}
 
+    def defineParameterRenames():
+        pass
+
+
+class UserPluginBadDefinesSettings(plugins.UserPlugin):
+    """TODO"""
+
+    def defineSettings():
+        return [1, 2, 3]
+
 
 class TestUserPlugins(unittest.TestCase):
     def setUp(self):
@@ -46,8 +56,20 @@ class TestUserPlugins(unittest.TestCase):
         context.APP_NAME = "armi"
 
     def test_userPluginsFlags(self):
-        # a basic test of the method
+        # a basic test that a UserPlugin is loaded
         app = getApp()
         self.assertEqual(app.pluginManager.counter, 8)
         app.pluginManager.register(UserPluginFlags)
         self.assertEqual(app.pluginManager.counter, 9)
+
+        # we shouldn't be able to register the same plugin twice
+        with self.assertRaises(ValueError):
+            app.pluginManager.register(UserPluginFlags)
+
+    def test_validateUserPluginLimitations(self):
+        # this should NOT raise any errors
+        up = UserPluginFlags()
+
+        # this should raise an error because it has a defineSettings() method
+        with self.assertRaises(AssertionError):
+            bad = UserPluginBadDefinesSettings()
