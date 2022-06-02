@@ -30,6 +30,7 @@ customizing much of the Framework's behavior.
 """
 from typing import Dict, Optional, Tuple, List
 import collections
+import importlib
 
 from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters

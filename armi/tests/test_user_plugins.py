@@ -29,15 +29,19 @@ class UserPluginFlags(plugins.UserPlugin):
     def defineFlags():
         return {"SPECIAL": utils.flags.auto()}
 
-    def defineParameterRenames():
-        pass
-
 
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
     """This is invalid/bad because it implements defineSettings()"""
 
     def defineSettings():
         return [1, 2, 3]
+
+
+class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
+    """This is invalid/bad because it implements defineParameterRenames()"""
+
+    def defineParameterRenames():
+        self.danger = "danger"
 
 
 class TestUserPlugins(unittest.TestCase):
@@ -72,4 +76,19 @@ class TestUserPlugins(unittest.TestCase):
 
         # this should raise an error because it has a defineSettings() method
         with self.assertRaises(AssertionError):
-            bad = UserPluginBadDefinesSettings()
+            bad0 = UserPluginBadDefinesSettings()
+
+        # overriding defineParameterRenames() is correctly fixed
+        bad1 = UserPluginBadDefineParameterRenames()
+        self.assertFalse(hasattr(bad1, "danger"))
+
+    def test_registerUserPlugins(self):
+        app = getApp()
+        count = app.pluginManager.counter
+        plugins = ["armi.tests.test_user_plugins.UserPluginFlags"]
+        app.registerUserPlugins(plugins)
+        self.assertEqual(app.pluginManager.counter, count + 1)
+
+    # TODO: Test that a UserPlugin can affect the Reactor state, by driving the app through some time steps
+
+    # TODO: Prove that we can correctly load a UserPlugin from a Settings file / yaml
