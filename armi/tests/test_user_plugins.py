@@ -58,9 +58,9 @@ class TestUserPlugins(unittest.TestCase):
     def test_userPluginsFlags(self):
         # a basic test that a UserPlugin is loaded
         app = getApp()
-        self.assertEqual(app.pluginManager.counter, 8)
+        count = app.pluginManager.counter
         app.pluginManager.register(UserPluginFlags)
-        self.assertEqual(app.pluginManager.counter, 9)
+        self.assertEqual(app.pluginManager.counter, count + 1)
 
         # we shouldn't be able to register the same plugin twice
         with self.assertRaises(ValueError):
