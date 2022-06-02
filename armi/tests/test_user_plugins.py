@@ -27,14 +27,14 @@ class UserPluginFlags(plugins.UserPlugin):
     """Simple UserPlugin that defines a single, new flag."""
 
     def defineFlags():
-        return {"FANCY": utils.flags.auto()}
+        return {"SPECIAL": utils.flags.auto()}
 
     def defineParameterRenames():
         pass
 
 
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
-    """TODO"""
+    """This is invalid/bad because it implements defineSettings()"""
 
     def defineSettings():
         return [1, 2, 3]

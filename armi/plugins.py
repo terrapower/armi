@@ -601,29 +601,56 @@ class ArmiPlugin:
 
 
 class UserPlugin(ArmiPlugin):
-    """TODO"""
+    """
+    This is a variation on the usual ArmiPlugin that is meant to be read in during run time,
+    from a hard-coded path in a settings file, or the like.
+
+    This is obviously a more limited use-case than the usual ArmiPlugin, as those are meant
+    to be defined at import time, instead of run time. As such, this class has some built-in
+    tooling to limit how these run-time plugins are used. They are meant to be more limited.
+
+    NOTE: The usual ArmiPlugin is much more flexible, if the UserPlugin does not support what
+    you want to do, just use an ArmiPlugin.
+    """
 
     def __init__(self, *args, **kwargs):
         ArmiPlugin.__init__(self, *args, **kwargs)
-        self.__validate()
+        self.__enforceLimitations()
 
-    def __validate(self):
-        """TODO"""
+    def __enforceLimitations(self):
+        """
+        This method is designed to enforce that UserPlugins are more limited
+        than regular ArmiPlugins.
+        UserPlugins are different from regular plugins in that they can be defined during
+        a run, and as such, we want to limit how flexible they are, so we can correctly
+        corral their side effects during a run.
+        """
         if issubclass(self.__class__, UserPlugin):
             assert len(self.__class__.defineSettings()) == 0, "TODO"
-            # TODO: Explain this. JOHN
+            # NOTE: These are the class methods that we are staunchly _not_ allowing people
+            # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: None
             self.defineSettings = lambda: []
 
     @staticmethod
     @HOOKSPEC
     def defineParameterRenames():
-        pass  # TODO: Forbid changing this somehow...
+        """
+        NOTE: This is not overridable.
+        It is a design limitation of user plugins that they not generate parameter renames,
+        so that they are able to be added to the plugin stack during run time.
+        """
+        pass
 
     @staticmethod
     @HOOKSPEC
     def defineSettings():
-        return []  # TODO: Forbid changing this somehow...
+        """
+        NOTE: This is not overridable.
+        It is a design limitation of user plugins that they not define new settings,
+        so that they are able to be added to the plugin stack during run time.
+        """
+        return []
 
 
 def getNewPluginManager() -> pluginManager.ArmiPluginManager:
