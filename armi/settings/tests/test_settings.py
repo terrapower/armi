@@ -230,6 +230,18 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             )
         )
 
+    def test_registerUserPlugins(self):
+        app = getApp()
+        cs = caseSettings.Settings().modified(
+            caseTitle="test_registerUserPlugins",
+            newSettings={
+                "userPlugins": ["armi.tests.test_user_plugins.UserPluginFlags"],
+            },
+        )
+        count = app.pluginManager.counter
+        cs.registerUserPlugins()
+        self.assertEqual(app.pluginManager.counter, count + 1)
+
     def test_pluginSettings(self):
         pm = getPluginManagerOrFail()
         pm.register(DummyPlugin1)
