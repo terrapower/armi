@@ -651,8 +651,10 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                 ),
             )
             for bStd, bExp in zip(aStd, aExp):
-                lst = [isinstance(c.material, custom.Custom) for c in bStd]
-                if (aStd.hasFlags(Flags.CONTROL)) or (True in lst):
+                hasCustomMaterial = any(
+                    isinstance(c.material, custom.Custom) for c in bStd
+                )
+                if (aStd.hasFlags(Flags.CONTROL)) or (hasCustomMaterial):
                     checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
