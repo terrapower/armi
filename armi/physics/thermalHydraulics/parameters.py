@@ -334,6 +334,13 @@ def _getBlockParams():
         )
 
         pb.defParam(
+            "THaverageSlugTemp",
+            units=units.DEGC,
+            description="The nominal average (non-fuel) slug/pin temperature in the block, which should be used for neutronic and TH feedback.",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
             "THcoolantAverageT",
             units=units.DEGC,
             description="Flow-based average of the inlet and outlet coolant temperatures.",
