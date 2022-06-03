@@ -21,6 +21,7 @@ from armi import context
 from armi import getApp
 from armi import plugins
 from armi import utils
+from armi.settings import caseSettings
 
 
 class UserPluginFlags(plugins.UserPlugin):
@@ -89,6 +90,16 @@ class TestUserPlugins(unittest.TestCase):
         app.registerUserPlugins(plugins)
         self.assertEqual(app.pluginManager.counter, count + 1)
 
-    # TODO: Test that a UserPlugin can affect the Reactor state, by driving the app through some time steps
+    def test_registerUserPlugins(self):
+        app = getApp()
+        cs = caseSettings.Settings().modified(
+            caseTitle="test_registerUserPlugins",
+            newSettings={
+                "userPlugins": ["armi.tests.test_user_plugins.UserPluginFlags"],
+            },
+        )
+        count = app.pluginManager.counter
+        cs.registerUserPlugins()
+        self.assertEqual(app.pluginManager.counter, count + 1)
 
-    # TODO: Prove that we can correctly load a UserPlugin from a Settings file / yaml
+    # TODO: Test that a UserPlugin can affect the Reactor state, by driving the app through some time steps
