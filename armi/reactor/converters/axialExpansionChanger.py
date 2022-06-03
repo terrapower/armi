@@ -442,9 +442,12 @@ class AssemblyAxialLinkage:
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
-                                "Multiple component axial linkages have been found for Component {0}; Block {1}."
+                                "Multiple component axial linkages have been found for "
+                                "Component {0}; Block {1}; Assembly {2}."
                                 " This is indicative of an error in the blueprints! Linked components found are"
-                                "{2} and {3}".format(c, b, lstLinkedC[ib], otherC)
+                                "{3} and {4}".format(
+                                    c, b, b.parent, lstLinkedC[ib], otherC
+                                )
                             )
                             runLog.error(msg=errMsg)
                             raise RuntimeError(errMsg)
