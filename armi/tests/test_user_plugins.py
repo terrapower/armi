@@ -139,7 +139,7 @@ class TestUserPlugins(unittest.TestCase):
         self.assertEqual(app.pluginManager.counter, count + 1)
 
         # validate the plugins was registered
-        plguinz = app.pluginManager.list_name_plugin()
+        pluginz = app.pluginManager.list_name_plugin()
         pluginNames = [p[0] for p in pluginz]
         name = "UserPluginOnProcessCoreLoading"
         self.assertIn(name, pluginNames)
