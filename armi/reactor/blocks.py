@@ -1580,7 +1580,6 @@ class HexBlock(Block):
         numPins,
         imax,
         jmax,
-        gamma=False,
         removeSixCornerPins=False,
         powerKeySuffix="",
     ):
@@ -1609,9 +1608,6 @@ class HexBlock(Block):
             is the number of pins in ring 2, and so on. This parameter should probably be
             removed because it can be derived from the block.
 
-        gamma: bool, optional
-            Currently unused
-
         removeSixCornerPins: bool, optional.
             Defaults to False
 
@@ -1624,7 +1620,8 @@ class HexBlock(Block):
         -----
         This method can handle assembly rotations by using the *pinLocation* parameter.
         """
-        self.p["linPowByPin" + powerKeySuffix] = numpy.zeros(numPins)
+        powerKey = f"linPowByPin{powerKeySuffix}"
+        self.p[powerKey] = numpy.zeros(numPins)
 
         # Loop through rings
         j0 = jmax[imax - 1] / 6
@@ -1645,8 +1642,18 @@ class HexBlock(Block):
                     else:
                         pinLoc = pinNum
                     linPow = powers[pinLoc]
-                self.p["linPowByPin" + powerKeySuffix][pinNum] = linPow
+                self.p[powerKey][pinNum] = linPow
                 pinNum += 1
+
+        # If using the *powerKeySuffix* parameter, we also need to set total power. If
+        # you were setting gamma power, the logic below assumes that the neutron powers
+        # have already been set.
+        if powerKeySuffix:
+            self.p.linPowByPin = (
+                self.p[f"linPowByPin{NEUTRON}"] + self.p[powerKey]
+                if powerKeySuffix == GAMMA
+                else self.p[powerKey]
+            )
 
     def rotate(self, deg):
         """Function for rotating a block's spatially varying variables by a specified angle.

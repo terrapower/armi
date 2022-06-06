@@ -16,30 +16,22 @@ r"""Tests blocks.py"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
 import copy
 import math
-import os
-import unittest
 import numpy
 from numpy.testing import assert_allclose
+import os
+import unittest
 
-from armi.reactor import blocks
-from armi.reactor import components
-from armi import runLog
-from armi import settings
-from armi import materials
+from armi import materials, runLog, settings, tests
 from armi.nucDirectory import nucDir, nuclideBases
-from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.tests import TEST_ROOT
-from armi.utils import units
-from armi.utils import hexagon
-from armi.reactor.flags import Flags
-from armi import tests
-from armi.reactor import grids
-from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import geometry
-from armi.physics.neutronics import NEUTRON
-from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.reactor import blocks, components, geometry, grids
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_assemblies import makeTestAssembly
+from armi.tests import TEST_ROOT
+from armi.utils import hexagon, units
+from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+from armi.tests import ISOAA_PATH
 
 
 def buildSimpleFuelBlock():
@@ -1185,34 +1177,51 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-    def test_setPinPowers(self):
+    def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
         totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
         imax = 9  # hexagonal rings of pins
         jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
+
+        totalPower = "linPowByPin"
+        neutronPower = f"linPowByPin{NEUTRON}"
+        gammaPower = f"linPowByPin{GAMMA}"
+
+        # Test with no powerKeySuffix
+        self.block.setPinPowers(
+            neutronPower, numPins, imax, jmax, removeSixCornerPins=False
+        )
+        assert_allclose(self.block.p[totalPower], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[neutronPower])
+        self.assertIsNone(self.block.p[gammaPower])
+
+        # Test with neutron powers
         self.block.setPinPowers(
             neutronPower,
             numPins,
             imax,
             jmax,
-            gamma=False,
             removeSixCornerPins=False,
             powerKeySuffix=NEUTRON,
         )
+        assert_allclose(self.block.p[totalPower], numpy.array(neutronPower))
+        assert_allclose(self.block.p[neutronPower], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[gammaPower])
+
+        # Test with gamma powers
         self.block.setPinPowers(
             gammaPower,
             numPins,
             imax,
             jmax,
-            gamma=True,
             removeSixCornerPins=False,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.block.p.pinPowersNeutron, numpy.array(neutronPower))
-        assert_allclose(self.block.p.pinPowersGamma, numpy.array(gammaPower))
-        assert_allclose(self.block.p.pinPowers, numpy.array(totalPower))
+        assert_allclose(self.block.p[totalPower], numpy.array(totalPower))
+        assert_allclose(self.block.p[neutronPower], numpy.array(neutronPower))
+        assert_allclose(self.block.p[gammaPower], numpy.array(gammaPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
