@@ -1585,56 +1585,67 @@ class HexBlock(Block):
         powerKeySuffix="",
     ):
         """
-        Updates the pin powers of this block for the current rotation.
+        Updates the pin linear power densities of this block for the current rotation.
+        The linear densities are represented by the *linPowByPin* parameter.
 
         Parameters
         ----------
-        powers : list of floats
-            The block-level pin linear power densities. pinPowers[i] represents the average linear
-            power density of pin i.
-            Power units are Watts/cm (Watts produced per cm of pin length).
-            The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
+        powers : list of floats, required
+            The block-level pin linear power densities. powers[i] represents the average
+            linear power density of pin i. The units of linear power density is watts/cm
+            (i.e., watts produced per cm of pin length). The "ARMI pin ordering" must be
+            be used, which is counter-clockwise from 3 o'clock.
+
+        numPins : int, required
+            Number of pins in the block. This parameter should probably be removed because it
+            can be derived from the block.
+
+        imax: int, required
+            Number of pin rings. This parameter should probably be removed because it
+            can be derived from the block.
+
+        jmax: list of ints, required
+            Number of pins per ring. Element 0 is the number of pins in ring 1, element 1
+            is the number of pins in ring 2, and so on. This parameter should probably be
+            removed because it can be derived from the block.
+
+        gamma: bool, optional
+            Currently unused
+
+        removeSixCornerPins: bool, optional.
+            Defaults to False
+
+        powerKeySuffix: str, optional
+            Must be either an empty string, :py:const:`NEUTRON <armi.physics.neutronics.const.NEUTRON>`,
+            or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty
+            string.
 
         Notes
         -----
-        This handles rotations using the pinLocation parameters.
-
-        This sets:
-
-        self.p.pinPowers : 1-D numpy array
-            The block-level pin linear power densities. pinPowers[i] represents the average linear
-            power density of pin i.
-            Power units are Watts/cm (Watts produced per cm of pin length).
-            The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
+        This method can handle assembly rotations by using the *pinLocation* parameter.
         """
-        self.p.pinPowers = numpy.zeros(numPins)
         self.p["linPowByPin" + powerKeySuffix] = numpy.zeros(numPins)
+
+        # Loop through rings
         j0 = jmax[imax - 1] / 6
         pinNum = 0
-        for i in range(imax):  # loop through rings
-            for j in range(jmax[i]):  # loop through positions in ring i
+        for i in range(imax):
+            # Loop through positions in ring i
+            for j in range(jmax[i]):
                 if removeSixCornerPins and i == imax - 1 and math.fmod(j, j0) == 0.0:
                     linPow = 0.0
                 else:
+                    # TODO: This appears to need fixing to account for blocks in fueled
+                    # TODO: assemblies that contain elevations with pins but no fuel,
+                    # TODO: such as for an axial shield.
                     if self.hasFlags(Flags.FUEL):
-                        # -1 to map from pinLocations to list index
+                        # -1 is needed in order to map from pinLocations to list index
                         pinLoc = self.p.pinLocation[pinNum] - 1
                     else:
                         pinLoc = pinNum
                     linPow = powers[pinLoc]
-                self.p.pinPowers[pinNum] = linPow
                 self.p["linPowByPin" + powerKeySuffix][pinNum] = linPow
                 pinNum += 1
-
-        if powerKeySuffix == GAMMA:
-            self.p.pinPowersGamma = self.p.pinPowers
-        elif powerKeySuffix == NEUTRON:
-            self.p.pinPowersNeutron = self.p.pinPowers
-
-        if gamma:
-            self.p.pinPowers = self.p.pinPowersNeutron + self.p.pinPowersGamma
-        else:
-            self.p.pinPowers = self.p.pinPowersNeutron
 
     def rotate(self, deg):
         """Function for rotating a block's spatially varying variables by a specified angle.
