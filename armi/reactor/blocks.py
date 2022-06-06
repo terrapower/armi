@@ -1637,7 +1637,8 @@ class HexBlock(Block):
                 else:
                     # TODO: This appears to need fixing to account for blocks in fueled
                     # TODO: assemblies that contain elevations with pins but no fuel,
-                    # TODO: such as for an axial shield.
+                    # TODO: such as for an axial shield. These blocks should still have
+                    # TODO: powers that are eligible for rotation.
                     if self.hasFlags(Flags.FUEL):
                         # -1 is needed in order to map from pinLocations to list index
                         pinLoc = self.p.pinLocation[pinNum] - 1
