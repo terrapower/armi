@@ -17,11 +17,20 @@
 import copy
 import unittest
 
+import pluggy
+
 from armi import context
 from armi import getApp
+from armi import getPluginManagerOrFail
 from armi import plugins
 from armi import utils
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
+from armi.tests import TEST_ROOT
+
+
+HOOKSPEC = pluggy.HookspecMarker("armi")
 
 
 class UserPluginFlags(plugins.UserPlugin):
@@ -43,6 +52,19 @@ class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
 
     def defineParameterRenames():
         self.danger = "danger"
+
+
+class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
+    """
+    This plugin flex-tests the onProcessCoreLoading() hook.
+    NOTE: This plugin affects the core in a non-physical way.
+    """
+
+    @staticmethod
+    @HOOKSPEC
+    def onProcessCoreLoading(core, cs):
+        fuels = core.getAssemblies(Flags.FUEL)
+        fuels[0].p.buLimit = fuels[0].p.buLimit + 1000
 
 
 class TestUserPlugins(unittest.TestCase):
@@ -90,10 +112,13 @@ class TestUserPlugins(unittest.TestCase):
         app.registerUserPlugins(plugins)
         self.assertEqual(app.pluginManager.counter, count + 1)
 
-    def test_registerUserPlugins(self):
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("UserPluginFlags", pluginNames)
+
+    def test_registerUserPluginsFromSettings(self):
         app = getApp()
         cs = caseSettings.Settings().modified(
-            caseTitle="test_registerUserPlugins",
+            caseTitle="test_registerUserPluginsFromSettings",
             newSettings={
                 "userPlugins": ["armi.tests.test_user_plugins.UserPluginFlags"],
             },
@@ -102,4 +127,31 @@ class TestUserPlugins(unittest.TestCase):
         cs.registerUserPlugins()
         self.assertEqual(app.pluginManager.counter, count + 1)
 
-    # TODO: Test that a UserPlugin can affect the Reactor state, by driving the app through some time steps
+    def test_userPluginOnProcessCoreLoading(self):
+        """
+        Test that a UserPlugin can affect the Reactor state,
+        by implementing onProcessCoreLoading().
+        """
+        # register the plugin
+        app = getApp()
+        count = app.pluginManager.counter
+        app.pluginManager.register(UserPluginOnProcessCoreLoading)
+        self.assertEqual(app.pluginManager.counter, count + 1)
+
+        # validate the plugins was registered
+        plguinz = app.pluginManager.list_name_plugin()
+        pluginNames = [p[0] for p in pluginz]
+        name = "UserPluginOnProcessCoreLoading"
+        self.assertIn(name, pluginNames)
+
+        # grab the loaded plugin
+        plug0 = [p[1] for p in pluginz if p[0] == name][0]
+
+        # load a reactor and grab the fuel assemblies
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        fuels = r.core.getAssemblies(Flags.FUEL)
+
+        # prove that our plugin affects the core in the desired way
+        sumBuLimits = sum(f.p.buLimit for f in fuels)
+        plug0.onProcessCoreLoading(core=r.core, cs=o.cs)
+        self.assertEqual(sum(f.p.buLimit for f in fuels), sumBuLimits + 1000)
