@@ -174,6 +174,7 @@ class MainInterface(interfaces.Interface):
             node = int(snapText[3:])
             newFolder = "snapShot{0}_{1}".format(cycle, node)
             utils.pathTools.cleanPath(newFolder)
+            context.waitAll()
 
         # delete database if it's SQLlite
         # no need to delete because the database won't have copied it back if using fastpath.
@@ -181,8 +182,12 @@ class MainInterface(interfaces.Interface):
         # clean temp directories.
         if os.path.exists("shuffleBranches"):
             utils.pathTools.cleanPath("shuffleBranches")
+            context.waitAll()
+            # Potentially, wait for all the processes to catch up.
+
         if os.path.exists("failedRuns"):
             utils.pathTools.cleanPath("failedRuns")
+            context.waitAll()
 
     # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):

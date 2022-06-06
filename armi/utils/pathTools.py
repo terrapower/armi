@@ -219,7 +219,7 @@ def moduleAndAttributeExist(pathAttr):
     return moduleAttributeName in userSpecifiedModule.__dict__
 
 
-def cleanPath(path, mpiRank=0, barrier=True):
+def cleanPath(path, mpiRank=0):
     """Recursively delete a path.
 
     !!! careful with this !!! It can delete the entire cluster.
@@ -240,8 +240,6 @@ def cleanPath(path, mpiRank=0, barrier=True):
     """
     valid = False
     if not os.path.exists(path):
-        if context.MPI_SIZE > 1 and context.MPI_DISTRIBUTABLE and barrier:
-            context.MPI_COMM.barrier()
         return True
 
     for validPath in [
@@ -281,10 +279,6 @@ def cleanPath(path, mpiRank=0, barrier=True):
         if loopCounter > maxLoops:
             break
         sleep(waitTime)
-
-    # Potentially, wait for all the processes to catch up.
-    if context.MPI_SIZE > 1 and context.MPI_DISTRIBUTABLE and barrier:
-        context.MPI_COMM.barrier()
 
     if os.path.exists(path):
         return False

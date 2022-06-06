@@ -238,7 +238,7 @@ def cleanTempDirs(olderThanDays=None):
                 file=sys.stdout,
             )
         try:
-            cleanPath(_FAST_PATH, mpiRank=MPI_RANK, barrier=False)
+            cleanPath(_FAST_PATH, mpiRank=MPI_RANK)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
@@ -279,9 +279,17 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
-                cleanPath(dirPath, mpiRank=MPI_RANK, barrier=False)
+                cleanPath(dirPath, mpiRank=MPI_RANK)
         except:  # pylint: disable=bare-except
             pass
+
+
+def waitAll() -> None:
+    """
+    If there are parallel processes running, wait for all to catch up to the checkpoint.
+    """
+    if MPI_SIZE > 1 and MPI_DISTRIBUTABLE:
+        MPI_COMM.barrier()
 
 
 def disconnectAllHdfDBs() -> None:
