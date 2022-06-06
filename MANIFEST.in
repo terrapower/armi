@@ -50,6 +50,7 @@ include armi/tests/cartesian-geom.xml
 include armi/tests/detailedAxialExpansion/armiRun.yaml
 include armi/tests/detailedAxialExpansion/refSmallReactor.yaml
 include armi/tests/detailedAxialExpansion/refSmallReactorBase.yaml
+include armi/tests/detailedAxialExpansion/refSmallCoreGrid.yaml
 include armi/tests/geom.xml
 include armi/tests/geom1Assem.xml
 include armi/tests/geomSmall.xml
