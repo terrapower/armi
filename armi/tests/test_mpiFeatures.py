@@ -292,7 +292,7 @@ class MpiPathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(dir3))
             self.assertTrue(os.path.exists(os.path.join(dir3, "file1.txt")))
             self.assertTrue(os.path.exists(os.path.join(dir3, "file2.txt")))
-            pathTools.cleanPath(dir3)
+            pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
             context.waitAll()
             self.assertFalse(os.path.exists(dir3))
 
