@@ -28,10 +28,9 @@ from armi.physics.neutronics import NEUTRON, GAMMA
 from armi.reactor import blocks, components, geometry, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.tests import TEST_ROOT
+from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.tests import ISOAA_PATH
 
 
 def buildSimpleFuelBlock():
