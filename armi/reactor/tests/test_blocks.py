@@ -1184,17 +1184,17 @@ class Block_TestCase(unittest.TestCase):
         imax = 9  # hexagonal rings of pins
         jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
 
-        totalPower = "linPowByPin"
-        neutronPower = f"linPowByPin{NEUTRON}"
-        gammaPower = f"linPowByPin{GAMMA}"
+        totalPowerKey = "linPowByPin"
+        neutronPowerKey = f"linPowByPin{NEUTRON}"
+        gammaPowerKey = f"linPowByPin{GAMMA}"
 
         # Test with no powerKeySuffix
         self.block.setPinPowers(
             neutronPower, numPins, imax, jmax, removeSixCornerPins=False
         )
-        assert_allclose(self.block.p[totalPower], numpy.array(neutronPower))
-        self.assertIsNone(self.block.p[neutronPower])
-        self.assertIsNone(self.block.p[gammaPower])
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[neutronPowerKey])
+        self.assertIsNone(self.block.p[gammaPowerKey])
 
         # Test with neutron powers
         self.block.setPinPowers(
@@ -1205,9 +1205,9 @@ class Block_TestCase(unittest.TestCase):
             removeSixCornerPins=False,
             powerKeySuffix=NEUTRON,
         )
-        assert_allclose(self.block.p[totalPower], numpy.array(neutronPower))
-        assert_allclose(self.block.p[neutronPower], numpy.array(neutronPower))
-        self.assertIsNone(self.block.p[gammaPower])
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[gammaPowerKey])
 
         # Test with gamma powers
         self.block.setPinPowers(
@@ -1218,9 +1218,9 @@ class Block_TestCase(unittest.TestCase):
             removeSixCornerPins=False,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.block.p[totalPower], numpy.array(totalPower))
-        assert_allclose(self.block.p[neutronPower], numpy.array(neutronPower))
-        assert_allclose(self.block.p[gammaPower], numpy.array(gammaPower))
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
+        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[gammaPowerKey], numpy.array(gammaPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
