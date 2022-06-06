@@ -1188,6 +1188,23 @@ class Block_TestCase(unittest.TestCase):
         neutronPowerKey = f"linPowByPin{NEUTRON}"
         gammaPowerKey = f"linPowByPin{GAMMA}"
 
+        # Try setting gamma power too early and then reset
+        with self.assertRaises(UnboundLocalError) as context:
+            self.block.setPinPowers(
+                gammaPower,
+                numPins,
+                imax,
+                jmax,
+                removeSixCornerPins=False,
+                powerKeySuffix=GAMMA,
+            )
+        errorMsg = (
+            "Neutron power has not been set yet. Cannot set total power for "
+            f"{self.block}."
+        )
+        self.assertTrue(errorMsg in str(context.exception))
+        self.block.p[gammaPowerKey] = None
+
         # Test with no powerKeySuffix
         self.block.setPinPowers(
             neutronPower, numPins, imax, jmax, removeSixCornerPins=False

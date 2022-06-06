@@ -1645,15 +1645,20 @@ class HexBlock(Block):
                 self.p[powerKey][pinNum] = linPow
                 pinNum += 1
 
-        # If using the *powerKeySuffix* parameter, we also need to set total power. If
-        # you were setting gamma power, the logic below assumes that the neutron powers
-        # have already been set.
+        # If using the *powerKeySuffix* parameter, we also need to set total power, which
+        # is sum of neutron and gamma powers. We assume that a solo gamma calculation
+        # to set total power does not make sense.
         if powerKeySuffix:
-            self.p.linPowByPin = (
-                self.p[f"linPowByPin{NEUTRON}"] + self.p[powerKey]
-                if powerKeySuffix == GAMMA
-                else self.p[powerKey]
-            )
+            if powerKeySuffix == GAMMA:
+                if self.p[f"linPowByPin{NEUTRON}"] is None:
+                    msg = (
+                        "Neutron power has not been set yet. Cannot set total power for "
+                        f"{self}."
+                    )
+                    raise UnboundLocalError(msg)
+                self.p.linPowByPin = self.p[f"linPowByPin{NEUTRON}"] + self.p[powerKey]
+            else:
+                self.p.linPowByPin = self.p[powerKey]
 
     def rotate(self, deg):
         """Function for rotating a block's spatially varying variables by a specified angle.
