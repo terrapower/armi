@@ -288,7 +288,7 @@ def waitAll() -> None:
     """
     If there are parallel processes running, wait for all to catch up to the checkpoint.
     """
-    if MPI_SIZE > 1 and MPI_DISTRIBUTABLE:
+    if MPI_SIZE > 1 and (MPI_DISTRIBUTABLE or not MPI_RANK == 0):
         MPI_COMM.barrier()
 
 
