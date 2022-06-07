@@ -12,11 +12,14 @@ blocks:
     fuel2: &block_fuel2
         triso compact: 
             shape: Circle
-            blend: triso particle
-            blend frac: 0.350
+            blends: 
+              - triso particle
+            blendFracs: 
+              - 0.350
             material: Graphite
             Tinput: 25.0
             Thot: 600.0
+            mult: 20.0 
             id: 0.0
             od: 1.2446
         duct: 
@@ -79,15 +82,15 @@ components:
 component groups:
     triso particle:
       kernel:
-        mult: 1
+        mult: 1000
       buffer:
-        mult: 1
+        mult: 1000
       ipyc:
-        mult: 1
+        mult: 1000
       sic:
-        mult: 1
+        mult: 1000
       opyc:
-        mult: 1
+        mult: 1000
         
 
 assemblies:

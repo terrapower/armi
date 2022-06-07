@@ -626,14 +626,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         
         if self._children:
-            childDens = composites.Composite.getNuclideNumberDensities(self, nucNames)
+            childDens = dict(zip(nucNames, composites.Composite.getNuclideNumberDensities(self, nucNames)))
+            # get volume of children by using the composite method which loops over all children
             childVol = composites.Composite.getVolume(self)
+            # get self volume by calling the shape-specific volume method of the background shape
             totalVol = self.getVolume()
             childFrac = childVol / totalVol
             selfFrac = 1.0 - childFrac
             return [
                 self.p.numberDensities.get(nucName, 0.0) * selfFrac
-                + childDens.get(nucName, 0, 0) * childFrac
+                + childDens.get(nucName, 0.0) * childFrac
                 for nucName in nucNames
             ]
         else:
@@ -1027,7 +1029,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def iterComponents(self, typeSpec=None, exact=False):
         if self._children:
-            return composites.Composite.iterComponents(self, typeSpec, exact)
+            # import pdb; pdb.set_trace()
+            return iter(composites.Composite.iterComponents(self, typeSpec, exact))
+            #print(self, list(comps))
         else:
             if self.hasFlags(typeSpec, exact):
                 yield self

@@ -1237,7 +1237,13 @@ class ArmiObject(metaclass=CompositeModelType):
         return self.getNuclideNumberDensities([nucName])[0]
 
     def getNuclideNumberDensities(self, nucNames):
-        """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
+        """
+        Return a list of number densities in atoms/barn-cm for the nuc names requested.
+
+        See Also
+        --------
+        getNumberDensities: Gets all number densities as a dict rather than a list
+        """
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
@@ -1284,6 +1290,10 @@ class ArmiObject(metaclass=CompositeModelType):
         -------
         numberDensities : dict
             nucName keys, number density values (atoms/bn-cm)
+
+        See Also
+        --------
+        getNuclideNumberDensities: Gets a list of number densities based on a list of nuclide names
         """
         numberDensities = self._getNdensHelper()
         if expandFissionProducts:
