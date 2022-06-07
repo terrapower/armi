@@ -16,10 +16,11 @@ r"""Tests blocks.py"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
 import copy
 import math
-import numpy
-from numpy.testing import assert_allclose
 import os
 import unittest
+
+import numpy
+from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
 from armi.nucDirectory import nucDir, nuclideBases
