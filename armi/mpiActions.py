@@ -362,7 +362,10 @@ def runActionsInSerial(o, r, cs, actions):
     for aa, action in enumerate(actions):
         action.serial = True
         runLog.extra("Running action {} of {}: {}".format(aa + 1, numActions, action))
-        results.append(action.invoke(o, r, cs))
+        distrib = DistributionAction(action)
+        distrib.broadcast()
+        results.append(distrib.invoke(o, r, cs))
+        #results.append(action.invoke(o, r, cs))
         action.serial = False  # return to original state
     return results
 
