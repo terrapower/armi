@@ -326,7 +326,37 @@ class TestConservation(Base, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_ExpansionContractionConservation(self):
+    def test_ThermalExpansionContractionConservation(self):
+        """thermally expand and then contract to ensure original state is recovered
+
+        Notes:
+        - temperature field is isothermal
+        - the final entry in isothermalTempList should be 25.0 C (the initial assembly temp)
+        """
+        isothermalTempList = [100.0, 200.0, 75.0, 25.0]
+        a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        originalMesh = a.getAxialMesh()
+        axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
+
+        tempGrid = linspace(0.0, a.getHeight())
+        for temp in isothermalTempList:
+            # Set hot isothermal temp and expand
+            tempField = array([temp] * len(tempGrid))
+            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
+            if temp != 25.0:
+                self.assertNotEqual(
+                    originalMesh,
+                    a.getAxialMesh(),
+                    msg="Original and Hot axial mesh should be different!",
+                )
+            else:
+                self.assertEqual(
+                    originalMesh,
+                    a.getAxialMesh(),
+                    msg="Original and cold axial mesh should be the same!",
+                )
+
+    def test_PrescribedExpansionContractionConservation(self):
         """expand all components and then contract back to original state
 
         Notes
