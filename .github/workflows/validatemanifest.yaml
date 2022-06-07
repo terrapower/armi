@@ -1,4 +1,4 @@
-name: Validate MANIFEST
+name: Validate Manifest
 
 on: [push, pull_request]
 
