@@ -355,7 +355,7 @@ settings:
             getPreviousTimeNode(0, 0, "foo")
         self.assertEqual(getPreviousTimeNode(1, 1, self.standaloneSimpleCS), (1, 0))
         self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneSimpleCS), (0, 3))
-        self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 2))
+        self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 3))
         self.assertEqual(getPreviousTimeNode(2, 4, self.standaloneDetailedCS), (2, 3))
 
     def test_getCumulativeNodeNum(self):
