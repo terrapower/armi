@@ -311,7 +311,9 @@ class TestConservation(Base, unittest.TestCase):
         Base.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
 
-        # initialize class variables for conservation checks
+    def expandAssemForMassConservationTest(self):
+        """initialize class variables for mass conservation checks"""
+        # pylint: disable=attribute-defined-outside-init
         self.oldMass = {}
         for b in self.a:
             self.oldMass[b.name] = 0.0
@@ -330,11 +332,10 @@ class TestConservation(Base, unittest.TestCase):
         """thermally expand and then contract to ensure original state is recovered
 
         Notes:
-        - temperature field is isothermal
-        - the final entry in isothermalTempList should be 25.0 C (the initial assembly temp)
+        - temperature field is isothermal and initially at 250 C
         """
-        isothermalTempList = [100.0, 200.0, 75.0, 25.0]
-        a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        isothermalTempList = [200.0, 300.0, 150.0, 250.0]
+        a = buildTestAssemblyWithFakeMaterial(name="FakeMat", hot=True)
         originalMesh = a.getAxialMesh()
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
 
@@ -343,17 +344,21 @@ class TestConservation(Base, unittest.TestCase):
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
             axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
-            if temp != 25.0:
-                self.assertNotEqual(
-                    originalMesh,
-                    a.getAxialMesh(),
-                    msg="Original and Hot axial mesh should be different!",
-                )
-            else:
-                self.assertEqual(
-                    originalMesh,
-                    a.getAxialMesh(),
-                    msg="Original and cold axial mesh should be the same!",
+            if temp < 250.0:
+                methd = self.assertLess
+            elif temp > 250.0:
+                methd = self.assertGreater 
+            elif temp == 250.0:
+                methd = self.assertEqual
+
+            for new, old in zip(a.getAxialMesh()[:-1], originalMesh[:-1]): # skip dummy block
+                methd(
+                    new,
+                    old,
+                    msg="At original temp (250 C) block height is {0:.5f}. "
+                    "Current temp is {1:.5f} and block height is {2:.5f}".format(
+                        old, temp, new
+                    ),
                 )
 
     def test_PrescribedExpansionContractionConservation(self):
@@ -391,6 +396,7 @@ class TestConservation(Base, unittest.TestCase):
 
     def test_TargetComponentMassConservation(self):
         """tests mass conservation for target components"""
+        self.expandAssemForMassConservationTest()
         for idt in range(self.temp.tempSteps):
             for b in self.a[:-1]:  # skip the dummy sodium block
                 if idt != 0:
@@ -413,6 +419,7 @@ class TestConservation(Base, unittest.TestCase):
 
         Component list defined by, Steel_Component_List, in GetSteelMass()
         """
+        self.expandAssemForMassConservationTest()
         for idt in range(self.temp.tempSteps - 1):
             self.assertAlmostEqual(
                 self.steelMass[idt],
@@ -427,13 +434,15 @@ class TestConservation(Base, unittest.TestCase):
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
         assembly.spatialGrid.armiObject = assembly
-        assembly.add(_buildTestBlock("shield", "FakeMat"))
-        assembly.add(_buildTestBlock("fuel", "FakeMat"))
-        assembly.add(_buildTestBlock("fuel", "FakeMat"))
-        assembly.add(_buildTestBlock("plenum", "FakeMat"))
-        assembly.add(_buildTestBlock("aclp", "FakeMat"))  # "aclp plenum" also works
-        assembly.add(_buildTestBlock("plenum", "FakeMat"))
-        assembly.add(_buildDummySodium())
+        assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
+        assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
+        assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
+        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
+        assembly.add(
+            _buildTestBlock("aclp", "FakeMat", 25.0, 10.0)
+        )  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
+        assembly.add(_buildDummySodium(25.0, 10.0))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
 
@@ -476,7 +485,7 @@ class TestExceptions(Base, unittest.TestCase):
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
         assembly.spatialGrid.armiObject = assembly
-        assembly.add(_buildTestBlock("shield", "FakeMat"))
+        assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
@@ -865,7 +874,7 @@ class TestLinkage(unittest.TestCase):
         self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
 
 
-def buildTestAssemblyWithFakeMaterial(name):
+def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
     """Create test assembly consisting of list of fake material
 
     Parameters
@@ -873,20 +882,27 @@ def buildTestAssemblyWithFakeMaterial(name):
     name : string
         determines which fake material to use
     """
+    if not hot:
+        hotTemp = 25.0
+        height = 10.0
+    else:
+        hotTemp = 250.0
+        height = 10.0 + 0.02 * (250.0 - 25.0)
+
     assembly = HexAssembly("testAssemblyType")
     assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
     assembly.spatialGrid.armiObject = assembly
-    assembly.add(_buildTestBlock("shield", name))
-    assembly.add(_buildTestBlock("fuel", name))
-    assembly.add(_buildTestBlock("fuel", name))
-    assembly.add(_buildTestBlock("plenum", name))
-    assembly.add(_buildDummySodium())
+    assembly.add(_buildTestBlock("shield", name, hotTemp, height))
+    assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
+    assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
+    assembly.add(_buildTestBlock("plenum", name, hotTemp, height))
+    assembly.add(_buildDummySodium(hotTemp, height))
     assembly.calculateZCoords()
     assembly.reestablishBlockOrder()
     return assembly
 
 
-def _buildTestBlock(blockType, name):
+def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
     """Return a simple pin type block filled with coolant and surrounded by duct.
 
     Parameters
@@ -897,19 +913,19 @@ def _buildTestBlock(blockType, name):
     name : string
         determines which fake material to use
     """
-    b = HexBlock(blockType, height=10.0)
+    b = HexBlock(blockType, height=height)
 
-    fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-    ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 16, "ip": 15.3, "mult": 1.0}
+    fuelDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.76, "id": 0.00, "mult": 127.0}
+    cladDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.77, "mult": 127.0}
+    ductDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 16, "ip": 15.3, "mult": 1.0}
     intercoolantDims = {
         "Tinput": 25.0,
-        "Thot": 25.0,
+        "Thot": hotTemp,
         "op": 17.0,
         "ip": ductDims["op"],
         "mult": 1.0,
     }
-    coolDims = {"Tinput": 25.0, "Thot": 25.0}
+    coolDims = {"Tinput": 25.0, "Thot": hotTemp}
     mainType = Circle(blockType, name, **fuelDims)
     clad = Circle("clad", name, **cladDims)
     duct = Hexagon("duct", name, **ductDims)
@@ -929,11 +945,11 @@ def _buildTestBlock(blockType, name):
     return b
 
 
-def _buildDummySodium():
+def _buildDummySodium(hotTemp: float, height: float):
     """Build a dummy sodium block."""
-    b = HexBlock("dummy", height=10.0)
+    b = HexBlock("dummy", height=height)
 
-    sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+    sodiumDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 17, "ip": 0.0, "mult": 1.0}
     dummy = Hexagon("dummy coolant", "Sodium", **sodiumDims)
 
     b.add(dummy)

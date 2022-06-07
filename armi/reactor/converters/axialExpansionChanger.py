@@ -183,6 +183,8 @@ class AxialExpansionChanger:
                             c, growFrac
                         )
                     )
+                    if thermal and self.expansionData.oldHotHeight:
+                        blockHeight = self.expansionData.oldHotHeight[c]
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
@@ -534,6 +536,7 @@ class ExpansionData:
 
     def __init__(self, a, setFuel):
         self._a = a
+        self.oldHotHeight = {}
         self._oldHotTemp = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
@@ -623,6 +626,7 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
+                self.oldHotHeight[c] = b.getHeight()
                 self._oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
                 # set component volume to be evaluated at "old" hot temp
                 c.p.volume = c.getArea(cold=self._oldHotTemp[c]) * c.parent.getHeight()
@@ -636,7 +640,10 @@ class ExpansionData:
 
         for b in self._a:
             for c in b:
-                self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
+                if self._oldHotTemp:
+                    self._expansionFactors[c] = c.getThermalExpansionFactor(T0=self._oldHotTemp[c]) - 1.0
+                else:
+                    self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c
