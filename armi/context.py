@@ -147,7 +147,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
 if MPI_COMM is not None:
     MPI_COMM.barrier()  # make sure app data exists before workers proceed.
 
-MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
+MPI_DISTRIBUTABLE = MPI_SIZE > 1
 
 _FAST_PATH = os.path.join(os.getcwd())
 """
@@ -288,7 +288,7 @@ def waitAll() -> None:
     """
     If there are parallel processes running, wait for all to catch up to the checkpoint.
     """
-    if MPI_SIZE > 1 and (MPI_DISTRIBUTABLE or not MPI_RANK == 0):
+    if MPI_SIZE > 1 and MPI_DISTRIBUTABLE:
         MPI_COMM.barrier()
 
 

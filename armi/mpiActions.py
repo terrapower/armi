@@ -360,13 +360,13 @@ def runActionsInSerial(o, r, cs, actions):
     runLog.extra("Running {} MPI actions in serial".format(len(actions)))
     numActions = len(actions)
     for aa, action in enumerate(actions):
+        canDistribute = context.MPI_DISTRIBUTABLE
         action.serial = True
+        context.MPI_DISTRIBUTABLE = False
         runLog.extra("Running action {} of {}: {}".format(aa + 1, numActions, action))
-        distrib = DistributionAction(action)
-        distrib.broadcast()
-        results.append(distrib.invoke(o, r, cs))
-        #results.append(action.invoke(o, r, cs))
+        results.append(action.invoke(o, r, cs))
         action.serial = False  # return to original state
+        context.MPI_DISTRIBUTABLE = canDistribute
     return results
 
 
@@ -431,7 +431,7 @@ class DistributionAction(MpiAction):
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()
             context.MPI_SIZE = context.MPI_COMM.Get_size()
-            context.MPI_DISTRIBUTABLE = context.MPI_RANK == 0 and context.MPI_SIZE > 1
+            context.MPI_DISTRIBUTABLE = context.MPI_SIZE > 1
             context.MPI_NODENAMES = context.MPI_COMM.allgather(context.MPI_NODENAME)
             if hasAction:
                 actionResult = action.invoke(self.o, self.r, self.cs)
