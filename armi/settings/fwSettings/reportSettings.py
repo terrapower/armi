@@ -14,6 +14,8 @@
 
 """Settings related to the report generation."""
 
+import voluptuous as vol
+
 from armi.settings import setting
 
 
@@ -38,27 +40,28 @@ def defineSettings():
             CONF_ASSEM_POW_SUMMARY,
             default=False,
             label="Summarize Assembly Power",
-            description="Print out a summary of how much power is in each assembly "
-            "type at every timenode.",
+            description="Print a summary of how much power is in each assembly "
+            "type at every timenode",
         ),
         setting.Setting(
             CONF_ZONE_FLOW_SUMMARY,
             default=True,
             label="Zone Flow Summary",
-            description="print flow and power edits for peak and average assemblies",
+            description="Print flow and power edits for peak and average assemblies",
         ),
         setting.Setting(
             CONF_SUMMARIZE_ASSEM_DESIGN,
             default=True,
             label="Summarize Assembly Design",
-            description="Printout a summary of the assembly design details at BOL",
+            description="Print a summary of the assembly design details at BOL",
         ),
         setting.Setting(
             CONF_TIMELINE_INCLUSION_CUTOFF,
             default=0.03,
             label="Timer Cutoff",
             description="Timers who are not active for this percent of the run will "
-            "not be presented in the timeline graphic.",
+            "not be presented in the timeline graphic",
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=100)),
         ),
     ]
     return settings
