@@ -328,13 +328,55 @@ class TestConservation(Base, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_ThermalExpansionContractionConservation(self):
+    def test_ColdThermalExpansionContractionConservation(self):
         """thermally expand and then contract to ensure original state is recovered
 
         Notes:
-        - temperature field is isothermal and initially at 250 C
+        - temperature field is isothermal and initially at 25 C
         """
-        isothermalTempList = [200.0, 300.0, 150.0, 250.0]
+        isothermalTempList = [20.0, 25.0, 30.0]
+        a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        originalMesh = a.getAxialMesh()
+        axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
+
+        tempGrid = linspace(0.0, a.getHeight())
+        for temp in isothermalTempList:
+            # Set hot isothermal temp and expand
+            tempField = array([temp] * len(tempGrid))
+            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
+            if temp == 25.0:
+                for new, old in zip(
+                    a.getAxialMesh()[:-1], originalMesh[:-1]
+                ):  # skip dummy block
+                    self.assertAlmostEqual(
+                        new,
+                        old,
+                        msg="At original temp (250 C) block height is {0:.5f}. "
+                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
+                            old, temp, new
+                        ),
+                        places=3,
+                    )
+            else:
+                for new, old in zip(
+                    a.getAxialMesh()[:-1], originalMesh[:-1]
+                ):  # skip dummy block
+                    self.assertNotEqual(
+                        new,
+                        old,
+                        msg="At original temp (250 C) block height is {0:.5f}. "
+                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
+                            old, temp, new
+                        ),
+                    )
+
+    def test_HotThermalExpansionContractionConservation(self):
+        """thermally expand and then contract to ensure original state is recovered
+
+        Notes:
+        - temperature field is isothermal and initially at 25 C
+        """
+        isothermalTempList = [200.0, 250.0, 300.0]
         a = buildTestAssemblyWithFakeMaterial(name="FakeMat", hot=True)
         originalMesh = a.getAxialMesh()
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -344,22 +386,31 @@ class TestConservation(Base, unittest.TestCase):
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
             axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
-            if temp < 250.0:
-                methd = self.assertLess
-            elif temp > 250.0:
-                methd = self.assertGreater 
-            elif temp == 250.0:
-                methd = self.assertEqual
-
-            for new, old in zip(a.getAxialMesh()[:-1], originalMesh[:-1]): # skip dummy block
-                methd(
-                    new,
-                    old,
-                    msg="At original temp (250 C) block height is {0:.5f}. "
-                    "Current temp is {1:.5f} and block height is {2:.5f}".format(
-                        old, temp, new
-                    ),
-                )
+            if temp == 250.0:
+                for new, old in zip(
+                    a.getAxialMesh()[:-1], originalMesh[:-1]
+                ):  # skip dummy block
+                    self.assertAlmostEqual(
+                        new,
+                        old,
+                        msg="At original temp (250 C) block height is {0:.5f}. "
+                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
+                            old, temp, new
+                        ),
+                        places=1,
+                    )
+            else:
+                for new, old in zip(
+                    a.getAxialMesh()[:-1], originalMesh[:-1]
+                ):  # skip dummy block
+                    self.assertNotEqual(
+                        new,
+                        old,
+                        msg="At original temp (250 C) block height is {0:.5f}. "
+                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
+                            old, temp, new
+                        ),
+                    )
 
     def test_PrescribedExpansionContractionConservation(self):
         """expand all components and then contract back to original state
