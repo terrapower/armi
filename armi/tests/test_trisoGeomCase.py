@@ -52,6 +52,15 @@ class ComponentGroupReactorTests(unittest.TestCase):
         settings.setMasterCs(cs)
         self.o.initializeInterfaces(self.r)
 
+    def test_particleFuel(self):
+        """
+        Make sure composition is blended as expected
+        """
+        triso = self.o.r.core[-1][0][0]
+        self.assertEqual(len(list(triso.iterComponents())), 5)
+        self.assertGreater(triso.getMass("U235"), 0.0)
+        self.assertGreater(triso.getMass("C"), 0.0)
+
     def test_db(self):
         """Show that this kind of reactor configuration can write and load from DB"""
         # set some state
@@ -65,7 +74,7 @@ class ComponentGroupReactorTests(unittest.TestCase):
         dbi.database.writeToDB(self.o.r)
 
         # read
-        dbo = db.databaseFactory(TEST_NAME.replace(".yaml", ".h5"))
+        dbo = db.databaseFactory(TEST_NAME.replace(".yaml", ".h5"), permission="r")
         with dbo:
             r = dbo.load(0, 0)
 
