@@ -2006,7 +2006,13 @@ class HexBlock(Block):
         spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
-        grid = grids.HexGrid.fromPitch(self.getPinPitch(cold=True), numRings=0)
+        pitch = self.getPinPitch(cold=True)
+        if pitch is None:
+            raise ValueError(
+                f"Could not create spatialGrid for block {self.p.type} "
+                "because the pin pitch was not detected."
+            )
+        grid = grids.HexGrid.fromPitch(pitch, numRings=0)
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
