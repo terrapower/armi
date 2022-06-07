@@ -58,8 +58,5 @@ settings:
   summarizeAssemDesign: false
   targetK: 1.002
   transientForSensitivity: ''
-  userPluginsXXX:
-    - armi.stuff.what
-    - armi.things.whatever
   verbosity: extra
   zoneFlowSummary: false
