@@ -199,7 +199,7 @@ class ComponentBlueprint(yamlize.Object):
                         # override free component multiplicity if it's set based on the group definition
                         component.setDimension("mult", groupedComponent.mult*blendFrac)
                         _setComponentFlags(component, self.flags, blueprint)
-                        _insertDepletableNuclideKeys(component, blueprint)
+                        insertDepletableNuclideKeys(component, blueprint)
                         constructedObject.add(component)
                     children = {c.name: c for c in constructedObject.getChildren()}
                     for child in children.values():

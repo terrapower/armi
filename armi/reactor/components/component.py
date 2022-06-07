@@ -624,9 +624,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         Component ndens is unique in that it combines its own actual composition
         with that of its potential children
         """
-        
+
         if self._children:
-            childDens = dict(zip(nucNames, composites.Composite.getNuclideNumberDensities(self, nucNames)))
+            childDens = dict(
+                zip(
+                    nucNames,
+                    composites.Composite.getNuclideNumberDensities(self, nucNames),
+                )
+            )
             # get volume of children by using the composite method which loops over all children
             childVol = composites.Composite.getVolume(self)
             # get self volume by calling the shape-specific volume method of the background shape
@@ -639,10 +644,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 for nucName in nucNames
             ]
         else:
-            return [
-                self.p.numberDensities.get(nucName, 0.0)
-                for nucName in nucNames
-            ]
+            return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
+
     def setName(self, name):
         """Components use name for type and name."""
         composites.Composite.setName(self, name)
@@ -1028,10 +1031,17 @@ class Component(composites.Composite, metaclass=ComponentType):
             )
 
     def iterComponents(self, typeSpec=None, exact=False):
+        """
+        Yield the component or its direct child components.
+
+        Notes
+        -----
+        This could probably be made recursive to allow arbitrary depth, but it's more complex
+        """
         if self._children:
-            # import pdb; pdb.set_trace()
-            return iter(composites.Composite.iterComponents(self, typeSpec, exact))
-            #print(self, list(comps))
+            for child in self._children:
+                if self.hasFlags(typeSpec, exact):
+                    yield child
         else:
             if self.hasFlags(typeSpec, exact):
                 yield self

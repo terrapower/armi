@@ -1950,11 +1950,15 @@ class HexBlock(Block):
 
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
+        pitch = self.getPinPitch(cold=True)
+        if pitch is None:
+            raise ValueError(
+                f"Could not create spatialGrid for block {self.p.type} "
+                "because the pin pitch was not detected."
+            )
         # note that it's the pointed end of the cell hexes that are up (but the
         # macro shape of the pins forms a hex with a flat top fitting in the assembly)
-        grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, pointedEndUp=True
-        )
+        grid = grids.HexGrid.fromPitch(pitch, numRings=0, pointedEndUp=True)
         spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         numLocations = 0
         for ring in range(ringNumber):
