@@ -422,7 +422,7 @@ def getPreviousTimeNode(cycle, node, cs):
     else:
         nodesPerCycle = getNodesPerCycle(cs)
         nodesInLastCycle = nodesPerCycle[cycle - 1]
-        indexOfLastNode = nodesInLastCycle - 1 # zero based indexing for nodes
+        indexOfLastNode = nodesInLastCycle - 1  # zero based indexing for nodes
         return (cycle - 1, indexOfLastNode)
 
 
