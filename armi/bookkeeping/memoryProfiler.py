@@ -17,8 +17,8 @@ Interface to help diagnose memory issues during debugging/development.
 
 There are many approaches to memory profiling.
 
-1. You can ask psutil for the memory used by the process
-from an OS perspective. This is great for top-down analysis. This module provides printouts
+1. You can ask psutil for the memory used by the process from an OS perspective.
+This is great for top-down analysis. This module provides printouts
 that show info from every process running. This is very fast.
 
 2. You can use ``gc.get_objects()`` to list all objects that the garbage collector is tracking. If you want, you
@@ -26,24 +26,21 @@ can filter it down and get the counts and sizes of objects of interest (e.g. all
 
 This module has tools to do all of this. It should help you out.
 
-Note that if psutil is reporting way more memory usage than the asizeof reports, then you probably are dealing
-with a garbage collection queue. If you free a large number of objects, call `gc.collect()` to force a
-garbage collection and the psutil process memory should fall by a lot.
-Also, it seems that even if your garbage is collected, Windows does not de-allocate all the memory. So if
-you are a worker and you just got a  1.6GB reactor but then deleted it, Windows will keep you at 1.6GB for a while.
+NOTE: Psutil and sys.getsizeof will certainly report slightly different results.
 
+NOTE: In Windows, it seems that even if your garbage is collected, Windows does not de-allocate all the memory.
+So if you are a worker and you just got a 2GB reactor but then deleted it, Windows will keep you at 2GB for a while.
 
 See Also:
 
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
-from itertools import chain  ########################
 from typing import Optional
 import copy
 import gc
 import logging
-import sys  ##########################3
+import sys
 import tabulate
 
 from armi import context
@@ -65,6 +62,7 @@ except ImportError:
 
 
 ORDER = interfaces.STACK_ORDER.POSTPROCESSING
+REPORT_COUNT = 100000
 
 
 def describeInterfaces(cs):
@@ -201,14 +199,12 @@ class MemoryProfiler(interfaces.Interface):
         """
         looks for any class from any module in the garbage collector and prints their count and size
 
-        Very powerful. Also very slow if you reportSize
-
         Parameters
         ----------
         startsWith : str, optional
             limit to objects with classes that start with a certain string
         reportSize : bool, optional
-            calculate size as well as counting individual objects. SLLOOOWW.
+            calculate size as well as counting individual objects.
 
         Notes
         -----
@@ -263,6 +259,13 @@ class MemoryProfiler(interfaces.Interface):
 
 
 class KlassCounter:
+    """
+    Helper class, to allow us to count instances of various classes in the
+    Python standard library garbage collector (gc).
+
+    Counting can be done simply, or by memory footprint.
+    """
+
     def __init__(self, reportSize):
         self.counters = dict()
         self.reportSize = reportSize
@@ -275,15 +278,15 @@ class KlassCounter:
 
     def countObjects(self, ao):
         """
-        TODO
+        Recursively find objects inside arbitrarily-deeply-nested containers.
 
-        Recursively find non-list,dict, tuple objects in containers.
-        Essential for traversing the garbage collector
+        This is designed to work with the garbage collector, so it focuses on
+        objects potentially being held in dict, tuple, list, or sets.
         """
         counter = self[type(ao)]
         if counter.add(ao):
             self.count += 1
-            if self.count % 100000 == 0:
+            if self.count % REPORT_COUNT == 0:
                 runLog.info("Counted {} items".format(self.count))
 
             if isinstance(ao, dict):
@@ -331,72 +334,6 @@ class InstanceCounter:
 
     def __gt__(self, that):
         return self.count > that.count
-
-
-class ObjectSizeBreakdown:
-    def __init__(
-        self,
-        name,
-        minMBToShowAttrBreakdown=30.0,
-        excludedAttributes=None,
-        initialZeroes=0,
-    ):
-        # don't hold onto obj, otherwise we'll bloat like crazy!!
-        self.name = name
-        self.sizes = [0.0] * initialZeroes
-        self.minMBToShowAttrBreakdown = minMBToShowAttrBreakdown
-        self.excludedAttributes = excludedAttributes or []
-        self.attrSizes = {}
-
-    @property
-    def size(self):
-        return self.sizes[-1]
-
-    def calcSize(self, obj):
-        tempAttrs = {}
-        try:
-            for attrName in self.excludedAttributes:
-                if hasattr(obj, attrName):
-                    tempAttrs[attrName] = getattr(obj, attrName, None)
-                    setattr(obj, attrName, None)
-            self.sizes.append(asizeof(obj) / (1024.0 ** 2))
-            self._breakdownAttributeSizes(obj)
-        finally:
-            for attrName, attrObj in tempAttrs.items():
-                setattr(obj, attrName, attrObj)
-
-    def _breakdownAttributeSizes(self, obj):
-        if self.size > self.minMBToShowAttrBreakdown:
-            # make a getter where getter(obj, key) gives obj.key or obj[key]
-            if isinstance(obj, dict):
-                keys = obj.keys()
-                getter = lambda obj, key: obj.get(key)
-            elif isinstance(obj, list):
-                keys = range(len(obj))
-                getter = lambda obj, key: obj[key]
-            else:
-                keys = obj.__dict__.keys()
-                getter = getattr
-
-            for attrName in set(keys) - set(self.excludedAttributes):
-                name = "  .{}".format(attrName)
-                if name not in self.attrSizes:
-                    # arbitrarily, we don't care unless the attribute is a GB
-                    self.attrSizes[name] = ObjectSizeBreakdown(
-                        name, 1000.0, initialZeroes=len(self.sizes) - 1
-                    )
-                attrSize = self.attrSizes[name]
-                attrSize.calcSize(getter(obj, attrName))
-
-    def __repr__(self):
-        message = []
-        name = self.name
-        if self.excludedAttributes:
-            name += " except(.{})".format(", .".join(self.excludedAttributes))
-        message.append("{0:53s} {1:8.4f}MB".format(name, self.size))
-        for attr in self.attrSizes.values():
-            message.append(repr(attr))
-        return "\n".join(message)
 
 
 class ProfileMemoryUsageAction(mpiActions.MpiAction):
@@ -470,7 +407,6 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
             SYS_MEM HOSTNAME     13.9% RAM. Proc mem (MB):   474   473   472   471   460   461
             SYS_MEM HOSTNAME     ...
             SYS_MEM HOSTNAME     ...
-
         """
         printedNodes = set()
         prefix = description or "SYS_MEM"

@@ -65,7 +65,6 @@ setup(
         "pillow",
         "pluggy",
         "pyevtk",
-        "pympler",
         "scipy",
         "tabulate",
         "voluptuous",
