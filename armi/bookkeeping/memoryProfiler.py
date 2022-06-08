@@ -112,8 +112,6 @@ class MemoryProfiler(interfaces.Interface):
         r"""
         Print out some information to stdout about the memory usage of ARMI.
 
-        Makes use of the asizeof utility.
-
         Useful when the debugMem setting is set to True.
 
         Turn these on as appropriate to find all your problems.
@@ -319,7 +317,6 @@ class InstanceCounter:
         self.ids.add(itemId)
         if self.reportSize:
             try:
-                # self.memSize += asizeof(item)
                 self.memSize += sys.getsizeof(item)
             except:
                 self.memSize = float("nan")
