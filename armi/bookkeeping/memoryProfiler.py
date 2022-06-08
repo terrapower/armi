@@ -130,23 +130,22 @@ class MemoryProfiler(interfaces.Interface):
     def _reactorAssemblyTrackingBreakdown(self):
         runLog.important("Reactor attribute ArmiObject tracking count")
         for attrName, attrObj in self.r.core.__dict__.items():
-            if (
-                isinstance(attrObj, list)
-                and attrObj
-                and isinstance(attrObj[0], ArmiObject)
+            if not attrObj:
+                continue
+
+            if isinstance(attrObj, list) and isinstance(attrObj[0], ArmiObject):
+                runLog.important(
+                    "List {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
+                )
+
+            if isinstance(attrObj, dict) and isinstance(
+                list(attrObj.values())[0], ArmiObject
             ):
                 runLog.important(
-                    "List {:30s} has {:4d} assemblies".format(attrName, len(attrObj))
+                    "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
                 )
-            if (
-                isinstance(attrObj, dict)
-                and attrObj
-                and isinstance(list(attrObj.values())[0], ArmiObject)
-            ):
-                runLog.important(
-                    "Dict {:30s} has {:4d} assemblies".format(attrName, len(attrObj))
-                )
-        runLog.important("SFP has {:4d} assemblies".format(len(self.r.core.sfp)))
+
+        runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.core.sfp)))
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
         """Scans thorugh ARMI model for duplicate objects"""
