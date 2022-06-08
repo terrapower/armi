@@ -1010,7 +1010,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         if os.path.exists(newFolder):
             runLog.important("Deleting existing snapshot data in {0}".format(newFolder))
             pathTools.cleanPath(newFolder)  # careful with cleanPath!
-            context.waitAll()
             # give it a minute.
             time.sleep(1)
 
