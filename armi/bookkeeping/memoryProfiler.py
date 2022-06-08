@@ -21,10 +21,7 @@ There are many approaches to memory profiling.
 from an OS perspective. This is great for top-down analysis. This module provides printouts
 that show info from every process running. This is very fast.
 
-2. You can use ``asizeof`` (part of pympler) to measure the size of various individual objects. This will help
-you pin-point your issue. But it's slow.
-
-3. You can use ``gc.get_objects()`` to list all objects that the garbage collector is tracking. If you want, you
+2. You can use ``gc.get_objects()`` to list all objects that the garbage collector is tracking. If you want, you
 can filter it down and get the counts and sizes of objects of interest (e.g. all armi objects).
 
 This module has tools to do all of this. It should help you out.
@@ -38,14 +35,16 @@ you are a worker and you just got a  1.6GB reactor but then deleted it, Windows 
 
 See Also:
 
-http://packages.python.org/Pympler/index.html
 https://pythonhosted.org/psutil/
-https://docs.python.org/2/library/gc.html#gc.garbage
+https://docs.python.org/3/library/gc.html#gc.garbage
 """
+from itertools import chain  ########################
+from typing import Optional
+import copy
 import gc
 import logging
+import sys  ##########################3
 import tabulate
-from typing import Optional
 
 from armi import context
 from armi import interfaces
@@ -63,14 +62,6 @@ except ImportError:
         "Failed to import psutil; MemoryProfiler will not provide meaningful data."
     )
     _havePsutil = False
-
-
-# disable the import warnings (Issue #88)
-logging.disable(logging.CRITICAL)
-from pympler.asizeof import asizeof
-
-# This is necessary to reset pympler's changes to the logging configuration
-logging.disable(logging.NOTSET)
 
 
 ORDER = interfaces.STACK_ORDER.POSTPROCESSING
@@ -229,16 +220,15 @@ class MemoryProfiler(interfaces.Interface):
         reactor = self.r
 
         if reportSize:
-            self.r.detach()
             self.o.detach()
 
         gc.collect()
         allObjects = gc.get_objects()
-        instanceCounters = KlassCounter(reportSize)
-
         runLog.info("GC returned {} objects".format(len(allObjects)))
 
+        instanceCounters = KlassCounter(reportSize)
         instanceCounters.countObjects(allObjects)
+
         for counter in sorted(instanceCounters.counters.values()):
             runLog.info(
                 "UNIQUE_INSTANCE_COUNT: {:60s} {:10d}     {:10.1f} MB".format(
@@ -283,28 +273,19 @@ class KlassCounter:
             self.counters[classType] = InstanceCounter(classType, self.reportSize)
         return self.counters[classType]
 
-    def __iadd__(self, item):
-        klass = type(item)
-        if klass in self.counters:
-            counter = self.counters[klass]
-        else:
-            counter = InstanceCounter(klass, self.reportSize)
-            counter.first = item  # done here for speed
-            self.counters[klass] = counter
-        counter += item
-
     def countObjects(self, ao):
         """
-        Recursively find non-list,dict, tuple objects in containers.
+        TODO
 
+        Recursively find non-list,dict, tuple objects in containers.
         Essential for traversing the garbage collector
         """
-        itemType = type(ao)
-        counter = self[itemType]
+        counter = self[type(ao)]
         if counter.add(ao):
             self.count += 1
             if self.count % 100000 == 0:
                 runLog.info("Counted {} items".format(self.count))
+
             if isinstance(ao, dict):
                 for k, v in ao.items():
                     self.countObjects(k)
@@ -335,7 +316,8 @@ class InstanceCounter:
         self.ids.add(itemId)
         if self.reportSize:
             try:
-                self.memSize += asizeof(item)
+                # self.memSize += asizeof(item)
+                self.memSize += sys.getsizeof(item)
             except:
                 self.memSize = float("nan")
         self.count += 1
@@ -349,23 +331,6 @@ class InstanceCounter:
 
     def __gt__(self, that):
         return self.count > that.count
-
-
-def _getClsName(obj):
-    try:
-        return obj.__class__.__name__
-    except:
-        try:
-            return obj.__name__
-        except:
-            return repr(obj)[:20]
-
-
-def _getModName(obj):
-    try:
-        return obj.__class__.__module__
-    except:
-        return None
 
 
 class ObjectSizeBreakdown:
