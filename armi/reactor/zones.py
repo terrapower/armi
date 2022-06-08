@@ -464,26 +464,15 @@ def _buildZonesByOrifice(core, cs):
     orificeZones = Zones(core, cs)
 
     # first get all different orifice setting zones
-    for a in core.getAssembliesOfType(Flags.FUEL):
+    for a in core.getAssemblies():
         orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.nozzleType)
-        b = a.getFirstBlock(Flags.FUEL)
-        cFuel = b.getComponent(Flags.FUEL)
-        fuelMaterial = cFuel.getProperties()
-        if "Oxide" in fuelMaterial.getName():
-            orificeSetting = "Oxide" + str((orificeSetting))
         if orificeSetting not in orificeZones.names:
             orificeZones.add(Zone(orificeSetting))
 
     # now put FAs of the same orifice zone in to one channel
-    for a in core.getAssembliesOfType(Flags.FUEL):
+    for a in core.getAssemblies():
         orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.nozzleType)
-        b = a.getFirstBlock(Flags.FUEL)
-        cFuel = b.getComponent(Flags.FUEL)
-        fuelMaterial = cFuel.getProperties()
-        if "Oxide" in fuelMaterial.getName():
-            orificeZones["Oxide" + str(orificeSetting)].append(a.getLocation())
-        else:
-            orificeZones[orificeSetting].append(a.getLocation())
+        orificeZones[orificeSetting].append(a.getLocation())
 
     return orificeZones
 
