@@ -27,7 +27,7 @@ blocks:
             Thot: 450.0
             ip: 15.277
             mult: 1.0
-            op: 16.577
+            op: 16.6
         coolant: &component_coolant
             shape: DerivedShape
             material: Sodium
@@ -337,7 +337,17 @@ blocks:
     
     ## ------------------------------------------------------------------------------------
     ## control
-    moveable duct: &block_duct
+    control axial shield: &block_control_axial_shield
+        flags: axial shield
+        shield:
+            shape: HoledHexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            op: 15.0
+            holeOD: 5
+            nHoles: 5
+            mult: 1
         coolant: *component_coolant
         duct: &component_control_duct
             shape: Hexagon
@@ -346,8 +356,8 @@ blocks:
             Thot: 450.0
             ip: 15.277
             mult: 1.0
-            op: 16.28228
-        intercoolant: &component_control_intercoolant
+            op: 16.6
+        intercoolant:  &component_control_intercoolant
             shape: Hexagon
             material: Sodium
             Tinput: 25.0
@@ -355,6 +365,11 @@ blocks:
             ip: duct.op
             mult: 1.0
             op: 16.75
+
+    moveable duct: &block_duct
+        coolant: *component_coolant
+        duct: *component_control_duct
+        intercoolant: *component_control_intercoolant
 
     moveable control: &block_control
         control:
@@ -574,16 +589,16 @@ assemblies:
         xs types: *igniter_fuel_xs_types
     secondary control:
         specifier: SC
-        blocks: [*block_grid_plate, *block_duct, *block_duct, *block_control, *block_control, *block_control_plenum, *block_duct, *block_duct, *block_dummy]
-        height: [25.0, 49.0, 49.0, 25.0, 25.0, 25.0, 1.0, 1.0, 17.5]
-        axial mesh points: *standard_axial_mesh_points
-        xs types: *igniter_fuel_xs_types
+        blocks: [*block_grid_plate, *block_control_axial_shield, *block_duct, *block_control, *block_control, *block_control_plenum, *block_duct, *block_dummy]
+        height: [25.0, 25.0, 74.0, 25.0, 25.0, 25.0, 1.0, 17.5]
+        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1]
+        xs types: [A, A, A, A, A, A, A, A]
     primary control:
         specifier: PC
-        blocks: [*block_grid_plate, *block_duct, *block_duct, *block_control, *block_control, *block_control_plenum, *block_duct, *block_duct, *block_dummy]
-        height: [25.0, 1.0, 1.0, 25.0, 25.0, 25.0, 49.0, 49.0, 17.5]
-        axial mesh points: *standard_axial_mesh_points
-        xs types: *igniter_fuel_xs_types
+        blocks: [*block_grid_plate, *block_control_axial_shield, *block_duct, *block_control, *block_control, *block_control_plenum, *block_duct, *block_dummy]
+        height: [25.0, 25.0, 1.0, 25.0, 25.0, 25.0, 74.0, 17.5]
+        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1]
+        xs types: [A, A, A, A, A, A, A, A]
     radial shield:
         specifier: SH
         blocks: [*block_grid_plate, *block_radial_shield, *block_radial_shield, *block_radial_shield, *block_radial_shield, *block_shield_plenum, *block_shield_aclp, *block_shield_plenum, *block_dummy]
