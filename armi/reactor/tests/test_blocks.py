@@ -1182,8 +1182,6 @@ class Block_TestCase(unittest.TestCase):
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
         totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
-        imax = 9  # hexagonal rings of pins
-        jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
 
         totalPowerKey = "linPowByPin"
         neutronPowerKey = f"linPowByPin{NEUTRON}"
@@ -1193,8 +1191,6 @@ class Block_TestCase(unittest.TestCase):
         with self.assertRaises(UnboundLocalError) as context:
             self.block.setPinPowers(
                 gammaPower,
-                imax,
-                jmax,
                 powerKeySuffix=GAMMA,
             )
         errorMsg = (
@@ -1205,7 +1201,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.p[gammaPowerKey] = None
 
         # Test with no powerKeySuffix
-        self.block.setPinPowers(neutronPower, imax, jmax)
+        self.block.setPinPowers(neutronPower)
         assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
         self.assertIsNone(self.block.p[neutronPowerKey])
         self.assertIsNone(self.block.p[gammaPowerKey])
@@ -1213,8 +1209,6 @@ class Block_TestCase(unittest.TestCase):
         # Test with neutron powers
         self.block.setPinPowers(
             neutronPower,
-            imax,
-            jmax,
             powerKeySuffix=NEUTRON,
         )
         assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
@@ -1224,8 +1218,6 @@ class Block_TestCase(unittest.TestCase):
         # Test with gamma powers
         self.block.setPinPowers(
             gammaPower,
-            imax,
-            jmax,
             powerKeySuffix=GAMMA,
         )
         assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
