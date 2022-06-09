@@ -1574,11 +1574,7 @@ class HexBlock(Block):
         nPins = self.getNumPins()
         self.p.pinLocation = list(range(1, nPins + 1))
 
-    def setPinPowers(
-        self,
-        powers,
-        powerKeySuffix="",
-    ):
+    def setPinPowers(self, powers, powerKeySuffix=""):
         """
         Updates the pin linear power densities of this block for the current rotation.
         The linear densities are represented by the *linPowByPin* parameter.
