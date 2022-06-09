@@ -1579,7 +1579,6 @@ class HexBlock(Block):
         powers,
         imax,
         jmax,
-        removeSixCornerPins=False,
         powerKeySuffix="",
     ):
         """
