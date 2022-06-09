@@ -1215,7 +1215,6 @@ class Block_TestCase(unittest.TestCase):
             neutronPower,
             imax,
             jmax,
-            removeSixCornerPins=False,
             powerKeySuffix=NEUTRON,
         )
         assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
@@ -1227,7 +1226,6 @@ class Block_TestCase(unittest.TestCase):
             gammaPower,
             imax,
             jmax,
-            removeSixCornerPins=False,
             powerKeySuffix=GAMMA,
         )
         assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
