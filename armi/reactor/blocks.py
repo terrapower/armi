@@ -1966,12 +1966,15 @@ class HexBlock(Block):
         return self._getPinCoordinatesHex()
 
     def _getPinCoordinatesHex(self):
-        coordinates = []
-        numPins = self.getNumPins()
-        numPinRings = hexagon.numRingsToHoldNumCells(numPins)
+        """"""
         pinPitch = self.getPinPitch()
         if pinPitch is None:
             return []
+
+        coordinates = []
+        numPins = self.getNumPins()
+        numPinRings = hexagon.numRingsToHoldNumCells(numPins)
+
         # pin lattice is rotated 30 degrees from assembly lattice
         grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
         for ring in range(numPinRings):
