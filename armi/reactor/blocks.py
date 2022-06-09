@@ -1577,7 +1577,6 @@ class HexBlock(Block):
     def setPinPowers(
         self,
         powers,
-        numPins,
         imax,
         jmax,
         removeSixCornerPins=False,
@@ -1594,10 +1593,6 @@ class HexBlock(Block):
             linear power density of pin i. The units of linear power density is watts/cm
             (i.e., watts produced per cm of pin length). The "ARMI pin ordering" must be
             be used, which is counter-clockwise from 3 o'clock.
-
-        numPins : int, required
-            Number of pins in the block. This parameter should probably be removed because it
-            can be derived from the block.
 
         imax: int, required
             Number of pin rings. This parameter should probably be removed because it
@@ -1620,6 +1615,8 @@ class HexBlock(Block):
         -----
         This method can handle assembly rotations by using the *pinLocation* parameter.
         """
+        numPins = self.getNumPins()
+
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = numpy.zeros(numPins)
 

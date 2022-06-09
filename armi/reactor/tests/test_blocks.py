@@ -1193,7 +1193,6 @@ class Block_TestCase(unittest.TestCase):
         with self.assertRaises(UnboundLocalError) as context:
             self.block.setPinPowers(
                 gammaPower,
-                numPins,
                 imax,
                 jmax,
                 removeSixCornerPins=False,
@@ -1207,9 +1206,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.p[gammaPowerKey] = None
 
         # Test with no powerKeySuffix
-        self.block.setPinPowers(
-            neutronPower, numPins, imax, jmax, removeSixCornerPins=False
-        )
+        self.block.setPinPowers(neutronPower, imax, jmax, removeSixCornerPins=False)
         assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
         self.assertIsNone(self.block.p[neutronPowerKey])
         self.assertIsNone(self.block.p[gammaPowerKey])
@@ -1217,7 +1214,6 @@ class Block_TestCase(unittest.TestCase):
         # Test with neutron powers
         self.block.setPinPowers(
             neutronPower,
-            numPins,
             imax,
             jmax,
             removeSixCornerPins=False,
@@ -1230,7 +1226,6 @@ class Block_TestCase(unittest.TestCase):
         # Test with gamma powers
         self.block.setPinPowers(
             gammaPower,
-            numPins,
             imax,
             jmax,
             removeSixCornerPins=False,
