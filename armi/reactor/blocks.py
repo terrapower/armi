@@ -1603,9 +1603,6 @@ class HexBlock(Block):
             is the number of pins in ring 2, and so on. This parameter should probably be
             removed because it can be derived from the block.
 
-        removeSixCornerPins: bool, optional.
-            Defaults to False
-
         powerKeySuffix: str, optional
             Must be either an empty string, :py:const:`NEUTRON <armi.physics.neutronics.const.NEUTRON>`,
             or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty
@@ -1621,26 +1618,22 @@ class HexBlock(Block):
         self.p[powerKey] = numpy.zeros(numPins)
 
         # Loop through rings
-        j0 = jmax[imax - 1] / 6
         pinNum = 0
         for i in range(imax):
             # Loop through positions in ring i
             for j in range(jmax[i]):
-                if removeSixCornerPins and i == imax - 1 and math.fmod(j, j0) == 0.0:
-                    linPow = 0.0
+                # TODO: This appears to need fixing to account for blocks in fueled
+                # TODO: assemblies that contain elevations with pins but no fuel,
+                # TODO: such as for an axial shield. These blocks should still have
+                # TODO: powers that are eligible for rotation.
+                if self.hasFlags(Flags.FUEL):
+                    # -1 is needed in order to map from pinLocations to list index
+                    pinLoc = self.p.pinLocation[pinNum] - 1
                 else:
-                    # TODO: This appears to need fixing to account for blocks in fueled
-                    # TODO: assemblies that contain elevations with pins but no fuel,
-                    # TODO: such as for an axial shield. These blocks should still have
-                    # TODO: powers that are eligible for rotation.
-                    if self.hasFlags(Flags.FUEL):
-                        # -1 is needed in order to map from pinLocations to list index
-                        pinLoc = self.p.pinLocation[pinNum] - 1
-                    else:
-                        pinLoc = pinNum
-                    linPow = powers[pinLoc]
-                self.p[powerKey][pinNum] = linPow
-                pinNum += 1
+                    pinLoc = pinNum
+                linPow = powers[pinLoc]
+            self.p[powerKey][pinNum] = linPow
+            pinNum += 1
 
         # If using the *powerKeySuffix* parameter, we also need to set total power, which
         # is sum of neutron and gamma powers. We assume that a solo gamma calculation

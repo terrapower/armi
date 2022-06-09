@@ -1195,7 +1195,6 @@ class Block_TestCase(unittest.TestCase):
                 gammaPower,
                 imax,
                 jmax,
-                removeSixCornerPins=False,
                 powerKeySuffix=GAMMA,
             )
         errorMsg = (
@@ -1206,7 +1205,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.p[gammaPowerKey] = None
 
         # Test with no powerKeySuffix
-        self.block.setPinPowers(neutronPower, imax, jmax, removeSixCornerPins=False)
+        self.block.setPinPowers(neutronPower, imax, jmax)
         assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
         self.assertIsNone(self.block.p[neutronPowerKey])
         self.assertIsNone(self.block.p[gammaPowerKey])
