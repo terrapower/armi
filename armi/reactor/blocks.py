@@ -1612,8 +1612,8 @@ class HexBlock(Block):
                 pinLoc = self.p.pinLocation[pinNum] - 1
             else:
                 pinLoc = pinNum
-            linPow = powers[pinLoc]
-            self.p[powerKey][pinNum] = linPow
+            pinLinPow = powers[pinLoc]
+            self.p[powerKey][pinNum] = pinLinPow
 
         # If using the *powerKeySuffix* parameter, we also need to set total power, which
         # is sum of neutron and gamma powers. We assume that a solo gamma calculation
