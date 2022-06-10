@@ -167,7 +167,8 @@ def deleteCache(cachedFolder):
     """
     if "Output_Cache" not in cachedFolder:
         raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
-    cleanPath(cachedFolder, context.MPI_RANK)
+    cleanPath(cachedFolder)
+    context.waitAll()
 
 
 def cacheCall(
