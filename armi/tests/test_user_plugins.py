@@ -131,9 +131,11 @@ class TestUserPlugins(unittest.TestCase):
 
     def test_registerUserPlugins(self):
         app = getApp()
+        print([p[0] for p in app.pluginManager.list_name_plugin()])
         count = app.pluginManager.counter
         plugins = ["armi.tests.test_user_plugins.UserPluginFlags"]
         app.registerUserPlugins(plugins)
+        print([p[0] for p in app.pluginManager.list_name_plugin()])
         self.assertEqual(app.pluginManager.counter, count + 1)
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
