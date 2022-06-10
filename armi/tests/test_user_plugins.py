@@ -70,23 +70,23 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
 
 class UpInterface(interfaces.Interface):
-    """TODO"""
+    """TODO: JOHN"""
+
     name = "UpInterface"
 
     def interactEveryNode(self, cycle, node):
-        self.r.core.p.power += int(cycle + node + 100)
-        assert False
+        self.r.core.p.power += 100
 
 
 class UserPluginWithInterface(plugins.UserPlugin):
     """TODO"""
+
     @staticmethod
-    @HOOKSPEC
+    @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        assert False
         return [
             interfaces.InterfaceInfo(
-                interfaces.STACK_ORDER.PREPROCESSING, UpInterface, {"enabled": enabled}
+                interfaces.STACK_ORDER.PREPROCESSING, UpInterface, {"enabled": True}
             )
         ]
 
@@ -184,10 +184,8 @@ class TestUserPlugins(unittest.TestCase):
         """TODO"""
         # register the plugin
         app = getApp()
-        #count = app.pluginManager.counter
-        #app.pluginManager.register(UserPluginWithInterface)
-        #self.assertEqual(app.pluginManager.counter, count + 1)
 
+        # register custom UserPlugin, that has an
         count = app.pluginManager.counter
         plugins = ["armi.tests.test_user_plugins.UserPluginWithInterface"]
         app.registerUserPlugins(plugins)
@@ -199,27 +197,19 @@ class TestUserPlugins(unittest.TestCase):
         name = "UserPluginWithInterface"
         self.assertIn(name, pluginNames)
 
-        # load a reactor and grab the fuel assemblies
+        print("\n\n\n")
+        print(pluginNames)
+
+        # load a reactor and grab the fuel assemblieapps
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         fuels = r.core.getAssemblies(Flags.FUEL)
 
-        #o.interfaces = []
-        #o.createInterfaces()  # TODO: JOHN! Not fixing the problem...
-
-        breakpoint()
-
-        #for p in pluginz:
-        #    p[1].exposeInterfaces(cs=o.cs)
-        #getPluginManagerOrFail().hook.exposeInterfaces(cs=o.cs)
-        app.pluginManager.hook.exposeInterfaces(cs=o.cs)
-
-        assert False
-
-        # TODO: Validate our interface is in the stack!
-        print("\n\n")
-        print(pluginNames)
+        print("\n\n\n")
         print(o.interfaces)
 
+        app.pluginManager.hook.exposeInterfaces(cs=o.cs)
+
+        # Exclude databases/DatabaseInterface from this unit test.
         for i, interf in enumerate(o.interfaces):
             if "history" in str(interf).lower():
                 o.interfaces = o.interfaces[:i] + o.interfaces[i + 1 :]
@@ -227,10 +217,10 @@ class TestUserPlugins(unittest.TestCase):
 
         # TODO: Validate our interface is in the stack!
         print(o.interfaces)
-        print("\n\n")
+        print("\n\n\n")
 
         # TODO
         self.assertEqual(r.core.p.power, 100000000.0)
         o.cs["nCycles"] = 2
         o.operate()
-        self.assertNotEqual(r.core.p.power, 100000000.0)
+        self.assertGreater(r.core.p.power, 100000000.0)
