@@ -189,27 +189,37 @@ class UniformMeshGeometryConverter(GeometryConverter):
             #     1. Select the first block that has either FUEL or CONTROL flags
             #     2. Fail if multiple blocks meet this criteria if they have different XS types
             #     3. Default to the first block in the list if no blocks meet FUEL or CONTROL flags criteria.
-            blocks = [b for b, _h in overlappingBlockInfo]
-            sourceBlock = None
-            xsType = None
-            for b in blocks:
+            # blocks = [b for b, h in overlappingBlockInfo]
+            typeHeight = collections.defaultdict(float)
+            blocks = [ b for b, _h in overlappingBlockInfo ]
+            for b, h in overlappingBlockInfo:
                 if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
-                    if sourceBlock is None:
-                        sourceBlock = b
-                        xsType = b.p.xsType
-                    else:
-                        # If there is a duplicate source block candidate that has a different
-                        # cross section type then this is an error because the code cannot
-                        # decide which one is correct.
-                        if b.p.xsType != xsType:
-                            msg = (
-                                f"{sourceBlock} and {b} in {newAssem} have conflicting XS types and are "
-                                f"candidates for the source block. To fix this, either set their XS types "
-                                f"to be the same or remove these flags {[Flags.FUEL, Flags.CONTROL]} "
-                                f"from one of the blocks."
-                            )
-                            runLog.error(msg)
-                            raise ValueError(msg)
+                    typeHeight[b.p.xsType] += h
+
+            sourceBlock = None
+            if len(typeHeight) > 1:
+                # xsType is the one with the majority of overlap
+                xsType = next(
+                    k for k, v in typeHeight.items() if v == max(typeHeight.values())
+                )
+                for b in blocks:
+                    if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                        if b.p.xsType == xsType:
+                            sourceBlock = b
+                            break
+
+                if sourceBlock:
+                    totalHeight = sum(typeHeight.values())
+                    runLog.extra(
+                        "Multiple XS types exist between {} and {}".format(
+                            bottom, topMeshPoint
+                        )
+                    )
+                    runLog.extra(
+                        "Using the XS type from the largest region, {}".format(xsType)
+                    )
+                    for xs, h in typeHeight.items():
+                        runLog.extra("XSType {}: {:.4f}".format(xs, h / totalHeight))
 
             # If no blocks meet the criteria above just select the first block
             # as the source block and use its cross section type.
@@ -244,6 +254,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
             newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
+            runLog.debug(
+                "Source assem {} in loc {}, {}, newLoc = {}".format(
+                    sourceAssem, src.i, src.j, newLoc
+                )
+            )
             self.convReactor.core.add(newAssem, newLoc)
 
     def plotConvertedReactor(self):
