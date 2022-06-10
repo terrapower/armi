@@ -360,10 +360,13 @@ def runActionsInSerial(o, r, cs, actions):
     runLog.extra("Running {} MPI actions in serial".format(len(actions)))
     numActions = len(actions)
     for aa, action in enumerate(actions):
+        canDistribute = context.MPI_DISTRIBUTABLE
         action.serial = True
+        context.MPI_DISTRIBUTABLE = False
         runLog.extra("Running action {} of {}: {}".format(aa + 1, numActions, action))
         results.append(action.invoke(o, r, cs))
         action.serial = False  # return to original state
+        context.MPI_DISTRIBUTABLE = canDistribute
     return results
 
 
@@ -400,7 +403,7 @@ class DistributionAction(MpiAction):
 
         Notes
         =====
-        Two things about this method make it non-recursiv
+        Two things about this method make it non-recursive
         """
         canDistribute = context.MPI_DISTRIBUTABLE
         mpiComm = context.MPI_COMM
@@ -424,11 +427,11 @@ class DistributionAction(MpiAction):
         try:
             action = mpiComm.scatter(self._actions, root=0)
             # create a new communicator that only has these specific dudes running
-            context.MPI_DISTRIBUTABLE = False
             hasAction = action is not None
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()
             context.MPI_SIZE = context.MPI_COMM.Get_size()
+            context.MPI_DISTRIBUTABLE = context.MPI_SIZE > 1
             context.MPI_NODENAMES = context.MPI_COMM.allgather(context.MPI_NODENAME)
             if hasAction:
                 actionResult = action.invoke(self.o, self.r, self.cs)
