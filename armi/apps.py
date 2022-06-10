@@ -72,6 +72,11 @@ class App:
         For a description of the things that an ARMI plugin can do, see the
         :py:mod:`armi.plugins` module.
         """
+        self._pm: Optional[pluginManager.ArmiPluginManager] = None
+        self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
+        self.__initNewPlugins()
+
+    def __initNewPlugins(self):
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -94,7 +99,7 @@ class App:
         ):
             self._pm.register(plugin)
 
-        self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
+        self._paramRenames = None
 
     @property
     def version(self) -> str:
@@ -240,6 +245,8 @@ class App:
         because they are defined during run time, not import time. As such, we
         restrict their flexibility and power as compared to the usual ArmiPlugins.
         """
+        self.__initNewPlugins()
+
         for pluginSpec in pluginPaths:
             names = pluginSpec.strip().split(".")
             modPath = ".".join(names[:-1])

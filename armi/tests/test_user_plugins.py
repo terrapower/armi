@@ -197,15 +197,13 @@ class TestUserPlugins(unittest.TestCase):
         name = "UserPluginWithInterface"
         self.assertIn(name, pluginNames)
 
-        print("\n\n\n")
-        print(pluginNames)
-
         # load a reactor and grab the fuel assemblieapps
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         fuels = r.core.getAssemblies(Flags.FUEL)
 
-        print("\n\n\n")
-        print(o.interfaces)
+        # TODO: JOHN! I believe this is just because we have multiple tests altering the App()
+        o.interfaces = []
+        o.initializeInterfaces(r)
 
         app.pluginManager.hook.exposeInterfaces(cs=o.cs)
 
@@ -214,10 +212,6 @@ class TestUserPlugins(unittest.TestCase):
             if "history" in str(interf).lower():
                 o.interfaces = o.interfaces[:i] + o.interfaces[i + 1 :]
                 break
-
-        # TODO: Validate our interface is in the stack!
-        print(o.interfaces)
-        print("\n\n\n")
 
         # TODO
         self.assertEqual(r.core.p.power, 100000000.0)
