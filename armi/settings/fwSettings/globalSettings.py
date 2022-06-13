@@ -111,7 +111,6 @@ CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
 
 # Unused by ARMI, slated for removal
-CONF_STATIONARY_BLOCKS = "stationaryBlocks"
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"  # mcnp & gui
 CONF_MEM_PER_NODE = "memPerNode"  # unused?
@@ -611,14 +610,6 @@ def defineSettings() -> List[setting.Setting]:
             label="stationary Block Flags",
             description="Blocks with these flags will not move in moves. "
             "Used for fuel management.",
-        ),
-        setting.Setting(
-            CONF_STATIONARY_BLOCKS,
-            default=[],
-            label="stationary Blocks",
-            description="Blocks with these indices (int values) will not move in "
-            "moves. Used for fuel management. "
-            "Deprecated setting, use CONF_STATIONARY_BLOCK_FLAGS",
         ),
         setting.Setting(
             CONF_TARGET_K,
