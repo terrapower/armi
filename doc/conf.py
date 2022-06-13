@@ -49,6 +49,8 @@ from armi import meta
 from armi.bookkeeping import tests as bookkeepingTests
 from armi.utils.dochelpers import *
 
+context.Mode.setMode(context.Mode.BATCH)
+
 # Configure the baseline framework "App" for framework doc building
 armi_configure(apps.App())
 disableFutureConfigures()
