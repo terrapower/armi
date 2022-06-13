@@ -122,7 +122,7 @@ def _boundingBox(points: Sequence[numpy.ndarray]) -> wx.Rect:
     ymin = numpy.amin([p[1] for p in points])
     ymax = numpy.amax([p[1] for p in points])
 
-    return wx.Rect(wx.Point(xmin, ymin), wx.Point(xmax, ymax))
+    return wx.Rect(wx.Point(int(xmin), int(ymin)), wx.Point(int(xmax), int(ymax)))
 
 
 def _desaturate(c: Sequence[float]):
@@ -215,7 +215,7 @@ def _drawShape(
     poly = numpy.array([numpy.append(vertex, 1) for vertex in primitive]).transpose()
     model = model if model is not None else numpy.eye(3)
     poly = view.dot(model).dot(poly).transpose()
-    poly = [vertex[0:2] for vertex in poly]
+    poly = [wx.Point(int(vertex[0]), int(vertex[1])) for vertex in poly]
 
     boundingBox = _boundingBox(poly)
 
@@ -844,7 +844,8 @@ class GridGui(wx.ScrolledWindow):
 
         # list of tuples with (distance, ID)
         sortableObjectIds = [
-            (_distanceish(wx.Point(x, y), self.pdcIdToCenter[obj]), obj) for obj in objs
+            (_distanceish(wx.RealPoint(x, y), self.pdcIdToCenter[obj]), obj)
+            for obj in objs
         ]
 
         return min(sortableObjectIds)[1]
@@ -882,7 +883,7 @@ class GridGui(wx.ScrolledWindow):
         self.SetVirtualSize((rect.Width, rect.Height))
         self.SetScrollRate(20, 20)
         # Global translation used to center the view
-        translate = _translationMatrix(-rect.Left, -rect.Top)
+        translate = _translationMatrix(-1 * rect.Left, -1 * rect.Top)
         self.transform = translate.dot(self.transform)
 
         brush = wx.Brush(wx.Colour(128, 128, 128, 0))
@@ -964,6 +965,8 @@ class GridGui(wx.ScrolledWindow):
 
                     p1 = self.transform.dot(p1)[0:2]
                     p2 = self.transform.dot(p2)[0:2]
+                    p1 = [int(v) for v in p1]
+                    p2 = [int(v) for v in p2]
                     self.pdc.DrawLines([wx.Point(*p1), wx.Point(*p2)])
 
     def _getLabel(self, idx) -> Tuple[str, Optional[str], bool]:
@@ -1211,8 +1214,11 @@ class GridGui(wx.ScrolledWindow):
         bottomLeft = numpy.append([minXY[0], minXY[1]], 1.0)
         nudge = numpy.array([UNIT_MARGIN, -UNIT_MARGIN, 0.0])
 
-        bottomRight = self.transform.dot(topRight) + nudge
-        topLeft = self.transform.dot(bottomLeft) - nudge
+        bottomRight = (self.transform.dot(topRight) + nudge).tolist()
+        topLeft = (self.transform.dot(bottomLeft) - nudge).tolist()
+
+        bottomRight = [int(v) for v in bottomRight]
+        topLeft = [int(v) for v in topLeft]
 
         return wx.Rect(wx.Point(*topLeft[:2]), wx.Point(*bottomRight[:2]))
 
