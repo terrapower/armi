@@ -338,15 +338,15 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         """
         # get a baseline: show how the Setting object looks to start
         s1 = setting.Setting("testCopy", 765)
-        self.assertEquals(s1.name, "testCopy")
-        self.assertEquals(s1._value, 765)
+        self.assertEqual(s1.name, "testCopy")
+        self.assertEqual(s1._value, 765)
         self.assertTrue(hasattr(s1, "schema"))
         self.assertTrue(hasattr(s1, "_customSchema"))
 
         # show that copy(Setting) is working correctly
         s2 = copy.copy(s1)
-        self.assertEquals(s2._value, 765)
-        self.assertEquals(s2.name, "testCopy")
+        self.assertEqual(s2._value, 765)
+        self.assertEqual(s2.name, "testCopy")
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
 
@@ -357,15 +357,15 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         # get a baseline: show how the Setting object looks to start
         s1 = setting.Setting("testCopy", 765)
         s1.value = 999
-        self.assertEquals(s1.name, "testCopy")
-        self.assertEquals(s1._value, 999)
+        self.assertEqual(s1.name, "testCopy")
+        self.assertEqual(s1._value, 999)
         self.assertTrue(hasattr(s1, "schema"))
         self.assertTrue(hasattr(s1, "_customSchema"))
 
         # show that copy(Setting) is working correctly
         s2 = copy.copy(s1)
-        self.assertEquals(s2._value, 999)
-        self.assertEquals(s2.name, "testCopy")
+        self.assertEqual(s2._value, 999)
+        self.assertEqual(s2.name, "testCopy")
         self.assertTrue(hasattr(s2, "schema"))
         self.assertTrue(hasattr(s2, "_customSchema"))
 
