@@ -65,8 +65,8 @@ custom isotopics:
         H: 6.70e-2
         O: 3.35E-2
         B: 2.87E-5
-        U235: 6e-8
-        U238: 6e-9
+        U235: 6.0e-8
+        U238: 6.0e-9
 # end-custom-isotopics
 blocks:
     uo2: &block_uo2
