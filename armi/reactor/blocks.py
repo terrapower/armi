@@ -1849,7 +1849,7 @@ class HexBlock(Block):
                 # getPinCenterFlatToFlat only works for hexes
                 # inner most duct might be circle or some other shape
                 duct = None
-            elif not isinstance(duct, components.HoledHexagon):
+            elif isinstance(duct, components.HoledHexagon):
                 # has no ip and is circular on inside so following
                 # code will not work
                 duct = None
