@@ -51,7 +51,7 @@ import pytest
 
 try:
     from test.support import import_module
-except ModuleNotFoundError:
+except ImportError:
     # module was moved here in Python 3.10
     from test.support.import_helper import import_module
 
