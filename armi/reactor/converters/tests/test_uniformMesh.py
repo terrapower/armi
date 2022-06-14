@@ -82,9 +82,11 @@ class TestUniformMeshComponents(unittest.TestCase):
     def test_makeAssemWithUniformMesh(self):
 
         sourceAssem = self.r.core.getFirstAssembly(Flags.FUEL)
-        sourceAssem[1].p["xsType"] = "B"
+        sourceAssem[2].p["xsType"] = "B"
         sourceAssem[4].p["ztop"] = 176.0
         self.converter._computeAverageAxialMesh()
+        print(sourceAssem.getAxialMesh())
+        print(self.converter._uniformMesh)
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem, self.converter._uniformMesh
         )
