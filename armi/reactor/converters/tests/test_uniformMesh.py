@@ -85,7 +85,9 @@ class TestUniformMeshComponents(unittest.TestCase):
         sourceAssem[1].p["xsType"] = "B"
         sourceAssem[4].p["ztop"] = 176.0
         self.converter._computeAverageAxialMesh()
-        newAssem = self.converter.makeAssemWithUniformMesh(sourceAssem, self.converter._uniformMesh)
+        newAssem = self.converter.makeAssemWithUniformMesh(
+            sourceAssem, self.converter._uniformMesh
+        )
 
         def setter(block, vals, paramNames):
             for pName, val in zip(paramNames, vals):
@@ -103,7 +105,6 @@ class TestUniformMeshComponents(unittest.TestCase):
                 newB.p["xsType"],
                 sourceB.p["xsType"],
             )
-
 
 
 def applyNonUniformHeightDistribution(reactor):
@@ -133,8 +134,6 @@ class TestUniformMesh(unittest.TestCase):
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
-
-
 
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
@@ -247,6 +246,7 @@ class TestParamConversion(unittest.TestCase):
             (sourceFlux1 * self.height1 + sourceFlux2 * self.height2)
             / (self.height1 + self.height2),
         )
+
 
 if __name__ == "__main__":
     unittest.main()
