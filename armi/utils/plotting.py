@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module makes heavy use of matplotlib. Beware that plots generated with matplotlib
+may not free their memory, even after the plot is closed, and excessive use of
+plotting functions may gobble up all of your machine's memory.
+
+Therefore, you should use these plotting tools judiciously. It is not advisable to,
+for instance, plot some sequence of objects in a loop at every time node. If you start
+to see your memory usage grow inexplicably, you should question any plots that you are
+generating.
+"""
+
 import collections
 import itertools
 import math
