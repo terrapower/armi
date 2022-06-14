@@ -69,7 +69,7 @@ install it with ``pip``, which will automatically discover and install the
 dependencies. This is useful for quick evaluations or to use it as a dependency
 in another project::
 
-   	(armi-venv) $ pip install https://github.com/terrapower/armi/archive/master.zip
+   	(armi-venv) $ pip install https://github.com/terrapower/armi/archive/main.zip
 
 Option 2: Install as a repository (for developers)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
