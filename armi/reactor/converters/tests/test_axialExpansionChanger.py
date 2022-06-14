@@ -28,7 +28,6 @@ from armi.reactor.components.basicShapes import (
     Circle,
     Hexagon,
     Rectangle,
-    Square,
 )
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
@@ -39,6 +38,7 @@ from armi.reactor.converters.axialExpansionChanger import (
 from armi.reactor.flags import Flags
 from armi import materials
 from armi.utils import units
+from armi.materials import custom
 
 # set namespace order for materials so that fake HT9 material can be found
 materials.setMaterialNamespaceOrder(
@@ -651,7 +651,10 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                 ),
             )
             for bStd, bExp in zip(aStd, aExp):
-                if aStd.hasFlags(Flags.CONTROL):
+                hasCustomMaterial = any(
+                    isinstance(c.material, custom.Custom) for c in bStd
+                )
+                if (aStd.hasFlags(Flags.CONTROL)) or (hasCustomMaterial):
                     checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")

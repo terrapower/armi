@@ -13,5 +13,5 @@ systems:
             y: 5000.0
             z: 6000.0
 grids:
-    !include ../refSmallCoreGrid.yaml
+    !include refSmallCoreGrid.yaml
     !include ../refSmallSfpGrid.yaml
