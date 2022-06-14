@@ -186,12 +186,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # Iterate over the blocks that are within this region and
             # select one as a "source" for determining which cross section
             # type to use. This uses the following rules:
-            #     1. Select the first block that has either FUEL or CONTROL flags
-            #     2. Fail if multiple blocks meet this criteria if they have different XS types
-            #     3. Default to the first block in the list if no blocks meet FUEL or CONTROL flags criteria.
-            # blocks = [b for b, h in overlappingBlockInfo]
+            #     1. Determine the total height corresponding to each XS type that
+            #     appears for blocks with FUEL or CONTROL flags in this domain.
+            #     2. Determine the single XS type that represents the largest fraction
+            #     of the total height of FUEL or CONTROL cross sections.
+            #     3. Use the first block of the majority XS type as the representative block.
             typeHeight = collections.defaultdict(float)
-            blocks = [ b for b, _h in overlappingBlockInfo ]
+            blocks = [b for b, _h in overlappingBlockInfo]
             for b, h in overlappingBlockInfo:
                 if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
                     typeHeight[b.p.xsType] += h
@@ -221,8 +222,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     for xs, h in typeHeight.items():
                         runLog.extra("XSType {}: {:.4f}".format(xs, h / totalHeight))
 
-            # If no blocks meet the criteria above just select the first block
-            # as the source block and use its cross section type.
+            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
+            # XS type present, just select the first block as the source block and use
+            # its cross section type.
             if sourceBlock is None:
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType
