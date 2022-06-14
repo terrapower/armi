@@ -79,6 +79,32 @@ class TestUniformMeshComponents(unittest.TestCase):
         # ensure that the assemblies were copied over
         self.assertTrue(converted.assemblies, msg="Assembly objects not copied!")
 
+    def test_makeAssemWithUniformMesh(self):
+
+        sourceAssem = self.r.core.getFirstAssembly(Flags.FUEL)
+        sourceAssem[1].p["xsType"] = "B"
+        sourceAssem[4].p["ztop"] = 176.0
+        self.converter._computeAverageAxialMesh()
+        newAssem = self.converter.makeAssemWithUniformMesh(sourceAssem, self.converter._uniformMesh)
+
+        def setter(block, vals, paramNames):
+            for pName, val in zip(paramNames, vals):
+                block.p[pName] = val
+
+        def getter(block, paramNames):
+            return numpy.array([block.p[pName] for pName in paramNames])
+
+        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
+            self.assertEqual(
+                newB.p["xsType"],
+                sourceB.p["xsType"],
+            )
+            self.assertEqual(
+                newB.p["xsType"],
+                sourceB.p["xsType"],
+            )
+
+
 
 def applyNonUniformHeightDistribution(reactor):
     """Modifies some assemblies to have non-uniform axial meshes"""
@@ -108,6 +134,8 @@ class TestUniformMesh(unittest.TestCase):
         self.r.core.p.keff = 1.0
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
+
+
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
         applyNonUniformHeightDistribution(
@@ -127,6 +155,7 @@ class TestUniformMesh(unittest.TestCase):
 
     def test_applyStateToOriginal(self):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
+
         self.converter.convert(self.r)
         for b in self.converter.convReactor.core.getBlocks():
             b.p.mgFlux = range(33)
@@ -218,7 +247,6 @@ class TestParamConversion(unittest.TestCase):
             (sourceFlux1 * self.height1 + sourceFlux2 * self.height2)
             / (self.height1 + self.height2),
         )
-
 
 if __name__ == "__main__":
     unittest.main()
