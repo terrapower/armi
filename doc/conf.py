@@ -182,7 +182,7 @@ templates_path = [".templates"]
 source_suffix = ".rst"
 
 # The top-level toctree document.
-master_doc = "index"
+root_doc = "index"
 
 # General information about the project.
 project = "ARMI"
