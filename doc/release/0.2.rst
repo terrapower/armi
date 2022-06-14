@@ -15,6 +15,7 @@ What's new in ARMI
 #. Removed the ``PyYaml`` dependency.
 #. Removed all bare ``import armi`` statements, for code clarity.
 #. Renamed control rod assembly parameters for generic implementations of control rod handling.
+#. Changed the default Git branch name to ``main``.
 #. TBD
 
 Bug fixes

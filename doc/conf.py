@@ -181,7 +181,7 @@ templates_path = [".templates"]
 # The suffix of source filenames.
 source_suffix = ".rst"
 
-# The master toctree document.
+# The top-level toctree document.
 master_doc = "index"
 
 # General information about the project.
@@ -273,7 +273,7 @@ html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "terrapower",  # Username
     "github_repo": "armi",  # Repo name
-    "github_version": "master",  # Version
+    "github_version": "main",  # Version
     "conf_py_path": "/doc/",  # Path in the checkout to the docs root
 }
 
