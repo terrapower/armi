@@ -15,6 +15,7 @@
 """
 Tests for the uniform mesh geometry converter
 """
+import os
 import random
 import unittest
 
@@ -26,6 +27,42 @@ from armi.tests import TEST_ROOT, ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
+
+
+class TestDetailedAxialExpansionComponents(unittest.TestCase):
+    """
+    Tests individual operations of the uniform mesh converter
+
+    Uses the test reactor for detailedAxialExpansion
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        # random seed to support random mesh in unit tests below
+        random.seed(987324987234)
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            customSettings={"xsKernel": "MC2v2"},
+        )
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+
+    def setUp(self):
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
+        self.converter._sourceReactor = self.r
+
+    def test_makeAssemWithUniformMesh(self):
+
+        sourceAssem = self.r.core.getFirstAssembly(Flags.FUEL)
+        sourceAssem[2].p["xsType"] = "B"
+        # sourceAssem[4].p["ztop"] = 176.0
+        self.converter._computeAverageAxialMesh()
+        newAssem = self.converter.makeAssemWithUniformMesh(
+            sourceAssem, self.converter._uniformMesh
+        )
+
+        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
+            print(newB.p["xsType"], sourceB.p["xsType"])
+            self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
 
 
 class TestUniformMeshComponents(unittest.TestCase):
