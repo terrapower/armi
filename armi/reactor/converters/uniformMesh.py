@@ -212,7 +212,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 if sourceBlock:
                     totalHeight = sum(typeHeight.values())
                     runLog.extra(
-                        f"Multiple XS types exist between {bottom} and {topMeshPoint}"
+                        f"Multiple XS types exist between {bottom} and {topMeshPoint}. "
                         f"Using the XS type from the largest region, {xsType}"
                     )
                     for xs, h in typeHeight.items():
