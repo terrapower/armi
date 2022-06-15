@@ -212,15 +212,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 if sourceBlock:
                     totalHeight = sum(typeHeight.values())
                     runLog.extra(
-                        "Multiple XS types exist between {} and {}".format(
-                            bottom, topMeshPoint
-                        )
-                    )
-                    runLog.extra(
-                        "Using the XS type from the largest region, {}".format(xsType)
+                        f"Multiple XS types exist between {bottom} and {topMeshPoint}"
+                        f"Using the XS type from the largest region, {xsType}"
                     )
                     for xs, h in typeHeight.items():
-                        runLog.extra("XSType {}: {:.4f}".format(xs, h / totalHeight))
+                        heightFrac = h / totalHeight
+                        runLog.extra(f"XSType {xs}: {heightFrac:.4f}")
 
             # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
             # XS type present, just select the first block as the source block and use
@@ -256,11 +253,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             newAssem = self.makeAssemWithUniformMesh(sourceAssem, self._uniformMesh)
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
-            runLog.debug(
-                "Source assem {} in loc {}, {}, newLoc = {}".format(
-                    sourceAssem, src.i, src.j, newLoc
-                )
-            )
             self.convReactor.core.add(newAssem, newLoc)
 
     def plotConvertedReactor(self):
