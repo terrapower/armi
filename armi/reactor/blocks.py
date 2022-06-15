@@ -25,7 +25,6 @@ import copy
 import collections
 from typing import Optional, Type, Tuple, ClassVar
 
-import matplotlib.pyplot as plt
 import numpy
 
 from armi.reactor import composites

@@ -72,7 +72,6 @@ from collections import OrderedDict
 from typing import Tuple
 import re
 
-from matplotlib import pyplot
 import tabulate
 
 from armi import interfaces
