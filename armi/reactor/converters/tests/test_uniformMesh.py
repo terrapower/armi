@@ -90,14 +90,7 @@ class TestUniformMeshComponents(unittest.TestCase):
         )
 
         for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
-            self.assertEqual(
-                newB.p["xsType"],
-                sourceB.p["xsType"],
-            )
-            self.assertEqual(
-                newB.p["xsType"],
-                sourceB.p["xsType"],
-            )
+            self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
 
 
 def applyNonUniformHeightDistribution(reactor):
