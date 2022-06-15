@@ -89,13 +89,6 @@ class TestUniformMeshComponents(unittest.TestCase):
             sourceAssem, self.converter._uniformMesh
         )
 
-        def setter(block, vals, paramNames):
-            for pName, val in zip(paramNames, vals):
-                block.p[pName] = val
-
-        def getter(block, paramNames):
-            return numpy.array([block.p[pName] for pName in paramNames])
-
         for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
             self.assertEqual(
                 newB.p["xsType"],
