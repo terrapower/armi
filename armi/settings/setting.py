@@ -127,7 +127,7 @@ class Setting:
         # Retain the passed schema so that we don't accidentally stomp on it in
         # addOptions(), et.al.
         self._customSchema = schema
-        self._setSchema(schema)
+        self._setSchema()
         self._value = copy.deepcopy(default)  # break link from _default
 
     @property
@@ -150,8 +150,9 @@ class Setting:
             # cannot infer. fall back to str
             return str
 
-    def _setSchema(self, schema):
+    def _setSchema(self):
         """Apply or auto-derive schema of the value."""
+        schema = self._customSchema
         if schema:
             self.schema = schema
         elif self.options and self.enforcedOptions:
@@ -210,7 +211,7 @@ class Setting:
     def addOptions(self, options: List[Option]):
         """Extend this Setting's options with extra options."""
         self.options.extend([o.option for o in options])
-        self._setSchema(self._customSchema)
+        self._setSchema()
 
     def addOption(self, option: Option):
         """Extend this Setting's options with an extra option."""

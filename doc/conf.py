@@ -49,6 +49,8 @@ from armi import meta
 from armi.bookkeeping import tests as bookkeepingTests
 from armi.utils.dochelpers import *
 
+context.Mode.setMode(context.Mode.BATCH)
+
 # Configure the baseline framework "App" for framework doc building
 armi_configure(apps.App())
 disableFutureConfigures()
@@ -179,8 +181,8 @@ templates_path = [".templates"]
 # The suffix of source filenames.
 source_suffix = ".rst"
 
-# The master toctree document.
-master_doc = "index"
+# The top-level toctree document.
+root_doc = "index"
 
 # General information about the project.
 project = "ARMI"
@@ -271,7 +273,7 @@ html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "terrapower",  # Username
     "github_repo": "armi",  # Repo name
-    "github_version": "master",  # Version
+    "github_version": "main",  # Version
     "conf_py_path": "/doc/",  # Path in the checkout to the docs root
 }
 

@@ -186,6 +186,11 @@ class TestHistoryTracker(ArmiTestHelper):
         # clean file created at interactEOL
         os.remove("armiRun.locationHistory.txt")
 
+        # test that detailAssemblyNames() is working
+        self.assertEqual(len(history.detailAssemblyNames), 1)
+        history.addAllFuelAssems()
+        self.assertEqual(len(history.detailAssemblyNames), 51)
+
 
 class TestHistoryTrackerNoModel(unittest.TestCase):
     """History tracker tests that do not require a Reactor Model."""

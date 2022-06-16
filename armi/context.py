@@ -147,7 +147,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
 if MPI_COMM is not None:
     MPI_COMM.barrier()  # make sure app data exists before workers proceed.
 
-MPI_DISTRIBUTABLE = MPI_RANK == 0 and MPI_SIZE > 1
+MPI_DISTRIBUTABLE = MPI_SIZE > 1
 
 _FAST_PATH = os.path.join(os.getcwd())
 """
@@ -238,7 +238,7 @@ def cleanTempDirs(olderThanDays=None):
                 file=sys.stdout,
             )
         try:
-            cleanPath(_FAST_PATH, MPI_RANK)
+            cleanPath(_FAST_PATH, mpiRank=MPI_RANK)
         except Exception as error:  # pylint: disable=broad-except
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
@@ -279,9 +279,17 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             runIsOldAndLikleyComplete = (now - dateOfFolder) > gracePeriod
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
-                cleanPath(dirPath, MPI_RANK)
+                cleanPath(dirPath, mpiRank=MPI_RANK)
         except:  # pylint: disable=bare-except
             pass
+
+
+def waitAll() -> None:
+    """
+    If there are parallel processes running, wait for all to catch up to the checkpoint.
+    """
+    if MPI_SIZE > 1 and MPI_DISTRIBUTABLE:
+        MPI_COMM.barrier()
 
 
 def disconnectAllHdfDBs() -> None:

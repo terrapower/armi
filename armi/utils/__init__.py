@@ -420,10 +420,10 @@ def getPreviousTimeNode(cycle, node, cs):
     if node != 0:
         return (cycle, node - 1)
     else:
-        # index starts at zero, so the last node in a cycle is equal to the number of
-        # burn steps.
         nodesPerCycle = getNodesPerCycle(cs)
-        return (cycle - 1, nodesPerCycle[cycle - 1])
+        nodesInLastCycle = nodesPerCycle[cycle - 1]
+        indexOfLastNode = nodesInLastCycle - 1  # zero based indexing for nodes
+        return (cycle - 1, indexOfLastNode)
 
 
 def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):

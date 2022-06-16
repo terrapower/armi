@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -33,6 +33,6 @@ jobs:
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           repository-name: ${{ github.repository_owner }}/terrapower.github.io
-          branch: master
+          branch: main
           folder: doc/_build/html
           target-folder: armi

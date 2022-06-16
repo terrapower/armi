@@ -44,15 +44,21 @@ If it outputs "x11", it should work (and if it outputs "wayland", it probably wo
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import asyncio
 import os
-import pytest
 import time
 import unittest
-import test.support
+
+import pytest
+
+try:
+    from test.support import import_module
+except ImportError:
+    # module was moved here in Python 3.10
+    from test.support.import_helper import import_module
 
 # wxpython is an optional dependency, and without it we cant do much of anything. This
 # should raise a unittest.SkipTest if it can't find wx, signalling to pytest to skip the
 # rest of the module. Neat!
-wx = test.support.import_module("wx")
+wx = import_module("wx")
 
 from armi import configure, getApp
 

@@ -240,8 +240,6 @@ def cleanPath(path, mpiRank=0):
     """
     valid = False
     if not os.path.exists(path):
-        if context.MPI_SIZE > 1:
-            context.MPI_COMM.barrier()
         return True
 
     for validPath in [
@@ -281,10 +279,6 @@ def cleanPath(path, mpiRank=0):
         if loopCounter > maxLoops:
             break
         sleep(waitTime)
-
-    # Potentially, wait for all the processes to catch up.
-    if context.MPI_SIZE > 1:
-        context.MPI_COMM.barrier()
 
     if os.path.exists(path):
         return False

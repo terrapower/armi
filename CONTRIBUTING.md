@@ -27,7 +27,7 @@ Any contribution must pass all included unit tests. The tests are built and run 
 
 ## Submitting changes
 
-Please send a [GitHub Pull Request to the ARMI master branch](https://github.com/terrapower/armi/pull/new/master) with a clear
+Please send a [GitHub Pull Request to the ARMI main branch](https://github.com/terrapower/armi/pull/new/main) with a clear
 list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)).  Please follow our
 coding conventions (below) and make sure all of your commits are atomic (one feature per commit).
 
