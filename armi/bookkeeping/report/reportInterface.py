@@ -18,13 +18,13 @@ to show in PDF form to others this is the place to do it.
 """
 import re
 
-from armi import runLog
 from armi import interfaces
-from armi.utils import directoryChangers
+from armi import runLog
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.reactor.flags import Flags
+from armi.utils import directoryChangers
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 

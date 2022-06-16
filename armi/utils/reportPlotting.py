@@ -13,25 +13,35 @@
 # limitations under the License.
 
 """
-A collection of plotting functions useful during ARMI analysis.
+Plotting Utils specific to reports
+
+This module makes heavy use of matplotlib. Beware that plots generated with matplotlib
+may not free their memory, even after the plot is closed, and excessive use of
+plotting functions may gobble up all of your machine's memory.
+
+Therefore, you should use these plotting tools judiciously. It is not advisable to,
+for instance, plot some sequence of objects in a loop at every time node. If you start
+to see your memory usage grow inexplicably, you should question any plots that you are
+generating.
 """
-import os
+
 import itertools
 import math
+import os
 
-import numpy
-import matplotlib.pyplot as plt
-import matplotlib.path
-import matplotlib.spines
-import matplotlib.projections.polar
 from matplotlib import cm
 from matplotlib import colors as mpltcolors
+import matplotlib.path
+import matplotlib.projections.polar
+import matplotlib.pyplot as plt
+import matplotlib.spines
+import numpy
 
 from armi import runLog
-from armi.reactor.flags import Flags
+from armi import settings
 from armi.bookkeeping import report
 from armi.physics.neutronics import crossSectionGroupManager
-from armi import settings
+from armi.reactor.flags import Flags
 
 
 def plotReactorPerformance(reactor, dbi, buGroups, extension=None):

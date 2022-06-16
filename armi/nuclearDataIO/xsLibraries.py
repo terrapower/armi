@@ -24,8 +24,8 @@ import os
 import re
 
 from armi import runLog
-from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
 from armi.nucDirectory import nuclideBases
+from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
 from armi.utils import properties
 
 _ISOTXS_EXT = "ISO"
