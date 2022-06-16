@@ -42,6 +42,20 @@ class UserPluginFlags(plugins.UserPlugin):
         return {"SPECIAL": utils.flags.auto()}
 
 
+class UserPluginFlags2(plugins.UserPlugin):
+    """Simple UserPlugin that defines a single, new flag."""
+
+    def defineFlags():
+        return {"FLAG2": utils.flags.auto()}
+
+
+class UserPluginFlags3(plugins.UserPlugin):
+    """Simple UserPlugin that defines a single, new flag."""
+
+    def defineFlags():
+        return {"FLAG3": utils.flags.auto()}
+
+
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
     """This is invalid/bad because it implements defineSettings()"""
 
@@ -109,9 +123,14 @@ class TestUserPlugins(unittest.TestCase):
     def test_userPluginsFlags(self):
         # a basic test that a UserPlugin is loaded
         app = getApp()
-        count = app.pluginManager.counter
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn("UserPluginFlags", pluginNames)
+
         app.pluginManager.register(UserPluginFlags)
-        self.assertEqual(app.pluginManager.counter, count + 1)
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("UserPluginFlags", pluginNames)
 
         # we shouldn't be able to register the same plugin twice
         with self.assertRaises(ValueError):
@@ -131,29 +150,32 @@ class TestUserPlugins(unittest.TestCase):
 
     def test_registerUserPlugins(self):
         app = getApp()
-        print([p[0] for p in app.pluginManager.list_name_plugin()])
-        count = app.pluginManager.counter
-        print(app.pluginManager.counter)
-        plugins = ["armi.tests.test_user_plugins.UserPluginFlags"]
-        app.registerUserPlugins(plugins)
-        print([p[0] for p in app.pluginManager.list_name_plugin()])
-        print(app.pluginManager.counter)
-        self.assertEqual(app.pluginManager.counter, count + 1)
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
-        self.assertIn("UserPluginFlags", pluginNames)
+        self.assertNotIn("UserPluginFlags2", pluginNames)
+
+        plugins = ["armi.tests.test_user_plugins.UserPluginFlags2"]
+        app.registerUserPlugins(plugins)
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("UserPluginFlags2", pluginNames)
 
     def test_registerUserPluginsFromSettings(self):
         app = getApp()
         cs = caseSettings.Settings().modified(
             caseTitle="test_registerUserPluginsFromSettings",
             newSettings={
-                "userPlugins": ["armi.tests.test_user_plugins.UserPluginFlags"],
+                "userPlugins": ["armi.tests.test_user_plugins.UserPluginFlags3"],
             },
         )
-        count = app.pluginManager.counter
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn("UserPluginFlags3", pluginNames)
+
         cs.registerUserPlugins()
-        self.assertEqual(app.pluginManager.counter, count + 1)
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("UserPluginFlags3", pluginNames)
 
     def test_userPluginOnProcessCoreLoading(self):
         """
@@ -162,14 +184,15 @@ class TestUserPlugins(unittest.TestCase):
         """
         # register the plugin
         app = getApp()
-        count = app.pluginManager.counter
+        name = "UserPluginOnProcessCoreLoading"
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn(name, pluginNames)
         app.pluginManager.register(UserPluginOnProcessCoreLoading)
-        self.assertEqual(app.pluginManager.counter, count + 1)
 
         # validate the plugins was registered
         pluginz = app.pluginManager.list_name_plugin()
         pluginNames = [p[0] for p in pluginz]
-        name = "UserPluginOnProcessCoreLoading"
         self.assertIn(name, pluginNames)
 
         # grab the loaded plugin
@@ -189,17 +212,15 @@ class TestUserPlugins(unittest.TestCase):
         # register the plugin
         app = getApp()
 
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn("UserPluginWithInterface", pluginNames)
+
         # register custom UserPlugin, that has an
-        count = app.pluginManager.counter
         plugins = ["armi.tests.test_user_plugins.UserPluginWithInterface"]
         app.registerUserPlugins(plugins)
-        self.assertEqual(app.pluginManager.counter, count + 1)
 
-        # validate the plugins was registered
-        pluginz = app.pluginManager.list_name_plugin()
-        pluginNames = [p[0] for p in pluginz]
-        name = "UserPluginWithInterface"
-        self.assertIn(name, pluginNames)
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("UserPluginWithInterface", pluginNames)
 
         # load a reactor and grab the fuel assemblieapps
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
