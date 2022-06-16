@@ -52,16 +52,14 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
 
     def test_makeAssemWithUniformMesh(self):
 
-        sourceAssem = self.r.core.getFirstAssembly(Flags.FUEL)
+        sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
         sourceAssem[2].p["xsType"] = "B"
-        # sourceAssem[4].p["ztop"] = 176.0
         self.converter._computeAverageAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem, self.converter._uniformMesh
         )
 
         for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
-            print(newB.p["xsType"], sourceB.p["xsType"])
             self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
 
 
@@ -115,19 +113,6 @@ class TestUniformMeshComponents(unittest.TestCase):
                 self.assertEqual(c, o)
         # ensure that the assemblies were copied over
         self.assertTrue(converted.assemblies, msg="Assembly objects not copied!")
-
-    def test_makeAssemWithUniformMesh(self):
-
-        sourceAssem = self.r.core.getFirstAssembly(Flags.FUEL)
-        sourceAssem[2].p["xsType"] = "B"
-        sourceAssem[4].p["ztop"] = 176.0
-        self.converter._computeAverageAxialMesh()
-        newAssem = self.converter.makeAssemWithUniformMesh(
-            sourceAssem, self.converter._uniformMesh
-        )
-
-        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
-            self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
 
 
 def applyNonUniformHeightDistribution(reactor):

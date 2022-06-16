@@ -390,7 +390,7 @@ assemblies:
     igniter fuel:
         specifier: IC
         blocks: &igniter_fuel_blocks [*block_grid_plate, *block_fuel, *block_fuel, *block_fuel, *block_plenum, *block_aclp, *block_plenum, *block_dummy]
-        height: *standard_heights
+        height: [25.0, 30.0, 20.0, 25.0, 25.0, 25.0, 25.0, 17.5]
         axial mesh points: *standard_axial_mesh_points
         material modifications:
             U235_wt_frac: &igniter_fuel_u235_wt_frac ['', 0.11, 0.11, 0.11, '', '', '', '']
