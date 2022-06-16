@@ -370,7 +370,6 @@ class ArmiPlugin:
         armi.settings.setting.Setting
         armi.settings.setting.Option
         armi.settings.setting.Default
-
         """
         return []
 
@@ -404,6 +403,7 @@ class ArmiPlugin:
         list
             Query objects to attach
         """
+        return []
 
     @staticmethod
     @HOOKSPEC
@@ -631,6 +631,7 @@ class UserPlugin(ArmiPlugin):
             # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: None
             self.defineSettings = lambda: []
+            self.defineSettingsValidators = lambda: []
 
     @staticmethod
     @HOOKSPEC
@@ -645,6 +646,16 @@ class UserPlugin(ArmiPlugin):
     @staticmethod
     @HOOKSPEC
     def defineSettings():
+        """
+        NOTE: This is not overridable.
+        It is a design limitation of user plugins that they not define new settings,
+        so that they are able to be added to the plugin stack during run time.
+        """
+        return []
+
+    @staticmethod
+    @HOOKSPEC
+    def defineSettingsValidators(inspector):
         """
         NOTE: This is not overridable.
         It is a design limitation of user plugins that they not define new settings,
