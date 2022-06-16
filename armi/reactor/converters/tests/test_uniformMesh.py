@@ -36,13 +36,10 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
     Uses the test reactor for detailedAxialExpansion
     """
 
-    @classmethod
-    def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(
+    def setUp(self):
+        self.o, self.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
         )
-
-    def setUp(self):
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
         self.converter._sourceReactor = self.r
 
@@ -60,9 +57,8 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
             elif not newB.isFuel() and not sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif newB.isFuel() and not sourceB.isFuel():
-                # a newB that is fuel can overwrite the xsType of a
-                # nonfuel sourceB; this is the expected behavior immediately above the
-                # fuel block
+                # a newB that is fuel can overwrite the xsType of a nonfuel sourceB;
+                # this is the expected behavior immediately above the fuel block
                 self.assertEqual(newB.p["xsType"], prevB.p["xsType"])
             prevB = newB
 
