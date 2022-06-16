@@ -497,7 +497,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         cs = settings.getMasterCs()
         wrong = (self.cs is not cs) or any((i.cs is not cs) for i in self.interfaces)
         if wrong:
-            msg = ["Primay cs ID is {}".format(id(cs))]
+            msg = ["Primary cs ID is {}".format(id(cs))]
             for i in self.interfaces:
                 msg.append("{:30s} has cs ID: {:12d}".format(str(i), id(i.cs)))
             msg.append("{:30s} has cs ID: {:12d}".format(str(self), id(self.cs)))
