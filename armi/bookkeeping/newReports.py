@@ -443,7 +443,6 @@ class TimeSeries(ReportNode):
     Example
     -------
 
-
     >>> series = TimeSeries("Plot of K-effective", "plot", ["k-effective"], "k-eff", "keff.png") # Adding to a plot with k-effective
     >>> time = r.p.time                     # The current time node of the reactor.
     >>> data = r.core.p.keff                # The parameter k-effective value at that time.
@@ -497,9 +496,6 @@ class TimeSeries(ReportNode):
             data value for the point
         uncertainty: float
             uncertainty associated with the point
-
-
-
         """
         self.dataDictionary[lineToAddTo].append((time, data, uncertainty))
 
@@ -513,25 +509,26 @@ class TimeSeries(ReportNode):
         ymin: float
             The minimum y-value for the graph.
         """
-
         plt.figure()
         lowestY = True
         for label in self.labels:
-
             points = self.dataDictionary[label]
-            # want to sort points by first entry in tuple... (so by asscending time stamp...)
+            # want to sort points by first entry in tuple, so by asscending time stamp
             points.sort(key=itemgetter(0))
+
             if ymin is None or not all([ymin > yi for yi in points]):
                 lowestY = False
+
             lineY = []
             timepoints = []
             uncertainties = []
-            for point in points:
-                # Now points is sorted, collect times, and a data line...
 
+            for point in points:
+                # Now points is sorted, collect times, and a data line
                 timepoints.append(point[0])
                 lineY.append(point[1])
                 uncertainties.append(point[2])
+
             self.dataDictionary[label] = (lineY, timepoints, uncertainties)
             if any(uncertainties):
                 plt.errorbar(
@@ -542,11 +539,13 @@ class TimeSeries(ReportNode):
                 )
             else:
                 plt.plot(timepoints, lineY, ".-", label=label)
+
         plt.xlabel("Time (yr)")
         plt.legend()
         plt.ylabel(self.yaxis)
         plt.grid(color="0.70")
         plt.title(self.title + " for {0}".format(self.rName))
+
         if lowestY:
             # set ymin all values are greater than it and it exists.
             ax = plt.gca()
@@ -555,12 +554,12 @@ class TimeSeries(ReportNode):
         figName = self.rName + "." + self.fName
         plt.savefig(figName)
         plt.close()
+
         return figName
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         """Renders the Timeseries into a graph and places that Image into an html Img tag and returns a div
         containing that image and the images caption if it has one stored."""
-
         figName = self.plot()
         if self.encode:
             img = htmltree.Img(
