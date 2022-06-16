@@ -198,8 +198,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     typeHeight[b.p.xsType] += h
 
             sourceBlock = None
-            if len(typeHeight) > 1:
-                # xsType is the one with the majority of overlap
+            # xsType is the one with the majority of overlap
+            if len(typeHeight) > 0:
                 xsType = next(
                     k for k, v in typeHeight.items() if v == max(typeHeight.values())
                 )
@@ -209,6 +209,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                             sourceBlock = b
                             break
 
+            if len(typeHeight) > 1:
                 if sourceBlock:
                     totalHeight = sum(typeHeight.values())
                     runLog.extra(
