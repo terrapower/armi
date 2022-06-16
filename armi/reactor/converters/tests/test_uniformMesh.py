@@ -38,13 +38,9 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # random seed to support random mesh in unit tests below
-        random.seed(987324987234)
         cls.o, cls.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"xsKernel": "MC2v2"},
         )
-        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
     def setUp(self):
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
@@ -53,7 +49,6 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
     def test_makeAssemWithUniformMesh(self):
 
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
-        sourceAssem[2].p["xsType"] = "B"
         self.converter._computeAverageAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem, self.converter._uniformMesh
@@ -72,8 +67,6 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # random seed to support random mesh in unit tests below
-        random.seed(987324987234)
         cls.o, cls.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
@@ -134,6 +127,11 @@ class TestUniformMesh(unittest.TestCase):
 
     Loads reactor once per test
     """
+
+    @classmethod
+    def setUpClass(cls):
+        # random seed to support random mesh in unit tests below
+        random.seed(987324987234)
 
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(
