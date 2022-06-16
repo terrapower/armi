@@ -17,9 +17,9 @@ import copy
 import os
 import unittest
 
-from armi.tests import TEST_ROOT
 from armi.reactor.tests import test_reactors
-from armi.bookkeeping.plotting import (
+from armi.tests import TEST_ROOT
+from armi.utils.reportPlotting import (
     createPlotMetaData,
     keffVsTime,
     plotAxialProfile,

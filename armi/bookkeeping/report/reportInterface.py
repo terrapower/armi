@@ -120,11 +120,11 @@ class ReportInterface(interfaces.Interface):
         b = self.o.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
-        from armi.bookkeeping import plotting
+        from armi.utils import reportPlotting
 
         dbi = self.o.getInterface("database")
         buGroups = self.cs["buGroups"]
-        plotting.plotReactorPerformance(
+        reportPlotting.plotReactorPerformance(
             self.r, dbi, buGroups, extension=self.cs["outputFileExtension"]
         )
 
