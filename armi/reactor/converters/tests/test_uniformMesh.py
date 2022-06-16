@@ -59,8 +59,12 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif not newB.isFuel() and not sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
-            # else a newB that is fuel can overwrite the xsType of a
-            # nonfuel sourceB; this is the expected behavior and it's okay
+            elif newB.isFuel() and not sourceB.isFuel():
+                # a newB that is fuel can overwrite the xsType of a
+                # nonfuel sourceB; this is the expected behavior immediately above the
+                # fuel block
+                self.assertEqual(newB.p["xsType"], prevB.p["xsType"])
+            prevB = newB
 
 
 class TestUniformMeshComponents(unittest.TestCase):
