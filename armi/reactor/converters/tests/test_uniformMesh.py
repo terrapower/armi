@@ -60,6 +60,11 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
                 # a newB that is fuel can overwrite the xsType of a nonfuel sourceB;
                 # this is the expected behavior immediately above the fuel block
                 self.assertEqual(newB.p["xsType"], prevB.p["xsType"])
+            elif sourceB.isFuel() and not newB.isFuel():
+                raise ValueError(
+                    f"The soure block {sourceB} is fuel but uniform mesh converter"
+                    f"created a nonfuel block {newB}."
+                )
             prevB = newB
 
 
