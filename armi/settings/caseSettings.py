@@ -22,7 +22,7 @@ the environment setup, and hundreds of other things.
 A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
-A master case settings is created as ``masterCs``
+A primay case settings is created as ``masterCs``
 
 """
 import io
