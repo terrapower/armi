@@ -349,9 +349,6 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
 
     def test_initNewFullReactor(self):
         """Test that initNewReactor will growToFullCore if necessary."""
-
-    def test_blueprintCopy(self):
-        """Ensure that necessary blueprint attributes are set"""
         # Perform reactor conversion
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
