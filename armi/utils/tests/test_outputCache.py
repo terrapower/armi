@@ -23,7 +23,7 @@ from armi.utils import outputCache
 
 class TestOutputCache(unittest.TestCase):
     def test_hashFiles(self):
-        with directoryChangers.TemporaryDirectoryChanger() as dc:
+        with directoryChangers.TemporaryDirectoryChanger() as _:
             files = ["test_hashFiles1.txt", "test_hashFiles2.txt"]
             for fileName in files:
                 with open(fileName, "w") as f:
@@ -34,7 +34,7 @@ class TestOutputCache(unittest.TestCase):
             self.assertEqual(hashed, "e9f5713dec55d727bb35392cec6190ce")
 
     def test_deleteCache(self):
-        with directoryChangers.TemporaryDirectoryChanger() as dc:
+        with directoryChangers.TemporaryDirectoryChanger() as _:
             outDir = "snapshotOutput_Cache"
             self.assertFalse(os.path.exists(outDir))
 
