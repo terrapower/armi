@@ -26,27 +26,28 @@ generating.
 import collections
 import itertools
 import math
-import re
 import os
+import re
 
-import numpy
-from ordered_set import OrderedSet
-import matplotlib.pyplot as plt
-import matplotlib.text as mpl_text
-import matplotlib.collections
-import matplotlib.patches
+from matplotlib.collections import PatchCollection
 from matplotlib.widgets import Slider
 from mpl_toolkits import axes_grid1
+from ordered_set import OrderedSet
 import matplotlib.colors as mcolors
+import matplotlib.patches
+import matplotlib.pyplot as plt
+import matplotlib.text as mpl_text
+import numpy
 
 from armi import runLog
-from armi.reactor.flags import Flags
-from armi.reactor import grids
 from armi.bookkeeping import report
-from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
-from armi.reactor.components import Helix, Circle, Rectangle, DerivedShape
-from armi.utils import hexagon
 from armi.materials import custom
+from armi.nuclearDataIO.cccc.rtflux import RtfluxData
+from armi.reactor import grids
+from armi.reactor.components import Helix, Circle, DerivedShape
+from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
+from armi.reactor.flags import Flags
+from armi.utils import hexagon
 
 
 LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
@@ -134,9 +135,7 @@ def plotBlockDepthMap(
     fig = plt.figure(figsize=(12, 12), dpi=100)
     # Make these now, so they are still referenceable after plotFaceMap.
     patches = _makeAssemPatches(core)
-    collection = matplotlib.collections.PatchCollection(
-        patches, cmap=cmapName, alpha=1.0
-    )
+    collection = PatchCollection(patches, cmap=cmapName, alpha=1.0)
     texts = []
 
     plotFaceMap(
@@ -246,6 +245,9 @@ def plotFaceMap(
         A format string that determines how the data is printed if ``labels`` is not provided.
         E.g. ``"{:.1e}"``
 
+    legendMap : list, optional
+        A tuple list of (value, lable, decription), to define the data in the legend.
+
     fontSize : int, optional
         Font size in points
 
@@ -280,9 +282,11 @@ def plotFaceMap(
     shuffleArrows : list, optional
         Adds arrows indicating fuel shuffling maneuvers
 
-    plotPartsToUpdate : list, optional
-        Send references to the parts of the plot such as patches, collections
-        and texts to be changed by another plot utility.
+    titleSize : int, optional
+        Size of title on plot
+
+    referencesToKeep : list, optional
+        References to previous plots you might want to plot on: patches, collection, texts.
 
     Examples
     --------
@@ -298,9 +302,7 @@ def plotFaceMap(
         fig, ax = plt.subplots(figsize=(12, 12), dpi=100)
         # set patch (shapes such as hexagon) heat map values
         patches = _makeAssemPatches(core)
-        collection = matplotlib.collections.PatchCollection(
-            patches, cmap=cmapName, alpha=1.0
-        )
+        collection = PatchCollection(patches, cmap=cmapName, alpha=1.0)
         texts = []
 
     ax.set_title(title, size=titleSize)
@@ -340,10 +342,9 @@ def plotFaceMap(
     # (The text is either black or white depending on the background color it is written on)
     _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collection)
 
-    if makeColorBar:  # allow a color bar option
-        collection2 = matplotlib.collections.PatchCollection(
-            patches, cmap=cmapName, alpha=1.0
-        )
+    # allow a color bar option
+    if makeColorBar:
+        collection2 = PatchCollection(patches, cmap=cmapName, alpha=1.0)
         collection2.set_array(numpy.array(data))
 
         if "radial" in cBarLabel:
@@ -512,10 +513,9 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
         Hexagons with Letters in them on the legend, which is not a built-in legend option.
 
         See: http://matplotlib.org/users/legend_guide.html#implementing-a-custom-legend-handler
-
         """
 
-        def legend_artist(self, legend, orig_handle, fontsize, handlebox):
+        def legend_artist(self, _legend, orig_handle, _fontsize, handlebox):
             letter, index = orig_handle
             x0, y0 = handlebox.xdescent, handlebox.ydescent
             width, height = handlebox.width, handlebox.height
@@ -950,19 +950,29 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         def __init__(
             self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
         ):
-            if blockList:
-                self.blockList = blockList
-                self.nGroup = nGroup
+            self.nGroup = nGroup
+            self.blockList = blockList
+            self.adjoint = adjoint
+            self.peak = peak
+            self.avgHistogram = None
+            self.eHistogram = None
+
+            if not blockList:
                 self.avgFlux = numpy.zeros(self.nGroup)
                 self.peakFlux = numpy.zeros(self.nGroup)
-                self.peak = peak
-                self.adjoint = adjoint
+                self.lineAvg = "-"
+                self.linePeak = "-"
+            else:
+                self.avgFlux = numpy.zeros(self.nGroup)
+                self.peakFlux = numpy.zeros(self.nGroup)
+
                 if self.adjoint:
                     self.labelAvg = "Average Adjoint Flux"
                     self.labelPeak = "Peak Adjoint Flux"
                 else:
                     self.labelAvg = "Average Flux"
                     self.labelPeak = "Peak Flux"
+
                 if primary:
                     self.lineAvg = "-"
                     self.linePeak = "-"
@@ -976,6 +986,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                 self.avgFlux += numpy.array(thisFlux)
                 if sum(thisFlux) > sum(self.peakFlux):
                     self.peakFlux = thisFlux
+
             self.avgFlux = self.avgFlux / len(bList)
 
         def setEnergyStructure(self, upperEnergyBounds):
@@ -1035,7 +1046,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     if max(bf1.avgFlux) <= 0.0:
         runLog.warning(
-            "Cannot plot flux with maxval=={0} in {1}".format(maxVal, bList[0])
+            "Cannot plot flux with maxval=={0} in {1}".format(eMax, bList[0])
         )
         return
 
@@ -1387,9 +1398,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     }
     patches, data, _ = _makeBlockPinPatches(block, cold)
 
-    collection = matplotlib.collections.PatchCollection(
-        patches, cmap=cmapName, alpha=1.0
-    )
+    collection = PatchCollection(patches, cmap=cmapName, alpha=1.0)
 
     allColors = numpy.array(list(materialMap.values()))
     ourColors = numpy.array([materialMap[materialName] for materialName in data])
@@ -1423,3 +1432,147 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     plt.savefig(fName, format="svg", **pltKwargs)
 
     return os.path.abspath(fName)
+
+
+def plotTriangleFlux(
+    rtfluxData: RtfluxData,
+    axialZ,
+    energyGroup,
+    hexPitch=math.sqrt(3.0),
+    hexSideSubdivisions=1,
+    imgFileExt=".png",
+):
+    """
+    Plot region total flux for one core-wide axial slice on triangular/hexagonal geometry.
+
+    .. warning:: This will run on non-triangular meshes but will look wrong.
+
+    Parameters
+    ----------
+    rtfluxData : RtfluxData object
+        The RTFLUX/ATFLUX data object containing all read file data.
+        Alternatively, this could be a FIXSRC file object,
+        but only if FIXSRC.fixSrc is first renamed FIXSRC.triangleFluxes.
+    axialZ : int
+        The DIF3D axial node index of the core-wide slice to plot.
+    energyGroup : int
+        The energy group index to plot.
+    hexPitch: float, optional
+        The flat-to-flat hexagonal assembly pitch in this core.
+        By default, it is sqrt(3) so that the triangle edge length is 1 if hexSideSubdivisions=1.
+    hexSideSubdivisions : int, optional
+        By default, it is 1 so that the triangle edge length is 1 if hexPitch=sqrt(3).
+    imgFileExt : str, optional
+        The image file extension.
+
+    Examples
+    --------
+    >>> rtflux = rtflux.RtfluxStream.readBinary("RTFLUX")
+    >>> plotTriangleFlux(rtflux, axialZ=10, energyGroup=4)
+    """
+    triHeightInCm = hexPitch / 2.0 / hexSideSubdivisions
+    sideLengthInCm = triHeightInCm / (math.sqrt(3.0) / 2.0)
+    s2InCm = sideLengthInCm / 2.0
+
+    vals = rtfluxData.groupFluxes[:, :, axialZ, energyGroup]
+    patches = []
+    colorVals = []
+    for i in range(vals.shape[0]):
+        for j in range(vals.shape[1]):
+            # use (i+j)%2 for rectangular meshing
+            flipped = i % 2
+            xInCm = s2InCm * (i - j)
+            yInCm = triHeightInCm * j + sideLengthInCm / 2.0 / math.sqrt(3) * (
+                1 + flipped
+            )
+
+            flux = vals[i][j]
+
+            if flux:
+                triangle = patches.mpatches.RegularPolygon(
+                    (xInCm, yInCm),
+                    3,
+                    sideLengthInCm / math.sqrt(3),
+                    orientation=math.pi * flipped,
+                    linewidth=0.0,
+                )
+
+                patches.append(triangle)
+                colorVals.append(flux)
+
+    collection = PatchCollection(patches, alpha=1.0, linewidths=(0,), edgecolors="none")
+    # add color map to this collection ONLY (pins, not ducts)
+    collection.set_array(numpy.array(colorVals))
+
+    plt.figure()
+    ax = plt.gca()
+    ax.add_collection(collection)
+    colbar = plt.colorbar(collection)
+    colbar.set_label("n/s/cm$^3$")
+    plt.ylabel("cm")
+    plt.xlabel("cm")
+    ax.autoscale_view()
+    plt.savefig("RTFLUX-z" + str(axialZ + 1) + "-g" + str(energyGroup + 1) + imgFileExt)
+    plt.close()
+
+
+def plotNucXs(
+    isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None
+):
+    """
+    generates a XS plot for a nuclide on the ISOTXS library
+
+    Parameters
+    ----------
+    isotxs : IsotxsLibrary
+        A collection of cross sections (XS) for both neutron and gamma reactions.
+    nucName : str or list
+        The nuclides to plot
+    xsName : str or list
+        the XS to plot e.g. n,g, n,f, nalph, etc. see xsCollections for actual names.
+    fName : str, optional
+        if fName is given, the file will be written rather than plotting to screen
+    label : str, optional
+        is an optional label for image legends, useful in ipython sessions.
+    noShow : bool, optional
+        Won't finalize plot. Useful for using this to make custom plots.
+
+    Examples
+    --------
+    >>> l = ISOTXS()
+    >>> plotNucXs(l, 'U238NA','fission')
+
+    >>> # Plot n,g for all xenon and krypton isotopes
+    >>> f = lambda name: 'XE' in name or 'KR' in name
+    >>> plotNucXs(l, sorted(filter(f,l.nuclides.keys())),itertools.repeat('nGamma'))
+
+    See Also
+    --------
+    armi.nucDirectory.nuclide.plotScatterMatrix
+    """
+    # convert all input to lists
+    if isinstance(nucNames, str):
+        nucNames = [nucNames]
+    if isinstance(xsNames, str):
+        xsNames = [xsNames]
+
+    for nucName, xsName in zip(nucNames, xsNames):
+        nuc = isotxs[nucName]
+        thisLabel = label or "{0} {1}".format(nucName, xsName)
+        x = isotxs.neutronEnergyUpperBounds / 1e6
+        y = nuc.micros[xsName]
+        plt.plot(x, y, "-", label=thisLabel, drawstyle="steps-post")
+
+    ax = plt.gca()
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    plt.grid(color="0.70")
+    plt.title(title or " microscopic XS from {0}".format(isotxs))
+    plt.xlabel("Energy (MeV)")
+    plt.ylabel("microscopic XS (barns)")
+    plt.legend()
+
+    if fName:
+        plt.savefig(fName)
+    elif not noShow:
+        plt.show()

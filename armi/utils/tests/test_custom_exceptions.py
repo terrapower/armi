@@ -16,7 +16,6 @@ r"""Basic tests of the custom exceptions
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,invalid-name
 import unittest
 
-from armi import context
 from armi.tests import mockRunLogs
 from armi.utils.customExceptions import info, important
 from armi.utils.customExceptions import warn, warn_when_root
