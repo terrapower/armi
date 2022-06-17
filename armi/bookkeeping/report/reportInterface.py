@@ -25,6 +25,7 @@ from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
+from armi.utils import reportPlotting
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -119,8 +120,6 @@ class ReportInterface(interfaces.Interface):
         """Adds the data to the report, and generates it"""
         b = self.o.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
-
-        from armi.utils import reportPlotting
 
         dbi = self.o.getInterface("database")
         buGroups = self.cs["buGroups"]
