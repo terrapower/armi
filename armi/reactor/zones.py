@@ -458,7 +458,9 @@ def _buildZonesByOrifice(core, cs):
 
     Notes
     -----
-    It separate oxide and LTA assembly into their own zones
+    Orifice coefficients are determined by a combinatio of the
+    ``THorificeZone`` and ``nozzleType`` parameters. Each combination of
+    ``THorificeZone`` and ``nozzleType`` is treated as a unique ``Zone``.
     """
     runLog.extra("Building Zones by Orifice zone")
     orificeZones = Zones(core, cs)
