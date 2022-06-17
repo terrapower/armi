@@ -57,7 +57,6 @@ class TestRadar(unittest.TestCase):
 
     def test_plotAxialProfile(self):
         vals = list(range(1, 10, 2))
-        dVals = list(range(1, 24, 2))
         fName = "test_plotAxialProfile"
 
         xLabel = "xLabel"
@@ -67,7 +66,7 @@ class TestRadar(unittest.TestCase):
         labels = ["a", "b"]
         meta = createPlotMetaData(fName, xLabel, yLabel, xTicks, yTicks, labels)
 
-        plotAxialProfile(vals, vals, fName, meta)
+        plotAxialProfile(vals, vals, fName, meta, 2)
         os.remove(fName + ".png")
 
     def test_keffVsTime(self):

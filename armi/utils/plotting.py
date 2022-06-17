@@ -44,7 +44,7 @@ from armi.bookkeeping import report
 from armi.materials import custom
 from armi.nuclearDataIO.cccc.rtflux import RtfluxData
 from armi.reactor import grids
-from armi.reactor.components import Helix, Circle, Rectangle, DerivedShape
+from armi.reactor.components import Helix, Circle, DerivedShape
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
 from armi.reactor.flags import Flags
 from armi.utils import hexagon
@@ -245,6 +245,9 @@ def plotFaceMap(
         A format string that determines how the data is printed if ``labels`` is not provided.
         E.g. ``"{:.1e}"``
 
+    legendMap : list, optional
+        A tuple list of (value, lable, decription), to define the data in the legend.
+
     fontSize : int, optional
         Font size in points
 
@@ -279,9 +282,11 @@ def plotFaceMap(
     shuffleArrows : list, optional
         Adds arrows indicating fuel shuffling maneuvers
 
-    plotPartsToUpdate : list, optional
-        Send references to the parts of the plot such as patches, collections
-        and texts to be changed by another plot utility.
+    titleSize : int, optional
+        Size of title on plot
+
+    referencesToKeep : list, optional
+        References to previous plots you might want to plot on: patches, collection, texts.
 
     Examples
     --------
@@ -508,10 +513,9 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
         Hexagons with Letters in them on the legend, which is not a built-in legend option.
 
         See: http://matplotlib.org/users/legend_guide.html#implementing-a-custom-legend-handler
-
         """
 
-        def legend_artist(self, legend, orig_handle, fontsize, handlebox):
+        def legend_artist(self, _legend, orig_handle, _fontsize, handlebox):
             letter, index = orig_handle
             x0, y0 = handlebox.xdescent, handlebox.ydescent
             width, height = handlebox.width, handlebox.height
@@ -946,19 +950,29 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         def __init__(
             self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
         ):
-            if blockList:
-                self.blockList = blockList
-                self.nGroup = nGroup
+            self.nGroup = nGroup
+            self.blockList = blockList
+            self.adjoint = adjoint
+            self.peak = peak
+            self.avgHistogram = None
+            self.eHistogram = None
+
+            if not blockList:
                 self.avgFlux = numpy.zeros(self.nGroup)
                 self.peakFlux = numpy.zeros(self.nGroup)
-                self.peak = peak
-                self.adjoint = adjoint
+                self.lineAvg = "-"
+                self.linePeak = "-"
+            else:
+                self.avgFlux = numpy.zeros(self.nGroup)
+                self.peakFlux = numpy.zeros(self.nGroup)
+
                 if self.adjoint:
                     self.labelAvg = "Average Adjoint Flux"
                     self.labelPeak = "Peak Adjoint Flux"
                 else:
                     self.labelAvg = "Average Flux"
                     self.labelPeak = "Peak Flux"
+
                 if primary:
                     self.lineAvg = "-"
                     self.linePeak = "-"
@@ -972,6 +986,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                 self.avgFlux += numpy.array(thisFlux)
                 if sum(thisFlux) > sum(self.peakFlux):
                     self.peakFlux = thisFlux
+
             self.avgFlux = self.avgFlux / len(bList)
 
         def setEnergyStructure(self, upperEnergyBounds):
@@ -1031,7 +1046,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     if max(bf1.avgFlux) <= 0.0:
         runLog.warning(
-            "Cannot plot flux with maxval=={0} in {1}".format(maxVal, bList[0])
+            "Cannot plot flux with maxval=={0} in {1}".format(eMax, bList[0])
         )
         return
 
