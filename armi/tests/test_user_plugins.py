@@ -72,8 +72,9 @@ class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
 
 class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
     """
-    This plugin flex-tests the onProcessCoreLoading() hook.
-    NOTE: This plugin affects the core in a non-physical way.
+    This plugin flex-tests the onProcessCoreLoading() hook,
+    and arbitrarily adds "1" to the height of every block,
+    after the DB is loaded.
     """
 
     @staticmethod
