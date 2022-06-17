@@ -163,7 +163,7 @@ class SystemBlueprint(yamlize.Object):
         )
         system.spatialLocator = spatialLocator
         if context.MPI_RANK != 0:
-            # on non-master nodes we don't bother building up the assemblies
+            # on non-primary nodes we don't bother building up the assemblies
             # because they will be populated with DistributeState.
             return None
 

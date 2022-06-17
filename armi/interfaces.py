@@ -204,7 +204,7 @@ class Interface:
 
         Notes
         -----
-        This runs on all worker nodes as well as the master.
+        This runs on all worker nodes as well as the primary.
         """
         self.r = r
         self.cs = o.cs
@@ -316,7 +316,7 @@ class Interface:
         pass
 
     def interactDistributeState(self):
-        """Called after this interface is copied to a different (non-master) MPI node."""
+        """Called after this interface is copied to a different (non-primary) MPI node."""
         pass
 
     def isRequestedDetailPoint(self, cycle=None, node=None):
