@@ -27,6 +27,7 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
+from armi.reactor.converters import uniformMesh
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
@@ -345,6 +346,23 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             ),
         )
         self.assertFalse(self.r.core.isFullCore)
+
+    def test_initNewFullReactor(self):
+        """Test that initNewReactor will growToFullCore if necessary."""
+
+    def test_blueprintCopy(self):
+        """Ensure that necessary blueprint attributes are set"""
+        # Perform reactor conversion
+        changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
+        changer.convert(self.r)
+
+        converter = uniformMesh.NeutronicsUniformMeshConverter()
+        newR = converter.initNewReactor(self.r)
+
+        # Check the full core conversion is successful
+        self.assertTrue(self.r.core.isFullCore)
+        self.assertTrue(newR.core.isFullCore)
+        self.assertEqual(newR.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
         """Test that hex core is not modified when third core to full core changer is called on an already full core geometry."""
