@@ -79,12 +79,16 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
     @staticmethod
     @HOOKSPEC
     def onProcessCoreLoading(core, cs):
-        fuels = core.getAssemblies(Flags.FUEL)
-        fuels[0].p.buLimit = fuels[0].p.buLimit + 1000
+        blocks = core.getBlocks(Flags.FUEL)
+        for b in blocks:
+            b.p.height += 1.0
 
 
 class UpInterface(interfaces.Interface):
-    """TODO: JOHN"""
+    """
+    A mostly meaningless little test interface, just to prove that we can affect
+    the reactor state from an interface inside a UserPlugin
+    """
 
     name = "UpInterface"
 
@@ -93,7 +97,7 @@ class UpInterface(interfaces.Interface):
 
 
 class UserPluginWithInterface(plugins.UserPlugin):
-    """TODO"""
+    """A little test UserPlugin, just to show how to add an Inteface through a UserPlugin"""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -180,7 +184,8 @@ class TestUserPlugins(unittest.TestCase):
     def test_userPluginOnProcessCoreLoading(self):
         """
         Test that a UserPlugin can affect the Reactor state,
-        by implementing onProcessCoreLoading().
+        by implementing onProcessCoreLoading() to arbitrarily increase the
+        height of all the blocks by 1.0
         """
         # register the plugin
         app = getApp()
@@ -200,15 +205,16 @@ class TestUserPlugins(unittest.TestCase):
 
         # load a reactor and grab the fuel assemblies
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
-        fuels = r.core.getAssemblies(Flags.FUEL)
+        fuels = r.core.getBlocks(Flags.FUEL)
 
         # prove that our plugin affects the core in the desired way
-        sumBuLimits = sum(f.p.buLimit for f in fuels)
+        heights = [float(f.p.height) for f in fuels]
         plug0.onProcessCoreLoading(core=r.core, cs=o.cs)
-        self.assertEqual(sum(f.p.buLimit for f in fuels), sumBuLimits + 1000)
+        for i, height in enumerate(heights):
+            self.assertEqual(fuels[i].p.height, height + 1.0)
 
     def test_userPluginWithInterfaces(self):
-        """TODO"""
+        """Test that UserPlugins can correctly inject an interface into the stack"""
         # register the plugin
         app = getApp()
 
@@ -226,7 +232,7 @@ class TestUserPlugins(unittest.TestCase):
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         fuels = r.core.getAssemblies(Flags.FUEL)
 
-        # TODO: JOHN! I believe this is just because we have multiple tests altering the App()
+        # This is here because we have multiple tests altering the App()
         o.interfaces = []
         o.initializeInterfaces(r)
 
@@ -238,7 +244,7 @@ class TestUserPlugins(unittest.TestCase):
                 o.interfaces = o.interfaces[:i] + o.interfaces[i + 1 :]
                 break
 
-        # TODO
+        # test that the core power goes up
         self.assertEqual(r.core.p.power, 100000000.0)
         o.cs["nCycles"] = 2
         o.operate()
