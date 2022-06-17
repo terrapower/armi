@@ -61,7 +61,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
 
     customSettings["db"] = False  # stop use of database
     cs = cs.modified(newSettings=customSettings)
-    settings.setMasterCs(cs)  # reset so everything matches master
+    settings.setMasterCs(cs)  # reset so everything matches the primary Cs
 
     r = tests.getEmptyHexReactor()
     r.core.setOptionsFromCs(cs)

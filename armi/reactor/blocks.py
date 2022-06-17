@@ -25,7 +25,6 @@ import copy
 import collections
 from typing import Optional, Type, Tuple, ClassVar
 
-import matplotlib.pyplot as plt
 import numpy
 
 from armi.reactor import composites
@@ -1848,6 +1847,10 @@ class HexBlock(Block):
             if not isinstance(duct, components.Hexagon):
                 # getPinCenterFlatToFlat only works for hexes
                 # inner most duct might be circle or some other shape
+                duct = None
+            elif isinstance(duct, components.HoledHexagon):
+                # has no ip and is circular on inside so following
+                # code will not work
                 duct = None
         clad = self.getComponent(Flags.CLAD)
         if any(c is None for c in (duct, wire, clad)):

@@ -497,14 +497,16 @@ class Operator:  # pylint: disable=too-many-public-methods
         cs = settings.getMasterCs()
         wrong = (self.cs is not cs) or any((i.cs is not cs) for i in self.interfaces)
         if wrong:
-            msg = ["Master cs ID is {}".format(id(cs))]
+            msg = ["Primary cs ID is {}".format(id(cs))]
             for i in self.interfaces:
                 msg.append("{:30s} has cs ID: {:12d}".format(str(i), id(i.cs)))
             msg.append("{:30s} has cs ID: {:12d}".format(str(self), id(self.cs)))
             raise RuntimeError("\n".join(msg))
 
         runLog.debug(
-            "Reactors, operators, and interfaces all share master cs: {}".format(id(cs))
+            "Reactors, operators, and interfaces all share primary cs: {}".format(
+                id(cs)
+            )
         )
 
     def interactAllInit(self):
@@ -1009,7 +1011,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         newFolder = "snapShot{0}_{1}".format(cycle, node)
         if os.path.exists(newFolder):
             runLog.important("Deleting existing snapshot data in {0}".format(newFolder))
-            pathTools.cleanPath(newFolder, context.MPI_RANK)  # careful with cleanPath!
+            pathTools.cleanPath(newFolder)  # careful with cleanPath!
             # give it a minute.
             time.sleep(1)
 

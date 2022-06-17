@@ -148,7 +148,7 @@ class TestGeneralUtils(unittest.TestCase):
            heirarchically inside the Core, which is inside the Reactor object.
         """
         # load the test reactor
-        o, r = loadTestReactor()
+        _o, r = loadTestReactor()
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -353,8 +353,9 @@ settings:
     def test_getPreviousTimeNode(self):
         with self.assertRaises(ValueError):
             getPreviousTimeNode(0, 0, "foo")
-
-        self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 4))
+        self.assertEqual(getPreviousTimeNode(1, 1, self.standaloneSimpleCS), (1, 0))
+        self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneSimpleCS), (0, 3))
+        self.assertEqual(getPreviousTimeNode(1, 0, self.standaloneDetailedCS), (0, 3))
         self.assertEqual(getPreviousTimeNode(2, 4, self.standaloneDetailedCS), (2, 3))
 
     def test_getCumulativeNodeNum(self):

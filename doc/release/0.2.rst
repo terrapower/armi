@@ -15,6 +15,7 @@ What's new in ARMI
 #. Removed the ``PyYaml`` dependency.
 #. Removed all bare ``import armi`` statements, for code clarity.
 #. Renamed control rod assembly parameters for generic implementations of control rod handling.
+#. Changed the default Git branch name to ``main``.
 #. Added new ``UserPlugin`` functionality.
 #. TBD
 
@@ -27,6 +28,7 @@ Bug fixes
 #. Multiple bug fixes in ``growToFullCore``.
 #. ``Block.getWettedPerim`` was moved to ``HexBlock``, as that was more accurate.
 #. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
+#. Fixed bugs in the ARMI memory profiler.
 #. TBD
 
 

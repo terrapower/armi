@@ -55,6 +55,7 @@ settings:
   refType: inner igniter fuel
   reloadDBName: reloadingDB.h5
   shuffleLogic: refSmallReactorShuffleLogic.py
+  smallRun: true
   summarizeAssemDesign: false
   targetK: 1.002
   transientForSensitivity: ''
