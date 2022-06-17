@@ -17,7 +17,7 @@ The MPI-aware variant of the standard ARMI operator.
 
 See :py:class:`~armi.operators.operator.Operator` for the parent class.
 
-This sets up the main Operator on the master MPI node and initializes worker
+This sets up the main Operator on the primary MPI node and initializes worker
 processes on all other MPI nodes. At certain points in the run, particular interfaces
 might call into action all the workers. For example, a depletion or
 subchannel T/H module may ask the MPI pool to perform a few hundred
@@ -56,7 +56,7 @@ class OperatorMPI(Operator):
             Operator.__init__(self, cs)
         except:
             # kill the workers too so everything dies.
-            runLog.important("Master node failed on init. Quitting.")
+            runLog.important("Primary node failed on init. Quitting.")
             if context.MPI_COMM:  # else it's a single cpu case.
                 context.MPI_COMM.bcast("quit", root=0)
             raise
@@ -70,14 +70,16 @@ class OperatorMPI(Operator):
         """
         runLog.debug("OperatorMPI.operate")
         if context.MPI_RANK == 0:
-            # this is the master
+            # this is the primary
             try:
                 # run the regular old operate function
                 Operator.operate(self)
                 runLog.important(time.ctime())
             except Exception as ee:
                 runLog.error(
-                    "Error in Master Node. Check STDERR for a traceback.\n{}".format(ee)
+                    "Error in Primary Node. Check STDERR for a traceback.\n{}".format(
+                        ee
+                    )
                 )
                 raise
             finally:
@@ -120,8 +122,8 @@ class OperatorMPI(Operator):
         Notes
         -----
         This method is what worker nodes are in while they wait for instructions from
-        the master node in a parallel run. The nodes will sit, waiting for a "worker
-        command". When this comes (from a bcast from the master), a set of if statements
+        the primary node in a parallel run. The nodes will sit, waiting for a "worker
+        command". When this comes (from a bcast from the primary), a set of if statements
         are evaluated, with specific behaviors defined for each command. If the operator
         doesn't understand the command, it loops through the interface stack to see if
         any of the interfaces understand it.
@@ -138,7 +140,7 @@ class OperatorMPI(Operator):
 
         """
         while True:
-            # sit around waiting for a command from the master
+            # sit around waiting for a command from the primary
             runLog.extra("Node {0} ready and waiting".format(context.MPI_RANK))
             cmd = context.MPI_COMM.bcast(None, root=0)
             runLog.extra("worker received command {0}".format(cmd))

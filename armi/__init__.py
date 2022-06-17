@@ -173,7 +173,7 @@ def init(choice=None, fName=None, cs=None):
     try:
         return armiCase.initializeOperator()
     except:  # Catch any and all errors. Naked exception on purpose.
-        # Concatenate errors to the master log file.
+        # Concatenate errors to the primary log file.
         runLog.close()
         raise
 
