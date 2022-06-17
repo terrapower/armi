@@ -741,14 +741,12 @@ def plotAxialProfile(zVals, dataVals, fName, metadata, nPlot=1, yLog=False):
     metadata : bool
         Metadata (title, labels, legends, ticks)
 
-    nPlot: str
+    nPlot: int
         Number of plots to be generated
 
     yLog: bool
         Boolean flag indicating that y-axis is to be plotted on a log scale.
-
     """
-
     plt.figure(figsize=(15, 10))
 
     plt.xlabel(metadata["xlabel"])
@@ -770,13 +768,11 @@ def plotAxialProfile(zVals, dataVals, fName, metadata, nPlot=1, yLog=False):
         lineTypes = ["", ":", "--", "-."]
         nLineTypes = len(lineTypes)
         for n in range(nPlot):
-            n_ = (
-                nPlot - n - 1
-            )  # reverse order for color map, so high E is red and low E is blue
+            # reverse order for color map, so high E is red and low E is blue
+            n_ = nPlot - n - 1
             color = colormap(norm(n_))
             lineTypeIndex = int(math.fmod(n, nLineTypes))
             plt.plot(zVals, dataVals[:, n], lineTypes[lineTypeIndex], color=color)
-
     else:
         plt.plot(zVals, dataVals)
 

@@ -17,6 +17,8 @@ import copy
 import os
 import unittest
 
+import numpy as np
+
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils.reportPlotting import (
@@ -66,13 +68,15 @@ class TestRadar(unittest.TestCase):
         labels = ["a", "b"]
         meta = createPlotMetaData(fName, xLabel, yLabel, xTicks, yTicks, labels)
 
-        plotAxialProfile(vals, vals, fName, meta, 2)
+        plotAxialProfile(vals, np.ones((5, 2)), fName, meta, nPlot=2)
+        self.assertTrue(os.path.exists(fName + ".png"))
         os.remove(fName + ".png")
 
     def test_keffVsTime(self):
         t = list(range(75))
         ext = "png"
         keffVsTime(self.r, t, t, keffUnc=[], extension=ext)
+        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
         os.remove("R-armiRun.keff.png")
 
 
