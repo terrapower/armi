@@ -34,6 +34,10 @@
 		}
 	},
 
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "pip install -e .",
+	"postCreateCommand": "pip install -r requirements.txt",
+
 	// Allows port 8888 used for Jupyter Notebook to be available locally.
 	"forwardPorts": [8888],
 	"remoteUser": "vscode"
