@@ -4,4 +4,4 @@
 
 # A vscode remote container docker image with conda from
 # https://hub.docker.com/_/microsoft-vscode-devcontainers
-FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
+FROM mcr.microsoft.com/vscode/devcontainers/python:3.10
