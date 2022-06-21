@@ -458,7 +458,7 @@ def _buildZonesByOrifice(core, cs):
 
     Notes
     -----
-    Orifice coefficients are determined by a combinatio of the
+    Orifice coefficients are determined by a combination of the
     ``THorificeZone`` and ``nozzleType`` parameters. Each combination of
     ``THorificeZone`` and ``nozzleType`` is treated as a unique ``Zone``.
     """
