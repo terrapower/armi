@@ -29,6 +29,7 @@ import voluptuous as vol
 from armi import context
 from armi.settings import setting
 from armi.utils.mathematics import isMonotonic
+from armi.reactor.flags import Flags
 
 
 # Framework settings
@@ -109,6 +110,8 @@ CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
+CONF_PRIMARY_ASSEMBLY_CONSERVE = "primaryAssemblyToConserve"
+CONF_SECONDARY_ASSEMBLY_CONSERVE = "secondaryAssemblyToConserve"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -153,6 +156,28 @@ def defineSettings() -> List[setting.Setting]:
             description="Multiplicative factor on the Global Flux number of mesh per "
             "block. Used for axial mesh refinement.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False)),
+        ),
+        setting.Setting(
+            CONF_PRIMARY_ASSEMBLY_CONSERVE,
+            default=Flags.FUEL,
+            label="Primary Assembly To Conserve",
+            description=(
+                "For disjoint axial meshes, the 'primary assembly to conserve' corresponds to "
+                "the assembly type in which the axial mesh is given highest priority for preservation. "
+                "Axial mesh preservation is defined as minimizing (or ideally, eliminating) "
+                "inter-block material smearing."
+            ),
+        ),
+        setting.Setting(
+            CONF_SECONDARY_ASSEMBLY_CONSERVE,
+            default=Flags.CONTROL,
+            label="Secondary Assembly To Conserve",
+            description=(
+                "For disjoint axial meshes, the 'secondary assembly to conserve' corresponds to "
+                "the assembly type in which the axial mesh is given second highest priority for preservation. "
+                "Axial mesh preservation is defined as minimizing (or ideally, eliminating) "
+                "inter-block material smearing."
+            ),
         ),
         setting.Setting(
             CONF_DETAILED_AXIAL_EXPANSION,

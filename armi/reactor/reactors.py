@@ -2242,9 +2242,9 @@ class Core(composites.Composite):
         refAssem = self.refAssem
 
         if not cs["detailedAxialExpansion"] and self.name == "core":
-            primaryAssemblyFlag = Flags.FUEL  # Flags.CONTROL #
-            secondaryAssemblyFlag = Flags.CONTROL  # Flags.FUEL #
-            uniformMeshCore = self.getCoreWideUniformMesh(primaryAssemblyFlag, secondaryAssemblyFlag)
+            uniformMeshCore = self.getCoreWideUniformMesh(
+                cs["primaryAssemblyToConserve"], cs["secondaryAssemblyToConserve"]
+            )
             self.applyCoreWideUniformMesh(uniformMeshCore)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
@@ -2326,14 +2326,17 @@ class Core(composites.Composite):
                 ia += 1
 
         if preserve:
-            self.checkAxialMeshValidity(newMeshPoints, preservedMeshPoints=assemAxialMesh)
+            self.checkAxialMeshValidity(
+                newMeshPoints, preservedMeshPoints=assemAxialMesh
+            )
         else:
             self.checkAxialMeshValidity(newMeshPoints)
 
         return newMeshPoints
 
-
-    def getBlockBoundsBetweenElevation(self, axialGrid: list, zLower: float, zUpper: float):
+    def getBlockBoundsBetweenElevation(
+        self, axialGrid: list, zLower: float, zUpper: float
+    ):
         """retrieve axial mesh values on axialGrid that fall between zLower and zUpper
 
         Parameters
@@ -2367,7 +2370,6 @@ class Core(composites.Composite):
                 break
 
         return blkBndsBetweenElev
-
 
     def checkAxialMeshValidity(self, axialMesh: list, preservedMeshPoints: list = None):
         """check validity of axialMesh (that each subsequent entry increases)
@@ -2422,9 +2424,11 @@ class Core(composites.Composite):
                                 )
                             ) from second
 
-
     def createUniformMeshCore(
-        self, primaryAssemsToPreserve: list, secondaryAssemsToPreserve: list, otherAssems: list
+        self,
+        primaryAssemsToPreserve: list,
+        secondaryAssemsToPreserve: list,
+        otherAssems: list,
     ):
         """using three sets of assemblies, create a core-wide uniform mesh
 
@@ -2445,7 +2449,9 @@ class Core(composites.Composite):
         # get uniformMesh for otherAssems
         uniformMeshOther = otherAssems[0].getAxialMesh()
         for assem in otherAssems:
-            uniformMeshOther = self.updateUniformMesh(assem.getAxialMesh(), uniformMeshOther)
+            uniformMeshOther = self.updateUniformMesh(
+                assem.getAxialMesh(), uniformMeshOther
+            )
 
         # get uniformMesh for secondaryAssemsToPreserve
         uniformMeshSecondaryPreserve = secondaryAssemsToPreserve[0].getAxialMesh()
@@ -2473,8 +2479,9 @@ class Core(composites.Composite):
 
         return coreUniformMesh
 
-
-    def checkForSmearing(self, aList: list, uniformMesh: list, printLikeBlkSmears: bool = False):
+    def checkForSmearing(
+        self, aList: list, uniformMesh: list, printLikeBlkSmears: bool
+    ):
         """indicate smearing by presence of block bounds that are not aligned with uniformMesh
 
         Parameters
@@ -2483,14 +2490,14 @@ class Core(composites.Composite):
             List of assemblies which uniformMesh would be applied; will or will not have inter-block smearing
         uniformMesh : list, float
             The axial mesh to be applied to a
-        printLikeBlkSmears : boolean, optional
+        printLikeBlkSmears : boolean
             There may be inter-block smearing between similar/like blocks. E.g., fuel to fuel, plenum to plenum, etc.
             These smearing instances may be less important than dissimilar blocks (e.g., control to plenum,
             shield to fuel, fuel to plenum). This boolean controls whether or not the similar/like block
             smearing cases are printed.
         """
         for a in aList:
-            print("{0}...".format(a))
+            runLog.debug("{0}...".format(a))
             for i, _z in enumerate(uniformMesh):
                 if i == 0:
                     bottom = 0.0
@@ -2499,23 +2506,24 @@ class Core(composites.Composite):
                 top = uniformMesh[i]
                 overlap = a.getBlocksBetweenElevations(bottom, top)
                 if len(overlap) > 1:
-                    diffMaterialInBlocks = len(set([b.p.flags for b, _h in overlap])) > 1
+                    diffMaterialInBlocks = len(set(b.p.flags for b, _h in overlap)) > 1
                     if printLikeBlkSmears or diffMaterialInBlocks:
-                        print(
+                        runLog.debug(
                             "    uniform mesh block {0}, ({1:.3f},{2:.3f})".format(
                                 i, bottom, top
                             )
                         )
-                        print("    percent contribution \t block")
+                        runLog.debug("    percent contribution \t block")
                         for b, val in overlap:
-                            print(
+                            runLog.debug(
                                 "    {0:9.2f}\t\t\t{1}".format(
                                     val / (top - bottom) * 100.0, b.p.flags
                                 )
                             )
 
-
-    def getCoreWideUniformMesh(self, primaryFlag: Flags, secondaryFlag: Flags):
+    def getCoreWideUniformMesh(
+        self, primaryFlag: Flags, secondaryFlag: Flags, printLikeBlkSmears: bool = False
+    ):
         """generate core wise uniform mesh
 
         Parameters
@@ -2524,12 +2532,21 @@ class Core(composites.Composite):
             Flag which corresponds to the primary assembly type
         secondaryFlag: :py:class:`Flags <armi.reactor.flags.Flags` object.
             Flag which corresponds to the secondary assembly type
+        printLikeBlkSmears : boolean, optional
+            There may be inter-block smearing between similar/like blocks. E.g., fuel to fuel, plenum to plenum, etc.
+            These smearing instances may be less important than dissimilar blocks (e.g., control to plenum,
+            shield to fuel, fuel to plenum). This boolean controls whether or not the similar/like block
+            smearing cases are printed.
 
         Returns
         -------
         uniformMesh: list
             uniform axial mesh for reactor
         """
+        runLog.info(
+            "Getting uniform mesh for axially disjoint core... "
+            "Inter-block material smearing report available via 'verbosity: debug'."
+        )
         primaryAssems = []
         secondaryAssems = []
         otherAssems = []
@@ -2548,15 +2565,17 @@ class Core(composites.Composite):
             otherAssems=otherAssems,
         )
 
-        runLog.info(
+        runLog.debug(
             "Smearing Report For Primary Assemblies -- {0:s}".format(str(primaryFlag))
         )
-        self.checkForSmearing(primaryAssems, uniformMesh, printLikeBlkSmears=False)
+        self.checkForSmearing(primaryAssems, uniformMesh, printLikeBlkSmears)
 
-        runLog.info(
-            "Smearing Report For Secondary Assemblies -- {0:s}".format(str(secondaryFlag))
+        runLog.debug(
+            "Smearing Report For Secondary Assemblies -- {0:s}".format(
+                str(secondaryFlag)
+            )
         )
-        self.checkForSmearing(secondaryAssems, uniformMesh, printLikeBlkSmears=False)
+        self.checkForSmearing(secondaryAssems, uniformMesh, printLikeBlkSmears)
 
         return uniformMesh
 
@@ -2570,7 +2589,7 @@ class Core(composites.Composite):
         uniformMesh: list, float
             The calculated uniform mesh for reactor, r
         """
-        runLog.info("Applying uniform mesh to reactor.core...")
+        runLog.info("Applying uniform mesh to core...")
         for assem in self.getAssemblies():
             uniAssem = updateAssemblyAxialMesh(assem, uniformMesh)
             if (assem.getMass() - uniAssem.getMass()) > 1e-4:
@@ -2584,6 +2603,7 @@ class Core(composites.Composite):
             self.add(uniAssem, spatialLocator)
 
         self.p.axialMesh = uniformMesh
+
 
 def updateAssemblyAxialMesh(sourceAssembly, uniMesh):
     """apply calculated core-wise uniform mesh to assembly
