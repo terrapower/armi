@@ -1579,6 +1579,14 @@ class HexBlock(Block):
         Updates the pin linear power densities of this block for the current rotation.
         The linear densities are represented by the *linPowByPin* parameter.
 
+        It is assumed that :py:meth:`.initializePinLocations` has already been executed
+        for fueled blocks in order to access the *pinLocation* parameter. The
+        *pinLocation* parameter is not accessed for non-fueled blocks.
+
+        The *linPowByPin* parameter can be directly assigned to instead of using this
+        method if the multiplicity of the pins in the block is equal to the number of
+        pins in the block.
+
         Parameters
         ----------
         powers : list of floats, required
@@ -1601,12 +1609,9 @@ class HexBlock(Block):
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = numpy.zeros(numPins)
 
-        # Loop through rings
+        # Loop through rings. The *pinLocation* parameter is only accessed for fueled
+        # blocks; it is assumed that non-fueled blocks do not use a rotation map.
         for pinNum in range(numPins):
-            # TODO: This appears to need fixing to account for blocks in fueled
-            # TODO: assemblies that contain elevations with pins but no fuel,
-            # TODO: such as for an axial shield. These blocks should still have
-            # TODO: powers that are eligible for rotation.
             if self.hasFlags(Flags.FUEL):
                 # -1 is needed in order to map from pinLocations to list index
                 pinLoc = self.p.pinLocation[pinNum] - 1
