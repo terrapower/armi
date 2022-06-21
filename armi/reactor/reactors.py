@@ -2283,6 +2283,8 @@ class Core(composites.Composite):
             axial mesh of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
         currentUniformMesh : list, float
             the current uniform mesh
+        preserve : bool, optional
+            boolean to engage different behavior if assemAxialMesh is to be given priority for preservation
 
         Returns
         -------
@@ -2350,14 +2352,14 @@ class Core(composites.Composite):
 
         Notes
         -----
-        - if axialGrid is whithin EPS of either zLower or zUpper, it is skipped
+        - if axialGrid is within EPS of either zLower or zUpper, it is skipped
 
         Returns
         -------
         blkBndsBetweenElev: list
             a list of axial mesh values from axialGrid that fall between zLower and zUpper
         """
-        EPS = 1e-3
+        EPS = 1e-3 #pylint: disable=invalid-name
         blkBndsBetweenElev = []
         for i in range(len(axialGrid[:-1])):
             if zLower < axialGrid[i] < zUpper:
@@ -2479,48 +2481,6 @@ class Core(composites.Composite):
 
         return coreUniformMesh
 
-    def checkForSmearing(
-        self, aList: list, uniformMesh: list, printLikeBlkSmears: bool
-    ):
-        """indicate smearing by presence of block bounds that are not aligned with uniformMesh
-
-        Parameters
-        ----------
-        aList : list, :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            List of assemblies which uniformMesh would be applied; will or will not have inter-block smearing
-        uniformMesh : list, float
-            The axial mesh to be applied to a
-        printLikeBlkSmears : boolean
-            There may be inter-block smearing between similar/like blocks. E.g., fuel to fuel, plenum to plenum, etc.
-            These smearing instances may be less important than dissimilar blocks (e.g., control to plenum,
-            shield to fuel, fuel to plenum). This boolean controls whether or not the similar/like block
-            smearing cases are printed.
-        """
-        for a in aList:
-            runLog.debug("{0}...".format(a))
-            for i, _z in enumerate(uniformMesh):
-                if i == 0:
-                    bottom = 0.0
-                else:
-                    bottom = uniformMesh[i - 1]
-                top = uniformMesh[i]
-                overlap = a.getBlocksBetweenElevations(bottom, top)
-                if len(overlap) > 1:
-                    diffMaterialInBlocks = len(set(b.p.flags for b, _h in overlap)) > 1
-                    if printLikeBlkSmears or diffMaterialInBlocks:
-                        runLog.debug(
-                            "    uniform mesh block {0}, ({1:.3f},{2:.3f})".format(
-                                i, bottom, top
-                            )
-                        )
-                        runLog.debug("    percent contribution \t block")
-                        for b, val in overlap:
-                            runLog.debug(
-                                "    {0:9.2f}\t\t\t{1}".format(
-                                    val / (top - bottom) * 100.0, b.p.flags
-                                )
-                            )
-
     def getCoreWideUniformMesh(
         self, primaryFlag: Flags, secondaryFlag: Flags, printLikeBlkSmears: bool = False
     ):
@@ -2568,14 +2528,14 @@ class Core(composites.Composite):
         runLog.debug(
             "Smearing Report For Primary Assemblies -- {0:s}".format(str(primaryFlag))
         )
-        self.checkForSmearing(primaryAssems, uniformMesh, printLikeBlkSmears)
+        checkForSmearing(primaryAssems, uniformMesh, printLikeBlkSmears)
 
         runLog.debug(
             "Smearing Report For Secondary Assemblies -- {0:s}".format(
                 str(secondaryFlag)
             )
         )
-        self.checkForSmearing(secondaryAssems, uniformMesh, printLikeBlkSmears)
+        checkForSmearing(secondaryAssems, uniformMesh, printLikeBlkSmears)
 
         return uniformMesh
 
@@ -2604,6 +2564,47 @@ class Core(composites.Composite):
 
         self.p.axialMesh = uniformMesh
 
+def checkForSmearing(
+    aList: list, uniformMesh: list, printLikeBlkSmears: bool
+):
+    """indicate smearing by presence of block bounds that are not aligned with uniformMesh
+
+    Parameters
+    ----------
+    aList : list, :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
+        List of assemblies which uniformMesh would be applied; will or will not have inter-block smearing
+    uniformMesh : list, float
+        The axial mesh to be applied to a
+    printLikeBlkSmears : boolean
+        There may be inter-block smearing between similar/like blocks. E.g., fuel to fuel, plenum to plenum, etc.
+        These smearing instances may be less important than dissimilar blocks (e.g., control to plenum,
+        shield to fuel, fuel to plenum). This boolean controls whether or not the similar/like block
+        smearing cases are printed.
+    """
+    for a in aList:
+        runLog.debug("{0}...".format(a))
+        for i, _z in enumerate(uniformMesh):
+            if i == 0:
+                bottom = 0.0
+            else:
+                bottom = uniformMesh[i - 1]
+            top = uniformMesh[i]
+            overlap = a.getBlocksBetweenElevations(bottom, top)
+            if len(overlap) > 1:
+                diffMaterialInBlocks = len(set(b.p.flags for b, _h in overlap)) > 1
+                if printLikeBlkSmears or diffMaterialInBlocks:
+                    runLog.debug(
+                        "    uniform mesh block {0}, ({1:.3f},{2:.3f})".format(
+                            i, bottom, top
+                        )
+                    )
+                    runLog.debug("    percent contribution \t block")
+                    for b, val in overlap:
+                        runLog.debug(
+                            "    {0:9.2f}\t\t\t{1}".format(
+                                val / (top - bottom) * 100.0, b.p.flags
+                            )
+                        )
 
 def updateAssemblyAxialMesh(sourceAssembly, uniMesh):
     """apply calculated core-wise uniform mesh to assembly
@@ -2614,6 +2615,11 @@ def updateAssemblyAxialMesh(sourceAssembly, uniMesh):
         ARMI assembly to be adjusted
     uniMesh: float, list
         calculated core-wide uniform mesh
+    
+    Raises
+    ------
+    ValueError
+        No blocks found between zLower and zUpper.
     """
     # create a new assembly, a, that is the same type and contains the same params, grid, etc as sourceAssembly
     uniAssem = sourceAssembly.__class__(sourceAssembly.getType())
@@ -2649,6 +2655,25 @@ def updateAssemblyAxialMesh(sourceAssembly, uniMesh):
 
 
 def createNewBlock(overlappingBlockInfo):
+    """creates a new block for the uniform mesh that contains number density contributions from overlappingBlockInfo
+    
+    Notes
+    -----
+    - block type, params, and components within it are determined from the "source block" 
+    - the source block is determined by examining which block in overlappingBlockInfo has the
+      largest height.
+    - though structure and block params are determined by source block, the final block to be returned
+      contains number density information from all blocks within overlappingBlockInfo 
+
+    Parameters
+    ----------
+    overlappingBlockInfo: dict
+        output from assemblies.py::Assembly::getBlocksBetweenElevations
+    
+    Returns
+    -------
+    b : :py:class:`Block <armi.reactor.blocks.Block>` object
+    """
     from armi.reactor.converters.uniformMesh import _setNumberDensitiesFromOverlaps
 
     # get source block type
