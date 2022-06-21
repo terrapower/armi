@@ -572,49 +572,6 @@ class Assembly(composites.Composite):
             at += b.p.residence * b.getHeight()
         return at / self.getTotalHeight()
 
-    def makeAxialSnapList(self, refAssem=None, refMesh=None, force=False):
-        """
-        Creates a list of block indices that should track axially with refAssem's
-
-        When axially expanding, the control rods, shields etc. need to maintain mesh
-        lines with the rest of the core. To do this, we'll just keep track of which
-        indices of a reference assembly we should stick with. This method writes the
-        indices of the top of a block to settings as topIndex.
-
-        Keep in mind that assemblies can have different number of blocks. This is why
-        this function is useful. So this makes a list of reference indices that
-        correspond to different axial mesh points on this assembly.
-
-        This is the depletion mesh we're returning, useful for snapping after axial
-        extension. Note that the neutronics mesh on rebusOutputs might be different.
-
-        See Also
-        --------
-        setBlockMesh : applies a snap.
-
-        """
-        if not force and self[-1].p.topIndex > 0:
-            return
-
-        refMesh = refAssem.getAxialMesh() if refMesh is None else refMesh
-        selfMesh = self.getAxialMesh()
-        # make a list relating this assemblies axial mesh points to indices of the
-        # reference assembly
-        z = 0.0
-        for b in self:
-            top = z + b.getHeight()
-            try:
-                b.p.topIndex = numpy.where(numpy.isclose(refMesh, top))[0].tolist()[0]
-            except IndexError:
-                runLog.error(
-                    "Height {0} in this assembly ({1} in {4}) is not in the reactor mesh "
-                    "list from  {2}\nThis has: {3}\nIf you want to run "
-                    "a case with non-uniform axial mesh, activate the `detailedAxialExpansion` "
-                    "setting".format(top, self, refMesh, selfMesh, self.parent)
-                )
-                raise
-            z = top
-
     def _shouldMassBeConserved(self, belowFuelColumn, b):
         """
         Determine from a rule set if the mass of a block should be conserved during axial expansion
