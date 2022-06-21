@@ -270,6 +270,28 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.db.fileName = "whatever.h5"
 
+    def test_load_updateGlobalAssemNum(self):
+        from armi.reactor import assemblies
+        from armi.reactor.assemblies import resetAssemNumCounter
+
+        self.makeShuffleHistory()
+
+        resetAssemNumCounter()
+        self.assertEqual(assemblies._assemNum, 0)
+
+        # there will 77 assemblies added to the newly created core
+        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
+        self.assertEqual(assemblies._assemNum, 77)
+
+        # now do the same call again and show that the global _assemNum just keeps going up
+        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
+        self.assertEqual(assemblies._assemNum, 77 * 2)
+
+        # now load but also updateGlobalAssemNum and show that it updates to the value
+        # stored in self.r.p.maxAssemNum plus 1
+        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
+        self.assertEqual(assemblies._assemNum, self.r.core.p.maxAssemNum + 1)
+
     def test_history(self):
         self.makeShuffleHistory()
 

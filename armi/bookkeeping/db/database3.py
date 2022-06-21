@@ -293,7 +293,7 @@ class DatabaseInterface(interfaces.Interface):
         """
         Reconnect to pre-existing database.
 
-        DB is created and managed by the master node only but we can still connect to it
+        DB is created and managed by the primary node only but we can still connect to it
         from workers to enable things like history tracking.
         """
         if context.MPI_RANK > 0:
@@ -423,7 +423,9 @@ class DatabaseInterface(interfaces.Interface):
                         cs=self.cs,
                         bp=self.r.blueprints,
                         allowMissing=True,
+                        updateGlobalAssemNum=updateGlobalAssemNum,
                     )
+                    self.o.reattach(newR, self.cs)
                     break
         else:
             # reactor was never set so fail
@@ -438,11 +440,6 @@ class DatabaseInterface(interfaces.Interface):
                     getH5GroupName(cycle, timeNode, timeStepName)
                 )
             )
-
-        if updateGlobalAssemNum:
-            updateGlobalAssemblyNum(newR)
-
-        self.o.reattach(newR, self.cs)
 
     def getHistory(
         self,
@@ -1080,7 +1077,14 @@ class Database3(database.Database):
         shutil.copy(self._fullPath, self._fileName)
 
     def load(
-        self, cycle, node, cs=None, bp=None, statePointName=None, allowMissing=False
+        self,
+        cycle,
+        node,
+        cs=None,
+        bp=None,
+        statePointName=None,
+        allowMissing=False,
+        updateGlobalAssemNum=True,
     ):
         """Load a new reactor from (cycle, node).
 
@@ -1105,6 +1109,9 @@ class Database3(database.Database):
         allowMissing : bool
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
+        updateGlobalAssemNum : bool
+            Whether to update the global assembly number to the value stored in
+            r.core.p.maxAssemNum. Default True.
 
         Returns
         -------
@@ -1140,8 +1147,9 @@ class Database3(database.Database):
         )
         root = comps[0][0]
 
-        # ensure the max assembly number is correct
-        updateGlobalAssemblyNum(root)
+        # ensure the max assembly number is correct, unless the user says no
+        if updateGlobalAssemNum:
+            updateGlobalAssemblyNum(root)
 
         # usually a reactor object
         return root

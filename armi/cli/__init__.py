@@ -231,7 +231,7 @@ class ArmiCLI:
 
 
 def splash():
-    """Emit a the active App's splash text to the runLog for the master node."""
+    """Emit a the active App's splash text to the runLog for the primary node."""
     from armi import getApp  # pylint: disable=import-outside-toplevel
 
     app = getApp()
