@@ -269,7 +269,7 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
-            math.pi * (cladID ** 2) / 4.0 * self.getNumComponents(Flags.FUEL)
+            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
@@ -1920,14 +1920,10 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                if (
-                    symmetryLine
-                    in [
-                        grids.BOUNDARY_0_DEGREES,
-                        grids.BOUNDARY_120_DEGREES,
-                    ]
-                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
-                ):
+                if symmetryLine in [
+                    grids.BOUNDARY_0_DEGREES,
+                    grids.BOUNDARY_120_DEGREES,
+                ] and bool(self.r.core.childrenByLocator.get(upperEdgeLoc)):
                     return 2.0
         return 1.0
 
@@ -1963,6 +1959,8 @@ class HexBlock(Block):
         numPinRings = hexagon.numRingsToHoldNumCells(numPins)
 
         # pin lattice is rotated 30 degrees from assembly lattice
+        # note that it's the pointed end of the cell hexes that are up (but the
+        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
         grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
         for ring in range(numPinRings):
             for pos in range(grid.getPositionsInRing(ring + 1)):
@@ -2003,10 +2001,12 @@ class HexBlock(Block):
                 )
             )
 
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
-        grid = grids.HexGrid.fromPitch(self.getPinPitch(cold=True), numRings=0)
+        grid = grids.HexGrid.fromPitch(
+            self.getPinPitch(cold=True), numRings=0, pointedEndUp=True
+        )
+        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
