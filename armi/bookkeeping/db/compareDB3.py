@@ -420,7 +420,11 @@ def _diffSimpleData(
     try:
         # use mean to avoid some unnecessary infinities
         mean = (src[()] + ref[()]) / 2.0
-        diff = (src[()] - ref[()]) / mean
+        if mean.all() == 0:
+            # no diffs possible
+            return
+        else:
+            diff = (src[()] - ref[()]) / mean
     except TypeError:
         # Strings are persnickety
         if src.dtype.kind == ref.dtype.kind and src.dtype.kind in {"U", "S"}:
