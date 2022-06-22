@@ -1930,7 +1930,7 @@ class HexBlock(Block):
 
     def getPinCoordinates(self):
         """
-        Compute the centroid coordinates of any pins in this block.
+        Compute the local centroid coordinates of any pins in this block.
 
         Returns
         -------
@@ -1940,42 +1940,27 @@ class HexBlock(Block):
         Notes
         -----
         This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed.
-
-        A block with fully-defined pins could just use their individual spatialLocators in a
-        block-level 2-D grid. However most cases do not have this to minimize overhead and maximize
-        speed. Thus we want to just come up with a uniform mesh of pins if they're not explicitly
-        placed in the grid.
-
+        options are needed. Only works if pins have clad.
         """
-        return self._getPinCoordinatesHex()
-
-    def _getPinCoordinatesHex(self):
-        coordinates = []
-        numPins = self.getNumPins()
-        numPinRings = hexagon.numRingsToHoldNumCells(numPins)
-        pinPitch = self.getPinPitch()
-        if pinPitch is None:
-            return []
-        # pin lattice is rotated 30 degrees from assembly lattice
-        # note that it's the pointed end of the cell hexes that are up (but the
-        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
-        grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
-        for ring in range(numPinRings):
-            for pos in range(grid.getPositionsInRing(ring + 1)):
-                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
-                xyz = grid[i, j, 0].getLocalCoordinates()
-                coordinates.append(xyz)
-        return coordinates
+        coords = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                coords.extend(
+                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
+                )
+            else:
+                coords.append(locator.getLocalCoordinates())
+        return coords
 
     def autoCreateSpatialGrids(self):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children
         the corresponding spatialLocators (if it is a simple block).
 
-        In this case, a simple block would
-        be one that has either multiplicity of components equal to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly into a given number of hex rings.
-        Otherwise, do not create a grid for this block.
+        In this case, a simple block would be one that has either multiplicity of
+        components equal to 1 or N but no other multiplicities. Also, this should only
+        happen when N fits exactly into a given number of hex rings.  Otherwise, do not
+        create a grid for this block.
 
         Notes
         -----
@@ -2002,6 +1987,8 @@ class HexBlock(Block):
 
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
+        # note that it's the pointed end of the cell hexes that are up (but the
+        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
         grid = grids.HexGrid.fromPitch(
             self.getPinPitch(cold=True), numRings=0, pointedEndUp=True
         )
