@@ -1625,6 +1625,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.HexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
+        self.HexBlock.autoCreateSpatialGrids()
         r = tests.getEmptyHexReactor()
         a = makeTestAssembly(1, 1)
         a.add(self.HexBlock)
@@ -1843,6 +1844,7 @@ class HexBlock_TestCase(unittest.TestCase):
         # add a wire only some places in the block, so grid should not be created.
         wire = components.Helix("wire", "HT9", **wireDims)
         self.HexBlock.add(wire)
+        self.HexBlock.spatialGrid = None # clear existing
         with self.assertRaises(ValueError):
             self.HexBlock.autoCreateSpatialGrids()
 
