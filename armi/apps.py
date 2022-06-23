@@ -264,11 +264,15 @@ class App:
 
                 # handle the minor variations on Windows file pathing
                 if isWindows:
-                    assert pluginPath.count(":") == 2, f"Invalid plugin path: {pluginPath}"
+                    assert (
+                        pluginPath.count(":") == 2
+                    ), f"Invalid plugin path: {pluginPath}"
                     drive, filePath, className = pluginPath.split(":")
                     filePath = drive + ":" + filePath
                 else:
-                    assert pluginPath.count(":") == 1, f"Invalid plugin path: {pluginPath}"
+                    assert (
+                        pluginPath.count(":") == 1
+                    ), f"Invalid plugin path: {pluginPath}"
                     filePath, className = pluginPath.split(":")
 
                 spec = importlib.util.spec_from_file_location(className, filePath)
