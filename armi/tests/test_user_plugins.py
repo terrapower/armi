@@ -15,6 +15,7 @@
 """Tests for the UserPlugin class."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
+import os
 import unittest
 
 import pluggy
@@ -30,6 +31,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
+from armi.utils import directoryChangers
 
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
@@ -54,6 +56,17 @@ class UserPluginFlags3(plugins.UserPlugin):
 
     def defineFlags():
         return {"FLAG3": utils.flags.auto()}
+
+
+# text-file version of a stand-alone Python file for a simple User Plugin
+upFlags4 = """
+from armi import plugins
+from armi import utils
+
+class UserPluginFlags4(plugins.UserPlugin):
+    def defineFlags():
+        return {"FLAG4": utils.flags.auto()}
+"""
 
 
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
@@ -165,6 +178,22 @@ class TestUserPlugins(unittest.TestCase):
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags2", pluginNames)
 
+    def test_registerUserPluginsAbsPath(self):
+        app = getApp()
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            # write a simple UserPlugin to a simple Python file
+            with open("plugin4.py", "w") as f:
+                f.write(upFlags4)
+
+            # register that plugin using an absolute path
+            cwd = os.getcwd()
+            plugins = [os.path.join(cwd, "plugin4.py") + ":UserPluginFlags4"]
+            app.registerUserPlugins(plugins)
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("UserPluginFlags4", pluginNames)
+
     def test_registerUserPluginsFromSettings(self):
         app = getApp()
         cs = caseSettings.Settings().modified(
@@ -239,14 +268,16 @@ class TestUserPlugins(unittest.TestCase):
 
         app.pluginManager.hook.exposeInterfaces(cs=o.cs)
 
-        # Exclude databases/DatabaseInterface from this unit test.
-        for i, interf in enumerate(o.interfaces):
-            if "history" in str(interf).lower():
-                o.interfaces = o.interfaces[:i] + o.interfaces[i + 1 :]
-                break
+        # We don't actually have everything in place to do a full run through all the interfaces.
+        # For instance, we don't have any database files preped. So, let's skip a few interfaces.
+        for skipIt in ["fuelhandler", "history"]:
+            for i, interf in enumerate(o.interfaces):
+                if skipIt in str(interf).lower():
+                    o.interfaces = o.interfaces[:i] + o.interfaces[i + 1 :]
+                    break
 
         # test that the core power goes up
-        self.assertEqual(r.core.p.power, 100000000.0)
+        power0 = float(r.core.p.power)
         o.cs["nCycles"] = 2
         o.operate()
-        self.assertGreater(r.core.p.power, 100000000.0)
+        self.assertGreater(r.core.p.power, power0)

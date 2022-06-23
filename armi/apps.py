@@ -28,9 +28,11 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
+from os import sep
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
+import sys
 
 from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters
@@ -234,9 +236,13 @@ class App:
         based on user input.
         Format expected to be a list of full namespaces to plugin classes.
         There should be a comma between individual plugins and dots representing
-        the importable python namespace.
-        e.g. ``myplugins.plugindir.pluginMod.pluginCls,myplugins.plugMod2.plugCls2``.
-        The user plugins must be importable.
+        the importable python namespace. e.g.
+
+        ``armi.stuff.plugindir.pluginMod.pluginCls,armi.whatever.plugMod2.plugCls2``.
+        or on Linux/Unix:
+        ``/path/to/pluginMod.py:pluginCls,/path/to/plugMod2.py:plugCls2```,
+        or on Windows:
+        ``C:\\\\path\\to\\pluginMod.py:pluginCls,C:\\\\path\\to\\plugMod2.py:plugCls2```,
 
         Notes
         -----
@@ -248,13 +254,26 @@ class App:
         self.__initNewPlugins()
 
         for pluginSpec in pluginPaths:
-            names = pluginSpec.strip().split(".")
-            modPath = ".".join(names[:-1])
-            clsName = names[-1]
-            mod = importlib.import_module(modPath)
-            plugin = getattr(mod, clsName)
-            assert issubclass(plugin, plugins.UserPlugin)
-            self._pm.register(plugin)
+            if sep in pluginSpec:
+                # If the path is of the form: /path/to/why.py:MyPlugin
+                assert pluginSpec.count(":") == 1, "Invalid UserPlugin path."
+                filePath, className = pluginSpec.split(":")
+                spec = importlib.util.spec_from_file_location(className, filePath)
+                mod = importlib.util.module_from_spec(spec)
+                sys.modules[spec.name] = mod
+                spec.loader.exec_module(mod)
+                plugin = getattr(mod, className)
+                assert issubclass(plugin, plugins.UserPlugin)
+                self._pm.register(plugin)
+            else:
+                # The path is of the form: armi.thing.what.MyPlugin
+                names = pluginSpec.strip().split(".")
+                modPath = ".".join(names[:-1])
+                clsName = names[-1]
+                mod = importlib.import_module(modPath)
+                plugin = getattr(mod, clsName)
+                assert issubclass(plugin, plugins.UserPlugin)
+                self._pm.register(plugin)
 
     @property
     def splashText(self):
