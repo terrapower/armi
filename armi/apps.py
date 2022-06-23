@@ -253,11 +253,24 @@ class App:
         """
         self.__initNewPlugins()
 
-        for pluginSpec in pluginPaths:
-            if sep in pluginSpec:
-                # If the path is of the form: /path/to/why.py:MyPlugin
-                assert pluginSpec.count(":") == 1, "Invalid UserPlugin path."
-                filePath, className = pluginSpec.split(":")
+        for pluginPath in pluginPaths:
+            if sep in pluginPath:
+                # The path is of the form: /path/to/why.py:MyPlugin
+
+                # determine if we have that Windows file path (C:\\path\to\whatever.py)
+                isWindows = False
+                if ":\\" in pluginPath:
+                    isWindows = True
+
+                # handle the minor variations on Windows file pathing
+                if isWindows:
+                    assert pluginPath.count(":") == 2, f"Invalid plugin path: {pluginPath}"
+                    drive, filePath, className = pluginPath.split(":")
+                    filePath = drive + ":" + filePath
+                else:
+                    assert pluginPath.count(":") == 1, f"Invalid plugin path: {pluginPath}"
+                    filePath, className = pluginPath.split(":")
+
                 spec = importlib.util.spec_from_file_location(className, filePath)
                 mod = importlib.util.module_from_spec(spec)
                 sys.modules[spec.name] = mod
@@ -267,7 +280,7 @@ class App:
                 self._pm.register(plugin)
             else:
                 # The path is of the form: armi.thing.what.MyPlugin
-                names = pluginSpec.strip().split(".")
+                names = pluginPath.strip().split(".")
                 modPath = ".".join(names[:-1])
                 clsName = names[-1]
                 mod = importlib.import_module(modPath)
