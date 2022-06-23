@@ -148,7 +148,7 @@ class TestGeneralUtils(unittest.TestCase):
            heirarchically inside the Core, which is inside the Reactor object.
         """
         # load the test reactor
-        o, r = loadTestReactor()
+        _o, r = loadTestReactor()
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)

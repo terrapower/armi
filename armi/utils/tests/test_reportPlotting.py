@@ -17,9 +17,11 @@ import copy
 import os
 import unittest
 
-from armi.tests import TEST_ROOT
+import numpy as np
+
 from armi.reactor.tests import test_reactors
-from armi.bookkeeping.plotting import (
+from armi.tests import TEST_ROOT
+from armi.utils.reportPlotting import (
     createPlotMetaData,
     keffVsTime,
     plotAxialProfile,
@@ -57,7 +59,6 @@ class TestRadar(unittest.TestCase):
 
     def test_plotAxialProfile(self):
         vals = list(range(1, 10, 2))
-        dVals = list(range(1, 24, 2))
         fName = "test_plotAxialProfile"
 
         xLabel = "xLabel"
@@ -67,13 +68,15 @@ class TestRadar(unittest.TestCase):
         labels = ["a", "b"]
         meta = createPlotMetaData(fName, xLabel, yLabel, xTicks, yTicks, labels)
 
-        plotAxialProfile(vals, vals, fName, meta)
+        plotAxialProfile(vals, np.ones((5, 2)), fName, meta, nPlot=2)
+        self.assertTrue(os.path.exists(fName + ".png"))
         os.remove(fName + ".png")
 
     def test_keffVsTime(self):
         t = list(range(75))
         ext = "png"
         keffVsTime(self.r, t, t, keffUnc=[], extension=ext)
+        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
         os.remove("R-armiRun.keff.png")
 
 

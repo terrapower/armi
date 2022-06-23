@@ -18,13 +18,14 @@ to show in PDF form to others this is the place to do it.
 """
 import re
 
-from armi import runLog
 from armi import interfaces
-from armi.utils import directoryChangers
+from armi import runLog
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.reactor.flags import Flags
+from armi.utils import directoryChangers
+from armi.utils import reportPlotting
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -120,11 +121,9 @@ class ReportInterface(interfaces.Interface):
         b = self.o.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
-        from armi.bookkeeping import plotting
-
         dbi = self.o.getInterface("database")
         buGroups = self.cs["buGroups"]
-        plotting.plotReactorPerformance(
+        reportPlotting.plotReactorPerformance(
             self.r, dbi, buGroups, extension=self.cs["outputFileExtension"]
         )
 

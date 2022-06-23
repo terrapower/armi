@@ -293,7 +293,7 @@ class DatabaseInterface(interfaces.Interface):
         """
         Reconnect to pre-existing database.
 
-        DB is created and managed by the master node only but we can still connect to it
+        DB is created and managed by the primary node only but we can still connect to it
         from workers to enable things like history tracking.
         """
         if context.MPI_RANK > 0:
