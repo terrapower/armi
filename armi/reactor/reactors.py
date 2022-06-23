@@ -1070,7 +1070,7 @@ class Core(composites.Composite):
 
         Returns
         -------
-            nozzles : dict
+        nozzles : dict
             A dictionary of ``{nozzleType: nozzleID}`` pairs, where the nozzleIDs are
             numbers corresponding to the alphabetical order of the ``nozzleType`` names.
 
