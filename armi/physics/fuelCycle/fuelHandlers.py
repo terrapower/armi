@@ -990,7 +990,7 @@ class FuelHandler:
             chargeRing = maxRingInCore
         if jumpRingFrom is not None and not (1 < jumpRingFrom < maxRingInCore):
             raise ValueError(f"JumpRingFrom {jumpRingFrom} is not in the core.")
-        if jumpRingTo is not None and not (1 < jumpRingTo < maxRingInCore):
+        if jumpRingTo is not None and not (1 <= jumpRingTo < maxRingInCore):
             raise ValueError(f"JumpRingTo {jumpRingTo} is not in the core.")
 
         if chargeRing > dischargeRing and jumpRingTo is None:

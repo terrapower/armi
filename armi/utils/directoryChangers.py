@@ -268,6 +268,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
                     "That is, if you create a directory with a name starting with a period, the "
                     "TempDirChanger will not be able to clean it (for instance, a '.git' dir)."
                 )
+        context.waitAll()
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):

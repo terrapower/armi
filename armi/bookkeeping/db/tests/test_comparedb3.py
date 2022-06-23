@@ -111,7 +111,7 @@ class TestCompareDB3(unittest.TestCase):
 
         # create two DBs, identical but for file names
         dbs = []
-        for nCycles in range(2):
+        for nCycles in range(1, 3):
             # build some test data
             days = 100 * nCycles
             cycles = [

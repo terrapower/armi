@@ -64,6 +64,21 @@ class TestMemoryProfiler(unittest.TestCase):
             # do some basic testing
             self.assertIn("End Memory Usage Report", mock._outputStream)
 
+    def test_printFullMemoryBreakdown(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock._outputStream)
+            runLog.LOG.startLog("test_displayMemUsage")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            # we should start at info level, and that should be working correctly
+            self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
+            self.memPro._printFullMemoryBreakdown(startsWith="", reportSize=True)
+
+            # do some basic testing
+            self.assertIn("UNIQUE_INSTANCE_COUNT", mock._outputStream)
+            self.assertIn(" MB", mock._outputStream)
+
     def test_getReferrers(self):
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
