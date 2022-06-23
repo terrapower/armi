@@ -170,7 +170,7 @@ class TestUserPlugins(unittest.TestCase):
         cs = caseSettings.Settings().modified(
             caseTitle="test_registerUserPluginsFromSettings",
             newSettings={
-                "userPlugins": ["armi.tests.test_user_plugins.UserPluginFlags3"],
+                "UserPlugins": ["armi.tests.test_user_plugins.UserPluginFlags3"],
             },
         )
 

@@ -277,9 +277,8 @@ class Settings:
         return reader
 
     def registerUserPlugins(self):
-        """TODO"""
-        userPlugins = self.__settings.get("userPlugins", [])
-        userPlugins = self["userPlugins"]
+        """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
+        userPlugins = self["UserPlugins"]
         if len(userPlugins):
             from armi import getApp  # pylint: disable=import-outside-toplevel
 

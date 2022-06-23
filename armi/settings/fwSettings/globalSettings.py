@@ -109,7 +109,7 @@ CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
-CONF_USER_PLUGINS = "userPlugins"
+CONF_USER_PLUGINS = "UserPlugins"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -836,7 +836,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_USER_PLUGINS,
             default=[],
-            label="User Plugins",
+            label=CONF_USER_PLUGINS,
             description="An optional place for users to define on-the-fly plugins "
             "for things like one-off analysis.",
             schema=vol.Any([vol.Coerce(str)], None),
