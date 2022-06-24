@@ -1614,7 +1614,6 @@ class Core(composites.Composite):
         -----
         createFreshFeed and createAssemblyOfType and this
         all need to be merged together somehow.
-
         """
         return self.createAssemblyOfType(assemType=self._freshFeedType)
 
@@ -1646,7 +1645,6 @@ class Core(composites.Composite):
         See Also
         --------
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
-
         """
         a = self.parent.blueprints.constructAssem(
             cs or settings.getMasterCs(), name=assemType
@@ -1948,14 +1946,12 @@ class Core(composites.Composite):
 
         Parameters
         ----------
-
         target : float
             This is the fraction of the total reactor fuel flux compared to the flux in a
             specific assembly in a ring
 
         Returns
         -------
-
         targetRing, fraction of flux : tuple
             targetRing is the ring with the fraction of flux that best meets the target.
         """

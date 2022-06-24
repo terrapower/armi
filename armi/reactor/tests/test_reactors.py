@@ -519,6 +519,16 @@ class HexReactorTests(ReactorTests):
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
+    def test_getNumEnergyGroups(self):
+        # this Core doesn't have a loaded ISOTXS library, so this test is minimally useful
+        with self.assertRaises(AttributeError):
+            self.r.core.getNumEnergyGroups()
+
+    def test_getMinimumPercentFluxInFuel(self):
+        # there is no flux in the test reactor YET, so this test is minimally useful
+        with self.assertRaises(ZeroDivisionError):
+            _targetRing, _fluxFraction = self.r.core.getMinimumPercentFluxInFuel()
+
     def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="005-023")
