@@ -222,6 +222,8 @@ class Core(composites.Composite):
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
         self._inputHeightsConsideredHot = True
+        self._primaryAssemblyToConserve = None
+        self._secondaryAssemblyToConserve = None
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -233,6 +235,8 @@ class Core(composites.Composite):
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
         self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
+        self._primaryAssemblyToConserve = cs["primaryAssemblyToConserve"]
+        self._secondaryAssemblyToConserve = cs["secondaryAssemblyToConserve"]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
