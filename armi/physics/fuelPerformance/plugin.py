@@ -51,8 +51,3 @@ class FuelPerformancePlugin(plugins.ArmiPlugin):
         from armi.physics.fuelPerformance import parameters
 
         return parameters.getFuelPerformanceParameterDefinitions()
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def afterConstructionOfAssemblies(assemblies, cs):
-        pass
