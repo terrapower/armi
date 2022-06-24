@@ -1018,6 +1018,9 @@ class Assembly_TestCase(unittest.TestCase):
 class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        for a in self.r.core.getAssemblies(includeBolAssems=True):
+            # prepare for mesh snapping during axial expansion
+            a.makeAxialSnapList(refAssem=self.r.core.refAssem)
 
     def test_snapAxialMeshToReferenceConservingMassBasedOnBlockIgniter(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
