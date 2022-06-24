@@ -17,7 +17,7 @@ results are.  Here is an excerpt::
         [xtra] Cross section group manager summary
 
 In a standard run, the various interfaces will loop through and print out messages according to the `verbosity`
-setting. In multi-processing runs, the **stdout** shows messages from the master node first and then shows information
+setting. In multi-processing runs, the **stdout** shows messages from the primary node first and then shows information
 from all other nodes below (with verbosity set by the `branchVerbosity` setting). Sometimes a user will want to set the
 verbosity of just one module (.py file) in the code higher than the rest of ARMI, to do so they can set up a custom
 logger by placing this line at the top of the file::
@@ -40,5 +40,4 @@ Some Linux users tend to use the **tail** command to monitor the progress of an 
     tail -f myRun.stdout
 
 This provides live information on the progress.
-
 

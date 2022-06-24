@@ -159,7 +159,7 @@ def getMasterCs():
     """
     Return the global case-settings object (cs).
 
-    This can be called at any time to create or obtain the master Cs, a module-level CS
+    This can be called at any time to create or obtain the primary Cs, a module-level CS
     intended to be shared by many other objects.
 
     It can have multiple instances in multiprocessing cases.
@@ -178,9 +178,9 @@ def getMasterCs():
 
 def setMasterCs(cs):
     """
-    Set the master Cs to be the one that is passed in.
+    Set the primary Cs to be the one that is passed in.
 
     These are kept track of independently on a PID basis to allow independent multiprocessing.
     """
     Settings.instance = cs
-    runLog.debug("Master cs set to {} with ID: {}".format(cs, id(cs)))
+    runLog.debug("Primary cs set to {} with ID: {}".format(cs, id(cs)))

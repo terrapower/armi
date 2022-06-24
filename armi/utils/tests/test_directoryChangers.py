@@ -134,7 +134,7 @@ class TestDirectoryChangers(unittest.TestCase):
 
         with directoryChangers.TemporaryDirectoryChanger(
             filesToRetrieve=[f("file*.txt")]
-        ) as dc:
+        ) as _:
             Path(f("file1.txt")).touch()
             Path(f("file2.txt")).touch()
 
