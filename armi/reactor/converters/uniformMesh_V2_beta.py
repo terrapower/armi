@@ -198,6 +198,7 @@ def createNewBlock(overlappingBlockInfo: list, uniformHeight: float):
     for c in sourceBlk.getChildren():
         b.add(c.__copy__())
     b.spatialGrid = sourceBlk.spatialGrid
+    b.p.axMesh = 1
     b.p.height = uniformHeight  # other z params get set in uniAssem.calculateZCoords
     b.clearCache()  # reset component volumes so that they are referenced to new height
     _setNumberDensitiesFromOverlaps(b, overlappingBlockInfo)
