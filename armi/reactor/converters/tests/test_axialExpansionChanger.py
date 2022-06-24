@@ -61,7 +61,7 @@ class Base(unittest.TestCase):
     ]
 
     def setUp(self):
-        self.obj = AxialExpansionChanger()
+        self.obj = AxialExpansionChanger(Flags.FUEL, Flags.CONTROL)
         self.massAndDens = {}
         self.steelMass = []
         self.blockHeights = {}
@@ -336,7 +336,7 @@ class TestConservation(Base, unittest.TestCase):
         - assertion on if original axial mesh matches the final axial mesh
         """
         a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
-        obj = AxialExpansionChanger()
+        obj = AxialExpansionChanger(Flags.FUEL, Flags.CONTROL)
         oldMesh = a.getAxialMesh()
         componentLst = [c for b in a for c in b]
         for i in range(0, 10):
@@ -417,7 +417,7 @@ class TestConservation(Base, unittest.TestCase):
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
         # 10% growth of fuel components
         pList = zeros(len(cList)) + 0.1
-        chngr = AxialExpansionChanger()
+        chngr = AxialExpansionChanger(Flags.FUEL, Flags.CONTROL)
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
 
         # do assertion
@@ -450,7 +450,9 @@ class TestExceptions(Base, unittest.TestCase):
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
-        obj = AxialExpansionChanger(detailedAxialExpansion=True)
+        obj = AxialExpansionChanger(
+            Flags.FUEL, Flags.CONTROL, detailedAxialExpansion=True
+        )
         with self.assertRaises(RuntimeError) as cm:
             obj.setAssembly(assembly)
             the_exception = cm.exception
@@ -567,7 +569,7 @@ class TestSpecifyTargetComponent(unittest.TestCase):
     """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
-        self.obj = AxialExpansionChanger()
+        self.obj = AxialExpansionChanger(Flags.FUEL, Flags.CONTROL)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
         # need an empty dictionary because we want to test for the added component only

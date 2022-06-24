@@ -130,7 +130,11 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.info("Constructing the `{}`".format(self.name))
 
-        self.axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+        self.axialExpChngr = AxialExpansionChanger(
+            cs["primaryAssemblyToConserve"],
+            cs["secondaryAssemblyToConserve"],
+            cs["detailedAxialExpansion"],
+        )
         # TODO: We should consider removing automatic geom file migration.
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]

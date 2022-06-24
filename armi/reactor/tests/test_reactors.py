@@ -742,7 +742,10 @@ class HexReactorTests(ReactorTests):
         # creation with modified enrichment on an expanded BOL assem.
         fuelComp = fuelBlock.getComponent(Flags.FUEL)
         bol = self.r.blueprints.assemblies[aOld.getType()]
-        changer = AxialExpansionChanger()
+        changer = AxialExpansionChanger(
+            self.r.core._primaryAssemblyToConserve,
+            self.r.core._secondaryAssemblyToConserve,
+        )
         changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
         aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
         self.assertAlmostEqual(
@@ -782,7 +785,7 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(0, len(self.r.core.blocksByName))
         self.assertEqual(0, len(self.r.core.assembliesByName))
-    
+
     def test_areAssembliesAxiallyDisjoint(self):
         self.assertFalse(self.r.core.areAssembliesAxiallyDisjoint())
 

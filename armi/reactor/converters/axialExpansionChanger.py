@@ -17,6 +17,7 @@ from statistics import mean
 from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
+from armi.reactor.converters.uniformMesh_V2_beta import UniformMeshV2
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -45,16 +46,28 @@ class AxialExpansionChanger:
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
 
-    def __init__(self, detailedAxialExpansion: bool = False):
+    def __init__(
+        self,
+        primaryAssemblyToConserve: Flags,
+        secondaryAssemblyToConserve: Flags,
+        detailedAxialExpansion: bool = False,
+    ):
         """
         Build an axial expansion converter.
 
         Parameters
         ----------
+        primaryAssemblyToConserve: Flags
+            used by uniformMesh_V2_beta to give primary priority to an assembly group for preserving axial meshes
+        secondaryAssemblyToConserve: Flags
+            used by uniformMesh_V2_beta to give secondary priority to an assembly group for preserving axial meshes
+
         detailedAxialExpansion : bool, optional
             A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
         """
         self._detailedAxialExpansion = detailedAxialExpansion
+        self._primaryAssemblyToConserve = primaryAssemblyToConserve
+        self._secondaryAssemblyToConserve = secondaryAssemblyToConserve
         self.linked = None
         self.expansionData = None
 
@@ -281,18 +294,17 @@ class AxialExpansionChanger:
 
         Notes
         -----
-        - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
+        - if no detailedAxialExpansion, then fire up uniformMesh converter.
         - update average core mesh values with call to r.core.updateAxialMesh()
         """
         if not self._detailedAxialExpansion:
-            # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
-            refAssem = r.core.refAssem
-            axMesh = refAssem.getAxialMesh()
-            for a in r.core.getAssemblies(includeBolAssems=True):
-                # See ARMI Ticket #112 for explanation of the commented out code
-                a.setBlockMesh(
-                    axMesh
-                )  # , conserveMassFlag=True, adjustList=adjustList)
+            uniMesher = UniformMeshV2(
+                r.core,
+                self._primaryAssemblyToConserve,
+                self._secondaryAssemblyToConserve,
+            )
+            uniMesher.getCoreWideUniformMesh()
+            uniMesher.applyCoreWideUniformMesh()
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()  # floating point correction
