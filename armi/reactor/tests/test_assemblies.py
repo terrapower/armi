@@ -289,21 +289,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assembly.p.notes = note
         self.assertEqual(self.assembly.p.notes, note)
 
-        tooLongNote = r"""
-This is a note that is too long. asdfasdfasdfadslfkasjdflkasdjflaksjdf;adkfasfsd
-asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
-ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lkdjsldf
-asd;lfkajsd;lfkajsd;lfkajsd;lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdjka
-asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
-ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lkdjsldf
-asd;lfkajsd;lfkajsd;lfkajsd;lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdjka
-asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
-ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lkdjsldf
-asd;lfkajsd;lfkajsd;lfkajsd;lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdjka
-asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
-ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lk The 
-thousandth character is here. lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdj
-"""
+        tooLongNote = "a" * 1001
 
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
