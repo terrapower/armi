@@ -2241,7 +2241,11 @@ class Core(composites.Composite):
         self.p.axialMesh = self.findAllAxialMeshPoints()
         refAssem = self.refAssem
 
-        if not cs["detailedAxialExpansion"] and self.name == "core":
+        if (
+            not cs["detailedAxialExpansion"]
+            and self.name == "core"
+            and self.areAssembliesAxiallyDisjoint()
+        ):
             uniMesher = UniformMeshV2(
                 self, cs["primaryAssemblyToConserve"], cs["secondaryAssemblyToConserve"]
             )
@@ -2272,3 +2276,12 @@ class Core(composites.Composite):
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+
+    def areAssembliesAxiallyDisjoint(self) -> bool:
+        """determines if assemblies are axially disjoint"""
+        refMesh = self.refAssem.getAxialMesh()
+        for a in self.getChildren():
+            if a.getAxialMesh() != refMesh:
+                return True
+
+        return False

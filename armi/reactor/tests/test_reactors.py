@@ -782,6 +782,12 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(0, len(self.r.core.blocksByName))
         self.assertEqual(0, len(self.r.core.assembliesByName))
+    
+    def test_areAssembliesAxiallyDisjoint(self):
+        self.assertFalse(self.r.core.areAssembliesAxiallyDisjoint())
+
+        _o2, r2 = loadTestReactor(os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+        self.assertTrue(r2.core.areAssembliesAxiallyDisjoint())
 
 
 class CartesianReactorTests(ReactorTests):
