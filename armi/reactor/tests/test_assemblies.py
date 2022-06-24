@@ -278,6 +278,36 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.calculateZCoords()
 
+    def test_notesParameter(self):
+        self.assertEqual(self.assembly.p.notes, "")
+
+        with self.assertRaises(ValueError):
+            # try to assign a non-string
+            self.assembly.p.notes = 1
+
+        note = "This is a short, acceptable not about the assembly"
+        self.assembly.p.notes = note
+        self.assertEqual(self.assembly.p.notes, note)
+
+        tooLongNote = r"""
+This is a note that is too long. asdfasdfasdfadslfkasjdflkasdjflaksjdf;adkfasfsd
+asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
+ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lkdjsldf
+asd;lfkajsd;lfkajsd;lfkajsd;lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdjka
+asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
+ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lkdjsldf
+asd;lfkajsd;lfkajsd;lfkajsd;lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdjka
+asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
+ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lkdjsldf
+asd;lfkajsd;lfkajsd;lfkajsd;lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdjka
+asdfsdlkasjflkasjdlfkasjdlfkasdjlfksjdlfkajsdlfkasdjflkasjflasdkjflaksdjflasdfsf
+ajd;faklsdfja;lskdfa;slkfjasldkfasd;fkasj;flkasjdlfkasjd;fkasjd;flkasjf;lk The 
+thousandth character is here. lkfja;sldkfja;lsdkjfa;lksdjf;alskdjf;alksdfjl;asdj
+"""
+
+        self.assembly.p.notes = tooLongNote
+        self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
+
     def test_resetAssemNumCounter(self):
         resetAssemNumCounter()
         cur = 0
