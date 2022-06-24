@@ -25,6 +25,7 @@ from armi.reactor.converters.tests.test_axialExpansionChanger import (
 from armi.reactor.converters import uniformMesh_V2_beta
 from armi.reactor.converters.uniformMesh_V2_beta import UniformMeshV2
 
+
 class TestMassConservation(unittest.TestCase):
     """ensure that mass is conserved"""
 
@@ -42,7 +43,9 @@ class TestMassConservation(unittest.TestCase):
         self.origBlockMass = {}
         self.newBlockMass = {}
 
-        self.uniMesher = UniformMeshV2(self.r.core, primaryFlag=Flags.FUEL, secondaryFlag=Flags.CONTROL)
+        self.uniMesher = UniformMeshV2(
+            self.r.core, primaryFlag=Flags.FUEL, secondaryFlag=Flags.CONTROL
+        )
         self.uniMesher.getCoreWideUniformMesh()
 
     def calculateAssemblyAndBlockMasses(self):
@@ -80,12 +83,18 @@ class TestMassConservation(unittest.TestCase):
         zLower = 0.0
         for zUpper in self.uniMesher.uniformMesh:
             overlappingBlockInfo = a.getBlocksBetweenElevations(zLower, zUpper)
-            self.origBlockMass[a.name].append(getPredictedUniformMeshBlockMass(overlappingBlockInfo))
+            self.origBlockMass[a.name].append(
+                getPredictedUniformMeshBlockMass(overlappingBlockInfo)
+            )
             zLower = zUpper
 
     def test_massConservation(self):
         self.calculateAssemblyAndBlockMasses()
-        for key in self.origAssemblyMass.keys(): #pylint: disable=consider-iterating-dictionary
+        for (
+            key
+        ) in (
+            self.origAssemblyMass.keys()
+        ):  # pylint: disable=consider-iterating-dictionary
             # check block masses
             for i, (orig, new) in enumerate(
                 zip(self.origBlockMass[key], self.newBlockMass[key])
@@ -114,7 +123,9 @@ class TestMassConservation(unittest.TestCase):
             msg="Core mass is not conserved.",
         )
         # check core axial mesh aligns with self.uniformMesh
-        self.uniMesher.uniformMesh.insert(0, 0.0) # insert bottom mesh point into uniformMesh
+        self.uniMesher.uniformMesh.insert(
+            0, 0.0
+        )  # insert bottom mesh point into uniformMesh
         for i, _val in enumerate(self.uniMesher.uniformMesh):
             self.assertAlmostEqual(
                 self.uniMesher.uniformMesh[i],
@@ -122,14 +133,15 @@ class TestMassConservation(unittest.TestCase):
                 msg="The core uniform mesh doesn't align with the calculated uniform mesh.",
             )
 
+
 def getPredictedUniformMeshBlockMass(overlappingBlockInfo: list):
     """calculates the mass of a hypothetical block whose contributions are determined by overlappingBlockInfo
-    
+
     Parameters
     ----------
     overlappingBlockInfo: list
         output from a.getBlocksBetweenElevations(zLower, zUpper)
-    
+
     Returns
     -------
     mass : float
@@ -138,7 +150,9 @@ def getPredictedUniformMeshBlockMass(overlappingBlockInfo: list):
     mass = 0.0
     for _i, (b, h) in enumerate(overlappingBlockInfo):
         for c in b:
-            nuclideNames = c._getNuclidesFromSpecifier(None) #pylint: disable=protected-access
+            nuclideNames = c._getNuclidesFromSpecifier(
+                None
+            )  # pylint: disable=protected-access
             volume = (c.getArea() * h) / (b.getSymmetryFactor())
             densities = c.getNuclideNumberDensities(nuclideNames)
             mass += sum(
@@ -146,6 +160,7 @@ def getPredictedUniformMeshBlockMass(overlappingBlockInfo: list):
                 for nucName, numberDensity in zip(nuclideNames, densities)
             )
     return mass
+
 
 class TestExceptions(unittest.TestCase):
     """make sure hardcoded exceptions work as expected"""

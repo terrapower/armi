@@ -158,8 +158,8 @@ class UniformMeshV2:
         """
         for a in aList:
             runLog.debug(
-                "{0}...".format(a) # pylint: disable=logging-format-interpolation
-            ) 
+                "{0}...".format(a)  # pylint: disable=logging-format-interpolation
+            )
             for i, _z in enumerate(self.uniformMesh):
                 if i == 0:
                     bottom = 0.0
