@@ -915,8 +915,6 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("bondBOL", units="?", description="?", saveToDB=False)
-
         pb.defParam(
             "breedRatio",
             units="None",
