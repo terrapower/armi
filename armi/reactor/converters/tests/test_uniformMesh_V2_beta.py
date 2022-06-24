@@ -114,8 +114,9 @@ class TestMassConservation(unittest.TestCase):
             msg="Core mass is not conserved.",
         )
         # check core axial mesh aligns with self.uniformMesh
+        self.uniMesher.uniformMesh.insert(0, 0.0) # insert bottom mesh point into uniformMesh
         for i, _val in enumerate(self.uniMesher.uniformMesh):
-            self.assertEqual(
+            self.assertAlmostEqual(
                 self.uniMesher.uniformMesh[i],
                 self.r.core.p.axialMesh[i],
                 msg="The core uniform mesh doesn't align with the calculated uniform mesh.",

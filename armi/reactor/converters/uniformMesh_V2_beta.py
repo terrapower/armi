@@ -82,13 +82,15 @@ class UniformMeshV2:
     def applyCoreWideUniformMesh(self):
         """apply the core wide uniform mesh to the core"""
         runLog.info("Applying uniform mesh to reactor.core...")
-        for assem in self.core.getAssemblies():
+        for assem in self.core.getChildren():
             uniAssem = self.updateAssemblyAxialMesh(assem)
             spatialLocator = assem.spatialLocator
             self.core.removeAssembly(assem, discharge=False)
             self.core.add(uniAssem, spatialLocator)
 
-        self.core.p.axialMesh = self.uniformMesh
+        # get new axial mesh with subMesh
+        coreAxialMesh = self.core.findAllAxialMeshPoints()
+        self.core.p.axialMesh = coreAxialMesh
 
     def updateAssemblyAxialMesh(self, sourceAssembly):
         """apply calculated core-wise uniform mesh to assembly
@@ -114,7 +116,7 @@ class UniformMeshV2:
         uniAssem.setName(sourceAssembly.getName())
         for param in sourceAssembly.getParamNames():
             uniAssem.p[param] = sourceAssembly.p[param]
-        uniAssem.spatialGrid = grids.axialUnitGrid(len(sourceAssembly))
+        uniAssem.spatialGrid = sourceAssembly.spatialGrid
         uniAssem.spatialGrid.armiObject = uniAssem
 
         zLower = 0
