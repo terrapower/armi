@@ -256,41 +256,48 @@ class App:
         for pluginPath in pluginPaths:
             if sep in pluginPath:
                 # The path is of the form: /path/to/why.py:MyPlugin
-
-                # determine if we have that Windows file path (C:\\path\to\whatever.py)
-                isWindows = False
-                if ":\\" in pluginPath:
-                    isWindows = True
-
-                # handle the minor variations on Windows file pathing
-                if isWindows:
-                    assert (
-                        pluginPath.count(":") == 2
-                    ), f"Invalid plugin path: {pluginPath}"
-                    drive, filePath, className = pluginPath.split(":")
-                    filePath = drive + ":" + filePath
-                else:
-                    assert (
-                        pluginPath.count(":") == 1
-                    ), f"Invalid plugin path: {pluginPath}"
-                    filePath, className = pluginPath.split(":")
-
-                spec = importlib.util.spec_from_file_location(className, filePath)
-                mod = importlib.util.module_from_spec(spec)
-                sys.modules[spec.name] = mod
-                spec.loader.exec_module(mod)
-                plugin = getattr(mod, className)
-                assert issubclass(plugin, plugins.UserPlugin)
-                self._pm.register(plugin)
+                self.__registerUserPluginsAbsPath(pluginPath)
             else:
                 # The path is of the form: armi.thing.what.MyPlugin
-                names = pluginPath.strip().split(".")
-                modPath = ".".join(names[:-1])
-                clsName = names[-1]
-                mod = importlib.import_module(modPath)
-                plugin = getattr(mod, clsName)
-                assert issubclass(plugin, plugins.UserPlugin)
-                self._pm.register(plugin)
+                self.__registerUserPluginsInternalImport(pluginPath)
+
+    def __registerUserPluginsAbsPath(self, pluginPath):
+        """Helper method to register a single UserPlugin where
+        the given path is of the form: /path/to/why.py:MyPlugin
+        """
+        # determine if we have that Windows file path (C:\\path\to\whatever.py)
+        isWindows = False
+        if ":\\" in pluginPath:
+            isWindows = True
+
+        # handle the minor variations on Windows file pathing
+        if isWindows:
+            assert pluginPath.count(":") == 2, f"Invalid plugin path: {pluginPath}"
+            drive, filePath, className = pluginPath.split(":")
+            filePath = drive + ":" + filePath
+        else:
+            assert pluginPath.count(":") == 1, f"Invalid plugin path: {pluginPath}"
+            filePath, className = pluginPath.split(":")
+
+        spec = importlib.util.spec_from_file_location(className, filePath)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = mod
+        spec.loader.exec_module(mod)
+        plugin = getattr(mod, className)
+        assert issubclass(plugin, plugins.UserPlugin)
+        self._pm.register(plugin)
+
+    def __registerUserPluginsInternalImport(self, pluginPath):
+        """Helper method to register a single UserPlugin where
+        the given path is of the form: armi.thing.what.MyPlugin
+        """
+        names = pluginPath.strip().split(".")
+        modPath = ".".join(names[:-1])
+        clsName = names[-1]
+        mod = importlib.import_module(modPath)
+        plugin = getattr(mod, clsName)
+        assert issubclass(plugin, plugins.UserPlugin)
+        self._pm.register(plugin)
 
     @property
     def splashText(self):
