@@ -1309,7 +1309,7 @@ class Core(composites.Composite):
         assemblyLevel : bool, optional
             If True, will find assemblies rather than blocks
         locContents : dict, optional
-            A master lookup table with location string keys and block/assembly values
+            A lookup table with location string keys and block/assembly values
             useful if you want to call this function many times and would like a speedup.
 
         Returns
@@ -1834,7 +1834,7 @@ class Core(composites.Composite):
 
         See Also
         --------
-        processLoading : sets up the master mesh that this perturbs.
+        processLoading : sets up the primary mesh that this perturbs.
         """
         # most of the time, we want fuel, but they should mostly have the same number of blocks
         # if this becomes a problem, we might find either the
@@ -2078,7 +2078,7 @@ class Core(composites.Composite):
         Parameters
         ----------
         mats : iterable or Material
-            List (or single) of materials to scan the full core for, accumulating a master nuclide list
+            List (or single) of materials to scan the full core for, accumulating a nuclide list
 
         Returns
         -------
@@ -2095,7 +2095,6 @@ class Core(composites.Composite):
         If you need to know the nuclides in a fuel pin, you can't just use the sample returned
         from getDominantMaterial, because it may be a fresh fuel material (U and Zr) even though
         there are burned materials elsewhere (with U, Zr, Pu, LFP, etc.).
-
         """
         if not isinstance(mats, list):
             # single material passed in

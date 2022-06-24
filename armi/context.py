@@ -99,7 +99,7 @@ Mode.setMode(CURRENT_MODE)
 
 MPI_COMM = None
 # MPI_RANK represents the index of the CPU that is running.
-# 0 is typically the master CPU, while 1+ are typically workers.
+# 0 is typically the primary CPU, while 1+ are typically workers.
 # MPI_SIZE is the total number of CPUs
 MPI_RANK = 0
 MPI_SIZE = 1

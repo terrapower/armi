@@ -330,7 +330,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_BRANCH_VERBOSITY,
             default="error",
             label="Worker Log Verbosity",
-            description="Verbosity of the non-master MPI nodes",
+            description="Verbosity of the non-primary MPI nodes",
             options=[
                 "debug",
                 "extra",
@@ -664,7 +664,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_VERBOSITY,
             default="info",
-            label="Master Log Verbosity",
+            label="Primary Log Verbosity",
             description="How verbose the output will be",
             options=[
                 "debug",

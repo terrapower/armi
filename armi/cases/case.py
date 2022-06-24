@@ -372,7 +372,7 @@ class Case:
 
         with o:
             if self.cs["trace"] and context.MPI_RANK == 0:
-                # only trace master node.
+                # only trace primary node.
                 tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
                 tracer.runctx("o.operate()", globals(), locals())
             else:
