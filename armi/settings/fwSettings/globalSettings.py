@@ -656,7 +656,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_TRACK_ASSEMS,
-            default=True,
+            default=False,
             label="Save Discharged Assemblies",
             description="Track assemblies for detailed fuel histories. Disable in case "
             "you get memory errors.",

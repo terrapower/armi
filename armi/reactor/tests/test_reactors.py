@@ -216,7 +216,9 @@ class ReactorTests(unittest.TestCase):
 
 class HexReactorTests(ReactorTests):
     def setUp(self):
-        self.o, self.r = loadTestReactor(self.directoryChanger.destination)
+        self.o, self.r = loadTestReactor(
+            self.directoryChanger.destination, customSettings={"trackAssems": True}
+        )
 
     def test_getTotalParam(self):
         # verify that the block params are being read.
