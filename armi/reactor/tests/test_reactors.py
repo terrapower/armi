@@ -526,20 +526,6 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(a1, a2)
         self.assertEqual(a1, a3)
 
-    def test_countAssemblies(self):
-        """Tests that the users definition of assemblies is preserved.
-
-        .. test:: Tests that the users definition of assembilies is preserved.
-            :id: TEST_REACTOR_3
-            :links: REQ_REACTOR
-        """
-        nFuel = self.r.core.countAssemblies(Flags.FUEL)
-        self.assertEqual(2, nFuel)
-        nFuel_r3 = self.r.core.countAssemblies(Flags.FUEL, ring=3)
-        self.assertEqual(1, nFuel_r3)
-        nFuel = self.r.core.countAssemblies(Flags.FUEL, fullCore=True)
-        self.assertEqual(6, nFuel)
-
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
         converter = self.r.core.growToFullCore(self.o.cs)

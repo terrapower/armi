@@ -651,36 +651,6 @@ class Core(composites.Composite):
         """
         return self.lib.numGroups
 
-    # NOTE: this method is never used
-    def countAssemblies(self, typeList, ring=None, fullCore=False):
-        """
-        Counts the number of assemblies of type in ring (or in full reactor)
-
-        Parameters
-        ----------
-        typeList : iterable, optional
-            Restruct counts to this assembly type.
-
-        rings : int
-            The reactor ring to find assemblies in
-
-        fullCore : bool, optional
-            If True, will consider the core symmetry. Default: False
-        """
-        assems = (a for a in self if a.hasFlags(typeList, exact=True))
-
-        if ring is not None:
-            assems = (a for a in assems if a.spatialLocator.getRingPos()[0] == ring)
-
-        if not fullCore:
-            return sum(1 for _a in assems)
-
-        pmult = self.powerMultiplier  # value is loop-independent
-
-        rings = (a.spatialLocator.getRingPos()[0] for a in assems)
-
-        return sum(1 if r == 1 else pmult for r in rings)
-
     def countBlocksWithFlags(self, blockTypeSpec, assemTypeSpec=None):
         """
         Return the total number of blocks in an assembly in the reactor that
