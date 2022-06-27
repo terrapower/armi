@@ -368,4 +368,72 @@ A generic description of the outputs is provided in :doc:`/user/outputs/index`.
 
 You can add your own outputs from your plugins.
 
+Bonus: Ad-hoc UserPlugins
+=========================
+It will often be the case that you are not building an ARMI application from scratch, but
+you are using a pre-existing ARMI application. And while working with this (potentially
+quite large) ARMI application, you want to add a one-off change. Maybe you want to make a
+special plot during the run, or do a quick "what-if" modification of the 
+:py:class:`Reactor <armi.reactor.reactors.Reactor>`. These things come up for scientific
+or engineering work: a quick one-off idea you want to test out and probably only use once.
+
+This is where a :py:class:`UserPlugin <armi.plugins.UserPlugin>` come in.
+
+There are two parts to defining a :py:class:`UserPlugin <armi.plugins.UserPlugin>`:
+
+Define the UserPlugin in Python
+-------------------------------
+This can be done by sublassing :py:class:`armi.plugins.UserPlugin`:
+
+.. code-block:: python
+
+    from armi import plugins
+    from armi.reactor.flags import Flags
+
+    class UserPluginExample(plugins.UserPlugin):
+        """
+        This plugin flex-tests the onProcessCoreLoading() hook,
+        and arbitrarily adds "1" to the height of every block,
+        after the DB is loaded.
+        """
+
+        @staticmethod
+        @HOOKSPEC
+        def onProcessCoreLoading(core, cs):
+            blocks = core.getBlocks(Flags.FUEL)
+            for b in blocks:
+                b.p.height += 1.0
+
+In most ways, ``UserPluginExample`` above is just a normal
+:py:class:`ArmiPlugin <armi.plugins.ArmiPlugin>`. You can implement any of the normal
+:py:class:`ArmiPlugin <armi.plugins.ArmiPlugin>` hooks, like: 
+:py:meth:`exposeInterfaces() <armi.plugins.ArmiPlugin.exposeInterfaces>`,
+:py:meth:`defineParameters() <armi.plugins.ArmiPlugin.defineParameters>`, and so on. The
+:py:class:`UserPlugin <armi.plugins.UserPlugin>` class is more limited than a
+regular plugin though, you cannot implement:
+
+* :py:meth:`armi.plugins.ArmiPlugin.defineParameterRenames`
+* :py:meth:`armi.plugins.ArmiPlugin.defineSettings`
+* :py:meth:`armi.plugins.ArmiPlugin.defineSettingsValidators`
+
+Define a list of UserPlugins in the Settings File
+-------------------------------------------------
+In order for your simulation to know about your custom
+:py:class:`UserPlugin <armi.plugins.UserPlugin>` you need to add a line to your Settings
+file:
+
+.. code-block::
+
+  userPlugins::
+    - armi.tests.test_user_plugins.UserPlugin0
+    - //path/to/my/pluginz.py:UserPlugin1
+    - C:\\path\to\my\pluginZ.py:UserPlugin2
+
+What we have above is actually an example of including three different plugins via your
+settings YAML file:
+
+* By providing a ``.``-separated ARMI import path (if you included your :py:class:`UserPlugin <armi.plugins.UserPlugin>` in your commit.
+* By providing a full Linux/Unix/MacOS file path, then a colon (``:``), followed by the class name.
+* By providing a full Windows file path, then a colon (``:``), followed by the class name.
+
 .. |deg| unicode:: U+00B0

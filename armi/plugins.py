@@ -626,7 +626,9 @@ class UserPlugin(ArmiPlugin):
         corral their side effects during a run.
         """
         if issubclass(self.__class__, UserPlugin):
-            assert len(self.__class__.defineSettings()) == 0, "TODO"
+            assert (
+                len(self.__class__.defineSettings()) == 0
+            ), "UserPlugins cannot define new Settings"
             # NOTE: These are the class methods that we are staunchly _not_ allowing people
             # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: None

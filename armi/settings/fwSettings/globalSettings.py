@@ -837,8 +837,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_USER_PLUGINS,
             default=[],
             label=CONF_USER_PLUGINS,
-            description="An optional place for users to define on-the-fly plugins "
-            "for things like one-off analysis.",
+            description="YAML list defining the locations of UserPlugin subclasses. "
+            "You can enter the full armi import path: armi.test.test_what.MyPlugin, "
+            "or you can enter the full file path: /path/to/my/pluginz.py:MyPlugin ",
             schema=vol.Any([vol.Coerce(str)], None),
         ),
     ]

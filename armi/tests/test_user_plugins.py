@@ -268,8 +268,8 @@ class TestUserPlugins(unittest.TestCase):
 
         app.pluginManager.hook.exposeInterfaces(cs=o.cs)
 
-        # We don't actually have everything in place to do a full run through all the interfaces.
-        # For instance, we don't have any database files preped. So, let's skip a few interfaces.
+        # This test is not set up for a full run through all the interfaces, for
+        # instance, there is not database prepped. So let's skip some interfaces.
         for skipIt in ["fuelhandler", "history"]:
             for i, interf in enumerate(o.interfaces):
                 if skipIt in str(interf).lower():
