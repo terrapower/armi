@@ -294,10 +294,14 @@ def updateUniformMesh(
             ia += 1
         elif diff >= 1:
             # Difference is sufficient to add new mesh point.
+            zLowerOpts = [currentUniformMesh[ib - 1], assemAxialMesh[ia - 1]]
+            zUpperOpts = [currentUniformMesh[ib], assemAxialMesh[ia]]
+            if ia == 0:
+                zLowerOpts[1] = 0.0
+            if ib == 0:
+                zLowerOpts[0] = 0.0
             meshBetweenBlk = getBlockBoundsBetweenElevation(
-                assemAxialMesh,
-                max(currentUniformMesh[ib - 1], assemAxialMesh[ia - 1]),
-                max(currentUniformMesh[ib], assemAxialMesh[ia]),
+                assemAxialMesh, max(zLowerOpts), max(zUpperOpts),
             )
             if not meshBetweenBlk:
                 newMeshPoints.append(currentUniformMesh[ib])
