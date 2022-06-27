@@ -26,10 +26,10 @@ runLog = logging.getLogger(__name__)
 class UniformMeshV2:
     """beta class for uniform mesh converter overhaul"""
 
-    def __init__(self, core, primaryFlag: Flags, secondaryFlag: Flags):
+    def __init__(self, core, primaryFlag: str, secondaryFlag: str):
         self.core = core
-        self.primaryFlag = primaryFlag
-        self.secondaryFlag = secondaryFlag
+        self.primaryFlag = Flags.fromString(primaryFlag)
+        self.secondaryFlag = Flags.fromString(secondaryFlag)
         self.uniformMesh = []
 
     def getCoreWideUniformMesh(self, printLikeBlkSmears: bool = False):

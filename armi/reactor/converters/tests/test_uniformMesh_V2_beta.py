@@ -44,7 +44,7 @@ class TestMassConservation(unittest.TestCase):
         self.newBlockMass = {}
 
         self.uniMesher = UniformMeshV2(
-            self.r.core, primaryFlag=Flags.FUEL, secondaryFlag=Flags.CONTROL
+            self.r.core, primaryFlag="fuel", secondaryFlag="control"
         )
         self.uniMesher.getCoreWideUniformMesh()
 
@@ -192,7 +192,7 @@ class TestExceptions(unittest.TestCase):
 
     def test_updateAssemblyAxialMesh(self):
         a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
-        uniMesh = UniformMeshV2(None, Flags.FUEL, Flags.CONTROL)
+        uniMesh = UniformMeshV2(None, "fuel", "control")
         uniMesh.uniformMesh = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 5.0]
         with self.assertRaises(ValueError) as cm:
             uniMesh.updateAssemblyAxialMesh(a)

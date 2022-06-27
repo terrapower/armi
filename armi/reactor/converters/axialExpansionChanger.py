@@ -66,10 +66,8 @@ class AxialExpansionChanger:
             A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
         """
         self._detailedAxialExpansion = detailedAxialExpansion
-        self._primaryAssemblyToConserve = Flags.fromString(primaryAssemblyToConserve)
-        self._secondaryAssemblyToConserve = Flags.fromString(
-            secondaryAssemblyToConserve
-        )
+        self._primaryAssemblyToConserve = primaryAssemblyToConserve
+        self._secondaryAssemblyToConserve = secondaryAssemblyToConserve
         self.linked = None
         self.expansionData = None
 
