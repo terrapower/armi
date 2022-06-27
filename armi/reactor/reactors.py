@@ -124,9 +124,7 @@ def loadFromCs(cs):
 
 
 def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
-    """
-    Build a reactor from input settings, blueprints and geometry.
-    """
+    """Build a reactor from input settings, blueprints and geometry."""
     from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
@@ -185,10 +183,6 @@ class Core(composites.Composite):
         ----------
         name : str
             Name of the object. Flags will inherit from this.
-        geom : SystemLayoutInput object
-            Contains face-map
-        cs : CaseSettings object, optional
-            the calculation settings dictionary
         """
         composites.Composite.__init__(self, name)
         self.p.flags = Flags.fromStringIgnoreErrors(name)
