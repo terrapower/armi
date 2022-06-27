@@ -126,6 +126,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
+
+        # check if the sourceReactor has been modified from the blueprints
+        if sourceReactor.core.isFullCore and not newReactor.core.isFullCore:
+            geometryConverter = newReactor.core.growToFullCore(sourceReactor.o.cs)
+
         return newReactor
 
     def _computeAverageAxialMesh(self):
