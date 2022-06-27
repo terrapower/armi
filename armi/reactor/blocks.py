@@ -1951,7 +1951,6 @@ class HexBlock(Block):
         return self._getPinCoordinatesHex()
 
     def _getPinCoordinatesHex(self):
-        """"""
         pinPitch = self.getPinPitch()
         if pinPitch is None:
             return []
