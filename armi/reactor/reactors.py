@@ -229,8 +229,12 @@ class Core(composites.Composite):
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
         self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
-        self._primaryAssemblyToConserve = cs["primaryAssemblyToConserve"]
-        self._secondaryAssemblyToConserve = cs["secondaryAssemblyToConserve"]
+        self._primaryAssemblyToConserve = Flags.fromString(
+            cs["primaryAssemblyToConserve"]
+        )
+        self._secondaryAssemblyToConserve = Flags.fromString(
+            cs["secondaryAssemblyToConserve"]
+        )
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
@@ -2245,7 +2249,9 @@ class Core(composites.Composite):
             and self.areAssembliesAxiallyDisjoint()
         ):
             uniMesher = UniformMeshV2(
-                self, cs["primaryAssemblyToConserve"], cs["secondaryAssemblyToConserve"]
+                self,
+                Flags.fromString(cs["primaryAssemblyToConserve"]),
+                Flags.fromString(cs["secondaryAssemblyToConserve"]),
             )
             uniMesher.getCoreWideUniformMesh()
             uniMesher.applyCoreWideUniformMesh()

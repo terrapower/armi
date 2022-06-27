@@ -29,7 +29,6 @@ import voluptuous as vol
 from armi import context
 from armi.settings import setting
 from armi.utils.mathematics import isMonotonic
-from armi.reactor.flags import Flags
 
 
 # Framework settings
@@ -159,7 +158,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_PRIMARY_ASSEMBLY_CONSERVE,
-            default=Flags.FUEL,
+            default="fuel",
             label="Primary Assembly To Conserve",
             description=(
                 "For disjoint axial meshes, the 'primary assembly to conserve' corresponds to "
@@ -170,7 +169,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_SECONDARY_ASSEMBLY_CONSERVE,
-            default=Flags.CONTROL,
+            default="control",
             label="Secondary Assembly To Conserve",
             description=(
                 "For disjoint axial meshes, the 'secondary assembly to conserve' corresponds to "
