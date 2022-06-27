@@ -48,8 +48,8 @@ class AxialExpansionChanger:
 
     def __init__(
         self,
-        primaryAssemblyToConserve: Flags,
-        secondaryAssemblyToConserve: Flags,
+        primaryAssemblyToConserve: str,
+        secondaryAssemblyToConserve: str,
         detailedAxialExpansion: bool = False,
     ):
         """
@@ -57,17 +57,17 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        primaryAssemblyToConserve: Flags
+        primaryAssemblyToConserve: str
             used by uniformMesh_V2_beta to give primary priority to an assembly group for preserving axial meshes
-        secondaryAssemblyToConserve: Flags
+        secondaryAssemblyToConserve: str
             used by uniformMesh_V2_beta to give secondary priority to an assembly group for preserving axial meshes
 
         detailedAxialExpansion : bool, optional
             A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
         """
         self._detailedAxialExpansion = detailedAxialExpansion
-        self._primaryAssemblyToConserve = primaryAssemblyToConserve
-        self._secondaryAssemblyToConserve = secondaryAssemblyToConserve
+        self._primaryAssemblyToConserve = Flags.fromString(primaryAssemblyToConserve)
+        self._secondaryAssemblyToConserve = Flags.fromString(secondaryAssemblyToConserve)
         self.linked = None
         self.expansionData = None
 
