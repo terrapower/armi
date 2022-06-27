@@ -450,9 +450,7 @@ class TestExceptions(Base, unittest.TestCase):
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
-        obj = AxialExpansionChanger(
-            "fuel", "control", detailedAxialExpansion=True
-        )
+        obj = AxialExpansionChanger("fuel", "control", detailedAxialExpansion=True)
         with self.assertRaises(RuntimeError) as cm:
             obj.setAssembly(assembly)
             the_exception = cm.exception

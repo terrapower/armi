@@ -301,7 +301,9 @@ def updateUniformMesh(
             if ib == 0:
                 zLowerOpts[0] = 0.0
             meshBetweenBlk = getBlockBoundsBetweenElevation(
-                assemAxialMesh, max(zLowerOpts), max(zUpperOpts),
+                assemAxialMesh,
+                max(zLowerOpts),
+                max(zUpperOpts),
             )
             if not meshBetweenBlk:
                 newMeshPoints.append(currentUniformMesh[ib])

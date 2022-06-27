@@ -67,7 +67,9 @@ class AxialExpansionChanger:
         """
         self._detailedAxialExpansion = detailedAxialExpansion
         self._primaryAssemblyToConserve = Flags.fromString(primaryAssemblyToConserve)
-        self._secondaryAssemblyToConserve = Flags.fromString(secondaryAssemblyToConserve)
+        self._secondaryAssemblyToConserve = Flags.fromString(
+            secondaryAssemblyToConserve
+        )
         self.linked = None
         self.expansionData = None
 
