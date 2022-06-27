@@ -80,7 +80,7 @@ class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
     """This is invalid/bad because it implements defineParameterRenames()"""
 
     def defineParameterRenames():
-        self.danger = "danger"
+        return {"oldType": "type"}
 
 
 class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
@@ -161,10 +161,6 @@ class TestUserPlugins(unittest.TestCase):
         # this should raise an error because it has a defineSettings() method
         with self.assertRaises(AssertionError):
             bad0 = UserPluginBadDefinesSettings()
-
-        # overriding defineParameterRenames() is correctly fixed
-        bad1 = UserPluginBadDefineParameterRenames()
-        self.assertFalse(hasattr(bad1, "danger"))
 
     def test_registerUserPlugins(self):
         app = getApp()

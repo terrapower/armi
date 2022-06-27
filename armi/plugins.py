@@ -627,11 +627,14 @@ class UserPlugin(ArmiPlugin):
         """
         if issubclass(self.__class__, UserPlugin):
             assert (
+                len(self.__class__.defineParameterRenames()) == 0
+            ), "UserPlugins cannot define parameter renames"
+            assert (
                 len(self.__class__.defineSettings()) == 0
             ), "UserPlugins cannot define new Settings"
             # NOTE: These are the class methods that we are staunchly _not_ allowing people
             # to change in this class. If you need these, please use a regular ArmiPlugin.
-            self.defineParameterRenames = lambda: None
+            self.defineParameterRenames = lambda: {}
             self.defineSettings = lambda: []
             self.defineSettingsValidators = lambda: []
 
@@ -643,7 +646,7 @@ class UserPlugin(ArmiPlugin):
         It is a design limitation of user plugins that they not generate parameter renames,
         so that they are able to be added to the plugin stack during run time.
         """
-        pass
+        return {}
 
     @staticmethod
     @HOOKSPEC
