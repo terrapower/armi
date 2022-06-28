@@ -357,7 +357,7 @@ blocks:
             ip: 15.277
             mult: 1.0
             op: 16.6
-        intercoolant:  &component_control_intercoolant
+        intercoolant: &component_control_intercoolant
             shape: Hexagon
             material: Sodium
             Tinput: 25.0
