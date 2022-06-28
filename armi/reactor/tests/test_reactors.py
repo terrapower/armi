@@ -725,6 +725,14 @@ class HexReactorTests(ReactorTests):
             self.assertNotEqual(aLoc[i], a.spatialLocator)
             self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
+    def test_getNozzleTypes(self):
+        nozzleTypes = self.r.core.getNozzleTypes()
+        expectedTypes = ["Inner", "Outer", "lta", "Default"]
+        for nozzle in nozzleTypes:
+            self.assertTrue(
+                nozzle in expectedTypes, f"nozzleType {nozzle} not in {expectedTypes}"
+            )
+
     def test_createAssemblyOfType(self):
         """Test creation of new assemblies."""
         # basic creation

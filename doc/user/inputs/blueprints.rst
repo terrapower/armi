@@ -283,7 +283,7 @@ Historically, flags have also been used to describe directly `what should be don
 an object in the reactor model. For instance, an object with the ``DEPLETABLE`` flag set
 will participate in isotopic depletion analysis, whereas objects without the
 ``DEPLETION`` flag set will not. This has led to a lot of confusion, as the meaning of
-various flags is burried deep within the code, and can conflict from place to place. We
+various flags is buried deep within the code, and can conflict from place to place. We
 are trying to align around a `what something is` interpretation, and bind those to
 specific behaviors with settings. For more details, see :py:mod:`armi.reactor.flags`.
 
@@ -328,6 +328,7 @@ A complete definition of an inner-core assembly may be seen below::
                 material modifications:
                     U235_wt_frac: ['', '', 0.001, 0.002, 0.03, '']
                     ZR_wt_frac: ['', '', 0.1, 0.1, 0.1, 0.1]
+                nozzleType: Inner
                 xs types: [A, B, C, D, E, F]
 
 .. note:: While component dimensions are entered as cold dimensions, axial heights must
@@ -379,6 +380,11 @@ material modifications
   enrichment (mass frac.), zirconium mass frac, and any additional options required to fully define
   the material loaded in the component.  The material definitions in the material library define
   valid modifications for them.
+
+nozzleType
+  This is a string that identifies what type of inlet nozzle an assembly has. This parameter could
+  be used in an implementation of a thermal-hydraulics solver with flow orificing to apply
+  different pressure loss coefficients and/or flow rates to different types of assemblies.
 
   .. exec::
       from armi.materials import Material
