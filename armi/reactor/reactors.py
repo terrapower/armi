@@ -1058,6 +1058,27 @@ class Core(composites.Composite):
 
         return assems
 
+    def getNozzleTypes(self):
+        """
+        Get a dictionary of all of the assembly ``nozzleType``s in the core.
+
+        Returns
+        -------
+        nozzles : dict
+            A dictionary of ``{nozzleType: nozzleID}`` pairs, where the nozzleIDs are
+            numbers corresponding to the alphabetical order of the ``nozzleType`` names.
+
+        Notes
+        -----
+        Getting the ``nozzleID`` by alphabetical order could cause a problem if a new
+        ``nozzleType`` is added during a run. This problem should not occur with the
+        ``includeBolAssems=True`` argument provided.
+        """
+        nozzleList = list(
+            set(a.p.nozzleType for a in self.getAssemblies(includeBolAssems=True))
+        )
+        return {nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList))}
+
     def getBlockByName(self, name):
         """
         Finds a block based on its name.

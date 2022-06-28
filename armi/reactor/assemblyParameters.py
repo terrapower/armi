@@ -328,6 +328,16 @@ def getAssemblyParameterDefinitions():
             saveToDB=True,
         )
 
+        pb.defParam(
+            "nozzleType",
+            units="None",
+            description="nozzle type for assembly",
+            location="?",
+            default="Default",
+            saveToDB=True,
+            categories=[parameters.Category.assignInBlueprints],
+        )
+
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam("Pos", units="?", description="?", location="?")
