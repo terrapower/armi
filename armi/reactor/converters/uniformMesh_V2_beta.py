@@ -18,7 +18,6 @@
 
 import logging
 from armi.reactor.flags import Flags
-from armi.reactor import grids
 
 runLog = logging.getLogger(__name__)
 
@@ -59,7 +58,7 @@ class UniformMeshV2:
                 otherAssems.append(a)
 
         # Overlay uniform meshes on each other for a core wide uniform mesh and check for smearing
-        self.uniformMesh = createUniformMeshCore(
+        self.uniformMesh = _createUniformMeshCore(
             primaryAssemsToPreserve=primaryAssems,
             secondaryAssemsToPreserve=secondaryAssems,
             otherAssems=otherAssems,
@@ -70,20 +69,20 @@ class UniformMeshV2:
                 str(self.primaryFlag)
             )
         )
-        self.checkForSmearing(primaryAssems, printLikeBlkSmears)
+        self._checkForSmearing(primaryAssems, printLikeBlkSmears)
 
         runLog.debug(
             "Smearing Report For Secondary Assemblies -- {0:s}".format(
                 str(self.secondaryFlag)
             )
         )
-        self.checkForSmearing(secondaryAssems, printLikeBlkSmears)
+        self._checkForSmearing(secondaryAssems, printLikeBlkSmears)
 
     def applyCoreWideUniformMesh(self):
         """apply the core wide uniform mesh to the core"""
         runLog.info("Applying uniform mesh to reactor.core...")
         for assem in self.core.getChildren():
-            uniAssem = self.updateAssemblyAxialMesh(assem)
+            uniAssem = self._updateAssemblyAxialMesh(assem)
             spatialLocator = assem.spatialLocator
             self.core.removeAssembly(assem, discharge=False)
             self.core.add(uniAssem, spatialLocator)
@@ -92,7 +91,7 @@ class UniformMeshV2:
         coreAxialMesh = self.core.findAllAxialMeshPoints()
         self.core.p.axialMesh = coreAxialMesh
 
-    def updateAssemblyAxialMesh(self, sourceAssembly):
+    def _updateAssemblyAxialMesh(self, sourceAssembly):
         """apply calculated core-wise uniform mesh to assembly
 
         Parameters
@@ -132,7 +131,7 @@ class UniformMeshV2:
                     f"No blocks found between {zLower:.3f} and {zUpper:.3f} in {sourceAssembly}. "
                     f"This is a major bug that should be reported to the developers."
                 )
-            b = createNewBlock(overlappingBlockInfo, zUpper - zLower)
+            b = _createNewBlock(overlappingBlockInfo, zUpper - zLower)
             b.p.assemNum = uniAssem.p.assemNum
             b.name = b.makeName(uniAssem.p.assemNum, i)
             uniAssem.add(b)
@@ -143,7 +142,7 @@ class UniformMeshV2:
 
         return uniAssem
 
-    def checkForSmearing(self, aList: list, printLikeBlkSmears: bool):
+    def _checkForSmearing(self, aList: list, printLikeBlkSmears: bool):
         """indicate smearing by presence of block bounds that are not aligned with uniformMesh
 
         Parameters
@@ -184,7 +183,7 @@ class UniformMeshV2:
                             )
 
 
-def createNewBlock(overlappingBlockInfo: list, uniformHeight: float):
+def _createNewBlock(overlappingBlockInfo: list, uniformHeight: float):
     """create new armi block from overlapping block info"""
     # get source block type
     heights = [h for _b, h in overlappingBlockInfo]
@@ -206,7 +205,7 @@ def createNewBlock(overlappingBlockInfo: list, uniformHeight: float):
     return b
 
 
-def createUniformMeshCore(
+def _createUniformMeshCore(
     primaryAssemsToPreserve: list, secondaryAssemsToPreserve: list, otherAssems: list
 ):
     """using three sets of assemblies, create a core-wide uniform mesh
@@ -228,36 +227,36 @@ def createUniformMeshCore(
     # get uniformMesh for otherAssems
     uniformMeshOther = otherAssems[0].getAxialMesh()
     for assem in otherAssems:
-        uniformMeshOther = updateUniformMesh(assem.getAxialMesh(), uniformMeshOther)
+        uniformMeshOther = _updateUniformMesh(assem.getAxialMesh(), uniformMeshOther)
 
     # get uniformMesh for secondaryAssemsToPreserve
     uniformMeshSecondaryPreserve = secondaryAssemsToPreserve[0].getAxialMesh()
     for assem in secondaryAssemsToPreserve:
-        uniformMeshSecondaryPreserve = updateUniformMesh(
+        uniformMeshSecondaryPreserve = _updateUniformMesh(
             assem.getAxialMesh(), uniformMeshSecondaryPreserve
         )
 
     # get uniformMesh for primaryAssemsToPreserve
     uniformMeshPrimaryPreserve = primaryAssemsToPreserve[0].getAxialMesh()
     for assem in primaryAssemsToPreserve:
-        uniformMeshPrimaryPreserve = updateUniformMesh(
+        uniformMeshPrimaryPreserve = _updateUniformMesh(
             assem.getAxialMesh(), uniformMeshPrimaryPreserve
         )
 
     # overlay uniformMeshSecondaryPreserve on uniformMeshOther
-    coreUniformMesh = updateUniformMesh(
+    coreUniformMesh = _updateUniformMesh(
         uniformMeshSecondaryPreserve, uniformMeshOther, preserve=True
     )
 
     # overlay uniformMeshPrimaryPreserve on uniformMeshSecondaryPreserve
-    coreUniformMesh = updateUniformMesh(
+    coreUniformMesh = _updateUniformMesh(
         uniformMeshPrimaryPreserve, coreUniformMesh, preserve=True
     )
 
     return coreUniformMesh
 
 
-def updateUniformMesh(
+def _updateUniformMesh(
     assemAxialMesh: list, currentUniformMesh: list, preserve: bool = False
 ):
     """update currentUniformMesh given assembly, assem
@@ -300,7 +299,7 @@ def updateUniformMesh(
                 zLowerOpts[1] = 0.0
             if ib == 0:
                 zLowerOpts[0] = 0.0
-            meshBetweenBlk = getBlockBoundsBetweenElevation(
+            meshBetweenBlk = _getBlockBoundsBetweenElevation(
                 assemAxialMesh,
                 max(zLowerOpts),
                 max(zUpperOpts),
@@ -319,14 +318,14 @@ def updateUniformMesh(
             ia += 1
 
     if preserve:
-        checkAxialMeshValidity(newMeshPoints, preservedMeshPoints=assemAxialMesh)
+        _checkAxialMeshValidity(newMeshPoints, preservedMeshPoints=assemAxialMesh)
     else:
-        checkAxialMeshValidity(newMeshPoints)
+        _checkAxialMeshValidity(newMeshPoints)
 
     return newMeshPoints
 
 
-def checkAxialMeshValidity(axialMesh: list, preservedMeshPoints: list = None):
+def _checkAxialMeshValidity(axialMesh: list, preservedMeshPoints: list = None):
     """check validity of axialMesh (that each subsequent entry increases)
 
     Parameters
@@ -380,7 +379,7 @@ def checkAxialMeshValidity(axialMesh: list, preservedMeshPoints: list = None):
                         ) from second
 
 
-def getBlockBoundsBetweenElevation(axialGrid: list, zLower: float, zUpper: float):
+def _getBlockBoundsBetweenElevation(axialGrid: list, zLower: float, zUpper: float):
     """retrieve axial mesh values on axialGrid that fall between zLower and zUpper
 
     Parameters

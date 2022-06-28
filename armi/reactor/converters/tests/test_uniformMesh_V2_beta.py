@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: disable = invalid-name, wrong-import-position
+# pylint: disable = invalid-name, wrong-import-position, protected-access
 import unittest
 import os
-from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import densityTools
@@ -60,7 +59,7 @@ class TestMassConservation(unittest.TestCase):
         """
         for a in self.r.core.getAssemblies():
             # calculate uniform mesh for assembly
-            uniAssem = self.uniMesher.updateAssemblyAxialMesh(a)
+            uniAssem = self.uniMesher._updateAssemblyAxialMesh(a)
             # get spatial locator and remove original assembly from core
             loc = a.spatialLocator
             self.r.core.removeAssembly(a, discharge=False)
@@ -168,7 +167,7 @@ class TestExceptions(unittest.TestCase):
     def test_checkAxialMeshValidity_invalidMesh(self):
         failMesh = [1.0, 2.0, 3.0, 5.0, 4.0]
         with self.assertRaises(RuntimeError) as cm:
-            uniformMesh_V2_beta.checkAxialMeshValidity(failMesh)
+            uniformMesh_V2_beta._checkAxialMeshValidity(failMesh)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -186,7 +185,7 @@ class TestExceptions(unittest.TestCase):
         testMesh = [1.0, 2.0, 2.05, 3.05, 4.05, 5.0]
         preservedMesh = [1.0, 2.01, 3.0, 4.0, 4.95, 5.0]
         with self.assertRaises(RuntimeError) as cm:
-            uniformMesh_V2_beta.checkAxialMeshValidity(testMesh, preservedMesh)
+            uniformMesh_V2_beta._checkAxialMeshValidity(testMesh, preservedMesh)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -195,6 +194,6 @@ class TestExceptions(unittest.TestCase):
         uniMesh = UniformMeshV2(None, "fuel", "control")
         uniMesh.uniformMesh = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 5.0]
         with self.assertRaises(ValueError) as cm:
-            uniMesh.updateAssemblyAxialMesh(a)
+            uniMesh._updateAssemblyAxialMesh(a)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
