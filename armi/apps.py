@@ -244,7 +244,7 @@ class App:
         or on Linux/Unix:
         ``/path/to/pluginMod.py:pluginCls,/path/to/plugMod2.py:plugCls2```,
         or on Windows:
-        ``C:\\\\path\\to\\pluginMod.py:pluginCls,C:\\\\path\\to\\plugMod2.py:plugCls2```,
+        ``C:\\path\\to\\pluginMod.py:pluginCls,C:\\\\path\\to\\plugMod2.py:plugCls2```,
 
         Notes
         -----
@@ -267,7 +267,7 @@ class App:
         """Helper method to register a single UserPlugin where
         the given path is of the form: /path/to/why.py:MyPlugin
         """
-        # determine if we have that Windows file path (C:\\path\to\whatever.py)
+        # determine if we have that Windows file path (C:\path\to\whatever.py)
         isWindows = False
         if ":\\" in pluginPath:
             isWindows = True
