@@ -458,39 +458,23 @@ def _buildZonesByOrifice(core, cs):
 
     Notes
     -----
-    It separate oxide and LTA assembly into their own zones
+    Orifice coefficients are determined by a combination of the
+    ``THorificeZone`` and ``nozzleType`` parameters. Each combination of
+    ``THorificeZone`` and ``nozzleType`` is treated as a unique ``Zone``.
     """
     runLog.extra("Building Zones by Orifice zone")
     orificeZones = Zones(core, cs)
 
     # first get all different orifice setting zones
-    for a in core.getAssembliesOfType(Flags.FUEL):
-        orificeSetting = "zone" + str(a.p.THorificeZone)
-        b = a.getFirstBlock(Flags.FUEL)
-        cFuel = b.getComponent(Flags.FUEL)
-        fuelMaterial = cFuel.getProperties()
-        if "lta" in a.getType():
-            orificeSetting = "lta" + str((orificeSetting))
-        elif "Oxide" in fuelMaterial.getName():
-            orificeSetting = "Oxide" + str((orificeSetting))
+    for a in core.getAssemblies():
+        orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.nozzleType)
         if orificeSetting not in orificeZones.names:
             orificeZones.add(Zone(orificeSetting))
 
     # now put FAs of the same orifice zone in to one channel
-    for a in core.getAssembliesOfType(Flags.FUEL):
-        orificeSetting = "zone" + str(a.p.THorificeZone)
-        b = a.getFirstBlock(Flags.FUEL)
-        cFuel = b.getComponent(Flags.FUEL)
-        fuelMaterial = cFuel.getProperties()
-        # get channel for lta
-        if "lta" in a.getType():
-            orificeZones["lta" + str(orificeSetting)].append(a.getLocation())
-        # account for oxide fuel
-        elif "Oxide" in fuelMaterial.getName():
-            orificeZones["Oxide" + str(orificeSetting)].append(a.getLocation())
-        # account for LTA
-        else:
-            orificeZones[orificeSetting].append(a.getLocation())
+    for a in core.getAssemblies():
+        orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.nozzleType)
+        orificeZones[orificeSetting].append(a.getLocation())
 
     return orificeZones
 

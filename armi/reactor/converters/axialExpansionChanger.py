@@ -374,7 +374,7 @@ class AssemblyAxialLinkage:
         b : :py:class:`Block <armi.reactor.blocks.Block>` object
             block to determine axial linkage for
 
-        NOTES
+        Notes
         -----
         - block linkage is determined by matching ztop/zbottom (see below)
         - block linkage is stored in self.linkedBlocks[b]

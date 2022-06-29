@@ -124,9 +124,7 @@ def loadFromCs(cs):
 
 
 def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
-    """
-    Build a reactor from input settings, blueprints and geometry.
-    """
+    """Build a reactor from input settings, blueprints and geometry."""
     from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
@@ -185,10 +183,6 @@ class Core(composites.Composite):
         ----------
         name : str
             Name of the object. Flags will inherit from this.
-        geom : SystemLayoutInput object
-            Contains face-map
-        cs : CaseSettings object, optional
-            the calculation settings dictionary
         """
         composites.Composite.__init__(self, name)
         self.p.flags = Flags.fromStringIgnoreErrors(name)
@@ -405,18 +399,20 @@ class Core(composites.Composite):
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
 
-
         Originally, this held onto all assemblies in the spend fuel pool. However, having
-        this sitting in memory becomes constraining for large problems. It is more
+        this sitting in memory becomes constraining for large simulations. It is more
         memory-efficient to only save the assemblies that are required for detailed
         history tracking. In fact, there's no need to save the assembly object at all,
-        just have the history interface save the relevant parameters. This is an important
-        cleanup.
+        just have the history interface save the relevant parameters.
+
+        Notes
+        -----
+        Please expect this method will delete your assembly (instead of moving it to a
+        Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
 
         See Also
         --------
         add : adds an assembly
-
         """
         paramDefs = set(parameters.ALL_DEFINITIONS)
         paramDefs.difference_update(set(parameters.forType(Core)))
@@ -648,36 +644,6 @@ class Core(composites.Composite):
         armi.nuclearDataIO.ISOTXS.read1D : reads the number of energy groups off the ISOTXS library.
         """
         return self.lib.numGroups
-
-    # NOTE: this method is never used
-    def countAssemblies(self, typeList, ring=None, fullCore=False):
-        """
-        Counts the number of assemblies of type in ring (or in full reactor)
-
-        Parameters
-        ----------
-        typeList : iterable, optional
-            Restruct counts to this assembly type.
-
-        rings : int
-            The reactor ring to find assemblies in
-
-        fullCore : bool, optional
-            If True, will consider the core symmetry. Default: False
-        """
-        assems = (a for a in self if a.hasFlags(typeList, exact=True))
-
-        if ring is not None:
-            assems = (a for a in assems if a.spatialLocator.getRingPos()[0] == ring)
-
-        if not fullCore:
-            return sum(1 for _a in assems)
-
-        pmult = self.powerMultiplier  # value is loop-independent
-
-        rings = (a.spatialLocator.getRingPos()[0] for a in assems)
-
-        return sum(1 if r == 1 else pmult for r in rings)
 
     def countBlocksWithFlags(self, blockTypeSpec, assemTypeSpec=None):
         """
@@ -1063,6 +1029,27 @@ class Core(composites.Composite):
             assems = [a for a in assems if a.getLocation() in zoneLocs]
 
         return assems
+
+    def getNozzleTypes(self):
+        """
+        Get a dictionary of all of the assembly ``nozzleType``s in the core.
+
+        Returns
+        -------
+        nozzles : dict
+            A dictionary of ``{nozzleType: nozzleID}`` pairs, where the nozzleIDs are
+            numbers corresponding to the alphabetical order of the ``nozzleType`` names.
+
+        Notes
+        -----
+        Getting the ``nozzleID`` by alphabetical order could cause a problem if a new
+        ``nozzleType`` is added during a run. This problem should not occur with the
+        ``includeBolAssems=True`` argument provided.
+        """
+        nozzleList = list(
+            set(a.p.nozzleType for a in self.getAssemblies(includeBolAssems=True))
+        )
+        return {nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList))}
 
     def getBlockByName(self, name):
         """
@@ -1642,7 +1629,6 @@ class Core(composites.Composite):
         -----
         createFreshFeed and createAssemblyOfType and this
         all need to be merged together somehow.
-
         """
         return self.createAssemblyOfType(assemType=self._freshFeedType)
 
@@ -1674,7 +1660,6 @@ class Core(composites.Composite):
         See Also
         --------
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
-
         """
         a = self.parent.blueprints.constructAssem(
             cs or settings.getMasterCs(), name=assemType
@@ -1976,14 +1961,12 @@ class Core(composites.Composite):
 
         Parameters
         ----------
-
         target : float
             This is the fraction of the total reactor fuel flux compared to the flux in a
             specific assembly in a ring
 
         Returns
         -------
-
         targetRing, fraction of flux : tuple
             targetRing is the ring with the fraction of flux that best meets the target.
         """
