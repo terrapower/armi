@@ -740,6 +740,13 @@ class HexReactorTests(ReactorTests):
         aNew = self.r.core.createAssemblyOfType(aOld.getType())
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
+        # test axial mesh alignment
+        aNewMesh = aNew.getAxialMesh()
+        for i, meshValue in enumerate(aNewMesh):
+            self.assertAlmostEqual(
+                meshValue, self.r.core.p.currentGeometryAxialMesh[i + 1]
+            )  # use i+1 to skip 0.0
+
         # creation with modified enrichment
         aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
         fuelBlock = aNew2.getFirstBlock(Flags.FUEL)

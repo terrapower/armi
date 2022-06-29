@@ -218,6 +218,13 @@ def defineCoreParameters():
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(
+            "currentGeometryAxialMesh",
+            units="cm",
+            description="Current core axial mesh.",
+            default=None,
+        )
+
+        pb.defParam(
             "breedingRatio2",
             units="N/A",
             description="Ratio of fissile Burned and discharged to fissile discharged",
