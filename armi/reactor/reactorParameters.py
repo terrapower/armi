@@ -218,9 +218,9 @@ def defineCoreParameters():
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(
-            "currentGeometryAxialMesh",
+            "referenceBlockAxialMesh",
             units="cm",
-            description="Current core axial mesh.",
+            description="The axial block boundaries that assemblies should conform to in a uniform mesh case.",
             default=None,
         )
 

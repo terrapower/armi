@@ -1693,7 +1693,7 @@ class Core(composites.Composite):
         if not self._detailedAxialExpansion:
             # if detailedAxialExpansion: False, make sure that the assembly being created has the correct core mesh
             a.setBlockMesh(
-                self.p.currentGeometryAxialMesh[1:], conserveMassFlag="auto"
+                self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto"
             )  # pass [1:] to skip 0.0
 
         return a
@@ -2229,9 +2229,7 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        self.p.currentGeometryAxialMesh = self.findAllAxialMeshPoints(
-            applySubMesh=False
-        )
+        self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
         self.p.axialMesh = self.findAllAxialMeshPoints()
         refAssem = self.refAssem
 
