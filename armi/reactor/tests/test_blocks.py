@@ -18,28 +18,20 @@ import copy
 import math
 import os
 import unittest
+
 import numpy
 from numpy.testing import assert_allclose
 
-from armi.reactor import blocks
-from armi.reactor import components
-from armi import runLog
-from armi import settings
-from armi import materials
+from armi import materials, runLog, settings, tests
 from armi.nucDirectory import nucDir, nuclideBases
-from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.tests import TEST_ROOT
-from armi.utils import units
-from armi.utils import hexagon
-from armi.reactor.flags import Flags
-from armi import tests
-from armi.reactor import grids
-from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import geometry
-from armi.physics.neutronics import NEUTRON
-from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.reactor import blocks, components, geometry, grids
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_assemblies import makeTestAssembly
+from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.utils import hexagon, units
+from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
 
 def buildSimpleFuelBlock():
@@ -1185,34 +1177,52 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-    def test_setPinPowers(self):
+    def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
         totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
-        imax = 9  # hexagonal rings of pins
-        jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
+
+        totalPowerKey = "linPowByPin"
+        neutronPowerKey = f"linPowByPin{NEUTRON}"
+        gammaPowerKey = f"linPowByPin{GAMMA}"
+
+        # Try setting gamma power too early and then reset
+        with self.assertRaises(UnboundLocalError) as context:
+            self.block.setPinPowers(
+                gammaPower,
+                powerKeySuffix=GAMMA,
+            )
+        errorMsg = (
+            "Neutron power has not been set yet. Cannot set total power for "
+            f"{self.block}."
+        )
+        self.assertTrue(errorMsg in str(context.exception))
+        self.block.p[gammaPowerKey] = None
+
+        # Test with no powerKeySuffix
+        self.block.setPinPowers(neutronPower)
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[neutronPowerKey])
+        self.assertIsNone(self.block.p[gammaPowerKey])
+
+        # Test with neutron powers
         self.block.setPinPowers(
             neutronPower,
-            numPins,
-            imax,
-            jmax,
-            gamma=False,
-            removeSixCornerPins=False,
             powerKeySuffix=NEUTRON,
         )
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[gammaPowerKey])
+
+        # Test with gamma powers
         self.block.setPinPowers(
             gammaPower,
-            numPins,
-            imax,
-            jmax,
-            gamma=True,
-            removeSixCornerPins=False,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.block.p.pinPowersNeutron, numpy.array(neutronPower))
-        assert_allclose(self.block.p.pinPowersGamma, numpy.array(gammaPower))
-        assert_allclose(self.block.p.pinPowers, numpy.array(totalPower))
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
+        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[gammaPowerKey], numpy.array(gammaPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):

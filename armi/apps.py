@@ -99,7 +99,9 @@ class App:
     def version(self) -> str:
         """Grab the version of this app (defaults to ARMI version).
 
-        NOTE: This is designed to be over-ridable by Application developers.
+        Notes
+        -----
+        This is designed to be over-ridable by Application developers.
         """
         return meta.__version__
 

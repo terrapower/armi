@@ -15,6 +15,7 @@
 """
 Tests for the uniform mesh geometry converter
 """
+import os
 import random
 import unittest
 
@@ -28,6 +29,45 @@ from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 
 
+class TestDetailedAxialExpansionComponents(unittest.TestCase):
+    """
+    Tests individual operations of the uniform mesh converter
+
+    Uses the test reactor for detailedAxialExpansion
+    """
+
+    def setUp(self):
+        self.o, self.r = test_reactors.loadTestReactor(
+            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+        )
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
+        self.converter._sourceReactor = self.r
+
+    def test_makeAssemWithUniformMesh(self):
+
+        sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
+        self.converter._computeAverageAxialMesh()
+        newAssem = self.converter.makeAssemWithUniformMesh(
+            sourceAssem, self.converter._uniformMesh
+        )
+
+        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
+            if newB.isFuel() and sourceB.isFuel():
+                self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
+            elif not newB.isFuel() and not sourceB.isFuel():
+                self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
+            elif newB.isFuel() and not sourceB.isFuel():
+                # a newB that is fuel can overwrite the xsType of a nonfuel sourceB;
+                # this is the expected behavior immediately above the fuel block
+                self.assertEqual(newB.p["xsType"], prevB.p["xsType"])
+            elif sourceB.isFuel() and not newB.isFuel():
+                raise ValueError(
+                    f"The soure block {sourceB} is fuel but uniform mesh converter"
+                    f"created a nonfuel block {newB}."
+                )
+            prevB = newB
+
+
 class TestUniformMeshComponents(unittest.TestCase):
     """
     Tests individual operations of the uniform mesh converter
@@ -37,8 +77,6 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # random seed to support random mesh in unit tests below
-        random.seed(987324987234)
         cls.o, cls.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
@@ -100,6 +138,11 @@ class TestUniformMesh(unittest.TestCase):
     Loads reactor once per test
     """
 
+    @classmethod
+    def setUpClass(cls):
+        # random seed to support random mesh in unit tests below
+        random.seed(987324987234)
+
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
@@ -127,6 +170,7 @@ class TestUniformMesh(unittest.TestCase):
 
     def test_applyStateToOriginal(self):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
+
         self.converter.convert(self.r)
         for b in self.converter.convReactor.core.getBlocks():
             b.p.mgFlux = range(33)

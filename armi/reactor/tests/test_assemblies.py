@@ -278,6 +278,22 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.calculateZCoords()
 
+    def test_notesParameter(self):
+        self.assertEqual(self.assembly.p.notes, "")
+
+        with self.assertRaises(ValueError):
+            # try to assign a non-string
+            self.assembly.p.notes = 1
+
+        note = "This is a short, acceptable not about the assembly"
+        self.assembly.p.notes = note
+        self.assertEqual(self.assembly.p.notes, note)
+
+        tooLongNote = "a" * 1001
+
+        self.assembly.p.notes = tooLongNote
+        self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
+
     def test_resetAssemNumCounter(self):
         resetAssemNumCounter()
         cur = 0
