@@ -371,6 +371,7 @@ assemblies:
             U235_wt_frac: &igniter_fuel_u235_wt_frac ['', 0.11, 0.11, 0.11, '']
             ZR_wt_frac: &igniter_fuel_zr_wt_frac ['', 0.06, 0.06, 0.06, '']
         xs types: &igniter_fuel_xs_types [A, A, A, A, A]
+        nozzleType: Inner
     middle fuel:
         specifier: MC
         blocks: [*block_grid_plate, *block_fuel2, *block_fuel2, *block_fuel2, *block_plenum]
@@ -392,6 +393,7 @@ assemblies:
             U235_wt_frac: &lta_fuel_u235_wt_frac ['', 0.2, 0.2, 0.2, '']
             ZR_wt_frac: &lta_fuel_zr_wt_frac ['', 0.07, 0.07, 0.06, '']
         xs types: *igniter_fuel_xs_types
+        nozzleType: lta
     lta fuel b:
         specifier: LB
         blocks: [*block_grid_plate, *block_lta2_fuel, *block_lta2_fuel, *block_lta2_fuel, *block_plenum]
@@ -401,6 +403,7 @@ assemblies:
             U235_wt_frac: *lta_fuel_u235_wt_frac
             ZR_wt_frac: *lta_fuel_zr_wt_frac
         xs types: *igniter_fuel_xs_types
+        nozzleType: lta
     feed fuel:
         specifier: OC
         blocks: *igniter_fuel_blocks
@@ -410,6 +413,7 @@ assemblies:
             U235_wt_frac: *igniter_fuel_u235_wt_frac
             ZR_wt_frac: *igniter_fuel_zr_wt_frac
         xs types: *igniter_fuel_xs_types
+        nozzleType: Outer
     primary control:
         specifier: PC
         blocks: [*block_grid_plate, *block_duct, *block_control, *block_plenum, *block_duct]

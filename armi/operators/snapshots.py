@@ -91,7 +91,9 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
     @property
     def atEOL(self):
         """
-        NOTE: This operator's atEOL method behaves very differently than other operators.
+        Notes
+        -----
+        This operator's atEOL method behaves very differently than other operators.
         The idea is that snapshots don't really have an EOL since they are independent of
         chrological order and may or may not contain the last time node from the load database.
         """

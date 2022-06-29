@@ -59,7 +59,9 @@ class Settings:
     The settings object has a 1-to-1 correspondence with the ARMI settings input file.
     This file may be created by hand or by the GUI in submitter.py.
 
-    NOTE: The actual settings in any instance of this class are immutable.
+    Notes
+    -----
+    The actual settings in any instance of this class are immutable.
     """
 
     # Settings is not a singleton, but there is a globally
@@ -186,7 +188,9 @@ class Settings:
         """
         Return a copy of an actual Setting object, instead of just its value.
 
-        NOTE: This is used very rarely, try to organize your code to only need a Setting value.
+        Notes
+        -----
+        This is used very rarely, try to organize your code to only need a Setting value.
         """
         if key in self.__settings:
             return copy(self.__settings[key])
@@ -196,7 +200,11 @@ class Settings:
             raise NonexistentSetting(key)
 
     def __setitem__(self, key, val):
-        # TODO: This potentially allows for invisible settings mutations and should be removed.
+        """
+        Notes
+        -----
+        This potentially allows for invisible settings mutations.
+        """
         if key in self.__settings:
             self.__settings[key].setValue(val)
         else:
@@ -321,7 +329,9 @@ class Settings:
         """
         Central location to init logging verbosity
 
-        NOTE: This means that creating a Settings object sets the global logging
+        Notes
+        -----
+        This means that creating a Settings object sets the global logging
         level of the entire code base.
         """
         if context.MPI_RANK == 0:
@@ -395,13 +405,15 @@ class Settings:
         """Attempt to grab the module-level logger verbosities from the settings file,
         and then set their log levels (verbosities).
 
-        NOTE: This method is only meant to be called once per run.
-
         Parameters
         ----------
         force : bool, optional
             If force is False, don't overwrite the log verbosities if the logger already exists.
             IF this needs to be used mid-run, force=False is safer.
+
+        Notes
+        -----
+        This method is only meant to be called once per run.
         """
         # try to get the setting dict
         verbs = self["moduleVerbosity"]
