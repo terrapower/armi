@@ -532,7 +532,7 @@ assemblies:
         material modifications:
             U235_wt_frac: &igniter_fuel_u235_wt_frac ['', '', 0.11, 0.11, 0.11, '', '', '', '']
             ZR_wt_frac: &igniter_fuel_zr_wt_frac ['', '', 0.06, 0.06, 0.06, '', '', '', '']
-        xs types: &igniter_fuel_xs_types [A, A, A, A, A, A, A, A, A]
+        xs types: &igniter_fuel_xs_types [A, A, B, C, C, D, A, A, A]
     middle fuel:
         specifier: MC
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_fuel2, *block_fuel2, *block_fuel2, *block_plenum, *block_aclp, *block_plenum, *block_dummy]

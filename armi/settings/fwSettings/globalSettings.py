@@ -656,10 +656,12 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_TRACK_ASSEMS,
-            default=True,
+            default=False,
             label="Save Discharged Assemblies",
-            description="Track assemblies for detailed fuel histories. Disable in case "
-            "you get memory errors.",
+            description="Track assemblies for detailed fuel histories. For instance, "
+            "assemblies are tracked after they come out of a reactor by putting them "
+            "in a Spent Fuel Pool. This might be necessary for your work, but it "
+            "certainly increases the memory usage of the program.",
         ),
         setting.Setting(
             CONF_VERBOSITY,
