@@ -282,8 +282,8 @@ systems:
     core:
         grid name: core
         origin:
-            x: -65.0
-            y: -65.0
+            x: 0.0
+            y: 0.0
             z: 0.0
 
 grids:
