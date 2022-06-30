@@ -1180,6 +1180,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.listOfVolIntegratedParamsToScale = []
+
     def convert(self, r=None):
         """
         Run the conversion.
@@ -1233,22 +1237,50 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
                 self._newAssembliesAdded.append(newAssem)
 
+            if a.getLocation() == "001-001":
+                runLog.extra(
+                    f"Modifying parameters in central assembly {a} to convert from 1/3 to full"
+                )
+
+                if not self.listOfVolIntegratedParamsToScale:
+                    # populate the list with all parameters that are VOLUME_INTEGRATED
+                    (
+                        self.listOfVolIntegratedParamsToScale,
+                        _,
+                    ) = _generateListOfParamsToScale(r, paramsToScaleSubset=[])
+
+                for b in a:
+                    for param in self.listOfVolIntegratedParamsToScale:
+                        b.p[param] *= 3
+
         # set domain after expanding, because it isnt actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
         r.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
 
-    def restorePreviousGeometry(self, cs, reactor):
+    def restorePreviousGeometry(self, cs, r):
         """Undo the changes made by convert by going back to 1/3 core."""
         # remove the assemblies that were added when the conversion happened.
         if bool(self.getNewAssembliesAdded()):
             for a in self.getNewAssembliesAdded():
-                reactor.core.removeAssembly(a, discharge=False)
+                r.core.removeAssembly(a, discharge=False)
 
-            reactor.core.symmetry = geometry.SymmetryType.fromAny(
+            r.core.symmetry = geometry.SymmetryType.fromAny(
                 self.EXPECTED_INPUT_SYMMETRY
             )
+
+            # clear the list for next time
+            self._newAssembliesAdded = []
+
+            # change the central assembly params back to 1/3
+            a = r.core.getAssemblyWithStringLocation("001-001")
+            runLog.extra(
+                f"Modifying parameters in central assembly {a} to revert from full to 1/3"
+            )
+            for b in a:
+                for param in self.listOfVolIntegratedParamsToScale:
+                    b.p[param] /= 3
 
 
 class EdgeAssemblyChanger(GeometryChanger):
