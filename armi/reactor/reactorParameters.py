@@ -218,6 +218,13 @@ def defineCoreParameters():
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(
+            "referenceBlockAxialMesh",
+            units="cm",
+            description="The axial block boundaries that assemblies should conform to in a uniform mesh case.",
+            default=None,
+        )
+
+        pb.defParam(
             "breedingRatio2",
             units="N/A",
             description="Ratio of fissile Burned and discharged to fissile discharged",
