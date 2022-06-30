@@ -330,7 +330,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_BRANCH_VERBOSITY,
             default="error",
             label="Worker Log Verbosity",
-            description="Verbosity of the non-master MPI nodes",
+            description="Verbosity of the non-primary MPI nodes",
             options=[
                 "debug",
                 "extra",
@@ -656,15 +656,17 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_TRACK_ASSEMS,
-            default=True,
+            default=False,
             label="Save Discharged Assemblies",
-            description="Track assemblies for detailed fuel histories. Disable in case "
-            "you get memory errors.",
+            description="Track assemblies for detailed fuel histories. For instance, "
+            "assemblies are tracked after they come out of a reactor by putting them "
+            "in a Spent Fuel Pool. This might be necessary for your work, but it "
+            "certainly increases the memory usage of the program.",
         ),
         setting.Setting(
             CONF_VERBOSITY,
             default="info",
-            label="Master Log Verbosity",
+            label="Primary Log Verbosity",
             description="How verbose the output will be",
             options=[
                 "debug",

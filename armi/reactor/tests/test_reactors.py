@@ -61,7 +61,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
 
     customSettings["db"] = False  # stop use of database
     cs = cs.modified(newSettings=customSettings)
-    settings.setMasterCs(cs)  # reset so everything matches master
+    settings.setMasterCs(cs)  # reset so everything matches the primary Cs
 
     r = tests.getEmptyHexReactor()
     r.core.setOptionsFromCs(cs)
@@ -216,7 +216,9 @@ class ReactorTests(unittest.TestCase):
 
 class HexReactorTests(ReactorTests):
     def setUp(self):
-        self.o, self.r = loadTestReactor(self.directoryChanger.destination)
+        self.o, self.r = loadTestReactor(
+            self.directoryChanger.destination, customSettings={"trackAssems": True}
+        )
 
     def test_getTotalParam(self):
         # verify that the block params are being read.
@@ -517,26 +519,22 @@ class HexReactorTests(ReactorTests):
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
+    def test_getNumEnergyGroups(self):
+        # this Core doesn't have a loaded ISOTXS library, so this test is minimally useful
+        with self.assertRaises(AttributeError):
+            self.r.core.getNumEnergyGroups()
+
+    def test_getMinimumPercentFluxInFuel(self):
+        # there is no flux in the test reactor YET, so this test is minimally useful
+        with self.assertRaises(ZeroDivisionError):
+            _targetRing, _fluxFraction = self.r.core.getMinimumPercentFluxInFuel()
+
     def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="005-023")
         a3 = self.r.core.getAssembly(assemblyName="A0010")
         self.assertEqual(a1, a2)
         self.assertEqual(a1, a3)
-
-    def test_countAssemblies(self):
-        """Tests that the users definition of assemblies is preserved.
-
-        .. test:: Tests that the users definition of assembilies is preserved.
-            :id: TEST_REACTOR_3
-            :links: REQ_REACTOR
-        """
-        nFuel = self.r.core.countAssemblies(Flags.FUEL)
-        self.assertEqual(2, nFuel)
-        nFuel_r3 = self.r.core.countAssemblies(Flags.FUEL, ring=3)
-        self.assertEqual(1, nFuel_r3)
-        nFuel = self.r.core.countAssemblies(Flags.FUEL, fullCore=True)
-        self.assertEqual(6, nFuel)
 
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
@@ -726,6 +724,14 @@ class HexReactorTests(ReactorTests):
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
             self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+
+    def test_getNozzleTypes(self):
+        nozzleTypes = self.r.core.getNozzleTypes()
+        expectedTypes = ["Inner", "Outer", "lta", "Default"]
+        for nozzle in nozzleTypes:
+            self.assertTrue(
+                nozzle in expectedTypes, f"nozzleType {nozzle} not in {expectedTypes}"
+            )
 
     def test_createAssemblyOfType(self):
         """Test creation of new assemblies."""

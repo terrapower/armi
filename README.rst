@@ -431,9 +431,9 @@ only use third-party Python libraries that have MIT or BSD licenses.
 
 --------------
 
-.. |Build Status| image:: https://github.com/terrapower/armi/actions/workflows/unittests.yaml/badge.svg?branch=master
+.. |Build Status| image:: https://github.com/terrapower/armi/actions/workflows/unittests.yaml/badge.svg?branch=main
     :target: https://github.com/terrapower/armi/actions/workflows/unittests.yaml
 
-.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=master&kill_cache=7
-    :target: https://coveralls.io/github/terrapower/armi?branch=master
+.. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=main&kill_cache=7
+    :target: https://coveralls.io/github/terrapower/armi?branch=main
 

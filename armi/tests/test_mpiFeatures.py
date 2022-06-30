@@ -99,7 +99,7 @@ class MpiOperatorTests(unittest.TestCase):
         self.o.operate()
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_masterException(self):
+    def test_primaryException(self):
         self.o.removeAllInterfaces()
         failer = FailingInterface1(self.o.r, self.o.cs)
         self.o.addInterface(failer)
@@ -110,7 +110,7 @@ class MpiOperatorTests(unittest.TestCase):
             self.o.operate()
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_masterCritical(self):
+    def test_primaryCritical(self):
         self.o.removeAllInterfaces()
         failer = FailingInterface2(self.o.r, self.o.cs)
         self.o.addInterface(failer)

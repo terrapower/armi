@@ -34,12 +34,7 @@ NHFLUX
 RZFLUX
     Reads/writes total fluxes from zones
 """
-import math
-
 import numpy
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
 
 from armi.nuclearDataIO import cccc
 
@@ -207,94 +202,3 @@ def getFDFluxReader(adjointFlag):
         return AtfluxStream
     else:
         return RtfluxStream
-
-
-def plotTriangleFlux(
-    rtfluxData: RtfluxData,
-    axialZ,
-    energyGroup,
-    hexPitch=math.sqrt(3.0),
-    hexSideSubdivisions=1,
-    imgFileExt=".png",
-):
-    """
-    Plot region total flux for one core-wide axial slice on triangular/hexagonal geometry.
-
-    .. warning:: This will run on non-triangular meshes but will look wrong.
-
-    Parameters
-    ----------
-    rtfluxData : RtfluxData object
-        The RTFLUX/ATFLUX data object containing all read file data.
-        Alternatively, this could be a FIXSRC file object,
-        but only if FIXSRC.fixSrc is first renamed FIXSRC.triangleFluxes.
-
-    axialZ : int
-        The DIF3D axial node index of the core-wide slice to plot.
-
-    energyGroup : int
-        The energy group index to plot.
-
-    hexPitch: float, optional
-        The flat-to-flat hexagonal assembly pitch in this core.
-        By default, it is sqrt(3) so that the triangle edge length is 1 if hexSideSubdivisions=1.
-
-    hexSideSubdivisions : int, optional
-        By default, it is 1 so that the triangle edge length is 1 if hexPitch=sqrt(3).
-
-    imgFileExt : str, optional
-        The image file extension.
-
-    """
-
-    triHeightInCm = hexPitch / 2.0 / hexSideSubdivisions
-    sideLengthInCm = triHeightInCm / (math.sqrt(3.0) / 2.0)
-    s2InCm = sideLengthInCm / 2.0
-
-    vals = rtfluxData.groupFluxes[:, :, axialZ, energyGroup]
-    patches = []
-    colorVals = []
-    for i in range(vals.shape[0]):
-        for j in range(vals.shape[1]):
-            flipped = i % 2  # use (i+j)%2 for rectangular meshing
-            xInCm = s2InCm * (i - j)
-            yInCm = triHeightInCm * j + sideLengthInCm / 2.0 / math.sqrt(3) * (
-                1 + flipped
-            )
-
-            flux = vals[i][j]
-
-            if flux:
-
-                triangle = mpatches.RegularPolygon(
-                    (xInCm, yInCm),
-                    3,
-                    sideLengthInCm / math.sqrt(3),
-                    orientation=math.pi * flipped,
-                    linewidth=0.0,
-                )
-
-                patches.append(triangle)
-                colorVals.append(flux)
-
-    collection = PatchCollection(patches, alpha=1.0, linewidths=(0,), edgecolors="none")
-    collection.set_array(
-        numpy.array(colorVals)
-    )  # add color map to this collection ONLY (pins, not ducts)
-
-    plt.figure()
-    ax = plt.gca()
-    ax.add_collection(collection)
-    colbar = plt.colorbar(collection)
-    colbar.set_label("n/s/cm$^3$")
-    # colbar.set_label('n*cm/s')
-    plt.ylabel("cm")
-    plt.xlabel("cm")
-    ax.autoscale_view()
-    plt.savefig("RTFLUX-z" + str(axialZ + 1) + "-g" + str(energyGroup + 1) + imgFileExt)
-    plt.close()
-
-
-if __name__ == "__main__":
-    rtflux = RtfluxStream.readBinary("RTFLUX")
-    plotTriangleFlux(rtflux, axialZ=10, energyGroup=4)

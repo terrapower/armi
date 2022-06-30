@@ -19,16 +19,14 @@ Cross section libraries, currently, contain neutron and/or gamma
 cross sections, but are not necessarily intended to be only neutron and gamma data.
 """
 
-import re
-import os
 import glob
-
-from matplotlib import pyplot
+import os
+import re
 
 from armi import runLog
+from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
 from armi.utils import properties
-from armi.nucDirectory import nuclideBases
 
 _ISOTXS_EXT = "ISO"
 
@@ -549,63 +547,6 @@ class IsotxsLibrary(_XSLibrary):
             for fromG, scatterColumn in nucScatterWeights.items():
                 scatterWeights[nucName, fromG] = scatterColumn
         return scatterWeights
-
-    def plotNucXs(
-        self, nucNames, xsNames, fName=None, label=None, noShow=False, title=None
-    ):
-        """
-        generates a XS plot for a nuclide on the ISOTXS library
-
-        nucName : str or list
-            The nuclides to plot
-        xsName : str or list
-            the XS to plot e.g. n,g, n,f, nalph, etc. see xsCollections for actual names.
-        fName : str, optional
-            if fName is given, the file will be written rather than plotting to screen
-        label : str, optional
-            is an optional label for image legends, useful in ipython sessions.
-        noShow : bool, optional
-            Won't finalize plot. Useful for using this to make custom plots.
-
-        Examples
-        --------
-        >>> l = ISOTXS()
-        >>> l.plotNucXs('U238NA','fission')
-
-        Plot n,g for all xenon and krypton isotopes
-        >>> f = lambda name: 'XE' in name or 'KR' in name
-        >>> l.plotNucXs(sorted(filter(f,l.nuclides.keys())),itertools.repeat('nGamma'))
-
-        See Also
-        --------
-        armi.nucDirectory.nuclide.plotScatterMatrix
-
-        """
-        # convert all input to lists
-        if isinstance(nucNames, str):
-            nucNames = [nucNames]
-        if isinstance(xsNames, str):
-            xsNames = [xsNames]
-
-        for nucName, xsName in zip(nucNames, xsNames):
-            nuc = self[nucName]
-            thisLabel = label or "{0} {1}".format(nucName, xsName)
-            x = self.neutronEnergyUpperBounds / 1e6
-            y = nuc.micros[xsName]
-            pyplot.plot(x, y, "-", label=thisLabel, drawstyle="steps-post")
-
-        ax = pyplot.gca()
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        pyplot.grid(color="0.70")
-        pyplot.title(title or " microscopic XS from {0}".format(self))
-        pyplot.xlabel("Energy (MeV)")
-        pyplot.ylabel("microscopic XS (barns)")
-        pyplot.legend()
-        if fName:
-            pyplot.savefig(fName)
-        elif not noShow:
-            pyplot.show()
 
     def purgeFissionProducts(self, r):
         """
