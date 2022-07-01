@@ -43,6 +43,7 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineEntryPoints():
         from armi.bookkeeping import visualization
+        from armi.cli import database
 
         entryPoints = []
         # Disabling ConvertDB because there is no other format to convert between. The
