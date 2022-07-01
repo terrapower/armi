@@ -16,12 +16,8 @@
 Generic Fuel Performance Plugin
 """
 
-import tabulate
-
 from armi import plugins
 from armi import interfaces
-from armi import runLog
-from armi.reactor.flags import Flags
 from armi.physics.fuelPerformance import settings
 
 
@@ -55,50 +51,3 @@ class FuelPerformancePlugin(plugins.ArmiPlugin):
         from armi.physics.fuelPerformance import parameters
 
         return parameters.getFuelPerformanceParameterDefinitions()
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def afterConstructionOfAssemblies(assemblies, cs):
-        """After new assemblies are built, set some state information."""
-        _setBOLBond(assemblies)
-
-
-def _setBOLBond(assemblies):
-    """Set initial bond fractions for each block in the core."""
-    assemsWithoutMatchingBond = set()
-    for a in assemblies:
-        for b in a:
-            bond = b.getComponent(Flags.BOND, quiet=True)
-            if not bond:
-                b.p.bondBOL = 0.0
-                continue
-            # only warn if bond doesn't match first of potentially many coolant components
-            coolants = b.getComponents(Flags.COOLANT)
-            coolant = coolants[0]
-            b.p.bondBOL = sum(bond.getNuclideNumberDensities(bond.getNuclides()))
-            if not isinstance(bond.material, coolant.material.__class__):
-                assemsWithoutMatchingBond.add(
-                    (
-                        a.getType(),
-                        b.getType(),
-                        bond.material.getName(),
-                        coolant.material.getName(),
-                    )
-                )
-
-    if assemsWithoutMatchingBond:
-        runLog.warning(
-            "The following have mismatching `{}` and `{}` materials:\n".format(
-                Flags.BOND, Flags.COOLANT
-            )
-            + tabulate.tabulate(
-                list(assemsWithoutMatchingBond),
-                headers=[
-                    "Assembly Type",
-                    "Block Type",
-                    "Bond Material",
-                    "Coolant Material",
-                ],
-                tablefmt="armi",
-            )
-        )
