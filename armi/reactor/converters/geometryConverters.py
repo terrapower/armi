@@ -27,11 +27,11 @@ Generally, mass is conserved in geometry conversions.
 import collections
 import copy
 import math
-import os
-
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy
+import operator
+import os
 
 from armi import materials
 from armi import runLog
@@ -1184,6 +1184,23 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         super().__init__(*args, **kwargs)
         self.listOfVolIntegratedParamsToScale = []
 
+    def _scaleBlockVolIntegratedParams(self, b, direction):
+        if direction == "up":
+            op = operator.mul
+        elif direction == "down":
+            op = operator.truediv
+
+        for param in self.listOfVolIntegratedParamsToScale:
+            print(param)
+            print(b.p[param])
+            if b.p[param] is None:
+                continue
+            if type(b.p[param]) == list:
+                # some params like volume-integrated mg flux are lists
+                b.p[param] = [op(val, 3) for val in b.p[param]]
+            else:
+                b.p[param] = op(b.p[param], 3)
+
     def convert(self, r=None):
         """
         Run the conversion.
@@ -1239,7 +1256,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
             if a.getLocation() == "001-001":
                 runLog.extra(
-                    f"Modifying parameters in central assembly {a} to convert from 1/3 to full"
+                    f"Modifying parameters in central assembly {a} to convert from 1/3 to full core"
                 )
 
                 if not self.listOfVolIntegratedParamsToScale:
@@ -1250,8 +1267,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                     ) = _generateListOfParamsToScale(r, paramsToScaleSubset=[])
 
                 for b in a:
-                    for param in self.listOfVolIntegratedParamsToScale:
-                        b.p[param] *= 3
+                    self._scaleBlockVolIntegratedParams(b, "up")
 
         # set domain after expanding, because it isnt actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
@@ -1276,11 +1292,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # change the central assembly params back to 1/3
             a = r.core.getAssemblyWithStringLocation("001-001")
             runLog.extra(
-                f"Modifying parameters in central assembly {a} to revert from full to 1/3"
+                f"Modifying parameters in central assembly {a} to revert from full to 1/3 core"
             )
             for b in a:
-                for param in self.listOfVolIntegratedParamsToScale:
-                    b.p[param] /= 3
+                self._scaleBlockVolIntegratedParams(b, "down")
 
 
 class EdgeAssemblyChanger(GeometryChanger):
