@@ -385,6 +385,53 @@ class TestHexGrid(unittest.TestCase):
         self.assertFalse(grid.isInFirstThird(grid[-1, -1, 0]))
         self.assertFalse(grid.isInFirstThird(grid[3, -2, 0]))
 
+    def test_indicesAndEdgeFromRingAndPos(self):
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(0, 0)
+        self.assertEqual(i, 0)
+        self.assertEqual(j, -1)
+        self.assertEqual(edge, 1)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(1, 1)
+        self.assertEqual(i, 0)
+        self.assertEqual(j, 0)
+        self.assertEqual(edge, 0)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(3, 11)
+        self.assertEqual(i, 2)
+        self.assertEqual(j, -2)
+        self.assertEqual(edge, 5)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(3, 9)
+        self.assertEqual(i, 0)
+        self.assertEqual(j, -2)
+        self.assertEqual(edge, 4)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(3, 7)
+        self.assertEqual(i, -2)
+        self.assertEqual(j, 0)
+        self.assertEqual(edge, 3)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(3, 5)
+        self.assertEqual(i, -2)
+        self.assertEqual(j, 2)
+        self.assertEqual(edge, 2)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(3, 3)
+        self.assertEqual(i, 0)
+        self.assertEqual(j, 2)
+        self.assertEqual(edge, 1)
+
+        i, j, edge = grids.HexGrid._indicesAndEdgeFromRingAndPos(7, 3)
+        self.assertEqual(i, 4)
+        self.assertEqual(j, 2)
+        self.assertEqual(edge, 0)
+
+        with self.assertRaises(ValueError):
+            _ = grids.HexGrid._indicesAndEdgeFromRingAndPos(3, 13)
+
+        with self.assertRaises(ValueError):
+            _ = grids.HexGrid._indicesAndEdgeFromRingAndPos(1, 3)
+
 
 class TestBoundsDefinedGrid(unittest.TestCase):
     def test_positions(self):

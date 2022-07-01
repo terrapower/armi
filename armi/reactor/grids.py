@@ -1546,14 +1546,14 @@ class HexGrid(Grid):
 
         if ring == 0:
             if pos != 0:
-                raise ValueError(f"Position in center ring must be 1, not {pos}")
+                raise ValueError(f"Position in center ring must be 1, not {position}")
             return 0, 0, 0
 
-        # # Edge indicates which edge of the ring in which the hexagon resides.
-        # # Edge 0 is the NE edge, edge 1 is the N edge, etc.
-        # # Offset is (0-based) index of the hexagon in that edge. For instance,
-        # # ring 3, pos 12 resides in edge 5 at index 1; it is the second hexagon
-        # # in ring 3, edge 5.
+        # Edge indicates which edge of the ring in which the hexagon resides.
+        # Edge 0 is the NE edge, edge 1 is the N edge, etc.
+        # Offset is (0-based) index of the hexagon in that edge. For instance,
+        # ring 3, pos 12 resides in edge 5 at index 1; it is the second hexagon
+        # in ring 3, edge 5.
         edge, offset = divmod(pos, ring)  # = pos//ring, pos%ring
         if edge == 0:
             i = ring - offset
