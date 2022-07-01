@@ -77,6 +77,14 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(o.getInterface("Second"), interfaceB)
         self.assertEqual(o.getInterface("Third"), interfaceC)
 
+    def test_checkCsConsistency(self):
+        o, r = test_reactors.loadTestReactor()
+        o._checkCsConsistency()  # passes without error
+
+        o.cs = o.cs.modified(newSettings={"nCycles": 66})
+        with self.assertRaises(RuntimeError):
+            o._checkCsConsistency()
+
 
 class CyclesSettingsTests(unittest.TestCase):
     """
