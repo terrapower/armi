@@ -155,35 +155,6 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
     return o
 
 
-def copyDatabase(r, srcDB, tarDB):
-    """Write the information stored in the source database to the target database
-
-    Parameters
-    ----------
-    r : reactor
-        This reactor should correspond to the data model housed in the srcDB
-    srcDB : database
-        Any implementation of the database in ARMI
-    tarDB : database
-        Any implementation of the database in ARMI
-
-    """
-    runLog.important(
-        "Transfering data\n\tstored in {}\n\tacross {}\n\tto target {}".format(
-            srcDB, r, tarDB
-        )
-    )
-    tarDB._initDatabaseContact = True  # pylint: disable=protected-access
-    for ts in range(srcDB.numTimeSteps):
-        srcDB.updateFromDB(r, ts)
-        tarDB.writeStateToDB(r)
-
-    for misc in srcDB._getDataNamesToCompare():  # pylint: disable=protected-access
-        data = srcDB.readDataFromDB(misc)
-        tarDB.writeDataToDB(misc, data)
-    runLog.important("Transfer complete")
-
-
 def convertDatabase(
     inputDBName: str,
     outputDBName: Optional[str] = None,

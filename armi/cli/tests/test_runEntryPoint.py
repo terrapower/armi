@@ -23,7 +23,6 @@ from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
-from armi.cli.copyDB import CopyDB
 from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
 from armi.cli.migrateInputs import MigrateInputs
 from armi.cli.modify import ModifyCaseSettingsCommand
@@ -113,18 +112,6 @@ class TestConvertDB(unittest.TestCase):
         cdb.addOptions()
         cdb.parse_args(["/path/to/fake.h5", "--nodes", "(1,2)"])
         self.assertEqual(cdb.args.nodes, [(1, 2)])
-
-
-class TestCopyDB(unittest.TestCase):
-    def test_copyDBBasics(self):
-        cdb = CopyDB()
-        cdb.addOptions()
-        cdb.parse_args(["cs_path", "/path/to/fake1.h5", "/path/to/fake2.h5"])
-
-        self.assertEqual(cdb.name, "copy-db")
-        self.assertEqual(cdb.args.csPath, "cs_path")
-        self.assertEqual(cdb.args.srcDB, "/path/to/fake1.h5")
-        self.assertEqual(cdb.args.tarDB, "/path/to/fake2.h5")
 
 
 class TestExpandBlueprints(unittest.TestCase):
