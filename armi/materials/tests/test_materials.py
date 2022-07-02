@@ -266,7 +266,7 @@ class Tantalum_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
+class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.ThU
 
     def test_density(self):
