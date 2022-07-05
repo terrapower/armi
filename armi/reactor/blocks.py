@@ -1935,6 +1935,8 @@ class HexBlock(Block):
         """
         Compute the local centroid coordinates of any pins in this block.
 
+        The pins must have a CLAD-flagged component for this to work.
+
         Returns
         -------
         localCoordinates : list
@@ -1952,7 +1954,7 @@ class HexBlock(Block):
                     [locator.getLocalCoordinates() for locator in clad.spatialLocator]
                 )
             else:
-                coords.append(locator.getLocalCoordinates())
+                coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
 
     def autoCreateSpatialGrids(self):
@@ -1969,6 +1971,8 @@ class HexBlock(Block):
         -----
         If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
         of the pin positions, otherwise, locator is the center (0,0).
+
+        Also, this only works on blocks that have 'flat side up'.
 
         Raises
         ------
