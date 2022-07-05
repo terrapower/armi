@@ -101,6 +101,7 @@ class BlockBlueprint(yamlize.KeyedList):
             Top layer groups the by-block material modifications under the `byBlock` key
             and the by-component material modifications under the component's name.
             The inner dict under each key contains material modification names and values.
+
         """
         runLog.debug("Constructing block {}".format(self.name))
         components = collections.OrderedDict()
@@ -194,6 +195,11 @@ class BlockBlueprint(yamlize.KeyedList):
                 b.autoCreateSpatialGrids()
             except (ValueError, NotImplementedError) as e:
                 runLog.warning(str(e), single=True)
+
+        # now that components are in blocks we have heights and can actually
+        # compute the mults of the component groups.
+        b.updateComponentGroupMults()
+
         return b
 
     def _checkByComponentMaterialInput(self, materialInput):

@@ -751,6 +751,30 @@ class Block(composites.Composite):
             # on the interface stack.
             self.p.pdensDecay *= frac
 
+    def updateComponentGroupMults(self):
+        """
+        Update component group mults.
+
+        They were temporarily set to the desired blend fraction during component
+        construction. This derives the actual multiplicity based on the target
+        blend fraction.
+
+        Note that the blend fractions are applied to the hot thermally-expanded
+        dimensions.
+        """
+        for c in self.getChildren():
+            if len(c) > 1:
+                backgroundVol = c.getVolume()
+                # expect all mults to be temporarily set to blend frac from blueprints
+                blendFrac = c[0].p.mult
+                # remove scaling by mult=blendFrac here
+                childVol = sum(subchild.getVolume() / blendFrac for subchild in c)
+                # mult should be such that subchild/backgroundVol = blendFrac
+                # so subchild * blendFrac * newMult = blendFrac * backgroundVol
+                newMult = blendFrac * backgroundVol / childVol
+                for subchild in c:
+                    subchild.setDimension("mult", newMult)
+
     def completeInitialLoading(self, bolBlock=None):
         """
         Does some BOL bookkeeping to track things like BOL HM density for burnup tracking.
