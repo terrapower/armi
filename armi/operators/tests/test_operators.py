@@ -75,7 +75,7 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(o.getInterface("Third"), interfaceC)
 
     def test_checkCsConsistency(self):
-        o, r = test_reactors.loadTestReactor()
+        o, _r = test_reactors.loadTestReactor()
         o._checkCsConsistency()  # passes without error
 
         o.cs = o.cs.modified(newSettings={"nCycles": 66})
@@ -83,17 +83,33 @@ class OperatorTests(unittest.TestCase):
             o._checkCsConsistency()
 
     def test_interfaceIsActive(self):
-        o, r = test_reactors.loadTestReactor()
+        o, _r = test_reactors.loadTestReactor()
         self.assertTrue(o.interfaceIsActive("main"))
         self.assertFalse(o.interfaceIsActive("Fake-o"))
 
     def test_loadState(self):
         """The loadTestReactor() test tool does not have any history in the DB to load from"""
-        o, r = test_reactors.loadTestReactor()
+        o, _r = test_reactors.loadTestReactor()
 
         # a first, simple test that this method fails correctly
         with self.assertRaises(RuntimeError):
             o.loadState(0, 1)
+
+    def test_couplingIsActive(self):
+        o, _r = test_reactors.loadTestReactor()
+        self.assertFalse(o.couplingIsActive())
+
+    def test_setStateToDefault(self):
+        o, _r = test_reactors.loadTestReactor()
+
+        # reset the runType for testing
+        self.assertEqual(o.cs["runType"], "Standard")
+        o.cs = o.cs.modified(newSettings={"runType": "fake"})
+        self.assertEqual(o.cs["runType"], "fake")
+
+        # validate the method works
+        cs = o.setStateToDefault(o.cs)
+        self.assertEqual(cs["runType"], "Standard")
 
 
 class CyclesSettingsTests(unittest.TestCase):
