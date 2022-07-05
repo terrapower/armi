@@ -490,7 +490,8 @@ class Operator:  # pylint: disable=too-many-public-methods
                 statePointIndex,
                 interfaceName,
             )
-            db.writeStateToDB(self.r, statePointName=statePointName)
+
+            db.writeToDB(self.r, statePointName=statePointName)
 
     def _checkCsConsistency(self):
         """Debugging check to verify that CS objects are not unexpectedly multiplying."""

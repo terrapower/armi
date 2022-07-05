@@ -311,6 +311,25 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
 
+        # initialize the block powers to a uniform power profile, accounting for
+        # the loaded reactor being 1/3 core
+        numBlocksInFullCore = 0
+        for a in self.r.core:
+            if a.getLocation() == "001-001":
+                for b in a:
+                    numBlocksInFullCore += 1
+            else:
+                for b in a:
+                    # account for the 1/3 symmetry
+                    numBlocksInFullCore += 3
+        for a in self.r.core:
+            if a.getLocation() == "001-001":
+                for b in a:
+                    b.p["power"] = self.o.cs["power"] / numBlocksInFullCore / 3
+            else:
+                for b in a:
+                    b.p["power"] = self.o.cs["power"] / numBlocksInFullCore
+
     def tearDown(self):
         del self.o
         del self.r
@@ -327,6 +346,14 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         )
         initialNumBlocks = len(self.r.core.getBlocks())
 
+        self.assertAlmostEqual(
+            self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
+        )
+        self.assertGreater(
+            self.r.core.getTotalBlockParam("power", calcBasedOnFullObj=True),
+            self.o.cs["power"] / 3,
+        )
+
         # Perform reactor conversion
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
@@ -335,6 +362,16 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertTrue(self.r.core.isFullCore)
         self.assertGreater(len(self.r.core.getBlocks()), initialNumBlocks)
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+
+        # ensure that block power is handled correctly
+        self.assertAlmostEqual(
+            self.r.core.getTotalBlockParam("power"), self.o.cs["power"], places=5
+        )
+        self.assertAlmostEqual(
+            self.r.core.getTotalBlockParam("power", calcBasedOnFullObj=True),
+            self.o.cs["power"],
+            places=5,
+        )
 
         # Check that the geometry can be restored to a third core
         changer.restorePreviousGeometry(self.o.cs, self.r)
@@ -346,6 +383,9 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             ),
         )
         self.assertFalse(self.r.core.isFullCore)
+        self.assertAlmostEqual(
+            self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
+        )
 
     def test_initNewFullReactor(self):
         """Test that initNewReactor will growToFullCore if necessary."""

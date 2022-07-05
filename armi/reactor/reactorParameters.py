@@ -218,6 +218,13 @@ def defineCoreParameters():
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(
+            "referenceBlockAxialMesh",
+            units="cm",
+            description="The axial block boundaries that assemblies should conform to in a uniform mesh case.",
+            default=None,
+        )
+
+        pb.defParam(
             "breedingRatio2",
             units="N/A",
             description="Ratio of fissile Burned and discharged to fissile discharged",
@@ -541,7 +548,7 @@ def defineCoreParameters():
         pb.defParam(
             "power",
             units="W",
-            description="Rated thermal power of the reactor core. Corresponds to the "
+            description="Thermal power of the reactor core. Corresponds to the "
             "nuclear power generated in the core.",
         )
 

@@ -218,6 +218,7 @@ class Core(composites.Composite):
         self._inputHeightsConsideredHot = True
         self._primaryAssemblyToConserve = None
         self._secondaryAssemblyToConserve = None
+        self._detailedAxialExpansion = False
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
@@ -231,6 +232,7 @@ class Core(composites.Composite):
         self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
         self._primaryAssemblyToConserve = cs["primaryAssemblyToConserve"]
         self._secondaryAssemblyToConserve = cs["secondaryAssemblyToConserve"]
+        self._detailedAxialExpansion = cs["detailedAxialExpansion"]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
@@ -1692,6 +1694,12 @@ class Core(composites.Composite):
                     # therefore breaks the burnup metric.
                     b.adjustUEnrich(enrich)
 
+        if not self._detailedAxialExpansion:
+            # if detailedAxialExpansion: False, make sure that the assembly being created has the correct core mesh
+            a.setBlockMesh(
+                self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto"
+            )  # pass [1:] to skip 0.0
+
         return a
 
     def saveAllFlux(self, fName="allFlux.txt"):
@@ -2225,6 +2233,7 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
+        self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
         self.p.axialMesh = self.findAllAxialMeshPoints()
         refAssem = self.refAssem
 
