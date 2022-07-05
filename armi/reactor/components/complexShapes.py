@@ -188,10 +188,11 @@ class Helix(ShapedComponent):
 
     - od: outer diameter of the helix wire
     - id: inner diameter of the helix wire (if non-zero, helix wire is annular.)
-    - axialPitch: vertical distance between wraps
-    - helixDiameter: can be visualized if the axial pitch is 0.0 (creates a circle). The helix diameter
-                     is the distance from the center of the wire-wrap on one side to the center of the wire-wrap
-                     on the opposite side.
+    - axialPitch: vertical distance between wraps. Is also the axial distance required to complete
+                  a full 2*pi rotation.
+    - helixDiameter: The helix diameter is the distance from the center of the
+                     wire-wrap on one side to the center of the wire-wrap on the opposite side
+                     (can be visualized if the axial pitch is 0.0 - creates a circle).
     """
 
     is3D = False
