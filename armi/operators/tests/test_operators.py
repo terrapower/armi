@@ -22,6 +22,7 @@ from armi.interfaces import Interface
 from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class InterfaceA(Interface):
@@ -110,6 +111,11 @@ class OperatorTests(unittest.TestCase):
         # validate the method works
         cs = o.setStateToDefault(o.cs)
         self.assertEqual(cs["runType"], "Standard")
+
+    def test_snapshotRequest(self):
+        o, _r = test_reactors.loadTestReactor()
+        with TemporaryDirectoryChanger():
+            o.snapshotRequest(0, 1)
 
 
 class CyclesSettingsTests(unittest.TestCase):
