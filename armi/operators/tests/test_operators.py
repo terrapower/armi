@@ -66,13 +66,10 @@ class OperatorTests(unittest.TestCase):
         # 3) Also if another class not a subclass has the same function,
         #    raise an error
         interfaceC = InterfaceC(r, self.cs)
-
         self.assertRaises(RuntimeError, o.addInterface, interfaceC)
 
         # 4) Check adding a different function Interface
-
         interfaceC.function = "C"
-
         o.addInterface(interfaceC)
         self.assertEqual(o.getInterface("Second"), interfaceB)
         self.assertEqual(o.getInterface("Third"), interfaceC)
@@ -89,6 +86,14 @@ class OperatorTests(unittest.TestCase):
         o, r = test_reactors.loadTestReactor()
         self.assertTrue(o.interfaceIsActive("main"))
         self.assertFalse(o.interfaceIsActive("Fake-o"))
+
+    def test_loadState(self):
+        """The loadTestReactor() test tool does not have any history in the DB to load from"""
+        o, r = test_reactors.loadTestReactor()
+
+        # a first, simple test that this method fails correctly
+        with self.assertRaises(RuntimeError):
+            o.loadState(0, 1)
 
 
 class CyclesSettingsTests(unittest.TestCase):
