@@ -269,7 +269,7 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
-            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
+            math.pi * (cladID ** 2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
@@ -1921,16 +1921,22 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
-                if symmetryLine in [
-                    grids.BOUNDARY_0_DEGREES,
-                    grids.BOUNDARY_120_DEGREES,
-                ] and bool(self.r.core.childrenByLocator.get(upperEdgeLoc)):
+                if (
+                    symmetryLine
+                    in [
+                        grids.BOUNDARY_0_DEGREES,
+                        grids.BOUNDARY_120_DEGREES,
+                    ]
+                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                ):
                     return 2.0
         return 1.0
 
     def getPinCoordinates(self):
         """
         Compute the local centroid coordinates of any pins in this block.
+
+        The pins must have a CLAD-flagged component for this to work.
 
         Returns
         -------
@@ -1949,7 +1955,7 @@ class HexBlock(Block):
                     [locator.getLocalCoordinates() for locator in clad.spatialLocator]
                 )
             else:
-                coords.append(locator.getLocalCoordinates())
+                coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
 
     def autoCreateSpatialGrids(self):
@@ -1966,6 +1972,8 @@ class HexBlock(Block):
         -----
         If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
         of the pin positions, otherwise, locator is the center (0,0).
+
+        Also, this only works on blocks that have 'flat side up'.
 
         Raises
         ------
