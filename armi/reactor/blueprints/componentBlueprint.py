@@ -180,13 +180,13 @@ class ComponentBlueprint(yamlize.Object):
             if self.blends:
                 # build a blended object
                 for groupName, blendFrac in zip(self.blends, self.blendFracs):
-                    # blendFrac is a volume fraction, and so we need to adjust the multiplicities 
+                    # blendFrac is a volume fraction, and so we need to adjust the multiplicities
                     # so that the background component and the child group match up
                     # The area of the background component will be fully determined by its dims and mult.
                     # but internally, its number densities and volumes need to be set to match
                     # the blendFrac
                     group = blueprint.componentGroups[groupName]
-                    # strip off the blend/blendFrac args since they aren't valid on any 
+                    # strip off the blend/blendFrac args since they aren't valid on any
                     # specific shape's constructor
                     del kwargs["blends"]
                     del kwargs["blendFracs"]
@@ -194,10 +194,14 @@ class ComponentBlueprint(yamlize.Object):
                     constructedObject = components.factory(shape, [], kwargs)
                     # build the child objects
                     for groupedComponent in group:
-                        componentDesign = blueprint.componentDesigns[groupedComponent.name]
+                        componentDesign = blueprint.componentDesigns[
+                            groupedComponent.name
+                        ]
                         component = componentDesign.construct(blueprint, matMods=dict())
                         # override free component multiplicity if it's set based on the group definition
-                        component.setDimension("mult", groupedComponent.mult*blendFrac)
+                        component.setDimension(
+                            "mult", groupedComponent.mult * blendFrac
+                        )
                         _setComponentFlags(component, self.flags, blueprint)
                         insertDepletableNuclideKeys(component, blueprint)
                         constructedObject.add(component)
