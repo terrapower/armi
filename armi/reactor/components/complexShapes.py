@@ -185,6 +185,13 @@ class Helix(ShapedComponent):
     http://mathworld.wolfram.com/Helix.html
     In a single rotation with an axial climb of P, the length of the helix will be a factor of
     2*pi*sqrt(r^2+c^2)/2*pi*c longer than vertical length L. P = 2*pi*c.
+
+    - od: outer diameter of the helix wire
+    - id: inner diameter of the helix wire (if non-zero, helix wire is annular.)
+    - axialPitch: vertical distance between wraps
+    - helixDiameter: can be visualized if the axial pitch is 0.0 (creates a circle). The helix diameter
+                     is the distance from the center of the wire-wrap on one side to the center of the wire-wrap
+                     on the opposite side.
     """
 
     is3D = False
@@ -230,13 +237,18 @@ class Helix(ShapedComponent):
         )
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        return self.getDimension("od", Tc, cold) + self.getDimension(
-            "helixDiameter", Tc, cold=cold
+        """the diameter of a circle which is encompassed by the exterior of the wire-wrap"""
+        return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension(
+            "od", Tc, cold
         )
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        return self.getDimension("id", Tc, cold) + self.getDimension(
-            "helixDiameter", Tc, cold=cold
+        """the diameter of a circle which is encompassed by the interior of the wire-wrap
+
+        - should be equal to the outer diameter of the pin in which the wire is wrapped around
+        """
+        return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension(
+            "od", Tc, cold
         )
 
     def getComponentArea(self, cold=False):
