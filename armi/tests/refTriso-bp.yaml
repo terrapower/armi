@@ -4,7 +4,7 @@ blocks:
         fuel: &component_fuel_fuel
             shape: Hexagon
             material: UZr
-            Tinput: 25.0
+            Tinput: 600.0
             Thot: 600.0
             ip: 0.0
             mult: 1.0
@@ -17,15 +17,15 @@ blocks:
             blendFracs: 
               - 0.350
             material: Graphite
-            Tinput: 25.0
+            Tinput: 600.0
             Thot: 600.0
             mult: 20.0 
             id: 0.0
             od: 1.2446
         duct: 
             shape: Hexagon
-            material: UZr
-            Tinput: 25.0
+            material: HT9
+            Tinput: 600.0
             Thot: 600.0
             ip: 9.0
             mult: 1.0
@@ -41,7 +41,7 @@ components:
     kernel:
         shape: Sphere
         material: UZr
-        Tinput: 25.0
+        Tinput: 600.0
         Thot: 600.0
         id: 0.0
         mult: 1.0
@@ -49,7 +49,7 @@ components:
     buffer:
         shape: Sphere
         material: Graphite
-        Tinput: 25.0
+        Tinput: 600.0
         Thot: 600.0
         id: kernel.od
         mult: 1.0
@@ -57,7 +57,7 @@ components:
     ipyc:
         shape: Sphere
         material: Graphite
-        Tinput: 25.0
+        Tinput: 600.0
         Thot: 600.0
         id: buffer.od
         mult: 1.0
@@ -65,7 +65,7 @@ components:
     sic:
         shape: Sphere
         material: SiC
-        Tinput: 25.0
+        Tinput: 600.0
         Thot: 600.0
         id: ipyc.od
         mult: 1.0
@@ -73,7 +73,7 @@ components:
     opyc:
         shape: Sphere
         material: Graphite
-        Tinput: 25.0
+        Tinput: 600.0
         Thot: 600.0
         id: sic.od
         mult: 1.0
@@ -82,15 +82,15 @@ components:
 component groups:
     triso particle:
       kernel:
-        mult: 1000
+        mult: 1
       buffer:
-        mult: 1000
+        mult: 1
       ipyc:
-        mult: 1000
+        mult: 1
       sic:
-        mult: 1000
+        mult: 1
       opyc:
-        mult: 1000
+        mult: 1
         
 
 assemblies:

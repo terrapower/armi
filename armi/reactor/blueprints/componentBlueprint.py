@@ -198,10 +198,10 @@ class ComponentBlueprint(yamlize.Object):
                             groupedComponent.name
                         ]
                         component = componentDesign.construct(blueprint, matMods=dict())
-                        # override free component multiplicity if it's set based on the group definition
-                        component.setDimension(
-                            "mult", groupedComponent.mult * blendFrac
-                        )
+                        # temporarily set grouped component mults to the blend fraction
+                        # these will be updated based on parent component volume
+                        # during block construction
+                        component.setDimension("mult", blendFrac)
                         _setComponentFlags(component, self.flags, blueprint)
                         insertDepletableNuclideKeys(component, blueprint)
                         constructedObject.add(component)

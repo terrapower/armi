@@ -19,6 +19,7 @@ This test is intended to grow into a test of a TRISO fuel case as the capabiliti
 to support TRISO are added. It does not yet represent real TRISO.
 """
 import unittest
+import math
 
 from armi.utils import directoryChangers
 from armi.tests import TEST_ROOT
@@ -56,10 +57,26 @@ class ComponentGroupReactorTests(unittest.TestCase):
         """
         Make sure composition is blended as expected
         """
-        triso = self.o.r.core[-1][0][0]
-        self.assertEqual(len(list(triso.iterComponents())), 5)
-        self.assertGreater(triso.getMass("U235"), 0.0)
-        self.assertGreater(triso.getMass("C"), 0.0)
+        trisoBlock = self.o.r.core[-1][0]
+        trisoComponent = trisoBlock[0]
+        self.assertEqual(len(list(trisoComponent.iterComponents())), 5)
+        self.assertGreater(trisoComponent.getMass("U235"), 0.0)
+        self.assertGreater(trisoComponent.getMass("C"), 0.0)
+
+        uraniumMass = trisoBlock.getMass("U")
+        # compute triso compact volume from blueprints dimensions
+        blockHeight = trisoBlock.getHeight()
+
+        # expected volume of all kernels in 1 block
+        trisoVolume = blockHeight * math.pi * 1.2466 ** 2 / 4.0 * 20 * 0.350
+
+        # u vol frac within one kernel
+        uraniumFrac = 0.010625 ** 3 / 0.021125 ** 3
+
+        # UZr is 15 g/cc with 90% U
+        expectedMass = 15.6 * 0.9 * trisoVolume * uraniumFrac
+        diff = abs(uraniumMass - expectedMass) / uraniumMass
+        self.assertLess(diff, 0.01)
 
     def test_db(self):
         """Show that this kind of reactor configuration can write and load from DB"""
