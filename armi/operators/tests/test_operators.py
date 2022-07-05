@@ -85,6 +85,11 @@ class OperatorTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             o._checkCsConsistency()
 
+    def test_interfaceIsActive(self):
+        o, r = test_reactors.loadTestReactor()
+        self.assertTrue(o.interfaceIsActive("main"))
+        self.assertFalse(o.interfaceIsActive("Fake-o"))
+
 
 class CyclesSettingsTests(unittest.TestCase):
     """
