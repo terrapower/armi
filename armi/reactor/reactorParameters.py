@@ -548,7 +548,7 @@ def defineCoreParameters():
         pb.defParam(
             "power",
             units="W",
-            description="Rated thermal power of the reactor core. Corresponds to the "
+            description="Thermal power of the reactor core. Corresponds to the "
             "nuclear power generated in the core.",
         )
 
