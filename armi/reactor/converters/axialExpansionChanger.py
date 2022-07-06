@@ -202,9 +202,18 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        runLog.debug(
-                            "      Component {0} is target component".format(c)
-                        )
+                        if b.targetComponent is None:
+                            runLog.debug(
+                                "      Component {0} is target component (inferred)".format(
+                                    c
+                                )
+                            )
+                        else:
+                            runLog.debug(
+                                "      Component {0} is target component (blueprints defined)".format(
+                                    c
+                                )
+                            )
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()

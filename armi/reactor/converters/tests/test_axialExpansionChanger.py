@@ -609,7 +609,7 @@ class TestSpecifyTargetComponent(unittest.TestCase):
                 fuel
             ),
         )
-    
+
     def test_specifyTargetComponet_BlueprintSpecifed(self):
         b = HexBlock("SodiumBlock", height=10.0)
         sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
@@ -623,7 +623,7 @@ class TestSpecifyTargetComponent(unittest.TestCase):
             self.obj.expansionData.specifyTargetComponent(b)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
-        
+
         b.setTargetComponent(dummy)
         self.assertEqual(
             b.targetComponent,
