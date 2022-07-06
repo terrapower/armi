@@ -473,8 +473,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(b.getRotationNum(), rotNum + 2)
 
     def test_linPowByPin(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
+        _fh = fuelHandlers.FuelHandler(self.o)
+        _hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
@@ -487,8 +487,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(type(b.p.linPowByPin), np.ndarray)
 
     def test_linPowByPinNeutron(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
+        _fh = fuelHandlers.FuelHandler(self.o)
+        _hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
@@ -501,8 +501,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
 
     def test_linPowByPinGamma(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
+        _fh = fuelHandlers.FuelHandler(self.o)
+        _hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)

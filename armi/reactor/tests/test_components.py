@@ -445,7 +445,7 @@ class TestCircle(TestShapedComponent):
         }
         gapDims["components"] = {"clad_4.2.3": clad, "fuel": fuel}
         with self.assertRaises(ValueError):
-            gap = Circle("gap", "Void", **gapDims)
+            _gap = Circle("gap", "Void", **gapDims)
 
     def test_componentInteractionsLinkingBySubtraction(self):
         r"""Tests linking of components by subtraction."""

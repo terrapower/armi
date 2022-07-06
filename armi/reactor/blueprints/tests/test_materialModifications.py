@@ -134,7 +134,7 @@ assemblies:
 
     def test_invalid_component_modification(self):
         with self.assertRaises(ValueError):
-            a = self.loadUZrAssembly(
+            _a = self.loadUZrAssembly(
                 """
         material modifications:
             by component:
