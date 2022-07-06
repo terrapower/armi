@@ -20,7 +20,6 @@ from armi.reactor import blueprints
 from armi import settings
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
-from armi.nucDirectory import nuclideBases
 
 
 class TestCustomIsotopics(unittest.TestCase):

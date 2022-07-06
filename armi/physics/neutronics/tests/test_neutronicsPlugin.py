@@ -17,7 +17,6 @@ import io
 import os
 
 from ruamel.yaml import YAML
-import voluptuous as vol
 
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION

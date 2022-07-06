@@ -108,7 +108,7 @@ Examples
 import copy
 from io import StringIO
 import itertools
-from typing import Sequence, Optional, Tuple
+from typing import Tuple
 
 import numpy
 import yamlize
@@ -561,7 +561,6 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             continue
 
         if gridDesign.readFromLatticeMap or tryMap:
-            geomType = geometry.GeomType.fromStr(gridDesign.geom)
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
             aMap = asciimaps.asciiMapFromGeomAndDomain(

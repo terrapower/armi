@@ -3,7 +3,7 @@ Tooling and Infrastructure
 
 Good Commit Messages
 --------------------
-The ARMI project follows a few basic rools for "good" commit messages:
+The ARMI project follows a few basic rules for "good" commit messages:
 
 * The purpose of the message is to explain to the changes you made to a stranger 5 years from now.
 * Keep your writing short and to the point.

@@ -47,7 +47,7 @@ class TestCrossSectionTable(unittest.TestCase):
         self.assertIn("mcnpId", xSecTable[-1])
 
     def test_isotopicDepletionInterface(self):
-        o, r = loadTestReactor()
+        _o, r = loadTestReactor()
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)

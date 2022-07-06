@@ -28,7 +28,6 @@ import h5py
 
 from armi import __version__ as version
 from armi import getApp, runLog, utils
-from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts.migration.base import DatabaseMigration
 

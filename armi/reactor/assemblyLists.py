@@ -30,7 +30,6 @@ from armi import runLog
 from armi.utils import units
 from armi.reactor import grids
 from armi.reactor import composites
-from armi.reactor.flags import Flags
 
 
 class AutoFiller(abc.ABC):

@@ -37,9 +37,7 @@ https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
 from typing import Optional
-import copy
 import gc
-import logging
 import sys
 import tabulate
 

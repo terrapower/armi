@@ -449,7 +449,7 @@ class Block_TestCase(unittest.TestCase):
         ref = "B"
         self.assertEqual(cur, ref)
 
-        oldBuGroups = self.cs["buGroups"]
+        _oldBuGroups = self.cs["buGroups"]
         newSettings = {"buGroups": [100]}
         self.cs = self.cs.modified(newSettings=newSettings)
 
