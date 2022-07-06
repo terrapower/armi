@@ -25,7 +25,6 @@ import unittest
 
 import numpy as np
 
-from armi.physics import fuelCycle
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags

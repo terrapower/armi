@@ -30,7 +30,6 @@ from armi import plugins
 from armi import settings
 from armi.operators import settingsValidation
 from armi.physics.fuelCycle import FuelHandlerPlugin
-from armi.physics.neutronics import settings as neutronicsSettings
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting

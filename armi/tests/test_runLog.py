@@ -19,7 +19,7 @@ import logging
 import os
 import unittest
 
-from armi import context, runLog
+from armi import runLog
 from armi.tests import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

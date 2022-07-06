@@ -15,10 +15,8 @@
 Dynamic importing help
 """
 import glob
-from importlib import import_module
 import os
-
-from armi import runLog
+from importlib import import_module
 
 
 def importEntirePackage(module):

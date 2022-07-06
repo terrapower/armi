@@ -20,7 +20,6 @@ import numpy
 from armi.utils import units
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
-from armi.reactor import geometry
 
 
 def defineReactorParameters():
