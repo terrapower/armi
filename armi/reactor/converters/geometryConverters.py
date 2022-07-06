@@ -1191,8 +1191,6 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             op = operator.truediv
 
         for param in self.listOfVolIntegratedParamsToScale:
-            print(param)
-            print(b.p[param])
             if b.p[param] is None:
                 continue
             if type(b.p[param]) == list:
