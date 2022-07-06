@@ -87,7 +87,7 @@ class TestArmiCase(unittest.TestCase):
             cs = cs.modified(newSettings={"verbosity": "important"})
             case = cases.Case(cs)
             c2 = case.clone()
-            c2.summarizeDesign(True, True)
+            c2.summarizeDesign()
             self.assertTrue(
                 os.path.exists(
                     os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")

@@ -938,12 +938,12 @@ class TestHelix(TestShapedComponent):
         "id": 0.1,
     }
 
-    def test_getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+    def test_getBoundingCircleOuterDiameter(self):
         ref = 2.0 + 0.25
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getCircleInnerDiameter(self, Tc=None, cold=False):
+    def test_getCircleInnerDiameter(self):
         ref = 2.0 - 0.25
         cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)

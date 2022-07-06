@@ -243,7 +243,7 @@ def _compareTimeStep(
         )
 
     for aux in auxData:
-        _compareAuxData(out, refGroup[aux], srcGroup[aux], diffResults, exclusions)
+        _compareAuxData(out, refGroup[aux], srcGroup[aux], diffResults)
 
 
 def _compareAuxData(
@@ -251,7 +251,6 @@ def _compareAuxData(
     refGroup: h5py.Group,
     srcGroup: h5py.Group,
     diffResults: DiffResults,
-    exclusions: Sequence[Pattern],
 ):
     """
     Compare auxiliary datasets, which aren't stored as Parameters on the Composite model.
@@ -278,7 +277,7 @@ def _compareAuxData(
     diffResults.addStructureDiffs(n)
     matchedSets = set(srcData.keys()) & set(refData.keys())
     for name in matchedSets:
-        _diffSimpleData(refData[name], srcData[name], out, diffResults)
+        _diffSimpleData(refData[name], srcData[name], diffResults)
 
 
 def _compareSets(
@@ -411,9 +410,7 @@ def _diffSpecialData(
     return
 
 
-def _diffSimpleData(
-    ref: numpy.ndarray, src: numpy.ndarray, out: OutputWriter, diffResults: DiffResults
-):
+def _diffSimpleData(ref: numpy.ndarray, src: numpy.ndarray, diffResults: DiffResults):
     paramName = ref.name.split("/")[-1]
     compName = ref.name.split("/")[-2]
 
@@ -489,4 +486,4 @@ def _compareComponentData(
         if srcSpecial or refSpecial:
             _diffSpecialData(refDataset, srcDataset, out, diffResults)
         else:
-            _diffSimpleData(refDataset, srcDataset, out, diffResults)
+            _diffSimpleData(refDataset, srcDataset, diffResults)

@@ -285,7 +285,7 @@ def applyDummyData(block):
     block.r.core.lib = xslib
 
 
-def getComponentDataFromBlock(component, block):
+def getComponentData(component):
     density = 0.0
     for nuc in component.getNuclides():
         density += (
@@ -772,19 +772,16 @@ class Block_TestCase(unittest.TestCase):
             self.assertEqual(b.getSymmetryFactor(), powerMult)
 
     def test_setBuLimitInfo(self):
-        cs = settings.getMasterCs()
-
         self.block.adjustUEnrich(0.1)
         self.block.setType("igniter fuel")
 
-        self.block.setBuLimitInfo(cs)
+        self.block.setBuLimitInfo()
 
         cur = self.block.p.buLimit
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_getTotalNDens(self):
-
         self.block.setType("fuel")
 
         self.block.clearNumberDensities()
@@ -811,7 +808,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHMDens(self):
-
         self.block.setType("fuel")
         self.block.clearNumberDensities()
         refDict = {
@@ -864,7 +860,6 @@ class Block_TestCase(unittest.TestCase):
         self.block.remove(self.fuelComponent)
 
     def test_getUraniumMassEnrich(self):
-
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
@@ -876,7 +871,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getUraniumNumEnrich(self):
-
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
@@ -889,7 +883,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getNumberOfAtoms(self):
-
         self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
@@ -941,7 +934,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getPuMass(self):
-
         fuel = self.block.getComponent(Flags.FUEL)
         refDict = {
             "AM241": 2.695633500634074e-05,
@@ -963,7 +955,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, pu)
 
     def test_adjustDensity(self):
-
         u235Dens = 0.003
         u238Dens = 0.010
         self.block.setNumberDensity("U235", u235Dens)
@@ -986,7 +977,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
     def test_completeInitialLoading(self):
-
         area = self.block.getArea()
         height = 2.0
         self.block.setHeight(height)
@@ -1244,9 +1234,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
         # allow inexact for things like fuel1, fuel2 or clad vs. cladding
-        val = self.block.getComponentAreaFrac(
-            [Flags.COOLANT, Flags.INTERCOOLANT], exact=False
-        )
+        val = self.block.getComponentAreaFrac([Flags.COOLANT, Flags.INTERCOOLANT])
         ref = calcFracManually(["coolant", "interCoolant"])
         refWrong = calcFracManually(
             ["coolant", "interCoolant", "clad"]
@@ -1425,7 +1413,7 @@ class Block_TestCase(unittest.TestCase):
         expectedData = []
         actualData = []
         for c in block:
-            expectedData.append(getComponentDataFromBlock(c, block))
+            expectedData.append(getComponentData(c))
             actualData.append(
                 (c, c.density(), c.getVolume(), c.density() * c.getVolume())
             )
@@ -1442,7 +1430,7 @@ class Block_TestCase(unittest.TestCase):
         expectedData = []
         actualData = []
         for c in block:
-            expectedData.append(getComponentDataFromBlock(c, block))
+            expectedData.append(getComponentData(c))
             actualData.append(
                 (c, c.density(), c.getVolume(), c.density() * c.getVolume())
             )
@@ -1529,9 +1517,9 @@ class Block_TestCase(unittest.TestCase):
         .. warning:: This will likely be pushed to the component level.
         """
         fluxes = numpy.ones((33, 10))
-        self.block.setPinMgFluxes(fluxes, 10)
-        self.block.setPinMgFluxes(fluxes * 2, 10, adjoint=True)
-        self.block.setPinMgFluxes(fluxes * 3, 10, gamma=True)
+        self.block.setPinMgFluxes(fluxes)
+        self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
+        self.block.setPinMgFluxes(fluxes * 3, gamma=True)
         self.assertEqual(self.block.p.pinMgFluxes[0][2], 1.0)
         self.assertEqual(self.block.p.pinMgFluxesAdj[0][2], 2.0)
         self.assertEqual(self.block.p.pinMgFluxesGamma[0][2], 3.0)

@@ -177,7 +177,7 @@ class BlockBlueprint(yamlize.KeyedList):
         b.p.height = height
         b.p.heightBOL = height  # for fuel performance
         b.p.xsType = xsType
-        b.setBuLimitInfo(cs)
+        b.setBuLimitInfo()
         b = self._mergeComponents(b)
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid

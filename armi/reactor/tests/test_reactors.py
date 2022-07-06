@@ -539,7 +539,7 @@ class HexReactorTests(ReactorTests):
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
         converter = self.r.core.growToFullCore(self.o.cs)
-        converter.restorePreviousGeometry(self.o.cs, self.r)
+        converter.restorePreviousGeometry(self.r)
         self.assertEqual(aListLength, len(self.r.core.getAssemblies()))
 
     def test_differentNuclideModels(self):
