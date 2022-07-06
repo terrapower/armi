@@ -18,7 +18,6 @@ import os
 from armi.cli.run import RunEntryPoint
 from armi import cases
 from armi.utils import directoryChangers
-from armi import runLog
 
 
 class RunSuiteCommand(RunEntryPoint):

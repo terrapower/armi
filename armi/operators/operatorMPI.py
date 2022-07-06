@@ -42,9 +42,7 @@ from armi import getPluginManager
 from armi import mpiActions
 from armi import runLog
 from armi import settings
-from armi.bookkeeping import memoryProfiler
 from armi.operators.operator import Operator
-from armi.reactor import assemblies
 from armi.reactor import reactors
 
 

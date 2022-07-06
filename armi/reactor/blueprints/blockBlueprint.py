@@ -25,7 +25,6 @@ from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.converters import blockConverters
-from armi.reactor import grids
 from armi.settings.fwSettings import globalSettings
 
 

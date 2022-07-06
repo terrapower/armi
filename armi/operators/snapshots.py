@@ -16,7 +16,6 @@
 
 from armi.operators import operatorMPI
 from armi import runLog
-from armi import utils
 
 
 class OperatorSnapshots(operatorMPI.OperatorMPI):

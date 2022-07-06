@@ -17,9 +17,7 @@ This module contains constants and enumerations that are useful for describing s
 geometry.
 """
 import enum
-from typing import Union, List, Optional
-
-from armi.utils import parsing
+from typing import Union, Optional
 
 
 class GeomType(enum.Enum):

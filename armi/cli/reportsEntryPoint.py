@@ -21,7 +21,6 @@ from armi.cli import entryPoint
 from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.utils import directoryChangers
-from armi.utils import runLog
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
