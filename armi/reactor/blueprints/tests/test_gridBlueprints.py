@@ -378,7 +378,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
     def test_simpleReadLatticeMap(self):
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
-        grid = gridDesign4.construct()
+        _grid = gridDesign4.construct()
 
         # test that we can correctly save this to a YAML
         bp = Blueprints.load(FULL_BP)
@@ -413,7 +413,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
     def test_simpleReadNoLatticeMap(self):
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
-        grid = gridDesign4.construct()
+        _grid = gridDesign4.construct()
 
         # test that we can correctly save this to a YAML
         bp = Blueprints.load(FULL_BP_GRID)
