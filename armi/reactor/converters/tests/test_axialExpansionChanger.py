@@ -494,7 +494,7 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_specifyTargetComponentRuntimeErrorFirst(self):
+    def test_determineTargetComponentRuntimeErrorFirst(self):
         # build block for testing
         b = HexBlock("test", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -507,12 +507,12 @@ class TestExceptions(Base, unittest.TestCase):
         b.getVolumeFractions()
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.specifyTargetComponent(b)
+            self.obj.expansionData.determineTargetComponent(b)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_specifyTargetComponentRuntimeErrorSecond(self):
+    def test_determineTargetComponentRuntimeErrorSecond(self):
         # build block for testing
         b = HexBlock("test", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -525,7 +525,7 @@ class TestExceptions(Base, unittest.TestCase):
         b.getVolumeFractions()
         # do test
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.specifyTargetComponent(b)
+            self.obj.expansionData.determineTargetComponent(b)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -563,8 +563,8 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
 
-class TestSpecifyTargetComponent(unittest.TestCase):
-    """verify specifyTargetComponent method is properly updating _componentDeterminesBlockHeight"""
+class TestDetermineTargetComponent(unittest.TestCase):
+    """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
         self.obj = AxialExpansionChanger()
@@ -573,7 +573,7 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         # need an empty dictionary because we want to test for the added component only
         self.obj.expansionData._componentDeterminesBlockHeight = {}
 
-    def test_specifyTargetComponent(self):
+    def test_determineTargetComponent(self):
         # build a test block
         b = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -583,15 +583,15 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         b.add(fuel)
         b.add(clad)
         # call method, and check that target component is correct
-        self.obj.expansionData.specifyTargetComponent(b)
+        self.obj.expansionData.determineTargetComponent(b)
         self.assertTrue(
             self.obj.expansionData.isTargetComponent(fuel),
-            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+            msg="determineTargetComponent failed to recognize intended component: {}".format(
                 fuel
             ),
         )
 
-    def test_specifyTargetComponentBlockWithMultipleFlags(self):
+    def test_determineTargetComponentBlockWithMultipleFlags(self):
         # build a block that has two flags as well as a component matching each
         # flag
         b = HexBlock("fuel poison", height=10.0)
@@ -602,10 +602,10 @@ class TestSpecifyTargetComponent(unittest.TestCase):
         b.add(fuel)
         b.add(poison)
         # call method, and check that target component is correct
-        self.obj.expansionData.specifyTargetComponent(b)
+        self.obj.expansionData.determineTargetComponent(b)
         self.assertTrue(
             self.obj.expansionData.isTargetComponent(fuel),
-            msg="specifyTargetComponent failed to recognize intended component: {}".format(
+            msg="determineTargetComponent failed to recognize intended component: {}".format(
                 fuel
             ),
         )
@@ -620,7 +620,7 @@ class TestSpecifyTargetComponent(unittest.TestCase):
 
         # check for no target component found
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.specifyTargetComponent(b)
+            self.obj.expansionData.determineTargetComponent(b)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 

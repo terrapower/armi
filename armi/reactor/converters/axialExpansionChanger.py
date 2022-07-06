@@ -675,15 +675,15 @@ class ExpansionData:
             if b.targetComponent is not None:
                 self._componentDeterminesBlockHeight[b.targetComponent] = True
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
-                self.specifyTargetComponent(b, Flags.CLAD)
+                self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
-                self.specifyTargetComponent(b, Flags.COOLANT)
+                self.determineTargetComponent(b, Flags.COOLANT)
             elif setFuel and b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
-                self.specifyTargetComponent(b)
+                self.determineTargetComponent(b)
 
-    def specifyTargetComponent(self, b, flagOfInterest=None):
+    def determineTargetComponent(self, b, flagOfInterest=None):
         """appends target component to self._componentDeterminesBlockHeight
 
         Parameters
