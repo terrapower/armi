@@ -247,7 +247,7 @@ class SettingsReader:
                 self.invalidSettings.add(settingName)
             else:
                 # apply validations
-                settingObj = self.cs.getSetting(settingName)
+                _settingObj = self.cs.getSetting(settingName)
 
                 # The value is automatically coerced into the expected type
                 # when set using either the default or user-defined schema

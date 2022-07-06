@@ -169,7 +169,7 @@ class TestHexToRZConverter(unittest.TestCase):
         self._checkNuclideMasses(expectedMassDict, newR)
         self._checkBlockAtMeshPoint(geomConv)
         self._checkReactorMeshCoordinates(geomConv)
-        figs = geomConv.plotConvertedReactor()
+        _figs = geomConv.plotConvertedReactor()
         with directoryChangers.TemporaryDirectoryChanger():
             geomConv.plotConvertedReactor("fname")
 

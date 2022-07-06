@@ -329,7 +329,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         # prove that successive applications of "modified" don't fail
         cs3 = cs2.modified(newSettings={"numberofGenericParams": 7})
-        cs4 = cs3.modified(newSettings={"somethingElse": 123})
+        _cs4 = cs3.modified(newSettings={"somethingElse": 123})
 
     def test_copySetting(self):
         """Ensure that when we copy a Setting() object, the result is sound.

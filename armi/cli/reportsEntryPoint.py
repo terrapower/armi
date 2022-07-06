@@ -113,7 +113,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         blueprint = db.loadBlueprints()
                     r = reactors.factory(cs, blueprint)
                     report.title = r.name
-                    pluginContent = getPluginManagerOrFail().hook.getReportContents(
+                    _pc = getPluginManagerOrFail().hook.getReportContents(
                         r=r,
                         cs=cs,
                         report=report,

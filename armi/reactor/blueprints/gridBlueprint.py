@@ -561,7 +561,6 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             continue
 
         if gridDesign.readFromLatticeMap or tryMap:
-            geomType = geometry.GeomType.fromStr(gridDesign.geom)
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
             aMap = asciimaps.asciiMapFromGeomAndDomain(
