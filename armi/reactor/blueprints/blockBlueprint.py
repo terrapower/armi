@@ -46,6 +46,7 @@ class BlockBlueprint(yamlize.KeyedList):
     name = yamlize.Attribute(key="name", type=str)
     gridName = yamlize.Attribute(key="grid name", type=str, default=None)
     flags = yamlize.Attribute(type=str, default=None)
+    targetComponent = yamlize.Attribute(type=str, default=None)
     _geomOptions = _configureGeomOptions()
 
     def _getBlockClass(self, outerComponent):
@@ -168,6 +169,19 @@ class BlockBlueprint(yamlize.KeyedList):
             flags = Flags.fromString(self.flags)
 
         b.setType(self.name, flags)
+
+        if self.targetComponent is not None:
+            try:
+                b.setTargetComponent(components[self.targetComponent])
+            except KeyError:
+                raise RuntimeError(
+                    "Block {0} --> target component {1}, specified in the blueprints does not "
+                    "match any component names. Revise target component in blueprints "
+                    "to match the name of a component and retry.".format(
+                        b, self.targetComponent,
+                    )
+                )
+
         for c in components.values():
             b.add(c)
         b.p.nPins = b.getNumPins()

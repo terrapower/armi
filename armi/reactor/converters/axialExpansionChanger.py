@@ -656,10 +656,16 @@ class ExpansionData:
     def _setTargetComponents(self, setFuel):
         """sets target component for each block
 
-        - To-Do: allow users to specify target component for a block in settings
+        Parameters
+        ----------
+        setFuel : bool
+            boolean to determine if fuel block should have its target component set. Useful for when
+            target components should be determined on the fly.
         """
         for b in self._a:
-            if b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
+            if b.targetComponent is not None:
+                self._componentDeterminesBlockHeight[b.targetComponent] = True
+            elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.specifyTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
                 self.specifyTargetComponent(b, Flags.COOLANT)

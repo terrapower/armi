@@ -97,6 +97,7 @@ class Block(composites.Composite):
 
         self.points = []
         self.macros = None
+        self.targetComponent = None
 
         # flag to indicated when DerivedShape children must be updated.
         self.derivedMustUpdate = False
@@ -1537,6 +1538,19 @@ class Block(composites.Composite):
         """
         raise NotImplementedError
 
+    def setTargetComponent(self, targetComponent):
+        """sets the targetComponent for the axial expansion changer
+        
+        Parameter
+        ---------
+        targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
+            component specified to be target component for axial expansion changer
+        
+        See Also
+        --------
+        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
+        """
+        self.targetComponent = targetComponent
 
 class HexBlock(Block):
 
