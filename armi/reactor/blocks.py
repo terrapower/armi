@@ -361,7 +361,7 @@ class Block(composites.Composite):
             flux = (flux + lastFlux) / 2.0
         return flux
 
-    def setPinMgFluxes(self, fluxes, numPins, adjoint=False, gamma=False):
+    def setPinMgFluxes(self, fluxes, adjoint=False, gamma=False):
         """
         Store the pin-detailed multi-group neutron flux
 
@@ -374,13 +374,8 @@ class Block(composites.Composite):
             The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for pin i.
             Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
-
-        numPins : int
-            The number of pins in this block.
-
         adjoint : bool, optional
             Whether to set real or adjoint data.
-
         gamma : bool, optional
             Whether to set gamma or neutron data.
 
@@ -573,8 +568,8 @@ class Block(composites.Composite):
             raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
 
-    def setBuLimitInfo(self, cs):
-        r"""Sets burnup limit based on igniter, feed, etc.  (will implement general grouping later)"""
+    def setBuLimitInfo(self):
+        r"""Sets burnup limit based on igniter, feed, etc."""
         if self.p.buRate == 0:
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
@@ -1033,7 +1028,7 @@ class Block(composites.Composite):
 
         self.setNumberDensities(newDensities)
 
-    def getComponentAreaFrac(self, typeSpec, exact=True):
+    def getComponentAreaFrac(self, typeSpec):
         """
         Returns the area fraction of the specified component(s) among all components in the block.
 
@@ -1041,8 +1036,6 @@ class Block(composites.Composite):
         ----------
         typeSpec : Flags or list of Flags
             Component types to look up
-        exact : bool, optional
-            Match exact names only
 
         Examples
         ---------
@@ -1054,7 +1047,6 @@ class Block(composites.Composite):
         float
             The area fraction of the component.
         """
-
         tFrac = sum(f for (c, f) in self.getVolumeFractions() if c.hasFlags(typeSpec))
 
         if tFrac:
