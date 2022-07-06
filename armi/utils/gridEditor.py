@@ -54,23 +54,18 @@ from typing import Dict, Optional, Sequence, Tuple, Union
 
 import wx
 import wx.adv
-from wx.lib import buttons
 import numpy
 import numpy.linalg
 
-from armi import runLog
 from armi.utils import hexagon
 from armi.utils import textProcessors
-from armi.utils import asciimaps
 from armi.settings.caseSettings import Settings
 from armi.reactor import geometry
 from armi.reactor import grids
-from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
 from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
-from armi.settings.fwSettings import globalSettings
 
 
 UNIT_SIZE = 50  # pixels per assembly

@@ -31,7 +31,6 @@ from armi.meta import __version__ as version
 from armi import context
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
-from armi.reactor import systemLayoutInput
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
     SettingException,

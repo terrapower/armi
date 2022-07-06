@@ -108,7 +108,7 @@ Examples
 import copy
 from io import StringIO
 import itertools
-from typing import Sequence, Optional, Tuple
+from typing import Tuple
 
 import numpy
 import yamlize

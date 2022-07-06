@@ -25,7 +25,6 @@ import six
 
 from armi.utils.textProcessors import SequentialStringIOReader, SequentialReader
 from armi.nucDirectory import elements
-from armi import runLog
 from armi.utils import units
 from armi.settings.caseSettings import Settings
 

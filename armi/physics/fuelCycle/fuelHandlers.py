@@ -33,12 +33,8 @@ import logging
 
 import numpy
 
-from armi import interfaces
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
-from armi.operators import RunTypes
-from armi.utils import directoryChangers, pathTools
-from armi.utils import plotting
 from armi.utils.mathematics import findClosest, resampleStepwise
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
