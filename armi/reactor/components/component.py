@@ -298,9 +298,18 @@ class Component(composites.Composite, metaclass=ComponentType):
                     linkedKey = match.group(2)
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
                 except:
-                    raise KeyError(
-                        "Bad component link `{}` defined as `{}`".format(dimName, value)
-                    )
+                    if value.count(".") > 1:
+                        raise ValueError(
+                            "Component names should not have periods in them: `{}`".format(
+                                value
+                            )
+                        )
+                    else:
+                        raise KeyError(
+                            "Bad component link `{}` defined as `{}`".format(
+                                dimName, value
+                            )
+                        )
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
