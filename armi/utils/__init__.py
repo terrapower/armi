@@ -426,7 +426,7 @@ def getPreviousTimeNode(cycle, node, cs):
         return (cycle - 1, indexOfLastNode)
 
 
-def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):
+def tryPickleOnAllContents(obj, ignore=None, verbose=False):
     r"""
     Attempts to pickle all members of this object and identifies those who cannot be pickled.
 
@@ -440,11 +440,8 @@ def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):
         Any object to be tested.
     ignore : iterable
         list of string variable names to ignore.
-    path : str
-        the path in which to test pickle.
     verbose : bool, optional
         Print all objects whether they fail or not
-
     """
     if ignore is None:
         ignore = []
@@ -462,7 +459,7 @@ def tryPickleOnAllContents(obj, ignore=None, path=None, verbose=False):
                 )
 
 
-def doTestPickleOnAllContents2(obj, ignore=None, path=None, verbose=False):
+def doTestPickleOnAllContents2(obj, ignore=None):
     r"""
     Attempts to find one unpickleable object in a nested object
 
@@ -510,7 +507,7 @@ class MyPickler(pickle.Pickler):
             raise
 
 
-def tryPickleOnAllContents3(obj, ignore=None, path=None, verbose=False):
+def tryPickleOnAllContents3(obj):
     """
     Definitely find pickle errors
 
