@@ -128,7 +128,9 @@ Here we have provided the following information:
 
 Component name
     The component name (``fuel``) is specified at the top. Some physics kernels interpret names specially, so
-    pay attention to any naming conventions.
+    pay attention to any naming conventions. As a general rule, you can expect that people will be doing regex
+    on your name, so you should not use any of these characters in your component names:
+    ``. ^ $ * + ? { } [ ] \ | ( ) :``. 
 
 shape
     The shape will be extruded to the length specified in the ``assemblies`` input section below. ARMI contains
