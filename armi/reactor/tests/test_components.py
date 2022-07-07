@@ -833,7 +833,7 @@ class TestHoledHexagon(TestShapedComponent):
 
         # make and test another one with just 1 hole
         simpleHoledHexagon = HoledHexagon(
-            'hex',
+            "hex",
             "Void",
             self.componentDims["Tinput"],
             self.componentDims["Thot"],
