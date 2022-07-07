@@ -2215,8 +2215,6 @@ class Core(composites.Composite):
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
 
-        self.p.power = cs["power"]
-
         for b in self.getBlocks():
             if b.p.molesHmBOL > 0.0:
                 break

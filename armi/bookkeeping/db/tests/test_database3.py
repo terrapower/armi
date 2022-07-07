@@ -24,6 +24,7 @@ from armi.bookkeeping.db import database3
 from armi.reactor import grids
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
+from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -138,14 +139,20 @@ class TestDatabase3(unittest.TestCase):
         # first successfully call to prepRestartRun
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         cs = o.cs
+        ratedPower = cs["power"]
+        startCycle = cs["startCycle"]
+        startNode = cs["startNode"]
+        cyclesSetting = [
+            {"step days": [1000, 1000], "power fractions": [1, 1]},
+            {"step days": [1000, 1000], "power fractions": [1, 1]},
+            {"step days": [1000, 1000], "power fractions": [1, 1]},
+        ]
+        cycleP, nodeP = getPreviousTimeNode(startCycle, startNode, cs)
+        cyclesSetting[cycleP]["power fractions"][nodeP] = 0.5
         cs = cs.modified(
             newSettings={
                 "nCycles": 3,
-                "cycles": [
-                    {"step days": [1000, 1000], "power fractions": [1, 1]},
-                    {"step days": [1000, 1000], "power fractions": [1, 1]},
-                    {"step days": [1000, 1000], "power fractions": [1, 1]},
-                ],
+                "cycles": cyclesSetting,
                 "reloadDBName": "something_fake.h5",
             }
         )
@@ -155,15 +162,25 @@ class TestDatabase3(unittest.TestCase):
         dbi.initDB(fName="reloadingDB.h5")
         db = dbi.database
 
-        # populate the db with something
+        # populate the db with some things
         for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
             r.p.cycle = cycle
             r.p.timeNode = node
-            r.p.cycleLength = 2000
+            r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
+            r.core.p.power = ratedPower * cyclesSetting[cycle]["power fractions"][node]
             db.writeToDB(r)
         db.close()
 
         self.dbi.prepRestartRun()
+
+        # prove that the reloaded reactor has the correct power
+        self.assertEqual(self.o.r.p.cycle, cycleP)
+        self.assertEqual(self.o.r.p.timeNode, nodeP)
+        self.assertEqual(cyclesSetting[cycleP]["power fractions"][nodeP], 0.5)
+        self.assertEqual(
+            self.o.r.core.p.power,
+            ratedPower * cyclesSetting[cycleP]["power fractions"][nodeP],
+        )
 
         # now make the cycle histories clash and confirm that an error is thrown
         cs = cs.modified(
