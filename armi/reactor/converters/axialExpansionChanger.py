@@ -506,22 +506,29 @@ def _determineLinked(componentA, componentB):
         and isinstance(componentA, type(componentB))
         and (componentA.getDimension("mult") == componentB.getDimension("mult"))
     ):
-        idA, odA = (
-            componentA.getCircleInnerDiameter(cold=True),
-            componentA.getBoundingCircleOuterDiameter(cold=True),
-        )
-        idB, odB = (
-            componentB.getCircleInnerDiameter(cold=True),
-            componentB.getBoundingCircleOuterDiameter(cold=True),
-        )
+        try:
+            idA, odA = (
+                componentA.getCircleInnerDiameter(cold=True),
+                componentA.getBoundingCircleOuterDiameter(cold=True),
+            )
+            idB, odB = (
+                componentB.getCircleInnerDiameter(cold=True),
+                componentB.getBoundingCircleOuterDiameter(cold=True),
+            )
 
-        biggerID = max(idA, idB)
-        smallerOD = min(odA, odB)
-        if biggerID >= smallerOD:
-            # one object fits inside the other
+            biggerID = max(idA, idB)
+            smallerOD = min(odA, odB)
+            if biggerID >= smallerOD:
+                # one object fits inside the other
+                linked = False
+            else:
+                linked = True
+        except NotImplementedError:
+            runLog.debug(
+                "Components {0} and {1} do not have a 'getCircleInnerDiameter' method. "
+                "Instead of crashing and raising an error, I'm just going to assume they aren't linked."
+            )
             linked = False
-        else:
-            linked = True
 
     else:
         linked = False
