@@ -1613,6 +1613,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.HexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
+        self.HexBlock.autoCreateSpatialGrids()
         r = tests.getEmptyHexReactor()
         a = makeTestAssembly(1, 1)
         a.add(self.HexBlock)
@@ -1680,6 +1681,10 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
 
     def test_getPinCoords(self):
+        blockPitch = self.HexBlock.getPitch()
+        pinPitch = self.HexBlock.getPinPitch()
+        nPins = self.HexBlock.getNumPins()
+        side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
         x, y, _z = zip(*xyz)
         self.assertAlmostEqual(
@@ -1687,6 +1692,24 @@ class HexBlock_TestCase(unittest.TestCase):
         )  # first two pins should be side by side on top.
         self.assertNotAlmostEqual(x[1], x[2])
         self.assertEqual(len(xyz), self.HexBlock.getNumPins())
+
+        # ensure all pins are within the proper bounds of a
+        # flats-up oriented hex block
+        self.assertLess(max(y), blockPitch / 2.0)
+        self.assertGreater(min(y), -blockPitch / 2.0)
+        self.assertLess(max(x), side)
+        self.assertGreater(min(x), -side)
+
+        # center pin should be at 0
+        mags = [(xi ** 2 + yi ** 2, (xi, yi)) for xi, yi, zi in xyz]
+        _centerMag, (cx, cy) = min(mags)
+        self.assertAlmostEqual(cx, 0.0)
+        self.assertAlmostEqual(cy, 0.0)
+
+        # extreme pin should be at proper radius
+        cornerMag, (cx, cy) = max(mags)
+        nRings = hexagon.numRingsToHoldNumCells(nPins) - 1
+        self.assertAlmostEqual(math.sqrt(cornerMag), nRings * pinPitch)
 
     def test_getPitchHomogenousBlock(self):
         """
@@ -1831,6 +1854,7 @@ class HexBlock_TestCase(unittest.TestCase):
         # add a wire only some places in the block, so grid should not be created.
         wire = components.Helix("wire", "HT9", **wireDims)
         self.HexBlock.add(wire)
+        self.HexBlock.spatialGrid = None  # clear existing
         with self.assertRaises(ValueError):
             self.HexBlock.autoCreateSpatialGrids()
 
