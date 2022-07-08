@@ -106,7 +106,7 @@ True
 
 """
 import re
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 from armi.utils.flags import Flag, FlagType, auto
 
@@ -258,6 +258,7 @@ class Flags(Flag):
     WIRE = auto()
     COOLANT = auto()
     INTERCOOLANT = auto()
+    LOAD_PAD = auto()
     ACLP = auto()  # above core load pad
     SKID = auto()
     VOID = auto()
@@ -330,6 +331,7 @@ _CONVERSIONS = {
     re.compile(r"\bGRID\b"): Flags.GRID_PLATE,
     re.compile(r"\bINLET\s+NOZZLE\b"): Flags.INLET_NOZZLE,
     re.compile(r"\bNOZZLE\b"): Flags.INLET_NOZZLE,
+    re.compile(r"\bLOAD\s+PAD\b"): Flags.LOAD_PAD,
     re.compile(r"\bHANDLING\s+SOCKET\b"): Flags.HANDLING_SOCKET,
     re.compile(r"\bGUIDE\s+TUBE\b"): Flags.GUIDE_TUBE,
     re.compile(r"\bFISSION\s+CHAMBER\b"): Flags.FISSION_CHAMBER,

@@ -266,7 +266,7 @@ class Tantalum_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
-class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
+class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.ThU
 
     def test_density(self):
@@ -1502,7 +1502,7 @@ assemblies:
     def test_class1Class2_class1_wt_frac(self):
         # should error because class1_wt_frac not in (0,1)
         with self.assertRaises(ValueError):
-            a = self.loadAssembly(
+            _a = self.loadAssembly(
                 """
         material modifications:
             class1_wt_frac: [2.0]
@@ -1514,7 +1514,7 @@ assemblies:
     def test_class1Class2_classX_custom_isotopics(self):
         # should error because class1_custom_isotopics doesn't exist
         with self.assertRaises(KeyError):
-            a = self.loadAssembly(
+            _a = self.loadAssembly(
                 """
         material modifications:
             class1_wt_frac: [0.5]

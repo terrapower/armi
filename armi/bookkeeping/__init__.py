@@ -42,8 +42,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineEntryPoints():
-        from armi.cli import database, copyDB
         from armi.bookkeeping import visualization
+        from armi.cli import database
 
         entryPoints = []
         # Disabling ConvertDB because there is no other format to convert between. The
@@ -51,7 +51,6 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         # entryPoints.append(database.ConvertDB)
         entryPoints.append(database.ExtractInputs)
         entryPoints.append(database.InjectInputs)
-        entryPoints.append(copyDB.CopyDB)
         entryPoints.append(visualization.VisFileEntryPoint)
 
         return entryPoints

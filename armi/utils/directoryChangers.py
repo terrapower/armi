@@ -135,10 +135,8 @@ class DirectoryChanger:
         entire directory to aid in debugging. Typically this is only called if
         ``dumpOnException`` is True.
         """
-        initialPath = self.destination
         folderName = os.path.split(self.destination)[1]
         recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
-        fileList = os.listdir(self.destination)
         shutil.copytree(self.destination, recoveryPath)
 
     @staticmethod

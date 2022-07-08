@@ -129,7 +129,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         # check if the sourceReactor has been modified from the blueprints
         if sourceReactor.core.isFullCore and not newReactor.core.isFullCore:
-            geometryConverter = newReactor.core.growToFullCore(sourceReactor.o.cs)
+            _geometryConverter = newReactor.core.growToFullCore(sourceReactor.o.cs)
 
         return newReactor
 

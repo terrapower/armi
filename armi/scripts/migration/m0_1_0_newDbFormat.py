@@ -28,7 +28,6 @@ import h5py
 
 from armi import __version__ as version
 from armi import getApp, runLog, utils
-from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts.migration.base import DatabaseMigration
 
@@ -42,10 +41,10 @@ class ConvertDB2toDB3(DatabaseMigration):
             raise ValueError("Can only migrate database by path.")
 
     def apply(self):
-        _migrateDatabase(self.path, _preCollector, _visit, _postApplier)
+        _migrateDatabase(self.path, _preCollector, _visit)
 
 
-def _migrateDatabase(databasePath, preCollector, visitor, postApplier):
+def _migrateDatabase(databasePath, preCollector, visitor):
     """
     Generic database-traversing system to apply custom version-specific migrations.
 
@@ -58,9 +57,6 @@ def _migrateDatabase(databasePath, preCollector, visitor, postApplier):
     visitor : callable
         Function that will be called on each dataset of the old HDF5 database.
         This should map information into the new DB.
-    postApplier : callable
-        Function that will run after all visiting is done. Will have acecss
-        to the pre-collected data.
 
     Raises
     ------
@@ -96,8 +92,6 @@ def _migrateDatabase(databasePath, preCollector, visitor, postApplier):
         newDB.attrs["original-databaseVersion"] = oldDB.attrs["databaseVersion"]
         newDB.attrs["version"] = version
 
-        postApplier(oldDB, newDB, preCollection)
-
     runLog.info("Successfully generated migrated database file: {}".format(newDBName))
 
 
@@ -131,10 +125,6 @@ def _preCollector(oldDB):
     preCollection.update(_collectParamRenames())
     preCollection.update(_collectSymmetry(oldDB))
     return preCollection
-
-
-def _postApplier(oldDB, newDB, preCollection):
-    pass
 
 
 def _updateLayout(newDB, preCollection, name, dataset):

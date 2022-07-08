@@ -29,7 +29,7 @@ armi.reactor.parameters
 import enum
 import re
 import functools
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Type
+from typing import Any, Dict, Optional, Sequence, Tuple, Type
 
 import numpy
 

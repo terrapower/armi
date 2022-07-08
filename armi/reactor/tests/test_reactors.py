@@ -539,7 +539,7 @@ class HexReactorTests(ReactorTests):
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
         converter = self.r.core.growToFullCore(self.o.cs)
-        converter.restorePreviousGeometry(self.o.cs, self.r)
+        converter.restorePreviousGeometry(self.r)
         self.assertEqual(aListLength, len(self.r.core.getAssemblies()))
 
     def test_differentNuclideModels(self):
@@ -739,6 +739,13 @@ class HexReactorTests(ReactorTests):
         aOld = self.r.core.getFirstAssembly(Flags.FUEL)
         aNew = self.r.core.createAssemblyOfType(aOld.getType())
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
+
+        # test axial mesh alignment
+        aNewMesh = aNew.getAxialMesh()
+        for i, meshValue in enumerate(aNewMesh):
+            self.assertAlmostEqual(
+                meshValue, self.r.core.p.referenceBlockAxialMesh[i + 1]
+            )  # use i+1 to skip 0.0
 
         # creation with modified enrichment
         aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
