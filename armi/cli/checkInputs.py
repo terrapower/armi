@@ -119,9 +119,7 @@ class CheckInputEntryPoint(EntryPoint):
                 hasIssues = "PASSED" if case.checkInputs() else "HAS ISSUES"
             try:
                 if self.args.generate_design_summary:
-                    case.summarizeDesign(
-                        self.args.full_core_map, not self.args.disable_block_axial_mesh
-                    )
+                    case.summarizeDesign()
                     canStart = "PASSED"
                 else:
                     canStart = "UNKNOWN"

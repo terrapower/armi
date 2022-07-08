@@ -1841,7 +1841,6 @@ class ThetaRZGrid(Grid):
         Returns
         -------
         tuple : i, j, k of given bounds
-
         """
         i = int(numpy.abs(self._bounds[0] - theta0).argmin())
         j = int(numpy.abs(self._bounds[1] - rad0).argmin())
