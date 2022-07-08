@@ -20,7 +20,6 @@ import unittest
 from armi import settings
 from armi import operators
 from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
-from armi.utils.units import DAYS_PER_YEAR
 
 
 class TestInspector(unittest.TestCase):

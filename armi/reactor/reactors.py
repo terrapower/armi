@@ -55,7 +55,6 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 # init logger
 runLog = logging.getLogger(__name__)

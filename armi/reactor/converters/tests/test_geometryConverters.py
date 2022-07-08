@@ -169,7 +169,7 @@ class TestHexToRZConverter(unittest.TestCase):
         self._checkNuclideMasses(expectedMassDict, newR)
         self._checkBlockAtMeshPoint(geomConv)
         self._checkReactorMeshCoordinates(geomConv)
-        figs = geomConv.plotConvertedReactor()
+        _figs = geomConv.plotConvertedReactor()
         with directoryChangers.TemporaryDirectoryChanger():
             geomConv.plotConvertedReactor("fname")
 
@@ -374,7 +374,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         )
 
         # Check that the geometry can be restored to a third core
-        changer.restorePreviousGeometry(self.o.cs, self.r)
+        changer.restorePreviousGeometry(self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         self.assertEqual(
             self.r.core.symmetry,
@@ -420,7 +420,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         changer.convert(self.r)
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        changer.restorePreviousGeometry(self.o.cs, self.r)
+        changer.restorePreviousGeometry(self.r)
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 

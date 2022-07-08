@@ -28,7 +28,6 @@ from armi.reactor import blocks
 from armi.reactor import grids
 from armi.reactor import components
 from armi.reactor.flags import Flags
-from armi.utils import hexagon
 from armi import runLog
 
 SIN60 = math.sin(math.radians(60.0))

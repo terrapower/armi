@@ -25,10 +25,9 @@ import os
 
 from armi import context
 from armi import getPluginManagerOrFail
-from armi import runLog, settings, utils
+from armi import runLog
 from armi.utils import pathTools
 from armi.utils.mathematics import expandRepeatedFloats
-from armi.utils.units import DAYS_PER_YEAR
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
@@ -270,8 +269,6 @@ class Inspector:
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
-        from armi.reactor import blueprints
-
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
             return

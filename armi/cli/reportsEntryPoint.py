@@ -21,7 +21,6 @@ from armi.cli import entryPoint
 from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.utils import directoryChangers
-from armi.utils import runLog
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
@@ -113,7 +112,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         blueprint = db.loadBlueprints()
                     r = reactors.factory(cs, blueprint)
                     report.title = r.name
-                    pluginContent = getPluginManagerOrFail().hook.getReportContents(
+                    _pc = getPluginManagerOrFail().hook.getReportContents(
                         r=r,
                         cs=cs,
                         report=report,

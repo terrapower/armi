@@ -37,9 +37,7 @@ https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
 from typing import Optional
-import copy
 import gc
-import logging
 import sys
 import tabulate
 
@@ -119,9 +117,7 @@ class MemoryProfiler(interfaces.Interface):
         runLog.important(
             "----- Memory Usage Report at {} -----".format(timeDescription)
         )
-        self._printFullMemoryBreakdown(
-            startsWith="", reportSize=self.cs["debugMemSize"]
-        )
+        self._printFullMemoryBreakdown(reportSize=self.cs["debugMemSize"])
         self._reactorAssemblyTrackingBreakdown()
         runLog.important(
             "----- End Memory Usage Report at {} -----".format(timeDescription)
@@ -190,16 +186,12 @@ class MemoryProfiler(interfaces.Interface):
             )
             raise RuntimeError
 
-    def _printFullMemoryBreakdown(
-        self, startsWith="armi", reportSize=True, printReferrers=False
-    ):
+    def _printFullMemoryBreakdown(self, reportSize=True, printReferrers=False):
         """
         looks for any class from any module in the garbage collector and prints their count and size
 
         Parameters
         ----------
-        startsWith : str, optional
-            limit to objects with classes that start with a certain string
         reportSize : bool, optional
             calculate size as well as counting individual objects.
 

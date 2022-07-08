@@ -21,7 +21,6 @@ import math
 
 import numpy
 
-from armi import utils
 from armi import runLog
 from armi.utils.mathematics import findNearestValue
 from .const import (

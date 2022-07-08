@@ -674,7 +674,6 @@ def _diagnosePickleError(o):
 
     We also find that modifying the Python library as documented here tells us which
     object can't be pickled by printing it out.
-
     """
     checker = utils.tryPickleOnAllContents3
     runLog.info("-------- Pickle Error Detection -------")
@@ -685,19 +684,19 @@ def _diagnosePickleError(o):
         )
     )
     runLog.info("Scanning the Reactor for pickle errors")
-    checker(o.r, verbose=True)
+    checker(o.r)
 
     runLog.info("Scanning All assemblies for pickle errors")
     for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
-        checker(a, ignore=["blockStack"])
+        checker(a)
 
     runLog.info("Scanning all blocks for pickle errors")
     for b in o.r.core.getBlocks(includeAll=True):  # pylint: disable=no-member
-        checker(b, ignore=["parentAssembly", "r"])
+        checker(b)
 
     runLog.info("Scanning blocks by name for pickle errors")
     for _bName, b in o.r.core.blocksByName.items():  # pylint: disable=no-member
-        checker(b, ignore=["parentAssembly", "r"])
+        checker(b)
 
     runLog.info("Scanning the ISOTXS library for pickle errors")
     checker(o.r.core.lib)  # pylint: disable=no-member

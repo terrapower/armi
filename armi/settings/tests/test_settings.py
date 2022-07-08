@@ -30,7 +30,6 @@ from armi import plugins
 from armi import settings
 from armi.operators import settingsValidation
 from armi.physics.fuelCycle import FuelHandlerPlugin
-from armi.physics.neutronics import settings as neutronicsSettings
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
@@ -329,7 +328,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         # prove that successive applications of "modified" don't fail
         cs3 = cs2.modified(newSettings={"numberofGenericParams": 7})
-        cs4 = cs3.modified(newSettings={"somethingElse": 123})
+        _cs4 = cs3.modified(newSettings={"somethingElse": 123})
 
     def test_copySetting(self):
         """Ensure that when we copy a Setting() object, the result is sound.
