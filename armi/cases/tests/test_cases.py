@@ -87,7 +87,7 @@ class TestArmiCase(unittest.TestCase):
             cs = cs.modified(newSettings={"verbosity": "important"})
             case = cases.Case(cs)
             c2 = case.clone()
-            c2.summarizeDesign(True, True)
+            c2.summarizeDesign()
             self.assertTrue(
                 os.path.exists(
                     os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")
@@ -134,7 +134,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
     def test_clone(self):
         """if you pass an invalid path, the clone can't happen, but it won't do any damage either"""
         with self.assertRaises(RuntimeError):
-            clone = self.suite.clone("test_clone")
+            _clone = self.suite.clone("test_clone")
 
     def test_dependenciesWithObscurePaths(self):
         """

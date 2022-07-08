@@ -25,19 +25,13 @@ import unittest
 
 import numpy as np
 
-from armi.physics.fuelCycle import fuelHandlers
-from armi.physics.fuelCycle import settings
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import components
-from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
-from armi.utils import directoryChangers
-from armi.reactor import grids
+from armi.physics.fuelCycle import fuelHandlers, settings
+from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
-from armi.tests import ArmiTestHelper
+from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.physics import fuelCycle
+from armi.tests import ArmiTestHelper, TEST_ROOT
+from armi.utils import directoryChangers
 
 
 class TestFuelHandler(ArmiTestHelper):
@@ -60,8 +54,10 @@ class TestFuelHandler(ArmiTestHelper):
         but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
-            self.directoryChanger.destination, customSettings={"nCycles": 3}
+            self.directoryChanger.destination,
+            customSettings={"nCycles": 3, "trackAssems": True},
         )
+
         blockList = self.r.core.getBlocks()
         for bi, b in enumerate(blockList):
             b.p.flux = 5e10
@@ -324,6 +320,7 @@ class TestFuelHandler(ArmiTestHelper):
     def runShuffling(self, fh):
         """Shuffle fuel and write out a SHUFFLES.txt file."""
         fh.attachReactor(self.o, self.r)
+
         # so we don't overwrite the version-controlled armiRun-SHUFFLES.txt
         self.o.cs.caseTitle = "armiRun2"
         fh.interactBOL()
@@ -476,8 +473,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(b.getRotationNum(), rotNum + 2)
 
     def test_linPowByPin(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
+        _fh = fuelHandlers.FuelHandler(self.o)
+        _hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
@@ -490,8 +487,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(type(b.p.linPowByPin), np.ndarray)
 
     def test_linPowByPinNeutron(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
+        _fh = fuelHandlers.FuelHandler(self.o)
+        _hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
@@ -504,8 +501,8 @@ class TestFuelHandler(ArmiTestHelper):
         self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
 
     def test_linPowByPinGamma(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
+        _fh = fuelHandlers.FuelHandler(self.o)
+        _hist = self.o.getInterface("history")
         newSettings = {"assemblyRotationStationary": True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)

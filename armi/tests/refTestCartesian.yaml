@@ -24,7 +24,6 @@ settings:
   max2SigmaCladIDT: 630.0
   maxFlowZones: 12
   maxRegionDensityIterations: 5
-  outputCOBRAPinPeakingFactors: false
   outputFileExtension: png
   percentNaReduction: 10.0
   power: 400000000.0

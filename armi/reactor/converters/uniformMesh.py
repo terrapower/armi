@@ -126,6 +126,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
+
+        # check if the sourceReactor has been modified from the blueprints
+        if sourceReactor.core.isFullCore and not newReactor.core.isFullCore:
+            _geometryConverter = newReactor.core.growToFullCore(sourceReactor.o.cs)
+
         return newReactor
 
     def _computeAverageAxialMesh(self):
@@ -186,33 +191,43 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # Iterate over the blocks that are within this region and
             # select one as a "source" for determining which cross section
             # type to use. This uses the following rules:
-            #     1. Select the first block that has either FUEL or CONTROL flags
-            #     2. Fail if multiple blocks meet this criteria if they have different XS types
-            #     3. Default to the first block in the list if no blocks meet FUEL or CONTROL flags criteria.
+            #     1. Determine the total height corresponding to each XS type that
+            #     appears for blocks with FUEL or CONTROL flags in this domain.
+            #     2. Determine the single XS type that represents the largest fraction
+            #     of the total height of FUEL or CONTROL cross sections.
+            #     3. Use the first block of the majority XS type as the representative block.
+            typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
-            sourceBlock = None
-            xsType = None
-            for b in blocks:
+            for b, h in overlappingBlockInfo:
                 if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
-                    if sourceBlock is None:
-                        sourceBlock = b
-                        xsType = b.p.xsType
-                    else:
-                        # If there is a duplicate source block candidate that has a different
-                        # cross section type then this is an error because the code cannot
-                        # decide which one is correct.
-                        if b.p.xsType != xsType:
-                            msg = (
-                                f"{sourceBlock} and {b} in {newAssem} have conflicting XS types and are "
-                                f"candidates for the source block. To fix this, either set their XS types "
-                                f"to be the same or remove these flags {[Flags.FUEL, Flags.CONTROL]} "
-                                f"from one of the blocks."
-                            )
-                            runLog.error(msg)
-                            raise ValueError(msg)
+                    typeHeight[b.p.xsType] += h
 
-            # If no blocks meet the criteria above just select the first block
-            # as the source block and use its cross section type.
+            sourceBlock = None
+            # xsType is the one with the majority of overlap
+            if len(typeHeight) > 0:
+                xsType = next(
+                    k for k, v in typeHeight.items() if v == max(typeHeight.values())
+                )
+                for b in blocks:
+                    if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                        if b.p.xsType == xsType:
+                            sourceBlock = b
+                            break
+
+            if len(typeHeight) > 1:
+                if sourceBlock:
+                    totalHeight = sum(typeHeight.values())
+                    runLog.extra(
+                        f"Multiple XS types exist between {bottom} and {topMeshPoint}. "
+                        f"Using the XS type from the largest region, {xsType}"
+                    )
+                    for xs, h in typeHeight.items():
+                        heightFrac = h / totalHeight
+                        runLog.extra(f"XSType {xs}: {heightFrac:.4f}")
+
+            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
+            # XS type present, just select the first block as the source block and use
+            # its cross section type.
             if sourceBlock is None:
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType

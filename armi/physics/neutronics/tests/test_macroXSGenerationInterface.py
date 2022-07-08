@@ -25,7 +25,7 @@ from armi.settings import Settings
 class TestMacroXSGenerationInterface(unittest.TestCase):
     def test_macroXSGenerationInterface(self):
         cs = Settings()
-        o, r = loadTestReactor()
+        _o, r = loadTestReactor()
         i = MacroXSGenerationInterface(r, cs)
 
         self.assertIsNone(i.macrosLastBuiltAt)

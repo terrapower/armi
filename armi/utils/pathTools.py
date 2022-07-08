@@ -116,24 +116,9 @@ def isAccessible(path):
         return False
 
 
-def getModAndClassFromPath(path):
-    """
-    Return the path to the module specified and the name of the class in the module.
-
-    Raises
-    ------
-    ValueError:
-        If the path does not exist or
-
-
-    """
-    pass
-
-
 def separateModuleAndAttribute(pathAttr):
     """
     Return True of the specified python module, and attribute of the module exist.
-
 
     Parameters
     ----------
@@ -240,8 +225,6 @@ def cleanPath(path, mpiRank=0):
     """
     valid = False
     if not os.path.exists(path):
-        if context.MPI_SIZE > 1:
-            context.MPI_COMM.barrier()
         return True
 
     for validPath in [
@@ -281,10 +264,6 @@ def cleanPath(path, mpiRank=0):
         if loopCounter > maxLoops:
             break
         sleep(waitTime)
-
-    # Potentially, wait for all the processes to catch up.
-    if context.MPI_SIZE > 1:
-        context.MPI_COMM.barrier()
 
     if os.path.exists(path):
         return False

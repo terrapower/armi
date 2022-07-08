@@ -18,28 +18,20 @@ import copy
 import math
 import os
 import unittest
+
 import numpy
 from numpy.testing import assert_allclose
 
-from armi.reactor import blocks
-from armi.reactor import components
-from armi import runLog
-from armi import settings
-from armi import materials
+from armi import materials, runLog, settings, tests
 from armi.nucDirectory import nucDir, nuclideBases
-from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.tests import TEST_ROOT
-from armi.utils import units
-from armi.utils import hexagon
-from armi.reactor.flags import Flags
-from armi import tests
-from armi.reactor import grids
-from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import geometry
-from armi.physics.neutronics import NEUTRON
-from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.reactor import blocks, components, geometry, grids
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_assemblies import makeTestAssembly
+from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.utils import hexagon, units
+from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
 
 def buildSimpleFuelBlock():
@@ -293,7 +285,7 @@ def applyDummyData(block):
     block.r.core.lib = xslib
 
 
-def getComponentDataFromBlock(component, block):
+def getComponentData(component):
     density = 0.0
     for nuc in component.getNuclides():
         density += (
@@ -457,7 +449,7 @@ class Block_TestCase(unittest.TestCase):
         ref = "B"
         self.assertEqual(cur, ref)
 
-        oldBuGroups = self.cs["buGroups"]
+        _oldBuGroups = self.cs["buGroups"]
         newSettings = {"buGroups": [100]}
         self.cs = self.cs.modified(newSettings=newSettings)
 
@@ -780,19 +772,16 @@ class Block_TestCase(unittest.TestCase):
             self.assertEqual(b.getSymmetryFactor(), powerMult)
 
     def test_setBuLimitInfo(self):
-        cs = settings.getMasterCs()
-
         self.block.adjustUEnrich(0.1)
         self.block.setType("igniter fuel")
 
-        self.block.setBuLimitInfo(cs)
+        self.block.setBuLimitInfo()
 
         cur = self.block.p.buLimit
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_getTotalNDens(self):
-
         self.block.setType("fuel")
 
         self.block.clearNumberDensities()
@@ -819,7 +808,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHMDens(self):
-
         self.block.setType("fuel")
         self.block.clearNumberDensities()
         refDict = {
@@ -872,7 +860,6 @@ class Block_TestCase(unittest.TestCase):
         self.block.remove(self.fuelComponent)
 
     def test_getUraniumMassEnrich(self):
-
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
@@ -884,7 +871,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getUraniumNumEnrich(self):
-
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
@@ -897,7 +883,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getNumberOfAtoms(self):
-
         self.block.clearNumberDensities()
         refDict = {
             "U235": 0.00275173784234,
@@ -949,7 +934,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getPuMass(self):
-
         fuel = self.block.getComponent(Flags.FUEL)
         refDict = {
             "AM241": 2.695633500634074e-05,
@@ -971,7 +955,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, pu)
 
     def test_adjustDensity(self):
-
         u235Dens = 0.003
         u238Dens = 0.010
         self.block.setNumberDensity("U235", u235Dens)
@@ -994,7 +977,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
     def test_completeInitialLoading(self):
-
         area = self.block.getArea()
         height = 2.0
         self.block.setHeight(height)
@@ -1185,34 +1167,52 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-    def test_setPinPowers(self):
+    def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
         gammaPower = [1.0 * i for i in range(numPins)]
         totalPower = [x + y for x, y in zip(neutronPower, gammaPower)]
-        imax = 9  # hexagonal rings of pins
-        jmax = [max(1, 6 * i) for i in range(imax)]  # pins in each hexagonal ring
+
+        totalPowerKey = "linPowByPin"
+        neutronPowerKey = f"linPowByPin{NEUTRON}"
+        gammaPowerKey = f"linPowByPin{GAMMA}"
+
+        # Try setting gamma power too early and then reset
+        with self.assertRaises(UnboundLocalError) as context:
+            self.block.setPinPowers(
+                gammaPower,
+                powerKeySuffix=GAMMA,
+            )
+        errorMsg = (
+            "Neutron power has not been set yet. Cannot set total power for "
+            f"{self.block}."
+        )
+        self.assertTrue(errorMsg in str(context.exception))
+        self.block.p[gammaPowerKey] = None
+
+        # Test with no powerKeySuffix
+        self.block.setPinPowers(neutronPower)
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[neutronPowerKey])
+        self.assertIsNone(self.block.p[gammaPowerKey])
+
+        # Test with neutron powers
         self.block.setPinPowers(
             neutronPower,
-            numPins,
-            imax,
-            jmax,
-            gamma=False,
-            removeSixCornerPins=False,
             powerKeySuffix=NEUTRON,
         )
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        self.assertIsNone(self.block.p[gammaPowerKey])
+
+        # Test with gamma powers
         self.block.setPinPowers(
             gammaPower,
-            numPins,
-            imax,
-            jmax,
-            gamma=True,
-            removeSixCornerPins=False,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.block.p.pinPowersNeutron, numpy.array(neutronPower))
-        assert_allclose(self.block.p.pinPowersGamma, numpy.array(gammaPower))
-        assert_allclose(self.block.p.pinPowers, numpy.array(totalPower))
+        assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
+        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[gammaPowerKey], numpy.array(gammaPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
@@ -1234,9 +1234,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
         # allow inexact for things like fuel1, fuel2 or clad vs. cladding
-        val = self.block.getComponentAreaFrac(
-            [Flags.COOLANT, Flags.INTERCOOLANT], exact=False
-        )
+        val = self.block.getComponentAreaFrac([Flags.COOLANT, Flags.INTERCOOLANT])
         ref = calcFracManually(["coolant", "interCoolant"])
         refWrong = calcFracManually(
             ["coolant", "interCoolant", "clad"]
@@ -1415,7 +1413,7 @@ class Block_TestCase(unittest.TestCase):
         expectedData = []
         actualData = []
         for c in block:
-            expectedData.append(getComponentDataFromBlock(c, block))
+            expectedData.append(getComponentData(c))
             actualData.append(
                 (c, c.density(), c.getVolume(), c.density() * c.getVolume())
             )
@@ -1432,7 +1430,7 @@ class Block_TestCase(unittest.TestCase):
         expectedData = []
         actualData = []
         for c in block:
-            expectedData.append(getComponentDataFromBlock(c, block))
+            expectedData.append(getComponentData(c))
             actualData.append(
                 (c, c.density(), c.getVolume(), c.density() * c.getVolume())
             )
@@ -1519,9 +1517,9 @@ class Block_TestCase(unittest.TestCase):
         .. warning:: This will likely be pushed to the component level.
         """
         fluxes = numpy.ones((33, 10))
-        self.block.setPinMgFluxes(fluxes, 10)
-        self.block.setPinMgFluxes(fluxes * 2, 10, adjoint=True)
-        self.block.setPinMgFluxes(fluxes * 3, 10, gamma=True)
+        self.block.setPinMgFluxes(fluxes)
+        self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
+        self.block.setPinMgFluxes(fluxes * 3, gamma=True)
         self.assertEqual(self.block.p.pinMgFluxes[0][2], 1.0)
         self.assertEqual(self.block.p.pinMgFluxesAdj[0][2], 2.0)
         self.assertEqual(self.block.p.pinMgFluxesGamma[0][2], 3.0)
@@ -1615,6 +1613,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.HexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
+        self.HexBlock.autoCreateSpatialGrids()
         r = tests.getEmptyHexReactor()
         a = makeTestAssembly(1, 1)
         a.add(self.HexBlock)
@@ -1682,6 +1681,10 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
 
     def test_getPinCoords(self):
+        blockPitch = self.HexBlock.getPitch()
+        pinPitch = self.HexBlock.getPinPitch()
+        nPins = self.HexBlock.getNumPins()
+        side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
         x, y, _z = zip(*xyz)
         self.assertAlmostEqual(
@@ -1689,6 +1692,24 @@ class HexBlock_TestCase(unittest.TestCase):
         )  # first two pins should be side by side on top.
         self.assertNotAlmostEqual(x[1], x[2])
         self.assertEqual(len(xyz), self.HexBlock.getNumPins())
+
+        # ensure all pins are within the proper bounds of a
+        # flats-up oriented hex block
+        self.assertLess(max(y), blockPitch / 2.0)
+        self.assertGreater(min(y), -blockPitch / 2.0)
+        self.assertLess(max(x), side)
+        self.assertGreater(min(x), -side)
+
+        # center pin should be at 0
+        mags = [(xi ** 2 + yi ** 2, (xi, yi)) for xi, yi, zi in xyz]
+        _centerMag, (cx, cy) = min(mags)
+        self.assertAlmostEqual(cx, 0.0)
+        self.assertAlmostEqual(cy, 0.0)
+
+        # extreme pin should be at proper radius
+        cornerMag, (cx, cy) = max(mags)
+        nRings = hexagon.numRingsToHoldNumCells(nPins) - 1
+        self.assertAlmostEqual(math.sqrt(cornerMag), nRings * pinPitch)
 
     def test_getPitchHomogenousBlock(self):
         """
@@ -1833,6 +1854,7 @@ class HexBlock_TestCase(unittest.TestCase):
         # add a wire only some places in the block, so grid should not be created.
         wire = components.Helix("wire", "HT9", **wireDims)
         self.HexBlock.add(wire)
+        self.HexBlock.spatialGrid = None  # clear existing
         with self.assertRaises(ValueError):
             self.HexBlock.autoCreateSpatialGrids()
 

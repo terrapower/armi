@@ -21,7 +21,6 @@ import numpy
 
 from armi import runLog
 from armi.reactor import grids
-from armi.reactor.flags import Flags, TypeSpec
 
 
 class MeshConverter:

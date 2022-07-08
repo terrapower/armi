@@ -68,16 +68,13 @@ Specifying blocks and assemblies to track
 See :ref:`detail-assems`.
 
 """
-from collections import OrderedDict
 from typing import Tuple
 import re
 
-from matplotlib import pyplot
 import tabulate
 
 from armi import interfaces
 from armi import runLog
-from armi import utils
 from armi import operators
 from armi.reactor.flags import Flags
 from armi.reactor import grids

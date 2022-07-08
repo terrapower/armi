@@ -429,6 +429,24 @@ class TestCircle(TestShapedComponent):
         cur = gap.getArea()
         self.assertAlmostEqual(cur, ref)
 
+    def test_badComponentName(self):
+        """This shows that resolveLinkedDims cannot support names with periods in them"""
+        nPins = 12
+        fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
+        cladDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.1, "id": 1.0, "mult": nPins}
+        fuel = Circle("fuel", "UZr", **fuelDims)
+        clad = Circle("clad_4.2.3", "HT9", **cladDims)
+        gapDims = {
+            "Tinput": 25.0,
+            "Thot": 430.0,
+            "od": "clad_4.2.3.id",
+            "id": "fuel.od",
+            "mult": nPins,
+        }
+        gapDims["components"] = {"clad_4.2.3": clad, "fuel": fuel}
+        with self.assertRaises(ValueError):
+            _gap = Circle("gap", "Void", **gapDims)
+
     def test_componentInteractionsLinkingBySubtraction(self):
         r"""Tests linking of components by subtraction."""
         nPins = 217
@@ -920,13 +938,13 @@ class TestHelix(TestShapedComponent):
         "id": 0.1,
     }
 
-    def test_getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        ref = 0.25 + 2.0
+    def test_getBoundingCircleOuterDiameter(self):
+        ref = 2.0 + 0.25
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
-    def test_getCircleInnerDiameter(self, Tc=None, cold=False):
-        ref = 0.1 + 2.0
+    def test_getCircleInnerDiameter(self):
+        ref = 2.0 - 0.25
         cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 

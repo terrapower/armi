@@ -372,7 +372,7 @@ class Case:
 
         with o:
             if self.cs["trace"] and context.MPI_RANK == 0:
-                # only trace master node.
+                # only trace primary node.
                 tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
                 tracer.runctx("o.operate()", globals(), locals())
             else:
@@ -494,9 +494,8 @@ class Case:
 
             return not any(inspectorIssues)
 
-    def summarizeDesign(self, generateFullCoreMap=True, showBlockAxialMesh=True):
+    def summarizeDesign(self):
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
-
         _ = reportsEntryPoint.createReportFromSettings(self.cs)
 
     def buildCommand(self, python="python"):
@@ -629,10 +628,7 @@ class Case:
         self,
         that,
         exclusion: Optional[Sequence[str]] = None,
-        weights=None,
         tolerance=0.01,
-        timestepMatchup=None,
-        output="",
     ) -> int:
         """
         Compare the output databases from two run cases. Return number of differences.

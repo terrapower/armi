@@ -16,8 +16,8 @@
 This module provides an abstract class to be used to implement "MPI actions."
 
 MPI actions are tasks, activities, or work that can be executed on the worker nodes. The standard
-workflow is essentially that the master node creates an :py:class:`~armi.mpiActions.MpiAction`,
-sends it to the workers, and then both the master and the workers
+workflow is essentially that the primary node creates an :py:class:`~armi.mpiActions.MpiAction`,
+sends it to the workers, and then both the primary and the workers
 :py:meth:`invoke() <armi.mpiActions.MpiAction.invoke>` together. For example:
 
 .. list-table:: Sample MPI Action Workflow
@@ -28,23 +28,23 @@ sends it to the workers, and then both the master and the workers
      - Code
      - Notes
    * - 1
-     - **master**: :py:class:`distributeState = DistributeStateAction() <armi.mpiActions.MpiAction>`
+     - **primary**: :py:class:`distributeState = DistributeStateAction() <armi.mpiActions.MpiAction>`
 
        **worker**: :code:`action = context.MPI_COMM.bcast(None, root=0)`
-     - **master**: Initializing a distribute state action.
+     - **primary**: Initializing a distribute state action.
 
-       **worker**: Waiting for something to do, as determined by the master, this happens within the
+       **worker**: Waiting for something to do, as determined by the primary, this happens within the
        worker's :py:meth:`~armi.operators.MpiOperator.workerOperate`.
    * - 2
-     - **master**: :code:`context.MPI_COMM.bcast(distributeState, root=0)`
+     - **primary**: :code:`context.MPI_COMM.bcast(distributeState, root=0)`
 
        **worker**: :code:`action = context.MPI_COMM.bcast(None, root=0)`
-     - **master**: Broadcasts a distribute state action to all the worker nodes
+     - **primary**: Broadcasts a distribute state action to all the worker nodes
 
-       **worker**: Receives the action from the master, which is a
+       **worker**: Receives the action from the primary, which is a
        :py:class:`~armi.mpiActions.DistributeStateAction`.
    * - 3
-     - **master**: :code:`distributeState.invoke(self.o, self.r, self.cs)`
+     - **primary**: :code:`distributeState.invoke(self.o, self.r, self.cs)`
 
        **worker**: :code:`action.invoke(self.o, self.r, self.cs)`
      - Both invoke the action, and are in sync. Any broadcast or receive within the action should
@@ -93,7 +93,7 @@ class MpiAction:
 
     @classmethod
     def invokeAsMaster(cls, o, r, cs):
-        """Simplified method to call from the master process.
+        """Simplified method to call from the primary process.
 
         This can be used in place of:
 
@@ -103,8 +103,8 @@ class MpiAction:
 
         Interestingly, the code above can be used in two ways:
 
-        1. Both the master and worker can call the above code at the same time, or
-        2. the master can run the above code, which will be handled by the worker's main loop.
+        1. Both the primary and worker can call the above code at the same time, or
+        2. the primary can run the above code, which will be handled by the worker's main loop.
 
         Option number 2 is the most common usage.
 
@@ -146,8 +146,8 @@ class MpiAction:
 
     def broadcast(self, obj=None):
         """
-        A wrapper around ``bcast``, on the master node can be run with an equals sign, so that it
-        can be consistent within both master and worker nodes.
+        A wrapper around ``bcast``, on the primary node can be run with an equals sign, so that it
+        can be consistent within both primary and worker nodes.
 
         Parameters
         ----------
@@ -163,14 +163,14 @@ class MpiAction:
         -----
         The standard ``bcast`` method creates a new instance even for the root process. Consequently,
         when passing an object, references can be broken to the original object. Therefore, this
-        method, returns the original object when called by the master node, or the broadcasted
+        method, returns the original object when called by the primary node, or the broadcasted
         object when called on the worker nodes.
         """
         if self.serial:
             return obj if obj is not None else self
         if context.MPI_SIZE > 1:
             result = self._mpiOperationHelper(obj, context.MPI_COMM.bcast)
-        # the following if-branch prevents the creation of duplicate objects on the master node
+        # the following if-branch prevents the creation of duplicate objects on the primary node
         # if the object is large with lots of links, it is prudent to call gc.collect()
         if obj is None and context.MPI_RANK == 0:
             return self
@@ -360,10 +360,13 @@ def runActionsInSerial(o, r, cs, actions):
     runLog.extra("Running {} MPI actions in serial".format(len(actions)))
     numActions = len(actions)
     for aa, action in enumerate(actions):
+        canDistribute = context.MPI_DISTRIBUTABLE
         action.serial = True
+        context.MPI_DISTRIBUTABLE = False
         runLog.extra("Running action {} of {}: {}".format(aa + 1, numActions, action))
         results.append(action.invoke(o, r, cs))
         action.serial = False  # return to original state
+        context.MPI_DISTRIBUTABLE = canDistribute
     return results
 
 
@@ -400,7 +403,7 @@ class DistributionAction(MpiAction):
 
         Notes
         =====
-        Two things about this method make it non-recursiv
+        Two things about this method make it non-recursive
         """
         canDistribute = context.MPI_DISTRIBUTABLE
         mpiComm = context.MPI_COMM
@@ -424,11 +427,11 @@ class DistributionAction(MpiAction):
         try:
             action = mpiComm.scatter(self._actions, root=0)
             # create a new communicator that only has these specific dudes running
-            context.MPI_DISTRIBUTABLE = False
             hasAction = action is not None
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()
             context.MPI_SIZE = context.MPI_COMM.Get_size()
+            context.MPI_DISTRIBUTABLE = context.MPI_SIZE > 1
             context.MPI_NODENAMES = context.MPI_COMM.allgather(context.MPI_NODENAME)
             if hasAction:
                 actionResult = action.invoke(self.o, self.r, self.cs)
@@ -457,13 +460,12 @@ class DistributeStateAction(MpiAction):
 
         Notes
         -----
-        This is run by all workers and the master any time the code needs to sync all processors.
-
+        This is run by all workers and the primary any time the code needs to sync all processors.
         """
-
         if context.MPI_SIZE <= 1:
             runLog.extra("Not distributing state because there is only one processor")
             return
+
         # Detach phase:
         # The Reactor and the interfaces have links to the Operator, which contains Un-MPI-able objects
         # like the MPI Comm and the SQL database connections.
@@ -545,10 +547,10 @@ class DistributeStateAction(MpiAction):
             raise RuntimeError("Failed to transmit reactor, received: {}".format(r))
 
         if context.MPI_RANK == 0:
-            # on the master node this unfortunately created a __deepcopy__ of the reactor, delete it
+            # on the primary node this unfortunately created a __deepcopy__ of the reactor, delete it
             del r
         else:
-            # maintain original reactor object on master
+            # maintain original reactor object on primary
             self.r = r
             self.o.r = r
 
@@ -586,7 +588,7 @@ class DistributeStateAction(MpiAction):
         Interface copy description
         Since interfaces store information that can influence a calculation, it is important
         in branch searches to make sure that no information is carried forward from these
-        runs on either the master node or the workers.  However, there are interfaces that
+        runs on either the primary node or the workers.  However, there are interfaces that
         cannot be distributed, making this a challenge.  To solve this problem, any interface
         that cannot be distributed is simply re-initialized.  If any information needs to be
         given to the worker nodes on a non-distributable interface, additional function definitions
@@ -595,13 +597,12 @@ class DistributeStateAction(MpiAction):
 
         See Also
         --------
-        armi.interfaces.Interface.preDistributeState : runs on master before DS
-        armi.interfaces.Interface.postDistributeState : runs on master after DS
+        armi.interfaces.Interface.preDistributeState : runs on primary before DS
+        armi.interfaces.Interface.postDistributeState : runs on primary after DS
         armi.interfaces.Interface.interactDistributeState : runs on workers after DS
-
         """
         if context.MPI_RANK == 0:
-            # These run on the master node. (Worker nodes run sychronized code below)
+            # These run on the primary node. (Worker nodes run sychronized code below)
             toRestore = {}
             for i in self.o.getInterfaces():
                 if i.distributable() == interfaces.Interface.Distribute.DUPLICATE:
@@ -649,7 +650,7 @@ class DistributeStateAction(MpiAction):
                         for i in self.o.getInterfaces():
                             runLog.warning(i)
                         raise RuntimeError(
-                            "Non-distributable interface {0} exists on the master MPI process "
+                            "Non-distributable interface {0} exists on the primary MPI process "
                             "but not on the workers. "
                             "Cannot distribute state.".format(iName)
                         )
@@ -673,7 +674,6 @@ def _diagnosePickleError(o):
 
     We also find that modifying the Python library as documented here tells us which
     object can't be pickled by printing it out.
-
     """
     checker = utils.tryPickleOnAllContents3
     runLog.info("-------- Pickle Error Detection -------")
@@ -684,19 +684,19 @@ def _diagnosePickleError(o):
         )
     )
     runLog.info("Scanning the Reactor for pickle errors")
-    checker(o.r, verbose=True)
+    checker(o.r)
 
     runLog.info("Scanning All assemblies for pickle errors")
     for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
-        checker(a, ignore=["blockStack"])
+        checker(a)
 
     runLog.info("Scanning all blocks for pickle errors")
     for b in o.r.core.getBlocks(includeAll=True):  # pylint: disable=no-member
-        checker(b, ignore=["parentAssembly", "r"])
+        checker(b)
 
     runLog.info("Scanning blocks by name for pickle errors")
     for _bName, b in o.r.core.blocksByName.items():  # pylint: disable=no-member
-        checker(b, ignore=["parentAssembly", "r"])
+        checker(b)
 
     runLog.info("Scanning the ISOTXS library for pickle errors")
     checker(o.r.core.lib)  # pylint: disable=no-member

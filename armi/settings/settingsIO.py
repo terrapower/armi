@@ -31,7 +31,6 @@ from armi.meta import __version__ as version
 from armi import context
 from armi.settings.setting import Setting
 from armi.settings import settingsRules
-from armi.reactor import systemLayoutInput
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
     SettingException,
@@ -247,7 +246,7 @@ class SettingsReader:
                 self.invalidSettings.add(settingName)
             else:
                 # apply validations
-                settingObj = self.cs.getSetting(settingName)
+                _settingObj = self.cs.getSetting(settingName)
 
                 # The value is automatically coerced into the expected type
                 # when set using either the default or user-defined schema

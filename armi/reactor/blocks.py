@@ -25,7 +25,6 @@ import copy
 import collections
 from typing import Optional, Type, Tuple, ClassVar
 
-import matplotlib.pyplot as plt
 import numpy
 
 from armi.reactor import composites
@@ -362,7 +361,7 @@ class Block(composites.Composite):
             flux = (flux + lastFlux) / 2.0
         return flux
 
-    def setPinMgFluxes(self, fluxes, numPins, adjoint=False, gamma=False):
+    def setPinMgFluxes(self, fluxes, adjoint=False, gamma=False):
         """
         Store the pin-detailed multi-group neutron flux
 
@@ -375,13 +374,8 @@ class Block(composites.Composite):
             The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for pin i.
             Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
-
-        numPins : int
-            The number of pins in this block.
-
         adjoint : bool, optional
             Whether to set real or adjoint data.
-
         gamma : bool, optional
             Whether to set gamma or neutron data.
 
@@ -574,8 +568,8 @@ class Block(composites.Composite):
             raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
 
-    def setBuLimitInfo(self, cs):
-        r"""Sets burnup limit based on igniter, feed, etc.  (will implement general grouping later)"""
+    def setBuLimitInfo(self):
+        r"""Sets burnup limit based on igniter, feed, etc."""
         if self.p.buRate == 0:
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
@@ -1034,7 +1028,7 @@ class Block(composites.Composite):
 
         self.setNumberDensities(newDensities)
 
-    def getComponentAreaFrac(self, typeSpec, exact=True):
+    def getComponentAreaFrac(self, typeSpec):
         """
         Returns the area fraction of the specified component(s) among all components in the block.
 
@@ -1042,8 +1036,6 @@ class Block(composites.Composite):
         ----------
         typeSpec : Flags or list of Flags
             Component types to look up
-        exact : bool, optional
-            Match exact names only
 
         Examples
         ---------
@@ -1055,7 +1047,6 @@ class Block(composites.Composite):
         float
             The area fraction of the component.
         """
-
         tFrac = sum(f for (c, f) in self.getVolumeFractions() if c.hasFlags(typeSpec))
 
         if tFrac:
@@ -1574,67 +1565,66 @@ class HexBlock(Block):
         nPins = self.getNumPins()
         self.p.pinLocation = list(range(1, nPins + 1))
 
-    def setPinPowers(
-        self,
-        powers,
-        numPins,
-        imax,
-        jmax,
-        gamma=False,
-        removeSixCornerPins=False,
-        powerKeySuffix="",
-    ):
+    def setPinPowers(self, powers, powerKeySuffix=""):
         """
-        Updates the pin powers of this block for the current rotation.
+        Updates the pin linear power densities of this block for the current rotation.
+        The linear densities are represented by the *linPowByPin* parameter.
+
+        It is assumed that :py:meth:`.initializePinLocations` has already been executed
+        for fueled blocks in order to access the *pinLocation* parameter. The
+        *pinLocation* parameter is not accessed for non-fueled blocks.
+
+        The *linPowByPin* parameter can be directly assigned to instead of using this
+        method if the multiplicity of the pins in the block is equal to the number of
+        pins in the block.
 
         Parameters
         ----------
-        powers : list of floats
-            The block-level pin linear power densities. pinPowers[i] represents the average linear
-            power density of pin i.
-            Power units are Watts/cm (Watts produced per cm of pin length).
-            The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
+        powers : list of floats, required
+            The block-level pin linear power densities. powers[i] represents the average
+            linear power density of pin i. The units of linear power density is watts/cm
+            (i.e., watts produced per cm of pin length). The "ARMI pin ordering" must be
+            be used, which is counter-clockwise from 3 o'clock.
+
+        powerKeySuffix: str, optional
+            Must be either an empty string, :py:const:`NEUTRON <armi.physics.neutronics.const.NEUTRON>`,
+            or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty
+            string.
 
         Notes
         -----
-        This handles rotations using the pinLocation parameters.
-
-        This sets:
-
-        self.p.pinPowers : 1-D numpy array
-            The block-level pin linear power densities. pinPowers[i] represents the average linear
-            power density of pin i.
-            Power units are Watts/cm (Watts produced per cm of pin length).
-            The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
+        This method can handle assembly rotations by using the *pinLocation* parameter.
         """
-        self.p.pinPowers = numpy.zeros(numPins)
-        self.p["linPowByPin" + powerKeySuffix] = numpy.zeros(numPins)
-        j0 = jmax[imax - 1] / 6
-        pinNum = 0
-        for i in range(imax):  # loop through rings
-            for j in range(jmax[i]):  # loop through positions in ring i
-                if removeSixCornerPins and i == imax - 1 and math.fmod(j, j0) == 0.0:
-                    linPow = 0.0
-                else:
-                    if self.hasFlags(Flags.FUEL):
-                        # -1 to map from pinLocations to list index
-                        pinLoc = self.p.pinLocation[pinNum] - 1
-                    else:
-                        pinLoc = pinNum
-                    linPow = powers[pinLoc]
-                self.p.pinPowers[pinNum] = linPow
-                self.p["linPowByPin" + powerKeySuffix][pinNum] = linPow
-                pinNum += 1
+        numPins = self.getNumPins()
 
-        if powerKeySuffix == GAMMA:
-            self.p.pinPowersGamma = self.p.pinPowers
-        elif powerKeySuffix == NEUTRON:
-            self.p.pinPowersNeutron = self.p.pinPowers
+        powerKey = f"linPowByPin{powerKeySuffix}"
+        self.p[powerKey] = numpy.zeros(numPins)
 
-        if gamma:
-            self.p.pinPowers = self.p.pinPowersNeutron + self.p.pinPowersGamma
-        else:
-            self.p.pinPowers = self.p.pinPowersNeutron
+        # Loop through rings. The *pinLocation* parameter is only accessed for fueled
+        # blocks; it is assumed that non-fueled blocks do not use a rotation map.
+        for pinNum in range(numPins):
+            if self.hasFlags(Flags.FUEL):
+                # -1 is needed in order to map from pinLocations to list index
+                pinLoc = self.p.pinLocation[pinNum] - 1
+            else:
+                pinLoc = pinNum
+            pinLinPow = powers[pinLoc]
+            self.p[powerKey][pinNum] = pinLinPow
+
+        # If using the *powerKeySuffix* parameter, we also need to set total power, which
+        # is sum of neutron and gamma powers. We assume that a solo gamma calculation
+        # to set total power does not make sense.
+        if powerKeySuffix:
+            if powerKeySuffix == GAMMA:
+                if self.p[f"linPowByPin{NEUTRON}"] is None:
+                    msg = (
+                        "Neutron power has not been set yet. Cannot set total power for "
+                        f"{self}."
+                    )
+                    raise UnboundLocalError(msg)
+                self.p.linPowByPin = self.p[f"linPowByPin{NEUTRON}"] + self.p[powerKey]
+            else:
+                self.p.linPowByPin = self.p[powerKey]
 
     def rotate(self, deg):
         """Function for rotating a block's spatially varying variables by a specified angle.
@@ -1849,6 +1839,10 @@ class HexBlock(Block):
                 # getPinCenterFlatToFlat only works for hexes
                 # inner most duct might be circle or some other shape
                 duct = None
+            elif isinstance(duct, components.HoledHexagon):
+                # has no ip and is circular on inside so following
+                # code will not work
+                duct = None
         clad = self.getComponent(Flags.CLAD)
         if any(c is None for c in (duct, wire, clad)):
             return None
@@ -1931,7 +1925,9 @@ class HexBlock(Block):
 
     def getPinCoordinates(self):
         """
-        Compute the centroid coordinates of any pins in this block.
+        Compute the local centroid coordinates of any pins in this block.
+
+        The pins must have a CLAD-flagged component for this to work.
 
         Returns
         -------
@@ -1941,45 +1937,34 @@ class HexBlock(Block):
         Notes
         -----
         This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed.
-
-        A block with fully-defined pins could just use their individual spatialLocators in a
-        block-level 2-D grid. However most cases do not have this to minimize overhead and maximize
-        speed. Thus we want to just come up with a uniform mesh of pins if they're not explicitly
-        placed in the grid.
-
+        options are needed. Only works if pins have clad.
         """
-        return self._getPinCoordinatesHex()
-
-    def _getPinCoordinatesHex(self):
-        coordinates = []
-        numPins = self.getNumPins()
-        numPinRings = hexagon.numRingsToHoldNumCells(numPins)
-        pinPitch = self.getPinPitch()
-        if pinPitch is None:
-            return []
-        # pin lattice is rotated 30 degrees from assembly lattice
-        grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
-        for ring in range(numPinRings):
-            for pos in range(grid.getPositionsInRing(ring + 1)):
-                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
-                xyz = grid[i, j, 0].getLocalCoordinates()
-                coordinates.append(xyz)
-        return coordinates
+        coords = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                coords.extend(
+                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
+                )
+            else:
+                coords.append(clad.spatialLocator.getLocalCoordinates())
+        return coords
 
     def autoCreateSpatialGrids(self):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children
         the corresponding spatialLocators (if it is a simple block).
 
-        In this case, a simple block would
-        be one that has either multiplicity of components equal to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly into a given number of hex rings.
-        Otherwise, do not create a grid for this block.
+        In this case, a simple block would be one that has either multiplicity of
+        components equal to 1 or N but no other multiplicities. Also, this should only
+        happen when N fits exactly into a given number of hex rings.  Otherwise, do not
+        create a grid for this block.
 
         Notes
         -----
         If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
         of the pin positions, otherwise, locator is the center (0,0).
+
+        Also, this only works on blocks that have 'flat side up'.
 
         Raises
         ------
@@ -1999,10 +1984,14 @@ class HexBlock(Block):
                 )
             )
 
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
-        grid = grids.HexGrid.fromPitch(self.getPinPitch(cold=True), numRings=0)
+        # note that it's the pointed end of the cell hexes that are up (but the
+        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
+        grid = grids.HexGrid.fromPitch(
+            self.getPinPitch(cold=True), numRings=0, pointedEndUp=True
+        )
+        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)

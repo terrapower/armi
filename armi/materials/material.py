@@ -441,7 +441,6 @@ class Material(composites.Leaf):
         """
         Return the coefficient to be used in the LIFE-METAL correlation
         """
-
         return 0.0
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
@@ -500,7 +499,6 @@ class Material(composites.Leaf):
 
         Notes
         -----
-
         self.p.massFrac are modified mass fractions that may not add up to 1.0
         (for instance, after a axial expansion, the modified mass fracs will sum to less than one.
         The alternative is to put a multiplier on the density. They're mathematically equivalent.
