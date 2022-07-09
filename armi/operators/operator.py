@@ -358,6 +358,12 @@ class Operator:  # pylint: disable=too-many-public-methods
             self._timeNodeLoop(cycle, timeNode)
         else:  # do one last node at the end using the same power as the previous node
             timeNode = self.burnSteps[cycle]
+            if self.burnSteps[cycle] == 0:
+                powFrac = self.powerFractions[cycle][0]
+            else:
+                powFrac = self.powerFractions[cycle][timeNode-1]
+
+            self.r.core.p.power = powFrac * self.cs["power"]
             self._timeNodeLoop(cycle, timeNode)
 
         self.interactAllEOC(self.r.p.cycle)
