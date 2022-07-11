@@ -45,26 +45,34 @@ class Material(composites.Leaf):
     A material is made up of elements or isotopes. It has bulk properties like mass density.
     """
 
+    # State parameter definitions
     pDefs = materialParameters.getMaterialParameterDefinitions()
-    """State parameter definitions"""
 
+    # Indication of where the material is loaded from (may be plugin name)
     DATA_SOURCE = "ARMI"
-    """Indication of where the material is loaded from (may be plugin name)"""
 
+    # TODO
     name = "Material"
-    references = {}  # property : citation
-    """The literature references."""
 
+    # The literature references {property : citation}
+    references = {}
+
+    # Name of enriched nuclide to be interpreted by enrichment modification methods
     enrichedNuclide = None
-    """Name of enriched nuclide to be interpreted by enrichment modification methods"""
+
+    # TODO
     correctDensityAfterApplyInputParams = True
 
+    # Constants that may be used in intepolation functions for property lookups"
     modelConst = {}
-    """Constants that may be used in intepolation functions for property lookups"""
 
+    # Dictionary of valid temperatures over which the property models are valid in the format
+    # 'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)
+    propertyValidTemperature = {}
+
+    # A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances
+    # with information about thermal scattering.
     thermalScatteringLaws = ()
-    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances 
-    with information about thermal scattering."""
 
     def __init__(self):
         composites.Leaf.__init__(self, self.__class__.name)

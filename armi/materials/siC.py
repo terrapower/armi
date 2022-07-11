@@ -84,22 +84,20 @@ class SiC(Material):
 
     def heatCapacity(self, Tc=None, Tk=None):
         Tc = getTc(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["heat capacity"][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "heat capacity")
+        (Tmin, Tmax) = self.propertyValidTemperature["heat capacity"][0]
+        self.checkTempRange(Tmin, Tmax, Tc, "heat capacity")
         return 1110 + 0.15 * Tc - 425 * math.exp(-0.003 * Tc)
 
     def cumulativeLinearExpansion(self, Tk=None, Tc=None):
         Tc = getTc(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature[
-            "cumulative linear expansion"
-        ][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "cumulative linear expansion")
+        (Tmin, Tmax) = self.propertyValidTemperature["cumulative linear expansion"][0]
+        self.checkTempRange(Tmin, Tmax, Tc, "cumulative linear expansion")
         return (4.22 + 8.33e-4 * Tc - 3.51 * math.exp(-0.00527 * Tc)) * 1.0e-6
 
     def density(self, Tc=None, Tk=None):
         Tc = getTc(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "density")
+        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
+        self.checkTempRange(Tmin, Tmax, Tc, "density")
         rho0 = 3.16
         Tc0 = 0.0
         cA = self.cumulativeLinearExpansion(Tc=Tc)
@@ -107,8 +105,6 @@ class SiC(Material):
 
     def thermalConductivity(self, Tc=None, Tk=None):
         Tc = getTc(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature[
-            "thermal conductivity"
-        ][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "thermal conductivity")
+        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
+        self.checkTempRange(Tmin, Tmax, Tc, "thermal conductivity")
         return (52000 * math.exp(-1.24e-5 * Tc)) / (Tc + 437)

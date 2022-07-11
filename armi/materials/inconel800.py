@@ -65,7 +65,6 @@ class Inconel800(Material):
         Returns
         -------
         %dLL(T) in m/m/K
-
         """
         Tc = getTc(Tc, Tk)
         refTempC = getTc(Tk=self.p.refTempK)
@@ -86,13 +85,10 @@ class Inconel800(Material):
         Returns
         -------
         mean coefficient of thermal expansion in m/m/C
-
         """
         Tc = getTc(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
-            0
-        ]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "thermal expansion")
+        (Tmin, Tmax) = self.propertyValidTemperature["thermal expansion"][0]
+        self.checkTempRange(Tmin, Tmax, Tc, "thermal expansion")
         return (
             2.52525e-14 * Tc ** 3
             - 3.77814e-11 * Tc ** 2

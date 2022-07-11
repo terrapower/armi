@@ -41,8 +41,6 @@ class HastelloyN(Material):
         "salts in the temperature range of 704 to 871C (1300 to 1600F)"
     )
 
-    # Dictionary of valid temperatures (in C) over which the property models are valid in the format
-    # 'Property_Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)
     propertyValidTemperature = {
         "thermal conductivity": ((473.15, 973.15), "K"),
         "heat capacity": ((373.15, 973.15), "K"),
@@ -88,14 +86,11 @@ class HastelloyN(Material):
         Returns
         -------
         Hastelloy N thermal conductivity (W/m-K)
-
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature[
-            "thermal conductivity"
-        ][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "thermal conductivity")
+        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "thermal conductivity")
         return 1.92857e-05 * Tc ** 2 + 3.12857e-03 * Tc + 1.17743e01  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):
@@ -118,8 +113,8 @@ class HastelloyN(Material):
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["heat capacity"][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "heat capacity")
+        (Tmin, Tmax) = self.propertyValidTemperature["heat capacity"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "heat capacity")
         return (
             +3.19981e02
             + 2.47421e00 * Tc
@@ -169,8 +164,6 @@ class HastelloyN(Material):
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
-            0
-        ]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "thermal expansion")
+        (Tmin, Tmax) = self.propertyValidTemperature["thermal expansion"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "thermal expansion")
         return 2.60282e-12 * Tc ** 2 + 7.69859e-10 * Tc + 1.21036e-05
