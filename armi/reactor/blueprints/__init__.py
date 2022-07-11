@@ -68,8 +68,6 @@ text representations of input and objects in the code.
 
 
 """
-from collections import OrderedDict
-import collections
 import copy
 import os
 import pathlib
@@ -86,15 +84,16 @@ from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
 from armi import plugins
 from armi import runLog
-from armi import settings
 from armi.utils.customExceptions import InputError
-from armi.nucDirectory import elements
 from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts import migration
 from armi.utils import textProcessors
+
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.flags import Flags
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -301,6 +300,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         This method should not be called directly, but it is used in testing.
         """
+        axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
         if not self._prepped:
             self._assignTypeNums()
             for func in self._resolveFunctions:
@@ -311,6 +311,11 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             for aDesign in self.assemDesigns:
                 a = aDesign.construct(cs, self)
+                if not cs["inputHeightsConsideredHot"]:
+                    if not a.hasFlags(Flags.CONTROL):
+                        axialExpChngr.setAssembly(a)
+                        axialExpChngr.expansionData.computeThermalExpansionFactors()
+                        axialExpChngr.axiallyExpandAssembly(thermal=True)
                 self._assembliesBySpecifier[aDesign.specifier] = a
                 self.assemblies[aDesign.name] = a
 
