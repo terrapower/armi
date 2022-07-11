@@ -51,7 +51,7 @@ class Material(composites.Leaf):
     # Indication of where the material is loaded from (may be plugin name)
     DATA_SOURCE = "ARMI"
 
-    # TODO
+    # String identifying the material
     name = "Material"
 
     # The literature references {property : citation}
@@ -59,9 +59,6 @@ class Material(composites.Leaf):
 
     # Name of enriched nuclide to be interpreted by enrichment modification methods
     enrichedNuclide = None
-
-    # TODO
-    correctDensityAfterApplyInputParams = True
 
     # Constants that may be used in intepolation functions for property lookups"
     modelConst = {}
