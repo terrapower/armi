@@ -158,7 +158,9 @@ def getHoledHexagonParameterDefinitions():
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("holeOD", units="cm", description="Diameter of interior hole(s)")
 
-        pb.defParam("nHoles", units=units.UNITLESS, description="Number of interior holes")
+        pb.defParam(
+            "nHoles", units=units.UNITLESS, description="Number of interior holes"
+        )
 
     return pDefs
 
