@@ -22,8 +22,8 @@ uses data from [#ornltm2000]_.
 .. [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
     et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 """
-import math
 import collections
+import math
 
 from numpy import interp
 
