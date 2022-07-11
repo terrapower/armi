@@ -359,7 +359,8 @@ class Operator:  # pylint: disable=too-many-public-methods
         else:  # do one last node at the end using the same power as the previous node
             timeNode = self.burnSteps[cycle]
             if self.burnSteps[cycle] == 0:
-                powFrac = self.powerFractions[cycle][0]
+                # this is a zero-burnup case
+                powFrac = 1
             else:
                 powFrac = self.powerFractions[cycle][timeNode-1]
 
