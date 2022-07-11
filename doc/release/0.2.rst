@@ -29,6 +29,7 @@ Bug fixes
 #. ``Block.getWettedPerim`` was moved to ``HexBlock``, as that was more accurate.
 #. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
 #. Fixed bugs in the ARMI memory profiler.
+#. Fixed linear expansion in ``Alloy200``.
 #. TBD
 
 
