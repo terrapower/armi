@@ -362,7 +362,7 @@ class Operator:  # pylint: disable=too-many-public-methods
                 # this is a zero-burnup case
                 powFrac = 1
             else:
-                powFrac = self.powerFractions[cycle][timeNode-1]
+                powFrac = self.powerFractions[cycle][timeNode - 1]
 
             self.r.core.p.power = powFrac * self.cs["power"]
             self._timeNodeLoop(cycle, timeNode)
