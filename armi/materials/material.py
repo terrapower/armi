@@ -554,9 +554,7 @@ class Material(composites.Leaf):
 
         label : str
             The name of the function or property that is being checked.
-
         """
-
         if not minV <= val <= maxV:
             msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(
                 val, minV, maxV, self.name, label
@@ -586,7 +584,6 @@ class Material(composites.Leaf):
         rhoCP : float
             Calculated value for the HT9 density* heat capacity
             unit (J/m^3-K)
-
         """
         Tc = getTc(Tc, Tk)
 

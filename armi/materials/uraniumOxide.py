@@ -22,8 +22,8 @@ uses data from [#ornltm2000]_.
 .. [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
     et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 """
-import math
 import collections
+import math
 
 from numpy import interp
 
@@ -156,7 +156,7 @@ class UraniumOxide(material.FuelMaterial):
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(300, 3100, Tk, "thermal conductivity")
+        self.checkTempRange(300, 3100, Tk, "density")
         return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
@@ -167,7 +167,7 @@ class UraniumOxide(material.FuelMaterial):
         simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(300, 3000, Tk, "density")
+        self.checkTempRange(300, 3000, Tk, "thermal conductivity")
         return interp(Tk, self.thermalConductivityTableK, self.thermalConductivityTable)
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
