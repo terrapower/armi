@@ -33,7 +33,6 @@ class HastelloyN(Material):
 
     """
     name = "HastelloyN"
-    type = "Structural"
 
     materialIntro = (
         "Hastelloy N alloy is a nickel-base alloy that was invented at Oak RIdge National Laboratories "

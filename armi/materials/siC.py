@@ -46,8 +46,6 @@ class SiC(Material):
         ],
     }
 
-    type = "Structural"
-
     propertyEquation = {
         "heat capacity": "1110 + 0.15*Tc - 425*math.exp(-0.003*Tc)",
         "cumulative linear expansion": "(4.22 + 8.33E-4*Tc-3.51*math.exp(-0.00527*Tc))*1.0E-6",
