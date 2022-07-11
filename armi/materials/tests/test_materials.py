@@ -1238,6 +1238,16 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
         """Assert alloy 200 has more than 99% nickle per its spec"""
         self.assertGreater(self.mat.p.massFrac["NI"], 0.99)
 
+    def test_linearExpansion(self):
+        ref = self.mat.linearExpansion(Tc=100)
+        cur = 13.3e-6
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+    def test_linearExpansion(self):
+        ref = self.mat.linearExpansion(Tk=873.15)
+        cur = 15.6e-6
+        self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
 
 class CaH2_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.CaH2
