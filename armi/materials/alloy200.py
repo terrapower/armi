@@ -43,6 +43,8 @@ class Alloy200(Material):
         "TRefa": 20,  # Constants for thermal expansion
     }
 
+    propertyValidTemperature = {"linear expansion": ((73.15, 1273.15), "K")}
+
     referenceMaxPercentImpurites = [
         ("C", 0.15),
         ("MN", 0.35),
@@ -99,7 +101,8 @@ class Alloy200(Material):
             instantaneous coefficient of thermal expansion of Alloy 200 (1/C)
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(73.15, 1273.15, Tk, "linear expansion")
+        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def setDefaultMassFracs(self):

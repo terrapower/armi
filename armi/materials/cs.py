@@ -23,3 +23,12 @@ from armi.materials.material import Material
 class Cs(Material):
 
     name = "Cesium"
+
+    def setDefaultMassFracs(self):
+        self.setMassFrac("CS133", 1.0)
+
+    def density(self, Tk=None, Tc=None):
+        """
+        https://en.wikipedia.org/wiki/Caesium
+        """
+        return 1.843  # g/cm3
