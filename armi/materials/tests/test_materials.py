@@ -1248,6 +1248,9 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
         cur = 15.6e-6
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class CaH2_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.CaH2
