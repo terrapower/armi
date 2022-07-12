@@ -77,6 +77,19 @@ class HoledHexagon(basicShapes.Hexagon):
         area = mult * (hexArea - circularArea)
         return area
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        For the special case of only one single hole, returns the
+        diameter of that hole.
+
+        For any other case, returns 0.0 because an "circle inner diameter" becomes
+        undefined.
+        """
+        if self.getDimension("nHoles") == 1:
+            return self.getDimension("holeOD", Tc, cold)
+        else:
+            return 0.0
+
 
 class HoledRectangle(basicShapes.Rectangle):
     """Rectangle with one circular hole in it."""
@@ -130,6 +143,12 @@ class HoledRectangle(basicShapes.Rectangle):
         area = mult * (rectangleArea - circularArea)
         return area
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        Returns the ``holeOD``.
+        """
+        return self.getDimension("holeOD", Tc, cold)
+
 
 class HoledSquare(basicShapes.Square):
     """Square with one circular hole in it."""
@@ -175,6 +194,12 @@ class HoledSquare(basicShapes.Square):
         mult = self.getDimension("mult")
         area = mult * (rectangleArea - circularArea)
         return area
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        Returns the ``holeOD``.
+        """
+        return self.getDimension("holeOD", Tc, cold)
 
 
 class Helix(ShapedComponent):
