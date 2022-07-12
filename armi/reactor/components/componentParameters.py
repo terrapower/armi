@@ -156,9 +156,11 @@ def getHoledHexagonParameterDefinitions():
 
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("holeOD", units="?", description="?")
+        pb.defParam("holeOD", units="cm", description="Diameter of interior hole(s)")
 
-        pb.defParam("nHoles", units="?", description="?")
+        pb.defParam(
+            "nHoles", units=units.UNITLESS, description="Number of interior holes"
+        )
 
     return pDefs
 
@@ -168,7 +170,7 @@ def getHoledRectangleParameterDefinitions():
 
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("holeOD", units="?", description="?")
+        pb.defParam("holeOD", units="cm", description="Diameter of interior hole")
 
     return pDefs
 
