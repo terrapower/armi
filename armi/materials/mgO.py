@@ -22,11 +22,28 @@ from armi.materials.material import Material
 class MgO(Material):
     r"""MagnesiumOxide"""
     name = "MgO"
+    propertyValidTemperature = {
+        "density": ((273, 1273), "K"),
+        "linear expansion percent": ((273.15, 1273.15), "K"),
+    }
 
     def setDefaultMassFracs(self):
         r"""mass fractions"""
         self.setMassFrac("MG", 0.603035897)
         self.setMassFrac("O16", 0.396964103)
+
+    def density(self, Tk=None, Tc=None):
+        """same reference as linear expansion. Table II.
+        Reference density is from Wolfram Alpha At STP (273 K)"""
+        Tk = getTk(Tc, Tk)
+        rho0 = 3.58
+        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "density")
+        dLL = self.linearExpansionPercent(Tk=Tk)
+
+        dRho = (1 - (1 + dLL) ** 3) / (1 + dLL) ** 3
+        density = rho0 * (1 + dRho)
+        return density
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """THE COEFFICIENT OF EXPANSION OF MAGNESIUM OXIDE
@@ -36,20 +53,8 @@ class MgO(Material):
 
         This is based on a 3rd order polynomial fit of the data in Table I.
         """
-        # Note: This is in C! Others are mostly in K. Depends on reference.
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(273.15, 1273.15, Tk, "deltaL")
+        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
         return 1.0489e-5 * Tc + 6.0458e-9 * Tc ** 2 - 2.6875e-12 * Tc ** 3
-
-    def density(self, Tk=None, Tc=None):
-        """same reference as linear expansion. Table II.
-        Reference density is from Wolfram Alpha At STP (273 K)"""
-        Tk = getTk(Tc, Tk)
-        rho0 = 3.58
-        self.checkTempRange(273, 1273, Tk, "density")
-        dLL = self.linearExpansionPercent(Tk=Tk)
-
-        dRho = (1 - (1 + dLL) ** 3) / (1 + dLL) ** 3
-        density = rho0 * (1 + dRho)
-        return density

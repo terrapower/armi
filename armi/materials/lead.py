@@ -23,13 +23,19 @@ from armi.materials import material
 class Lead(material.Fluid):
     r"""Natural lead"""
     name = "Lead"
+    propertyValidTemperature = {
+        "density": ((600, 1700), "K"),
+        "heat capacity": ((600, 1500), "K"),
+        "volumetric expansion": ((600, 1700), "K"),
+    }
 
     def volumetricExpansion(self, Tk=None, Tc=None):
         r"""volumetric expansion inferred from density.
         NOT BASED ON MEASUREMENT.
         Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247"""
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(600, 1700, Tk, "volumetric expansion")
+        (Tmin, Tmax) = self.propertyValidTemperature["volumetric expansion"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "volumetric expansion")
 
         return 1.0 / (9516.9 - Tk)
 
@@ -40,13 +46,15 @@ class Lead(material.Fluid):
     def density(self, Tk=None, Tc=None):
         r"""density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247"""
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(600, 1700, Tk, "density")
+        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "density")
 
         return 11.367 - 0.0011944 * Tk  # pre-converted from kg/m^3 to g/cc
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""heat ccapacity in J/kg/K from Sobolev"""
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(600, 1500, Tk, "heat capacity")
+        (Tmin, Tmax) = self.propertyValidTemperature["heat capacity"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "heat capacity")
 
         return 162.9 - 3.022e-2 * Tk + 8.341e-6 * Tk ** 2

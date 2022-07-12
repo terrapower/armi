@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
-Cesium.
+Cesium
 """
 
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Cs(Material):
@@ -31,4 +31,11 @@ class Cs(Material):
         """
         https://en.wikipedia.org/wiki/Caesium
         """
-        return 1.843  # g/cm3
+        Tk = getTk(Tc, Tk)
+        if Tk < self.meltingPoint():
+            return 1.93  # g/cm3
+        else:
+            return 1.843  # g/cm3
+
+    def meltingPoint(self):
+        return 301.7  # K

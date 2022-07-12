@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Mixed-oxide (MOX) ceramic fuel.
 
@@ -113,7 +112,6 @@ class MOX(UraniumOxide):
         return massFracPuO2 * molweightUO2 / massFracUO2 / molweightPuO2
 
     def setDefaultMassFracs(self):
-
         r"""UO2 + PuO2 mixture mass fractions.
 
         Pu238: 238.0495599 g/mol

@@ -18,14 +18,14 @@ Silicon Carbide
 
 import math
 
-from armi.utils.units import getTc
 from armi.materials.material import Material
-from armi.nucDirectory import thermalScattering as tsl
 from armi.nucDirectory import nuclideBases as nb
+from armi.nucDirectory import thermalScattering as tsl
+from armi.utils.units import getTc
 
 
 class SiC(Material):
-    r""" """
+    r"""Silicon Carbide"""
     name = "Silicon Carbide"
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["C"], tsl.SIC],
@@ -64,9 +64,9 @@ class SiC(Material):
     propertyNotes = {}
 
     propertyValidTemperature = {
-        "heat capacity": ((0, 2000), "C"),
         "cumulative linear expansion": ((0, 1500), "C"),
         "density": ((0, 1500), "C"),
+        "heat capacity": ((0, 2000), "C"),
         "thermal conductivity": ((0, 2000), "C"),
     }
 

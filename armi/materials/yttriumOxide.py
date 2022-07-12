@@ -14,12 +14,14 @@
 
 """Yttrium Oxide"""
 
-from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Y2O3(Material):
     name = "Y2O3"
+
+    propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
 
     def setDefaultMassFracs(self):
         self.setMassFrac("Y89", 0.7875)
@@ -37,5 +39,7 @@ class Y2O3(Material):
         From Table 5 of "Thermal Expansion and Phase Inversion of Rare-Earth Oxides.
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(273.15, 1573.15, Tk, "linear expansion percent")
+        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
+        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+
         return 1.4922e-07 * Tk ** 2 + 6.2448e-04 * Tk - 1.8414e-01
