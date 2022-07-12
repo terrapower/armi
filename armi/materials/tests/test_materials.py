@@ -83,6 +83,38 @@ class MaterialFindingTests(unittest.TestCase):
             )
 
 
+class Californium_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Californium
+
+    def test_density(self):
+        ref = 15.1
+
+        cur = self.mat.density(923)
+        self.assertAlmostEqual(cur, ref, delta=ref * 0.05)
+
+        cur = self.mat.density(1390)
+        self.assertAlmostEqual(cur, ref, delta=ref * 0.05)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+
+class Cesium_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Cs
+
+    def test_density(self):
+        cur = self.mat.density(250)
+        ref = 1.93
+        self.assertAlmostEqual(cur, ref, delta=ref * 0.05)
+
+        cur = self.mat.density(450)
+        ref = 1.843
+        self.assertAlmostEqual(cur, ref, delta=ref * 0.05)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+
 class Magnesium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Magnesium
 
@@ -510,6 +542,11 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
+    def test_adjustTD(self):
+        self.assertEqual(self.mat.theoreticalDensityFrac, 1.0)
+        self.mat.adjustTD(0.123)
+        self.assertEqual(self.mat.theoreticalDensityFrac, 0.123)
 
 
 class Thorium_TestCase(_Material_Test, unittest.TestCase):
