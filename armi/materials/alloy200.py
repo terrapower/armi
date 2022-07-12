@@ -103,6 +103,7 @@ class Alloy200(Material):
         Tk = getTk(Tc, Tk)
         (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
         self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
+
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def setDefaultMassFracs(self):
