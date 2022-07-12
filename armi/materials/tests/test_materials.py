@@ -97,6 +97,9 @@ class Magnesium_TestCase(_Material_Test, unittest.TestCase):
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class MagnesiumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.MgO
@@ -121,6 +124,9 @@ class MagnesiumOxide_TestCase(_Material_Test, unittest.TestCase):
         ref = 0.0049909
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Molybdenum
@@ -136,6 +142,12 @@ class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
         delta = ref * 0.0001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
 
 class NaCl_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.NaCl
@@ -149,6 +161,9 @@ class NaCl_TestCase(_Material_Test, unittest.TestCase):
         ref = 2.050604
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
 
 class NiobiumZirconium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.NZ
@@ -161,6 +176,9 @@ class NiobiumZirconium_TestCase(_Material_Test, unittest.TestCase):
         cur = self.mat.density(Tk=1390)
         ref = 8.66
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class Potassium_TestCase(_Material_Test, unittest.TestCase):
@@ -181,6 +199,9 @@ class Potassium_TestCase(_Material_Test, unittest.TestCase):
         ref = 0.732
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class ScandiumOxide_TestCase(_Material_Test, unittest.TestCase):
@@ -203,6 +224,9 @@ class ScandiumOxide_TestCase(_Material_Test, unittest.TestCase):
         cur = self.mat.linearExpansionPercent(Tc=400)
         ref = 0.28322
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class Sodium_TestCase(_Material_Test, unittest.TestCase):
@@ -252,6 +276,9 @@ class Sodium_TestCase(_Material_Test, unittest.TestCase):
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Tantalum_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Tantalum
@@ -264,6 +291,9 @@ class Tantalum_TestCase(_Material_Test, unittest.TestCase):
         cur = self.mat.density(Tc=300)
         ref = 16.6
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
@@ -301,6 +331,9 @@ class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
         ref = 11.9e-6
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
 
 class Uranium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Uranium
@@ -325,6 +358,9 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
         cur = self.mat.thermalConductivity(Tc=900)
         ref = 48.524507909207507339033327298
         self.assertAlmostEqual(cur, ref, delta=10e-10)
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
@@ -472,6 +508,9 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         for key in self.mat.p.massFrac.keys():
             self.assertEqual(duplicateMassFrac[key], self.mat.p.massFrac[key])
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Thorium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Thorium
@@ -506,6 +545,9 @@ class Thorium_TestCase(_Material_Test, unittest.TestCase):
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.ThoriumOxide
@@ -534,6 +576,9 @@ class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Void_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Void
@@ -548,6 +593,9 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class Lead_TestCase(_Material_Test, unittest.TestCase):
@@ -598,6 +646,9 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
         ref = 138.647
         delta = ref * 0.05
         self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
@@ -663,6 +714,9 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
         cur = 0.0024316
         self.assertAlmostEqual(ref, cur, delta=ref * 0.001)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Sulfur_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Sulfur
@@ -683,6 +737,9 @@ class Sulfur_TestCase(_Material_Test, unittest.TestCase):
         ref = 5.28e-4
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class Zr_TestCase(_Material_Test, unittest.TestCase):
@@ -792,6 +849,9 @@ class Zr_TestCase(_Material_Test, unittest.TestCase):
             self.assertAlmostEqual(self.mat.density(Tc=Tc), expectedDensityValues[i])
             self.assertAlmostEqual(self.mat.density(Tk=Tk), expectedDensityValues[i])
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Inconel_TestCase(_Material_Test, unittest.TestCase):
     def setUp(self):
@@ -839,6 +899,12 @@ class Inconel_TestCase(_Material_Test, unittest.TestCase):
                 cur, ref
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.Inconel.propertyValidTemperature), 0)
+        self.assertGreater(len(self.Inconel800.propertyValidTemperature), 0)
+        self.assertEqual(len(self.InconelPE16.propertyValidTemperature), 0)
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class Inconel600_TestCase(_Material_Test, unittest.TestCase):
@@ -957,6 +1023,9 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
         ref = self.mat.heatCapacity(Tc=200)
         cur = 482.742084
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class Inconel625_TestCase(_Material_Test, unittest.TestCase):
@@ -1095,6 +1164,9 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
         cur = 454.044892
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class InconelX750_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.InconelX750
@@ -1230,6 +1302,9 @@ class InconelX750_TestCase(_Material_Test, unittest.TestCase):
         cur = 484.93968
         self.assertAlmostEqual(ref, cur, delta=cur * 0.001)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class Alloy200_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Alloy200
@@ -1251,6 +1326,9 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class CaH2_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.CaH2
@@ -1264,6 +1342,9 @@ class CaH2_TestCase(_Material_Test, unittest.TestCase):
         ref = self.mat.density(Tc=300)
         self.assertAlmostEqual(cur, ref, ref * 0.01)
 
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
 
 class Hafnium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Hafnium
@@ -1276,6 +1357,9 @@ class Hafnium_TestCase(_Material_Test, unittest.TestCase):
 
         ref = self.mat.density(Tc=300)
         self.assertAlmostEqual(cur, ref, ref * 0.01)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
 class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
@@ -1364,6 +1448,9 @@ class HastelloyN_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class TZM_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.TZM
@@ -1420,6 +1507,9 @@ class TZM_TestCase(_Material_Test, unittest.TestCase):
             )
             self.assertAlmostEqual(cur, ref, delta=10e-3, msg=errorMsg)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class YttriumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Y2O3
@@ -1442,6 +1532,9 @@ class YttriumOxide_TestCase(_Material_Test, unittest.TestCase):
         cur = 0.0696622
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 class ZincOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.ZnO
@@ -1463,6 +1556,9 @@ class ZincOxide_TestCase(_Material_Test, unittest.TestCase):
         ref = self.mat.linearExpansionPercent(Tc=100)
         cur = -99670.4933
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 class FuelMaterial_TestCase(unittest.TestCase):
