@@ -1596,6 +1596,11 @@ class HexBlock(Block):
         This method can handle assembly rotations by using the *pinLocation* parameter.
         """
         numPins = self.getNumPins()
+        if not numPins or numPins != len(powers):
+            raise ValueError(
+                f"Invalid power data for {self} with {numPins} pins."
+                f" Got {len(powers)} entries in powers: {powers}"
+            )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = numpy.zeros(numPins)
