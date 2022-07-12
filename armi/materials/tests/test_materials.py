@@ -177,8 +177,27 @@ class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+class MOX_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.MOX
+
+    def test_density(self):
+        cur = self.mat.density(333)
+        ref = 10.926
+        delta = ref * 0.0001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+    def test_getMassFracPuO2(self):
+        ref = 0.176067
+        self.assertAlmostEqual(self.mat.getMassFracPuO2(), ref, delta=ref * 0.001)
+
+    def test_getMolFracPuO2(self):
+        ref = 0.209
+        self.assertAlmostEqual(self.mat.getMolFracPuO2(), ref, delta=ref * 0.001)
+
+    def test_getMolFracPuO2(self):
+        ref = 2996.788765
+        self.assertAlmostEqual(self.mat.meltingPoint(), ref, delta=ref * 0.001)
 
 
 class NaCl_TestCase(_Material_Test, unittest.TestCase):
