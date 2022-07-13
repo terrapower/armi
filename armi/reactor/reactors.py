@@ -445,7 +445,8 @@ class Core(composites.Composite):
             The ring to remove
 
         forceHexRing : bool, optional
-            If you want to remove a circular ring from a square or hex reactor.
+            True ~ if you want to remove assemblies in square or hex ring from a squre or hex reactor.
+            False ~ if you want to remove assemblies in a circular ring.
         """
         if forceHexRing:
             assems = self.getAssembliesInSquareOrHexRing(ringNum)
