@@ -728,10 +728,8 @@ class HexReactorTests(ReactorTests):
     def test_getNozzleTypes(self):
         nozzleTypes = self.r.core.getNozzleTypes()
         expectedTypes = ["Inner", "Outer", "lta", "Default"]
-        for nozzle in nozzleTypes:
-            self.assertTrue(
-                nozzle in expectedTypes, f"nozzleType {nozzle} not in {expectedTypes}"
-            )
+        for nozzle in expectedTypes:
+            self.assertIn(nozzle, nozzleTypes)
 
     def test_createAssemblyOfType(self):
         """Test creation of new assemblies."""
