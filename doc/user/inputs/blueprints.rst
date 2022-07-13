@@ -376,17 +376,17 @@ hotChannelFactors
   A label to define which set of hot channel factors (HCFs) get applied to
   this block in the thermal/hydraulic calculations. There are various valid sets included with ARMI.
 
+nozzleType
+  This is a string that identifies what type of inlet nozzle an assembly has. This parameter could
+  be used in an implementation of a thermal-hydraulics solver with flow orificing to apply
+  different pressure loss coefficients and/or flow rates to different types of assemblies.
+
 material modifications
   These are a variety of modifications that are made to the
   materials in blocks in these locations. It may include the fuel enrichment (mass frac.), poison
   enrichment (mass frac.), zirconium mass frac, and any additional options required to fully define
   the material loaded in the component.  The material definitions in the material library define
   valid modifications for them.
-
-nozzleType
-  This is a string that identifies what type of inlet nozzle an assembly has. This parameter could
-  be used in an implementation of a thermal-hydraulics solver with flow orificing to apply
-  different pressure loss coefficients and/or flow rates to different types of assemblies.
 
   .. exec::
       from armi.materials import Material
