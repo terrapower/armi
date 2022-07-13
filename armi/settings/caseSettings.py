@@ -286,7 +286,7 @@ class Settings:
 
     def registerUserPlugins(self):
         """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
-        userPlugins = self["UserPlugins"]
+        userPlugins = self["userPlugins"]
         if len(userPlugins):
             from armi import getApp  # pylint: disable=import-outside-toplevel
 

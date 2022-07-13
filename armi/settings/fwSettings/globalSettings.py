@@ -109,7 +109,7 @@ CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
-CONF_USER_PLUGINS = "UserPlugins"
+CONF_USER_PLUGINS = "userPlugins"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
