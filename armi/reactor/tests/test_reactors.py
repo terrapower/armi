@@ -725,6 +725,21 @@ class HexReactorTests(ReactorTests):
             self.assertNotEqual(aLoc[i], a.spatialLocator)
             self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
+    def test_removeAssembliesInRingByCount(self):
+        self.assertEqual(self.r.core.getNumRings(), 9)
+        self.r.core.removeAssembliesInRing(9)
+        self.assertEqual(self.r.core.getNumRings(), 8)
+
+    def test_removeAssembliesInRingHex(self):
+        """
+        Since the test reactor is hex, we need to use the forceHexRing option
+        to remove assemblies from it.
+        """
+        self.assertEqual(self.r.core.getNumRings(), 9)
+        for ringNum in range(6, 10):
+            self.r.core.removeAssembliesInRing(ringNum, forceHexRing=True)
+        self.assertEqual(self.r.core.getNumRings(), 5)
+
     def test_getNozzleTypes(self):
         nozzleTypes = self.r.core.getNozzleTypes()
         expectedTypes = ["Inner", "Outer", "lta", "Default"]

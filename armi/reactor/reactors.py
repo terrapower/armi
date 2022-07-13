@@ -435,12 +435,26 @@ class Core(composites.Composite):
         else:
             self._removeListFromAuxiliaries(a1)
 
-    def removeAssembliesInRing(self, ringNum):
+    def removeAssembliesInRing(self, ringNum, forceHexRing=False):
         """
         Removes all of the assemblies in a given ring
+
+        Parameters
+        ----------
+        ringNum : int
+            The ring to remove
+
+        forceHexRing : bool, optional
+            If you want to remove a circular ring from a square or hex reactor.
         """
-        for a in self.getAssembliesInRing(ringNum):
+        if forceHexRing:
+            assems = self.getAssembliesInSquareOrHexRing(ringNum)
+        else:
+            assems = self.getAssembliesInRing(ringNum)
+
+        for a in assems:
             self.removeAssembly(a)
+
         self.processLoading(settings.getMasterCs())
 
     def _removeListFromAuxiliaries(self, assembly):
