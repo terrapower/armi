@@ -37,8 +37,7 @@ class MgO(Material):
         Reference density is from Wolfram Alpha At STP (273 K)"""
         Tk = getTk(Tc, Tk)
         rho0 = 3.58
-        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "density")
+        self.checkPropertyTempRange("density", Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
 
         dRho = (1 - (1 + dLL) ** 3) / (1 + dLL) ** 3
@@ -55,6 +54,5 @@ class MgO(Material):
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
         return 1.0489e-5 * Tc + 6.0458e-9 * Tc ** 2 - 2.6875e-12 * Tc ** 3

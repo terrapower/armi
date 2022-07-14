@@ -101,8 +101,7 @@ class Alloy200(Material):
             instantaneous coefficient of thermal expansion of Alloy 200 (1/C)
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tk)
 
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 

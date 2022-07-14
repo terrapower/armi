@@ -44,6 +44,5 @@ class Be9(Material):
         which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987)
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
         return 1e-4 * (8.4305 + 1.1464e-2 * Tk - 2.9752e-6 * Tk ** 2)

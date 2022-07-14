@@ -39,6 +39,5 @@ class Sc2O3(Material):
         From Table 4 of "Thermal Expansion and Phase Inversion of Rare-Earth Oxides.
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
         return 2.6045e-07 * Tk ** 2 + 4.6374e-04 * Tk - 1.4696e-01

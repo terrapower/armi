@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-TZM
-"""
+"""TZM"""
 from numpy import interp
 
 from armi.materials.material import Material
@@ -88,7 +86,6 @@ class TZM(Material):
         See Table viii-b, Appendix B, page 181.
         """
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tc)
 
         return interp(Tc, self.temperatureC, self.percentThermalExpansion)

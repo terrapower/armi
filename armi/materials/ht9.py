@@ -66,8 +66,7 @@ class HT9(materials.Material):
         The ref gives dL/L0 in percent and is valid from 293 - 1050 K.
         """
         tk = units.getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", tk)
         return -0.16256 + 1.62307e-4 * tk + 1.42357e-6 * tk ** 2 - 5.50344e-10 * tk ** 3
 
     def thermalConductivity(self, Tk=None, Tc=None):

@@ -43,6 +43,5 @@ class Cu(Material):
         Properties of High Performance Rocket Nozzle Materials (NASA CR - 134806)
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
         return 5.0298e-07 * Tk ** 2 + 1.3042e-03 * Tk - 4.3097e-01

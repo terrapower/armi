@@ -37,8 +37,7 @@ class Thorium(Material):
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TECDOC 1450"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tk)
 
         return 11.9e-6
 

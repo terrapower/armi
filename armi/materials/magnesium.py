@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Magnesium
-"""
+"""Magnesium"""
 
 from armi.materials import material
 from armi.utils.units import getTk
@@ -31,6 +29,6 @@ class Magnesium(material.Fluid):
         r"""returns mass density of magnesium in g/cc
         The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961."""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "density")
+        self.checkPropertyTempRange("density", Tk)
+
         return 1.59 - 0.00026 * (Tk - 924.0)

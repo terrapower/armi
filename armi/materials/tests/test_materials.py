@@ -383,7 +383,7 @@ class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
     def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+        self.assertEqual(len(self.mat.propertyValidTemperature), 1)
 
 
 class Uranium_TestCase(_Material_Test, unittest.TestCase):

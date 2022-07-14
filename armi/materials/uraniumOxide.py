@@ -169,8 +169,7 @@ class UraniumOxide(material.FuelMaterial):
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "density")
+        self.checkPropertyTempRange("density", Tk)
 
         return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 
@@ -181,8 +180,7 @@ class UraniumOxide(material.FuelMaterial):
         From Section 4.3 in  [#ornltm2000]_
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["heat capacity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "heat capacity")
+        self.checkPropertyTempRange("heat capacity", Tk)
 
         hcc = self.heatCapacityConstants
         # eq 4.2
@@ -203,8 +201,7 @@ class UraniumOxide(material.FuelMaterial):
         Curve fit from data in [#ornltm2000]_
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tk)
 
         return 1.06817e-12 * Tk ** 2 - 1.37322e-9 * Tk + 1.02863e-5
 
@@ -215,8 +212,7 @@ class UraniumOxide(material.FuelMaterial):
         From Section 3.3 of [#ornltm2000]_
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
 
         if Tk >= 273.0 and Tk < 923.0:
             return (
@@ -235,8 +231,7 @@ class UraniumOxide(material.FuelMaterial):
         simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
 
         return interp(Tk, self.thermalConductivityTableK, self.thermalConductivityTable)
 

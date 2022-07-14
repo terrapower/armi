@@ -175,8 +175,7 @@ class B4C(material.Material):
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tc)
         deltaT = Tc - 25
         dLL = deltaT * 4.5e-6
         return dLL * 100

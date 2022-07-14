@@ -48,8 +48,7 @@ class Uranium(Material):
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """The thermal conductivity of pure U in W-m/K."""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
 
         kU = 21.73 + (0.01591 * Tk) + (0.000005907 * Tk ** 2)
         return kU

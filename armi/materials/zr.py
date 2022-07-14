@@ -90,8 +90,7 @@ class Zr(Material):
     def _computeReferenceDensity(self, Tk=None, Tc=None):
         r"""AAA Materials Handbook 45803"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "density")
+        self.checkPropertyTempRange("density", Tk)
 
         if Tk < 1135:
             return -3.29256e-8 * Tk ** 2 - 9.67145e-5 * Tk + 6.60176
@@ -105,8 +104,7 @@ class Zr(Material):
         Reference: AAA Fuels handbook. ANL.
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
         return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk ** 2) + (2992.0 / Tk)
 
     def linearExpansion(self, Tk=None, Tc=None):
@@ -118,8 +116,7 @@ class Zr(Material):
         See page 400
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tk)
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
@@ -131,8 +128,7 @@ class Zr(Material):
         See page 400
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
 
         if Tk >= 293 and Tk < 1137:
             return (

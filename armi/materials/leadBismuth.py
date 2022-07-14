@@ -43,8 +43,7 @@ class LeadBismuth(material.Fluid):
     def density(self, Tk=None, Tc=None):
         r"""density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "density")
+        self.checkPropertyTempRange("density", Tk)
 
         return 11.096 - 0.0013236 * Tk  # pre-converted from kg/m^3 to g/cc
 
@@ -52,16 +51,14 @@ class LeadBismuth(material.Fluid):
         r"""dynamic viscosity in Pa-s from Sobolev. Accessed online at
         http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["dynamic visc"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "dynamic visc")
+        self.checkPropertyTempRange("dynamic visc", Tk)
 
         return 4.94e-4 * math.exp(754.1 / Tk)
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""heat ccapacity in J/kg/K from Sobolev. Expected acuracy 5%"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["heat capacity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "heat capacity")
+        self.checkPropertyTempRange("heat capacity", Tk)
 
         return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk ** 2
 
@@ -69,8 +66,7 @@ class LeadBismuth(material.Fluid):
         r"""thermal conductivity in W/m/K from Sobolev. Accessed online at
         http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
 
         return 2.45 * Tk / (86.334 + 0.0511 * Tk)
 
@@ -79,7 +75,6 @@ class LeadBismuth(material.Fluid):
         NOT BASED ON MEASUREMENT.
         Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["volumetric expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "volumetric expansion")
+        self.checkPropertyTempRange("volumetric expansion", Tk)
 
         return 1.0 / (8383.2 - Tk)

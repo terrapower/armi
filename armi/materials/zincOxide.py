@@ -40,8 +40,7 @@ class ZnO(Material):
         Zinc Oxide: Fundamentals, Materials and Device Technology
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
 
         return (
             -1.9183e-03 * Tk ** 3 + 6.5944e-07 * Tk ** 2 + 5.2992e-05 * Tk - 5.2631e-02

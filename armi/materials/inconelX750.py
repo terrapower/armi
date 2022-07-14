@@ -125,8 +125,7 @@ class InconelX750(Material):
             thermal conductivity in W/m/C
         """
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tc)
         thermalCond = 1.4835e-6 * Tc ** 2 + 1.2668e-2 * Tc + 11.632
         return thermalCond  # W/m-C
 
@@ -164,11 +163,9 @@ class InconelX750(Material):
         -------
         heatCapacity : float
             heat capacity in J/kg/C
-
         """
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["heat capacity"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "heat capacity")
+        self.checkPropertyTempRange("heat capacity", Tc)
         heatCapacity = (
             9.2261e-7 * Tc ** 3 - 9.6368e-4 * Tc ** 2 + 4.7778e-1 * Tc + 420.55
         )
@@ -232,8 +229,7 @@ class InconelX750(Material):
         linExpPercent in %-m/m/C
         """
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tc)
         linExpPercent = 6.8378e-7 * Tc ** 2 + 1.056e-3 * Tc - 1.3161e-2
         return linExpPercent
 
@@ -261,7 +257,6 @@ class InconelX750(Material):
         linExp in m/m/C
         """
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tc)
         linExp = 1.36756e-8 * Tc + 1.056e-5
         return linExp

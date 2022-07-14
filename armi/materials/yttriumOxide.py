@@ -39,7 +39,6 @@ class Y2O3(Material):
         From Table 5 of "Thermal Expansion and Phase Inversion of Rare-Earth Oxides.
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion percent"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
 
         return 1.4922e-07 * Tk ** 2 + 6.2448e-04 * Tk - 1.8414e-01

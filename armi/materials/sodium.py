@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple sodium material."""
+"""Simple sodium material"""
 
 from armi.materials import material
 from armi import runLog
@@ -67,8 +67,7 @@ class Sodium(material.Fluid):
         """
         Tk = getTk(Tc, Tk)
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["density"][0]
-        self.checkTempRange(Tmin, Tmax, Tc, "density")
+        self.checkPropertyTempRange("density", Tc)
 
         if (Tc is not None) and (Tc <= 97.72):
             runLog.warning(
@@ -101,8 +100,7 @@ class Sodium(material.Fluid):
         From [ANL-RE-95-2]_, Table 1.1-2.
         """
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["enthalpy"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "enthalpy")
+        self.checkPropertyTempRange("enthalpy", Tk)
         enthalpy = (
             -365.77
             + 1.6582 * Tk
@@ -133,8 +131,7 @@ class Sodium(material.Fluid):
 
         """
         Tc = getTc(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["thermal conductivity"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
             124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
         )

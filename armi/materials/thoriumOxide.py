@@ -81,8 +81,7 @@ class ThoriumOxide(FuelMaterial):
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TE 1450"""
         Tk = getTk(Tc, Tk)
-        (Tmin, Tmax) = self.propertyValidTemperature["linear expansion"][0]
-        self.checkTempRange(Tmin, Tmax, Tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tk)
 
         return 9.67e-6
 
