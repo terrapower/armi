@@ -1954,7 +1954,6 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-
     def autoCreateSpatialGrids(self):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children
@@ -1976,10 +1975,7 @@ class HexBlock(Block):
         ------
         ValueError
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
-
-
         """
-
         # Check multiplicities...
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
