@@ -18,8 +18,8 @@ Sodium Chloride salt
 .. note:: This is a very basic description of this material.
 
 """
-from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class NaCl(Material):

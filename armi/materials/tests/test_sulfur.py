@@ -49,6 +49,9 @@ class Sulfur_TestCase(_Material_Test, unittest.TestCase):
         reduced = self.Sulfur_both.density(500)
         self.assertAlmostEqual(ref * 0.4, reduced)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

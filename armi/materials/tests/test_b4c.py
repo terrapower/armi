@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Tests for boron carbide.
+Tests for boron carbide
 """
 
 import unittest
 
-from armi.materials.b4c import B4C
-from armi.materials.b4c import DEFAULT_THEORETICAL_DENSITY_FRAC
+from armi.materials.b4c import B4C, DEFAULT_THEORETICAL_DENSITY_FRAC
 from armi.materials.tests.test_materials import _Material_Test
 
 
@@ -49,6 +48,9 @@ class B4C_TestCase(_Material_Test, unittest.TestCase):
 
         reduced = self.B4C_both.density(500)
         self.assertAlmostEqual(ref * 0.4 / DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
+
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
 if __name__ == "__main__":
