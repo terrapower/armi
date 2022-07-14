@@ -28,10 +28,10 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
-from os import sep
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
+import os
 import sys
 
 from armi import context, plugins, pluginManager, meta, settings
@@ -262,7 +262,7 @@ class App:
         self.__initNewPlugins()
 
         for pluginPath in pluginPaths:
-            if sep in pluginPath:
+            if os.sep in pluginPath:
                 # The path is of the form: /path/to/why.py:MyPlugin
                 self.__registerUserPluginsAbsPath(pluginPath)
             else:
@@ -273,9 +273,9 @@ class App:
         """Helper method to register a single UserPlugin where
         the given path is of the form: /path/to/why.py:MyPlugin
         """
-        # determine if we have that Windows file path (C:\path\to\whatever.py)
+        # determine if this is a Windows system
         isWindows = False
-        if ":\\" in pluginPath:
+        if os.name == "nt":
             isWindows = True
 
         # handle the minor variations on Windows file pathing
