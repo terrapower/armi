@@ -728,10 +728,8 @@ class HexReactorTests(ReactorTests):
     def test_getNozzleTypes(self):
         nozzleTypes = self.r.core.getNozzleTypes()
         expectedTypes = ["Inner", "Outer", "lta", "Default"]
-        for nozzle in nozzleTypes:
-            self.assertTrue(
-                nozzle in expectedTypes, f"nozzleType {nozzle} not in {expectedTypes}"
-            )
+        for nozzle in expectedTypes:
+            self.assertIn(nozzle, nozzleTypes)
 
     def test_createAssemblyOfType(self):
         """Test creation of new assemblies."""
@@ -795,6 +793,12 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(0, len(self.r.core.blocksByName))
         self.assertEqual(0, len(self.r.core.assembliesByName))
+
+    def test_pinCoordsAllBlocks(self):
+        """Make sure all blocks can get pin coords."""
+        for b in self.r.core.getBlocks():
+            coords = b.getPinCoordinates()
+            self.assertGreater(len(coords), -1)
 
 
 class CartesianReactorTests(ReactorTests):
