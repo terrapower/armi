@@ -435,7 +435,7 @@ class Core(composites.Composite):
         else:
             self._removeListFromAuxiliaries(a1)
 
-    def removeAssembliesInRing(self, ringNum, forceHexRing=False):
+    def removeAssembliesInRing(self, ringNum, overrideCircularRingMode=False):
         """
         Removes all of the assemblies in a given ring
 
@@ -444,16 +444,17 @@ class Core(composites.Composite):
         ringNum : int
             The ring to remove
 
-        forceHexRing : bool, optional
-            True ~ if you want to remove assemblies in square or hex ring from a squre or hex reactor.
-            False ~ if you want to remove assemblies in a circular ring.
-        """
-        if forceHexRing:
-            assems = self.getAssembliesInSquareOrHexRing(ringNum)
-        else:
-            assems = self.getAssembliesInRing(ringNum)
+        overrideCircularRingMode : bool, optional
+            False ~ default: use circular/square/hex rings, just as the reactor defines them
+            True ~ If you know you don't want to use the circular ring mode, and instead want square or hex.
 
-        for a in assems:
+        See Also
+        --------
+        getAssembliesInRing : definition of a ring
+        """
+        for a in self.getAssembliesInRing(
+            ringNum, overrideCircularRingMode=overrideCircularRingMode
+        ):
             self.removeAssembly(a)
 
         self.processLoading(settings.getMasterCs())
@@ -731,7 +732,12 @@ class Core(composites.Composite):
             return float("inf")
 
     def getAssembliesInRing(
-        self, ring, typeSpec=None, exactType=False, exclusions=None
+        self,
+        ring,
+        typeSpec=None,
+        exactType=False,
+        exclusions=None,
+        overrideCircularRingMode=False,
     ):
         """
         Returns the assemblies in a specified ring. Definitions of rings can change
@@ -754,13 +760,16 @@ class Core(composites.Composite):
         exclusions : list of assemblies
             list of assemblies that are not to be considered
 
+        overrideCircularRingMode : bool, optional
+            False ~ default: use circular/square/hex rings, just as the reactor defines them
+            True ~ If you know you don't want to use the circular ring mode, and instead want square or hex.
+
         Returns
         -------
         aList : list of assemblies
             A list of assemblies that match the criteria within the ring
-
         """
-        if self._circularRingMode:
+        if self._circularRingMode and not overrideCircularRingMode:
             getter = self.getAssembliesInCircularRing
         else:
             getter = self.getAssembliesInSquareOrHexRing

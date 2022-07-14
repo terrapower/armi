@@ -732,12 +732,12 @@ class HexReactorTests(ReactorTests):
 
     def test_removeAssembliesInRingHex(self):
         """
-        Since the test reactor is hex, we need to use the forceHexRing option
+        Since the test reactor is hex, we need to use the overrideCircularRingMode option
         to remove assemblies from it.
         """
         self.assertEqual(self.r.core.getNumRings(), 9)
         for ringNum in range(6, 10):
-            self.r.core.removeAssembliesInRing(ringNum, forceHexRing=True)
+            self.r.core.removeAssembliesInRing(ringNum, overrideCircularRingMode=True)
         self.assertEqual(self.r.core.getNumRings(), 5)
 
     def test_getNozzleTypes(self):
