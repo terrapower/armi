@@ -236,15 +236,21 @@ class App:
         Register additional plugins passed in by importable paths.
         These plugins may be provided e.g. by an application during startup
         based on user input.
+
         Format expected to be a list of full namespaces to plugin classes.
         There should be a comma between individual plugins and dots representing
-        the importable python namespace. e.g.
+        the file path or importable python namespace.
 
-        ``armi.stuff.plugindir.pluginMod.pluginCls,armi.whatever.plugMod2.plugCls2``.
+        Examples
+        --------
+        importable namespace:
+        ``armi.stuff.plugindir.pluginMod.pluginCls,armi.whatever.plugMod2.plugCls2``
+
         or on Linux/Unix:
-        ``/path/to/pluginMod.py:pluginCls,/path/to/plugMod2.py:plugCls2```,
+        ``/path/to/pluginMod.py:pluginCls,/path/to/plugMod2.py:plugCls2``
+
         or on Windows:
-        ``C:\\path\\to\\pluginMod.py:pluginCls,C:\\\\path\\to\\plugMod2.py:plugCls2```,
+        ``C:\\path\\to\\pluginMod.py:pluginCls,C:\\\\path\\to\\plugMod2.py:plugCls2``
 
         Notes
         -----

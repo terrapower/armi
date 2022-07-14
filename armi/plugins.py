@@ -602,14 +602,15 @@ class ArmiPlugin:
 
 class UserPlugin(ArmiPlugin):
     """
-    This is a variation on the usual ArmiPlugin that is meant to be read in during run time,
-    from a hard-coded path in a settings file, or the like.
+    A variation on the ArmiPlugin meant to be created at runtime, from the ``userPlugins`` setting.
 
     This is obviously a more limited use-case than the usual ArmiPlugin, as those are meant
     to be defined at import time, instead of run time. As such, this class has some built-in
     tooling to limit how these run-time plugins are used. They are meant to be more limited.
 
-    NOTE: The usual ArmiPlugin is much more flexible, if the UserPlugin does not support what
+    Notes
+    -----
+    The usual ArmiPlugin is much more flexible, if the UserPlugin does not support what
     you want to do, just use an ArmiPlugin.
     """
 
@@ -619,8 +620,8 @@ class UserPlugin(ArmiPlugin):
 
     def __enforceLimitations(self):
         """
-        This method is designed to enforce that UserPlugins are more limited
-        than regular ArmiPlugins.
+        This method enforces that UserPlugins are more limited than regular ArmiPlugins.
+
         UserPlugins are different from regular plugins in that they can be defined during
         a run, and as such, we want to limit how flexible they are, so we can correctly
         corral their side effects during a run.
@@ -628,10 +629,10 @@ class UserPlugin(ArmiPlugin):
         if issubclass(self.__class__, UserPlugin):
             assert (
                 len(self.__class__.defineParameterRenames()) == 0
-            ), "UserPlugins cannot define parameter renames"
+            ), "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
             assert (
                 len(self.__class__.defineSettings()) == 0
-            ), "UserPlugins cannot define new Settings"
+            ), "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
             # NOTE: These are the class methods that we are staunchly _not_ allowing people
             # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: {}
@@ -642,8 +643,13 @@ class UserPlugin(ArmiPlugin):
     @HOOKSPEC
     def defineParameterRenames():
         """
-        NOTE: This is not overridable.
-        It is a design limitation of user plugins that they not generate parameter renames,
+        Prevents parameter renames.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not generate parameter renames,
         so that they are able to be added to the plugin stack during run time.
         """
         return {}
@@ -652,8 +658,13 @@ class UserPlugin(ArmiPlugin):
     @HOOKSPEC
     def defineSettings():
         """
-        NOTE: This is not overridable.
-        It is a design limitation of user plugins that they not define new settings,
+        Prevents new settings.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not define new settings,
         so that they are able to be added to the plugin stack during run time.
         """
         return []
@@ -662,8 +673,13 @@ class UserPlugin(ArmiPlugin):
     @HOOKSPEC
     def defineSettingsValidators(inspector):
         """
-        NOTE: This is not overridable.
-        It is a design limitation of user plugins that they not define new settings,
+        Prevents new settings validators.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not define new settings,
         so that they are able to be added to the plugin stack during run time.
         """
         return []
