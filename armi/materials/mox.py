@@ -21,6 +21,7 @@ A definitive source for these properties is [#ornltm20002]_.
     Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
 """
+from armi import runLog
 from armi.materials.uraniumOxide import UraniumOxide
 from armi.materials import material
 from armi.nucDirectory import nucDir
