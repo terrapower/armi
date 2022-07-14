@@ -79,6 +79,7 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
+        # pylint: disable=import-outside-toplevel
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -214,7 +215,7 @@ class App:
             renames = dict()
             for (
                 pluginRenames
-            ) in self._pm.hook.defineParameterRenames():  #  pylint: disable=no-member
+            ) in self._pm.hook.defineParameterRenames():  # pylint: disable=no-member
                 collisions = currentNames & pluginRenames.keys()
                 if collisions:
                     raise plugins.PluginError(
