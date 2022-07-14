@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-TZM
-"""
+"""TZM"""
 from numpy import interp
 
 from armi.materials.material import Material
@@ -23,6 +21,7 @@ from armi.utils.units import getTc
 
 class TZM(Material):
     name = "TZM"
+    propertyValidTemperature = {"linear expansion percent": ((21.11, 1382.22), "C")}
     references = {
         "linear expansion percent": "Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced \
                    in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, \
@@ -87,5 +86,6 @@ class TZM(Material):
         See Table viii-b, Appendix B, page 181.
         """
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(21.11, 1382.22, Tc, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tc)
+
         return interp(Tc, self.temperatureC, self.percentThermalExpansion)

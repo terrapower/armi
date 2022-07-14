@@ -52,18 +52,23 @@ class Material(composites.Leaf):
     """Indication of where the material is loaded from (may be plugin name)"""
 
     name = "Material"
-    references = {}  # property : citation
-    """The literature references."""
+    """String identifying the material"""
+
+    references = {}
+    """The literature references {property : citation}"""
 
     enrichedNuclide = None
     """Name of enriched nuclide to be interpreted by enrichment modification methods"""
-    correctDensityAfterApplyInputParams = True
 
     modelConst = {}
     """Constants that may be used in intepolation functions for property lookups"""
 
+    propertyValidTemperature = {}
+    """Dictionary of valid temperatures over which the property models are valid in the format
+    'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
+
     thermalScatteringLaws = ()
-    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances 
+    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances
     with information about thermal scattering."""
 
     def __init__(self):
@@ -132,7 +137,6 @@ class Material(composites.Leaf):
         See Also
         --------
         linearExpansion : handle instantaneous thermal expansion coefficients
-
         """
         return 0.0
 
@@ -444,15 +448,11 @@ class Material(composites.Leaf):
         return 0.0
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        returns yield strength at given T in MPa
-        """
+        r"""returns yield strength at given T in MPa"""
         return self.p.yieldStrength
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        thermal conductivity in given T in K
-        """
+        r"""thermal conductivity in given T in K"""
         return self.p.thermalConductivity
 
     def getProperty(
@@ -539,25 +539,44 @@ class Material(composites.Leaf):
     def getMassFracCopy(self):
         return copy.deepcopy(self.p.massFrac)
 
-    def checkTempRange(self, minV, maxV, val, label=""):
+    def checkPropertyTempRange(self, label, val):
+        r"""Checks if the given property / value combination fall between the min and max valid
+        temperatures provided in the propertyValidTemperature object.
+
+        Parameters
+        ----------
+        label : str
+            The name of the function or property that is being checked.
+
+        val : float
+            The value to check whether it is between minT and maxT.
+
+        Notes
+        -----
+        This was designed as a convience method for ``checkTempRange``.
+        """
+        (minT, maxT) = self.propertyValidTemperature[label][0]
+        self.checkTempRange(minT, maxT, val, label)
+
+    def checkTempRange(self, minT, maxT, val, label=""):
         r"""
-        Checks if the given temperature (val) is between the minV and maxV temperature limits supplied.
+        Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
         Label identifies what material type or element is being evaluated in the check.
 
         Parameters
         ----------
-        minV, maxV : float
+        minT, maxT : float
             The minimum and maximum values that val is allowed to have.
 
         val : float
-            The value to check whether it is between minV and maxV.
+            The value to check whether it is between minT and maxT.
 
         label : str
             The name of the function or property that is being checked.
         """
-        if not minV <= val <= maxV:
+        if not minT <= val <= maxT:
             msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(
-                val, minV, maxV, self.name, label
+                val, minT, maxT, self.name, label
             )
             if FAIL_ON_RANGE or numpy.isnan(val):
                 runLog.error(msg)

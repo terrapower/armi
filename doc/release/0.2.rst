@@ -18,6 +18,7 @@ What's new in ARMI
 #. Changed the default Git branch name to ``main``.
 #. Changed the default value of the ``trackAssems`` setting to ``False``.
 #. Added new ``UserPlugin`` functionality.
+#. Made the min/max temperatures of ``Material`` curves discoverable.
 #. TBD
 
 Bug fixes

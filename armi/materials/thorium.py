@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Thorium Metal
 
@@ -21,29 +20,29 @@ Data is from [#IAEA-TECDOCT-1450]_.
 .. [#IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
-from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Thorium(Material):
     name = "Thorium metal"
+    propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def setDefaultMassFracs(self):
         self.setMassFrac("TH232", 1.0)
 
     def density(self, Tk=None, Tc=None):
-        Tk = getTk(Tc, Tk)
         return 11.68
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TECDOC 1450"""
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(30, 600, Tk, "linear expansionn")
+        self.checkPropertyTempRange("linear expansion", Tk)
+
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""W/m-K from IAEA TE 1450"""
-        Tk = getTk(Tc, Tk)
         return 43.1
 
     def meltingPoint(self):
