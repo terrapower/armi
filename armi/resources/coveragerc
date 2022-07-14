@@ -3,6 +3,7 @@
 branch = True
 omit =
     */tests/*
+    */site-packages/*
 # change default .coverage file to something that doesn't have a dot
 # because our Windows file server can't handle dots. :s
 data_file = coverage_results.cov

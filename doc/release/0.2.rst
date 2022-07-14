@@ -17,6 +17,7 @@ What's new in ARMI
 #. Renamed control rod assembly parameters for generic implementations of control rod handling.
 #. Changed the default Git branch name to ``main``.
 #. Changed the default value of the ``trackAssems`` setting to ``False``.
+#. Added new ``UserPlugin`` functionality.
 #. TBD
 
 Bug fixes
