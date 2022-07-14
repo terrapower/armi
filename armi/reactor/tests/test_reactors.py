@@ -794,6 +794,12 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(0, len(self.r.core.blocksByName))
         self.assertEqual(0, len(self.r.core.assembliesByName))
 
+    def test_pinCoordsAllBlocks(self):
+        """Make sure all blocks can get pin coords."""
+        for b in self.r.core.getBlocks():
+            coords = b.getPinCoordinates()
+            self.assertGreater(len(coords), -1)
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
