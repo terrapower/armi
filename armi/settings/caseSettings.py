@@ -280,8 +280,18 @@ class Settings:
         reader, path = self._prepToRead(fName)
         reader.readFromFile(fName, handleInvalids)
         self._applyReadSettings(path if setPath else None)
+        self.registerUserPlugins()
 
         return reader
+
+    def registerUserPlugins(self):
+        """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
+        userPlugins = self["userPlugins"]
+        if len(userPlugins):
+            from armi import getApp  # pylint: disable=import-outside-toplevel
+
+            app = getApp()
+            app.registerUserPlugins(userPlugins)
 
     def _prepToRead(self, fName):
         if self._failOnLoad:
