@@ -1529,6 +1529,32 @@ class Block(composites.Composite):
         """
         raise NotImplementedError
 
+    def getPinCoordinates(self):
+        """
+        Compute the local centroid coordinates of any pins in this block.
+
+        The pins must have a CLAD-flagged component for this to work.
+
+        Returns
+        -------
+        localCoordinates : list
+            list of (x,y,z) pairs representing each pin in the order they are listed as children
+
+        Notes
+        -----
+        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
+        options are needed. Only works if pins have clad.
+        """
+        coords = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                coords.extend(
+                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
+                )
+            else:
+                coords.append(clad.spatialLocator.getLocalCoordinates())
+        return coords
+
 
 class HexBlock(Block):
 
@@ -1928,31 +1954,6 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def getPinCoordinates(self):
-        """
-        Compute the local centroid coordinates of any pins in this block.
-
-        The pins must have a CLAD-flagged component for this to work.
-
-        Returns
-        -------
-        localCoordinates : list
-            list of (x,y,z) pairs representing each pin in the order they are listed as children
-
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed. Only works if pins have clad.
-        """
-        coords = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                coords.extend(
-                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
-                )
-            else:
-                coords.append(clad.spatialLocator.getLocalCoordinates())
-        return coords
 
     def autoCreateSpatialGrids(self):
         """
