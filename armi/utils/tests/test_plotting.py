@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for functions in util.plotting.py
-"""
+"""Tests for basic plotting tools"""
 import os
 import unittest
 
 from armi.nuclearDataIO.cccc import isotxs
-from armi.utils import plotting
+from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH, TEST_ROOT
-from armi.reactor.flags import Flags
+from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -64,6 +62,9 @@ class TestPlotting(unittest.TestCase):
         )
         self._checkExists(plotPath)
 
+        with self.assertRaises(ValueError):
+            plotting.plotAssemblyTypes(None, plotPath, None)
+
     def test_plotBlockFlux(self):
         try:
             xslib = isotxs.readBinary(ISOAA_PATH)
@@ -103,6 +104,7 @@ class TestPlotting(unittest.TestCase):
             self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
     def test_plotCartesianBlock(self):
+        # pylint: disable=import-outside-toplevel
         from armi import settings
         from armi.reactor import blueprints, reactors
 
