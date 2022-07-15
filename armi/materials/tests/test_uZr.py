@@ -29,6 +29,9 @@ class UZR_TestCase(test_materials._Material_Test, unittest.TestCase):
         delta = ref * 0.01
         self.assertAlmostEqual(cur, ref, delta=delta)
 
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

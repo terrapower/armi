@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Thorium Oxide solid ceramic.
 
@@ -21,13 +20,14 @@ Data is from [#IAEA-TECDOCT-1450]_.
 .. [#IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
-
+from armi import runLog
 from armi.utils.units import getTk
 from armi.materials.material import FuelMaterial
 
 
 class ThoriumOxide(FuelMaterial):
     name = "ThO2"
+    propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
     theoreticalDensityFrac = 1.0
 
     def adjustTD(self, val):
@@ -76,13 +76,13 @@ class ThoriumOxide(FuelMaterial):
 
     def density(self, Tk=None, Tc=None):
         """g/cc from IAEA TE 1450"""
-        Tk = getTk(Tc, Tk)
         return 10.00 * self.getTD()
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TE 1450"""
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(298, 1223, Tk, "linear expansionn")
+        self.checkPropertyTempRange("linear expansion", Tk)
+
         return 9.67e-6
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
@@ -92,11 +92,11 @@ class ThoriumOxide(FuelMaterial):
         """
         Tk = getTk(Tc=Tc, Tk=Tk)
         linearExpansionCoef = self.linearExpansion(Tk=Tk)
+
         return 100 * (linearExpansionCoef * (Tk - 298))
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""W/m-K from IAEA TE 1450"""
-        Tk = getTk(Tc, Tk)
         return 6.20
 
     def meltingPoint(self):

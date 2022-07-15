@@ -68,8 +68,10 @@ class TestApps(unittest.TestCase):
     """Test the base apps.App interfaces."""
 
     def setUp(self):
-        """Manipulate the standard App. We can't just configure our own, since the
-        pytest environment bleeds between tests :("""
+        """
+        Manipulate the standard App. We can't just configure our own, since the
+        pytest environment bleeds between tests.
+        """
         self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):

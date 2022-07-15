@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Mixed-oxide (MOX) ceramic fuel.
 
@@ -22,6 +21,7 @@ A definitive source for these properties is [#ornltm20002]_.
     Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
 """
+from armi import runLog
 from armi.materials.uraniumOxide import UraniumOxide
 from armi.materials import material
 from armi.nucDirectory import nucDir
@@ -113,7 +113,6 @@ class MOX(UraniumOxide):
         return massFracPuO2 * molweightUO2 / massFracUO2 / molweightPuO2
 
     def setDefaultMassFracs(self):
-
         r"""UO2 + PuO2 mixture mass fractions.
 
         Pu238: 238.0495599 g/mol

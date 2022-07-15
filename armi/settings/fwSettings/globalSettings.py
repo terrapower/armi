@@ -109,6 +109,7 @@ CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
+CONF_USER_PLUGINS = "userPlugins"
 
 # Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
@@ -833,6 +834,15 @@ def defineSettings() -> List[setting.Setting]:
                     )
                 ]
             ),
+        ),
+        setting.Setting(
+            CONF_USER_PLUGINS,
+            default=[],
+            label=CONF_USER_PLUGINS,
+            description="YAML list defining the locations of UserPlugin subclasses. "
+            "You can enter the full armi import path: armi.test.test_what.MyPlugin, "
+            "or you can enter the full file path: /path/to/my/pluginz.py:MyPlugin ",
+            schema=vol.Any([vol.Coerce(str)], None),
         ),
     ]
     return settings

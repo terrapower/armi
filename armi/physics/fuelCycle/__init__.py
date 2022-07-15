@@ -60,7 +60,6 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
         The interface may import user input modules to customize the actual
         fuel management.
         """
-
         fuelHandlerNeedsToBeActive = cs["fuelHandlerName"] or (
             cs["eqDirect"] and cs["runType"].lower() == RunTypes.STANDARD.lower()
         )
@@ -83,8 +82,5 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettingsValidators(inspector):
-        """
-        Implementation of settings inspections for fuel cycle settings.
-        """
-
+        """Implementation of settings inspections for fuel cycle settings."""
         return settings.getFuelCycleSettingValidators(inspector)

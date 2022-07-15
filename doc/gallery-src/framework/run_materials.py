@@ -21,7 +21,6 @@ contents. Some have temperature dependent properties, but some don't. You can pr
 your own proprietary material properties via a plugin.
 
 More info about the materials here: :py:mod:`armi.materials`.
-
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,7 +28,7 @@ import matplotlib.pyplot as plt
 from armi import configure, materials
 from armi.nucDirectory import nuclideBases
 
-MAX_Z = 96  # stop at Curium
+MAX_Z = 98  # stop at Californium
 
 configure(permissive=True)
 
@@ -45,7 +44,11 @@ for mi, matCls in enumerate(mats):
     for nucName, frac in m.p.massFrac.items():
         nb = nuclideBases.byName[nucName]
         idx = mi, nb.z - 1
-        zVals[idx] += frac
+        try:
+            zVals[idx] += frac
+        except IndexError:
+            # respect the MAX_Z bounds
+            pass
 
 fig, ax = plt.subplots(figsize=(16, 12))
 im = ax.imshow(zVals, cmap="YlGn")

@@ -40,6 +40,9 @@ class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
     def test_linearExpansionPercent(self):
         self.assertAlmostEqual(self.mat.linearExpansionPercent(Tk=500), 0.195334)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

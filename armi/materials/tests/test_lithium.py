@@ -76,6 +76,9 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
         cur = 3570.0
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
