@@ -55,6 +55,7 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 # init logger
 runLog = logging.getLogger(__name__)
@@ -2235,6 +2236,17 @@ class Core(composites.Composite):
         updateAxialMesh : Perturbs the axial mesh originally set up here.
 
         """
+        if not cs["inputHeightsConsideredHot"]:
+            runLog.info(
+                "Axially expanding all (except control) assemblies from Tinput to Thot."
+            )
+            axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+            for a in self.getAssemblies(includeAll=True):
+                if not a.hasFlags(Flags.CONTROL):
+                    axialExpChngr.setAssembly(a)
+                    axialExpChngr.expansionData.computeThermalExpansionFactors()
+                    axialExpChngr.axiallyExpandAssembly(thermal=True)
+
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
