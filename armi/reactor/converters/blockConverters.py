@@ -588,8 +588,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             # altogether. If not skipped, the conversion process still works, but this would
             # result in one or more rings having an outer diameter than is smaller than the
             # inner diameter.
-            #             if c.getArea() < 0.0:
-            #                 continue
+            if c.getArea() < 0.0:
+                continue
 
             if (
                 self._sourceBlock.getNumComponents(c.p.flags)
