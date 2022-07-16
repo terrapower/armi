@@ -277,7 +277,7 @@ def _buildJoyoFuel():
         mult=91,
     )
     clad = components.Circle(
-        name="fuel",
+        name="clad",
         material="HT9",
         Tinput=20.0,
         Thot=20.0,
