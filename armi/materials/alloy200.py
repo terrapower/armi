@@ -15,9 +15,10 @@
 """
 Alloy-200 are wrought commercially pure nickel.
 """
+from numpy import interp
 
 from armi.materials.material import Material
-from armi.utils.units import getTc
+from armi.utils.units import getTk
 
 
 class Alloy200(Material):
@@ -42,6 +43,8 @@ class Alloy200(Material):
         "TRefa": 20,  # Constants for thermal expansion
     }
 
+    propertyValidTemperature = {"linear expansion": ((73.15, 1273.15), "K")}
+
     referenceMaxPercentImpurites = [
         ("C", 0.15),
         ("MN", 0.35),
@@ -51,26 +54,35 @@ class Alloy200(Material):
         ("FE", 0.40),
     ]
 
-    def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
-        Returns percent linear thermal expansion of Alloy 200
+    linearExpansionTableK = [
+        73.15,
+        173.15,
+        373.15,
+        473.15,
+        573.15,
+        673.15,
+        773.15,
+        873.15,
+        973.15,
+        1073.15,
+        1173.15,
+        1273.15,
+    ]
 
-        Parameters
-        ----------
-        Tk : float, optional
-            temperature in degrees Kelvin
-        Tc : float, optional
-            temperature in degrees Celsius
-
-        Returns
-        -------
-        linearExpansionPercent : float
-            percent linear thermal expansion of Alloy 200 (%)
-        """
-        Tc = getTc(Tc, Tk)
-        self.checkTempRange(-200, 1000, Tc, "linear expansion percent")
-        linearExpansionPercent = self.calcLinearExpansionPercentMetal(T=Tc)
-        return linearExpansionPercent
+    linearExpansionTable = [
+        10.1e-6,
+        11.3e-6,
+        13.3e-6,
+        13.9e-6,
+        14.3e-6,
+        14.8e-6,
+        15.2e-6,
+        15.6e-6,
+        15.8e-6,
+        16.2e-6,
+        16.5e-6,
+        16.7e-6,
+    ]
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""
@@ -88,10 +100,10 @@ class Alloy200(Material):
         linearExpansion : float
             instantaneous coefficient of thermal expansion of Alloy 200 (1/C)
         """
-        Tc = getTc(Tc, Tk)
-        self.checkTempRange(-200, 1000, Tc, "linear expansion")
-        linearExpansion = self.calcLinearExpansionMetal(T=Tc)
-        return linearExpansion
+        Tk = getTk(Tc, Tk)
+        self.checkPropertyTempRange("linear expansion", Tk)
+
+        return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def setDefaultMassFracs(self):
         """
@@ -107,5 +119,4 @@ class Alloy200(Material):
             nickleMassFrac -= assumedMassFrac
 
         self.setMassFrac("NI", nickleMassFrac)
-
         self.p.refDens = 8.9

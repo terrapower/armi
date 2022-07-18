@@ -370,7 +370,6 @@ class ArmiPlugin:
         armi.settings.setting.Setting
         armi.settings.setting.Option
         armi.settings.setting.Default
-
         """
         return []
 
@@ -404,6 +403,7 @@ class ArmiPlugin:
         list
             Query objects to attach
         """
+        return []
 
     @staticmethod
     @HOOKSPEC
@@ -600,10 +600,93 @@ class ArmiPlugin:
         """
 
 
+class UserPlugin(ArmiPlugin):
+    """
+    A variation on the ArmiPlugin meant to be created at runtime, from the ``userPlugins`` setting.
+
+    This is obviously a more limited use-case than the usual ArmiPlugin, as those are meant
+    to be defined at import time, instead of run time. As such, this class has some built-in
+    tooling to limit how these run-time plugins are used. They are meant to be more limited.
+
+    Notes
+    -----
+    The usual ArmiPlugin is much more flexible, if the UserPlugin does not support what
+    you want to do, just use an ArmiPlugin.
+    """
+
+    def __init__(self, *args, **kwargs):
+        ArmiPlugin.__init__(self, *args, **kwargs)
+        self.__enforceLimitations()
+
+    def __enforceLimitations(self):
+        """
+        This method enforces that UserPlugins are more limited than regular ArmiPlugins.
+
+        UserPlugins are different from regular plugins in that they can be defined during
+        a run, and as such, we want to limit how flexible they are, so we can correctly
+        corral their side effects during a run.
+        """
+        if issubclass(self.__class__, UserPlugin):
+            assert (
+                len(self.__class__.defineParameterRenames()) == 0
+            ), "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
+            assert (
+                len(self.__class__.defineSettings()) == 0
+            ), "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
+            # NOTE: These are the class methods that we are staunchly _not_ allowing people
+            # to change in this class. If you need these, please use a regular ArmiPlugin.
+            self.defineParameterRenames = lambda: {}
+            self.defineSettings = lambda: []
+            self.defineSettingsValidators = lambda: []
+
+    @staticmethod
+    @HOOKSPEC
+    def defineParameterRenames():
+        """
+        Prevents parameter renames.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not generate parameter renames,
+        so that they are able to be added to the plugin stack during run time.
+        """
+        return {}
+
+    @staticmethod
+    @HOOKSPEC
+    def defineSettings():
+        """
+        Prevents new settings.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not define new settings,
+        so that they are able to be added to the plugin stack during run time.
+        """
+        return []
+
+    @staticmethod
+    @HOOKSPEC
+    def defineSettingsValidators(inspector):
+        """
+        Prevents new settings validators.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not define new settings,
+        so that they are able to be added to the plugin stack during run time.
+        """
+        return []
+
+
 def getNewPluginManager() -> pluginManager.ArmiPluginManager:
-    """
-    Return a new plugin manager with all of the hookspecs pre-registered.
-    """
+    """Return a new plugin manager with all of the hookspecs pre-registered."""
     pm = pluginManager.ArmiPluginManager("armi")
     pm.add_hookspecs(ArmiPlugin)
     return pm

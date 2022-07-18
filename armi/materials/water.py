@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 import math
 
-from armi.utils.units import getTk
-from armi.nucDirectory import elements
 from armi.materials.material import Fluid
-from armi.utils import units
-from armi.nucDirectory import thermalScattering as tsl
+from armi.nucDirectory import elements
 from armi.nucDirectory import nuclideBases as nb
+from armi.nucDirectory import thermalScattering as tsl
+from armi.utils import units
+from armi.utils.units import getTk
 
 
 class Water(Fluid):
-
     """
     Water
 
@@ -122,7 +120,6 @@ class Water(Fluid):
         IAPWS-IF97 is now the international standard for calculations in the
         steam power industry
         """
-
         tau = self.tau(Tc=Tc, Tk=Tk)
         T_ratio = self.TEMPERATURE_CRITICAL_K / getTk(Tc=Tc, Tk=Tk)
 
@@ -321,7 +318,6 @@ class Water(Fluid):
 
 
 class SaturatedWater(Water):
-
     """
     Saturated Water
 

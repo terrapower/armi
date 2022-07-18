@@ -18,14 +18,22 @@ Zirconium metal
 
 from numpy import interp
 
-from armi.utils.units import getTk, getTc
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Zr(Material):
     """Metallic zirconium"""
 
     name = "Zirconium"
+
+    propertyValidTemperature = {
+        "density": ((293, 1800), "K"),
+        "linear expansion": ((293, 1800), "K"),
+        "linear expansion percent": ((293, 1800), "K"),
+        "thermal conductivity": ((298, 2000), "K"),
+    }
+
     references = {
         "density": "AAA Materials Handbook 45803",
         "thermal conductivity": "AAA Fuels handbook. ANL",
@@ -81,9 +89,8 @@ class Zr(Material):
 
     def _computeReferenceDensity(self, Tk=None, Tc=None):
         r"""AAA Materials Handbook 45803"""
-        Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(293, 1800, Tk, "density")
+        self.checkPropertyTempRange("density", Tk)
 
         if Tk < 1135:
             return -3.29256e-8 * Tk ** 2 - 9.67145e-5 * Tk + 6.60176
@@ -96,9 +103,8 @@ class Zr(Material):
 
         Reference: AAA Fuels handbook. ANL.
         """
-        Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(298, 2000, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
         return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk ** 2) + (2992.0 / Tk)
 
     def linearExpansion(self, Tk=None, Tc=None):
@@ -109,9 +115,8 @@ class Zr(Material):
 
         See page 400
         """
-        Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(293, 1800, Tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tk)
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
@@ -122,9 +127,8 @@ class Zr(Material):
 
         See page 400
         """
-        Tc = getTc(Tc, Tk)
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(293, 1800, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
 
         if Tk >= 293 and Tk < 1137:
             return (

@@ -1529,6 +1529,32 @@ class Block(composites.Composite):
         """
         raise NotImplementedError
 
+    def getPinCoordinates(self):
+        """
+        Compute the local centroid coordinates of any pins in this block.
+
+        The pins must have a CLAD-flagged component for this to work.
+
+        Returns
+        -------
+        localCoordinates : list
+            list of (x,y,z) pairs representing each pin in the order they are listed as children
+
+        Notes
+        -----
+        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
+        options are needed. Only works if pins have clad.
+        """
+        coords = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                coords.extend(
+                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
+                )
+            else:
+                coords.append(clad.spatialLocator.getLocalCoordinates())
+        return coords
+
 
 class HexBlock(Block):
 
@@ -1596,6 +1622,11 @@ class HexBlock(Block):
         This method can handle assembly rotations by using the *pinLocation* parameter.
         """
         numPins = self.getNumPins()
+        if not numPins or numPins != len(powers):
+            raise ValueError(
+                f"Invalid power data for {self} with {numPins} pins."
+                f" Got {len(powers)} entries in powers: {powers}"
+            )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = numpy.zeros(numPins)
@@ -1923,32 +1954,6 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def getPinCoordinates(self):
-        """
-        Compute the local centroid coordinates of any pins in this block.
-
-        The pins must have a CLAD-flagged component for this to work.
-
-        Returns
-        -------
-        localCoordinates : list
-            list of (x,y,z) pairs representing each pin in the order they are listed as children
-
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed. Only works if pins have clad.
-        """
-        coords = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                coords.extend(
-                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
-                )
-            else:
-                coords.append(clad.spatialLocator.getLocalCoordinates())
-        return coords
-
     def autoCreateSpatialGrids(self):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children
@@ -1970,10 +1975,7 @@ class HexBlock(Block):
         ------
         ValueError
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
-
-
         """
-
         # Check multiplicities...
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 

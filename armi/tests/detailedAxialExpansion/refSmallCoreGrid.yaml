@@ -12,7 +12,7 @@ core:
         MC  PC  MC  MC  OC  SH
           IC  IC  MC  MC  OC
             IC  IC  MC  MC  SH
-          IC  LB  IC  MC  OC
+          IC  LA  IC  MC  OC
             IC  IC  SC  MC  SH
               LA  IC  MC  OC
             IC  IC  IC  MC  SH

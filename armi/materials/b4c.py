@@ -26,6 +26,8 @@ class B4C(material.Material):
     name = "B4C"
     enrichedNuclide = "B10"
 
+    propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
+
     def applyInputParams(
         self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs
     ):
@@ -173,7 +175,7 @@ class B4C(material.Material):
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(25, 500, Tc, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tc)
         deltaT = Tc - 25
-        dLL = deltaT * 4.5e-6 * 100  # percent
-        return dLL
+        dLL = deltaT * 4.5e-6
+        return dLL * 100

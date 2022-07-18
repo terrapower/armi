@@ -725,13 +725,26 @@ class HexReactorTests(ReactorTests):
             self.assertNotEqual(aLoc[i], a.spatialLocator)
             self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
+    def test_removeAssembliesInRingByCount(self):
+        self.assertEqual(self.r.core.getNumRings(), 9)
+        self.r.core.removeAssembliesInRing(9)
+        self.assertEqual(self.r.core.getNumRings(), 8)
+
+    def test_removeAssembliesInRingHex(self):
+        """
+        Since the test reactor is hex, we need to use the overrideCircularRingMode option
+        to remove assemblies from it.
+        """
+        self.assertEqual(self.r.core.getNumRings(), 9)
+        for ringNum in range(6, 10):
+            self.r.core.removeAssembliesInRing(ringNum, overrideCircularRingMode=True)
+        self.assertEqual(self.r.core.getNumRings(), 5)
+
     def test_getNozzleTypes(self):
         nozzleTypes = self.r.core.getNozzleTypes()
         expectedTypes = ["Inner", "Outer", "lta", "Default"]
-        for nozzle in nozzleTypes:
-            self.assertTrue(
-                nozzle in expectedTypes, f"nozzleType {nozzle} not in {expectedTypes}"
-            )
+        for nozzle in expectedTypes:
+            self.assertIn(nozzle, nozzleTypes)
 
     def test_createAssemblyOfType(self):
         """Test creation of new assemblies."""
@@ -795,6 +808,12 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(0, len(self.r.core.blocksByName))
         self.assertEqual(0, len(self.r.core.assembliesByName))
+
+    def test_pinCoordsAllBlocks(self):
+        """Make sure all blocks can get pin coords."""
+        for b in self.r.core.getBlocks():
+            coords = b.getPinCoordinates()
+            self.assertGreater(len(coords), -1)
 
 
 class CartesianReactorTests(ReactorTests):
