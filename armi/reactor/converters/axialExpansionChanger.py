@@ -524,9 +524,10 @@ def _determineLinked(componentA, componentB):
             else:
                 linked = True
         except NotImplementedError:
-            runLog.debug(
+            runLog.warning(
                 "Components {0} and {1} do not have a 'getCircleInnerDiameter' method. "
-                "Instead of crashing and raising an error, I'm just going to assume they aren't linked."
+                "Instead of crashing and raising an error, I'm just going to assume they aren't linked.",
+                single=True,
             )
             linked = False
 
