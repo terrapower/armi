@@ -362,7 +362,7 @@ class Block(composites.Composite):
             flux = (flux + lastFlux) / 2.0
         return flux
 
-    def setPinMgFluxes(self, fluxes, numPins, adjoint=False, gamma=False):
+    def setPinMgFluxes(self, fluxes, adjoint=False, gamma=False):
         """
         Store the pin-detailed multi-group neutron flux
 
@@ -375,13 +375,8 @@ class Block(composites.Composite):
             The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for pin i.
             Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
-
-        numPins : int
-            The number of pins in this block.
-
         adjoint : bool, optional
             Whether to set real or adjoint data.
-
         gamma : bool, optional
             Whether to set gamma or neutron data.
 
@@ -574,8 +569,8 @@ class Block(composites.Composite):
             raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
 
-    def setBuLimitInfo(self, cs):
-        r"""Sets burnup limit based on igniter, feed, etc.  (will implement general grouping later)"""
+    def setBuLimitInfo(self):
+        r"""Sets burnup limit based on igniter, feed, etc."""
         if self.p.buRate == 0:
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
@@ -1034,7 +1029,7 @@ class Block(composites.Composite):
 
         self.setNumberDensities(newDensities)
 
-    def getComponentAreaFrac(self, typeSpec, exact=True):
+    def getComponentAreaFrac(self, typeSpec):
         """
         Returns the area fraction of the specified component(s) among all components in the block.
 
@@ -1042,8 +1037,6 @@ class Block(composites.Composite):
         ----------
         typeSpec : Flags or list of Flags
             Component types to look up
-        exact : bool, optional
-            Match exact names only
 
         Examples
         ---------
@@ -1055,7 +1048,6 @@ class Block(composites.Composite):
         float
             The area fraction of the component.
         """
-
         tFrac = sum(f for (c, f) in self.getVolumeFractions() if c.hasFlags(typeSpec))
 
         if tFrac:
@@ -1552,6 +1544,33 @@ class Block(composites.Composite):
         """
         self.targetComponent = targetComponent
 
+    def getPinCoordinates(self):
+        """
+        Compute the local centroid coordinates of any pins in this block.
+
+        The pins must have a CLAD-flagged component for this to work.
+
+        Returns
+        -------
+        localCoordinates : list
+            list of (x,y,z) pairs representing each pin in the order they are listed as children
+
+        Notes
+        -----
+        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
+        options are needed. Only works if pins have clad.
+        """
+        coords = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                coords.extend(
+                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
+                )
+            else:
+                coords.append(clad.spatialLocator.getLocalCoordinates())
+        return coords
+
+
 class HexBlock(Block):
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
@@ -1618,6 +1637,11 @@ class HexBlock(Block):
         This method can handle assembly rotations by using the *pinLocation* parameter.
         """
         numPins = self.getNumPins()
+        if not numPins or numPins != len(powers):
+            raise ValueError(
+                f"Invalid power data for {self} with {numPins} pins."
+                f" Got {len(powers)} entries in powers: {powers}"
+            )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = numpy.zeros(numPins)
@@ -1945,68 +1969,28 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def getPinCoordinates(self):
-        """
-        Compute the centroid coordinates of any pins in this block.
-
-        Returns
-        -------
-        localCoordinates : list
-            list of (x,y,z) pairs representing each pin in the order they are listed as children
-
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed.
-
-        A block with fully-defined pins could just use their individual spatialLocators in a
-        block-level 2-D grid. However most cases do not have this to minimize overhead and maximize
-        speed. Thus we want to just come up with a uniform mesh of pins if they're not explicitly
-        placed in the grid.
-
-        """
-        return self._getPinCoordinatesHex()
-
-    def _getPinCoordinatesHex(self):
-        pinPitch = self.getPinPitch()
-        if pinPitch is None:
-            return []
-
-        coordinates = []
-        numPins = self.getNumPins()
-        numPinRings = hexagon.numRingsToHoldNumCells(numPins)
-
-        # pin lattice is rotated 30 degrees from assembly lattice
-        grid = grids.HexGrid.fromPitch(pinPitch, numPinRings, self, pointedEndUp=True)
-        for ring in range(numPinRings):
-            for pos in range(grid.getPositionsInRing(ring + 1)):
-                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
-                xyz = grid[i, j, 0].getLocalCoordinates()
-                coordinates.append(xyz)
-        return coordinates
-
     def autoCreateSpatialGrids(self):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children
         the corresponding spatialLocators (if it is a simple block).
 
-        In this case, a simple block would
-        be one that has either multiplicity of components equal to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly into a given number of hex rings.
-        Otherwise, do not create a grid for this block.
+        In this case, a simple block would be one that has either multiplicity of
+        components equal to 1 or N but no other multiplicities. Also, this should only
+        happen when N fits exactly into a given number of hex rings.  Otherwise, do not
+        create a grid for this block.
 
         Notes
         -----
         If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
         of the pin positions, otherwise, locator is the center (0,0).
 
+        Also, this only works on blocks that have 'flat side up'.
+
         Raises
         ------
         ValueError
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
-
-
         """
-
         # Check multiplicities...
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
@@ -2017,10 +2001,14 @@ class HexBlock(Block):
                 )
             )
 
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
-        grid = grids.HexGrid.fromPitch(self.getPinPitch(cold=True), numRings=0)
+        # note that it's the pointed end of the cell hexes that are up (but the
+        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
+        grid = grids.HexGrid.fromPitch(
+            self.getPinPitch(cold=True), numRings=0, pointedEndUp=True
+        )
+        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)

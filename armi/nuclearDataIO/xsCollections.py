@@ -900,7 +900,7 @@ def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
 
     if not microGroupConstants.any():
         runLog.debug(
-            "Nuclide {} does no have {} microscopic group constants.".format(
+            "Nuclide {} does not have {} microscopic group constants.".format(
                 nuclideName, constantName
             ),
             single=True,

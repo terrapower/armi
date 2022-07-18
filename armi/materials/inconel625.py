@@ -23,6 +23,12 @@ from armi.materials.material import Material
 
 class Inconel625(Material):
     name = "Inconel625"
+    propertyValidTemperature = {
+        "heat capacity": ((221.0, 1093.0), "C"),
+        "linear expansion": ((21.0, 927.0), "C"),
+        "linear expansion percent": ((21.0, 927.0), "C"),
+        "thermal conductivity": ((21.0, 982.0), "C"),
+    }
     references = {
         "mass fractions": "http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf",
         "density": "http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf",
@@ -72,7 +78,6 @@ class Inconel625(Material):
         Returns
         -------
         list of length 'power' containing the polynomial fit coefficients for thermal conductivity.
-
         """
         Tc = [21.0, 38.0, 93.0, 204.0, 316.0, 427.0, 538.0, 649.0, 760.0, 871.0, 982.0]
         k = [9.8, 10.1, 10.8, 12.5, 14.1, 15.7, 17.5, 19.0, 20.8, 22.8, 25.2]
@@ -93,10 +98,9 @@ class Inconel625(Material):
         -------
         thermalCond : float
             thermal conductivity in W/m/C
-
         """
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(21.0, 982.0, Tc, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tc)
         thermalCond = 2.7474e-6 * Tc ** 2 + 0.012907 * Tc + 9.62532
         return thermalCond  # W/m-C
 
@@ -114,7 +118,6 @@ class Inconel625(Material):
         Returns
         -------
         list of length 'power' containing the polynomial fit coefficients for heat capacity.
-
         """
         Tc = [
             21.0,
@@ -159,10 +162,9 @@ class Inconel625(Material):
         -------
         heatCapacity : float
             heat capacity in J/kg/C
-
         """
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(21.0, 1093.0, Tc, "heat capacity")
+        self.checkPropertyTempRange("heat capacity", Tc)
         heatCapacity = -5.3777e-6 * Tc ** 2 + 0.25 * Tc + 404.26
         return heatCapacity  # J/kg-C
 
@@ -182,7 +184,6 @@ class Inconel625(Material):
         Returns
         -------
         list of length 'power' containing the polynomial fit coefficients for linearExpansionPercent
-
         """
         refTempC = getTc(None, Tk=self.p.refTempK)
         Tc = [93.0, 204.0, 316.0, 427.0, 538.0, 649.0, 760.0, 871.0, 927.0]
@@ -223,10 +224,9 @@ class Inconel625(Material):
         Returns
         -------
         linExpPercent in %-m/m/C
-
         """
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(21.0, 927.0, Tc, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tc)
         linExpPercent = 5.083e-7 * Tc ** 2 + 1.125e-3 * Tc - 1.804e-2
         return linExpPercent
 
@@ -252,9 +252,8 @@ class Inconel625(Material):
         Returns
         -------
         linExp in m/m/C
-
         """
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(21.0, 927.0, Tc, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", Tc)
         linExp = 1.0166e-8 * Tc + 1.125e-5
         return linExp

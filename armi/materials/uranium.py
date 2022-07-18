@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Uranium metal
 
@@ -21,23 +20,20 @@ Much info is from [AAAFuels]_.
 .. [AAAFuels]  Kim, Y S, and Hofman, G L. AAA fuels handbook.. United States: N. p., 2003. Web. doi:10.2172/822554. .
 """
 
-from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Uranium(Material):
     name = "Uranium"
-    references = {
-        "thermal conductivity": ["AAA Fuels Handbook by YS Kim and G.L. Hofman, ANL"]
-    }
 
     materialIntro = ""
-
-    propertyUnits = {"thermal conductivity": "W/m-K"}
 
     propertyNotes = {"thermal conductivity": ""}
 
     propertyRawData = {"thermal conductivity": ""}
+
+    propertyUnits = {"thermal conductivity": "W/m-K"}
 
     propertyEquation = {
         "thermal conductivity": "21.73 + 0.01591T + 5.907&#215;10<super>-6</super>T<super>2</super>"
@@ -45,12 +41,14 @@ class Uranium(Material):
 
     propertyValidTemperature = {"thermal conductivity": ((255.4, 1173.2), "K")}
 
+    references = {
+        "thermal conductivity": ["AAA Fuels Handbook by YS Kim and G.L. Hofman, ANL"]
+    }
+
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """The thermal conductivity of pure U in W-m/K."""
         Tk = getTk(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature[
-            "thermal conductivity"
-        ][0]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
+
         kU = 21.73 + (0.01591 * Tk) + (0.000005907 * Tk ** 2)
         return kU

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple sodium material."""
+"""Simple sodium material"""
 
 from armi.materials import material
 from armi import runLog
@@ -36,12 +36,18 @@ class Sodium(material.Fluid):
 
     name = "Sodium"
 
+    propertyValidTemperature = {
+        "density": ((97.85, 2230.55), "C"),
+        "enthalpy": ((371.0, 2000.0), "K"),
+        "thermal conductivity": ((3715, 1500), "K"),
+    }
+
     def setDefaultMassFracs(self):
         """It's just sodium"""
         self.setMassFrac("NA", 1.0)
         self.p.refDens = 0.968
 
-    def density(self, Tk=None, Tc=None, check_range=True):
+    def density(self, Tk=None, Tc=None):
         """
         Returns density of Sodium in g/cc.
 
@@ -53,9 +59,6 @@ class Sodium(material.Fluid):
             temperature in degrees Kelvin
         Tc : float, optional
             temperature in degrees Celsius
-        check_range : Boolean, optional
-            Set check_range=False to avoid "zillions" of print-out warnings that occur if
-            the input temperature (Tc or Tk) is out of the applicability range of properties.
 
         Returns
         -------
@@ -64,10 +67,9 @@ class Sodium(material.Fluid):
         """
         Tk = getTk(Tc, Tk)
         Tc = getTc(Tc, Tk)
-        if check_range:
-            self.checkTempRange(97.85, 2230.55, Tc, "density")
+        self.checkPropertyTempRange("density", Tc)
 
-        if check_range and (Tc is not None) and (Tc <= 97.72):
+        if (Tc is not None) and (Tc <= 97.72):
             runLog.warning(
                 "Sodium frozen at Tc: {0}".format(Tc),
                 label="Sodium frozen at Tc={0}".format(Tc),
@@ -98,7 +100,7 @@ class Sodium(material.Fluid):
         From [ANL-RE-95-2]_, Table 1.1-2.
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(371.0, 2000.0, Tk, "enthalpy")
+        self.checkPropertyTempRange("enthalpy", Tk)
         enthalpy = (
             -365.77
             + 1.6582 * Tk
@@ -129,7 +131,7 @@ class Sodium(material.Fluid):
 
         """
         Tc = getTc(Tc, Tk)
-        self.checkTempRange(3715, 1500, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
             124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
         )

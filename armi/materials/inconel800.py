@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Incoloy 800."""
+"""Incoloy 800"""
 
 from armi.utils.units import getTc
 from armi.materials.material import Material
@@ -65,7 +65,6 @@ class Inconel800(Material):
         Returns
         -------
         %dLL(T) in m/m/K
-
         """
         Tc = getTc(Tc, Tk)
         refTempC = getTc(Tk=self.p.refTempK)
@@ -86,13 +85,9 @@ class Inconel800(Material):
         Returns
         -------
         mean coefficient of thermal expansion in m/m/C
-
         """
         Tc = getTc(Tc, Tk)
-        (TLowerLimit, TUpperLimit) = self.propertyValidTemperature["thermal expansion"][
-            0
-        ]
-        self.checkTempRange(TLowerLimit, TUpperLimit, Tc, "thermal expansion")
+        self.checkPropertyTempRange("thermal expansion", Tc)
         return (
             2.52525e-14 * Tc ** 3
             - 3.77814e-11 * Tc ** 2

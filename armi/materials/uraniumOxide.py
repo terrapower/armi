@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Uranium Oxide properties. 
 
@@ -22,16 +21,16 @@ uses data from [#ornltm2000]_.
 .. [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
     et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 """
-import math
 import collections
+import math
 
 from numpy import interp
 
-from armi.utils.units import getTk
-from armi.materials import material
 from armi import runLog
-from armi.nucDirectory import thermalScattering as tsl
+from armi.materials import material
 from armi.nucDirectory import nuclideBases as nb
+from armi.nucDirectory import thermalScattering as tsl
+from armi.utils.units import getTk
 
 
 HeatCapacityConstants = collections.namedtuple(
@@ -41,20 +40,41 @@ HeatCapacityConstants = collections.namedtuple(
 
 class UraniumOxide(material.FuelMaterial):
     name = "Uranium Oxide"
-    thermalScatteringLaws = (
-        tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
-        tsl.byNbAndCompound[nb.byName["O"], tsl.UO2],
+
+    enrichedNuclide = "U235"
+
+    # ORNL/TM-2000/351 section 4.3
+    heatCapacityConstants = HeatCapacityConstants(
+        c1=302.27, c2=8.463e-3, c3=8.741e7, theta=548.68, Ea=18531.7
     )
+
+    __meltingPoint = 3123.0
+
+    propertyUnits = {"heat capacity": "J/mol-K"}
+
+    propertyValidTemperature = {
+        "density": ((300, 3100), "K"),
+        "heat capacity": ((298.15, 3120), "K"),
+        "linear expansion": ((273, 3120), "K"),
+        "linear expansion percent": ((273, __meltingPoint), "K"),
+        "thermal conductivity": ((300, 3000), "K"),
+    }
+
     references = {
         "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
         "linear expansion": "Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
         "heat capacity": "ORNL/TM-2000/351",
     }
-    propertyUnits = {"heat capacity": "J/mol-K"}
 
     theoreticalDensityFrac = 1.0  # Default value
-    """Thermal conductivity values taken from:
-    Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999"""
+
+    thermalScatteringLaws = (
+        tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
+        tsl.byNbAndCompound[nb.byName["O"], tsl.UO2],
+    )
+
+    # Thermal conductivity values taken from:
+    # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
     thermalConductivityTableK = [
         300,
         600,
@@ -80,13 +100,6 @@ class UraniumOxide(material.FuelMaterial):
         1.847,
         1.718,
     ]
-
-    # ORNL/TM-2000/351 section 4.3
-    heatCapacityConstants = HeatCapacityConstants(
-        c1=302.27, c2=8.463e-3, c3=8.741e7, theta=548.68, Ea=18531.7
-    )
-
-    enrichedNuclide = "U235"
 
     def adjustTD(self, val: float) -> None:
         self.theoreticalDensityFrac = val
@@ -147,7 +160,7 @@ class UraniumOxide(material.FuelMaterial):
 
         From [#ornltm2000]_.
         """
-        return 3123.0
+        return self.__meltingPoint
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -156,45 +169,9 @@ class UraniumOxide(material.FuelMaterial):
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(300, 3100, Tk, "thermal conductivity")
+        self.checkPropertyTempRange("density", Tk)
+
         return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
-
-    def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Thermal conductivity
-
-        Ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics
-        simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
-        """
-        Tk = getTk(Tc, Tk)
-        self.checkTempRange(300, 3000, Tk, "density")
-        return interp(Tk, self.thermalConductivityTableK, self.thermalConductivityTable)
-
-    def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Linear expansion coefficient.
-
-        Curve fit from data in [#ornltm2000]_"""
-        Tk = getTk(Tc, Tk)
-        self.checkTempRange(273, 3120, Tk, "linear expansion")
-        return 1.06817e-12 * Tk ** 2 - 1.37322e-9 * Tk + 1.02863e-5
-
-    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        Return dL/L
-
-        From Section 3.3 of [#ornltm2000]_
-        """
-        Tk = getTk(Tc, Tk)
-        self.checkTempRange(273, self.meltingPoint(), Tk, "linear expansion percent")
-        if Tk >= 273.0 and Tk < 923.0:
-            return (
-                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk ** 2 + 4.391e-13 * Tk ** 3
-            ) * 100.0
-        else:
-            return (
-                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk ** 2 + 1.219e-12 * Tk ** 3
-            ) * 100.0
 
     def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -203,7 +180,8 @@ class UraniumOxide(material.FuelMaterial):
         From Section 4.3 in  [#ornltm2000]_
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(298.15, 3120, Tk, "heat capacity")
+        self.checkPropertyTempRange("heat capacity", Tk)
+
         hcc = self.heatCapacityConstants
         # eq 4.2
         specificHeatCapacity = (
@@ -215,6 +193,47 @@ class UraniumOxide(material.FuelMaterial):
             + hcc.c3 * hcc.Ea * math.exp(-hcc.Ea / Tk) / Tk ** 2
         )
         return specificHeatCapacity
+
+    def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Linear expansion coefficient.
+
+        Curve fit from data in [#ornltm2000]_
+        """
+        Tk = getTk(Tc, Tk)
+        self.checkPropertyTempRange("linear expansion", Tk)
+
+        return 1.06817e-12 * Tk ** 2 - 1.37322e-9 * Tk + 1.02863e-5
+
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Return dL/L
+
+        From Section 3.3 of [#ornltm2000]_
+        """
+        Tk = getTk(Tc, Tk)
+        self.checkPropertyTempRange("linear expansion percent", Tk)
+
+        if Tk >= 273.0 and Tk < 923.0:
+            return (
+                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk ** 2 + 4.391e-13 * Tk ** 3
+            ) * 100.0
+        else:
+            return (
+                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk ** 2 + 1.219e-12 * Tk ** 3
+            ) * 100.0
+
+    def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Thermal conductivity
+
+        Ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics
+        simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
+        """
+        Tk = getTk(Tc, Tk)
+        self.checkPropertyTempRange("thermal conductivity", Tk)
+
+        return interp(Tk, self.thermalConductivityTableK, self.thermalConductivityTable)
 
 
 class UO2(UraniumOxide):

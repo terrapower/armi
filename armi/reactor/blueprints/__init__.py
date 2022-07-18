@@ -68,8 +68,6 @@ text representations of input and objects in the code.
 
 
 """
-from collections import OrderedDict
-import collections
 import copy
 import os
 import pathlib
@@ -86,9 +84,7 @@ from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
 from armi import plugins
 from armi import runLog
-from armi import settings
 from armi.utils.customExceptions import InputError
-from armi.nucDirectory import elements
 from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry

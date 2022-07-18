@@ -645,13 +645,13 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             {"inputHeightsConsideredHot": True},
         )
-        self.stdAssems = [a for a in r.core.getAssemblies()]
+        self.stdAssems = [a for a in r.core.getAssemblies(includeAll=True)]
 
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             {"inputHeightsConsideredHot": False},
         )
-        self.testAssems = [a for a in rCold.core.getAssemblies()]
+        self.testAssems = [a for a in rCold.core.getAssemblies(includeAll=True)]
 
     def test_coldAssemblyHeight(self):
         """block heights are cold and should be expanded
@@ -689,7 +689,8 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     assertType(
         bStd.getHeight(),
         bExp.getHeight(),
-        msg="Std Block {0} ({1}) and Exp Block {2} ({3}) should have {4:s} heights!".format(
+        msg="Assembly: {0} -- Std Block {1} ({2}) and Exp Block {3} ({4}) should have {5:s} heights!".format(
+            bStd.parent,
             bStd,
             bStd.getHeight(),
             bExp,

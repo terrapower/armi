@@ -1273,7 +1273,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
 
-    def restorePreviousGeometry(self, cs, r):
+    def restorePreviousGeometry(self, r):
         """Undo the changes made by convert by going back to 1/3 core."""
         # remove the assemblies that were added when the conversion happened.
         if bool(self.getNewAssembliesAdded()):
