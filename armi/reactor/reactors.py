@@ -2237,8 +2237,8 @@ class Core(composites.Composite):
 
         """
         if not cs["inputHeightsConsideredHot"]:
-            runLog.info(
-                "Axially expanding all (except control) assemblies from Tinput to Thot."
+            runLog.header(
+                "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
             )
             axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
             for a in self.getAssemblies(includeAll=True):
