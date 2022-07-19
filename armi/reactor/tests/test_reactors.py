@@ -776,6 +776,24 @@ class HexReactorTests(ReactorTests):
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
 
+    def test_createAssemblyOfTypeExpandedCore(self):
+        """Test creation of new assemblies in an expanded core."""
+        # change the mesh of inner blocks
+        mesh = self.r.core.p.referenceBlockAxialMesh[1:]
+        lastIndex = len(mesh) - 1
+        mesh = [val + 5 for val in mesh]
+        mesh[0] -= 5
+        mesh[lastIndex] -= 5
+
+        # expand the core
+        self.r.core.p.referenceBlockAxialMesh = [0] + mesh
+        for a in self.r.core:
+            a.setBlockMesh(mesh)
+        aType = self.r.core.getFirstAssembly(Flags.FUEL).getType()
+
+        # demonstrate we can still create assemblies
+        self.assertTrue(self.r.core.createAssemblyOfType(aType))
+
     def test_getAvgTemp(self):
         t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
         self.assertAlmostEqual(t0, 459.267, delta=0.01)
