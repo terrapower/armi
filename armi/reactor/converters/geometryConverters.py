@@ -326,6 +326,9 @@ class HexToRZThetaConverter(GeometryConverter):
             * ``Axial Coordinates`` --  use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialCoordinates`
             * ``Axial Bins`` -- use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialBins`
 
+        homogenizeAxiallyByFlags
+            Boolean that if set to True will ignore the `axialConversionType` input and determine a mesh based on the
+            material boundaries for each RZ region axially.
 
     expandReactor : bool
         If True, the HEX-Z reactor will be expanded to full core geometry prior to converting to the RZT reactor.
@@ -385,16 +388,24 @@ class HexToRZThetaConverter(GeometryConverter):
         runLog.info("Generating mesh coordinates for the reactor conversion")
         self._radialMeshConversionType = self.converterSettings["radialConversionType"]
         self._axialMeshConversionType = self.converterSettings["axialConversionType"]
+        self._homogenizeAxiallyByFlags = self.converterSettings[
+            "homogenizeAxiallyByFlags"
+        ]
         converter = None
         if self._radialMeshConversionType == self._MESH_BY_RING_COMP:
-            if self._axialMeshConversionType == self._MESH_BY_AXIAL_COORDS:
-                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
+            if self._homogenizeAxiallyByFlags:
+                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
                     self.converterSettings
                 )
-            elif self._axialMeshConversionType == self._MESH_BY_AXIAL_BINS:
-                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-                    self.converterSettings
-                )
+            else:
+                if self._axialMeshConversionType == self._MESH_BY_AXIAL_COORDS:
+                    converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
+                        self.converterSettings
+                    )
+                elif self._axialMeshConversionType == self._MESH_BY_AXIAL_BINS:
+                    converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
+                        self.converterSettings
+                    )
         if converter is None:
             raise ValueError(
                 "No mesh converter exists for `radialConversionType` and `axialConversionType` settings "
@@ -860,7 +871,7 @@ class HexToRZThetaConverter(GeometryConverter):
                     msg + "Modify mesh converter settings before proceeding."
                 )
             else:
-                runLog.important(msg)
+                runLog.extra(msg)
 
         homBlockType = self._getHomogenizedBlockType(numHexBlockByType)
         homBlockTemperature = homBlockTemperature / homBlockVolume
