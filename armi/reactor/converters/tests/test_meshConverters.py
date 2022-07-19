@@ -67,6 +67,22 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
         self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
 
+    def test_meshByRingCompositionAxialFlagsSmallCore(self):
+        expectedRadialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
+        expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
+        expectedThetaMesh = [2 * math.pi]
+
+        meshConvert = (
+            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
+                self._converterSettings
+            )
+        )
+        meshConvert.generateMesh(self.r)
+
+        self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
+        self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
+        self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
+
     def _growReactor(self):
         modifier = geometryConverters.FuelAssemNumModifier(self.o.cs)
         modifier.numFuelAssems = 1
@@ -105,6 +121,23 @@ class TestRZReactorMeshConverter(unittest.TestCase):
 
         meshConvert = (
             meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
+                self._converterSettingsLargerCore
+            )
+        )
+        meshConvert.generateMesh(self.r)
+
+        self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
+        self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
+        self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
+
+    def test_meshByRingCompositionAxialFlagsLargeCore(self):
+        self._growReactor()
+        expectedRadialMesh = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13]
+        expectedAxialMesh = [25.0, 100.0, 175.0]
+        expectedThetaMesh = [2 * math.pi]
+
+        meshConvert = (
+            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
                 self._converterSettingsLargerCore
             )
         )
