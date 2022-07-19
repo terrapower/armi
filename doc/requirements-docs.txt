@@ -35,3 +35,6 @@ docutils<0.18
 
 # used to generate UML diagrams
 pylint==2.7.4
+
+# needed to side step bug: https://github.com/numpy/numpydoc/issues/380
+Jinja2==3.0.1
