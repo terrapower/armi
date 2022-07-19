@@ -1309,8 +1309,9 @@ class Database3(database.Database):
                 # - If not jagged, all top-level ndarrays are the same shape, so it is
                 # probably easier to replace Nones with ndarrays filled with special
                 # values.
-                data = None
-                if parameters.NoDefault not in data:
+                if parameters.NoDefault in data:
+                    data = None
+                else:
                     data, specialAttrs = packSpecialData(data, paramDef.name)
                     attrs.update(specialAttrs)
 
