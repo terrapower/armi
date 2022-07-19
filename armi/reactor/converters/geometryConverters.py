@@ -388,9 +388,9 @@ class HexToRZThetaConverter(GeometryConverter):
         runLog.info("Generating mesh coordinates for the reactor conversion")
         self._radialMeshConversionType = self.converterSettings["radialConversionType"]
         self._axialMeshConversionType = self.converterSettings["axialConversionType"]
-        self._homogenizeAxiallyByFlags = self.converterSettings[
-            "homogenizeAxiallyByFlags"
-        ]
+        self._homogenizeAxiallyByFlags = self.converterSettings.get(
+            "homogenizeAxiallyByFlags", False
+        )
         converter = None
         if self._radialMeshConversionType == self._MESH_BY_RING_COMP:
             if self._homogenizeAxiallyByFlags:
