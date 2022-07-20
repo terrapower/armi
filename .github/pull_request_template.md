@@ -18,11 +18,11 @@
 <!-- Check the code quality -->
 
 - [ ] The code style follows [good practices](https://terrapower.github.io/armi/developer/standards_and_practices.html).
-- [ ] The commit message follows [good practices](https://terrapower.github.io/armi/developer/tooling.html).
+- [ ] The commit message(s) follow [good practices](https://terrapower.github.io/armi/developer/tooling.html).
 
 <!-- Check the project-level cruft -->
 
-- [ ] Note bug fixes and new features in the [release notes](https://terrapower.github.io/armi/release/index.html).
+- [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) are up-to-date with any bug fixes or new features.
 - [ ] The documentation is still up-to-date in the `doc` folder.
 - [ ] The dependencies are still up-to-date in `setup.py`.
 
