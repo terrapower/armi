@@ -260,50 +260,6 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         return mean(tmpMapping)
 
 
-class TestCoreExpansion(Base, unittest.TestCase):
-    """verify core-based expansion changes r.core.p.axialMesh
-
-    Notes
-    -----
-    - Just checks that the mesh changes after expansion.
-    - Actual verification of axial expansion occurs in class TestAxialExpansionHeight
-    """
-
-    def setUp(self):
-        Base.setUp(self)
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-        self.temp = Temperature(self.r.core.refAssem.getTotalHeight())
-        # populate test temperature and percent expansion data
-        self.tempGrid = {}
-        self.tempField = {}
-        self.componentLst = {}
-        self.percents = {}
-        # just use self.tempField[-1], no need to use all steps in temp.tempField
-        for a in self.r.core.getAssemblies(includeBolAssems=True):
-            self.tempGrid[a] = self.temp.tempGrid
-            self.tempField[a] = self.temp.tempField[-1]
-            self.componentLst[a] = [c for b in a for c in b]
-            self.percents[a] = list(0.01 * ones(len(self.componentLst[a])))
-
-    def test_axiallyExpandCoreThermal(self):
-        oldMesh = self.r.core.p.axialMesh
-        self.obj.axiallyExpandCoreThermal(self.r, self.tempGrid, self.tempField)
-        self.assertNotEqual(
-            oldMesh,
-            self.r.core.p.axialMesh,
-            msg="The core mesh has not changed with the expansion. That's not right.",
-        )
-
-    def test_axiallyExpandCorePercent(self):
-        oldMesh = self.r.core.p.axialMesh
-        self.obj.axiallyExpandCorePercent(self.r, self.componentLst, self.percents)
-        self.assertNotEqual(
-            oldMesh,
-            self.r.core.p.axialMesh,
-            msg="The core mesh has not changed with the expansion. That's not right.",
-        )
-
-
 class TestConservation(Base, unittest.TestCase):
     """verify that conservation is maintained in assembly-level axial expansion"""
 
@@ -521,6 +477,28 @@ class TestConservation(Base, unittest.TestCase):
             aclp.p.ztop,
             msg="ACLP ztop has changed. It should not with fuel component only expansion!",
         )
+
+
+class TestManageCoreMesh(unittest.TestCase):
+    """verify that manage core mesh unifies the mesh for detailedAxialExpansion: False"""
+
+    def setUp(self):
+        self.axialExpChngr = AxialExpansionChanger()
+        _o, self.r = loadTestReactor(TEST_ROOT)
+        self.oldAxialMesh = self.r.core.p.axialMesh
+        # expand refAssem by 10%
+        componentLst = [c for b in self.r.core.refAssem for c in b]
+        percents = 0.01 + zeros(len(componentLst))
+        self.axialExpChngr.performPrescribedAxialExpansion(
+            self.r.core.refAssem, componentLst, percents, setFuel=True
+        )
+
+    def test_manageCoreMesh(self):
+        self.axialExpChngr.manageCoreMesh(self.r)
+        newAxialMesh = self.r.core.p.axialMesh
+        # skip first and last entries as they do not change
+        for old, new in zip(self.oldAxialMesh[1:-1], newAxialMesh[1:-1]):
+            self.assertLess(old, new)
 
 
 class TestExceptions(Base, unittest.TestCase):

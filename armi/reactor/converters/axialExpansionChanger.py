@@ -226,53 +226,7 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
-    def axiallyExpandCoreThermal(self, r, tempGrid, tempField):
-        """
-        Perform thermally driven axial expansion of the core.
-
-        Parameters
-        ----------
-        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-            ARMI reactor to be expanded
-        tempGrid : dictionary
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            values --> grid (list of floats)
-        tempField : dictionary
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
-            values --> temperatures (list of floats)
-
-        """
-        for a in r.core.getAssemblies(includeBolAssems=True):
-            self.setAssembly(a)
-            self.expansionData.mapHotTempToComponents(tempGrid[a], tempField[a])
-            self.expansionData.computeThermalExpansionFactors()
-            self.axiallyExpandAssembly()
-
-        self._manageCoreMesh(r)
-
-    def axiallyExpandCorePercent(self, r, components, percents):
-        """
-        Perform axial expansion of the core driven by user-defined expansion percentages.
-
-        Parameters
-        ----------
-        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-            ARMI reactor to be expanded
-        components : dict
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            values --> list of :py:class:`Component <armi.reactor.components.component.Component>` to be expanded
-        percents : dict
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            values --> list of percentages to expand :py:class:`Component <armi.reactor.components.component.Component>` by # pylint: disable=line-too-long
-        """
-        for a in r.core.getAssemblies(includeBolAssems=True):
-            self.setAssembly(a)
-            self.expansionData.setExpansionFactors(components[a], percents[a])
-            self.axiallyExpandAssembly()
-
-        self._manageCoreMesh(r)
-
-    def _manageCoreMesh(self, r):
+    def manageCoreMesh(self, r):
         """
         manage core mesh post assembly-level expansion
 
@@ -288,20 +242,14 @@ class AxialExpansionChanger:
         """
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
-            refAssem = r.core.refAssem
-            axMesh = refAssem.getAxialMesh()
-            for a in r.core.getAssemblies(includeBolAssems=True):
-                # See ARMI Ticket #112 for explanation of the commented out code
-                a.setBlockMesh(
-                    axMesh
-                )  # , conserveMassFlag=True, adjustList=adjustList)
+            for a in r.core.getAssemblies():
+                a.setBlockMesh(r.core.refAssem.getAxialMesh())
 
         oldMesh = r.core.p.axialMesh
-        r.core.updateAxialMesh()  # floating point correction
-        runLog.important(
-            "Adjusted full core fuel axial mesh uniformly "
-            "From {0} cm to {1} cm.".format(oldMesh, r.core.p.axialMesh)
-        )
+        r.core.updateAxialMesh()
+        runLog.important("Updated r.core.p.axialMesh (old, new)")
+        for old, new in zip(oldMesh, r.core.p.axialMesh):
+            runLog.important(f"{old:.6e}\t{new:.6e}")
 
 
 def _conserveComponentMass(b, oldHeight, oldVolume):
@@ -641,7 +589,9 @@ class ExpansionData:
         for b in self._a:
             for c in b:
                 if self._oldHotTemp:
-                    self._expansionFactors[c] = c.getThermalExpansionFactor(T0=self._oldHotTemp[c]) - 1.0
+                    self._expansionFactors[c] = (
+                        c.getThermalExpansionFactor(T0=self._oldHotTemp[c]) - 1.0
+                    )
                 else:
                     self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
