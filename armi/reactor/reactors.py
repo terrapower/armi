@@ -2262,14 +2262,42 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
-        self.p.axialMesh = self.findAllAxialMeshPoints()
-        refAssem = self.refAssem
+        # if we have these params loaded from the database do not overwrite,
+        # otherwise initialize them
+        if not self.p.referenceBlockAxialMesh:
+            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
+                applySubMesh=False
+            )
+        if not self.p.axialMesh:
+            self.p.axialMesh = self.findAllAxialMeshPoints()
 
+        refAssem = self.refAssem
+        # blueprints.assemblies.values need to be populated
+        # In a load from DB case construction may not have been prepped yet.
+        # this normally happens during blueprints constructAssem, but for DB
+        # load this is not called.
+        self.parent.blueprints._prepConstruction(cs)
         if not cs["detailedAxialExpansion"]:
-            for a in self.getAssemblies(includeBolAssems=True):
-                # prepare for mesh snapping during axial expansion
-                a.makeAxialSnapList(refAssem)
+            # prepare core for mesh snapping during axial expansion
+            for a in self.getAssemblies():
+                # No BOL assemblies since the core may have an expanded mesh
+                # That wont work for snap list. BOL (blueprints) assemblies
+                # will have the expansion applied upon core.createAssemblyOfType
+                a.makeAxialSnapList(refAssem=refAssem)
+
+            # Now apply mesh snapping for blueprints
+            # All mesh points should line up with the ref mesh, so first
+            # find the assembly with the finest mesh (it is the ref).
+            finestMeshA = sorted(
+                self.parent.blueprints.assemblies.values(),
+                key=lambda a: len(a),
+                reverse=True,
+            )[0]
+            # Apply an unexpanded ref mesh to the blueprints.Since they are
+            # not yet expanded, the normal core mesh would not line up.
+            # They will get expanded by core.createAssemblyOfType.
+            for a in self.parent.blueprints.assemblies.values():
+                a.makeAxialSnapList(refAssem=finestMeshA)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
