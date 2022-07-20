@@ -114,7 +114,6 @@ class DiffResults:
         self, compType: str, paramName: str, absMean: float, mean: float, absMax: float
     ) -> None:
         """Add a collection of diffs to the diff dictionary if they exceed the tolerance."""
-        # compType = compType[compType.index("/", 2) + 1 :]
         absMean = absMean if absMean > self.tolerance else None
         self.diffs["{}/{} mean(abs(diff))".format(compType, paramName)].append(absMean)
 
@@ -125,6 +124,9 @@ class DiffResults:
         self.diffs["{}/{} max(abs(diff))".format(compType, paramName)].append(absMax)
 
     def addStructureDiffs(self, nDiffs: int) -> None:
+        if not self._structureDiffs:
+            self._structureDiffs = [0]
+
         self._structureDiffs[-1] += nDiffs
 
     def addTimeStep(self, tsName: str) -> None:
@@ -407,7 +409,6 @@ def _diffSpecialData(
         absMean = numpy.nanmean(absDiff)
 
         diffResults.addDiff(compName, paramName, absMean, mean, absMax)
-    return
 
 
 def _diffSimpleData(ref: numpy.ndarray, src: numpy.ndarray, diffResults: DiffResults):
@@ -443,7 +444,6 @@ def _diffSimpleData(ref: numpy.ndarray, src: numpy.ndarray, diffResults: DiffRes
     absMean = numpy.nanmean(absDiff)
 
     diffResults.addDiff(compName, paramName, absMean, mean, absMax)
-    return
 
 
 def _compareComponentData(

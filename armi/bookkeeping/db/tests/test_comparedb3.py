@@ -17,9 +17,15 @@
 import unittest
 
 import h5py
+import numpy as np
 
 from armi.bookkeeping.db import database3
-from armi.bookkeeping.db.compareDB3 import compareDatabases, DiffResults, OutputWriter
+from armi.bookkeeping.db.compareDB3 import (
+    _diffSpecialData,
+    compareDatabases,
+    DiffResults,
+    OutputWriter,
+)
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -157,6 +163,24 @@ class TestCompareDB3(unittest.TestCase):
         diffs = compareDatabases(dbs[0]._fullPath, dbs[1]._fullPath)
         self.assertEqual(len(diffs.diffs), 456)
         self.assertEqual(diffs.nDiffs(), 3)
+
+    def test_diffSpecialData(self):
+        dr = DiffResults(0.01)
+
+        fileName = "test_diffSpecialData.txt"
+        with OutputWriter(fileName) as out:
+            # spin up one example H5 Dataset
+            f1 = h5py.File("test_diffSpecialData1.hdf5", "w")
+            a1 = np.arange(100, dtype="<f8")
+            refData = f1.create_dataset("numberDensities", data=a1)
+
+            # spin up an identical example H5 Dataset
+            f2 = h5py.File("test_diffSpecialData2.hdf5", "w")
+            srcData = f2.create_dataset("numberDensities", data=a1)
+
+            # there should be no difference
+            _diffSpecialData(refData, srcData, out, dr)
+            self.assertEqual(dr.nDiffs(), 0)
 
 
 if __name__ == "__main__":
