@@ -43,8 +43,6 @@ from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
-from armi.reactor.flags import Flags
 
 
 class SystemBlueprint(yamlize.Object):
@@ -74,7 +72,6 @@ class SystemBlueprint(yamlize.Object):
         self.name = name
         self.gridName = gridName
         self.origin = origin
-        self.axialExpChngr = None
 
     @staticmethod
     def _resolveSystemType(typ: str):
@@ -130,7 +127,6 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.info("Constructing the `{}`".format(self.name))
 
-        self.axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
         # TODO: We should consider removing automatic geom file migration.
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
@@ -195,11 +191,6 @@ class SystemBlueprint(yamlize.Object):
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
-            if not cs["inputHeightsConsideredHot"]:
-                if not newAssembly.hasFlags(Flags.CONTROL):
-                    self.axialExpChngr.setAssembly(newAssembly)
-                    self.axialExpChngr.expansionData.computeThermalExpansionFactors()
-                    self.axialExpChngr.axiallyExpandAssembly(thermal=True)
 
             i, j = locationInfo
             loc = container.spatialGrid[i, j, 0]

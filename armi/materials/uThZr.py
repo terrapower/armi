@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cython: profile=False
 """
 Uranium Thorium Zirconium alloy metal
 """
@@ -72,7 +71,6 @@ class UThZr(Material):
         # use vegard's law to mix densities by weight fraction at 50C
         # uzr0 = 1.0/(zrFrac/zr0+(1-zrFrac)/u0)
         uThZr0 = 1.0 / (zrFrac / zr0 + (uFrac) / u0 + thFrac / th0)
-        # runLog.debug('Cold density: {0} g/cc'.format(uzr0))
 
         dLL = self.linearExpansionPercent(Tk=Tk)
 

@@ -29,6 +29,9 @@ class Test_Be9(test_materials._Material_Test, unittest.TestCase):
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
+    def test_propertyValidTemperature(self):
+        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

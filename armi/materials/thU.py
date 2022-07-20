@@ -29,6 +29,7 @@ from armi import runLog
 class ThU(material.Material):
     name = "ThU"
     enrichedNuclide = "U233"
+    propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def getEnrichment(self):
         return self.getMassFrac("U233") / (
@@ -47,14 +48,13 @@ class ThU(material.Material):
         self.setMassFrac("U233", 0.0)
 
     def density(self, Tk=None, Tc=None):
-        Tk = getTk(Tc, Tk)
         """g/cc from IAEA TE 1450"""
         return 11.68
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TE 1450"""
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(30, 600, Tk, "linear expansionn")
+        self.checkPropertyTempRange("linear expansion", Tk)
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
