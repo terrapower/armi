@@ -2240,7 +2240,9 @@ class Core(composites.Composite):
             runLog.header(
                 "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
             )
-            axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+            axialExpChngr = AxialExpansionChanger(
+                cs["detailedAxialExpansion"], useComponentInputTemperatures=True
+            )
             for a in self.getAssemblies(includeAll=True):
                 if not a.hasFlags(Flags.CONTROL):
                     axialExpChngr.setAssembly(a)

@@ -286,9 +286,9 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
 
                     # Neglect any zero mesh points as zero points are implicit
                     if b.p.zbottom != 0.0:
-                        meshes.append(round(b.p.zbottom, 8))
+                        meshes.append(round(b.p.zbottom, 12))
                     if b.p.ztop != 0.0:
-                        meshes.append(round(b.p.ztop, 8))
+                        meshes.append(round(b.p.ztop, 12))
                 axialMeshCoordinates[a].add(min(meshes))
                 axialMeshCoordinates[a].add(max(meshes))
         self.axialMesh = sorted(set(itertools.chain(*axialMeshCoordinates.values())))

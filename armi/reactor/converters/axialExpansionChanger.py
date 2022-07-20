@@ -45,7 +45,11 @@ class AxialExpansionChanger:
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
 
-    def __init__(self, detailedAxialExpansion: bool = False):
+    def __init__(
+        self,
+        detailedAxialExpansion: bool = False,
+        useComponentInputTemperatures: bool = True,
+    ):
         """
         Build an axial expansion converter.
 
@@ -53,8 +57,16 @@ class AxialExpansionChanger:
         ----------
         detailedAxialExpansion : bool, optional
             A boolean to indicate whether or not detailedAxialExpansion is to be utilized.
+
+        useComponentInputTemperatures : bool, optional
+            A boolean that represents what the reference temperatures for thermal expansion should be.
+            If set to True, then the original or reference temperatures will be based on each of the components'
+            `inputTemperatureInC` values. If set to False, the reference temperatures will be based on each
+            of the components' `temperatureInC` values. `inputTemperatureInC` is the same as `Tinput`, where
+            as `temperatureInC` is the most recent "hot" temperature at the time.
         """
         self._detailedAxialExpansion = detailedAxialExpansion
+        self._useComponentInputTemperatures = useComponentInputTemperatures
         self.linked = None
         self.expansionData = None
 
@@ -101,7 +113,11 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.mapHotTempToComponents(tempGrid, tempField)
+        self.expansionData.mapHotTempToComponents(
+            tempGrid,
+            tempField,
+            useComponentInputTemperatures=self._useComponentInputTemperatures,
+        )
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly(thermal=True)
 
@@ -242,11 +258,15 @@ class AxialExpansionChanger:
         """
         for a in r.core.getAssemblies(includeBolAssems=True):
             self.setAssembly(a)
-            self.expansionData.mapHotTempToComponents(tempGrid[a], tempField[a])
+            self.expansionData.mapHotTempToComponents(
+                tempGrid[a],
+                tempField[a],
+                useComponentInputTemperatures=self._useComponentInputTemperatures,
+            )
             self.expansionData.computeThermalExpansionFactors()
             self.axiallyExpandAssembly()
 
-        self._manageCoreMesh(r)
+        self.manageCoreMesh(r)
 
     def axiallyExpandCorePercent(self, r, components, percents):
         """
@@ -268,9 +288,9 @@ class AxialExpansionChanger:
             self.expansionData.setExpansionFactors(components[a], percents[a])
             self.axiallyExpandAssembly()
 
-        self._manageCoreMesh(r)
+        self.manageCoreMesh(r)
 
-    def _manageCoreMesh(self, r):
+    def manageCoreMesh(self, r):
         """
         manage core mesh post assembly-level expansion
 
@@ -534,7 +554,7 @@ class ExpansionData:
 
     def __init__(self, a, setFuel):
         self._a = a
-        self._oldHotTemp = {}
+        self._referenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents(setFuel)
@@ -570,7 +590,9 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self._expansionFactors[c] = p
 
-    def mapHotTempToComponents(self, tempGrid, tempField):
+    def mapHotTempToComponents(
+        self, tempGrid, tempField, useComponentInputTemperatures: bool = True
+    ):
         """map axial temp distribution to blocks and components in self.a
 
         Parameters
@@ -579,6 +601,12 @@ class ExpansionData:
             axial temperature grid (i.e., physical locations where temp is stored)
         tempField : numpy array
             temperature values along grid
+        useComponentInputTemperatures : bool, optional
+            A boolean that represents what the reference temperatures for thermal expansion should be.
+            If set to True, then the original or reference temperatures will be based on each of the components'
+            `inputTemperatureInC` values. If set to False, the reference temperatures will be based on each
+            of the components' `temperatureInC` values. `inputTemperatureInC` is the same as `Tinput`, where
+            as `temperatureInC` is the most recent "hot" temperature at the time.
 
         Notes
         -----
@@ -604,7 +632,7 @@ class ExpansionData:
             runLog.error("tempGrid and tempField must have the same length.")
             raise RuntimeError
 
-        self._oldHotTemp = {}  # reset, just to be safe
+        self._referenceTemperature = {}  # reset, just to be safe
         for b in self._a:
             tmpMapping = []
             for idz, z in enumerate(tempGrid):
@@ -623,9 +651,16 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self._oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
+                # stash the "old" temperature
+                if useComponentInputTemperatures:
+                    self._referenceTemperature[c] = c.inputTemperatureInC
+                else:
+                    self._referenceTemperature[c] = c.temperatureInC
+
                 # set component volume to be evaluated at "old" hot temp
-                c.p.volume = c.getArea(cold=self._oldHotTemp[c]) * c.parent.getHeight()
+                c.p.volume = (
+                    c.getArea(cold=self._referenceTemperature[c]) * c.parent.getHeight()
+                )
                 # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
                 # and ruins mass conservation via number densities. Instead,
                 # set manually.
@@ -636,7 +671,12 @@ class ExpansionData:
 
         for b in self._a:
             for c in b:
-                self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
+                self._expansionFactors[c] = (
+                    c.getThermalExpansionFactor(
+                        Tc=c.temperatureInC, T0=self._referenceTemperature[c]
+                    )
+                    - 1.0
+                )
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c
