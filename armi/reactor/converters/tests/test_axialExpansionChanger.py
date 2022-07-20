@@ -330,7 +330,7 @@ class TestConservation(Base, unittest.TestCase):
         """thermally expand and then contract to ensure original state is recovered
 
         Notes:
-        - temperature field is isothermal and initially at 25 C
+        - temperature field is isothermal and initially at 250 C
         """
         isothermalTempList = [200.0, 250.0, 300.0]
         a = buildTestAssemblyWithFakeMaterial(name="FakeMat", hot=True)
