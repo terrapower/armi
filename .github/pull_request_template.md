@@ -1,27 +1,28 @@
-<!-- Thanks in advance for you contribution! -->
-
 ## Description
 
-<!-- Please include a summary of the change and link to any related GitHub Issues.-->
+<!-- Mandatory: Please include a summary of the change and link to any related GitHub Issues.-->
 
 ---
 
 ## Checklist
 
 <!--
-    Put an `x` in the boxes that apply. You can also fill these out after
-    creating the PR. If you're unsure about any of them, don't hesitate to ask.
-    We're here to help! This is simply a reminder of what we are going to look
-    for before merging your code.
+    You (the pull requester) should put an `x` in the boxes below you have completed.
+    If you're unsure about any of them, don't hesitate to ask. We're here to help!
+    Learn what a "good PR" looks like here: https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests
 -->
 
-- [ ] The code is understandable and maintainable to people beyond the author.
-- [ ] Tests have been added/updated to verify that the new or changed code works.
-- [ ] There is no commented out code in this PR.
-- [ ] The commit message follows [good practices](https://terrapower.github.io/armi/developer/tooling.html).
-- [ ] All docstrings are still up-to-date with these changes.
+- [ ] This PR has only one purpose or idea.
+- [ ] Tests have been added/updated to verify that the new/changed code works.
 
-If user exposed functionality was added/changed:
+<!-- Check the code quality -->
 
-- [ ] Documentation added/updated in the `doc` folder.
-- [ ] New or updated dependencies have been added to `setup.py`.
+- [ ] The code style follows [good practices](https://terrapower.github.io/armi/developer/standards_and_practices.html).
+- [ ] The commit message(s) follow [good practices](https://terrapower.github.io/armi/developer/tooling.html).
+
+<!-- Check the project-level cruft -->
+
+- [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) are up-to-date with any bug fixes or new features.
+- [ ] The documentation is still up-to-date in the `doc` folder.
+- [ ] The dependencies are still up-to-date in `setup.py`.
+
