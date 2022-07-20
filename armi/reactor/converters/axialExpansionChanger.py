@@ -256,7 +256,7 @@ class AxialExpansionChanger:
             values --> temperatures (list of floats)
 
         """
-        for a in r.core.getAssemblies(includeBolAssems=True):
+        for a in r.core.getAssemblies():
             self.setAssembly(a)
             self.expansionData.mapHotTempToComponents(
                 tempGrid[a],
@@ -264,7 +264,7 @@ class AxialExpansionChanger:
                 useComponentInputTemperatures=self._useComponentInputTemperatures,
             )
             self.expansionData.computeThermalExpansionFactors()
-            self.axiallyExpandAssembly()
+            self.axiallyExpandAssembly(thermal=True)
 
         self.manageCoreMesh(r)
 
@@ -283,7 +283,7 @@ class AxialExpansionChanger:
             keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
             values --> list of percentages to expand :py:class:`Component <armi.reactor.components.component.Component>` by # pylint: disable=line-too-long
         """
-        for a in r.core.getAssemblies(includeBolAssems=True):
+        for a in r.core.getAssemblies():
             self.setAssembly(a)
             self.expansionData.setExpansionFactors(components[a], percents[a])
             self.axiallyExpandAssembly()
@@ -590,7 +590,7 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self._expansionFactors[c] = p
 
-    def mapHotTempToComponents(
+    def mapHotTempToComponentsBlockAvg(
         self, tempGrid, tempField, useComponentInputTemperatures: bool = True
     ):
         """map axial temp distribution to blocks and components in self.a
