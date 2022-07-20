@@ -2262,7 +2262,7 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        # if we have these params loaded from  the database do not overwrite,
+        # if we have these params loaded from the database do not overwrite,
         # otherwise initialize them
         if not self.p.referenceBlockAxialMesh:
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
