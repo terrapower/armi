@@ -298,11 +298,11 @@ class TestDatabase3(unittest.TestCase):
 
         # there will 77 assemblies added to the newly created core
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 77)
+        self.assertEqual(assemblies._assemNum, 85)
 
         # now do the same call again and show that the global _assemNum just keeps going up
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 77 * 2)
+        self.assertEqual(assemblies._assemNum, 85 * 2)
 
         # now load but also updateGlobalAssemNum and show that it updates to the value
         # stored in self.r.p.maxAssemNum plus 1
