@@ -340,7 +340,7 @@ def _diffSpecialData(
             if len(srcFlat) != len(refFlat):
                 same = False
             else:
-                same = all(srcAttr.flatten() == refAttr.flatten())
+                same = all(srcFlat == refFlat)
         else:
             same = srcAttr == refAttr
         if not same:
