@@ -335,8 +335,12 @@ def _diffSpecialData(
     for k, srcAttr, refAttr in [
         (k, srcData.attrs[k], refData.attrs[k]) for k in srcData.attrs.keys()
     ]:
-        if isinstance(srcAttr, numpy.ndarray):
-            same = all(srcAttr.flatten() == refAttr.flatten())
+        if isinstance(srcAttr, numpy.ndarray) and isinstance(refAttr, numpy.ndarray):
+            srcFlat, refFlat = srcAttr.flatten(), refAttr.flatten()
+            if len(srcFlat) != len(refFlat):
+                same = False
+            else:
+                same = all(srcAttr.flatten() == refAttr.flatten())
         else:
             same = srcAttr == refAttr
         if not same:
