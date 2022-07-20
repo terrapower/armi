@@ -31,7 +31,6 @@ class Custom(Material):
 
     name = "Custom Material"
     enrichedNuclide = "U235"
-    correctDensityAfterApplyInputParams = False
 
     def __init__(self):
         """

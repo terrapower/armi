@@ -21,6 +21,8 @@ from armi.materials.material import Material
 class Sc2O3(Material):
     name = "Sc2O3"
 
+    propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
+
     def setDefaultMassFracs(self):
         self.setMassFrac("SC45", 0.6520)
         self.setMassFrac("O16", 0.3480)
@@ -37,5 +39,5 @@ class Sc2O3(Material):
         From Table 4 of "Thermal Expansion and Phase Inversion of Rare-Earth Oxides.
         """
         Tk = getTk(Tc, Tk)
-        self.checkTempRange(273.15, 1573.15, Tk, "linear expansion percent")
+        self.checkPropertyTempRange("linear expansion percent", Tk)
         return 2.6045e-07 * Tk ** 2 + 4.6374e-04 * Tk - 1.4696e-01

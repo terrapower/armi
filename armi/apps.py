@@ -30,6 +30,9 @@ customizing much of the Framework's behavior.
 """
 from typing import Dict, Optional, Tuple, List
 import collections
+import importlib
+import os
+import sys
 
 from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters
@@ -71,6 +74,12 @@ class App:
         For a description of the things that an ARMI plugin can do, see the
         :py:mod:`armi.plugins` module.
         """
+        self._pm: Optional[pluginManager.ArmiPluginManager] = None
+        self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
+        self.__initNewPlugins()
+
+    def __initNewPlugins(self):
+        # pylint: disable=import-outside-toplevel
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -93,7 +102,7 @@ class App:
         ):
             self._pm.register(plugin)
 
-        self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
+        self._paramRenames = None
 
     @property
     def version(self) -> str:
@@ -206,7 +215,7 @@ class App:
             renames = dict()
             for (
                 pluginRenames
-            ) in self._pm.hook.defineParameterRenames():  #  pylint: disable=no-member
+            ) in self._pm.hook.defineParameterRenames():  # pylint: disable=no-member
                 collisions = currentNames & pluginRenames.keys()
                 if collisions:
                     raise plugins.PluginError(
@@ -222,6 +231,82 @@ class App:
                 renames.update(pluginRenames)
             self._paramRenames = renames, self._pm.counter
         return renames
+
+    def registerUserPlugins(self, pluginPaths):
+        """
+        Register additional plugins passed in by importable paths.
+        These plugins may be provided e.g. by an application during startup
+        based on user input.
+
+        Format expected to be a list of full namespaces to plugin classes.
+        There should be a comma between individual plugins and dots representing
+        the file path or importable python namespace.
+
+        Examples
+        --------
+        importable namespace:
+        ``armi.stuff.plugindir.pluginMod.pluginCls,armi.whatever.plugMod2.plugCls2``
+
+        or on Linux/Unix:
+        ``/path/to/pluginMod.py:pluginCls,/path/to/plugMod2.py:plugCls2``
+
+        or on Windows:
+        ``C:\\path\\to\\pluginMod.py:pluginCls,C:\\\\path\\to\\plugMod2.py:plugCls2``
+
+        Notes
+        -----
+        These paths are meant to be taken from a settings file, though this method
+        is public. The idea is that these "user plugins" differ from regular plugins
+        because they are defined during run time, not import time. As such, we
+        restrict their flexibility and power as compared to the usual ArmiPlugins.
+        """
+        self.__initNewPlugins()
+
+        for pluginPath in pluginPaths:
+            if os.sep in pluginPath:
+                # The path is of the form: /path/to/why.py:MyPlugin
+                self.__registerUserPluginsAbsPath(pluginPath)
+            else:
+                # The path is of the form: armi.thing.what.MyPlugin
+                self.__registerUserPluginsInternalImport(pluginPath)
+
+    def __registerUserPluginsAbsPath(self, pluginPath):
+        """Helper method to register a single UserPlugin where
+        the given path is of the form: /path/to/why.py:MyPlugin
+        """
+        # determine if this is a Windows system
+        isWindows = False
+        if os.name == "nt":
+            isWindows = True
+
+        # handle the minor variations on Windows file pathing
+        if isWindows:
+            assert pluginPath.count(":") == 2, f"Invalid plugin path: {pluginPath}"
+            drive, filePath, className = pluginPath.split(":")
+            filePath = drive + ":" + filePath
+        else:
+            assert pluginPath.count(":") == 1, f"Invalid plugin path: {pluginPath}"
+            filePath, className = pluginPath.split(":")
+
+        spec = importlib.util.spec_from_file_location(className, filePath)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = mod
+        spec.loader.exec_module(mod)
+        plugin = getattr(mod, className)
+        assert issubclass(plugin, plugins.UserPlugin)
+        self._pm.register(plugin)
+
+    def __registerUserPluginsInternalImport(self, pluginPath):
+        """Helper method to register a single UserPlugin where
+        the given path is of the form: armi.thing.what.MyPlugin
+        """
+        names = pluginPath.strip().split(".")
+        modPath = ".".join(names[:-1])
+        clsName = names[-1]
+        mod = importlib.import_module(modPath)
+        plugin = getattr(mod, clsName)
+        assert issubclass(plugin, plugins.UserPlugin)
+        self._pm.register(plugin)
 
     @property
     def splashText(self):

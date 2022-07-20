@@ -39,6 +39,8 @@ class HT9(materials.Material):
 
     name = "HT9"
 
+    propertyValidTemperature = {"linear expansion": ((293, 1050), "K")}
+
     def setDefaultMassFracs(self):
         """
         HT9 mass fractions
@@ -64,7 +66,7 @@ class HT9(materials.Material):
         The ref gives dL/L0 in percent and is valid from 293 - 1050 K.
         """
         tk = units.getTk(Tc, Tk)
-        self.checkTempRange(293, 1050, tk, "linear expansion")
+        self.checkPropertyTempRange("linear expansion", tk)
         return -0.16256 + 1.62307e-4 * tk + 1.42357e-6 * tk ** 2 - 5.50344e-10 * tk ** 3
 
     def thermalConductivity(self, Tk=None, Tc=None):

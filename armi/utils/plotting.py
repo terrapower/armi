@@ -68,7 +68,6 @@ def colorGenerator(skippedColors=10):
     -----
     Will cycle indefinitely to accommodate large cores. Colors will repeat.
     """
-
     colors = list(mcolors.CSS4_COLORS)
 
     for start in itertools.cycle(range(20, 20 + skippedColors)):
@@ -293,7 +292,6 @@ def plotFaceMap(
     Plotting a BOL assembly type facemap with a legend::
 
         >>> plotFaceMap(core, param='typeNumAssem', cmapName='RdYlBu')
-
     """
     if referencesToKeep:
         patches, collection, texts = referencesToKeep
@@ -582,9 +580,7 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
 
 
 class DepthSlider(Slider):
-    """
-    Page slider used to view params at different depths.
-    """
+    """Page slider used to view params at different depths."""
 
     def __init__(
         self,
@@ -703,7 +699,7 @@ class DepthSlider(Slider):
 
 
 def plotAssemblyTypes(
-    blueprints,
+    blueprints=None,
     fileName=None,
     assems=None,
     maxAssems=None,
@@ -717,13 +713,13 @@ def plotAssemblyTypes(
     Parameters
     ----------
     blueprints: Blueprints
-        The blueprints to plot assembly types of.
+        The blueprints to plot assembly types of. (Either this or ``assems`` must be non-None.)
 
     fileName : str or None
         Base for filename to write, or None for just returning the fig
 
     assems: list
-        list of assembly objects to be plotted.
+        list of assembly objects to be plotted. (Either this or ``blueprints`` must be non-None.)
 
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
@@ -742,6 +738,12 @@ def plotAssemblyTypes(
     fig : plt.Figure
         The figure object created
     """
+    # input validation
+    if assems is None and blueprints is None:
+        raise ValueError(
+            "At least one of these inputs must be non-None: blueprints, assems"
+        )
+
     # handle defaults
     if assems is None:
         assems = list(blueprints.assemblies.values())
@@ -956,6 +958,8 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
             self.peak = peak
             self.avgHistogram = None
             self.eHistogram = None
+            self.peakHistogram = None
+            self.E = None
 
             if not blockList:
                 self.avgFlux = numpy.zeros(self.nGroup)
@@ -1046,21 +1050,25 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     if max(bf1.avgFlux) <= 0.0:
         runLog.warning(
-            "Cannot plot flux with maxval=={0} in {1}".format(eMax, bList[0])
+            "Cannot plot flux with maxval=={0} in {1}".format(bf1.avgFlux, bList[0])
         )
         return
 
     plt.figure()
     plt.plot(bf1.eHistogram, bf1.avgHistogram, bf1.lineAvg, label=bf1.labelAvg)
+
     if peak:
         plt.plot(bf1.eHistogram, bf1.peakHistogram, bf1.linePeak, label=bf1.labelPeak)
+
     ax = plt.gca()
     ax.set_xscale("log")
     ax.set_yscale("log")
     plt.xlabel("Energy (MeV)")
     plt.ylabel("Flux (n/cm$^2$/s)")
+
     if peak or bList2:
         plt.legend(loc="lower right")
+
     plt.grid(color="0.70")
     if bList2:
         if adjoint:
@@ -1138,7 +1146,6 @@ def _makeBlockPinPatches(block, cold):
     name : list
         list of the names of these components
     """
-
     patches = []
     data = []
     names = []
@@ -1237,7 +1244,6 @@ def _makeComponentPatch(component, position, cold):
     -----
     Currently accepts components of shape DerivedShape, Helix, Circle, or Square
     """
-
     x = position[0]
     y = position[1]
 
@@ -1526,9 +1532,9 @@ def plotNucXs(
     ----------
     isotxs : IsotxsLibrary
         A collection of cross sections (XS) for both neutron and gamma reactions.
-    nucName : str or list
+    nucNames : str or list
         The nuclides to plot
-    xsName : str or list
+    xsNames : str or list
         the XS to plot e.g. n,g, n,f, nalph, etc. see xsCollections for actual names.
     fName : str, optional
         if fName is given, the file will be written rather than plotting to screen
