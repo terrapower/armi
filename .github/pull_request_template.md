@@ -7,7 +7,7 @@
 ## Checklist
 
 <!--
-    Put an `x` in the boxes you have completed so far. You can check a box after creating the PR.
+    You (the pull requester) should put an `x` in the boxes below you have completed.
     If you're unsure about any of them, don't hesitate to ask. We're here to help!
     Learn what a "good PR" looks like here: https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests
 -->
