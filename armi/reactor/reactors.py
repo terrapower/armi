@@ -2262,10 +2262,16 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
-        self.p.axialMesh = self.findAllAxialMeshPoints()
-        refAssem = self.refAssem
+        # if we have these params loaded from  the database do not overwrite,
+        # otherwise initialize them
+        if not self.p.referenceBlockAxialMesh:
+            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
+                applySubMesh=False
+            )
+        if not self.p.axialMesh:
+            self.p.axialMesh = self.findAllAxialMeshPoints()
 
+        refAssem = self.refAssem
         # blueprints.assemblies.values need to be populated
         # In a load from DB case construction may not have been prepped yet.
         # this normally happens during blueprints constructAssem, but for DB
