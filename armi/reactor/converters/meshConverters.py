@@ -17,6 +17,9 @@ Mesh specifiers update the mesh structure of a reactor by increasing or decreasi
 """
 
 import math
+import collections
+import itertools
+
 import numpy
 
 from armi import runLog
@@ -85,7 +88,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
         self._numRingsInCore = core.getNumHexRings()
         self._assemsInCore = core.getAssemblies()
         self._coreAxialMeshCoords = core.findAllAxialMeshPoints(applySubMesh=False)
-        self.setAxialMesh()
+        self.setAxialMesh(core)
         self._checkAxialMeshList()
         self.setThetaMesh()
         self._checkThetaMeshList()
@@ -139,7 +142,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
     def setRingsToConvert(self, core):
         raise NotImplementedError
 
-    def setAxialMesh(self):
+    def setAxialMesh(self, core):
         raise NotImplementedError
 
     def setThetaMesh(self):
@@ -213,7 +216,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
 class _RZThetaReactorMeshConverterByAxialCoordinates(RZThetaReactorMeshConverter):
     """Generate an axial mesh based on user provided axial mesh coordinates."""
 
-    def setAxialMesh(self):
+    def setAxialMesh(self, core):
         """Set up the reactor's new radial rings based on a user-specified axial coordinate list (axial mesh)."""
         self.axialMesh = self._converterSettings["axialMesh"]
 
@@ -229,7 +232,7 @@ class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
     be [2, 4, 6, 8]).
     """
 
-    def setAxialMesh(self):
+    def setAxialMesh(self, core):
         """
         Set up axial mesh coordinates using user-specified number of axial segments per bins.
 
@@ -252,7 +255,43 @@ class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
         self.axialMesh = [0] * len(axialMeshIndices)
         for axialMeshIndex, locIndex in enumerate(axialMeshIndices):
             self.axialMesh[axialMeshIndex] = self._coreAxialMeshCoords[locIndex]
-        return self.axialMesh
+
+
+class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
+    """
+    Generate an axial mesh based on examining the block flags axially across the core.
+    """
+
+    def setAxialMesh(self, core):
+        """
+        Generate an axial mesh based on examining the block flags axially across the core.
+
+        Notes
+        -----
+        This approach is useful as it will create the largest material regions possible
+        to minimize number of axially regions within the converted reactor core. This
+        class not only looks at the block flags axially, but will add new mesh points for
+        regions where the blocks of the same flag differ by XSID.
+        """
+        axialMeshCoordinates = collections.defaultdict(set)
+        for a in core.getAssemblies():
+            blockFlags = set([(b.p.flags, b.getMicroSuffix()) for b in a])
+            for flags, xsID in blockFlags:
+                meshes = []
+                for b in a.getBlocks(flags):
+                    # Skip this block if it has a different XS ID than the
+                    # current target.
+                    if b.getMicroSuffix() != xsID:
+                        continue
+
+                    # Neglect any zero mesh points as zero points are implicit
+                    if b.p.zbottom != 0.0:
+                        meshes.append(round(b.p.zbottom, 8))
+                    if b.p.ztop != 0.0:
+                        meshes.append(round(b.p.ztop, 8))
+                axialMeshCoordinates[a].add(min(meshes))
+                axialMeshCoordinates[a].add(max(meshes))
+        self.axialMesh = sorted(set(itertools.chain(*axialMeshCoordinates.values())))
 
 
 class _RZThetaReactorMeshConverterByRingComposition(RZThetaReactorMeshConverter):
@@ -329,6 +368,23 @@ class RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
     --------
     _RZThetaReactorMeshConverterByRingComposition
     _RZThetaReactorMeshConverterByAxialCoordinates
+    """
+
+    pass
+
+
+class RZThetaReactorMeshConverterByRingCompositionAxialFlags(
+    _RZThetaReactorMeshConverterByRingComposition,
+    _RZThetaReactorMeshConverterByAxialFlags,
+):
+    """
+    Generate a new mesh based on the radial compositions and axial material
+    (based on block flags) regions in the core.
+
+    See Also
+    --------
+    _RZThetaReactorMeshConverterByRingComposition
+    _RZThetaReactorMeshConverterByAxialFlags
     """
 
     pass
