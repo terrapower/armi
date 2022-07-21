@@ -222,9 +222,9 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-        bounds = list(self.linked.a.spatialGrid._bounds)
+        bounds = list(self.linked.a.spatialGrid._bounds) #pylint: disable = protected-access
         bounds[2] = array(mesh)
-        self.linked.a.spatialGrid._bounds = tuple(bounds)
+        self.linked.a.spatialGrid._bounds = tuple(bounds) #pylint: disable = protected-access
 
     def manageCoreMesh(self, r):
         """
@@ -522,27 +522,27 @@ class ExpansionData:
             self._expansionFactors[c] = p
 
     def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
-        """map axial temp distribution to blocks and components in self.a
+        """assign a block-average axial temperature to components
 
         Parameters
         ----------
         tempGrid : numpy array
-            axial temperature grid (i.e., physical locations where temp is stored)
+            1D axial temperature grid (i.e., physical locations where temp is stored)
         tempField : numpy array
             temperature values along grid
 
         Notes
         -----
-        - maps the radially uniform axial temperature distribution to components
+        - maps a 1D axial temperature distribution to components
         - searches for temperatures that fall within the bounds of a block,
           averages them, and assigns them as appropriate
-        - The second portion, when component volume is set, is functionally very similar
-        to c.computeVolume(), however differs in the temperatures that get used to compute dimensions.
-           - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
-        cold=False results in self.getDimension to use the cold/input component temperature.
-        However, we want the "old hot" temp to be used. So, here we manually call
-        c.getArea and pass in the correct "cold" (old hot) temperature. This ensures that
-        component mass is conserved.
+        - Updating component volume is functionally very similar to c.computeVolume().
+          However, this implementation differs in the temperatures that get used to compute dimensions.
+            - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
+              cold=False results in self.getDimension to use the cold/input component temperature.
+            - However, we want the temperature from the previous state to be used (the reference temperature).
+              So, here we manually call c.getArea() and pass in the reference temperature. This ensures that
+              as the component is expanded its mass is conserved.
 
         Raises
         ------
@@ -575,17 +575,15 @@ class ExpansionData:
             blockAveTemp = mean(tmpMapping)
             for c in b:
                 self.componentReferenceHeight[c] = b.getHeight()
-                self.componentReferenceTemperature[
-                    c
-                ] = c.temperatureInC  # stash the "old" hot temp
-                # set component volume to be evaluated at "old" hot temp
+                # store the temperature from previous state (i.e., reference temp)
+                self.componentReferenceTemperature[c] = c.temperatureInC
+                # set component volume to be evaluated at reference temp
                 c.p.volume = (
                     c.getArea(cold=self.componentReferenceTemperature[c])
                     * c.parent.getHeight()
                 )
                 # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
-                # and ruins mass conservation via number densities. Instead,
-                # set manually.
+                # and ruins mass conservation via number densities. Instead, set manually.
                 c.temperatureInC = blockAveTemp
 
     def computeThermalExpansionFactors(self):
