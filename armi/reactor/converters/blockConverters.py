@@ -518,7 +518,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                         driverFuelBlock
                     )
                 )
-
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
@@ -547,6 +546,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self._buildNthRing(pinComponents, ring)
         self._buildNonPinRings(nonPins)
         self._addDriverFuelRings()
+
+        for comp in self.convertedBlock.getComponents():
+            assert comp.getArea() >= 0.0, (
+                f"{comp} in {self.convertedBlock} has a negative area of {comp.getArea()}. "
+                "Negative areas are not supported."
+            )
+
         return self.convertedBlock
 
     def _dissolveComponents(self):
@@ -566,12 +572,25 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         """
         Figure out which components are in each pin ring and which are not.
 
+        Notes
+        -----
         Assumption is that anything with multiplicity equal to numPins is a pin (clad, wire, bond, etc.)
-        Non-pins will include things like coolant, duct, interduct, whatever else.
+        Non-pins will include things like coolant, duct, interduct, etc.
+
+        This skips components that have a negative area, which can exist if a user implements a linked
+        component containing void or non-solid materials (e.g., gaps)
         """
         pinComponents, nonPins = [], []
 
         for c in self._sourceBlock:
+
+            # If the area of the component is negative than this component should be skipped
+            # altogether. If not skipped, the conversion process still works, but this would
+            # result in one or more rings having an outer diameter than is smaller than the
+            # inner diameter.
+            if c.getArea() < 0.0:
+                continue
+
             if (
                 self._sourceBlock.getNumComponents(c.p.flags)
                 == self._sourceBlock.getNumPins()
