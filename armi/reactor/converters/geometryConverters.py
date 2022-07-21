@@ -382,9 +382,7 @@ class HexToRZThetaConverter(GeometryConverter):
         self.blockVolFracs = collections.defaultdict(dict)
 
     def _generateConvertedReactorMesh(self):
-        """
-        Convert the source reactor using the converterSettings
-        """
+        """Convert the source reactor using the converterSettings"""
         runLog.info("Generating mesh coordinates for the reactor conversion")
         self._radialMeshConversionType = self.converterSettings["radialConversionType"]
         self._axialMeshConversionType = self.converterSettings["axialConversionType"]
@@ -397,15 +395,14 @@ class HexToRZThetaConverter(GeometryConverter):
                 converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
                     self.converterSettings
                 )
-            else:
-                if self._axialMeshConversionType == self._MESH_BY_AXIAL_COORDS:
-                    converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
-                        self.converterSettings
-                    )
-                elif self._axialMeshConversionType == self._MESH_BY_AXIAL_BINS:
-                    converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-                        self.converterSettings
-                    )
+            elif self._axialMeshConversionType == self._MESH_BY_AXIAL_COORDS:
+                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
+                    self.converterSettings
+                )
+            elif self._axialMeshConversionType == self._MESH_BY_AXIAL_BINS:
+                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
+                    self.converterSettings
+                )
         if converter is None:
             raise ValueError(
                 "No mesh converter exists for `radialConversionType` and `axialConversionType` settings "
