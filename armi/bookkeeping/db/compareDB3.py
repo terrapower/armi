@@ -334,23 +334,27 @@ def _diffSpecialData(
         return
 
     attrsMatch = True
-    for k, srcAttr, refAttr in [
-        (k, srcData.attrs[k], refData.attrs[k]) for k in srcData.attrs.keys()
-    ]:
+    for k, srcAttr in srcData.attrs.items():
+        refAttr = refData.attrs[k]
+
         if isinstance(srcAttr, numpy.ndarray) and isinstance(refAttr, numpy.ndarray):
-            srcFlat, refFlat = srcAttr.flatten(), refAttr.flatten()
+            srcFlat = srcAttr.flatten()
+            refFlat = refAttr.flatten()
             if len(srcFlat) != len(refFlat):
                 same = False
             else:
                 same = all(srcFlat == refFlat)
         else:
             same = srcAttr == refAttr
+
         if not same:
             attrsMatch = False
             out.writeln(
                 "Special formatting parameters for {} do not match for {}. Src: {} "
                 "Ref: {}".format(name, k, srcData.attrs[k], refData.attrs[k])
             )
+            break
+
     if not attrsMatch:
         return
 
