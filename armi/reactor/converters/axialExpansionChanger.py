@@ -222,9 +222,10 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-        bounds = list(self.linked.a.spatialGrid._bounds) #pylint: disable = protected-access
+        # pylint: disable = protected-access
+        bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
-        self.linked.a.spatialGrid._bounds = tuple(bounds) #pylint: disable = protected-access
+        self.linked.a.spatialGrid._bounds = tuple(bounds)
 
     def manageCoreMesh(self, r):
         """
