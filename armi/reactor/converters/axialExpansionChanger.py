@@ -101,7 +101,7 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.mapHotTempToComponents(tempGrid, tempField)
+        self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly(thermal=True)
 
@@ -183,8 +183,8 @@ class AxialExpansionChanger:
                             c, growFrac
                         )
                     )
-                    if thermal and self.expansionData.oldHotHeight:
-                        blockHeight = self.expansionData.oldHotHeight[c]
+                    if thermal and self.expansionData.componentReferenceHeight:
+                        blockHeight = self.expansionData.componentReferenceHeight[c]
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
@@ -247,9 +247,9 @@ class AxialExpansionChanger:
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()
-        runLog.important("Updated r.core.p.axialMesh (old, new)")
+        runLog.extra("Updated r.core.p.axialMesh (old, new)")
         for old, new in zip(oldMesh, r.core.p.axialMesh):
-            runLog.important(f"{old:.6e}\t{new:.6e}")
+            runLog.extra(f"{old:.6e}\t{new:.6e}")
 
 
 def _conserveComponentMass(b, oldHeight, oldVolume):
@@ -484,8 +484,8 @@ class ExpansionData:
 
     def __init__(self, a, setFuel):
         self._a = a
-        self.oldHotHeight = {}
-        self._oldHotTemp = {}
+        self.componentReferenceHeight = {}
+        self.componentReferenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents(setFuel)
@@ -521,7 +521,7 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self._expansionFactors[c] = p
 
-    def mapHotTempToComponents(self, tempGrid, tempField):
+    def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
         """map axial temp distribution to blocks and components in self.a
 
         Parameters
@@ -555,7 +555,7 @@ class ExpansionData:
             runLog.error("tempGrid and tempField must have the same length.")
             raise RuntimeError
 
-        self._oldHotTemp = {}  # reset, just to be safe
+        self.componentReferenceTemperature = {}  # reset, just to be safe
         for b in self._a:
             tmpMapping = []
             for idz, z in enumerate(tempGrid):
@@ -574,10 +574,15 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self.oldHotHeight[c] = b.getHeight()
-                self._oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
+                self.componentReferenceHeight[c] = b.getHeight()
+                self.componentReferenceTemperature[
+                    c
+                ] = c.temperatureInC  # stash the "old" hot temp
                 # set component volume to be evaluated at "old" hot temp
-                c.p.volume = c.getArea(cold=self._oldHotTemp[c]) * c.parent.getHeight()
+                c.p.volume = (
+                    c.getArea(cold=self.componentReferenceTemperature[c])
+                    * c.parent.getHeight()
+                )
                 # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
                 # and ruins mass conservation via number densities. Instead,
                 # set manually.
@@ -588,9 +593,12 @@ class ExpansionData:
 
         for b in self._a:
             for c in b:
-                if self._oldHotTemp:
+                if self.componentReferenceTemperature:
                     self._expansionFactors[c] = (
-                        c.getThermalExpansionFactor(T0=self._oldHotTemp[c]) - 1.0
+                        c.getThermalExpansionFactor(
+                            T0=self.componentReferenceTemperature[c]
+                        )
+                        - 1.0
                     )
                 else:
                     self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0

@@ -532,19 +532,23 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_mapHotTempToComponentsValueError(self):
+    def test_updateComponentTempsBy1DTempFieldValueError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)
         with self.assertRaises(ValueError) as cm:
-            self.obj.expansionData.mapHotTempToComponents(tempGrid, tempField)
+            self.obj.expansionData.updateComponentTempsBy1DTempField(
+                tempGrid, tempField
+            )
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_mapHotTempToComponentsRuntimeError(self):
+    def test_updateComponentTempsBy1DTempFieldRuntimeError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 10)
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.mapHotTempToComponents(tempGrid, tempField)
+            self.obj.expansionData.updateComponentTempsBy1DTempField(
+                tempGrid, tempField
+            )
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -553,7 +557,7 @@ class TestExceptions(Base, unittest.TestCase):
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
-                self.obj.expansionData.mapHotTempToComponents(
+                self.obj.expansionData.updateComponentTempsBy1DTempField(
                     temp.tempGrid, temp.tempField[idt, :]
                 )
                 self.obj.expansionData.computeThermalExpansionFactors()
