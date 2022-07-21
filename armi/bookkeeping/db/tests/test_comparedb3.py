@@ -198,7 +198,7 @@ class TestCompareDB3(unittest.TestCase):
             srcData3.attrs["2"] = 22
             srcData3.attrs["numDens"] = a2
 
-            # there should be no difference, and a logged error
+            # there should a logged error, but no diff
             with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData, srcData3, out, dr)
                 self.assertEqual(dr.nDiffs(), 0)
