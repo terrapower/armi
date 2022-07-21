@@ -27,7 +27,7 @@ from armi.bookkeeping.db.compareDB3 import (
     OutputWriter,
 )
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
+from armi.tests import mockRunLogs, TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -173,14 +173,34 @@ class TestCompareDB3(unittest.TestCase):
             f1 = h5py.File("test_diffSpecialData1.hdf5", "w")
             a1 = np.arange(100, dtype="<f8")
             refData = f1.create_dataset("numberDensities", data=a1)
+            refData.attrs["1"] = 1
+            refData.attrs["2"] = 22
+            refData.attrs["numDens"] = a1
 
             # spin up an identical example H5 Dataset
             f2 = h5py.File("test_diffSpecialData2.hdf5", "w")
             srcData = f2.create_dataset("numberDensities", data=a1)
+            srcData.attrs["1"] = 1
+            srcData.attrs["2"] = 22
+            srcData.attrs["numDens"] = a1
 
             # there should be no difference
             _diffSpecialData(refData, srcData, out, dr)
             self.assertEqual(dr.nDiffs(), 0)
+
+            # spin up a different size example H5 Dataset
+            f3 = h5py.File("test_diffSpecialData3.hdf5", "w")
+            a2 = np.arange(90, dtype="<f8")
+            srcData3 = f3.create_dataset("numberDensities", data=a2)
+            srcData3.attrs["1"] = 1
+            srcData3.attrs["2"] = 22
+            srcData3.attrs["numDens"] = a2
+
+            # there should be no difference
+            with mockRunLogs.BufferLog() as mock:
+                _diffSpecialData(refData, srcData3, out, dr)
+                self.assertEqual(dr.nDiffs(), 0)
+                self.assertIn("Special formatting parameters for", mock._outputStream)
 
 
 if __name__ == "__main__":
