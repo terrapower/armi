@@ -137,6 +137,7 @@ class DiffResults:
         return [None] * (len(self._columns) - 1)
 
     def reportDiffs(self, stream: OutputWriter) -> None:
+        """Print out a well-formatted table of the non-zero diffs"""
         # filter out empty rows
         diffsToPrint = {
             key: value
@@ -163,7 +164,7 @@ def compareDatabases(
     exclusions: Optional[Sequence[str]] = None,
     tolerance: float = 0.0,
 ) -> Optional[DiffResults]:
-
+    """High-level method to compare two ARMI H5 files, given file paths."""
     compiledExclusions = None
     if exclusions is not None:
         compiledExclusions = [re.compile(ex) for ex in exclusions]
@@ -269,6 +270,7 @@ def _compareAuxData(
 
     refGroup.visititems(visitor)
     refData = data
+
     data = dict()
     srcGroup.visititems(visitor)
     srcData = data
@@ -419,7 +421,7 @@ def _diffSpecialData(
         diffResults.addDiff(compName, paramName, absMean, mean, absMax)
 
 
-def _diffSimpleData(ref: numpy.ndarray, src: numpy.ndarray, diffResults: DiffResults):
+def _diffSimpleData(ref: h5py.Dataset, src: h5py.Dataset, diffResults: DiffResults):
     paramName = ref.name.split("/")[-1]
     compName = ref.name.split("/")[-2]
 

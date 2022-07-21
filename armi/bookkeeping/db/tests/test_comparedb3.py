@@ -21,6 +21,7 @@ import numpy as np
 
 from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.compareDB3 import (
+    _compareAuxData,
     _diffSimpleData,
     _diffSpecialData,
     compareDatabases,
@@ -236,6 +237,30 @@ class TestCompareDB3(unittest.TestCase):
         # there should be no difference
         _diffSimpleData(refData, srcData3, dr)
         self.assertEqual(dr.nDiffs(), 3)
+
+    def test_compareAuxData(self):
+        dr = DiffResults(0.01)
+
+        fileName = "test_diffSpecialData.txt"
+        with OutputWriter(fileName) as out:
+            # spin up one example H5 Dataset
+            f1 = h5py.File("test_compareAuxData1.hdf5", "w")
+            a1 = np.arange(100, dtype="<f8")
+            refData = f1.create_group("numberDensities")
+            refData.attrs["1"] = 1
+            refData.attrs["2"] = 22
+            refData.attrs["numDens"] = a1
+
+            # spin up an identical example H5 Dataset
+            f2 = h5py.File("test_compareAuxData2.hdf5", "w")
+            srcData = f2.create_group("numberDensities")
+            srcData.attrs["1"] = 1
+            srcData.attrs["2"] = 22
+            srcData.attrs["numDens"] = a1
+
+            # there should be no difference
+            _compareAuxData(out, refData, srcData, dr)
+            self.assertEqual(dr.nDiffs(), 0)
 
 
 if __name__ == "__main__":
