@@ -19,27 +19,27 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
-import unittest
 import os
 import pathlib
 import shutil
+import unittest
 
-from armi.context import ROOT
 from armi import init as armi_init
+from armi import settings
 from armi import utils
 from armi.bookkeeping import historyTracker
-from armi.reactor import blocks
-from armi.reactor.flags import Flags
-from armi import settings
-from armi.utils import directoryChangers
-from armi.reactor import grids
-from armi.cases import case
-from armi.tests import ArmiTestHelper
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
+from armi.cases import case
+from armi.context import ROOT
+from armi.reactor import blocks
+from armi.reactor import grids
+from armi.reactor.flags import Flags
+from armi.tests import ArmiTestHelper
+from armi.utils import directoryChangers
 
+CASE_TITLE = "anl-afci-177"
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
 TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
-CASE_TITLE = "anl-afci-177"
 
 
 def runTutorialNotebook():
@@ -151,9 +151,8 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-            mgFlux = (
-                hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
-            )  #  b.p.mgFlux is vol integrated
+            #  b.p.mgFlux is vol integrated
+            mgFlux = hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             timeInSec = years * 365 * 24 * 3600
             if mgFluence is None:
                 mgFluence = timeInSec * mgFlux
@@ -161,6 +160,11 @@ class TestHistoryTracker(ArmiTestHelper):
                 mgFluence += timeInSec * mgFlux
 
         self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
+
+        # test that unloadBlockHistoryVals() is working
+        self.assertIsNotNone(hti._preloadedBlockHistory)
+        hti.unloadBlockHistoryVals()
+        self.assertIsNone(hti._preloadedBlockHistory)
 
     def test_historyReport(self):
         """
@@ -183,13 +187,23 @@ class TestHistoryTracker(ArmiTestHelper):
         shutil.move(fileName, os.path.join(THIS_DIR, fileName))
 
         self.compareFilesLineByLine(expectedFileName, actualFilePath)
-        # clean file created at interactEOL
-        os.remove("armiRun.locationHistory.txt")
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
         history.addAllFuelAssems()
         self.assertEqual(len(history.detailAssemblyNames), 51)
+
+    def test_getBlockInAssembly(self):
+        history = self.o.getInterface("history")
+        aFuel = self.o.r.core.getFirstAssembly(Flags.FUEL)
+
+        b = history._getBlockInAssembly(aFuel)
+        self.assertGreater(b.p.height, 1.0)
+        self.assertEqual(b.getType(), "fuel")
+
+        with self.assertRaises(RuntimeError):
+            aShield = self.o.r.core.getFirstAssembly(Flags.SHIELD)
+            history._getBlockInAssembly(aShield)
 
 
 class TestHistoryTrackerNoModel(unittest.TestCase):
