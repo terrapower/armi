@@ -2236,17 +2236,6 @@ class Core(composites.Composite):
         updateAxialMesh : Perturbs the axial mesh originally set up here.
 
         """
-        if not cs["inputHeightsConsideredHot"]:
-            runLog.header(
-                "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
-            )
-            axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
-            for a in self.getAssemblies(includeAll=True):
-                if not a.hasFlags(Flags.CONTROL):
-                    axialExpChngr.setAssembly(a)
-                    axialExpChngr.expansionData.computeThermalExpansionFactors()
-                    axialExpChngr.axiallyExpandAssembly(thermal=True)
-
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
@@ -2299,6 +2288,18 @@ class Core(composites.Composite):
             for a in self.parent.blueprints.assemblies.values():
                 a.makeAxialSnapList(refAssem=finestMeshA)
 
+        if not cs["inputHeightsConsideredHot"]:
+            runLog.header(
+                "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
+            )
+            axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+            for a in self.getAssemblies():
+                if not a.hasFlags(Flags.CONTROL):
+                    axialExpChngr.setAssembly(a)
+                    axialExpChngr.expansionData.computeThermalExpansionFactors()
+                    axialExpChngr.axiallyExpandAssembly(thermal=True)
+            axialExpChngr._manageCoreMesh(self.parent)
+        
         self.numRings = self.getNumRings()  # TODO: why needed?
 
         self.getNuclideCategories()
