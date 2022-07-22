@@ -19,27 +19,27 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
-import unittest
 import os
 import pathlib
 import shutil
+import unittest
 
-from armi.context import ROOT
 from armi import init as armi_init
+from armi import settings
 from armi import utils
 from armi.bookkeeping import historyTracker
-from armi.reactor import blocks
-from armi.reactor.flags import Flags
-from armi import settings
-from armi.utils import directoryChangers
-from armi.reactor import grids
-from armi.cases import case
-from armi.tests import ArmiTestHelper
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
+from armi.cases import case
+from armi.context import ROOT
+from armi.reactor import blocks
+from armi.reactor import grids
+from armi.reactor.flags import Flags
+from armi.tests import ArmiTestHelper
+from armi.utils import directoryChangers
 
+CASE_TITLE = "anl-afci-177"
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
 TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
-CASE_TITLE = "anl-afci-177"
 
 
 def runTutorialNotebook():
@@ -161,6 +161,11 @@ class TestHistoryTracker(ArmiTestHelper):
                 mgFluence += timeInSec * mgFlux
 
         self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
+
+        # test that unloadBlockHistoryVals() is working
+        self.assertIsNotNone(hti._preloadedBlockHistory)
+        hti.unloadBlockHistoryVals()
+        self.assertIsNone(hti._preloadedBlockHistory)
 
     def test_historyReport(self):
         """
