@@ -2286,7 +2286,7 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
-                    a.makeAxialSnapList()
+                    a.makeAxialSnapList(self.refAssem)
 
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
