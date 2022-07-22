@@ -151,9 +151,8 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-            mgFlux = (
-                hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
-            )  #  b.p.mgFlux is vol integrated
+            #  b.p.mgFlux is vol integrated
+            mgFlux = hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             timeInSec = years * 365 * 24 * 3600
             if mgFluence is None:
                 mgFluence = timeInSec * mgFlux

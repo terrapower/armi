@@ -388,10 +388,6 @@ class HistoryTrackerInterface(interfaces.Interface):
         """
         block = self.r.core.getBlockByName(name)
 
-        if paramName == "loc":
-            # special behavior for location param.
-            return self._blockLocationAtTimenode(block, ts)
-
         if self._isCurrentTimeStep(ts) and not self._databaseHasDataForTimeStep(ts):
             # current timenode may not have been written to the DB. Use the current
             # value in the param system.  works for fuel performance, for some params,
@@ -467,25 +463,3 @@ class HistoryTrackerInterface(interfaces.Interface):
                 "A tracked assembly does not contain fuel and has caused this error, see the details in stdout."
             )
         return b
-
-    def _blockLocationAtTimenode(self, block, timeNode):
-        """
-        Find block location label at a specific timenode.
-
-        Warning
-        -------
-        This fuction no longer functions, as it relies on implmentation details of
-        Database version 2, which is no longer used. Retaining for historical purposes,
-        but this should be removed soon.
-        """
-        dbi = self.getInterface("database")
-        ids = dbi.database.readBlockParam("id", timeNode)
-        locs = dbi.database.lookupGeometry()
-        if ids is None:
-            return None
-        ids = ids.tolist()
-        try:
-            blockIndex = ids.index(block.p.id)
-            return locs[blockIndex]
-        except ValueError:
-            return None
