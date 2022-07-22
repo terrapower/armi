@@ -229,6 +229,15 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
+    def afterLoadDB(core, cs):
+        """
+        Function to call just after a Reactor is fully loaded from a DB.
+
+        This is usually used to modify a Reactor that has just been read from a DB.
+        """
+
+    @staticmethod
+    @HOOKSPEC
     def defineFlags() -> Dict[str, Union[int, flags.auto]]:
         """
         Function to provide new Flags definitions.

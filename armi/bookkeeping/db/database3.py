@@ -85,6 +85,7 @@ import numpy
 
 from armi import context
 from armi import getApp
+from armi import getPluginManagerOrFail
 from armi import interfaces
 from armi import meta
 from armi import runLog
@@ -440,6 +441,8 @@ class DatabaseInterface(interfaces.Interface):
                     getH5GroupName(cycle, timeNode, timeStepName)
                 )
             )
+
+        getPluginManagerOrFail().hook.afterLoadDB(core=self.r.core, cs=self.cs)
 
     def getHistory(
         self,
