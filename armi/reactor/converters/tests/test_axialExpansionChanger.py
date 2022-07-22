@@ -620,13 +620,13 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             {"inputHeightsConsideredHot": True},
         )
-        self.stdAssems = [a for a in r.core.getAssemblies(includeAll=True)]
+        self.stdAssems = [a for a in r.core.getAssemblies()]
 
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             {"inputHeightsConsideredHot": False},
         )
-        self.testAssems = [a for a in rCold.core.getAssemblies(includeAll=True)]
+        self.testAssems = [a for a in rCold.core.getAssemblies()]
 
     def test_coldAssemblyHeight(self):
         """block heights are cold and should be expanded
