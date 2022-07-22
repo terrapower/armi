@@ -69,7 +69,6 @@ See :ref:`detail-assems`.
 
 """
 from typing import Tuple
-import re
 
 import tabulate
 
@@ -78,7 +77,6 @@ from armi import runLog
 from armi import operators
 from armi.reactor.flags import Flags
 from armi.reactor import grids
-from armi.utils import textProcessors
 
 ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -88,6 +86,8 @@ def describeInterfaces(cs):
     if cs["runType"] not in (operators.RunTypes.EQUILIBRIUM):
         klass = HistoryTrackerInterface
         return (klass, {})
+
+    return None
 
 
 class HistoryTrackerInterface(interfaces.Interface):
@@ -455,7 +455,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     @staticmethod
     def _getBlockInAssembly(a):
-        """Get a representative block from an assembly."""
+        """Get a representative fuel block from an assembly."""
         b = a.getFirstBlock(Flags.FUEL)
         if not b:
             # there is a problem, it doesn't look like we have a fueled assembly
@@ -489,122 +489,3 @@ class HistoryTrackerInterface(interfaces.Interface):
             return locs[blockIndex]
         except ValueError:
             return None
-
-
-class HistoryFile:
-    r"""
-    A general history file that contains the parameter history of an object.
-
-    The object may be a block or assembly. This tracks them through time
-
-    Originally, these files were just created by the history interface,
-    but it became necessary to read them and post-process them for statistical needs
-    (stats for individual assembly types) so it became an object
-
-    They were typically named A234-ahist.txt or so.
-    """
-
-
-class AssemblyHistory(HistoryFile):
-    """History report of a single assembly."""
-
-    def __repr__(self):
-        return "<AssemHistory {0}>".format(self.assemName)
-
-    def read(self, fName):
-        r"""
-        Reads an assembly history file into memory.
-
-        Parameters
-        ----------
-        fName : str
-            The filename to read
-
-        Creates a blockStack list where each entry is a dictionary of [param,ts]=val maps
-
-        """
-
-        f = textProcessors.TextProcessor(fName)
-        timeSteps = map(int, f.f.next().split())  # first line is timestep integers
-        _timeYears = map(float, f.f.next().split())  # second line is times in years
-
-        # now there is a loop over all params
-        blockStack = (
-            []
-        )  # will assign to block names once they are read in (at end of file)
-        while True:
-            # expect a line like: "key: burnup"
-            line = f.fsearch("key:")
-            paramName = line.split()[1]  # pylint: disable=no-member
-            if paramName == "location":
-                operation = str
-            else:
-                operation = float
-            # expect values for each timestep on the next few lines
-            for line in f.f:
-                line = line.strip()
-                # read arbitrary number of blocks
-                if (
-                    not line or "EOL bottom" in line
-                ):  # detect axial info to(b/c we used to not have blank lines)
-                    # end on blank line
-                    break
-                vals = map(operation, line.split())
-                blockVals = {}
-                for ts, val in zip(timeSteps, vals):
-                    blockVals[paramName, ts] = val
-                blockStack.append(blockVals)
-
-            if paramName == "location":
-                # flags the end of the params.
-                break
-
-        # skip the EOL axial information (for now)
-        f.fsearch("Assembly info")
-
-        assemblyInfoLine = next(f.f)
-        assemblyInfo = assemblyInfoLine.split()
-        self.assemName = assemblyInfo[0]
-        if len(assemblyInfo) > 1:
-            self.assemType = " ".join(assemblyInfo[1:]).lower()
-        else:
-            self.assemType = None
-
-        blockTypes = []
-        for line in f.f:
-            match = re.search(r'"(.+)"\s(\S)\s(\S)', line)
-            if match:
-                blockTypes.append(match.group(1))
-        f.f.close()
-
-        self.blockStack = blockStack
-
-    def readFromArmi(self, blockName, historyInterface):
-        r"""
-        Loads up a working AssemblyHistory object from the history interface
-        """
-        pass
-
-    def computeBounds(self):
-        r"""
-        Finds the min and max values of all params in this assembly history
-
-        Returns
-        -------
-        mins : dict
-            Keys are param names, vals are minimum values for that param
-        maxes : dict
-            Keys are param names, vals are maximum values for that param
-
-        """
-
-        mins = {}
-        maxes = {}
-        for blockVals in self.blockStack:
-            for (paramName, _ts), val in blockVals.items():
-                if val < mins.get(paramName, float("inf")):
-                    mins[paramName] = val
-                if val > maxes.get(paramName, -float("inf")):
-                    maxes[paramName] = val
-
-        return mins, maxes

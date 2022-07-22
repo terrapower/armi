@@ -194,6 +194,18 @@ class TestHistoryTracker(ArmiTestHelper):
         history.addAllFuelAssems()
         self.assertEqual(len(history.detailAssemblyNames), 51)
 
+    def test_getBlockInAssembly(self):
+        history = self.o.getInterface("history")
+        aFuel = self.o.r.core.getFirstAssembly(Flags.FUEL)
+
+        b = history._getBlockInAssembly(aFuel)
+        self.assertGreater(b.p.height, 1.0)
+        self.assertEqual(b.getType(), "fuel")
+
+        with self.assertRaises(RuntimeError):
+            aShield = self.o.r.core.getFirstAssembly(Flags.SHIELD)
+            history._getBlockInAssembly(aShield)
+
 
 class TestHistoryTrackerNoModel(unittest.TestCase):
     """History tracker tests that do not require a Reactor Model."""
