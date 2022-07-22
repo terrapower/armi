@@ -254,7 +254,6 @@ class BoundaryType(enum.Enum):
     @property
     def label(self):
         """Human-presentable label"""
-
         if self == self.NO_SYMMETRY:
             return "No Symmetry"
         elif self == self.REFLECTIVE:
