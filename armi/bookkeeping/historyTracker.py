@@ -137,7 +137,6 @@ class HistoryTrackerInterface(interfaces.Interface):
     def interactEOL(self):
         """Generate the history reports."""
         self._writeDetailAssemblyHistories()
-        self.printFullCoreLocations()
 
     def addDetailAssembliesBOL(self):
         """
@@ -329,38 +328,6 @@ class HistoryTrackerInterface(interfaces.Interface):
             out.write("{0} {1}\n".format(a.getName(), a.getType()))
             for b in blocks:
                 out.write('"{}" {} {}\n'.format(b.getType(), b.p.xsType, b.p.buGroup))
-
-    def printFullCoreLocations(self):
-        """
-        Print a report showing the locations of each assembly as functions of time.
-
-        This is useful for third-party follow-on analysis of fuel management.
-        """
-        aNameList = []  # NWT: Have to read this from the DB.
-
-        ofile = open(self.cs.caseTitle + ".locationHistory.txt", "w")  # MORE data files
-        ofile.write(
-            " ".join(
-                ["Assem"]
-                + ["{:5d}".format(c) for c in range(self.cs["nCycles"])]
-                + ["\n"]
-            )
-        )
-
-        for aName in aNameList:
-            # print the assembly number and then all the locations it was ever in.
-            line = [aName[1:] + " "]
-            for cycle in range(self.cs["nCycles"]):
-                row, loc = self.fullCoreLocations.get((aName, cycle), (None, None))
-                if row:
-                    val1 = "{0:02d}{1:03d}".format(row, loc)
-                else:
-                    # none returned
-                    val1 = "     "
-                line.append(val1)
-            line.append("\n")
-            ofile.write(" ".join(line))
-        ofile.close()
 
     def preloadBlockHistoryVals(self, names, keys, timesteps):
         """

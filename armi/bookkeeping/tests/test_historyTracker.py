@@ -183,8 +183,6 @@ class TestHistoryTracker(ArmiTestHelper):
         shutil.move(fileName, os.path.join(THIS_DIR, fileName))
 
         self.compareFilesLineByLine(expectedFileName, actualFilePath)
-        # clean file created at interactEOL
-        os.remove("armiRun.locationHistory.txt")
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
