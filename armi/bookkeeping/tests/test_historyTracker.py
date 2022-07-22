@@ -35,7 +35,7 @@ from armi.reactor import blocks
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.tests import ArmiTestHelper
-from armi.utils import directoryChangers
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 CASE_TITLE = "anl-afci-177"
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
@@ -57,34 +57,13 @@ class TestHistoryTracker(ArmiTestHelper):
 
     @classmethod
     def setUpClass(cls):
-        # Not using a directory changer since it isn't important that we go back in the
-        # first place, and we don't want to get tangled with the directory change below.
-        # We need to be in the TUTORIAL_DIR in the first place so that for `filesToMove`
-        # to work right.
+        # We need to be in the TUTORIAL_DIR so that for `filesToMove` to work right.
         os.chdir(TUTORIAL_DIR)
 
-        # Make sure to do this work in a temporary directory to avoid race conditions
-        # when running tests in parallel with xdist.
-        cls.dirChanger = directoryChangers.TemporaryDirectoryChanger(
-            filesToMove=TUTORIAL_FILES
-        )
+        # Do this work in a temp dir, to avoid race conditions.
+        cls.dirChanger = TemporaryDirectoryChanger(filesToMove=TUTORIAL_FILES)
         cls.dirChanger.__enter__()
         runTutorialNotebook()
-
-        reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
-
-        newSettings = {}
-        newSettings["db"] = True
-        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        newSettings["runType"] = "Snapshots"
-        newSettings["loadStyle"] = "fromDB"
-        newSettings["detailAssemLocationsBOL"] = ["001-001"]
-
-        reloadCs = reloadCs.modified(newSettings=newSettings)
-        reloadCs.caseTitle = "armiRun"
-
-        o = armi_init(cs=reloadCs)
-        cls.o = o
 
     @classmethod
     def tearDownClass(cls):
@@ -94,13 +73,13 @@ class TestHistoryTracker(ArmiTestHelper):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
-        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        newSettings["loadStyle"] = "fromDB"
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         newSettings["startNode"] = 1
         cs = cs.modified(newSettings=newSettings)
 
-        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 
         c = case.Case(cs)
