@@ -19,12 +19,12 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access
 import os
 import pathlib
 import shutil
 import unittest
 
-from armi import init as armi_init
 from armi import settings
 from armi import utils
 from armi.bookkeeping import historyTracker
@@ -43,6 +43,7 @@ TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 
 
 def runTutorialNotebook():
+    # pylint: disable=import-outside-toplevel
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor
 

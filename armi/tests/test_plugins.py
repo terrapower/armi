@@ -78,7 +78,7 @@ class TestPlugin(unittest.TestCase):
 
         cs = settings.getMasterCs()
         results = self.plugin.exposeInterfaces(cs)
-        if results is None or not len(results):
+        if results is None or not results:
             return
 
         # each plugin should return a list
