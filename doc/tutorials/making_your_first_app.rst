@@ -397,7 +397,7 @@ This can be done by sublassing :py:class:`armi.plugins.UserPlugin`:
         """
 
         @staticmethod
-        @HOOKSPEC
+        @plugins.HOOKIMPL
         def afterLoadDB(core, cs):
         for b in core.getBlocks(Flags.FUEL):
             b.p.power += 1.0
