@@ -156,6 +156,9 @@ class ComponentBlueprint(yamlize.Object):
     orientation = yamlize.Attribute(type=str, default=None)
     mergeWith = yamlize.Attribute(type=str, default=None)
     area = yamlize.Attribute(type=float, default=None)
+    axiallyExpandsDownwards = yamlize.Attribute(
+        type=bool, default=False, key="axially expands downwards"
+    )
 
     def construct(self, blueprint, matMods):
         """Construct a component or group"""
@@ -176,6 +179,7 @@ class ComponentBlueprint(yamlize.Object):
 
         else:
             constructedObject = components.factory(shape, [], kwargs)
+            constructedObject.axiallyExpandsDownwards = self.axiallyExpandsDownwards
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
         return constructedObject
@@ -199,6 +203,10 @@ class ComponentBlueprint(yamlize.Object):
             elif attr.name == "flags":
                 # Don't pass these to the component constructor. These are used to
                 # override the flags derived from the type, if present.
+                continue
+            elif attr.name == "axiallyExpandsDownwards":
+                # Don't pass to component constructor. Gets manually assigned after
+                # component is initialized.
                 continue
             else:
                 value = attr.get_value(self)

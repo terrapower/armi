@@ -236,6 +236,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+        self.axiallyExpandsDownwards = False
 
     @property
     def temperatureInC(self):
