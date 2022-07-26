@@ -422,7 +422,7 @@ file:
 
 .. code-block::
 
-  userPlugins::
+  userPlugins:
     - armi.tests.test_user_plugins.UserPlugin0
     - //path/to/my/pluginz.py:UserPlugin1
     - C:\\path\to\my\pluginZ.py:UserPlugin2
