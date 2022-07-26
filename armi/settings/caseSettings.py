@@ -402,6 +402,9 @@ class Settings:
 
         if newSettings:
             for key, val in newSettings.items():
+                # this prevents a breaking change 
+                if len(val) == 1:
+                    val = val[0]
                 if isinstance(val, Setting):
                     settings.__settings[key] = copy(val)
                 elif key in settings.__settings:

@@ -38,6 +38,7 @@ import glob
 import tabulate
 import six
 import coverage
+from collections import defaultdict
 
 from armi import context
 from armi import getPluginManager
@@ -755,12 +756,13 @@ def copyInterfaceInputs(
     sourceDirPath = pathlib.Path(sourceDir)
     destPath = pathlib.Path(destination)
 
-    newSettings = {}
+    newSettings = defaultdict(list)
 
     assert destPath.is_dir()
 
     for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
+        runLog.info("interfaceFileNames: {}".format(interfaceFileNames))
         # returned files can be absolute paths, relative paths, or even glob patterns.
         # Since we don't have an explicit way to signal about these, we sort of have to
         # guess. In future, it might be nice to have interfaces specify which
@@ -795,33 +797,16 @@ def copyInterfaceInputs(
                     except OSError:
                         pass
 
-                    # relative path/glob. Should be safe to just use glob resolution.
-                    # Note that `glob.glob` is being used here rather than `pathlib.glob` because
-                    # `pathlib.glob` for Python 3.7.2 does not handle case sensitivity for file and
-                    # path names. This is required for copying and using Python scripts (e.g., fuel management,
-                    # control logic, etc.).
-                    srcFiles = [
-                        pathlib.Path(os.path.join(sourceDirPath, g))
-                        for g in glob.glob(os.path.join(sourceDirPath, f))
-                    ]
-                    for sourceFullPath in srcFiles:
-                        if not sourceFullPath:
-                            continue
-                        sourceName = os.path.basename(sourceFullPath.name)
-                        destFilePath = os.path.abspath(destPath / sourceName)
-                        pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
-                    if len(srcFiles) == 0:
+                    # Attempt to find file by creating an absolute path
+                    sourceFullPath = pathlib.Path(os.path.join(sourceDirPath, f)) 
+                    if not sourceFullPath:
                         runLog.warning(
                             f"No input files for `{label}` could be resolved "
                             f"with the following file path: `{f}`."
                         )
-                    elif len(srcFiles) > 1:
-                        runLog.warning(
-                            f"Input files for `{label}` resolved to more "
-                            f"than one file; cannot update settings safely. "
-                            f"Discovered input files: {srcFiles}"
-                        )
-                    elif len(srcFiles) == 1:
-                        newSettings[label] = str(destFilePath)
+                    sourceName = os.path.basename(sourceFullPath.name)
+                    destFilePath = os.path.abspath(destPath / sourceName)
+                    pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
+                    newSettings[label].append(str(destFilePath))
 
     return newSettings
