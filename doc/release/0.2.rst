@@ -19,6 +19,8 @@ What's new in ARMI
 #. Changed the default value of the ``trackAssems`` setting to ``False``.
 #. Added new ``UserPlugin`` functionality.
 #. Made the min/max temperatures of ``Material`` curves discoverable.
+#. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
+#. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
 #. TBD
 
 Bug fixes
@@ -32,6 +34,9 @@ Bug fixes
 #. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
 #. Fixed bugs in the ARMI memory profiler.
 #. Fixed linear expansion in ``Alloy200``.
+#. Remove ``copy.deepcopy`` from ``armi/reactor/converters/uniformMesh.py``
+#. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``
+#. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
 #. TBD
 
 

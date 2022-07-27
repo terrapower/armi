@@ -17,6 +17,7 @@ Unit tests for pathTools.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import os
+import time
 import types
 import unittest
 
@@ -119,6 +120,29 @@ class PathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir3, mpiRank=0)
             context.waitAll()
             self.assertFalse(os.path.exists(dir3))
+
+    def test_isFilePathNewer(self):
+        with TemporaryDirectoryChanger():
+            path1 = "test_isFilePathNewer1.txt"
+            with open(path1, "w") as f1:
+                f1.write("test1")
+
+            time.sleep(1)
+
+            path2 = "test_isFilePathNewer2.txt"
+            with open(path2, "w") as f2:
+                f2.write("test2")
+
+            self.assertFalse(pathTools.isFilePathNewer(path1, path2))
+            self.assertTrue(pathTools.isFilePathNewer(path2, path1))
+
+    def test_isAccessible(self):
+        with TemporaryDirectoryChanger():
+            path1 = "test_isAccessible.txt"
+            with open(path1, "w") as f1:
+                f1.write("test")
+
+            self.assertTrue(pathTools.isAccessible(path1))
 
 
 if __name__ == "__main__":
