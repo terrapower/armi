@@ -630,9 +630,13 @@ class TestDetermineTargetComponent(unittest.TestCase):
             dummy,
         )
 
-        self.obj.expansionData._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+        self.obj.expansionData._componentDeterminesBlockHeight[
+            b.axialExpTargetComponent
+        ] = True
         self.assertTrue(
-            self.obj.expansionData._componentDeterminesBlockHeight[b.axialExpTargetComponent]
+            self.obj.expansionData._componentDeterminesBlockHeight[
+                b.axialExpTargetComponent
+            ]
         )
 
 
