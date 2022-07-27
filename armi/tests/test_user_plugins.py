@@ -34,12 +34,11 @@ from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 
-HOOKSPEC = pluggy.HookspecMarker("armi")
-
-
 class UserPluginFlags(plugins.UserPlugin):
     """Simple UserPlugin that defines a single, new flag."""
 
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineFlags():
         return {"SPECIAL": utils.flags.auto()}
 
@@ -47,6 +46,8 @@ class UserPluginFlags(plugins.UserPlugin):
 class UserPluginFlags2(plugins.UserPlugin):
     """Simple UserPlugin that defines a single, new flag."""
 
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineFlags():
         return {"FLAG2": utils.flags.auto()}
 
@@ -54,6 +55,8 @@ class UserPluginFlags2(plugins.UserPlugin):
 class UserPluginFlags3(plugins.UserPlugin):
     """Simple UserPlugin that defines a single, new flag."""
 
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineFlags():
         return {"FLAG3": utils.flags.auto()}
 
@@ -64,6 +67,8 @@ from armi import plugins
 from armi import utils
 
 class UserPluginFlags4(plugins.UserPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineFlags():
         return {"FLAG4": utils.flags.auto()}
 """
@@ -72,6 +77,8 @@ class UserPluginFlags4(plugins.UserPlugin):
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
     """This is invalid/bad because it implements defineSettings()"""
 
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineSettings():
         return [1, 2, 3]
 
@@ -79,6 +86,8 @@ class UserPluginBadDefinesSettings(plugins.UserPlugin):
 class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
     """This is invalid/bad because it implements defineParameterRenames()"""
 
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineParameterRenames():
         return {"oldType": "type"}
 
@@ -91,7 +100,7 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
     """
 
     @staticmethod
-    @HOOKSPEC
+    @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs):
         blocks = core.getBlocks(Flags.FUEL)
         for b in blocks:
