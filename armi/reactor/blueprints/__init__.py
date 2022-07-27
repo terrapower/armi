@@ -256,7 +256,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         ValueError
             If neither name nor specifier are passed
 
-
         Notes
         -----
         There is some possibility for "compiling" the logic with closures to make
@@ -344,7 +343,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         :py:meth:`Component construction <armi.reactor.blueprints.componentBlueprint.
         ComponentBlueprint._constructMaterial>`.
         """
-
         from armi import utils
 
         actives = set()

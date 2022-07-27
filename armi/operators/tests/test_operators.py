@@ -88,7 +88,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(o.interfaceIsActive("main"))
         self.assertFalse(o.interfaceIsActive("Fake-o"))
 
-    def test_loadState(self):
+    def test_loadStateError(self):
         """The loadTestReactor() test tool does not have any history in the DB to load from"""
         o, _r = test_reactors.loadTestReactor()
 
