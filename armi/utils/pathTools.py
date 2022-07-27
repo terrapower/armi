@@ -100,20 +100,7 @@ def isAccessible(path):
     path : str
         a directory or file
     """
-    if os.path.exists(path):
-        # This can potentially return a false positive in Python 2 if the path
-        # exists but the user does not have access. As a workaround, we attempt
-        # to list the contents of the containing directory, which will throw an
-        # OSError if the user doesn't have access.
-        try:
-            if not os.path.isdir(path):
-                path = os.path.dirname(path)
-            os.listdir(path)
-            return True
-        except OSError:
-            return False
-    else:
-        return False
+    return os.path.exists(path)
 
 
 def separateModuleAndAttribute(pathAttr):
