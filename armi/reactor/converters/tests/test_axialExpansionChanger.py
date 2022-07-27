@@ -624,15 +624,15 @@ class TestDetermineTargetComponent(unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-        b.setTargetComponent(dummy)
+        b.setAxialExpTargetComp(dummy)
         self.assertEqual(
-            b.targetComponent,
+            b.axialExpTargetComponent,
             dummy,
         )
 
-        self.obj.expansionData._componentDeterminesBlockHeight[b.targetComponent] = True
+        self.obj.expansionData._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
         self.assertTrue(
-            self.obj.expansionData._componentDeterminesBlockHeight[b.targetComponent]
+            self.obj.expansionData._componentDeterminesBlockHeight[b.axialExpTargetComponent]
         )
 
 
