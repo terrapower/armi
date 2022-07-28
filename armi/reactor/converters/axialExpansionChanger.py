@@ -63,7 +63,12 @@ class AxialExpansionChanger:
         self.expansionData = None
 
     def performPrescribedAxialExpansion(
-        self, a, componentLst: list, percents: list, setFuel=True
+        self,
+        a,
+        componentLst: list,
+        percents: list,
+        setFuel: bool = True,
+        CRA: bool = False,
     ):
         """Perform axial expansion of an assembly given prescribed expansion percentages
 
@@ -85,7 +90,10 @@ class AxialExpansionChanger:
         """
         self.setAssembly(a, setFuel)
         self.expansionData.setExpansionFactors(componentLst, percents)
-        self.axiallyExpandAssembly(thermal=False)
+        if CRA:
+            self.axiallyExpandControlAssembly(thermal=False)
+        else:
+            self.axiallyExpandAssembly(thermal=False)
 
     def performThermalAxialExpansion(
         self,
@@ -94,6 +102,7 @@ class AxialExpansionChanger:
         tempField: list,
         setFuel: bool = True,
         updateNDensForRadialExp: bool = True,
+        CRA: bool = False,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field
 
@@ -111,6 +120,8 @@ class AxialExpansionChanger:
         updateNDensForRadialExp: optional, bool
             boolean to determine whether or not the component number densities should be updated
             to account for radial expansion/contraction
+        CRA : boolean, optional
+            boolean to determine whether or not to use the specific control assembly expansion method
 
         Notes
         -----
@@ -124,7 +135,10 @@ class AxialExpansionChanger:
             tempGrid, tempField, updateNDensForRadialExp
         )
         self.expansionData.computeThermalExpansionFactors()
-        self.axiallyExpandAssembly(thermal=True)
+        if CRA:
+            self.axiallyExpandControlAssembly(thermal=True)
+        else:
+            self.axiallyExpandAssembly(thermal=True)
 
     def reset(self):
         self.linked = None
@@ -203,17 +217,17 @@ class AxialExpansionChanger:
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
-            # if not in the dummy block, get expansion factor, do alignment, and modify block
-            if ib < (numOfBlocks - 1):
+            isDummyBlock = ib == (numOfBlocks - 1)
+            if not isDummyBlock:
                 ## grow all the components
-                for c in b:
+                for c in _getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(
                         msg="      Component {0}, growFrac = {1:.4e}".format(
                             c, growFrac
                         )
                     )
-                    if thermal and self.expansionData.componentReferenceHeight:
+                    if thermal and c in self.expansionData.componentReferenceHeight:
                         blockHeight = self.expansionData.componentReferenceHeight[c]
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
@@ -239,8 +253,13 @@ class AxialExpansionChanger:
                         else:
                             # otherwise there aren't any linked components
                             # so just set the bottom of the component to
-                            # the top of the block below it
-                            c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                            # the top of the target component in the block below it
+                            targetCompForBlockBelow = (
+                                self.expansionData.getTargetComponent(
+                                    self.linked.linkedBlocks[b][0]
+                                )
+                            )
+                            c.zbottom = targetCompForBlockBelow.ztop
                     c.ztop = c.zbottom + c.height
 
         # align downward expanding components
@@ -258,34 +277,47 @@ class AxialExpansionChanger:
                     else:
                         # otherwise there aren't any linked components
                         # so just set the top of the component to
-                        # the bottom of the block above it
-                        c.ztop = self.linked.linkedBlocks[b][1].p.zbottom
+                        # the bottom of target component in the block above it
+                        targetCompForBlockAbove = self.expansionData.getTargetComponent(
+                            self.linked.linkedBlocks[b][1]
+                        )
+                        c.ztop = targetCompForBlockAbove.zbottom
                 c.zbottom = c.ztop - c.height
 
         # align upward expanding pin components within control rod bundle.
-        # new c.height is set, but c.zbottom and c.ztop need to be set
+        # new c.height has been updated, but c.zbottom and c.ztop need to be set
         for ib, b in enumerate(self.linked.a.getChildrenWithFlags(Flags.CONTROL)):
-            c = _getControlPin(b)
+            c = _getComponent(b, Flags.CONTROL)
             if ib == 0:
-                c.zbottom = b.p.zbottom
+                cladComp = _getComponent(b, Flags.CLAD)
+                c.zbottom = cladComp.zbottom
             else:
                 c.zbottom = self.linked.linkedComponents[c][0].ztop
             c.ztop = c.zbottom + c.height
 
-        # redistribute block bounds if on the target component
+        # redistribute block bounds based on the target component
+        adjustedLowestControlDuct = False
         for ib, b in enumerate(self.linked.a):
-            # if ib == 0, leave block bottom = 0.0
-            if ib > 0:
+            c = self.expansionData.getTargetComponent(b)
+            runLog.debug("      Component {0} is target component".format(c))
+            if 0 < ib < numOfBlocks - 1:
+                b.p.zbottom = c.zbottom
+                # correct potentially misaligned blocks
+                if (
+                    self.linked.linkedBlocks[b][0].p.ztop != c.zbottom
+                    and ib < numOfBlocks - 1
+                ):
+                    b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+            if ib == numOfBlocks - 1:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
-            if ib < len(self.linked.a) - 1:
-                for c in b:
-                    if self.expansionData.isTargetComponent(c):
-                        runLog.debug(
-                            "      Component {0} is target component".format(c)
-                        )
-                        b.p.ztop = c.ztop
-                        break
+            elif b.hasFlags(Flags.EXPANDABLE) and not adjustedLowestControlDuct:
+                cTmp = self.expansionData.getTargetComponent(self.linked.a[ib + 1])
+                b.p.ztop = cTmp.zbottom
+                adjustedLowestControlDuct = True
+            else:
+                b.p.ztop = c.ztop
 
+        for b in self.linked.a:
             # see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
             oldComponentVolumes = [c.getVolume() for c in b]
@@ -452,17 +484,22 @@ class AxialExpansionChanger:
                     c.setNumberDensity(key, c.getNumberDensity(key) / growth)
 
 
-def _getControlPin(b):
-    """return control pin in control block"""
-    controlComps = b.getChildrenWithFlags(Flags.CONTROL)
-    if len(controlComps) > 1:
+def _getComponent(b, componentFlag):
+    """return component (with componentFlag) in block, b"""
+    comps = b.getChildrenWithFlags(componentFlag)
+    if len(comps) > 1:
         raise RuntimeError(
-            f"Block {b} has multiple control pin components! "
-            "The axial expansion changer is currently only set up to manage one "
-            "control pin component per control block."
-            "Returned Components = {controlComps}"
+            f"Block {b} has multiple components with flag {componentFlag}"
+            "_getComponent can only process blocks who have 1 component that"
+            "match componentFlag."
+            "Returned Components = {comps}"
         )
-    return controlComps[0]
+    if len(comps) == 0:
+        raise RuntimeError(
+            f"Block {b} has no components matching the flag {componentFlag}!"
+        )
+    return comps[0]
+
 
 def _getSolidComponents(b):
     """
@@ -924,7 +961,11 @@ class ExpansionData:
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:
-            raise RuntimeError("No target component found!\n   Block {0}".format(b))
+            raise RuntimeError(
+                "No target component found!\n   Block {0}\n   Assembly {1}".format(
+                    b, b.parent
+                )
+            )
         if len(componentWFlag) > 1:
             raise RuntimeError(
                 "Cannot have more than one component within a block that has the target flag!"
@@ -970,3 +1011,21 @@ class ExpansionData:
             :py:class:`Component <armi.reactor.components.component.Component>` object to check target component status
         """
         return bool(c in self._componentDeterminesBlockHeight)
+
+    def getTargetComponent(self, b):
+        """return the target component for a block
+
+        Parameters
+        ----------
+        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+            block to retrieve target component
+
+        Raises
+        ------
+        RuntimeError
+            no target component found
+        """
+        for c in b:
+            if self.isTargetComponent(c):
+                return c
+        raise RuntimeError(f"No target component found for block {b}!")

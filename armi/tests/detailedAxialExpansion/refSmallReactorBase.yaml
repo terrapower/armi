@@ -25,9 +25,9 @@ blocks:
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            ip: 15.277
+            ip: 12.0
             mult: 1.0
-            op: 16.577
+            op: 15.5
         coolant: &component_coolant
             shape: DerivedShape
             material: Sodium
@@ -99,7 +99,7 @@ blocks:
             Thot: 450.0
             ip: 16.0
             mult: 1.0
-            op: 16.6
+            op: 16.5
         intercoolant: &component_fuel_intercoolant
             shape: Hexagon
             material: Sodium
@@ -339,24 +339,10 @@ blocks:
     
     ## ------------------------------------------------------------------------------------
     ## control
-    moveable duct: &block_duct
+    expandable duct: &block_control_duct
         coolant: *component_coolant
-        duct: &component_control_duct
-            shape: Hexagon
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            ip: 15.277
-            mult: 1.0
-            op: 16.28228
-        intercoolant: &component_control_intercoolant
-            shape: Hexagon
-            material: Sodium
-            Tinput: 25.0
-            Thot: 450.0
-            ip: duct.op
-            mult: 1.0
-            op: 16.75
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
 
     moveable control: &block_control
         control:
@@ -365,25 +351,26 @@ blocks:
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            mult: 61.0
-            od: 1.286
+            mult: clad.mult
+            od: 1.0
         gap:
             shape: Circle
             material: Void
             Tinput: 25.0
             Thot: 450.0
             id: control.od
-            mult: control.mult
+            mult: clad.mult
             od: clad.id
-        clad:
+        clad: &component_control_clad
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            id: 1.358
-            mult: control.mult
-            od: 1.686
-        wire:
+            id: 1.2
+            mult: 61.0
+            od: 1.4
+            axially expands downwards: True
+        wire: &component_control_wire
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -391,19 +378,21 @@ blocks:
             axialPitch: 50.0
             helixDiameter: 1.771
             id: 0.0
-            mult: control.mult
+            mult: clad.mult
             od: 0.085
-        innerDuct:
+            axially expands downwards: True
+        ctrlDuct: &component_control_ctrl_duct
             shape: Hexagon
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            ip: 14.268
+            ip: 14.0
             mult: 1.0
-            op: 14.582
-        duct: *component_control_duct
+            op: 14.5
+            axially expands downwards: True
+        duct: *component_fuel_duct
         coolant: *component_coolant
-        intercoolant: *component_control_intercoolant
+        intercoolant: *component_fuel_intercoolant
     
     moveable plenum: &block_control_plenum
         gap:
@@ -414,27 +403,12 @@ blocks:
             id: 0.0
             mult: clad.mult
             od: clad.id
-        clad:
-            shape: Circle
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            id: 1.358
-            mult: 61.0
-            od: 1.686
-        wire:
-            shape: Helix
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            axialPitch: 30.15
-            helixDiameter: 1.19056
-            id: 0.0
-            mult: clad.mult
-            od: 0.10056
+        clad: *component_control_clad
+        wire: *component_control_wire
+        ctrlDuct: *component_control_ctrl_duct
         coolant: *component_coolant
-        duct: *component_control_duct
-        intercoolant: *component_control_intercoolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
 
     ## ------------------------------------------------------------------------------------
     ## radial shield
@@ -576,13 +550,13 @@ assemblies:
         xs types: *igniter_fuel_xs_types
     secondary control:
         specifier: SC
-        blocks: [*block_grid_plate, *block_duct, *block_duct, *block_control, *block_control, *block_control_plenum, *block_duct, *block_duct, *block_dummy]
+        blocks: [*block_grid_plate, *block_control_duct, *block_control_duct, *block_control, *block_control, *block_control_plenum, *block_control_duct, *block_control_duct, *block_dummy]
         height: [25.0, 49.0, 49.0, 25.0, 25.0, 25.0, 1.0, 1.0, 17.5]
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
     primary control:
         specifier: PC
-        blocks: [*block_grid_plate, *block_duct, *block_duct, *block_control, *block_control, *block_control_plenum, *block_duct, *block_duct, *block_dummy]
+        blocks: [*block_grid_plate, *block_control_duct, *block_control_duct, *block_control, *block_control, *block_control_plenum, *block_control_duct, *block_control_duct, *block_dummy]
         height: [25.0, 1.0, 1.0, 25.0, 25.0, 25.0, 49.0, 49.0, 17.5]
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types

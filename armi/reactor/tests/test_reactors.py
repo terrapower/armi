@@ -795,13 +795,13 @@ class HexReactorTests(ReactorTests):
 
     def test_getAvgTemp(self):
         t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
-        self.assertAlmostEqual(t0, 459.267, delta=0.01)
+        self.assertAlmostEqual(t0, 459.456, delta=0.01)
 
         t1 = self.r.core.getAvgTemp([Flags.CLAD, Flags.FUEL])
-        self.assertAlmostEqual(t1, 545.043, delta=0.01)
+        self.assertAlmostEqual(t1, 544.660, delta=0.01)
 
         t2 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT, Flags.FUEL])
-        self.assertAlmostEqual(t2, 521.95269, delta=0.01)
+        self.assertAlmostEqual(t2, 523.137, delta=0.01)
 
     def test_getScalarEvolution(self):
         self.r.core.scalarVals["fake"] = 123

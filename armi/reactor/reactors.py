@@ -2293,7 +2293,7 @@ class Core(composites.Composite):
                     a.makeAxialSnapList(self.refAssem)
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
-                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+                    "=========== Axially expanding all assemblies from Tinput to Thot ==========="
                 )
                 self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
 

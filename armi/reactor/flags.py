@@ -278,8 +278,10 @@ class Flags(Flag):
     STRUCTURE = auto()
     DEPLETABLE = auto()
 
-    # Allows movement of lower plenum with control rod
+    # Allows movement of control rod bundle
     MOVEABLE = auto()
+    # Allows expansion/contraction of control rod assembly ducts (usually above and below a moveable bundle)
+    EXPANDABLE = auto()
 
     @classmethod
     def fromStringIgnoreErrors(cls, typeSpec):

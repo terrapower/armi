@@ -77,12 +77,12 @@ blocks:
         control:
             shape: Circle
             material: B4C
-            Tinput: 600.0
-            Thot: 600.0
+            Tinput: 450.0
+            Thot: 450.0
             id: 0.0
             mult: 61.0
             od: 1.286
-        innerDuct:
+        innerDuct: &component_control_duct
             shape: Hexagon
             material: HT9
             Tinput: 450.0
@@ -90,23 +90,18 @@ blocks:
             ip: 14.268
             mult: 1.0
             op: 14.582
-        duct: &component_control_duct
-            shape: Hexagon
-            material: HT9
-            Tinput: 450.0
-            Thot: 450.0
-            ip: 15.277
-            mult: 1.0
-            op: 16.28228
-        clad:
+            axially expands downwards: True
+        duct: *component_fuel_duct
+        clad: &component_control_clad
             shape: Circle
             material: HT9
             Tinput: 450.0
             Thot: 450.0
             id: 1.358
-            mult: control.mult
+            mult: 61.0
             od: 1.686
-        wire:
+            axially expands downwards: True
+        wire: &component_control_wire
             shape: Helix
             material: HT9
             Tinput: 450.0
@@ -114,8 +109,9 @@ blocks:
             axialPitch: 50.0
             helixDiameter: 1.771
             id: 0.0
-            mult: control.mult
+            mult: clad.mult
             od: 0.085
+            axially expands downwards: True
         intercoolant: *component_fuel_intercoolant
         gap:
             shape: Circle
@@ -126,8 +122,23 @@ blocks:
             mult: control.mult
             od: clad.id
         coolant: *component_fuel_coolant
+    moveable plenum: &block_control_plenum
+        gap:
+            shape: Circle
+            material: Void
+            Tinput: 450.0
+            Thot: 450.0
+            id: 0.0
+            mult: clad.mult
+            od: clad.id
+        clad: *component_control_clad
+        wire: *component_control_wire
+        ctrlDuct: *component_control_duct
+        coolant: *component_fuel_coolant
+        duct: *component_fuel_duct
+        intercoolant: *component_fuel_intercoolant
     duct: &block_duct
-        duct: *component_control_duct
+        duct: *component_fuel_duct
         coolant: *component_fuel_coolant
         intercoolant: *component_fuel_intercoolant
     grid plate: &block_grid_plate
@@ -184,7 +195,7 @@ blocks:
             id: shield.od
             mult: shield.mult
             od: clad.id
-        duct: *component_control_duct
+        duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
         coolant: *component_fuel_coolant
         wire:
@@ -197,7 +208,7 @@ blocks:
             id: 0.0
             mult: shield.mult
             od: 0.10056
-    moveable plenum: &block_plenum
+    plenum: &block_plenum
         clad:
             shape: Circle
             material: HT9
@@ -416,7 +427,7 @@ assemblies:
         nozzleType: Outer
     primary control:
         specifier: PC
-        blocks: [*block_grid_plate, *block_duct, *block_control, *block_plenum, *block_duct]
+        blocks: [*block_grid_plate, *block_duct, *block_control, *block_control_plenum, *block_duct]
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
