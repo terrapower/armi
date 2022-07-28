@@ -31,7 +31,6 @@ customizing much of the Framework's behavior.
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
-import os
 import sys
 
 from armi import context, plugins, pluginManager, meta, settings
@@ -263,7 +262,7 @@ class App:
         self.__initNewPlugins()
 
         for pluginPath in pluginPaths:
-            if os.sep in pluginPath:
+            if ".py:" in pluginPath:
                 # The path is of the form: /path/to/why.py:MyPlugin
                 self.__registerUserPluginsAbsPath(pluginPath)
             else:
@@ -274,19 +273,11 @@ class App:
         """Helper method to register a single UserPlugin where
         the given path is of the form: /path/to/why.py:MyPlugin
         """
-        # determine if this is a Windows system
-        isWindows = False
-        if os.name == "nt":
-            isWindows = True
+        assert pluginPath.count(".py:") == 1, f"Invalid plugin path: {pluginPath}"
 
-        # handle the minor variations on Windows file pathing
-        if isWindows:
-            assert pluginPath.count(":") == 2, f"Invalid plugin path: {pluginPath}"
-            drive, filePath, className = pluginPath.split(":")
-            filePath = drive + ":" + filePath
-        else:
-            assert pluginPath.count(":") == 1, f"Invalid plugin path: {pluginPath}"
-            filePath, className = pluginPath.split(":")
+        # split the settings string into file path and class name
+        filePath, className = pluginPath.split(".py:")
+        filePath += ".py"
 
         spec = importlib.util.spec_from_file_location(className, filePath)
         mod = importlib.util.module_from_spec(spec)
