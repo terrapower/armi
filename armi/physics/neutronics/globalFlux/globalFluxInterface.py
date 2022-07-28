@@ -1065,10 +1065,10 @@ def calcReactionRates(obj, keff, lib):
 
         nucMc = lib.getNuclide(nucName, obj.getMicroSuffix())
         micros = nucMc.micros
-        for g, groupGlux in enumerate(obj.getMgFlux()):
+        for g, groupFlux in enumerate(obj.getMgFlux()):
 
             # dE = flux_e*dE
-            dphi = numberDensity * groupGlux
+            dphi = numberDensity * groupFlux
 
             tot += micros.total[g, 0] * dphi
             # absorption is fission + capture (no n2n here)

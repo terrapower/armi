@@ -60,6 +60,7 @@ from timeit import default_timer as timer
 
 import numpy
 
+import armi
 from armi import runLog
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
@@ -83,17 +84,29 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self.blockDetailedAxialExpansionParamNames = []
         self.reactorParamNames = []
 
+        # These dictionaries represent back-up data from the source reactor
+        # that can be recovered if the data is not being brought back from
+        # the uniform mesh reactor when ``applyStateToOriginal`` to called.
+        # This prevents clearing out data on the original reactor that should
+        # be preserved since no changes were applied.
+        self._cachedReactorCoreParamData = {}
+        self._cachedBlockParamData = collections.defaultdict(dict)
+
     def convert(self, r=None):
         """Create a new reactor with a uniform mesh."""
         runLog.extra("Building copy of {} with a uniform axial mesh".format(r))
-
         completeStartTime = timer()
         self._sourceReactor = r
         self.convReactor = self.initNewReactor(r)
         self._setParamsToUpdate()
         self._computeAverageAxialMesh()
         self._buildAllUniformAssemblies()
-        self._clearStateOnReactor(self.convReactor)
+
+        # Clear the state of the converted reactor that was just built
+        # to ensure that there is no stale data from creation a new
+        # reactor. The caching is disabled in this case because we don't
+        # care about storing this data since it might be overwritten later.
+        self._clearStateOnReactor(self.convReactor, cache=False)
         self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
         self.convReactor.core.updateAxialMesh()
         self._checkConversion()
@@ -299,7 +312,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def _setParamsToUpdate(self):
         """Gather a list of parameters that will be mapped between reactors."""
 
-    def _clearStateOnReactor(self, reactor):
+    def _clearStateOnReactor(self, reactor, cache):
         """
         Delete existing state that will be updated so they don't increment.
 
@@ -307,10 +320,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         runLog.debug("Clearing params from source reactor that will be converted.")
         for rp in self.reactorParamNames:
+            if cache:
+                self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
             reactor.core.p[rp] = 0.0
 
         for b in reactor.core.getBlocks():
             for bp in self.blockDetailedAxialExpansionParamNames:
+                if cache:
+                    self._cachedBlockParamData[b][bp] = b.p[bp]
                 b.p[bp] = 0.0
 
     def applyStateToOriginal(self):
@@ -321,7 +338,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
             f"Applying uniform neutronics mesh results from {self.convReactor} to ARMI mesh on {self._sourceReactor}"
         )
         completeStartTime = timer()
-        self._clearStateOnReactor(self._sourceReactor)
+
+        # Clear the state of the original source reactor to ensure that
+        # a clean mapping between the converted reactor for data that has been
+        # changed. In this case, we cache the original reactor's data so that
+        # after the mapping has been applied, we can recover data from any
+        # parameters that did not change.
+        self._cachedReactorCoreParamData = {}
+        self._cachedBlockParamData = collections.defaultdict(dict)
+        self._clearStateOnReactor(self._sourceReactor, cache=True)
         self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
         completeEndTime = timer()
         runLog.extra(
@@ -421,13 +446,17 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             f"Block params that will be mapped are: {self.blockMultigroupParamNames + self.blockDetailedAxialExpansionParamNames}"
         )
 
-    def _clearStateOnReactor(self, reactor):
+    def _clearStateOnReactor(self, reactor, cache):
         """
         Clear all multi-group block parameters.
         """
-        UniformMeshGeometryConverter._clearStateOnReactor(self, reactor)
+        print("cache", cache)
+
+        UniformMeshGeometryConverter._clearStateOnReactor(self, reactor, cache)
         for b in reactor.core.getBlocks():
             for fluxParam in self.blockMultigroupParamNames:
+                if cache:
+                    self._cachedBlockParamData[b][fluxParam] = b.p[fluxParam]
                 b.p[fluxParam] = []
 
     def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
@@ -463,9 +492,21 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                     paramVals.append(numpy.array(val))
             return numpy.array(paramVals, dtype=object)
 
+        # Map reactor core parameters
         for paramName in self.reactorParamNames:
-            destReactor.core.p[paramName] = sourceReactor.core.p[paramName]
+            # Check if the source reactor has a value assigned for this
+            # parameter and if so, then apply it. Otherwise, revert back to
+            # the original value.
+            if (
+                sourceReactor.core.p[paramName]
+                or paramName not in self._cachedReactorCoreParamData
+            ):
+                val = sourceReactor.core.p[paramName]
+            else:
+                val = self._cachedReactorCoreParamData[paramName]
+            destReactor.core.p[paramName] = val
 
+        # Map block parameters
         for aSource in sourceReactor.core:
             aDest = destReactor.core.getAssemblyByName(aSource.getName())
 
@@ -476,6 +517,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 multiGroupParamSetter,
                 multiGroupParamGetter,
                 self.blockMultigroupParamNames,
+                self._cachedBlockParamData,
             )
 
             # Map the detailed axial expansion parameters
@@ -485,6 +527,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 paramSetter,
                 paramGetter,
                 self.blockDetailedAxialExpansionParamNames,
+                self._cachedBlockParamData,
             )
 
             # If requested, the reaction rates will be calculated based on the
@@ -494,6 +537,9 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                     globalFluxInterface.calcReactionRates(
                         b, destReactor.core.p.keff, destReactor.core.lib
                     )
+
+        self._cachedReactorCoreParamData = {}
+        self._cachedBlockParamData = collections.defaultdict(dict)
 
 
 def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
@@ -527,7 +573,7 @@ def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
 
 
 def _setStateFromOverlaps(
-    sourceAssembly, destinationAssembly, setter, getter, paramNames
+    sourceAssembly, destinationAssembly, setter, getter, paramNames, cachedParams
 ):
     r"""
     Set state info on a assembly based on a source assembly with a different axial mesh
@@ -551,6 +597,12 @@ def _setStateFromOverlaps(
         takes block as an argument, returns relevant state that has __add__ capabilities.
     paramNames : list
         List of param names to set/get.
+    cachedParams : collections.defaultdict(dict)
+        A dictionary containing keys for each original block from the destination assembly
+        that are mapped to a dictionary containing key, value pairs of parameter names and original
+        values of the parameter from the destination assembly before the conversion process
+        took place. In the instance where a block within the source assembly does not have a value,
+        it the original cached value will be taken.
 
     Notes
     -----
@@ -642,3 +694,22 @@ def _setStateFromOverlaps(
                 updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
             setter(destBlock, updatedDestVals.values(), updatedDestVals.keys())
+
+        # For parameters that have not been set on the destination block, recover these
+        # back to their originals based on the cached values.
+        for paramName in paramNames:
+            # Skip over any parameter names that were not previously cached.
+            if paramName not in cachedParams[destBlock]:
+                continue
+
+            if isinstance(destBlock.p[paramName], list) or isinstance(
+                destBlock.p[paramName], numpy.ndarray
+            ):
+                # Using just all() on the list/array is not sufficient because if a zero value exists
+                # in the data then this would then lead to overwritting the data. This is an edge case see
+                # in the testing, so this excludes zero values on the check.
+                if not all([val for val in destBlock.p[paramName] if val != 0.0]):
+                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
+            else:
+                if not destBlock.p[paramName]:
+                    destBlock.p[paramName] = cachedParams[destBlock][paramName]

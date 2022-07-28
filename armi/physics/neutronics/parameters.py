@@ -787,14 +787,6 @@ def _getNeutronicsCoreParams():
         )
 
         pb.defParam(
-            "axialMesh",
-            units="cm",
-            description="Global axial mesh from bottom to top used in structured-mesh neutronics simulations.",
-            default=None,
-            location=ParamLocation.TOP,
-        )
-
-        pb.defParam(
             "kInf",
             units=None,
             description="k-infinity",
