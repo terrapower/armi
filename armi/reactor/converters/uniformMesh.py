@@ -62,6 +62,7 @@ import numpy
 
 import armi
 from armi import runLog
+from armi import settings
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
 from armi.utils import plotting
@@ -136,7 +137,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         bp = copy.deepcopy(sourceReactor.blueprints)
         newReactor = Reactor(sourceReactor.name, bp)
         coreDesign = bp.systemDesigns["core"]
-        coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
+        if sourceReactor.o is None:
+            cs = settings.getMasterCs()
+        else:
+            cs = sourceReactor.o.cs
+
+        coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
 
@@ -450,8 +456,6 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         """
         Clear all multi-group block parameters.
         """
-        print("cache", cache)
-
         UniformMeshGeometryConverter._clearStateOnReactor(self, reactor, cache)
         for b in reactor.core.getBlocks():
             for fluxParam in self.blockMultigroupParamNames:
