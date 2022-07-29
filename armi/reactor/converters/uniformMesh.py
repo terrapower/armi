@@ -134,7 +134,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # attributes are set when assemblies are added in coreDesign.construct(), however
         # since we skip that here, they never get set; therefore the need for the deepcopy.
         bp = copy.deepcopy(sourceReactor.blueprints)
-        newReactor = Reactor(sourceReactor.o.cs.caseTitle, bp)
+        newReactor = Reactor(sourceReactor.name, bp)
         coreDesign = bp.systemDesigns["core"]
         coreDesign.construct(sourceReactor.o.cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
