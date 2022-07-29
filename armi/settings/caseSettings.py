@@ -402,7 +402,7 @@ class Settings:
 
         if newSettings:
             for key, val in newSettings.items():
-                # this prevents a breaking change 
+                # this prevents making a change that would break many an input file
                 if len(val) == 1:
                     val = val[0]
                 if isinstance(val, Setting):
