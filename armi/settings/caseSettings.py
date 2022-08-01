@@ -402,8 +402,11 @@ class Settings:
 
         if newSettings:
             for key, val in newSettings.items():
-                # this prevents making a change that would break many an input file
-                if len(val) == 1:
+                # This first checks for settings that are a list of filenames.
+                # Single-filename settings are not compatible with lists returned from
+                # specifyInputs methods. This hack prevents making a change that would
+                # break many an input file
+                if isinstance(val, list) and isinstance(val[0], str) and len(val) == 1:
                     val = val[0]
                 if isinstance(val, Setting):
                     settings.__settings[key] = copy(val)
