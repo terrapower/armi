@@ -232,7 +232,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
+        self.setNDensFromMassFracsAtTempInC()  # not necessary when duplicating...
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
@@ -327,14 +327,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.material.parent = self
         self.clearLinkedCache()
 
-    def applyMaterialMassFracsToNumberDensities(self):
+    def setNDensFromMassFracsAtTempInC(self):
         """
-        Set number densities for the component using hot temperatures.
+        Set number densities for the component based on material mass using hot temperatures.
 
         Notes
         -----
         - the density returned accounts for the radial expansion of the component
           due to the difference in self.inputTemperatureInC and self.temperatureInC
+        - axial expansion effects are not included here.
         """
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
