@@ -361,18 +361,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         self.setNDensFromMassFracsAtTempInC
         """
-        densityIfNotPreExpandedAxially = self.material.getProperty(
-            "density", Tc=self.temperatureInC
-        )
-
         axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
             self.temperatureInC, self.inputTemperatureInC
         )
-
-        self.p.numberDensities = densityTools.getNDensFromMasses(
-            densityIfNotPreExpandedAxially / axialExpansionFactor,
-            self.material.p.massFrac,
-        )
+        self.changeNDensByFactor(1.0 / axialExpansionFactor)
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""
