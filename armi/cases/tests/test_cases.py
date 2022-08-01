@@ -283,8 +283,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
+            self.assertTrue(isinstance(newSettings, dict))
             newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(newSettings[testSetting], str(newFilepath))
+            self.assertEqual(newSettings[testSetting], [str(newFilepath)])
 
 
 if __name__ == "__main__":
