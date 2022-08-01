@@ -329,9 +329,14 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def applyMaterialMassFracsToNumberDensities(self):
         """
-        Set initial (cold) number densities of this component based Material composition.
+        Set number densities for the component using hot temperatures.
+
+        Notes
+        -----
+        - the density returned accounts for the radial expansion of the component
+          due to the difference in self.inputTemperatureInC and self.temperatureInC
         """
-        density = self.material.getProperty("density", Tc=self.inputTemperatureInC)
+        density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac

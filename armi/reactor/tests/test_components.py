@@ -493,6 +493,15 @@ class TestCircle(TestShapedComponent):
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
 
+    def test_MassConserved(self):
+        """Demonstrate that mass is conserved at different temperatures."""
+        circle1 = Circle("circle", "HT9", 20, 300, 1.0)
+        circle2 = Circle("circle", "HT9", 20, 600, 1.0)
+        self.assertAlmostEqual(
+            circle1.p.numberDensities["FE"] * circle1.getArea(),
+            circle2.p.numberDensities["FE"] * circle2.getArea(),
+        )
+
 
 class TestTriangle(TestShapedComponent):
     componentCls = Triangle
