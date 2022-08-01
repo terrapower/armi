@@ -236,7 +236,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         coldArea = coldComponent.getArea()
 
         self.assertGreater(thermalExpansionFactor, 1)
-        # thermalExpansionFactor accounts density being 3D while area is 2D
+        # thermalExpansionFactor accounts for density being 3D while area is 2D
         self.assertAlmostEqual(
             (coldDensity * coldArea),
             (thermalExpansionFactor * hotDensity * hotArea),
