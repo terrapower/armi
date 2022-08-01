@@ -23,8 +23,7 @@ import platform
 from armi import cases
 from armi import settings
 from armi.utils import directoryChangers
-from armi.tests import ARMI_RUN_PATH
-from armi.tests import TEST_ROOT
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 from armi.reactor import blueprints, systemLayoutInput
 
 
@@ -275,17 +274,51 @@ class TestExtraInputWriting(unittest.TestCase):
 class TestCopyInterfaceInputs(unittest.TestCase):
     """Ensure filepath is updated properly."""
 
-    def test_copyInterfaceInputs(self):
+    def test_copyInterfaceInputs_singleFile(self):
         testSetting = "shuffleLogic"
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
-        with directoryChangers.TemporaryDirectoryChanger() as newDir:  # ensure we are not in IN_USE_TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:  # ensure we are not in TEST_ROOT
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            self.assertTrue(isinstance(newSettings, dict))
             newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(newSettings[testSetting], [str(newFilepath)])
+            self.assertEqual(newSettings[testSetting], str(newFilepath))
+
+    def test_copyInterfaceInputs_nonFilePath(self):
+        testSetting = "shuffleLogic"
+        cs = settings.Settings(ARMI_RUN_PATH)
+        fakeShuffle = "fakeFile.py"
+        cs = cs.modified(newSettings={testSetting: fakeShuffle})
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:  # ensure we are not in TEST_ROOT
+            self.assertRaises(
+                Exception,
+                cases.case.copyInterfaceInputs(cs, destination=newDir.destination),
+            )
+
+    # def test_copyInterfaceInputs_multipleFiles(self):
+    #     testSetting = "copyFilesFrom"
+    #     cs = settings.Settings(ARMI_RUN_PATH)
+    #     settingFiles = ["ISOAA", "COMPXS.ascii"]
+    #     cs = cs.modified(newSettings={testSetting: settingFiles})
+    #     with directoryChangers.TemporaryDirectoryChanger() as newDir:  # ensure we are not in TEST_ROOT
+    #         newSettings = cases.case.copyInterfaceInputs(
+    #             cs, destination=newDir.destination
+    #         )
+    #         newFilepaths = [os.path.join(newDir.destination, f) for f in settingFiles]
+    #         self.assertEqual(newSettings[testSetting], newFilepaths)
+
+    def test_copyInterfaceInputs_wildcardFile(self):
+        testSetting = "shuffleLogic"
+        cs = settings.Settings(ARMI_RUN_PATH)
+        wcFile = "ISO*"
+        cs = cs.modified(newSettings={testSetting: wcFile})
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:  # ensure we are not in TEST_ROOT
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            newFilepath = [os.path.join(newDir.destination, "ISOAA")]
+            self.assertEqual(newSettings[testSetting], newFilepath)
 
 
 if __name__ == "__main__":
