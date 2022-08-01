@@ -762,7 +762,6 @@ def copyInterfaceInputs(
 
     for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
-        runLog.info("interfaceFileNames: {}".format(interfaceFileNames))
         # returned files can be absolute paths, relative paths, or even glob patterns.
         # Since we don't have an explicit way to signal about these, we sort of have to
         # guess. In future, it might be nice to have interfaces specify which
@@ -798,7 +797,7 @@ def copyInterfaceInputs(
                         pass
 
                     # Attempt to find file by creating an absolute path
-                    sourceFullPath = pathlib.Path(os.path.join(sourceDirPath, f)) 
+                    sourceFullPath = pathlib.Path(os.path.join(sourceDirPath, f))
                     if not sourceFullPath:
                         runLog.warning(
                             f"No input files for `{label}` could be resolved "
