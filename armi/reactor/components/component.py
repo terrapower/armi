@@ -329,13 +329,17 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setNDensFromMassFracsAtTempInC(self):
         """
-        Set number densities for the component based on material mass using hot temperatures.
+        Set number densities for the component based on material mass fractions using hot temperatures.
 
         Notes
         -----
         - the density returned accounts for the radial expansion of the component
           due to the difference in self.inputTemperatureInC and self.temperatureInC
         - axial expansion effects are not included here.
+
+        See Also
+        --------
+        self.adjustNDensForHotHeight
         """
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
@@ -343,30 +347,30 @@ class Component(composites.Composite, metaclass=ComponentType):
             density, self.material.p.massFrac
         )
 
-    def applyHotHeightDensityReduction(self):
+    def adjustNDensForHotHeight(self):
         """
-        Set initial (hot) number densities of this component based Material composition.
+        Adjust number densities to account for prescribed hot block heights (axial expansion).
 
         Notes
         -----
-        We apply the hot-height density reduction here to account for pre-expanded
-        block heights in blueprints.
-        Future temperature changes can be handled by multiplications of 1/(1+dLL)**2
-        instead of 1/(1+dLL)**3 since we have pre-expanded in the axial direction.
+        - We apply this hot height density reduction to account for pre-expanded
+          block heights in blueprints.
+        - This is called when inputHeightsConsideredHot: True.
+
+        See Also
+        --------
+        self.setNDensFromMassFracsAtTempInC
         """
-        denistyIfNotPreExpandedAxially = self.material.getProperty(
-            "density", self.temperatureInK
+        densityIfNotPreExpandedAxially = self.material.getProperty(
+            "density", Tc=self.temperatureInC
         )
 
-        # axial expansion factor must be applied because ARMI expects hot heights
-        # to be entered on assemblies in the blueprints  so that it doesn't have to
-        # handle the problem of fuel axially expanding at a different rate than clad.
         axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
             self.temperatureInC, self.inputTemperatureInC
         )
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
-            denistyIfNotPreExpandedAxially / axialExpansionFactor,
+            densityIfNotPreExpandedAxially / axialExpansionFactor,
             self.material.p.massFrac,
         )
 
