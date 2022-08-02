@@ -749,12 +749,18 @@ def copyInterfaceInputs(
     """
     Ping active interfaces to determine which files are considered "input". This
     enables developers to add new inputs in a plugin-dependent/ modular way.
+    
+    This function should now be able to handle the updating of:
+      - a single file (relative or absolute)
+      - a list of files (relative or absolute), and
+      - a file entry that has a wildcard processing into multiple files.
+        Glob is used to offer support for wildcards.
 
     If the file paths are absolute, do nothing. The case will be able to find the file.
 
     In case suites or parameter sweeps, these files often have a sourceDir associated
-    with them that is different from the cs.inputDirectory. So, if relative, update
-    the file paths to be absolute in the case settings and copy the file to the
+    with them that is different from the cs.inputDirectory. So, if relative or wildcard, 
+    update the file paths to be absolute in the case settings and copy the file to the
     destination directory.
 
     Parameters
@@ -776,7 +782,6 @@ def copyInterfaceInputs(
 
     Notes
     -----
-    Glob is used to offer support for wildcards.
 
     Regarding the handling of relative file paths: In the future this could be
     simplified by adding a concept for a suite root directory, below which it is safe
