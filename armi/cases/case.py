@@ -562,7 +562,7 @@ class Case:
                 )
             )
 
-        newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
+        newSettings = findInterfaceInputs(self.cs, clone.cs.inputDirectory)
         newCs = clone.cs.modified(newSettings=newSettings)
         clone.cs = newCs
 
@@ -707,7 +707,7 @@ class Case:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
             # copy input files from other modules/plugins
-            interfaceSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
+            interfaceSettings = findInterfaceInputs(self.cs, ".", sourceDir)
             for settingName, value in interfaceSettings.items():
                 newSettings[settingName] = value
 
@@ -716,17 +716,47 @@ class Case:
 
 
 def copyInterfaceInputs(
+    label: str, fileFullPath: pathlib.Path, destPath: pathlib.Path
+) -> str:
+    """
+
+    Helper function for findInterfaceInputs: Creates an absolute file path, and
+    copies the file to that location.
+
+    Parameters
+    ----------
+    label : str
+        CaseSettings key name
+
+    fileFullPath : pathlib.Path object
+        The absolute file path of the file to copy
+
+    destPath : pathlib.Path object
+        The target directory to copy input files to
+
+    Returns
+    -------
+    destFilePath : str
+    """
+
+    sourceName = os.path.basename(fileFullPath.name)
+    destFilePath = os.path.abspath(destPath / sourceName)
+    pathTools.copyOrWarn(label, fileFullPath, destFilePath)
+    return destFilePath
+
+
+def findInterfaceInputs(
     cs, destination: str, sourceDir: Optional[str] = None
 ) -> Dict[str, Union[str, list]]:
     """
     Ping active interfaces to determine which files are considered "input". This
     enables developers to add new inputs in a plugin-dependent/ modular way.
 
-    If the filepaths are absolute, do nothing. The case will be able to find the file.
+    If the file paths are absolute, do nothing. The case will be able to find the file.
 
     In case suites or parameter sweeps, these files often have a sourceDir associated
     with them that is different from the cs.inputDirectory. So, if relative, update
-    the filepaths to be absolute in the case settings and copy the file to the
+    the file paths to be absolute in the case settings and copy the file to the
     destination directory.
 
     Parameters
@@ -734,23 +764,23 @@ def copyInterfaceInputs(
     cs : CaseSettings
         The source case settings to find input files
 
-    destination: str
+    destination : str
         The target directory to copy input files to
 
-    sourceDir: str, optional
+    sourceDir : str, optional
         The directory from which to copy files. Defaults to cs.inputDirectory
 
     Returns
     -------
-    newSettings: dict
+    newSettings : dict
         A new settings object that contains settings for the keys and either an
-        absolute filepath or a list of absolute filepaths for the values
+        absolute file path or a list of absolute file paths for the values
 
     Notes
     -----
     Glob is used to offer support for wildcards.
 
-    Regarding the handling of relative filepaths: In the future this could be
+    Regarding the handling of relative file paths: In the future this could be
     simplified by adding a concept for a suite root directory, below which it is safe
     to copy files without needing to update settings that point with a relative path
     to files that are below it.
@@ -787,6 +817,7 @@ def copyInterfaceInputs(
                     # Path is absolute, no settings modification or filecopy needed
                     pass
                 else:
+                    # Path is either relative or includes a wildcard
                     try:
                         if not (path.exists() and path.is_file()):
                             runLog.extra(
@@ -796,7 +827,7 @@ def copyInterfaceInputs(
                             )
                     except OSError:
                         pass
-                    # Attempt to find file
+                    # Attempt to find relative path file
                     sourceFullString = os.path.join(sourceDirPath, f)
                     sourceFullPath = pathlib.Path(sourceFullString)
                     if not os.path.exists(sourceFullPath):
@@ -805,7 +836,7 @@ def copyInterfaceInputs(
                             f"with the following file path: `{sourceFullPath}`. Checking "
                             f"for wildcards."
                         )
-                        # loop and glob to capture filepaths from wildcards
+                        # Attempt to capture file paths from wildcards
                         globFilePaths = [
                             pathlib.Path(os.path.join(sourceDirPath, g))
                             for g in glob.glob(sourceFullString)
@@ -815,10 +846,11 @@ def copyInterfaceInputs(
                                 f"No input files for `{label}` setting could be resolved "
                                 f"with the following file path: `{sourceFullPath}`."
                             )
+                    # Finally, copy + update settings according to file path type
                     if not globFilePaths:
-                        sourceName = os.path.basename(sourceFullPath.name)
-                        destFilePath = os.path.abspath(destPath / sourceName)
-                        pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
+                        destFilePath = copyInterfaceInputs(
+                            label, sourceFullPath, destPath
+                        )
                         # Some settings are a single filename. Others are lists of files.
                         # Either overwrite the empty list at the top of the loop, or
                         # append to it.
@@ -828,8 +860,6 @@ def copyInterfaceInputs(
                             newSettings[label].append(str(destFilePath))
                     else:
                         for gFile in globFilePaths:
-                            sourceName = os.path.basename(gFile.name)
-                            destFilePath = os.path.abspath(destPath / sourceName)
-                            pathTools.copyOrWarn(label, gFile, destFilePath)
+                            destFilePath = copyInterfaceInputs(label, gFile, destPath)
                             newSettings[label].append(str(destFilePath))
     return newSettings
