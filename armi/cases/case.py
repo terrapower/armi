@@ -791,7 +791,6 @@ def copyInterfaceInputs(
     assert destPath.is_dir()
 
     newSettings = {}
-    globFilePaths = None
 
     for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
@@ -808,21 +807,19 @@ def copyInterfaceInputs(
 
             newSettings[label] = []
             for f in files:
+                globFilePaths = None
                 path = pathlib.Path(f)
                 if path.is_absolute() and path.exists() and path.is_file():
                     # Path is absolute, no settings modification or filecopy needed
                     pass
                 else:
                     # Path is either relative or includes a wildcard
-                    try:
-                        if not (path.exists() and path.is_file()):
-                            runLog.extra(
-                                f"Input file for `{label}` setting could not be resolved "
-                                f"with the following file path: `{path}`. Checking for "
-                                f"file at path `{sourceDirPath}`."
-                            )
-                    except OSError:
-                        pass
+                    if not (path.exists() and path.is_file()):
+                        runLog.extra(
+                            f"Input file for `{label}` setting could not be resolved "
+                            f"with the following file path: `{path}`. Checking for "
+                            f"file at path `{sourceDirPath}`."
+                        )
 
                     # Attempt to find relative path file
                     sourceFullString = os.path.join(sourceDirPath, f)
