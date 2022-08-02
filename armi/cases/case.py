@@ -716,7 +716,7 @@ class Case:
 
 
 def copyInputsHelper(
-    label: str, fileFullPath: pathlib.Path, destPath: pathlib.Path
+    fileDescription: str, fileFullPath: pathlib.Path, destPath: pathlib.Path
 ) -> str:
     """
 
@@ -725,8 +725,8 @@ def copyInputsHelper(
 
     Parameters
     ----------
-    label : str
-        CaseSettings key name
+    fileDescription : str
+        A file description for the copyOrWarn method
 
     fileFullPath : pathlib.Path object
         The absolute file path of the file to copy
@@ -741,7 +741,7 @@ def copyInputsHelper(
 
     sourceName = os.path.basename(fileFullPath.name)
     destFilePath = os.path.abspath(destPath / sourceName)
-    pathTools.copyOrWarn(label, fileFullPath, destFilePath)
+    pathTools.copyOrWarn(fileDescription, fileFullPath, destFilePath)
     return destFilePath
 
 
