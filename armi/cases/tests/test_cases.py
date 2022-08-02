@@ -287,7 +287,7 @@ class TestPluginForCopyInterfaces(plugins.ArmiPlugin):
         ]
 
 
-class TestFindInterfaceInputs(unittest.TestCase):
+class TestCopyInterfaceInputs(unittest.TestCase):
     """Ensure file path is found and updated properly."""
 
     def test_copyInputsHelper(self):
