@@ -2251,25 +2251,17 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        # TODO: There is an inconsistency with makeAxialSnapList when detailedAxialExpansion: False
-        # In a standard run from the blueprints:
-        #     - All assemblies (blueprints included) have their b.p.topIndex
-        #       set in reference to self.refAssem.getAxialMesh().
-        # In a database load run:
-        #     - All assemblies in the core have their b.p.topIndex as set in the standard run.
-        #     - The blueprints assemblies have the b.p.topIndex set in reference to the assembly with the finest mesh.
-        #       This guarantees functionality of makeAxialSnapList, but, if the assembly with the finest mesh is
-        #       not a fuel assembly, assembly.setBlockMesh may produce unexpected results.
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
-            # this normally happens during armi/reactor/blueprints/__init__.py::_prepConstruction
+            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
             # but for DB load, this is not called so it must be here.
             # pylint: disable=protected-access
             self.parent.blueprints._prepConstruction(cs)
             if not cs["detailedAxialExpansion"]:
                 # Apply mesh snapping for self.parent.blueprints.assemblies
-                # To guarantee mesh snapping will function, makeAxialSnapList should be in reference
-                # to the assembly with the finest mesh as defined in the blueprints.
+                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
+                # considereed here. To guarantee mesh snapping will function, makeAxialSnapList
+                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
                 finestAssemblyMesh = sorted(
                     self.parent.blueprints.assemblies.values(),
                     key=lambda a: len(a),
@@ -2298,7 +2290,7 @@ class Core(composites.Composite):
                         axialExpChngr.setAssembly(a)
                         axialExpChngr.expansionData.computeThermalExpansionFactors()
                         axialExpChngr.axiallyExpandAssembly(thermal=True)
-                axialExpChngr._manageCoreMesh(self.parent)
+                axialExpChngr.manageCoreMesh(self.parent)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 

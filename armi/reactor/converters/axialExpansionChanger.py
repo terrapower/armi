@@ -246,7 +246,7 @@ class AxialExpansionChanger:
             self.expansionData.computeThermalExpansionFactors()
             self.axiallyExpandAssembly()
 
-        self._manageCoreMesh(r)
+        self.manageCoreMesh(r)
 
     def axiallyExpandCorePercent(self, r, components, percents):
         """
@@ -268,9 +268,9 @@ class AxialExpansionChanger:
             self.expansionData.setExpansionFactors(components[a], percents[a])
             self.axiallyExpandAssembly()
 
-        self._manageCoreMesh(r)
+        self.manageCoreMesh(r)
 
-    def _manageCoreMesh(self, r):
+    def manageCoreMesh(self, r):
         """
         manage core mesh post assembly-level expansion
 
