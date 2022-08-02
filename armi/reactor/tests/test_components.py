@@ -236,10 +236,11 @@ class TestUnshapedComponent(TestGeneralComponents):
         coldArea = coldComponent.getArea()
 
         self.assertGreater(thermalExpansionFactor, 1)
+        # thermalExpansionFactor accounts for density being 3D while area is 2D
         self.assertAlmostEqual(
-            (coldDensity / hotDensity) / (thermalExpansionFactor * hotArea / coldArea),
-            1,
-        )  # account for density being 3D while area is 2D
+            (coldDensity * coldArea),
+            (thermalExpansionFactor * hotDensity * hotArea),
+        )
 
     def test_getBoundingCircleOuterDiameter(self):
         # a case without thermal expansion
