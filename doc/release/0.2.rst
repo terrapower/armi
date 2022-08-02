@@ -37,6 +37,7 @@ Bug fixes
 #. Remove ``copy.deepcopy`` from ``armi/reactor/converters/uniformMesh.py``
 #. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``
 #. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
+#. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
 #. TBD
 
 
