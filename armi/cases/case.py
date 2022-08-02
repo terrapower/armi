@@ -719,7 +719,6 @@ def copyInputsHelper(
     fileDescription: str, fileFullPath: pathlib.Path, destPath: pathlib.Path
 ) -> str:
     """
-
     Helper function for copyInterfaceInputs: Creates an absolute file path, and
     copies the file to that location.
 
@@ -738,7 +737,6 @@ def copyInputsHelper(
     -------
     destFilePath : str
     """
-
     sourceName = os.path.basename(fileFullPath.name)
     destFilePath = os.path.abspath(destPath / sourceName)
     pathTools.copyOrWarn(fileDescription, fileFullPath, destFilePath)
@@ -784,22 +782,20 @@ def copyInterfaceInputs(
     simplified by adding a concept for a suite root directory, below which it is safe
     to copy files without needing to update settings that point with a relative path
     to files that are below it.
-
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
     sourceDirPath = pathlib.Path(sourceDir)
     destPath = pathlib.Path(destination)
 
+    assert destPath.is_dir()
+
     newSettings = {}
     globFilePaths = None
-
-    assert destPath.is_dir()
 
     for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
         for key, files in interfaceFileNames.items():
-
             if not isinstance(key, settings.Setting):
                 try:
                     key = cs.getSetting(key)
@@ -827,6 +823,7 @@ def copyInterfaceInputs(
                             )
                     except OSError:
                         pass
+
                     # Attempt to find relative path file
                     sourceFullString = os.path.join(sourceDirPath, f)
                     sourceFullPath = pathlib.Path(sourceFullString)
@@ -846,6 +843,7 @@ def copyInterfaceInputs(
                                 f"No input files for `{label}` setting could be resolved "
                                 f"with the following file path: `{sourceFullPath}`."
                             )
+
                     # Finally, copy + update settings according to file path type
                     if not globFilePaths:
                         destFilePath = copyInputsHelper(label, sourceFullPath, destPath)
@@ -860,4 +858,5 @@ def copyInterfaceInputs(
                         for gFile in globFilePaths:
                             destFilePath = copyInputsHelper(label, gFile, destPath)
                             newSettings[label].append(str(destFilePath))
+
     return newSettings
