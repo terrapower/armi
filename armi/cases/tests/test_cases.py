@@ -279,7 +279,8 @@ class TestExtraInputWriting(unittest.TestCase):
 
 class MultiFilesInterfaces(interfaces.Interface):
     """
-    A mostly meaningless little test interface, just to prove that TODO
+    A little test interface that adds a setting that we need to test copyInterfaceInputs
+    with multiple files.
     """
 
     name = "MultiFilesInterfaces"
