@@ -562,7 +562,7 @@ class Case:
                 )
             )
 
-        newSettings = findInterfaceInputs(self.cs, clone.cs.inputDirectory)
+        newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
         newCs = clone.cs.modified(newSettings=newSettings)
         clone.cs = newCs
 
@@ -707,7 +707,7 @@ class Case:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
             # copy input files from other modules/plugins
-            interfaceSettings = findInterfaceInputs(self.cs, ".", sourceDir)
+            interfaceSettings = copyInterfaceInputs(self.cs, ".", sourceDir)
             for settingName, value in interfaceSettings.items():
                 newSettings[settingName] = value
 
@@ -715,12 +715,12 @@ class Case:
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
-def copyInterfaceInputs(
+def copyInputsHelper(
     label: str, fileFullPath: pathlib.Path, destPath: pathlib.Path
 ) -> str:
     """
 
-    Helper function for findInterfaceInputs: Creates an absolute file path, and
+    Helper function for copyInterfaceInputs: Creates an absolute file path, and
     copies the file to that location.
 
     Parameters
@@ -745,7 +745,7 @@ def copyInterfaceInputs(
     return destFilePath
 
 
-def findInterfaceInputs(
+def copyInterfaceInputs(
     cs, destination: str, sourceDir: Optional[str] = None
 ) -> Dict[str, Union[str, list]]:
     """
@@ -848,9 +848,7 @@ def findInterfaceInputs(
                             )
                     # Finally, copy + update settings according to file path type
                     if not globFilePaths:
-                        destFilePath = copyInterfaceInputs(
-                            label, sourceFullPath, destPath
-                        )
+                        destFilePath = copyInputsHelper(label, sourceFullPath, destPath)
                         # Some settings are a single filename. Others are lists of files.
                         # Either overwrite the empty list at the top of the loop, or
                         # append to it.
@@ -860,6 +858,6 @@ def findInterfaceInputs(
                             newSettings[label].append(str(destFilePath))
                     else:
                         for gFile in globFilePaths:
-                            destFilePath = copyInterfaceInputs(label, gFile, destPath)
+                            destFilePath = copyInputsHelper(label, gFile, destPath)
                             newSettings[label].append(str(destFilePath))
     return newSettings
