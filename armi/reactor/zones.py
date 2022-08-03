@@ -37,7 +37,6 @@ class Zone:
         if locations is None:
             locations = []
         self.locList = locations
-        self.hotZone = False
         self.hostZone = name
 
     def __repr__(self):
@@ -425,7 +424,6 @@ def buildZones(core, cs):
         "\nAssemblies",
         "\nLocations",
         "Symmetry\nFactor",
-        "Hot\nZone",
     ]
     zoneSummaryData = []
     for zi, zone in enumerate(zones, 1):
@@ -433,7 +431,7 @@ def buildZones(core, cs):
             zone, maxNumberOfValuesBeforeDelimiter=6
         )
         zoneSummaryData.append(
-            (zi, zone.name, len(zone), assemLocations, zone.symmetry, zone.hotZone)
+            (zi, zone.name, len(zone), assemLocations, zone.symmetry)
         )
     runLog.info(
         "Assembly zone definitions:\n"
@@ -654,7 +652,6 @@ def splitZones(core, cs, zones):
         "\nAssemblies",
         "\nLocations",
         "Symmetry\nFactor",
-        "Hot\nZone",
     ]
     zoneSummaryData = []
     for zi, zone in enumerate(zones, 1):
@@ -669,7 +666,6 @@ def splitZones(core, cs, zones):
                 len(zone),
                 assemLocations,
                 zone.symmetry,
-                zone.hotZone,
             )
         )
     runLog.info(
@@ -679,61 +675,4 @@ def splitZones(core, cs, zones):
         ),
         single=True,
     )
-    return zones
-
-
-def createHotZones(core, zones):
-    """
-    Make new zones from assemblies with the max power to flow ratio in a zone.
-
-    Parameters
-    ----------
-    core : Core
-        The core object
-    zones: Zones
-        Zones
-
-    Returns
-    -------
-    zones: zones object
-
-    Notes
-    -----
-    This method determines which assembly has the highest power to flow ratio in each zone.
-    This method then removes that assembly from its original zone and places it in a new zone.
-    """
-    originalZoneNames = tuple([zone.name for zone in zones])
-    for name in originalZoneNames:
-        assems = core.getAssemblies(zones=name)
-        # don't create hot zones from zones with only one assembly
-        if len(assems) > 1:
-            maxPOverF = 0.0
-            hotLocation = ""
-            for a in assems:
-                # Check to make sure power and TH calcs were performed for this zon
-                try:
-                    pOverF = a.calcTotalParam("power") / a[-1].p.THmassFlowRate
-                    loc = a.getLocation()
-                    if pOverF >= maxPOverF:
-                        maxPOverF = pOverF
-                        hotLocation = loc
-                except ZeroDivisionError:
-                    runLog.warning(
-                        "{} has no flow. Skipping {} in hot channel generation.".format(
-                            a, name
-                        )
-                    )
-                    break
-            # If we were able to identify the hot location, create a hot zone.
-            if hotLocation:
-                zones[name].locList.remove(hotLocation)
-                hotZoneName = "hot_" + name
-                hotZone = Zone(hotZoneName)
-                zones.add(hotZone)
-                zones[hotZoneName].append(hotLocation)
-                zones[hotZoneName].hotZone = True
-                zones[hotZoneName].hostZone = name
-            # Now remove the original zone if its does not store any locations anymore.
-            if len(zones[name]) == 0:
-                zones.removeZone(name)
     return zones
