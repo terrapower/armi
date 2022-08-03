@@ -508,8 +508,8 @@ class TestCircle(TestShapedComponent):
 
         # now 3D with HotHeightDensityReduction and equal height
         height = 1.0
-        circle1.applyHotHeightDensityReduction()
-        circle2.applyHotHeightDensityReduction()
+        circle1.adjustNDensForHotHeight()
+        circle2.adjustNDensForHotHeight()
         self.assertAlmostEqual(
             circle1.p.numberDensities["FE"]
             * circle1.getArea()
