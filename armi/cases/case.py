@@ -829,7 +829,7 @@ def copyInterfaceInputs(
                     # Attempt to find relative path file
                     sourceFullString = os.path.join(sourceDirPath, f)
                     sourceFullPath = pathlib.Path(sourceFullString)
-                    if not os.path.exists(sourceFullPath):
+                    if not sourceFullPath.exists():
                         runLog.extra(
                             f"Input file for `{label}` setting could not be resolved "
                             f"with the following file path: `{sourceFullPath}`. Checking "
@@ -849,9 +849,11 @@ def copyInterfaceInputs(
                     # Finally, copy + update settings according to file path type
                     if not globFilePaths:
                         destFilePath = copyInputsHelper(label, sourceFullPath, destPath)
-                        # Some settings are a single filename. Others are lists of files.
-                        # Either overwrite the empty list at the top of the loop, or
-                        # append to it.
+                        if not pathlib.Path(destFilePath).exists():
+                            destFilePath = f
+                        # Some settings are a single filename. Others are lists of
+                        # files. Either overwrite the empty list at the top of the
+                        # loop, or append to it.
                         if len(files) == 1:
                             newSettings[label] = str(destFilePath)
                         else:
@@ -859,6 +861,8 @@ def copyInterfaceInputs(
                     else:
                         for gFile in globFilePaths:
                             destFilePath = copyInputsHelper(label, gFile, destPath)
+                            if not pathlib.Path(destFilePath).exists():
+                                destFilePath = f
                             newSettings[label].append(str(destFilePath))
 
     return newSettings
