@@ -360,6 +360,7 @@ def _diffSpecialData(
 
     if not attrsMatch:
         return
+
     try:
         src = database3.unpackSpecialData(srcData[()], srcData.attrs, paramName)
         ref = database3.unpackSpecialData(refData[()], refData.attrs, paramName)
