@@ -392,8 +392,6 @@ def buildZones(core, cs):
         zones.update(_buildManualZones(core, cs))
     elif "byFuelType" in zoneOption:
         zones.update(_buildAssemTypeZones(core, cs, Flags.FUEL))
-    elif "everyFA" in zoneOption:
-        zones.update(_buildZonesforEachFA(core, cs))
     else:
         raise ValueError(
             "Invalid `zoningStrategy` grouping option {}".format(zoneOption)
@@ -442,22 +440,6 @@ def _buildManualZones(core, cs):
         zone.extend(map(stripper, zoneLocs))
         zones.add(zone)
     return zones
-
-
-def _buildZonesforEachFA(core, cs):
-    """
-    Split every fuel assembly in to a zones for safety analysis.
-
-    Returns
-    ------
-        reactorChannelZones : dict
-            dictionary of each channel as a zone
-    """
-    runLog.extra("Creating zones for `everyFA`")
-    reactorChannelZones = Zones(core, cs)
-    for i, a in enumerate(core.getAssembliesOfType(Flags.FUEL)):
-        reactorChannelZones.add(Zone("channel " + str(int(i) + 1), [a.getLocation()]))
-    return reactorChannelZones
 
 
 def _buildRingZoneZones(core, cs):

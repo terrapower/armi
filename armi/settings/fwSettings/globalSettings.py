@@ -140,11 +140,10 @@ def defineSettings() -> List[setting.Setting]:
             default="byRingZone",
             label="Automatic core zone creation strategy",
             description="Channel Grouping Options for Safety;"
-            "everyFA: every FA is its own channel, "
             "byRingZone: based on ringzones, "
             "byFuelType: based on fuel type, "
             "Manual: you must specify 'zoneDefinitions' setting",
-            options=["byRingZone", "byFuelType", "everyFA", "manual"],
+            options=["byRingZone", "byFuelType", "manual"],
         ),
         setting.Setting(
             CONF_AXIAL_MESH_REFINEMENT_FACTOR,

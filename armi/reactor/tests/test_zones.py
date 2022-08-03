@@ -173,20 +173,6 @@ class Zones_InReactor(unittest.TestCase):
         self.assertIn("003-002", zonez["lta fuel"])
         self.assertIn("004-003", zonez["lta fuel b"])
 
-    def test_buildZonesForEachFA(self):
-        o, r = self.o, self.r
-        cs = o.cs
-
-        # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "everyFA"}
-        cs = cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(r.core, cs)
-
-        self.assertEqual(len(list(zonez)), 53)
-        self.assertIn("008-040", zonez["channel 1"])
-        self.assertIn("005-023", zonez["channel 2"])
-        self.assertIn("006-029", zonez["channel 3"])
-
     def test_removeZone(self):
         o, r = self.o, self.r
         cs = o.cs
