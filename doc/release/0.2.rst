@@ -38,6 +38,7 @@ Bug fixes
 #. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``
 #. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
 #. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
+#. Bug fix in ``armi/reactor/components/component.py::getReac``
 #. TBD
 
 
