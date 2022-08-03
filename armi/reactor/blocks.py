@@ -97,6 +97,7 @@ class Block(composites.Composite):
 
         self.points = []
         self.macros = None
+        self.axialExpTargetComponent = None
 
         # flag to indicated when DerivedShape children must be updated.
         self.derivedMustUpdate = False
@@ -1528,6 +1529,20 @@ class Block(composites.Composite):
             number specifying the angle of counter clockwise rotation
         """
         raise NotImplementedError
+
+    def setAxialExpTargetComp(self, targetComponent):
+        """sets the targetComponent for the axial expansion changer
+
+        Parameter
+        ---------
+        targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
+            component specified to be target component for axial expansion changer
+
+        See Also
+        --------
+        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
+        """
+        self.axialExpTargetComponent = targetComponent
 
     def getPinCoordinates(self):
         """
