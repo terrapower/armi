@@ -1227,7 +1227,7 @@ class Database3(database.Database):
             # We only have a good geom for the main core, so can't do process loading on
             # the SFP, etc.
             if comp.hasFlags(Flags.CORE):
-                comp.processLoading(cs)
+                comp.processLoading(cs, dbLoad=True)
         elif isinstance(comp, Assembly):
             comp.calculateZCoords()
 

@@ -204,9 +204,18 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        runLog.debug(
-                            "      Component {0} is target component".format(c)
-                        )
+                        if b.axialExpTargetComponent is None:
+                            runLog.debug(
+                                "      Component {0} is target component (inferred)".format(
+                                    c
+                                )
+                            )
+                        else:
+                            runLog.debug(
+                                "      Component {0} is target component (blueprints defined)".format(
+                                    c
+                                )
+                            )
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
@@ -620,19 +629,25 @@ class ExpansionData:
     def _setTargetComponents(self, setFuel):
         """sets target component for each block
 
-        - To-Do: allow users to specify target component for a block in settings
+        Parameters
+        ----------
+        setFuel : bool
+            boolean to determine if fuel block should have its target component set. Useful for when
+            target components should be determined on the fly.
         """
         for b in self._a:
-            if b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
-                self.specifyTargetComponent(b, Flags.CLAD)
+            if b.axialExpTargetComponent is not None:
+                self._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+            elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
+                self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
-                self.specifyTargetComponent(b, Flags.COOLANT)
+                self.determineTargetComponent(b, Flags.COOLANT)
             elif setFuel and b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
-                self.specifyTargetComponent(b)
+                self.determineTargetComponent(b)
 
-    def specifyTargetComponent(self, b, flagOfInterest=None):
+    def determineTargetComponent(self, b, flagOfInterest=None):
         """appends target component to self._componentDeterminesBlockHeight
 
         Parameters

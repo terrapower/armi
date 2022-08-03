@@ -215,7 +215,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         )
 
         # show that area expansion is consistent with the density change in the material
-        self.component.applyHotHeightDensityReduction()
+        self.component.adjustNDensForHotHeight()
         hotDensity = self.component.density()
         hotArea = self.component.getArea()
         thermalExpansionFactor = self.component.getThermalExpansionFactor(
@@ -231,7 +231,7 @@ class TestUnshapedComponent(TestGeneralComponents):
                 area=math.pi,
             )
         )
-        coldComponent.applyHotHeightDensityReduction()
+        coldComponent.adjustNDensForHotHeight()
         coldDensity = coldComponent.density()
         coldArea = coldComponent.getArea()
 
@@ -493,6 +493,48 @@ class TestCircle(TestShapedComponent):
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
+
+    def test_amountConserved(self):
+        """Demonstrate that volume integrated ndense is conserved at different temperatures"""
+        # expansion only happens in 2D so only area is necessary
+        # since component expansion is only in 2D
+        tHotC = 20
+        circle1 = Circle("circle", "HT9", 20, tHotC, 1.0)
+        tHotC = 500
+        circle2 = Circle("circle", "HT9", 20, tHotC, 1.0)
+        self.assertAlmostEqual(
+            circle1.p.numberDensities["FE"] * circle1.getArea(),
+            circle2.p.numberDensities["FE"] * circle2.getArea(),
+        )
+
+        # now 3D with HotHeightDensityReduction and equal height
+        height = 1.0
+        circle1.adjustNDensForHotHeight()
+        circle2.adjustNDensForHotHeight()
+        self.assertAlmostEqual(
+            circle1.p.numberDensities["FE"]
+            * circle1.getArea()
+            * height
+            * circle1.getThermalExpansionFactor(),
+            circle2.p.numberDensities["FE"]
+            * circle2.getArea()
+            * height
+            * circle2.getThermalExpansionFactor(),
+        )
+
+        # now start with cold and make hot and show how quantity is conserved
+        circle1 = Circle("circle", "HT9", 20, 20, 1.0)
+        feNum = circle1.p.numberDensities["FE"] * circle1.getArea() * height
+        circle1.setTemperature(500)
+        # New height will be taller
+        newHeight = height * circle1.getThermalExpansionFactor()
+        # when block.setHeight is called (which effectively changes component height)
+        # component.setNumberDensity is called (for solid isotopes) to adjust the number
+        # density so that now the 2D expansion will be approximated around the hot temp
+        newN = circle1.p.numberDensities["FE"] / circle1.getThermalExpansionFactor()
+        circle1.setNumberDensity("FE", newN)
+        feNumHot = circle1.p.numberDensities["FE"] * circle1.getArea() * newHeight
+        self.assertAlmostEqual(feNum, feNumHot)
 
 
 class TestTriangle(TestShapedComponent):
