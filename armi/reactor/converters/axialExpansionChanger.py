@@ -17,6 +17,7 @@ from statistics import mean
 from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
+from armi.reactor.components import UnshapedComponent
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -466,7 +467,16 @@ def _determineLinked(componentA, componentB):
         and isinstance(componentA, type(componentB))
         and (componentA.getDimension("mult") == componentB.getDimension("mult"))
     ):
-        try:
+        if isinstance(componentA, UnshapedComponent):
+            runLog.warning(
+                f"Components {componentA} and {componentB} are UnshapedComponents "
+                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                "nor is it physical to do so. Instead of crashing and raising an error, "
+                "they are going to be assumed to not be linked.",
+                single=True,
+            )
+            linked = False
+        else:
             idA, odA = (
                 componentA.getCircleInnerDiameter(cold=True),
                 componentA.getBoundingCircleOuterDiameter(cold=True),
@@ -483,14 +493,6 @@ def _determineLinked(componentA, componentB):
                 linked = False
             else:
                 linked = True
-        except NotImplementedError:
-            runLog.warning(
-                f"Components {componentA} and {componentB} do not have "
-                "a 'getCircleInnerDiameter' and/or getBoundingCircleOuterDiameter method. "
-                "Instead of crashing and raising an error, they are going to be assumed to not be linked.",
-                single=True,
-            )
-            linked = False
 
     else:
         linked = False
