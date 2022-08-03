@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Zones are collections of locations.
+Zones are collections of locations in the Core, used to divide it up for analysis.
 """
 import tabulate
 
@@ -26,9 +26,8 @@ from armi.settings.fwSettings import globalSettings
 
 class Zone:
     """
-    A group of locations labels useful for choosing where to shuffle from or where to compute
-    reactivity coefficients.
-    locations if specified should be provided as a list of assembly locations.
+    A group of locations in the Core, used to divide it up for analysis.
+    Each location represents an Assembly or a Block.
     """
 
     def __init__(self, name, locations=None, symmetry=3):
@@ -76,7 +75,6 @@ class Zone:
         aList : list
             List of assembly objects
         """
-
         for a in aList:
             self.append(a.getLocation())
 
@@ -95,7 +93,6 @@ class Zone:
 
         p1 : int, optional
             Ending position within ring.
-
         """
         grid = grids.HexGrid.fromPitch(1.0)
         if p0 is None or p1 is None:
@@ -287,7 +284,6 @@ class Zones:
         -------
         zoneLocs : list
             List of location labels of this/these zone(s)
-
         """
         if not isinstance(zoneNames, list):
             zoneNames = [zoneNames]
