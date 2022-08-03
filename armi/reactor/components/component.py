@@ -1217,7 +1217,8 @@ def getReactionRateDict(nucName, lib, xsType, mgFlux, nDens):
     Parameters
     ----------
     nucName - str
-        nuclide name -- e.g. 'U235'
+        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
+        _label_, see the nucDirectory module for a description of the difference.
     lib - isotxs
         cross section library
     xsType - str
@@ -1237,7 +1238,8 @@ def getReactionRateDict(nucName, lib, xsType, mgFlux, nDens):
     assume there is no n3n cross section in ISOTXS
 
     """
-    key = "{}{}A".format(nucName, xsType)
+    nucLabel = nuclideBases.byName[nucName].label
+    key = "{}{}A".format(nucLabel, xsType)
     libNuc = lib[key]
     rxnRates = {"n3n": 0}
     for rxName, mgXSs in [
