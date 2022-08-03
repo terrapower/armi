@@ -101,7 +101,7 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.mapHotTempToComponents(tempGrid, tempField)
+        self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly(thermal=True)
 
@@ -183,6 +183,8 @@ class AxialExpansionChanger:
                             c, growFrac
                         )
                     )
+                    if thermal and self.expansionData.componentReferenceHeight:
+                        blockHeight = self.expansionData.componentReferenceHeight[c]
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
@@ -220,55 +222,10 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
+        # pylint: disable = protected-access
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
-
-    def axiallyExpandCoreThermal(self, r, tempGrid, tempField):
-        """
-        Perform thermally driven axial expansion of the core.
-
-        Parameters
-        ----------
-        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-            ARMI reactor to be expanded
-        tempGrid : dictionary
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            values --> grid (list of floats)
-        tempField : dictionary
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
-            values --> temperatures (list of floats)
-
-        """
-        for a in r.core.getAssemblies(includeBolAssems=True):
-            self.setAssembly(a)
-            self.expansionData.mapHotTempToComponents(tempGrid[a], tempField[a])
-            self.expansionData.computeThermalExpansionFactors()
-            self.axiallyExpandAssembly()
-
-        self.manageCoreMesh(r)
-
-    def axiallyExpandCorePercent(self, r, components, percents):
-        """
-        Perform axial expansion of the core driven by user-defined expansion percentages.
-
-        Parameters
-        ----------
-        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-            ARMI reactor to be expanded
-        components : dict
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            values --> list of :py:class:`Component <armi.reactor.components.component.Component>` to be expanded
-        percents : dict
-            keys --> :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object
-            values --> list of percentages to expand :py:class:`Component <armi.reactor.components.component.Component>` by # pylint: disable=line-too-long
-        """
-        for a in r.core.getAssemblies(includeBolAssems=True):
-            self.setAssembly(a)
-            self.expansionData.setExpansionFactors(components[a], percents[a])
-            self.axiallyExpandAssembly()
-
-        self.manageCoreMesh(r)
 
     def manageCoreMesh(self, r):
         """
@@ -286,20 +243,14 @@ class AxialExpansionChanger:
         """
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
-            refAssem = r.core.refAssem
-            axMesh = refAssem.getAxialMesh()
-            for a in r.core.getAssemblies(includeBolAssems=True):
-                # See ARMI Ticket #112 for explanation of the commented out code
-                a.setBlockMesh(
-                    axMesh
-                )  # , conserveMassFlag=True, adjustList=adjustList)
+            for a in r.core.getAssemblies():
+                a.setBlockMesh(r.core.refAssem.getAxialMesh())
 
         oldMesh = r.core.p.axialMesh
-        r.core.updateAxialMesh()  # floating point correction
-        runLog.important(
-            "Adjusted full core fuel axial mesh uniformly "
-            "From {0} cm to {1} cm.".format(oldMesh, r.core.p.axialMesh)
-        )
+        r.core.updateAxialMesh()
+        runLog.extra("Updated r.core.p.axialMesh (old, new)")
+        for old, new in zip(oldMesh, r.core.p.axialMesh):
+            runLog.extra(f"{old:.6e}\t{new:.6e}")
 
 
 def _conserveComponentMass(b, oldHeight, oldVolume):
@@ -534,7 +485,8 @@ class ExpansionData:
 
     def __init__(self, a, setFuel):
         self._a = a
-        self._oldHotTemp = {}
+        self.componentReferenceHeight = {}
+        self.componentReferenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents(setFuel)
@@ -570,28 +522,28 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self._expansionFactors[c] = p
 
-    def mapHotTempToComponents(self, tempGrid, tempField):
-        """map axial temp distribution to blocks and components in self.a
+    def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
+        """assign a block-average axial temperature to components
 
         Parameters
         ----------
         tempGrid : numpy array
-            axial temperature grid (i.e., physical locations where temp is stored)
+            1D axial temperature grid (i.e., physical locations where temp is stored)
         tempField : numpy array
             temperature values along grid
 
         Notes
         -----
-        - maps the radially uniform axial temperature distribution to components
+        - maps a 1D axial temperature distribution to components
         - searches for temperatures that fall within the bounds of a block,
           averages them, and assigns them as appropriate
-        - The second portion, when component volume is set, is functionally very similar
-        to c.computeVolume(), however differs in the temperatures that get used to compute dimensions.
-           - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
-        cold=False results in self.getDimension to use the cold/input component temperature.
-        However, we want the "old hot" temp to be used. So, here we manually call
-        c.getArea and pass in the correct "cold" (old hot) temperature. This ensures that
-        component mass is conserved.
+        - Updating component volume is functionally very similar to c.computeVolume().
+          However, this implementation differs in the temperatures that get used to compute dimensions.
+            - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
+              cold=False results in self.getDimension to use the cold/input component temperature.
+            - However, we want the temperature from the previous state to be used (the reference temperature).
+              So, here we manually call c.getArea() and pass in the reference temperature. This ensures that
+              as the component is expanded its mass is conserved.
 
         Raises
         ------
@@ -604,7 +556,7 @@ class ExpansionData:
             runLog.error("tempGrid and tempField must have the same length.")
             raise RuntimeError
 
-        self._oldHotTemp = {}  # reset, just to be safe
+        self.componentReferenceTemperature = {}  # reset, just to be safe
         for b in self._a:
             tmpMapping = []
             for idz, z in enumerate(tempGrid):
@@ -623,12 +575,16 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self._oldHotTemp[c] = c.temperatureInC  # stash the "old" hot temp
-                # set component volume to be evaluated at "old" hot temp
-                c.p.volume = c.getArea(cold=self._oldHotTemp[c]) * c.parent.getHeight()
+                self.componentReferenceHeight[c] = b.getHeight()
+                # store the temperature from previous state (i.e., reference temp)
+                self.componentReferenceTemperature[c] = c.temperatureInC
+                # set component volume to be evaluated at reference temp
+                c.p.volume = (
+                    c.getArea(cold=self.componentReferenceTemperature[c])
+                    * c.parent.getHeight()
+                )
                 # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
-                # and ruins mass conservation via number densities. Instead,
-                # set manually.
+                # and ruins mass conservation via number densities. Instead, set manually.
                 c.temperatureInC = blockAveTemp
 
     def computeThermalExpansionFactors(self):
@@ -636,7 +592,15 @@ class ExpansionData:
 
         for b in self._a:
             for c in b:
-                self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
+                if self.componentReferenceTemperature:
+                    self._expansionFactors[c] = (
+                        c.getThermalExpansionFactor(
+                            T0=self.componentReferenceTemperature[c]
+                        )
+                        - 1.0
+                    )
+                else:
+                    self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c
