@@ -55,7 +55,7 @@ class TestBlockConverter(unittest.TestCase):
         "Give the component different ref and hot temperatures than in test_Blocks."
         c = block.getComponent(Flags.fromString(cName))
         c.refTemp, c.refHot = tCold, tHot
-        c.applyHotHeightDensityReduction()
+        c.adjustNDensForHotHeight()
         c.setTemperature(tHot)
         return block
 
