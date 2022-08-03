@@ -35,7 +35,7 @@ CASE_TITLE = "anl-afci-177"
 TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 
 
-class TestPluginAfterLoadDB(plugins.ArmiPlugin):
+class PluginAfterLoadDB(plugins.ArmiPlugin):
     """Toy Plugin, used to test the afterLoadDB hook"""
 
     @staticmethod
@@ -158,7 +158,7 @@ class TestPluginsNeedDB(ArmiTestHelper):
         power = sum([b.p.power for b in bFuels])
         self.assertEqual(power, 0.0)
 
-        plugin = TestPluginAfterLoadDB()
+        plugin = PluginAfterLoadDB()
         plugin.afterLoadDB(self.r.core, self.o.cs)
 
         bFuels = self.r.core.getBlocks(Flags.FUEL)
