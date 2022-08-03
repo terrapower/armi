@@ -164,6 +164,7 @@ class TestPluginsNeedDB(ArmiTestHelper):
         bFuels = self.r.core.getBlocks(Flags.FUEL)
         powers = [b.p.power for b in bFuels]
         self.assertEqual(sum(powers), len(powers))
+        self.assertGreater(sum(powers), 0)
 
 
 if __name__ == "__main__":
