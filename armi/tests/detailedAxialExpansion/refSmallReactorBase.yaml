@@ -42,7 +42,8 @@ blocks:
             mult: 1.0
             op: 16.75
 
-    dummy : &block_dummy
+    SodiumBlock : &block_dummy
+        flags: dummy
         coolant:
             shape: Hexagon
             material: Sodium
@@ -51,6 +52,7 @@ blocks:
             ip: 0.0
             mult: 1.0
             op: 16.75
+        axial expansion target component: coolant
 
     ## ------------------------------------------------------------------------------------
     ## fuel blocks
