@@ -145,7 +145,7 @@ def defineSettings() -> List[setting.Setting]:
             "byRingZone: based on ringzones, "
             "byFuelType: based on fuel type, "
             "Manual: you must specify 'zoneDefinitions' setting",
-            options=["byRingZone", "byOrifice", "byFuelType", "everyFA", "manual"],
+            options=["byRingZone", "byFuelType", "everyFA", "manual"],
         ),
         setting.Setting(
             CONF_AXIAL_MESH_REFINEMENT_FACTOR,

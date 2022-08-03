@@ -235,16 +235,7 @@ class Zones:
                 "  There are {0} assemblies in this zone"
                 "".format(len(fuelAssemsInZone) * self.core.powerMultiplier)
             )
-            if self.cs["doOrificedTH"] and maxPowerAssem[0].p.THmaxLifeTimePower:
-                # print on the maximum power to flow in each ring zone.  This only has any meaning in
-                # an orficedTH case, no reason to use it otherwise.
-                runLog.info(
-                    "  The maximum power to flow is {} from assembly {} in this zone"
-                    "".format(
-                        maxPower / maxPowerAssem[0].p.THmaxLifeTimePower, maxPowerAssem
-                    )
-                )
-            # runLog.info('Flow rate  (m/s): {0:.3f}'.format())
+
             totalPower += totalZonePower
         runLog.info(
             "Total power of fuel in all zones is {0:.6E} Watts".format(totalPower)
@@ -401,8 +392,6 @@ def buildZones(core, cs):
         zones.update(_buildManualZones(core, cs))
     elif "byFuelType" in zoneOption:
         zones.update(_buildAssemTypeZones(core, cs, Flags.FUEL))
-    elif "byOrifice" in zoneOption:
-        zones.update(_buildZonesByOrifice(core, cs))
     elif "everyFA" in zoneOption:
         zones.update(_buildZonesforEachFA(core, cs))
     else:
@@ -437,40 +426,6 @@ def buildZones(core, cs):
         single=True,
     )
     return zones
-
-
-def _buildZonesByOrifice(core, cs):
-    """
-    Group fuel assemblies by orifice zones.
-
-    Each zone will contain all FAs with in same orifice coefficients.
-
-    Return
-    ------
-    faZonesForSafety : dict
-        dictionary of zone name and list of FAs name in that zone
-
-    Notes
-    -----
-    Orifice coefficients are determined by a combination of the
-    ``THorificeZone`` and ``nozzleType`` parameters. Each combination of
-    ``THorificeZone`` and ``nozzleType`` is treated as a unique ``Zone``.
-    """
-    runLog.extra("Building Zones by Orifice zone")
-    orificeZones = Zones(core, cs)
-
-    # first get all different orifice setting zones
-    for a in core.getAssemblies():
-        orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.nozzleType)
-        if orificeSetting not in orificeZones.names:
-            orificeZones.add(Zone(orificeSetting))
-
-    # now put FAs of the same orifice zone in to one channel
-    for a in core.getAssemblies():
-        orificeSetting = "zone" + str(a.p.THorificeZone) + "-" + str(a.p.nozzleType)
-        orificeZones[orificeSetting].append(a.getLocation())
-
-    return orificeZones
 
 
 def _buildManualZones(core, cs):
