@@ -94,7 +94,6 @@ CONF_VERBOSITY = "verbosity"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_RING_ZONES = "ringZones"
-CONF_SPLIT_ZONES = "splitZones"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_HCF_CORETYPE = "HCFcoretype"
@@ -704,13 +703,6 @@ def defineSettings() -> List[setting.Setting]:
             description="Define zones by concentric radial rings. Each zone will get "
             "independent reactivity coefficients.",
             schema=vol.Schema([int]),
-        ),
-        setting.Setting(
-            CONF_SPLIT_ZONES,
-            default=True,
-            label="Split Zones",
-            description="Automatically split defined zones further based on number of "
-            "blocks and assembly types",
         ),
         setting.Setting(
             CONF_INDEPENDENT_VARIABLES,

@@ -235,47 +235,6 @@ class Zones_InReactor(unittest.TestCase):
 
 
 class Zones_InRZReactor(unittest.TestCase):
-    def test_splitZones(self):
-        # Test to make sure that we can split a zone containing control and fuel assemblies.
-        # Also test that we can separate out assemblies with differing numbers of blocks.
-
-        o, r = test_reactors.loadTestReactor()
-        cs = o.cs
-
-        newSettings = {"splitZones": False}
-        newSettings[globalSettings.CONF_ZONING_STRATEGY] = "byRingZone"
-        newSettings["ringZones"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        cs = cs.modified(newSettings=newSettings)
-
-        diverseZone = "ring-4"
-        r.core.buildZones(cs)
-        daZones = r.core.zones
-        # lets make one of the assemblies have an extra block
-        zoneLocations = daZones.getZoneLocations(diverseZone)
-        originalAssemblies = r.core.getLocationContents(
-            zoneLocations, assemblyLevel=True
-        )
-        fuel = [a for a in originalAssemblies if a.hasFlags(Flags.FUEL)][0]
-        newBlock = copy.deepcopy(fuel[-1])
-        fuel.add(newBlock)
-
-        # should contain a zone for every ring zone
-        # we only want one ring zone for this test, containing assemblies of different types.
-        zoneTup = tuple(daZones.names)
-        for zoneName in zoneTup:
-            if zoneName != diverseZone:
-                daZones.removeZone(zoneName)
-
-        # this should split diverseZone into multiple zones by nodalization type.
-        newSettings = {"splitZones": True}
-        cs = cs.modified(newSettings=newSettings)
-        zones.splitZones(r.core, cs, daZones)
-
-        # test to make sure that we split the ring zone correctly
-        self.assertEqual(len(daZones["ring-4-igniter-fuel-5"]), 4)
-        self.assertEqual(len(daZones["ring-4-igniter-fuel-6"]), 1)
-        self.assertEqual(len(daZones["ring-4-lta-fuel-b-5"]), 1)
-
     def test_zoneSummary(self):
         o, r = test_reactors.loadTestReactor()
 
@@ -283,7 +242,7 @@ class Zones_InRZReactor(unittest.TestCase):
         daZones = r.core.zones
 
         # make sure we have a couple of zones to test on
-        for name0 in ["ring-1-radial-shield-5", "ring-1-feed-fuel-5"]:
+        for name0 in ["ring-1"]:
             self.assertIn(name0, daZones.names)
 
         with mockRunLogs.BufferLog() as mock:

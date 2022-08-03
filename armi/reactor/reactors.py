@@ -1764,7 +1764,6 @@ class Core(composites.Composite):
     def buildZones(self, cs):
         """Update the zones on the reactor."""
         self.zones = zones.buildZones(self, cs)
-        self.zones = zones.splitZones(self, cs, self.zones)
 
     def getCoreRadius(self):
         """Returns a radius that the core would fit into."""
