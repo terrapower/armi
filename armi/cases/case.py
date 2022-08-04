@@ -853,7 +853,8 @@ def copyInterfaceInputs(
                             f"with a glob of `{sourceFullPath}`. Will not update "
                             f"`{label}`."
                         )
-                        newFiles.append(f)
+                        destFilePath = f
+                        newFiles.append(str(destFilePath))
                     else:
                         for gFile in globFilePaths:
                             destFilePath = _copyInputsHelper(
