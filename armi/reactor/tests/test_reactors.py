@@ -833,6 +833,17 @@ class HexReactorTests(ReactorTests):
             coords = b.getPinCoordinates()
             self.assertGreater(len(coords), -1)
 
+    def test_updateBlockBOLHeights(self):
+        ## before getting too far with this, make manageCoreMesh a function so you can import it directly
+        oldRefBlockAxialMesh = self.r.p.referenceBlockAxialMesh
+        oldAxialMesh = self.r.o.axialMesh
+        oldBlockBOLHeights = {}
+        axialExpChngr = AxialExpansionChanger(False)
+        for a in self.r.getAssembliesOfType(Flags.FUEL):
+            for b in a[:-1]:
+                oldBlockBOLHeights[b.serialNum]
+                b.p.height *= 1.05
+        axialExpChngr.manageCoreMesh(self.r)
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
