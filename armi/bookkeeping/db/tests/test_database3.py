@@ -14,14 +14,16 @@
 
 r""" Tests for the Database3 class
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import subprocess
 import unittest
 
 import h5py
 import numpy
 
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import _getH5File, database3
 from armi.reactor import grids
+from armi.reactor import parameters
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
@@ -49,6 +51,45 @@ class TestDatabase3(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
+
+    def test_writeToDB(self):
+        self.r.p.cycle = 0
+        self.r.p.timeNode = 0
+        self.r.p.cycleLength = 0
+
+        # Adding some nonsense in, to test NoDefault params
+        self.r.p.availabilityFactor = parameters.NoDefault
+
+        # validate that the H5 file gets bigger after the write
+        self.assertEqual(list(self.db.h5db.keys()), ["inputs"])
+        self.db.writeToDB(self.r)
+        self.assertEqual(sorted(self.db.h5db.keys()), ["c00n00", "inputs"])
+
+        keys = [
+            "Circle",
+            "Core",
+            "DerivedShape",
+            "Helix",
+            "HexAssembly",
+            "HexBlock",
+            "Hexagon",
+            "Reactor",
+            "layout",
+        ]
+        self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
+
+        # validate availabilityFactor did not make it into the H5 file
+        rKeys = ["cycle", "cycleLength", "flags", "serialNum", "timeNode"]
+        self.assertEqual(
+            sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
+        )
+
+    def test_getH5File(self):
+        with self.assertRaises(TypeError):
+            _getH5File(None)
+
+        h5 = _getH5File(self.db)
+        self.assertEqual(type(h5), h5py.File)
 
     def makeHistory(self):
         """Walk the reactor through a few time steps and write them to the db."""
