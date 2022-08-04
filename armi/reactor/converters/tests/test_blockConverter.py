@@ -19,6 +19,7 @@ import os
 import numpy
 
 from armi.reactor.converters import blockConverters
+from armi.reactor import blocks
 from armi.reactor import components
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
@@ -54,7 +55,7 @@ class TestBlockConverter(unittest.TestCase):
         "Give the component different ref and hot temperatures than in test_Blocks."
         c = block.getComponent(Flags.fromString(cName))
         c.refTemp, c.refHot = tCold, tHot
-        c.applyHotHeightDensityReduction()
+        c.adjustNDensForHotHeight()
         c.setTemperature(tHot)
         return block
 
@@ -162,6 +163,34 @@ class TestBlockConverter(unittest.TestCase):
             blockConverters.BlockAvgToCylConverter,
             hexagon.numPositionsInRing,
         )
+
+    def test_convertHexWithFuelDriverOnNegativeComponentAreaBlock(self):
+        """
+        Tests the conversion of a control block with linked components, where
+        a component contains a negative area due to thermal expansion.
+        """
+        driverBlock = (
+            loadTestReactor(TEST_ROOT)[1]
+            .core.getAssemblies(Flags.FUEL)[2]
+            .getFirstBlock(Flags.FUEL)
+        )
+
+        block = buildControlBlockWithLinkedNegativeAreaComponent()
+        areas = [c.getArea() for c in block]
+
+        # Check that a negative area component exists.
+        self.assertLess(min(areas), 0.0)
+
+        driverBlock.spatialGrid = None
+        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
+
+        converter = blockConverters.HexComponentsToCylConverter(
+            block, driverFuelBlock=driverBlock, numExternalRings=2
+        )
+        convertedBlock = converter.convert()
+        # The area is increased because the negative area components are
+        # removed.
+        self.assertGreater(convertedBlock.getArea(), block.getArea())
 
     def test_convertCartesianLatticeWithFuelDriver(self):
         """Test conversion with fuel driver."""
@@ -277,7 +306,7 @@ def _buildJoyoFuel():
         mult=91,
     )
     clad = components.Circle(
-        name="fuel",
+        name="clad",
         material="HT9",
         Tinput=20.0,
         Thot=20.0,
@@ -286,6 +315,65 @@ def _buildJoyoFuel():
         mult=91,
     )
     return fuel, clad
+
+
+def buildControlBlockWithLinkedNegativeAreaComponent():
+    """
+    Return a block that contains a bond component that resolves to a negative area
+    once the fuel and clad thermal expansion have occurred.
+    """
+    b = blocks.HexBlock("control", height=10.0)
+
+    controlDims = {"Tinput": 25.0, "Thot": 600, "od": 0.77, "id": 0.00, "mult": 127.0}
+    bondDims = {
+        "Tinput": 600,
+        "Thot": 600,
+        "od": "clad.id",
+        "id": "control.od",
+        "mult": 127.0,
+    }
+    cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
+    wireDims = {
+        "Tinput": 25.0,
+        "Thot": 450,
+        "od": 0.1,
+        "id": 0.0,
+        "mult": 127.0,
+        "axialPitch": 30.0,
+        "helixDiameter": 0.9,
+    }
+    ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    control = components.Circle("control", "UZr", **controlDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    # This sets up the linking of the bond to the fuel and the clad components.
+    bond = components.Circle(
+        "bond", "Sodium", components={"control": control, "clad": clad}, **bondDims
+    )
+    wire = components.Helix("wire", "HT9", **wireDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
+    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(control)
+    b.add(bond)
+    b.add(clad)
+    b.add(wire)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
+
+    return b
 
 
 if __name__ == "__main__":

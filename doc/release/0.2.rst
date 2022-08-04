@@ -21,6 +21,9 @@ What's new in ARMI
 #. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
 #. Added new ``UserPlugin`` functionality.
 #. Made the min/max temperatures of ``Material`` curves discoverable.
+#. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
+#. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
+#. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
 #. TBD
 
 Bug fixes
@@ -32,6 +35,13 @@ Bug fixes
 #. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
 #. Fixed bugs in the ARMI memory profiler.
 #. Fixed linear expansion in ``Alloy200``.
+#. Remove ``copy.deepcopy`` from ``armi/reactor/converters/uniformMesh.py``
+#. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``
+#. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
+#. Fixed issue with axial expansion changer and axial meshing in ``armi/reactor/reactors.py::Core::processLoading``.
+#. Bug fix and clarity improvements for how number densities are initialized for components.
+#. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
+#. Bug fix in ``armi/reactor/components/component.py::getReac``
 #. TBD
 
 

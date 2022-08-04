@@ -114,7 +114,6 @@ class DiffResults:
         self, compType: str, paramName: str, absMean: float, mean: float, absMax: float
     ) -> None:
         """Add a collection of diffs to the diff dictionary if they exceed the tolerance."""
-        # compType = compType[compType.index("/", 2) + 1 :]
         absMean = absMean if absMean > self.tolerance else None
         self.diffs["{}/{} mean(abs(diff))".format(compType, paramName)].append(absMean)
 
@@ -125,6 +124,9 @@ class DiffResults:
         self.diffs["{}/{} max(abs(diff))".format(compType, paramName)].append(absMax)
 
     def addStructureDiffs(self, nDiffs: int) -> None:
+        if not self._structureDiffs:
+            self._structureDiffs = [0]
+
         self._structureDiffs[-1] += nDiffs
 
     def addTimeStep(self, tsName: str) -> None:
@@ -135,6 +137,7 @@ class DiffResults:
         return [None] * (len(self._columns) - 1)
 
     def reportDiffs(self, stream: OutputWriter) -> None:
+        """Print out a well-formatted table of the non-zero diffs"""
         # filter out empty rows
         diffsToPrint = {
             key: value
@@ -161,7 +164,7 @@ def compareDatabases(
     exclusions: Optional[Sequence[str]] = None,
     tolerance: float = 0.0,
 ) -> Optional[DiffResults]:
-
+    """High-level method to compare two ARMI H5 files, given file paths."""
     compiledExclusions = None
     if exclusions is not None:
         compiledExclusions = [re.compile(ex) for ex in exclusions]
@@ -267,6 +270,7 @@ def _compareAuxData(
 
     refGroup.visititems(visitor)
     refData = data
+
     data = dict()
     srcGroup.visititems(visitor)
     srcData = data
@@ -332,19 +336,27 @@ def _diffSpecialData(
         return
 
     attrsMatch = True
-    for k, srcAttr, refAttr in [
-        (k, srcData.attrs[k], refData.attrs[k]) for k in srcData.attrs.keys()
-    ]:
-        if isinstance(srcAttr, numpy.ndarray):
-            same = all(srcAttr.flatten() == refAttr.flatten())
+    for k, srcAttr in srcData.attrs.items():
+        refAttr = refData.attrs[k]
+
+        if isinstance(srcAttr, numpy.ndarray) and isinstance(refAttr, numpy.ndarray):
+            srcFlat = srcAttr.flatten()
+            refFlat = refAttr.flatten()
+            if len(srcFlat) != len(refFlat):
+                same = False
+            else:
+                same = all(srcFlat == refFlat)
         else:
             same = srcAttr == refAttr
+
         if not same:
             attrsMatch = False
             out.writeln(
                 "Special formatting parameters for {} do not match for {}. Src: {} "
                 "Ref: {}".format(name, k, srcData.attrs[k], refData.attrs[k])
             )
+            break
+
     if not attrsMatch:
         return
 
@@ -407,10 +419,9 @@ def _diffSpecialData(
         absMean = numpy.nanmean(absDiff)
 
         diffResults.addDiff(compName, paramName, absMean, mean, absMax)
-    return
 
 
-def _diffSimpleData(ref: numpy.ndarray, src: numpy.ndarray, diffResults: DiffResults):
+def _diffSimpleData(ref: h5py.Dataset, src: h5py.Dataset, diffResults: DiffResults):
     paramName = ref.name.split("/")[-1]
     compName = ref.name.split("/")[-2]
 
@@ -443,7 +454,6 @@ def _diffSimpleData(ref: numpy.ndarray, src: numpy.ndarray, diffResults: DiffRes
     absMean = numpy.nanmean(absDiff)
 
     diffResults.addDiff(compName, paramName, absMean, mean, absMax)
-    return
 
 
 def _compareComponentData(

@@ -6,8 +6,7 @@ The ARMI coding standards are a set of guidelines for helping to create a more c
 Subpart 2.7 402 of `NQA-1 <http://nqa-1.com/files/NQA-1%20Nuclear%20Quality%20Manual.pdf>`_ states, "Software
 design verification shall evaluate... the design approach and ensure internal completeness, consistency, clarity
 and correctness." While these are required by NQA-1, the idea is that an ARMI developer, who is familiar with
-these coding standards, should be able to jump from one module to another without changing their coding style
-(names, and practices).
+these coding standards, should be able to jump from one module to another without changing their coding style.
 
 .. tip ::
     :class: warning

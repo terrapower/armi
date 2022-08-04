@@ -55,6 +55,7 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 # init logger
 runLog = logging.getLogger(__name__)
@@ -2218,7 +2219,7 @@ class Core(composites.Composite):
             fuelBottoms.append(fuelHeightInCm)
         return lowestFuelHeightInCm
 
-    def processLoading(self, cs):
+    def processLoading(self, cs, dbLoad: bool = False):
         """
         After nuclide densities are loaded, this goes through and prepares the reactor.
 
@@ -2250,14 +2251,46 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
-        self.p.axialMesh = self.findAllAxialMeshPoints()
-        refAssem = self.refAssem
+        if dbLoad:
+            # reactor.blueprints.assemblies need to be populated
+            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
+            # but for DB load, this is not called so it must be here.
+            # pylint: disable=protected-access
+            self.parent.blueprints._prepConstruction(cs)
+            if not cs["detailedAxialExpansion"]:
+                # Apply mesh snapping for self.parent.blueprints.assemblies
+                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
+                # considereed here. To guarantee mesh snapping will function, makeAxialSnapList
+                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
+                finestAssemblyMesh = sorted(
+                    self.parent.blueprints.assemblies.values(),
+                    key=lambda a: len(a),
+                    reverse=True,
+                )[0]
+                for a in self.parent.blueprints.assemblies.values():
+                    a.makeAxialSnapList(refAssem=finestAssemblyMesh)
 
-        if not cs["detailedAxialExpansion"]:
-            for a in self.getAssemblies(includeBolAssems=True):
-                # prepare for mesh snapping during axial expansion
-                a.makeAxialSnapList(refAssem)
+        else:
+            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
+                applySubMesh=False
+            )
+            self.p.axialMesh = self.findAllAxialMeshPoints()
+            if not cs["detailedAxialExpansion"]:
+                # prepare core for mesh snapping during axial expansion
+                for a in self.getAssemblies(includeAll=True):
+                    a.makeAxialSnapList(self.refAssem)
+
+            if not cs["inputHeightsConsideredHot"]:
+                runLog.header(
+                    "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
+                )
+                axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+                for a in self.getAssemblies():
+                    if not a.hasFlags(Flags.CONTROL):
+                        axialExpChngr.setAssembly(a)
+                        axialExpChngr.expansionData.computeThermalExpansionFactors()
+                        axialExpChngr.axiallyExpandAssembly(thermal=True)
+                axialExpChngr.manageCoreMesh(self.parent)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 

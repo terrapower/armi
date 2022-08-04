@@ -53,11 +53,12 @@ class TestPlugin(unittest.TestCase):
         """Make sure that the exposeInterfaces hook is properly implemented"""
         if self.plugin is None:
             return
-        if not hasattr(self.plugin, "exposeInterfaces"):
-            return
 
         cs = settings.getMasterCs()
         results = self.plugin.exposeInterfaces(cs)
+        if results is None or not results:
+            return
+
         # each plugin should return a list
         self.assertIsInstance(results, list)
         for result in results:
