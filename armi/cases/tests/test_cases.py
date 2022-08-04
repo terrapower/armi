@@ -342,7 +342,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         sourceFullPath = os.path.join(TEST_ROOT, shuffleFile)
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            destFilePath = cases.case.copyInputsHelper(
+            destFilePath = cases.case._copyInputsHelper(
                 testSetting,
                 sourcePath=sourceFullPath,
                 destPath=newDir.destination,
@@ -355,10 +355,10 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             with self.assertRaises(Exception):
-                destFilePath = cases.case.copyInputsHelper(
+                destFilePath = cases.case._copyInputsHelper(
                     testSetting,
                     sourcePath=sourceFullPath,
-                    destPath=pathlib.Path(""),
+                    destPath="",
                     origFile=shuffleFile,
                 )
                 self.assertEqual(destFilePath, shuffleFile)

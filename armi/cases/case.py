@@ -715,7 +715,7 @@ class Case:
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
-def copyInputsHelper(
+def _copyInputsHelper(
     fileDescription: str,
     sourcePath: str,
     destPath: str,
@@ -856,12 +856,12 @@ def copyInterfaceInputs(
                         newFiles.append(f)
                     else:
                         for gFile in globFilePaths:
-                            destFilePath = copyInputsHelper(
+                            destFilePath = _copyInputsHelper(
                                 label, gFile, destination, f
                             )
                             newFiles.append(str(destFilePath))
                 else:
-                    destFilePath = copyInputsHelper(
+                    destFilePath = _copyInputsHelper(
                         label, sourceFullPath, destination, f
                     )
                     newFiles.append(str(destFilePath))
