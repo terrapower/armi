@@ -1307,8 +1307,7 @@ class Database3(database.Database):
                 # flatten, store the data offsets and array shapes, and None locations
                 # as attrs
                 # - If not jagged, all top-level ndarrays are the same shape, so it is
-                # probably easier to replace Nones with ndarrays filled with special
-                # values.
+                # easier to replace Nones with ndarrays filled with special values.
                 if parameters.NoDefault in data:
                     data = None
                 else:
