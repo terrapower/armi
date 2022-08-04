@@ -18,7 +18,6 @@ Unit tests for Case and CaseSuite objects
 import copy
 import io
 import os
-import pathlib
 import platform
 import unittest
 
@@ -339,29 +338,30 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
 
-        # ensure we are not in TEST_ROOT
-        with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            # null case, give it just the base of shuffleFile
-            destFilePath = cases.case.copyInputsHelper(
-                testSetting,
-                fileFullPath=pathlib.Path(shuffleFile),
-                destPath=pathlib.Path(newDir.destination),
-            )
-            newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(destFilePath, str(newFilepath))
-
         # test with full filepath too
-        fileFullPath = pathlib.Path(os.path.join(TEST_ROOT, shuffleFile))
-
+        sourceFullPath = os.path.join(TEST_ROOT, shuffleFile)
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             destFilePath = cases.case.copyInputsHelper(
                 testSetting,
-                fileFullPath=fileFullPath,
-                destPath=pathlib.Path(newDir.destination),
+                sourcePath=sourceFullPath,
+                destPath=newDir.destination,
+                origFile=shuffleFile,
             )
             newFilepath = os.path.join(newDir.destination, shuffleFile)
             self.assertEqual(destFilePath, str(newFilepath))
+
+        # test with bad file path, should return original file
+        # ensure we are not in TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            with self.assertRaises(Exception):
+                destFilePath = cases.case.copyInputsHelper(
+                    testSetting,
+                    sourcePath=sourceFullPath,
+                    destPath=pathlib.Path(""),
+                    origFile=shuffleFile,
+                )
+                self.assertEqual(destFilePath, shuffleFile)
 
     def test_copyInterfaceInputs_singleFile(self):
         testSetting = "shuffleLogic"
