@@ -717,8 +717,8 @@ class Case:
 
 def copyInputsHelper(
     fileDescription: str,
-    fileFullPath: pathlib.Path,
-    destPath: pathlib.Path,
+    sourcePath: str,
+    destPath: str,
     origFile: str,
 ) -> str:
     """
@@ -731,10 +731,10 @@ def copyInputsHelper(
     fileDescription : str
         A file description for the copyOrWarn method
 
-    fileFullPath : pathlib.Path object
+    sourcePath : str
         The absolute file path of the file to copy
 
-    destPath : pathlib.Path object
+    destPath : str
         The target directory to copy input files to
 
     origFile : str
@@ -744,24 +744,15 @@ def copyInputsHelper(
     -------
     destFilePath (or origFile) : str
     """
-    sourceName = os.path.basename(fileFullPath.name)
-    destFilePath = os.path.abspath(destPath / sourceName)
+    sourceName = os.path.basename(sourcePath)
+    destFilePath = os.path.join(destPath, sourceName)
     try:
+        pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
         if pathlib.Path(destFilePath).exists():
-            pathTools.copyOrWarn(fileDescription, fileFullPath, destFilePath)
             return destFilePath
         else:
-            runLog.info(
-                f"No input files for `{label}` setting could be resolved with the "
-                f"following file path: `{destFilePath}`. Returning original file "
-                f"path `{origFile}`"
-            )
             return origFile
     except Exception:
-        runLog.info(
-            f"copyOrWarn failed or destFilePath ({destFilePath}) does not exist. "
-            f"Returning original file path {origFile}"
-        )
         return origFile
 
 
@@ -814,9 +805,8 @@ def copyInterfaceInputs(
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
     sourceDirPath = pathlib.Path(sourceDir)
-    destPath = pathlib.Path(destination)
 
-    assert destPath.is_dir()
+    assert pathlib.Path(destination).is_dir()
 
     newSettings = {}
 
@@ -851,28 +841,36 @@ def copyInterfaceInputs(
                     except OSError:
                         pass
                 # Attempt to construct an absolute file path
-                sourceFullString = os.path.join(sourceDirPath, f)
-                sourceFullPath = pathlib.Path(sourceFullString)
+                sourceFullPath = os.path.join(sourceDirPath, f)
                 if WILDCARD == True:
                     globFilePaths = [
                         pathlib.Path(os.path.join(sourceDirPath, g))
-                        for g in glob.glob(sourceFullString)
+                        for g in glob.glob(sourceFullPath)
                     ]
                     if len(globFilePaths) == 0:
-                        # Don't bother trying to copy and update if empty, just give it
-                        # back the original string
-                        newFiles.append(f)
+                        runLog.info(
+                            f"No input files for `{label}` setting could be resolved "
+                            f"with a glob of `{sourceFullPath}`. Will not update "
+                            f"`{label}`."
+                        )
+                        newFiles.append(f)  # pass?
                     else:
-                        # Try to copy and update, or return original file
                         for gFile in globFilePaths:
-                            destFilePath = copyInputsHelper(label, gFile, destPath, f)
+                            destFilePath = copyInputsHelper(
+                                label, gFile, destination, f
+                            )
                             newFiles.append(str(destFilePath))
                 else:
-                    # Presumably WILDCARD is false and RELATIVE is true, so try to
-                    # copy constructed absolute path, or return original file
-                    destFilePath = copyInputsHelper(label, sourceFullPath, destPath, f)
+                    destFilePath = copyInputsHelper(
+                        label, sourceFullPath, destination, f
+                    )
                     newFiles.append(str(destFilePath))
-
+                if destFilePath == f:
+                    runLog.info(
+                        f"No input files for `{label}` setting could be resolved with "
+                        f"the following path: `{sourceFullPath}`. Will not update "
+                        f"`{label}`."
+                    )
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects
             if len(files) == 1 and not WILDCARD:
