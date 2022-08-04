@@ -2291,6 +2291,7 @@ class Core(composites.Composite):
                         axialExpChngr.expansionData.computeThermalExpansionFactors()
                         axialExpChngr.axiallyExpandAssembly(thermal=True)
                 axialExpChngr.manageCoreMesh(self.parent)
+                self.updateBlockBOLHeights()
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2316,3 +2317,12 @@ class Core(composites.Composite):
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+
+    def updateBlockBOLHeights(self):
+        """post thermal expansion, update block BOL heights"""
+        self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
+        self.p.axialMesh = self.findAllAxialMeshPoints()
+        for a in self.getAssemblies():
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a:
+                    b.p.heightBOL = b.getHeight()
