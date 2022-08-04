@@ -35,9 +35,6 @@ class TestPlotting(unittest.TestCase):
     demonstrate how they are meant to be called.
     """
 
-    # Change to False when you want to inspect the plots. Change back please.
-    removeFiles = True
-
     @classmethod
     def setUpClass(cls):
         cls.o, cls.r = test_reactors.loadTestReactor()
