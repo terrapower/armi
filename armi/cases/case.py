@@ -723,7 +723,8 @@ def copyInputsHelper(
 ) -> str:
     """
     Helper function for copyInterfaceInputs: Creates an absolute file path, and
-    copies the file to that location.
+    copies the file to that location. If that file path does not exist, returns
+    the file path from the original settings file.
 
     Parameters
     ----------
@@ -741,7 +742,7 @@ def copyInputsHelper(
 
     Returns
     -------
-    destFilePath : str
+    destFilePath (or origFile) : str
     """
     sourceName = os.path.basename(fileFullPath.name)
     destFilePath = os.path.abspath(destPath / sourceName)
@@ -750,6 +751,11 @@ def copyInputsHelper(
             pathTools.copyOrWarn(fileDescription, fileFullPath, destFilePath)
             return destFilePath
         else:
+            runLog.info(
+                f"No input files for `{label}` setting could be resolved with the "
+                f"following file path: `{destFilePath}`. Returning original file "
+                f"path `{origFile}`"
+            )
             return origFile
     except Exception:
         runLog.info(
@@ -793,8 +799,9 @@ def copyInterfaceInputs(
     Returns
     -------
     newSettings : dict
-        A new settings object that contains settings for the keys and either an
-        absolute file path or a list of absolute file paths for the values
+        A new settings object that contains settings for the keys and values that are
+        either an absolute file path, a list of absolute file paths, or the original
+        file path if absolute paths could not be resolved
 
     Notes
     -----
@@ -816,7 +823,6 @@ def copyInterfaceInputs(
     for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
         for key, files in interfaceFileNames.items():
-            runLog.info(f"key: {key} Files: {files}")
             if not isinstance(key, settings.Setting):
                 try:
                     key = cs.getSetting(key)
@@ -838,21 +844,13 @@ def copyInterfaceInputs(
 
                 path = pathlib.Path(f)
                 if WILDCARD == False and RELATIVE == False:
-                    # TODO is try/except needed here? is else check needed?
                     try:
                         if path.is_absolute() and path.exists() and path.is_file():
                             # Path is absolute, no settings modification or filecopy needed
                             pass
-                        else:
-                            if not (path.exists() and path.is_file()):
-                                runLog.extra(
-                                    f"Input file for `{label}` setting could not be resolved "
-                                    f"with the following file path: `{path}`. Checking for "
-                                    f"file at path `{sourceDirPath}`."
-                                )
                     except OSError:
                         pass
-                # Attempt to construct a file path
+                # Attempt to construct an absolute file path
                 sourceFullString = os.path.join(sourceDirPath, f)
                 sourceFullPath = pathlib.Path(sourceFullString)
                 if WILDCARD == True:
@@ -860,14 +858,9 @@ def copyInterfaceInputs(
                         pathlib.Path(os.path.join(sourceDirPath, g))
                         for g in glob.glob(sourceFullString)
                     ]
-                    runLog.info(f"globFilePaths: {globFilePaths}")
                     if len(globFilePaths) == 0:
-                        runLog.warning(
-                            f"No input files for `{label}` setting could be resolved "
-                            f"with the following file path: `{sourceFullPath}`."
-                        )
-                        # Don't bother trying to copy and update, just give it back
-                        # the original string
+                        # Don't bother trying to copy and update if empty, just give it
+                        # back the original string
                         newFiles.append(f)
                     else:
                         # Try to copy and update, or return original file
@@ -876,14 +869,13 @@ def copyInterfaceInputs(
                             newFiles.append(str(destFilePath))
                 else:
                     # Presumably WILDCARD is false and RELATIVE is true, so try to
-                    # copy relative path, or return original file
+                    # copy constructed absolute path, or return original file
                     destFilePath = copyInputsHelper(label, sourceFullPath, destPath, f)
                     newFiles.append(str(destFilePath))
-                runLog.info(f"new files are: {newFiles}")
 
-            # Some settings are a single filename. Others are lists of files. Either
-            # give the newSettings a single filename, or give it a list
-            if len(files) == 1 and len(newFiles) == 1 and not WILDCARD:
+            # Some settings are a single filename. Others are lists of files. Make
+            # sure we are returning what the setting expects
+            if len(files) == 1 and not WILDCARD:
                 newSettings[label] = newFiles[0]
             else:
                 newSettings[label] = newFiles
