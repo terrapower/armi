@@ -22,6 +22,7 @@ What's new in ARMI
 #. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
 #. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
 #. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
+#. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
 #. TBD
 
 Bug fixes
