@@ -56,7 +56,6 @@ CONF_CIRCULAR_RING_PITCH = "circularRingPitch"
 CONF_COMMENT = "comment"
 CONF_COPY_FILES_FROM = "copyFilesFrom"
 CONF_COPY_FILES_TO = "copyFilesTo"
-CONF_CREATE_ASSEMBLY_TYPE_ZONES = "createAssemblyTypeZones"
 CONF_DEBUG = "debug"
 CONF_DEBUG_MEM = "debugMem"
 CONF_DEBUG_MEM_SIZE = "debugMemSize"
@@ -141,9 +140,8 @@ def defineSettings() -> List[setting.Setting]:
             label="Automatic core zone creation strategy",
             description="Channel Grouping Options for Safety;"
             "byRingZone: based on ringzones, "
-            "byFuelType: based on fuel type, "
             "Manual: you must specify 'zoneDefinitions' setting",
-            options=["byRingZone", "byFuelType", "manual"],
+            options=["byRingZone", "manual"],
         ),
         setting.Setting(
             CONF_AXIAL_MESH_REFINEMENT_FACTOR,
@@ -387,12 +385,6 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_COPY_FILES_TO, default=[], label="None", description="None"
-        ),
-        setting.Setting(
-            CONF_CREATE_ASSEMBLY_TYPE_ZONES,
-            default=False,
-            label="Create Fuel Zones Automatically",
-            description="Let ARMI create zones based on fuel type automatically ",
         ),
         setting.Setting(
             CONF_DEBUG, default=False, label="Python Debug Mode", description="None"

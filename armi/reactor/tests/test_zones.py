@@ -158,21 +158,6 @@ class Zones_InReactor(unittest.TestCase):
         self.assertEqual(len(list(zonez)), 3)
         self.assertIn("003-002", zonez["ring-3"])
 
-    def test_buildAssemTypeZones(self):
-        o, r = self.o, self.r
-        cs = o.cs
-
-        # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "byFuelType"}
-        cs = cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(r.core, cs)
-
-        self.assertEqual(len(list(zonez)), 4)
-        self.assertIn("008-040", zonez["feed fuel"])
-        self.assertIn("005-023", zonez["igniter fuel"])
-        self.assertIn("003-002", zonez["lta fuel"])
-        self.assertIn("004-003", zonez["lta fuel b"])
-
     def test_removeZone(self):
         o, r = self.o, self.r
         cs = o.cs

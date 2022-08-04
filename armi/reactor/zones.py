@@ -15,8 +15,6 @@
 """
 Zones are collections of locations in the Core, used to divide it up for analysis.
 """
-import tabulate
-
 from armi import runLog
 from armi import utils
 from armi.reactor import grids
@@ -390,39 +388,11 @@ def buildZones(core, cs):
         zones.update(_buildRingZoneZones(core, cs))
     elif "manual" in zoneOption:
         zones.update(_buildManualZones(core, cs))
-    elif "byFuelType" in zoneOption:
-        zones.update(_buildAssemTypeZones(core, cs, Flags.FUEL))
     else:
         raise ValueError(
             "Invalid `zoningStrategy` grouping option {}".format(zoneOption)
         )
 
-    if cs["createAssemblyTypeZones"]:
-        zones.update(_buildAssemTypeZones(core, cs, Flags.FUEL))
-
-    # Summarize the zone information
-    headers = [
-        "Zone\nNumber",
-        "\nName",
-        "\nAssemblies",
-        "\nLocations",
-        "Symmetry\nFactor",
-    ]
-    zoneSummaryData = []
-    for zi, zone in enumerate(zones, 1):
-        assemLocations = utils.createFormattedStrWithDelimiter(
-            zone, maxNumberOfValuesBeforeDelimiter=6
-        )
-        zoneSummaryData.append(
-            (zi, zone.name, len(zone), assemLocations, zone.symmetry)
-        )
-    runLog.info(
-        "Assembly zone definitions:\n"
-        + tabulate.tabulate(
-            tabular_data=zoneSummaryData, headers=headers, tablefmt="armi"
-        ),
-        single=True,
-    )
     return zones
 
 
@@ -474,42 +444,4 @@ def _buildRingZoneZones(core, cs):
         for ring in rings:
             zone.addRing(ring)
         zones.add(zone)
-    return zones
-
-
-def _buildAssemTypeZones(core, cs, typeSpec=None):
-    """
-    Builds zones based on assembly type labels.
-
-    Notes
-    -----
-    Creates a zone for each assembly type. All locations occupied by
-    a certain type of assembly become a new zone based on that type.
-
-    For example, after this call, all 'feed fuel a' assemblies will reside
-    in the 'feed fuel a' zone.
-
-    Useful for building static zones based on some BOL core layout.
-
-    Parameters
-    ----------
-    core : Core
-        The core
-
-    typeSpec : Flags or list of Flags, optional
-        Assembly types to consider (e.g. Flags.FUEL)
-
-    Return
-    ------
-    zones : Zones
-    """
-    zones = Zones(core, cs)
-    for a in core.getAssemblies(typeSpec):
-        zoneName = a.getType()
-        try:
-            zone = zones[zoneName]
-        except KeyError:
-            zone = Zone(zoneName)
-            zones.add(zone)
-        zone.append(a.getLocation())
     return zones
