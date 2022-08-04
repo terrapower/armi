@@ -14,13 +14,14 @@
 
 r""" Tests for the Database3 class
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import subprocess
 import unittest
 
 import h5py
 import numpy
 
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import _getH5File, database3
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor.tests import test_reactors
@@ -82,6 +83,13 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(
             sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
         )
+
+    def test_getH5File(self):
+        with self.assertRaises(TypeError):
+            _getH5File(None)
+
+        h5 = _getH5File(self.db)
+        self.assertEqual(type(h5), h5py.File)
 
     def makeHistory(self):
         """Walk the reactor through a few time steps and write them to the db."""
