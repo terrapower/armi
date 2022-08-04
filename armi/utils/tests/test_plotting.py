@@ -72,35 +72,26 @@ class TestPlotting(unittest.TestCase):
 
     def test_plotBlockFlux(self):
         with TemporaryDirectoryChanger():
-            try:
-                xslib = isotxs.readBinary(ISOAA_PATH)
-                self.r.core.lib = xslib
+            xslib = isotxs.readBinary(ISOAA_PATH)
+            self.r.core.lib = xslib
 
-                blockList = self.r.core.getBlocks()
-                for _, b in enumerate(blockList):
-                    b.p.mgFlux = range(33)
+            blockList = self.r.core.getBlocks()
+            for _, b in enumerate(blockList):
+                b.p.mgFlux = range(33)
 
-                plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blockList)
-                self.assertTrue(os.path.exists("flux.png"))
-                plotting.plotBlockFlux(
-                    self.r.core, fName="peak.png", bList=blockList, peak=True
-                )
-                self.assertTrue(os.path.exists("peak.png"))
-                plotting.plotBlockFlux(
-                    self.r.core,
-                    fName="bList2.png",
-                    bList=blockList,
-                    bList2=blockList,
-                )
-                self.assertTrue(os.path.exists("bList2.png"))
-                # can't test adjoint at the moment, testBlock doesn't like to .getMgFlux(adjoint=True)
-            finally:
-                os.remove("flux.txt")  # secondarily created during the call.
-                os.remove("flux.png")  # created during the call.
-                os.remove("peak.txt")  # csecondarily reated during the call.
-                os.remove("peak.png")  # created during the call.
-                os.remove("bList2.txt")  # secondarily created during the call.
-                os.remove("bList2.png")  # created during the call.
+            plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blockList)
+            self.assertTrue(os.path.exists("flux.png"))
+            plotting.plotBlockFlux(
+                self.r.core, fName="peak.png", bList=blockList, peak=True
+            )
+            self.assertTrue(os.path.exists("peak.png"))
+            plotting.plotBlockFlux(
+                self.r.core,
+                fName="bList2.png",
+                bList=blockList,
+                bList2=blockList,
+            )
+            self.assertTrue(os.path.exists("bList2.png"))
 
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
@@ -129,8 +120,6 @@ class TestPlotting(unittest.TestCase):
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
-        if self.removeFiles:
-            os.remove(fName)
 
 
 if __name__ == "__main__":
