@@ -16,7 +16,6 @@
 Zones are collections of locations in the Core, used to divide it up for analysis.
 """
 from armi import runLog
-from armi import utils
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings import globalSettings
@@ -184,14 +183,13 @@ class Zones:
 
             # find the maximum power to flow in each zone
             maxPower = -1.0
-            maxPowerAssem = None
             fuelAssemsInZone = self.core.getAssemblies(Flags.FUEL, zones=zoneName)
+            a = []
             for a in fuelAssemsInZone:
                 flow = a.p.THmassFlowRate * a.getSymmetryFactor()
                 aPow = a.calcTotalParam("power", calcBasedOnFullObj=True)
                 if aPow > maxPower:
                     maxPower = aPow
-                    maxPowerAssem = a
                 if not flow:
                     runLog.important(
                         "No TH data. Run with thermal hydraulics activated. "
@@ -317,7 +315,7 @@ class Zones:
                     "ring zones {0} are invalid. Must be integers, increasing in order. "
                     "Can not return ring zone rings.".format(self.cs["ringZones"])
                 )
-                return
+                return []
             ring0 = ring
             if i == len(self.cs["ringZones"]) - 1:
                 # this is the final ring zone
@@ -369,16 +367,16 @@ class Zones:
             if aLoc in zone.locList:
                 zoneFound = True
                 return zone
+
         if not zoneFound:
             runLog.warning("Was not able to find which zone {} is in".format(a))
+
+        return None
 
 
 def buildZones(core, cs):
     """
-    Build/update the zones.
-
-    Zones are groups of assembly locations used for various purposes such as defining SASSYS channels and
-    reactivity coefficients.
+    Build/update the Zones.
 
     The zoning option is determined by the ``zoningStrategy`` setting.
     """
