@@ -41,6 +41,7 @@ Bug fixes
 #. Fixed issue with axial expansion changer and axial meshing in ``armi/reactor/reactors.py::Core::processLoading``.
 #. Bug fix and clarity improvements for how number densities are initialized for components.
 #. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
+#. Bug fix in ``armi/reactor/components/component.py::getReac``
 #. TBD
 
 
