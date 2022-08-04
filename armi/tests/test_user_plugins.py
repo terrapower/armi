@@ -209,11 +209,13 @@ class TestUserPlugins(unittest.TestCase):
         )
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        numPluginsBefore = len(pluginNames)
         self.assertNotIn("UserPluginFlags3", pluginNames)
 
         cs.registerUserPlugins()
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertEqual(len(pluginNames), numPluginsBefore + 1)
         self.assertIn("UserPluginFlags3", pluginNames)
 
     def test_userPluginOnProcessCoreLoading(self):
@@ -254,6 +256,7 @@ class TestUserPlugins(unittest.TestCase):
         app = getApp()
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        numPluginsBefore = len(pluginNames)
         self.assertNotIn("UserPluginWithInterface", pluginNames)
 
         # register custom UserPlugin, that has an
@@ -262,6 +265,7 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginWithInterface", pluginNames)
+        self.assertEqual(len(pluginNames), numPluginsBefore + 1)
 
         # load a reactor and grab the fuel assemblieapps
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
