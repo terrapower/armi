@@ -853,7 +853,7 @@ def copyInterfaceInputs(
                             f"with a glob of `{sourceFullPath}`. Will not update "
                             f"`{label}`."
                         )
-                        newFiles.append(f)  # pass?
+                        newFiles.append(f)
                     else:
                         for gFile in globFilePaths:
                             destFilePath = copyInputsHelper(
@@ -871,6 +871,7 @@ def copyInterfaceInputs(
                         f"the following path: `{sourceFullPath}`. Will not update "
                         f"`{label}`."
                     )
+
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects
             if len(files) == 1 and not WILDCARD:
