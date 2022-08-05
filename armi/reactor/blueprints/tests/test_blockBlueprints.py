@@ -336,19 +336,14 @@ class TestGriddedBlock(unittest.TestCase):
             clad.material.density3(Tc=clad.temperatureInC),
             delta=biggerDelta,
         )
-        # This should be equal, but block construction calls applyHotHeightDensityReduction
-        # while programmatic construction allows components to exist in a state where
-        # their density is not consistent with material density.
-        self.assertNotAlmostEqual(
-            clad.getMassDensity(),
-            programaticClad.getMassDensity(),
-            delta=biggerDelta,
-        )
-        # its off by a factor of thermal expansion
-        self.assertNotAlmostEqual(
+        # This illustrates an inconsistency with how Components are created
+        # programmatically and from blueprints. The latter computes number densities
+        # at hot radial dims cold heights; the former assumes hot radial dims and hot
+        # axial dims (since cs["inputHeightsConsideredHot'] = True by default).
+        self.assertAlmostEqual(
             clad.getMassDensity(),
             programaticClad.getMassDensity()
-            * programaticClad.getThermalExpansionFactor(),
+            / programaticClad.getThermalExpansionFactor(),
             delta=biggerDelta,
         )
 
