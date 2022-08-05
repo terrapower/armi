@@ -122,12 +122,12 @@ class BlockBlueprint(yamlize.KeyedList):
             if cs["inputHeightsConsideredHot"]:
                 if "group" in c.name:
                     for component in c:
-                        component.adjustNDensForHotHeight()
+                        component.applyHotHeightDensityReduction()
                         componentBlueprint.insertDepletableNuclideKeys(
                             component, blueprint
                         )
                 else:
-                    c.adjustNDensForHotHeight()
+                    c.applyHotHeightDensityReduction()
                     componentBlueprint.insertDepletableNuclideKeys(c, blueprint)
             components[c.name] = c
             if spatialGrid:
