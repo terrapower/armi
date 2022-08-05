@@ -215,8 +215,6 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags3", pluginNames)
-        for pluginName in pNames:
-            self.assertIn(pluginName, pluginNames)
 
     def test_userPluginOnProcessCoreLoading(self):
         """
@@ -264,8 +262,6 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginWithInterface", pluginNames)
-        for pluginName in pNames:
-            self.assertIn(pluginName, pluginNames)
 
         # load a reactor and grab the fuel assemblieapps
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
