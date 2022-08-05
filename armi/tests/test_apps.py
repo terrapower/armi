@@ -187,6 +187,19 @@ class TestApps(unittest.TestCase):
         self.assertTrue(isStableReleaseVersion("0.1.2"))
         self.assertFalse(isStableReleaseVersion("1.2.3-asda132a"))
 
+    def test_disableFutureConfigures(self):
+        import armi
+
+        # save off, in in case of poorly parallelized tests
+        old = armi._ignoreConfigures
+
+        # test it works (should be False to start)
+        armi.disableFutureConfigures()
+        self.assertTrue(armi._ignoreConfigures)
+
+        # reset, in case of poorly parallelized tests
+        armi._ignoreConfigures = old
+
 
 class TestArmi(unittest.TestCase):
     """Tests for functions in the ARMI __init__ module."""
