@@ -208,14 +208,16 @@ class TestUserPlugins(unittest.TestCase):
             },
         )
 
-        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
-        numPluginsBefore = len(pluginNames)
-        self.assertNotIn("UserPluginFlags3", pluginNames)
+        pNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        numPluginsBefore = len(pNames)
+        self.assertNotIn("UserPluginFlags3", pNames)
 
         cs.registerUserPlugins()
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
-        self.assertEqual(len(pluginNames), numPluginsBefore + 1)
+        self.assertEqual(
+            len(pluginNames), numPluginsBefore + 1, f"{pNames} vs {pluginNames}"
+        )
         self.assertIn("UserPluginFlags3", pluginNames)
 
     def test_userPluginOnProcessCoreLoading(self):
