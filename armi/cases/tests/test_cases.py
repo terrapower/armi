@@ -20,6 +20,7 @@ import io
 import os
 import platform
 import unittest
+import pathlib
 
 from armi import cases
 from armi import context
@@ -338,7 +339,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
 
-        # test with full filepath too
+        # test it passes
         sourceFullPath = os.path.join(TEST_ROOT, shuffleFile)
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
@@ -354,14 +355,23 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         # test with bad file path, should return original file
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            with self.assertRaises(Exception):
-                destFilePath = cases.case._copyInputsHelper(
+            destFilePath = cases.case._copyInputsHelper(
+                testSetting,
+                sourcePath=sourceFullPath,
+                destPath="",
+                origFile=shuffleFile,
+            )
+            self.assertEqual(destFilePath, shuffleFile)
+            # Now try for the exception with a bad file
+            self.assertRaises(
+                Exception,
+                cases.case._copyInputsHelper(
                     testSetting,
-                    sourcePath=sourceFullPath,
+                    sourcePath="fakeFile.py",
                     destPath="",
                     origFile=shuffleFile,
-                )
-                self.assertEqual(destFilePath, shuffleFile)
+                ),
+            )
 
     def test_copyInterfaceInputs_singleFile(self):
         testSetting = "shuffleLogic"
