@@ -2300,7 +2300,7 @@ class Core(composites.Composite):
                     axialExpChngr.expansionData.computeThermalExpansionFactors()
                     axialExpChngr.axiallyExpandAssembly(thermal=True)
             axialExpChngr.manageCoreMesh(self.parent)
-            self.updateBlockBOLHeights()
+            self._updateBlockBOLHeights(assemsToAxiallyExpand)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2327,11 +2327,18 @@ class Core(composites.Composite):
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
 
-    def updateBlockBOLHeights(self):
-        """post thermal expansion, update block BOL heights"""
+    def _updateBlockBOLHeights(self, assems: list):
+        """post thermal expansion, update block BOL heights
+
+        Parameters
+        ----------
+        assems: list
+            a list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects
+            that have been axially expanded
+        """
         self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(applySubMesh=False)
         self.p.axialMesh = self.findAllAxialMeshPoints()
-        for a in self.getAssemblies():
+        for a in assems:
             if not a.hasFlags(Flags.CONTROL):
                 for b in a:
                     b.p.heightBOL = b.getHeight()
