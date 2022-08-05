@@ -2090,21 +2090,6 @@ class CartesianBlock_TestCase(unittest.TestCase):
             _ = self.cartesianBlock.getHydraulicDiameter()
 
 
-class PointTests(unittest.TestCase):
-    def setUp(self):
-        self.point = blocks.Point()
-
-    def test_getters(self):
-        self.assertEqual(1.0, self.point.getVolume())
-        self.assertEqual(1.0, self.point.getBurnupPeakingFactor())
-
-    def test_getWettedPerimeter(self):
-        self.assertEqual(0.0, self.point.getWettedPerimeter())
-
-    def test_getHydraulicDiameter(self):
-        self.assertEqual(0.0, self.point.getHydraulicDiameter())
-
-
 class MassConservationTests(unittest.TestCase):
     r"""
     Tests designed to verify mass conservation during thermal expansion
