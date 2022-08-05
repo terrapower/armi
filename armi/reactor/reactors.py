@@ -2251,7 +2251,6 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2271,17 +2270,18 @@ class Core(composites.Composite):
                 for a in self.parent.blueprints.assemblies.values():
                     a.makeAxialSnapList(refAssem=finestAssemblyMesh)
             if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
+                self._axiallyExpandAssems(
+                    self.parent.blueprints.assemblies.values(),
+                    dbLoad,
+                    "blueprints",
+                    cs["detailedAxialExpansion"],
                 )
-                for a in self.parent.blueprints.assemblies.values():
-                    if not a.hasFlags(Flags.CONTROL):
-                        axialExpChngr.setAssembly(a)
-                        axialExpChngr.expansionData.computeThermalExpansionFactors()
-                        axialExpChngr.axiallyExpandAssembly(thermal=True)
-                self._updateBlockBOLHeights(
-                    self.parent.blueprints.assemblies.values(), dbLoad
-                )
+                if not cs["detailedAxialExpansion"]:
+                    refMesh = (
+                        self.refAssem.getAxialMesh()
+                    )  # calculate once for efficiency
+                    for a in self.parent.blueprints.assemblies.values():
+                        a.setBlockMesh(refMesh)
 
         else:
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
@@ -2293,16 +2293,12 @@ class Core(composites.Composite):
                 for a in self.getAssemblies(includeAll=True):
                     a.makeAxialSnapList(self.refAssem)
             if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+                self._axiallyExpandAssems(
+                    self.getAssemblies(includeAll=True),
+                    dbLoad,
+                    "all",
+                    cs["detailedAxialExpansion"],
                 )
-                for a in self.getAssemblies(includeAll=True):
-                    if not a.hasFlags(Flags.CONTROL):
-                        axialExpChngr.setAssembly(a)
-                        axialExpChngr.expansionData.computeThermalExpansionFactors()
-                        axialExpChngr.axiallyExpandAssembly(thermal=True)
-                axialExpChngr.manageCoreMesh(self.parent)
-                self._updateBlockBOLHeights(self.getAssemblies(includeAll=True), dbLoad)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2328,6 +2324,23 @@ class Core(composites.Composite):
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+
+    def _axiallyExpandAssems(
+        self, assems: list, dbLoad: bool, expTag: str, detAxExp: bool
+    ):
+        """expand assembliues"""
+        axialExpChngr = AxialExpansionChanger(detAxExp)
+        runLog.header(
+            f"=========== Axially expanding {expTag} assemblies (except control) from Tinput to Thot ==========="
+        )
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                axialExpChngr.setAssembly(a)
+                axialExpChngr.expansionData.computeThermalExpansionFactors()
+                axialExpChngr.axiallyExpandAssembly(thermal=True)
+        if not dbLoad:
+            axialExpChngr.manageCoreMesh(self.parent)
+        self._updateBlockBOLHeights(assems, dbLoad)
 
     def _updateBlockBOLHeights(self, assems: list, dbLoad: bool):
         """post thermal expansion, update block BOL heights
