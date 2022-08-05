@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for block blueprints."""
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import io
+import unittest
 
-from armi.reactor import blueprints
 from armi import settings
+from armi.reactor import blueprints
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks
 
@@ -318,6 +319,7 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
 
+    # TODO: This test passes, but shouldn't.
     def test_densityConsistentWithComponentConstructor(self):
         # when comparing to 3D density, the comparison is not quite correct.
         # We need a bigger delta, this will be investigated/fixed in another PR
@@ -336,6 +338,7 @@ class TestGriddedBlock(unittest.TestCase):
             clad.material.density3(Tc=clad.temperatureInC),
             delta=biggerDelta,
         )
+
         # This should be equal, but block construction calls applyHotHeightDensityReduction
         # while programmatic construction allows components to exist in a state where
         # their density is not consistent with material density.
