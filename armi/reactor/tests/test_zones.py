@@ -81,28 +81,6 @@ class Zone_TestCase(unittest.TestCase):
         for i, loc in enumerate(zone.locList):
             self.assertEqual(i, zone.index(loc))
 
-    def test_addRing(self):
-        zone = zones.Zone("TestZone")
-        zone.addRing(5)
-        self.assertIn("005-003", zone)
-        self.assertNotIn("006-002", zone)
-
-        zone.addRing(6, 3, 9)
-        self.assertIn("006-003", zone)
-        self.assertIn("006-009", zone)
-        self.assertNotIn("006-002", zone)
-        self.assertNotIn("006-010", zone)
-
-    def test_add(self):
-        zone = zones.Zone("TestZone")
-        zone.addRing(5)
-        otherZone = zones.Zone("OtherZone")
-        otherZone.addRing(6, 3, 9)
-        combinedZoneList = zone + otherZone
-        self.assertIn("005-003", combinedZoneList)
-        self.assertIn("006-003", combinedZoneList)
-        self.assertIn("006-009", combinedZoneList)
-
 
 class Zones_InReactor(unittest.TestCase):
     def setUp(self):

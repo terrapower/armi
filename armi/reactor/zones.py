@@ -30,9 +30,9 @@ class Zone:
     def __init__(self, name, locations=None, symmetry=3):
         self.symmetry = symmetry
         self.name = name
-        if locations is None:
-            locations = []
         self.locList = locations
+        if locations is None:
+            self.locList = []
         self.hostZone = name
 
     def __repr__(self):
@@ -53,10 +53,6 @@ class Zone:
     def __len__(self):
         return len(self.locList)
 
-    def __add__(self, other):
-        """Returns all the blocks in both assemblies."""
-        return self.locList + other.locList
-
     def append(self, obj):
         if obj in self.locList:
             # locations must be unique
@@ -74,43 +70,6 @@ class Zone:
         """
         for a in aList:
             self.append(a.getLocation())
-
-    # TODO: p0, p1 are only used in testing
-    def addRing(self, ring, p0=None, p1=None):
-        """
-        Adds a section of a ring (or a whole ring) to the zone
-
-        Parameters
-        ----------
-        ring : int
-            The ring to add
-
-        p0 : int, optional
-            beginning position within ring. Default: None (full ring)
-
-        p1 : int, optional
-            Ending position within ring.
-        """
-        grid = grids.HexGrid.fromPitch(1.0)
-        if p0 is None or p1 is None:
-            if self.symmetry == 3:
-                posList = grid.allPositionsInThird(ring)
-            elif self.symmetry == 1:
-                posList = range(1, grid.getPositionsInRing(ring) + 1)
-            else:
-                raise RuntimeError(
-                    "Zones are not written to handle {0}-fold symmetry yet"
-                    "".format(self.symmetry)
-                )
-        else:
-            posList = range(p0, p1 + 1)
-
-        for pos in posList:
-            newLoc = grid.getLabel(
-                grid.getLocatorFromRingAndPos(ring, pos).getCompleteIndices()[:2]
-            )
-            if newLoc not in self.locList:
-                self.append(newLoc)
 
 
 class Zones:
