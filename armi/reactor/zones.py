@@ -27,8 +27,7 @@ class Zone:
     Each location represents an Assembly or a Block.
     """
 
-    def __init__(self, name, locations=None, symmetry=3):
-        self.symmetry = symmetry
+    def __init__(self, name, locations=None):
         self.name = name
         self.locList = locations
         if locations is None:
