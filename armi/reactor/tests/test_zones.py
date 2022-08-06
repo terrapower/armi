@@ -110,37 +110,6 @@ class Zones_InReactor(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()
 
-    def test_buildRingZones(self):
-        o, r = self.o, self.r
-        cs = o.cs
-
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "byRingZone"}
-        newSettings["ringZones"] = []
-        cs = cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 1)
-        self.assertEqual(9, r.core.numRings)
-
-        newSettings = {"ringZones": [5, 8]}
-        cs = cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 2)
-        zone = zonez["ring-1"]
-        self.assertEqual(len(zone), (5 * (5 - 1) + 1))
-        zone = zonez["ring-2"]
-        # Note that the actual number of rings in the reactor model is 9. Even though we
-        # asked for the last zone to to to 8, the zone engine should bump it out. Not
-        # sure if this is behavior that we want to preserve, but at least it's being
-        # tested properly now.
-        self.assertEqual(len(zone), (9 * (9 - 1) + 1) - (5 * (5 - 1) + 1))
-
-        newSettings = {"ringZones": [5, 7, 8]}
-        cs = cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(r.core, cs)
-        self.assertEqual(len(list(zonez)), 3)
-        zone = zonez["ring-3"]
-        self.assertEqual(len(zone), 30)  # rings 8 and 9. See above comment
-
     def test_buildManualZones(self):
         o, r = self.o, self.r
         cs = o.cs
@@ -163,15 +132,20 @@ class Zones_InReactor(unittest.TestCase):
         cs = o.cs
 
         # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "byRingZone"}
-        newSettings["ringZones"] = [5, 8]
+        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+        ]
         cs = cs.modified(newSettings=newSettings)
 
-        # produce 2 zones, with the names ringzone0 and ringzone1
+        # build 2 zones
         daZones = zones.buildZones(r.core, cs)
+
+        # remove a Zone
         daZones.removeZone("ring-1")
 
-        # The names list should only house the only other remaining zone now
+        # verify we only have the one zone left
         self.assertEqual(["ring-2"], daZones.names)
 
         # if indexed like a dict, the zones object should give a key error from the removed zone
@@ -185,7 +159,12 @@ class Zones_InReactor(unittest.TestCase):
     def test_findZoneAssemblyIsIn(self):
         cs = self.o.cs
 
-        newSettings = {"ringZones": [5, 7, 8]}
+        # customize settings for this test
+        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+        ]
         cs = cs.modified(newSettings=newSettings)
 
         daZones = zones.buildZones(self.r.core, cs)
@@ -194,20 +173,28 @@ class Zones_InReactor(unittest.TestCase):
             aZone = daZones.findZoneAssemblyIsIn(a)
             self.assertEqual(aZone, zone)
 
-        # lets test if we get a none and a warning if the assembly does not exist in a zone
+        # get assem from first zone
         a = self.r.core.getAssemblyWithStringLocation(
             daZones[daZones.names[0]].locList[0]
-        )  # get assem from first zone
-        daZones.removeZone(
-            daZones.names[0]
-        )  # remove a zone to ensure that our assem does not have a zone anymore
+        )
+        # remove the zone
+        daZones.removeZone(daZones.names[0])
 
+        # ensure that we can no longer find the assembly in the zone
         self.assertEqual(daZones.findZoneAssemblyIsIn(a), None)
 
 
 class Zones_InRZReactor(unittest.TestCase):
     def test_zoneSummary(self):
         o, r = test_reactors.loadTestReactor()
+
+        # customize settings for this test
+        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+        ]
+        o.cs = o.cs.modified(newSettings=newSettings)
 
         r.core.buildZones(o.cs)
         daZones = r.core.zones
@@ -216,6 +203,7 @@ class Zones_InRZReactor(unittest.TestCase):
         for name0 in ["ring-1"]:
             self.assertIn(name0, daZones.names)
 
+        # test the summary (in the log)
         with mockRunLogs.BufferLog() as mock:
             runLog.LOG.startLog("test_zoneSummary")
             runLog.LOG.setVerbosity(logging.INFO)

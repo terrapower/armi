@@ -195,7 +195,7 @@ class Zones:
                         "No TH data. Run with thermal hydraulics activated. "
                         "Zone report will have flow rate of zero",
                         single=True,
-                        label="Cannot summarize ring zone T/H",
+                        label="Cannot summarize zone T/H",
                     )
                     # no TH for some reason
                     flow = 0.0
@@ -288,66 +288,6 @@ class Zones:
 
         return zoneLocs
 
-    def getRingZoneRings(self):
-        """
-        Get rings in each ring zone as a list of lists.
-
-        Returns
-        -------
-        ringZones : list
-            List of lists. Each entry is the ring numbers in a ring zone.
-            If there are no ring zones defined, returns a list of all rings.
-        """
-        core = self.core
-        if not self.cs["ringZones"]:
-            # no ring zones defined. Return all rings.
-            return [range(1, core.getNumRings() + 1)]
-
-        # ringZones are upper limits, defining ring zones from the center. so if they're
-        #  [3, 5, 8, 90] then the ring zones are from 1 to 3, 4 to 5, 6 to 8, etc.
-        # AKA, the upper bound is included in that particular zone.
-
-        # check validity of ringZones. Increasing order and integers.
-        ring0 = 0
-        for i, ring in enumerate(self.cs["ringZones"]):
-            if ring <= ring0 or not isinstance(ring, int):
-                runLog.warning(
-                    "ring zones {0} are invalid. Must be integers, increasing in order. "
-                    "Can not return ring zone rings.".format(self.cs["ringZones"])
-                )
-                return []
-            ring0 = ring
-            if i == len(self.cs["ringZones"]) - 1:
-                # this is the final ring zone
-                if ring < (core.getNumRings() + 1):
-                    finalRing = core.getNumRings()
-                else:
-                    finalRing = None
-
-        # modify the ringZones to definitely include all assemblies
-        if finalRing:
-            runLog.debug(
-                "Modifying final ring zone definition to include all assemblies. New max: {0}".format(
-                    finalRing
-                ),
-                single=True,
-                label="Modified ring zone definition",
-            )
-            self.cs["ringZones"][-1] = finalRing
-
-        # build the ringZone list
-        ring0 = 0
-        ringZones = []
-        for upperRing in self.cs["ringZones"]:
-            ringsInThisZone = range(
-                ring0 + 1, upperRing + 1
-            )  # the rings in this ring zone as defined above.
-
-            ringZones.append(ringsInThisZone)
-            ring0 = upperRing
-
-        return ringZones
-
     def findZoneAssemblyIsIn(self, a):
         """
         Return the zone object that this assembly is in.
@@ -374,6 +314,7 @@ class Zones:
         return None
 
 
+# TODO: How do we support zoningStrategies in external codebases?
 def buildZones(core, cs):
     """
     Build/update the Zones.
@@ -382,9 +323,7 @@ def buildZones(core, cs):
     """
     zones = Zones(core, cs)
     zoneOption = cs[globalSettings.CONF_ZONING_STRATEGY]
-    if "byRingZone" in zoneOption:
-        zones.update(_buildRingZoneZones(core, cs))
-    elif "manual" in zoneOption:
+    if "manual" in zoneOption:
         zones.update(_buildManualZones(core, cs))
     else:
         raise ValueError(
@@ -406,40 +345,5 @@ def _buildManualZones(core, cs):
         zoneLocs = zoneLocs.split(",")
         zone = Zone(zoneName.strip())
         zone.extend(map(stripper, zoneLocs))
-        zones.add(zone)
-    return zones
-
-
-def _buildRingZoneZones(core, cs):
-    """
-    Build zones based on annular rings.
-
-    Notes
-    -----
-    Originally, there were ringZones. These were defined by a user-input list of
-    upper bound rings and the zones were just annular regions between rings.
-    They were used to compute reactivity coefficients and whatnot. Then
-    one day, it became clear that more general zones were required. To support
-    old code that used ringZones, this code produces modern zones out
-    of the ringZone input.
-
-    It creates zones called ring-0, ring-1, etc. for each zone.
-
-    If no zones are defined, one big ringzone comprising the whole core will be built.
-
-    See Also
-    --------
-    getRingZoneAssemblies : gets assemblies in a ringzone
-    getRingZoneRings : computes rings in a ringzone
-    getAssembly : accesses assemblies in a zone the new way.
-
-    """
-    zones = Zones(core, cs)
-    zoneRings = zones.getRingZoneRings()
-    for ringZone, rings in enumerate(zoneRings, 1):
-        zoneName = "ring-{0}".format(ringZone)
-        zone = Zone(zoneName)
-        for ring in rings:
-            zone.addRing(ring)
         zones.add(zone)
     return zones

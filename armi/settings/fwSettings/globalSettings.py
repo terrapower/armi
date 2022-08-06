@@ -92,7 +92,6 @@ CONF_TRACK_ASSEMS = "trackAssems"
 CONF_VERBOSITY = "verbosity"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
-CONF_RING_ZONES = "ringZones"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_HCF_CORETYPE = "HCFcoretype"
@@ -136,12 +135,11 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_ZONING_STRATEGY,
-            default="byRingZone",
+            default="manual",
             label="Automatic core zone creation strategy",
             description="Channel Grouping Options for Safety;"
-            "byRingZone: based on ringzones, "
             "Manual: you must specify 'zoneDefinitions' setting",
-            options=["byRingZone", "manual"],
+            options=["manual"],
         ),
         setting.Setting(
             CONF_AXIAL_MESH_REFINEMENT_FACTOR,
@@ -686,14 +684,6 @@ def defineSettings() -> List[setting.Setting]:
             "sectional area and the reference block used during the assembly area "
             "consistency check",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False)),
-        ),
-        setting.Setting(
-            CONF_RING_ZONES,
-            default=[],
-            label="Ring Zones",
-            description="Define zones by concentric radial rings. Each zone will get "
-            "independent reactivity coefficients.",
-            schema=vol.Schema([int]),
         ),
         setting.Setting(
             CONF_INDEPENDENT_VARIABLES,
