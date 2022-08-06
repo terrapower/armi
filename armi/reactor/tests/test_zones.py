@@ -14,7 +14,6 @@
 
 """Test for Zones"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import copy
 import logging
 import os
 import unittest
@@ -26,7 +25,6 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
 from armi.reactor import zones
-from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings.fwSettings import globalSettings
 from armi.tests import mockRunLogs
