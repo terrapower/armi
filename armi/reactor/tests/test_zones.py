@@ -78,7 +78,7 @@ class Zone_TestCase(unittest.TestCase):
     def test_index(self):
         zone = zones.Zone("TestZone")
         zone.addAssemblyLocations(self.aList)
-        for i, loc in enumerate(zone.locList):
+        for i, loc in enumerate(zone.locs):
             self.assertEqual(i, zone.index(loc))
 
 
@@ -145,14 +145,12 @@ class Zones_InReactor(unittest.TestCase):
 
         daZones = zones.buildZones(self.r.core, cs)
         for zone in daZones:
-            a = self.r.core.getAssemblyWithStringLocation(zone.locList[0])
+            a = self.r.core.getAssemblyWithStringLocation(zone.locs[0])
             aZone = daZones.findZoneAssemblyIsIn(a)
             self.assertEqual(aZone, zone)
 
         # get assem from first zone
-        a = self.r.core.getAssemblyWithStringLocation(
-            daZones[daZones.names[0]].locList[0]
-        )
+        a = self.r.core.getAssemblyWithStringLocation(daZones[daZones.names[0]].locs[0])
         # remove the zone
         daZones.removeZone(daZones.names[0])
 

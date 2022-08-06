@@ -21,42 +21,51 @@ from armi.reactor.flags import Flags
 from armi.settings.fwSettings import globalSettings
 
 
+class ZoneType:
+    """TODO"""
+
+    ASSEM = 0
+    BLOCK = 1
+
+
 class Zone:
     """
     A group of locations in the Core, used to divide it up for analysis.
     Each location represents an Assembly or a Block.
     """
 
-    def __init__(self, name, locations=None):
+    def __init__(self, name, locations=None, zoneType=ZoneType.ASSEM):
         self.name = name
-        self.locList = locations
+        self.zoneType = zoneType
+
         if locations is None:
-            self.locList = []
-        self.hostZone = name
+            self.locs = []
+        else:
+            self.locs = locations
 
     def __repr__(self):
         return "<Zone {0} with {1} locations>".format(self.name, len(self))
 
     def __getitem__(self, index):
-        return self.locList[index]
+        return self.locs[index]
 
     def __setitem__(self, index, locStr):
-        self.locList[index] = locStr
+        self.locs[index] = locStr
 
-    def extend(self, locList):
-        self.locList.extend(locList)
+    def extend(self, locs):
+        self.locs.extend(locs)
 
     def index(self, loc):
-        return self.locList.index(loc)
+        return self.locs.index(loc)
 
     def __len__(self):
-        return len(self.locList)
+        return len(self.locs)
 
     def append(self, obj):
-        if obj in self.locList:
+        if obj in self.locs:
             # locations must be unique
             raise RuntimeError("{0} is already in this zone: {1}".format(obj, self))
-        self.locList.append(obj)
+        self.locs.append(obj)
 
     def addAssemblyLocations(self, aList):
         """
@@ -262,7 +271,7 @@ class Zones:
         aLoc = a.getLocation()
         zoneFound = False
         for zone in self:
-            if aLoc in zone.locList:
+            if aLoc in zone.locs:
                 zoneFound = True
                 return zone
 
