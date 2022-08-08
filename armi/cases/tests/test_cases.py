@@ -18,7 +18,6 @@ Unit tests for Case and CaseSuite objects
 import copy
 import io
 import os
-import pathlib
 import platform
 import unittest
 
@@ -339,29 +338,29 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
 
+        # test it passes
+        sourceFullPath = os.path.join(TEST_ROOT, shuffleFile)
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            # null case, give it just the base of shuffleFile
-            destFilePath = cases.case.copyInputsHelper(
+            destFilePath = cases.case._copyInputsHelper(
                 testSetting,
-                fileFullPath=pathlib.Path(shuffleFile),
-                destPath=pathlib.Path(newDir.destination),
+                sourcePath=sourceFullPath,
+                destPath=newDir.destination,
+                origFile=shuffleFile,
             )
             newFilepath = os.path.join(newDir.destination, shuffleFile)
             self.assertEqual(destFilePath, str(newFilepath))
 
-        # test with full filepath too
-        fileFullPath = pathlib.Path(os.path.join(TEST_ROOT, shuffleFile))
-
+        # test with bad file path, should return original file
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            destFilePath = cases.case.copyInputsHelper(
+            destFilePath = cases.case._copyInputsHelper(
                 testSetting,
-                fileFullPath=fileFullPath,
-                destPath=pathlib.Path(newDir.destination),
+                sourcePath=sourceFullPath,
+                destPath="",
+                origFile=shuffleFile,
             )
-            newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(destFilePath, str(newFilepath))
+            self.assertEqual(destFilePath, shuffleFile)
 
     def test_copyInterfaceInputs_singleFile(self):
         testSetting = "shuffleLogic"
@@ -384,10 +383,10 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            self.assertRaises(
-                Exception,
-                cases.case.copyInterfaceInputs(cs, destination=newDir.destination),
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
             )
+            self.assertEqual(newSettings[testSetting], fakeShuffle)
 
     def test_copyInterfaceInputs_multipleFiles(self):
         # register the new Plugin
@@ -429,6 +428,30 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 cs, destination=newDir.destination
             )
             newFilepath = [os.path.join(newDir.destination, "ISOAA")]
+            self.assertEqual(newSettings[testSetting], newFilepath)
+
+        # Check on a file that doesn't exist (so globFilePaths len is 0)
+        wcFile = "fakeFile*"
+        cs = cs.modified(newSettings={testSetting: wcFile})
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            self.assertEqual(newSettings[testSetting], [wcFile])
+
+    def test_copyInterfaceInputs_relPath(self):
+        testSetting = "shuffleLogic"
+        cs = settings.Settings(ARMI_RUN_PATH)
+        shuffleFile = cs[testSetting]
+        relFile = "../tests/" + shuffleFile
+        cs = cs.modified(newSettings={testSetting: relFile})
+
+        # ensure we are not in TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            newFilepath = os.path.join(newDir.destination, shuffleFile)
             self.assertEqual(newSettings[testSetting], newFilepath)
 
 

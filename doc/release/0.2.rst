@@ -23,6 +23,7 @@ What's new in ARMI
 #. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
 #. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
 #. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
+#. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
 #. TBD
 
 Bug fixes
