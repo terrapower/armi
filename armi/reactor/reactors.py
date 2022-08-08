@@ -2219,7 +2219,7 @@ class Core(composites.Composite):
             fuelBottoms.append(fuelHeightInCm)
         return lowestFuelHeightInCm
 
-    def processLoading(self, cs):
+    def processLoading(self, cs, dbLoad: bool = False):
         """
         After nuclide densities are loaded, this goes through and prepares the reactor.
 
@@ -2236,17 +2236,6 @@ class Core(composites.Composite):
         updateAxialMesh : Perturbs the axial mesh originally set up here.
 
         """
-        if not cs["inputHeightsConsideredHot"]:
-            runLog.header(
-                "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
-            )
-            axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
-            for a in self.getAssemblies(includeAll=True):
-                if not a.hasFlags(Flags.CONTROL):
-                    axialExpChngr.setAssembly(a)
-                    axialExpChngr.expansionData.computeThermalExpansionFactors()
-                    axialExpChngr.axiallyExpandAssembly(thermal=True)
-
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
@@ -2262,42 +2251,46 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        # if we have these params loaded from the database do not overwrite,
-        # otherwise initialize them
-        if not self.p.referenceBlockAxialMesh:
+        if dbLoad:
+            # reactor.blueprints.assemblies need to be populated
+            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
+            # but for DB load, this is not called so it must be here.
+            # pylint: disable=protected-access
+            self.parent.blueprints._prepConstruction(cs)
+            if not cs["detailedAxialExpansion"]:
+                # Apply mesh snapping for self.parent.blueprints.assemblies
+                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
+                # considereed here. To guarantee mesh snapping will function, makeAxialSnapList
+                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
+                finestAssemblyMesh = sorted(
+                    self.parent.blueprints.assemblies.values(),
+                    key=lambda a: len(a),
+                    reverse=True,
+                )[0]
+                for a in self.parent.blueprints.assemblies.values():
+                    a.makeAxialSnapList(refAssem=finestAssemblyMesh)
+
+        else:
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 applySubMesh=False
             )
-        if not self.p.axialMesh:
             self.p.axialMesh = self.findAllAxialMeshPoints()
+            if not cs["detailedAxialExpansion"]:
+                # prepare core for mesh snapping during axial expansion
+                for a in self.getAssemblies(includeAll=True):
+                    a.makeAxialSnapList(self.refAssem)
 
-        refAssem = self.refAssem
-        # blueprints.assemblies.values need to be populated
-        # In a load from DB case construction may not have been prepped yet.
-        # this normally happens during blueprints constructAssem, but for DB
-        # load this is not called.
-        self.parent.blueprints._prepConstruction(cs)
-        if not cs["detailedAxialExpansion"]:
-            # prepare core for mesh snapping during axial expansion
-            for a in self.getAssemblies():
-                # No BOL assemblies since the core may have an expanded mesh
-                # That wont work for snap list. BOL (blueprints) assemblies
-                # will have the expansion applied upon core.createAssemblyOfType
-                a.makeAxialSnapList(refAssem=refAssem)
-
-            # Now apply mesh snapping for blueprints
-            # All mesh points should line up with the ref mesh, so first
-            # find the assembly with the finest mesh (it is the ref).
-            finestMeshA = sorted(
-                self.parent.blueprints.assemblies.values(),
-                key=lambda a: len(a),
-                reverse=True,
-            )[0]
-            # Apply an unexpanded ref mesh to the blueprints.Since they are
-            # not yet expanded, the normal core mesh would not line up.
-            # They will get expanded by core.createAssemblyOfType.
-            for a in self.parent.blueprints.assemblies.values():
-                a.makeAxialSnapList(refAssem=finestMeshA)
+            if not cs["inputHeightsConsideredHot"]:
+                runLog.header(
+                    "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
+                )
+                axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
+                for a in self.getAssemblies():
+                    if not a.hasFlags(Flags.CONTROL):
+                        axialExpChngr.setAssembly(a)
+                        axialExpChngr.expansionData.computeThermalExpansionFactors()
+                        axialExpChngr.axiallyExpandAssembly(thermal=True)
+                axialExpChngr.manageCoreMesh(self.parent)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2307,7 +2300,7 @@ class Core(composites.Composite):
         stationaryBlocks = []
         # look for blocks that should not be shuffled in an assembly.  It is assumed that the
         # reference assembly has all the fixed block information and it is the same for all assemblies
-        for i, b in enumerate(refAssem):
+        for i, b in enumerate(self.refAssem):
             if b.hasFlags(Flags.GRID_PLATE):
                 stationaryBlocks.append(i)
                 # TODO: remove hard-coded assumption of grid plates (T3019)
