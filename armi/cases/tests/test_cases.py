@@ -20,7 +20,6 @@ import io
 import os
 import platform
 import unittest
-import pathlib
 
 from armi import cases
 from armi import context
