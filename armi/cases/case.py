@@ -715,32 +715,45 @@ class Case:
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
-def copyInputsHelper(
-    fileDescription: str, fileFullPath: pathlib.Path, destPath: pathlib.Path
+def _copyInputsHelper(
+    fileDescription: str,
+    sourcePath: str,
+    destPath: str,
+    origFile: str,
 ) -> str:
     """
     Helper function for copyInterfaceInputs: Creates an absolute file path, and
-    copies the file to that location.
+    copies the file to that location. If that file path does not exist, returns
+    the file path from the original settings file.
 
     Parameters
     ----------
     fileDescription : str
         A file description for the copyOrWarn method
 
-    fileFullPath : pathlib.Path object
+    sourcePath : str
         The absolute file path of the file to copy
 
-    destPath : pathlib.Path object
+    destPath : str
         The target directory to copy input files to
+
+    origFile : str
+        File path as defined in the original settings file
 
     Returns
     -------
-    destFilePath : str
+    destFilePath (or origFile) : str
     """
-    sourceName = os.path.basename(fileFullPath.name)
-    destFilePath = os.path.abspath(destPath / sourceName)
-    pathTools.copyOrWarn(fileDescription, fileFullPath, destFilePath)
-    return destFilePath
+    sourceName = os.path.basename(sourcePath)
+    destFilePath = os.path.join(destPath, sourceName)
+    try:
+        pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
+        if pathlib.Path(destFilePath).exists():
+            return destFilePath
+        else:
+            return origFile
+    except Exception:
+        return origFile
 
 
 def copyInterfaceInputs(
@@ -777,8 +790,9 @@ def copyInterfaceInputs(
     Returns
     -------
     newSettings : dict
-        A new settings object that contains settings for the keys and either an
-        absolute file path or a list of absolute file paths for the values
+        A new settings object that contains settings for the keys and values that are
+        either an absolute file path, a list of absolute file paths, or the original
+        file path if absolute paths could not be resolved
 
     Notes
     -----
@@ -791,9 +805,8 @@ def copyInterfaceInputs(
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
     sourceDirPath = pathlib.Path(sourceDir)
-    destPath = pathlib.Path(destination)
 
-    assert destPath.is_dir()
+    assert pathlib.Path(destination).is_dir()
 
     newSettings = {}
 
@@ -810,55 +823,55 @@ def copyInterfaceInputs(
                     )
             label = key.name
 
-            newSettings[label] = []
+            newFiles = []
             for f in files:
-                globFilePaths = None
+                WILDCARD = False
+                RELATIVE = False
+                if "*" in f:
+                    WILDCARD = True
+                if ".." in f:
+                    RELATIVE = True
+
                 path = pathlib.Path(f)
-                if path.is_absolute() and path.exists() and path.is_file():
-                    # Path is absolute, no settings modification or filecopy needed
-                    pass
-                else:
-                    # Path is either relative or includes a wildcard
-                    if not (path.exists() and path.is_file()):
-                        runLog.extra(
-                            f"Input file for `{label}` setting could not be resolved "
-                            f"with the following file path: `{path}`. Checking for "
-                            f"file at path `{sourceDirPath}`."
-                        )
-
-                    # Attempt to find relative path file
-                    sourceFullString = os.path.join(sourceDirPath, f)
-                    sourceFullPath = pathlib.Path(sourceFullString)
-                    if not os.path.exists(sourceFullPath):
-                        runLog.extra(
-                            f"Input file for `{label}` setting could not be resolved "
-                            f"with the following file path: `{sourceFullPath}`. Checking "
-                            f"for wildcards."
-                        )
-                        # Attempt to capture file paths from wildcards
-                        globFilePaths = [
-                            pathlib.Path(os.path.join(sourceDirPath, g))
-                            for g in glob.glob(sourceFullString)
-                        ]
-                        if len(globFilePaths) == 0:
-                            runLog.warning(
-                                f"No input files for `{label}` setting could be resolved "
-                                f"with the following file path: `{sourceFullPath}`."
-                            )
-
-                    # Finally, copy + update settings according to file path type
-                    if not globFilePaths:
-                        destFilePath = copyInputsHelper(label, sourceFullPath, destPath)
-                        # Some settings are a single filename. Others are lists of files.
-                        # Either overwrite the empty list at the top of the loop, or
-                        # append to it.
-                        if len(files) == 1:
-                            newSettings[label] = str(destFilePath)
-                        else:
-                            newSettings[label].append(str(destFilePath))
+                if not WILDCARD and not RELATIVE:
+                    try:
+                        if path.is_absolute() and path.exists() and path.is_file():
+                            # Path is absolute, no settings modification or filecopy needed
+                            pass
+                    except OSError:
+                        pass
+                # Attempt to construct an absolute file path
+                sourceFullPath = os.path.join(sourceDirPath, f)
+                if WILDCARD:
+                    globFilePaths = [
+                        pathlib.Path(os.path.join(sourceDirPath, g))
+                        for g in glob.glob(sourceFullPath)
+                    ]
+                    if len(globFilePaths) == 0:
+                        destFilePath = f
+                        newFiles.append(str(destFilePath))
                     else:
                         for gFile in globFilePaths:
-                            destFilePath = copyInputsHelper(label, gFile, destPath)
-                            newSettings[label].append(str(destFilePath))
+                            destFilePath = _copyInputsHelper(
+                                label, gFile, destination, f
+                            )
+                            newFiles.append(str(destFilePath))
+                else:
+                    destFilePath = _copyInputsHelper(
+                        label, sourceFullPath, destination, f
+                    )
+                    newFiles.append(str(destFilePath))
+                if destFilePath == f:
+                    runLog.info(
+                        f"No input files for `{label}` setting could be resolved with "
+                        f"the following path: `{sourceFullPath}`. Will not update "
+                        f"`{label}`."
+                    )
 
+            # Some settings are a single filename. Others are lists of files. Make
+            # sure we are returning what the setting expects
+            if len(files) == 1 and not WILDCARD:
+                newSettings[label] = newFiles[0]
+            else:
+                newSettings[label] = newFiles
     return newSettings

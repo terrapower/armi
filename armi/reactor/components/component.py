@@ -329,9 +329,21 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def applyMaterialMassFracsToNumberDensities(self):
         """
-        Set initial (cold) number densities of this component based Material composition.
+        Set number densities for the component based on material mass fractions using hot temperatures.
+
+        Notes
+        -----
+        - the density returned accounts for the radial expansion of the component
+          due to the difference in self.inputTemperatureInC and self.temperatureInC
+        - axial expansion effects are not included here.
+
+        See Also
+        --------
+        self.applyHotHeightDensityReduction
         """
-        density = self.material.getProperty("density", Tc=self.inputTemperatureInC)
+        # note, that this is not the actual material density, but rather 2D expanded
+        # `density3` is 3D density
+        density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
@@ -339,30 +351,22 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def applyHotHeightDensityReduction(self):
         """
-        Set initial (hot) number densities of this component based Material composition.
+        Adjust number densities to account for prescribed hot block heights (axial expansion).
 
         Notes
         -----
-        We apply the hot-height density reduction here to account for pre-expanded
-        block heights in blueprints.
-        Future temperature changes can be handled by multiplications of 1/(1+dLL)**2
-        instead of 1/(1+dLL)**3 since we have pre-expanded in the axial direction.
-        """
-        denistyIfNotPreExpandedAxially = self.material.getProperty(
-            "density", self.temperatureInK
-        )
+        - We apply this hot height density reduction to account for pre-expanded
+          block heights in blueprints.
+        - This is called when inputHeightsConsideredHot: True.
 
-        # axial expansion factor must be applied because ARMI expects hot heights
-        # to be entered on assemblies in the blueprints  so that it doesn't have to
-        # handle the problem of fuel axially expanding at a different rate than clad.
+        See Also
+        --------
+        self.applyMaterialMassFracsToNumberDensities
+        """
         axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
             self.temperatureInC, self.inputTemperatureInC
         )
-
-        self.p.numberDensities = densityTools.getNDensFromMasses(
-            denistyIfNotPreExpandedAxially / axialExpansionFactor,
-            self.material.p.massFrac,
-        )
+        self.changeNDensByFactor(1.0 / axialExpansionFactor)
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""
@@ -733,15 +737,32 @@ class Component(composites.Composite, metaclass=ComponentType):
         mass : float
             The mass in grams.
         """
-        nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         volume = self.getVolume() / (
             self.parent.getSymmetryFactor() if self.parent else 1.0
         )
+        return self.getMassDensity(nuclideNames) * volume
+
+    def getMassDensity(self, nuclideNames=None):
+        """
+        Return the mass density of the component, in g/cc.
+
+        Parameters
+        ----------
+        nuclideNames : str, optional
+            The nuclide/element specifier to get the partial density of in
+            the object. If omitted, total density is returned.
+
+        Returns
+        -------
+        density : float
+            The density in grams/cc.
+        """
+        nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
+        # densities comes from self.p.numberDensities
         densities = self.getNuclideNumberDensities(nuclideNames)
-        return sum(
-            densityTools.getMassInGrams(nucName, volume, numberDensity)
-            for nucName, numberDensity in zip(nuclideNames, densities)
-        )
+        nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        massDensity = densityTools.calculateMassDensity(nDens)
+        return massDensity
 
     def setDimension(self, key, val, retainLink=False, cold=True):
         """
