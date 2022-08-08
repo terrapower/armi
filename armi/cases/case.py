@@ -848,11 +848,6 @@ def copyInterfaceInputs(
                         for g in glob.glob(sourceFullPath)
                     ]
                     if len(globFilePaths) == 0:
-                        runLog.info(
-                            f"No input files for `{label}` setting could be resolved "
-                            f"with a glob of `{sourceFullPath}`. Will not update "
-                            f"`{label}`."
-                        )
                         destFilePath = f
                         newFiles.append(str(destFilePath))
                     else:
