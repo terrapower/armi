@@ -232,7 +232,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self.setNDensFromMassFracsAtTempInC()  # not necessary when duplicating...
+        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
@@ -327,7 +327,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.material.parent = self
         self.clearLinkedCache()
 
-    def setNDensFromMassFracsAtTempInC(self):
+    def applyMaterialMassFracsToNumberDensities(self):
         """
         Set number densities for the component based on material mass fractions using hot temperatures.
 
@@ -339,15 +339,17 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         See Also
         --------
-        self.adjustNDensForHotHeight
+        self.applyHotHeightDensityReduction
         """
+        # note, that this is not the actual material density, but rather 2D expanded
+        # `density3` is 3D density
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
         )
 
-    def adjustNDensForHotHeight(self):
+    def applyHotHeightDensityReduction(self):
         """
         Adjust number densities to account for prescribed hot block heights (axial expansion).
 
@@ -359,7 +361,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         See Also
         --------
-        self.setNDensFromMassFracsAtTempInC
+        self.applyMaterialMassFracsToNumberDensities
         """
         axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
             self.temperatureInC, self.inputTemperatureInC
@@ -735,15 +737,32 @@ class Component(composites.Composite, metaclass=ComponentType):
         mass : float
             The mass in grams.
         """
-        nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         volume = self.getVolume() / (
             self.parent.getSymmetryFactor() if self.parent else 1.0
         )
+        return self.getMassDensity(nuclideNames) * volume
+
+    def getMassDensity(self, nuclideNames=None):
+        """
+        Return the mass density of the component, in g/cc.
+
+        Parameters
+        ----------
+        nuclideNames : str, optional
+            The nuclide/element specifier to get the partial density of in
+            the object. If omitted, total density is returned.
+
+        Returns
+        -------
+        density : float
+            The density in grams/cc.
+        """
+        nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
+        # densities comes from self.p.numberDensities
         densities = self.getNuclideNumberDensities(nuclideNames)
-        return sum(
-            densityTools.getMassInGrams(nucName, volume, numberDensity)
-            for nucName, numberDensity in zip(nuclideNames, densities)
-        )
+        nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        massDensity = densityTools.calculateMassDensity(nDens)
+        return massDensity
 
     def setDimension(self, key, val, retainLink=False, cold=True):
         """
