@@ -21,6 +21,7 @@ What's new in ARMI
 #. Made the min/max temperatures of ``Material`` curves discoverable.
 #. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
 #. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
+#. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
 #. TBD
 
 Bug fixes
