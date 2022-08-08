@@ -833,7 +833,7 @@ def copyInterfaceInputs(
                     RELATIVE = True
 
                 path = pathlib.Path(f)
-                if WILDCARD == False and RELATIVE == False:
+                if not WILDCARD and not RELATIVE:
                     try:
                         if path.is_absolute() and path.exists() and path.is_file():
                             # Path is absolute, no settings modification or filecopy needed
@@ -842,7 +842,7 @@ def copyInterfaceInputs(
                         pass
                 # Attempt to construct an absolute file path
                 sourceFullPath = os.path.join(sourceDirPath, f)
-                if WILDCARD == True:
+                if WILDCARD:
                     globFilePaths = [
                         pathlib.Path(os.path.join(sourceDirPath, g))
                         for g in glob.glob(sourceFullPath)
