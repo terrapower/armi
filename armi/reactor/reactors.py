@@ -2270,16 +2270,17 @@ class Core(composites.Composite):
                 for a in self.parent.blueprints.assemblies.values():
                     a.makeAxialSnapList(refAssem=finestAssemblyMesh)
             if not cs["inputHeightsConsideredHot"]:
-                self._axiallyExpandAssems(
+                runLog.header(
+                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
+                )
+                self._updateBlockBOLHeights(
                     self.parent.blueprints.assemblies.values(),
                     dbLoad,
-                    "blueprints",
                     cs["detailedAxialExpansion"],
                 )
                 if not cs["detailedAxialExpansion"]:
-                    refMesh = (
-                        self.refAssem.getAxialMesh()
-                    )  # calculate once for efficiency
+                    # calculate refMesh once for efficiency
+                    refMesh = self.refAssem.getAxialMesh()
                     for a in self.parent.blueprints.assemblies.values():
                         a.setBlockMesh(refMesh)
 
@@ -2293,10 +2294,12 @@ class Core(composites.Composite):
                 for a in self.getAssemblies(includeAll=True):
                     a.makeAxialSnapList(self.refAssem)
             if not cs["inputHeightsConsideredHot"]:
-                self._axiallyExpandAssems(
+                runLog.header(
+                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+                )
+                self._updateBlockBOLHeights(
                     self.getAssemblies(includeAll=True),
                     dbLoad,
-                    "all",
                     cs["detailedAxialExpansion"],
                 )
 
@@ -2325,35 +2328,18 @@ class Core(composites.Composite):
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
 
-    def _axiallyExpandAssems(
-        self, assems: list, dbLoad: bool, expTag: str, detAxExp: bool
-    ):
-        """expand assembliues"""
+    def _updateBlockBOLHeights(self, assems: list, dbLoad: bool, detAxExp: bool):
+        """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights"""
         axialExpChngr = AxialExpansionChanger(detAxExp)
-        runLog.header(
-            f"=========== Axially expanding {expTag} assemblies (except control) from Tinput to Thot ==========="
-        )
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
                 axialExpChngr.setAssembly(a)
                 axialExpChngr.expansionData.computeThermalExpansionFactors()
                 axialExpChngr.axiallyExpandAssembly(thermal=True)
+        # resolve axially disjoint mesh (if needed) and update block BOL heights
+        # the latter has to be done after call to manageCoreMesh
         if not dbLoad:
             axialExpChngr.manageCoreMesh(self.parent)
-        self._updateBlockBOLHeights(assems, dbLoad)
-
-    def _updateBlockBOLHeights(self, assems: list, dbLoad: bool):
-        """post thermal expansion, update block BOL heights
-
-        Parameters
-        ----------
-        assems: list
-            a list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects
-            that have been axially expanded
-        dbLoad: bool
-            used to determine if Core::processLoading is originating from database load or not
-        """
-        if not dbLoad:
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 applySubMesh=False
             )
