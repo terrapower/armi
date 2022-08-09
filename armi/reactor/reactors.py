@@ -2342,7 +2342,7 @@ class Core(composites.Composite):
             if not detAxExp:
                 # calculate refMesh once for efficiency
                 refMesh = self.refAssem.getAxialMesh()
-                for a in self.parent.blueprints.assemblies.values():
+                for a in assems:
                     a.setBlockMesh(refMesh)
         # update block BOL heights
         for a in assems:

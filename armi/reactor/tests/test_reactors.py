@@ -834,16 +834,50 @@ class HexReactorTests(ReactorTests):
             self.assertGreater(len(coords), -1)
 
     def test_updateBlockBOLHeights(self):
-        ## before getting too far with this, make manageCoreMesh a function so you can import it directly
-        oldRefBlockAxialMesh = self.r.p.referenceBlockAxialMesh
-        oldAxialMesh = self.r.o.axialMesh
+        """test Core::_updateBlockBOLHeights
+
+        Testing consists of two parts:
+          1. core expansion based on core contruction (dbLoad: False)
+          2. blueprints assem expansion (dbLoad: True).
+             - since there isn't a DB to load in armi, we will use the expanded
+               core from part 1 to act as our DB.
+
+        Notes:
+        ------
+        - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        """
+        ## PART 1: Test core expansion based on core construction
+        assemsToChange = self.r.core.getAssembliesOfType(Flags.FUEL)
+        # stash original axial mesh info
+        oldRefBlockAxialMesh = self.r.core.p.referenceBlockAxialMesh
+        oldAxialMesh = self.r.core.p.axialMesh
         oldBlockBOLHeights = {}
-        axialExpChngr = AxialExpansionChanger(False)
-        for a in self.r.getAssembliesOfType(Flags.FUEL):
-            for b in a[:-1]:
-                oldBlockBOLHeights[b.serialNum]
-                b.p.height *= 1.05
-        axialExpChngr.manageCoreMesh(self.r)
+        for a in assemsToChange:
+            for b in a[1:]:
+                oldBlockBOLHeights[b] = b.p.heightBOL
+        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=False, detAxExp=False)
+        for i, val in enumerate(oldRefBlockAxialMesh[1:]):
+            self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
+        for i, val in enumerate(oldAxialMesh[1:]):
+            self.assertNotEqual(val, self.r.core.p.axialMesh[i])
+        for a in assemsToChange:
+            for b in a[1:]:
+                self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+
+        ## PART 2: Test dbLoad
+        assemsToChange = [
+            a for a in self.r.blueprints.assemblies.values() if a.hasFlags(Flags.FUEL)
+        ]
+        # stash original blueprint assemblies axial mesh info
+        oldBlockBOLHeights = {}
+        for a in assemsToChange:
+            for b in a[1:]:
+                oldBlockBOLHeights[b] = b.p.heightBOL
+        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=True, detAxExp=False)
+        for a in assemsToChange:
+            for b in a[1:]:
+                self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
