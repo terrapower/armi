@@ -24,6 +24,7 @@ What's new in ARMI
 #. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
 #. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
 #. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
+#. Added setting nonUniformAssemFlags that allows specific assems to not conform to uniform mesh.
 #. TBD
 
 Bug fixes
