@@ -2278,11 +2278,6 @@ class Core(composites.Composite):
                     dbLoad,
                     cs["detailedAxialExpansion"],
                 )
-                if not cs["detailedAxialExpansion"]:
-                    # calculate refMesh once for efficiency
-                    refMesh = self.refAssem.getAxialMesh()
-                    for a in self.parent.blueprints.assemblies.values():
-                        a.setBlockMesh(refMesh)
 
         else:
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
@@ -2336,14 +2331,20 @@ class Core(composites.Composite):
                 axialExpChngr.setAssembly(a)
                 axialExpChngr.expansionData.computeThermalExpansionFactors()
                 axialExpChngr.axiallyExpandAssembly(thermal=True)
-        # resolve axially disjoint mesh (if needed) and update block BOL heights
-        # the latter has to be done after call to manageCoreMesh
+        # resolve axially disjoint mesh (if needed)
         if not dbLoad:
             axialExpChngr.manageCoreMesh(self.parent)
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 applySubMesh=False
             )
             self.p.axialMesh = self.findAllAxialMeshPoints()
+        else:
+            if not detAxExp:
+                # calculate refMesh once for efficiency
+                refMesh = self.refAssem.getAxialMesh()
+                for a in self.parent.blueprints.assemblies.values():
+                    a.setBlockMesh(refMesh)
+        # update block BOL heights
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
                 for b in a:
