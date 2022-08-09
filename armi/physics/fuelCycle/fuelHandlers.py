@@ -725,6 +725,7 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
+                # TODO: I'm pretty sure this is broken.
                 if zoneList:
                     found = False  # guilty until proven innocent
                     for zone in zoneList:

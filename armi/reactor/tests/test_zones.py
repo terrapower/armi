@@ -20,6 +20,7 @@ import unittest
 
 from armi import runLog
 from armi.reactor import assemblies
+from armi.reactor import blocks
 from armi.reactor import blueprints
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -32,64 +33,158 @@ from armi.tests import mockRunLogs
 THIS_DIR = os.path.dirname(__file__)
 
 
-class Zone_TestCase(unittest.TestCase):
+class TestZone(unittest.TestCase):
     def setUp(self):
+        # set up a Reactor, for the spatialLocator
         bp = blueprints.Blueprints()
         r = reactors.Reactor("zonetest", bp)
         r.add(reactors.Core("Core"))
         r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
+        r.core.spatialGrid._bounds = (
+            [0, 1, 2, 3, 4],
+            [0, 10, 20, 30, 40],
+            [0, 20, 40, 60, 80],
+        )
         r.core.spatialGrid.symmetry = geometry.SymmetryType(
             geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
         )
         r.core.spatialGrid.geomType = geometry.HEX
-        aList = []
-        for ring in range(10):
+
+        # some testing constants
+        self.numAssems = 5
+        self.numBlocks = 5
+
+        # build a list of Assemblies
+        self.aList = []
+        for ring in range(self.numAssems):
             a = assemblies.HexAssembly("fuel")
+            a.spatialGrid = r.core.spatialGrid
             a.spatialLocator = r.core.spatialGrid[ring, 1, 0]
             a.parent = r.core
-            aList.append(a)
-        self.aList = aList
+            self.aList.append(a)
 
-    def test_addAssemblyLocations(self):
-        zone = zones.Zone("TestZone")
-        zone.addAssemblyLocations(self.aList)
+        # build a list of Blocks
+        self.bList = []
+        for _ in range(self.numBlocks):
+            b = blocks.HexBlock("TestHexBlock")
+            b.setType("defaultType")
+            b.p.nPins = 3
+            b.setHeight(3.0)
+            self.aList[0].add(b)
+            self.bList.append(b)
+
+    def test_addItem(self):
+        zone = zones.Zone("test_addItem")
+        zone.addItem(self.aList[0])
+        self.assertIn(self.aList[0].getLocation(), zone)
+
+        self.assertRaises(AssertionError, zone.addItem, "nope")
+
+    def test_addItems(self):
+        zone = zones.Zone("test_addItems")
+        zone.addItems(self.aList)
         for a in self.aList:
             self.assertIn(a.getLocation(), zone)
 
-        self.assertRaises(RuntimeError, zone.addAssemblyLocations, self.aList)
+    def test_addLoc(self):
+        zone = zones.Zone("test_addLoc")
+        zone.addLoc(self.aList[0].getLocation())
+        self.assertIn(self.aList[0].getLocation(), zone)
+
+        self.assertRaises(AssertionError, zone.addLoc, 1234)
+
+    def test_addLocs(self):
+        zone = zones.Zone("test_addLocs")
+        zone.addLocs([a.getLocation() for a in self.aList])
+        for a in self.aList:
+            self.assertIn(a.getLocation(), zone)
 
     def test_iteration(self):
         locs = [a.getLocation() for a in self.aList]
-        zone = zones.Zone("TestZone")
-        zone.addAssemblyLocations(self.aList)
+        zone = zones.Zone("test_iteration")
+
+        # BONUS TEST: Zone.__len__()
+        self.assertEqual(len(zone), 0)
+        zone.addLocs(locs)
+        self.assertEqual(len(zone), self.numAssems)
+
+        # loop once to prove looping works
         for aLoc in zone:
             self.assertIn(aLoc, locs)
+            self.assertTrue(aLoc in zone)  # Tests Zone.__contains__()
 
         # loop twice to make sure it iterates nicely.
         for aLoc in zone:
             self.assertIn(aLoc, locs)
+            self.assertTrue(aLoc in zone)  # Tests Zone.__contains__()
 
-    def test_extend(self):
-        zone = zones.Zone("TestZone")
-        zone.extend([a.getLocation() for a in self.aList])
-        for a in self.aList:
-            self.assertIn(a.getLocation(), zone)
+    def test_repr(self):
+        zone = zones.Zone("test_repr")
+        zone.addItems(self.aList)
+        zStr = "Zone test_repr with 5 Assemblies"
+        self.assertIn(zStr, str(zone))
 
-    def test_index(self):
-        zone = zones.Zone("TestZone")
-        zone.addAssemblyLocations(self.aList)
-        for i, loc in enumerate(zone.locs):
-            self.assertEqual(i, zone.index(loc))
+    def test_blocks(self):
+        zone = zones.Zone("test_blocks", zoneType=blocks.Block)
+
+        # test the blocks were correctly added
+        self.assertEqual(len(zone), 0)
+        zone.addItems(self.bList)
+        self.assertEqual(len(zone), self.numBlocks)
+
+        # loop once to prove looping works
+        for aLoc in zone:
+            self.assertIn(aLoc, zone.locs)
+            self.assertTrue(aLoc in zone)  # Tests Zone.__contains__()
 
 
-class Zones_InReactor(unittest.TestCase):
+class TestZones(unittest.TestCase):
     def setUp(self):
+        # spin up the test reactor
         self.o, self.r = test_reactors.loadTestReactor()
 
-    def test_buildManualZones(self):
-        o, r = self.o, self.r
-        cs = o.cs
+        # build some generic test zones to get started with
+        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+            "ring-3: 003-001, 003-002, 003-003",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.zonez = zones.buildZones(self.r.core, cs)
+        self.r.zones = self.zonez
+        self.r.core.zones = self.zonez
 
+    def test_dictionaryInterface(self):
+        zs = zones.Zones()
+
+        # validate the addZone() and __len__() work
+        self.assertEqual(len(zs.names), 0)
+        zs.addZone(self.zonez["ring-2"])
+        self.assertEqual(len(zs.names), 1)
+
+        # validate that __contains__() works
+        self.assertFalse("ring-1" in zs)
+        self.assertTrue("ring-2" in zs)
+        self.assertFalse("ring-3" in zs)
+
+        # validate that __remove__() works
+        del zs["ring-2"]
+        self.assertEqual(len(zs.names), 0)
+
+        # validate that addZones() works
+        zs.addZones(self.zonez)
+        self.assertEqual(len(zs.names), 3)
+        self.assertTrue("ring-1" in zs)
+        self.assertTrue("ring-2" in zs)
+        self.assertTrue("ring-3" in zs)
+
+        # validate that get() works
+        ring3 = zs["ring-3"]
+        self.assertEqual(len(ring3), 3)
+        self.assertIn("003-002", ring3)
+
+    def test_buildManualZones(self):
         # customize settings for this test
         newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
         newSettings["zoneDefinitions"] = [
@@ -97,85 +192,42 @@ class Zones_InReactor(unittest.TestCase):
             "ring-2: 002-001, 002-002",
             "ring-3: 003-001, 003-002, 003-003",
         ]
-        cs = cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(r.core, cs)
+        cs = self.o.cs.modified(newSettings=newSettings)
+        zonez = zones.buildZones(self.r.core, cs)
 
         self.assertEqual(len(list(zonez)), 3)
         self.assertIn("003-002", zonez["ring-3"])
+        self.assertIn("003-002", zonez["ring-3"])
 
-    def test_removeZone(self):
-        o, r = self.o, self.r
-        cs = o.cs
-
+    def test_findZoneItIsIn(self):
         # customize settings for this test
         newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
         newSettings["zoneDefinitions"] = [
             "ring-1: 001-001",
             "ring-2: 002-001, 002-002",
         ]
-        cs = cs.modified(newSettings=newSettings)
-
-        # build 2 zones
-        daZones = zones.buildZones(r.core, cs)
-
-        # remove a Zone
-        daZones.removeZone("ring-1")
-
-        # verify we only have the one zone left
-        self.assertEqual(["ring-2"], daZones.names)
-
-        # if indexed like a dict, the zones object should give a key error from the removed zone
-        with self.assertRaises(KeyError):
-            daZones["ring-1"]  # pylint: disable=pointless-statement
-
-        # Ensure we can still iterate through our zones object
-        for name in daZones.names:
-            _ = daZones[name]
-
-    def test_findZoneAssemblyIsIn(self):
-        cs = self.o.cs
-
-        # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
-        newSettings["zoneDefinitions"] = [
-            "ring-1: 001-001",
-            "ring-2: 002-001, 002-002",
-        ]
-        cs = cs.modified(newSettings=newSettings)
+        cs = self.o.cs.modified(newSettings=newSettings)
 
         daZones = zones.buildZones(self.r.core, cs)
         for zone in daZones:
-            a = self.r.core.getAssemblyWithStringLocation(zone.locs[0])
-            aZone = daZones.findZoneAssemblyIsIn(a)
+            a = self.r.core.getAssemblyWithStringLocation(sorted(zone.locs)[0])
+            aZone = daZones.findZoneItIsIn(a)
             self.assertEqual(aZone, zone)
 
         # get assem from first zone
-        a = self.r.core.getAssemblyWithStringLocation(daZones[daZones.names[0]].locs[0])
+        a = self.r.core.getAssemblyWithStringLocation(
+            sorted(daZones[daZones.names[0]].locs)[0]
+        )
         # remove the zone
         daZones.removeZone(daZones.names[0])
 
         # ensure that we can no longer find the assembly in the zone
-        self.assertEqual(daZones.findZoneAssemblyIsIn(a), None)
+        self.assertEqual(daZones.findZoneItIsIn(a), None)
 
-
-class Zones_InRZReactor(unittest.TestCase):
     def test_zoneSummary(self):
-        o, r = test_reactors.loadTestReactor()
-
-        # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
-        newSettings["zoneDefinitions"] = [
-            "ring-1: 001-001",
-            "ring-2: 002-001, 002-002",
-        ]
-        o.cs = o.cs.modified(newSettings=newSettings)
-
-        r.core.buildZones(o.cs)
-        daZones = r.core.zones
-
         # make sure we have a couple of zones to test on
-        for name0 in ["ring-1"]:
-            self.assertIn(name0, daZones.names)
+        for name0 in ["ring-1", "ring-2", "ring-3"]:
+            self.assertIn(name0, self.zonez.names)
 
         # test the summary (in the log)
         with mockRunLogs.BufferLog() as mock:
@@ -184,7 +236,7 @@ class Zones_InRZReactor(unittest.TestCase):
 
             self.assertEqual("", mock._outputStream)
 
-            daZones.summary()
+            zones.zoneSummary(self.r.core)
 
             self.assertIn("Zone Summary", mock._outputStream)
             self.assertIn("Zone Power", mock._outputStream)

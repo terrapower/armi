@@ -37,6 +37,7 @@ from armi import runLog
 from armi import settings
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
+from armi.reactor.zones import zoneSummary
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.utils import codeTiming
@@ -1014,7 +1015,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
         runLog.info("Producing snapshot for cycle {0} node {1}".format(cycle, node))
-        self.r.core.zones.summary()
+        zoneSummary(self.r.core)
 
         newFolder = "snapShot{0}_{1}".format(cycle, node)
         if os.path.exists(newFolder):

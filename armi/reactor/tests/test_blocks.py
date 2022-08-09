@@ -80,7 +80,7 @@ def loadTestBlock(cold=True):
     block = blocks.HexBlock("TestHexBlock")
     block.setType("defaultType")
     block.p.nPins = 217
-    Assembly = makeTestAssembly(assemNum, 1, r=r)
+    assembly = makeTestAssembly(assemNum, 1, r=r)
 
     # NOTE: temperatures are supposed to be in C
     coldTemp = 25.0
@@ -229,8 +229,8 @@ def loadTestBlock(cold=True):
 
     block.setHeight(16.0)
 
-    Assembly.add(block)
-    r.core.add(Assembly)
+    assembly.add(block)
+    r.core.add(assembly)
     return block
 
 
