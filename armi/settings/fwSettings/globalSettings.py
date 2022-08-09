@@ -87,7 +87,7 @@ CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_SKIP_CYCLES = "skipCycles"
 CONF_SMALL_RUN = "smallRun"
 CONF_REALLY_SMALL_RUN = "reallySmallRun"
-CONF_STATIONARY_BLOCKS = "stationaryBlocks"
+CONF_STATIONARY_BLOCK_FLAGS = "stationaryBlockFlags"
 CONF_TARGET_K = "targetK"  # lots of things use this
 CONF_TRACK_ASSEMS = "trackAssems"
 CONF_VERBOSITY = "verbosity"
@@ -655,11 +655,11 @@ def defineSettings() -> List[setting.Setting]:
             description="Clean up files at the beginning of each cycle (BOC)",
         ),
         setting.Setting(
-            CONF_STATIONARY_BLOCKS,
-            default=[],
-            label="Stationary Blocks",
-            description="Blocks with these indices (int values) will not move in "
-            "moves",
+            CONF_STATIONARY_BLOCK_FLAGS,
+            default=["GRID_PLATE"],
+            label="stationary Block Flags",
+            description="Blocks with these flags will not move in moves. "
+            "Used for fuel management.",
         ),
         setting.Setting(
             CONF_TARGET_K,

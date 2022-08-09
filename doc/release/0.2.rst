@@ -14,9 +14,11 @@ What's new in ARMI
 #. Minor code re-org, moving math utilities into their own module.
 #. Removed the ``PyYaml`` dependency.
 #. Removed all bare ``import armi`` statements, for code clarity.
+#. Replaced setting ``stationaryBlocks`` (now deprecated) with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`_)
 #. Renamed control rod assembly parameters for generic implementations of control rod handling.
 #. Changed the default Git branch name to ``main``.
 #. Changed the default value of the ``trackAssems`` setting to ``False``.
+#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
 #. Added new ``UserPlugin`` functionality.
 #. Made the min/max temperatures of ``Material`` curves discoverable.
 #. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
@@ -29,10 +31,8 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. Supporting swapping assemblies with different block meshes in ``_swapFluxParam``.
 #. Fixed issues finding ``ISOXX`` files cross-platform.
 #. Fixed issue with docs not correctly loading their Git submodule in TOX.
-#. Fixed issue with ``_swapFluxParams`` failing for assemblies with different blocks (`#566 <https://github.com/terrapower/armi/issues/566>`_)
 #. Multiple bug fixes in ``growToFullCore``.
 #. ``Block.getWettedPerim`` was moved to ``HexBlock``, as that was more accurate.
 #. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
