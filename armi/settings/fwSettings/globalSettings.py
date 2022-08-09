@@ -106,6 +106,7 @@ CONF_DEFERRED_INTERFACE_NAMES = "deferredInterfaceNames"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
+CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
@@ -162,6 +163,17 @@ def defineSettings() -> List[setting.Setting]:
             description=(
                 "Allow each assembly to expand independently of the others. Results in non-uniform "
                 "axial mesh. Neutronics kernel must be able to handle."
+            ),
+        ),
+        setting.Setting(
+            CONF_NON_UNIFORM_ASSEM_FLAGS,
+            default=[],
+            label="Non Uniform Assem Flags",
+            description=(
+                "Assemblies that match a flag group on this list will not have their "
+                "mesh changed with the reference mesh of the core for uniform mesh cases (non-"
+                "detailed axial expansion). Another plugin may need to make the mesh uniform if "
+                "necessary."
             ),
         ),
         setting.Setting(

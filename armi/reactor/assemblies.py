@@ -713,8 +713,13 @@ class Assembly(composites.Composite):
         belowFuelColumn = True
 
         if self[-1].p.topIndex == 0:
-            # this appears to not have been initialized, so initialize it
-            self.makeAxialSnapList(refMesh=blockMesh)
+            runLog.warning(
+                "Reference uniform mesh not being applied to {}. It was likely "
+                "excluded through the setting `nonUniformAssemFlags`.".format(
+                    self.p.type
+                )
+            )
+            return
 
         for b in self:
             if b.isFuel():

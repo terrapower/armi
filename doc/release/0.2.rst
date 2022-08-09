@@ -25,6 +25,7 @@ What's new in ARMI
 #. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
 #. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
 #. Added new ``afterLoadDB`` hook to plugins.
+#. Added setting nonUniformAssemFlags that allows specific assems to not conform to uniform mesh.
 #. TBD
 
 Bug fixes
