@@ -13,8 +13,12 @@
 # limitations under the License.
 
 """
-Zones are collections of locations in the Core, used to divide it up for analysis.
+A Zone object is a collection of locations in the Core.
+A Zones object is a collection of Zone objects.
+Together, they are used to conceptually divide the Core for analysis.
 """
+from typing import Iterator, List, Optional, Set, Union
+
 from armi import runLog
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
@@ -30,7 +34,9 @@ class Zone:
 
     VALID_TYPES = (Assembly, Block)
 
-    def __init__(self, name, locations=None, zoneType=Assembly):
+    def __init__(
+        self, name: str, locations: Optional[List] = None, zoneType: type = Assembly
+    ):
         self.name = name
 
         # A single Zone must contain items of the same type
@@ -46,44 +52,80 @@ class Zone:
         if locations is None:
             self.locs = set()
         else:
-            # TODO: We either need to do a type check here, or put a note in that users have to be careful.
+            # NOTE: We are not validating the locations.
             self.locs = set(locations)
 
-    def __contains__(self, loc):
+    def __contains__(self, loc: str) -> bool:
         return loc in self.locs
 
-    def __iter__(self):
-        """Loop through the locations, in order."""
+    def __iter__(self) -> Iterator[str]:
+        """Loop through the locations, in alphabetical order."""
         for loc in sorted(self.locs):
             yield loc
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Return the number of locations"""
         return len(self.locs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         zType = "Assemblies"
         if self.zoneType == Block:
             zType = "Blocks"
 
         return "<Zone {0} with {1} {2}>".format(self.name, len(self), zType)
 
-    def addLoc(self, loc):
-        # TODO: We either need to do a type check here, or put a note in that users have to be careful.
-        assert isinstance(loc, str), "TODO?"
+    def addLoc(self, loc: str) -> None:
+        """
+        Adds the location to this Zone.
+
+        Parameters
+        ----------
+        items : list
+            List of str objects
+
+        Notes
+        -----
+        This method does not validate that the location given is somehow "valid".
+        We are not doing any reverse lookups in the Reactor to prove that the type
+        or location is valid. Because this would require heavier computation, and
+        would add some chicken-and-the-egg problems into instantiating a new Reactor.
+
+        Returns
+        -------
+        None
+        """
+        assert isinstance(loc, str), "The location must be a str: {0}".format(loc)
         self.locs.add(loc)
 
-    def addLocs(self, locs):
+    def addLocs(self, locs: List) -> None:
+        """
+        Adds the locations to this Zone
+
+        Parameters
+        ----------
+        items : list
+            List of str objects
+        """
         for loc in locs:
             self.addLoc(loc)
 
-    def addItem(self, item):
-        """TODO"""
-        assert issubclass(type(item), self.zoneType), "TODO?"
-        self.locs.add(item.getLocation())
-
-    def addItems(self, items):
+    def addItem(self, item: Union[Assembly, Block]) -> None:
         """
-        Adds the locations of a list of assemblies to a zone
+        Adds the location of an Assembly or Block to a zone
+
+        Parameters
+        ----------
+        item : Assembly or Block
+            A single item with Core location (Assembly or Block)
+        """
+        assert issubclass(
+            type(item), self.zoneType
+        ), "The item ({0}) but be have a type in: {1}".format(item, Zone.VALID_TYPES)
+        self.addLoc(item.getLocation())
+
+    def addItems(self, items: List) -> None:
+        """
+        Adds the locations of a list of Assemblies or Blocks to a zone
 
         Parameters
         ----------
@@ -102,27 +144,43 @@ class Zones:
         self._zones = {}
 
     @property
-    def names(self):
-        """Ordered names of contained zones."""
+    def names(self) -> List:
+        """Ordered names of contained zones.
+
+        Returns
+        -------
+        list
+            Alphabetical collection of Zone names
+        """
         return sorted(self._zones.keys())
 
-    def __contains__(self, nomen):
-        return nomen in self._zones
+    def __contains__(self, name: str) -> bool:
+        return name in self._zones
 
-    def __delitem__(self, name):
+    def __delitem__(self, name: str) -> None:
         del self._zones[name]
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Zone:
         """Access a zone by name."""
         return self._zones[name]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Zone]:
         """Loop through the zones in order."""
         for nm in sorted(self._zones.keys()):
             yield self._zones[nm]
 
-    def addZone(self, zone):
-        """Add a zone to the collection."""
+    def addZone(self, zone: Zone) -> None:
+        """Add a zone to the collection.
+
+        Parameters
+        ----------
+        zone: Zone
+            A new Zone to add to this collection.
+
+        Returns
+        -------
+        None
+        """
         if zone.name in self._zones:
             raise ValueError(
                 "Cannot add {} because a zone of that name already exists.".format(
@@ -131,19 +189,49 @@ class Zones:
             )
         self._zones[zone.name] = zone
 
-    def addZones(self, zones):
-        """Add multiple zones to the collection"""
+    def addZones(self, zones: List) -> None:
+        """
+        Add multiple zones to the collection,
+        then validate that this Zones collection still make sense.
+
+        Parameters
+        ----------
+        zones: List (or Zones)
+            A multiple new Zone objects to add to this collection.
+
+        Returns
+        -------
+        None
+        """
         for zone in zones:
             self.addZone(zone)
 
         self.checkDuplicates()
 
-    def removeZone(self, name):
-        """delete a zone by name."""
+    def removeZone(self, name: str) -> None:
+        """delete a zone by name
+
+        Parameters
+        ----------
+        name: str
+            Name of zone to remove
+
+        Returns
+        -------
+        None
+        """
         del self[name]
 
-    def checkDuplicates(self):
-        """TODO"""
+    def checkDuplicates(self) -> None:
+        """
+        Validate that the the zones are mutually exclusive.
+
+        That is, make sure that no item appears in more than one Zone.
+
+        Returns
+        -------
+        None
+        """
         allLocs = []
         for zone in self:
             allLocs.extend(list(zone.locs))
@@ -161,7 +249,7 @@ class Zones:
         locs = sorted(set(allLocs))
         raise RuntimeError("Duplicate items found in Zones: {0}".format(locs))
 
-    def getZoneLocations(self, zoneNames):
+    def getZoneLocations(self, zoneNames: List) -> Set:
         """
         Get the location labels of a particular (or a few) zone(s).
 
@@ -191,15 +279,21 @@ class Zones:
 
         return zoneLocs
 
-    def getAllLocations(self):
-        """TODO"""
+    def getAllLocations(self) -> Set:
+        """Return all locations across every Zone in this Zones object
+
+        Returns
+        -------
+        set
+            A combination set of all locations, from every Zone
+        """
         locs = set()
         for zoneName in self:
             locs.update(self[zoneName])
 
         return locs
 
-    def findZoneItIsIn(self, a):
+    def findZoneItIsIn(self, a: Union[Assembly, Block]) -> Optional[Zone]:
         """
         Return the zone object that this Assembly/Block is in.
 
@@ -227,7 +321,20 @@ class Zones:
 
 # TODO: This only works for Assemblies!
 def zoneSummary(core, zoneNames=None):
-    """Print out power distribution of fuel assemblies this/these zone."""
+    """
+    Print out power distribution of fuel assemblies this/these zone.
+
+    Parameters
+    ----------
+    core : Core
+        A fully-initialized Core object
+    zoneNames : list, optional
+        The names of the zones you want to inspect. Leave blank to summarize all zones.
+
+    Returns
+    -------
+    None
+    """
     if zoneNames is None:
         zoneNames = core.zones.names
 
@@ -298,13 +405,30 @@ def zoneSummary(core, zoneNames=None):
     runLog.info("Total power of fuel in all zones is {0:.6E} Watts".format(totalPower))
 
 
-def _getZoneAxialPowerDistribution(core, zone):
-    """Return a list of powers in watts of the axial levels of zone.
-    Helper method for Zones summary.
+def _getZoneAxialPowerDistribution(core, zoneName):
+    """
+    Return a list of powers in watts of the axial levels of zone.
+    (Helper method for Zones summary.)
+
+    Parameters
+    ----------
+    core : Core
+        A fully-initialized Core object
+    zoneName : str
+        The name of the zone you want to inspect.
+
+    See Also
+    --------
+    zoneSummary
+
+    Returns
+    -------
+    list
+        Block powers, ordered by axial position.
     """
     slabPower = {}
     zi = 0
-    for a in core.getAssemblies(Flags.FUEL, zones=zone):
+    for a in core.getAssemblies(Flags.FUEL, zones=[zoneName]):
         # Add up slab power and flow rates
         for zi, b in enumerate(a):
             slabPower[zi] = (
@@ -318,7 +442,7 @@ def _getZoneAxialPowerDistribution(core, zone):
         try:
             slabPowList.append(slabPower[i])
         except:
-            runLog.warning("slabPower {} zone {}".format(slabPower, zone))
+            runLog.warning("slabPower {} zone {}".format(slabPower, zoneName))
 
     return slabPowList
 
@@ -329,11 +453,27 @@ def buildZones(core, cs):
     Build/update the Zones.
 
     The zoning option is determined by the ``zoningStrategy`` setting.
+
+    Parameters
+    ----------
+    core : Core
+        A fully-initialized Core object
+    cs : CaseSettings
+        The standard ARMI settings object
+
+    Notes
+    -----
+    This method is being reconsidered, so it currently only supports manual zoning.
+
+    Returns
+    -------
+    Zones
+        The zones built by some other routine.
     """
     zones = Zones()
     zoneOption = cs[globalSettings.CONF_ZONING_STRATEGY]
     if "manual" in zoneOption:
-        zones.addZones(_buildManualZones(cs))
+        zones.addZones(buildManualZones(cs))
     else:
         raise ValueError(
             "Invalid `zoningStrategy` grouping option {}".format(zoneOption)
@@ -342,13 +482,42 @@ def buildZones(core, cs):
     return zones
 
 
-def _buildManualZones(cs):
+def buildManualZones(cs):
+    """
+    Build the Zones that are defined manually in the give CaseSettings File
+
+    Parameters
+    ----------
+    cs : CaseSettings
+        The standard ARMI settings object
+
+    Examples
+    --------
+    Manual zones will be defined in a special string format, e.g.:
+
+    zoneDefinitions:
+        - ring-1: 001-001
+        - ring-2: 002-001, 002-002
+        - ring-3: 003-001, 003-002, 003-003
+
+    Notes
+    -----
+    This function will just define the Zones it sees in the settings, it does
+    not do any validation against a Core object to ensure those manual zones
+    make sense.
+
+    Returns
+    -------
+    Zones
+        One ore more zones, as defined in the CaseSettings.
+    """
     runLog.extra(
         "Building Zones by manual zone definitions in `zoneDefinitions` setting"
     )
     stripper = lambda s: s.strip()
     zones = Zones()
-    # read input zones, which are special strings like this: "zoneName: loc1,loc2,loc3,loc4,..."
+
+    # read input zones from the YAML definition
     for zoneString in cs["zoneDefinitions"]:
         zoneName, zoneLocs = zoneString.split(":")
         zoneLocs = zoneLocs.split(",")
