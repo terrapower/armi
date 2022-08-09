@@ -35,38 +35,40 @@ class TestPlotting(unittest.TestCase):
     demonstrate how they are meant to be called.
     """
 
-    # Change to False when you want to inspect the plots. Change back please.
-    removeFiles = True
-
     @classmethod
     def setUpClass(cls):
         cls.o, cls.r = test_reactors.loadTestReactor()
 
     def test_plotDepthMap(self):  # indirectly tests plot face map
-        # set some params to visualize
-        for i, b in enumerate(self.o.r.core.getBlocks()):
-            b.p.percentBu = i / 100
-        fName = plotting.plotBlockDepthMap(
-            self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
-        )
-        self._checkExists(fName)
+        with TemporaryDirectoryChanger():
+            # set some params to visualize
+            for i, b in enumerate(self.o.r.core.getBlocks()):
+                b.p.percentBu = i / 100
+            fName = plotting.plotBlockDepthMap(
+                self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
+            )
+            self._checkExists(fName)
 
     def test_plotAssemblyTypes(self):
-        plotPath = "coreAssemblyTypes1.png"
-        plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
-        self._checkExists(plotPath)
+        with TemporaryDirectoryChanger():
+            plotPath = "coreAssemblyTypes1.png"
+            plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
+            self._checkExists(plotPath)
 
-        plotPath = "coreAssemblyTypes2.png"
-        plotting.plotAssemblyTypes(
-            self.r.core.parent.blueprints, plotPath, yAxisLabel="y axis", title="title"
-        )
-        self._checkExists(plotPath)
+            plotPath = "coreAssemblyTypes2.png"
+            plotting.plotAssemblyTypes(
+                self.r.core.parent.blueprints,
+                plotPath,
+                yAxisLabel="y axis",
+                title="title",
+            )
+            self._checkExists(plotPath)
 
-        with self.assertRaises(ValueError):
-            plotting.plotAssemblyTypes(None, plotPath, None)
+            with self.assertRaises(ValueError):
+                plotting.plotAssemblyTypes(None, plotPath, None)
 
     def test_plotBlockFlux(self):
-        try:
+        with TemporaryDirectoryChanger():
             xslib = isotxs.readBinary(ISOAA_PATH)
             self.r.core.lib = xslib
 
@@ -87,14 +89,6 @@ class TestPlotting(unittest.TestCase):
                 bList2=blockList,
             )
             self.assertTrue(os.path.exists("bList2.png"))
-            # can't test adjoint at the moment, testBlock doesn't like to .getMgFlux(adjoint=True)
-        finally:
-            os.remove("flux.txt")  # secondarily created during the call.
-            os.remove("flux.png")  # created during the call.
-            os.remove("peak.txt")  # csecondarily reated during the call.
-            os.remove("peak.png")  # created during the call.
-            os.remove("bList2.txt")  # secondarily created during the call.
-            os.remove("bList2.png")  # created during the call.
 
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
@@ -123,8 +117,6 @@ class TestPlotting(unittest.TestCase):
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
-        if self.removeFiles:
-            os.remove(fName)
 
 
 if __name__ == "__main__":

@@ -350,7 +350,7 @@ class Material(composites.Leaf):
         density3 should be in agreement at both cold and hot temperatures as long as the block height is correct for
         the specified temperature.
         In the case of Fluids, density and density3 are the same as density is not driven by linear expansion, but
-        rather an exilicit density function dependent on Temperature. linearExpansionPercent is zero for a fluid.
+        rather an explicit density function dependent on Temperature. linearExpansionPercent is zero for a fluid.
 
         See Also
         --------
