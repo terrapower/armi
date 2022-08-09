@@ -467,7 +467,8 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["startCycle"] and self.cs["nCycles"] < self.cs["startCycle"],
+            lambda: self.cs["startCycle"]
+            and self.cs["nCycles"] < self.cs["startCycle"],
             "nCycles must be greater than or equal to startCycle in restart cases. nCycles"
             " is the _total_ number of cycles in the completed run (i.e. restarted +"
             " continued cycles). Please update the case settings.",
