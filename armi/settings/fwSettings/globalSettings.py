@@ -567,7 +567,9 @@ def defineSettings() -> List[setting.Setting]:
             label="Number of Cycles",
             description="Number of cycles that will be simulated. Fuel management "
             "happens at the beginning of each cycle. Can include active (full-power) "
-            "cycles as well as post-shutdown decay-heat steps.",
+            "cycles as well as post-shutdown decay-heat steps. For restart cases, "
+            "this value should include both cycles from the restart plus any additional "
+            "cycles to be run after `startCycle`.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
         ),
         setting.Setting(
