@@ -2251,6 +2251,7 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
+        nonUniformAssems = [Flags.fromString(t) for t in cs["nonUniformAssemFlags"]]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2268,6 +2269,8 @@ class Core(composites.Composite):
                     reverse=True,
                 )[0]
                 for a in self.parent.blueprints.assemblies.values():
+                    if a.hasFlags(nonUniformAssems, exact=True):
+                        continue
                     a.makeAxialSnapList(refAssem=finestAssemblyMesh)
 
         else:
@@ -2278,6 +2281,8 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
+                    if a.hasFlags(nonUniformAssems, exact=True):
+                        continue
                     a.makeAxialSnapList(self.refAssem)
 
             if not cs["inputHeightsConsideredHot"]:
@@ -2296,19 +2301,13 @@ class Core(composites.Composite):
 
         self.getNuclideCategories()
 
-        # some blocks will not move in the core like grid plates... Find them and fix them in place
-        stationaryBlocks = []
-        # look for blocks that should not be shuffled in an assembly.  It is assumed that the
-        # reference assembly has all the fixed block information and it is the same for all assemblies
-        for i, b in enumerate(self.refAssem):
-            if b.hasFlags(Flags.GRID_PLATE):
-                stationaryBlocks.append(i)
-                # TODO: remove hard-coded assumption of grid plates (T3019)
-                runLog.extra(
-                    "Detected a grid plate {}.  Adding to stationary blocks".format(b)
-                )
+        # Generate list of flags that are to be stationary during assembly shuffling
+        stationaryBlockFlags = []
 
-        cs["stationaryBlocks"] = stationaryBlocks
+        for stationaryBlockFlagString in cs["stationaryBlockFlags"]:
+            stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
+
+        self.stationaryBlockFlagsList = stationaryBlockFlags
 
         # Perform initial zoning task
         self.buildZones(cs)

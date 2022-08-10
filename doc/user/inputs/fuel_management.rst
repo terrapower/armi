@@ -192,6 +192,3 @@ during a regular run by selecting the **Branch Search** option on the GUI.
 The **best** result from the branch search is determined by comparing the *keff* values
 with the ``targetK`` setting, which is available for setting in the GUI. The branch
 with *keff* closest to the setting, while still being above 1.0 is chosen.
-
-If you want to do branch searches from within an interface, just call
-the :py:meth:`o.branchSearch <armi.operators.Operator.branchSearch>` method.
