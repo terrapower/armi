@@ -27,6 +27,8 @@ from armi import interfaces
 from armi import plugins
 from armi import utils
 from armi.bookkeeping.db.database3 import DatabaseInterface
+from armi.reactor import zones
+from armi.reactor.assemblies import Assembly
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
@@ -105,6 +107,25 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
         blocks = core.getBlocks(Flags.FUEL)
         for b in blocks:
             b.p.height += 1.0
+
+
+class UserPluginDefineZoningStrategy(plugins.UserPlugin):
+    """
+    This plugin flex-tests the defineZoningStrategy() hook,
+    and puts every Assembly into its own Zone.
+    """
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineZoningStrategy(core, cs):
+        core.zones = zones.Zones()
+        assems = core.getAssemblies()
+        for a in assems:
+            loc = a.getLocation()
+            z = zones.Zone(name=loc, locations=[loc], zoneType=Assembly)
+            core.zones.addZone(z)
+
+        return len(core.zones)
 
 
 class UpInterface(interfaces.Interface):
@@ -247,6 +268,36 @@ class TestUserPlugins(unittest.TestCase):
         plug0.onProcessCoreLoading(core=r.core, cs=o.cs)
         for i, height in enumerate(heights):
             self.assertEqual(fuels[i].p.height, height + 1.0)
+
+    def test_userPluginDefineZoningStrategy(self):
+        """
+        Test that a UserPlugin can affect the Reactor state,
+        by implementing defineZoningStrategy() to arbitrarily put each
+        Assembly in the test reactor into its own Zone.
+        """
+        # register the plugin
+        app = getApp()
+        name = "UserPluginDefineZoningStrategy"
+
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn(name, pluginNames)
+        app.pluginManager.register(UserPluginDefineZoningStrategy)
+
+        # validate the plugins was registered
+        pluginz = app.pluginManager.list_name_plugin()
+        pluginNames = [p[0] for p in pluginz]
+        self.assertIn(name, pluginNames)
+
+        # grab the loaded plugin
+        plug0 = [p[1] for p in pluginz if p[0] == name][0]
+
+        # load a reactor and grab the fuel assemblies
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        # prove that our plugin affects the core in the desired way
+        self.assertEqual(len(r.core.zones), len(r.core.getAssemblies()))
+        name0 = r.core.zones.names[0]
+        self.assertIn(name0, r.core.zones[name0])
 
     def test_userPluginWithInterfaces(self):
         """Test that UserPlugins can correctly inject an interface into the stack"""
