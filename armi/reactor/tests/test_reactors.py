@@ -855,7 +855,7 @@ class HexReactorTests(ReactorTests):
         for a in assemsToChange:
             for b in a[1:]:
                 oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=False, detAxExp=False)
+        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=False)
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
             self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
         for i, val in enumerate(oldAxialMesh[1:]):
@@ -873,7 +873,7 @@ class HexReactorTests(ReactorTests):
         for a in assemsToChange:
             for b in a[1:]:
                 oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=True, detAxExp=False)
+        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=True)
         for a in assemsToChange:
             for b in a[1:]:
                 self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)

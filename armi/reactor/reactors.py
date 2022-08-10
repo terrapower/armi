@@ -2278,8 +2278,7 @@ class Core(composites.Composite):
                 )
                 self._updateBlockBOLHeights(
                     self.parent.blueprints.assemblies.values(),
-                    dbLoad,
-                    cs["detailedAxialExpansion"],
+                    dbLoad
                 )
 
         else:
@@ -2299,8 +2298,7 @@ class Core(composites.Composite):
                 )
                 self._updateBlockBOLHeights(
                     self.getAssemblies(includeAll=True),
-                    dbLoad,
-                    cs["detailedAxialExpansion"],
+                    dbLoad
                 )
 
         self.numRings = self.getNumRings()  # TODO: why needed?
@@ -2328,9 +2326,9 @@ class Core(composites.Composite):
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
 
-    def _updateBlockBOLHeights(self, assems: list, dbLoad: bool, detAxExp: bool):
+    def _updateBlockBOLHeights(self, assems: list, dbLoad: bool):
         """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights"""
-        axialExpChngr = AxialExpansionChanger(detAxExp)
+        axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
                 axialExpChngr.setAssembly(a)
@@ -2343,12 +2341,11 @@ class Core(composites.Composite):
                 applySubMesh=False
             )
             self.p.axialMesh = self.findAllAxialMeshPoints()
-        else:
-            if not detAxExp:
-                # calculate refMesh once for efficiency
-                refMesh = self.refAssem.getAxialMesh()
-                for a in assems:
-                    a.setBlockMesh(refMesh)
+        elif not self._detailedAxialExpansion:
+            # calculate refMesh once for efficiency
+            refMesh = self.refAssem.getAxialMesh()
+            for a in assems:
+                a.setBlockMesh(refMesh)
         # update block BOL heights
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
