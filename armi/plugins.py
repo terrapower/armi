@@ -141,8 +141,7 @@ HOOKIMPL = pluggy.HookimplMarker("armi")
 class ArmiPlugin:
     """
     An ArmiPlugin provides a namespace to collect hook implementations provided by a
-    single "plugin". This API is incomplete, unstable, and expected to change
-    dramatically!
+    single "plugin". This API is incomplete, unstable, and expected to change.
     """
 
     @staticmethod
@@ -214,7 +213,6 @@ class ArmiPlugin:
         Returns
         -------
         None
-
         """
 
     @staticmethod
@@ -430,7 +428,6 @@ class ArmiPlugin:
             This should return a set containing ``Case`` objects that are considered
             dependencies of the passed ``case``. They should be members of the passed
             ``suite``.
-
         """
 
     @staticmethod
@@ -596,7 +593,15 @@ class ArmiPlugin:
         -----
         The default :class:`~armi.reactor.ReactorPlugin` defines a ``"core"`` lookup
         and a ``"sfp"`` lookup, triggered to run after all other hooks have been run.
+        """
 
+    @staticmethod
+    @HOOKSPEC
+    def defineZoningStrategy(core, cs) -> None:
+        """
+        TODO
+
+        TODO: Returns?
         """
 
 

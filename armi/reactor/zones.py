@@ -19,6 +19,7 @@ Together, they are used to conceptually divide the Core for analysis.
 """
 from typing import Iterator, List, Optional, Set, Union
 
+from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
@@ -471,17 +472,22 @@ def buildZones(core, cs):
         The zones built by some other routine.
     """
     zones = Zones()
-    zoneOption = cs[globalSettings.CONF_ZONING_STRATEGY]
-    if "manual" in zoneOption:
-        zones.addZones(buildManualZones(cs))
+
+    strategies = getPluginManagerOrFail().hook.defineZoningStrategy(core=core, cs=cs)
+
+    if len(strategies) > 1:
+        # TODO: Throw error
+        pass
+    elif len(strategies) == 1:
+        # TODO: Use the strategy
+        pass
     else:
-        raise ValueError(
-            "Invalid `zoningStrategy` grouping option {}".format(zoneOption)
-        )
+        zones.addZones(buildManualZones(cs))
 
     return zones
 
 
+# TODO: Make sure this gracefully handles no manual zones. (Maybe throw a debug) (Add a test!)
 def buildManualZones(cs):
     """
     Build the Zones that are defined manually in the give CaseSettings File

@@ -34,7 +34,6 @@ from armi.utils.mathematics import isMonotonic
 # Framework settings
 CONF_NUM_PROCESSORS = "numProcessors"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
-CONF_ZONING_STRATEGY = "zoningStrategy"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_TRACE = "trace"
@@ -132,14 +131,6 @@ def defineSettings() -> List[setting.Setting]:
             default=os.path.join(context.RES, "burn-chain.yaml"),
             label="Burn Chain File",
             description="Path to YAML file that has the depletion chain defined in it",
-        ),
-        setting.Setting(
-            CONF_ZONING_STRATEGY,
-            default="manual",
-            label="Automatic core zone creation strategy",
-            description="Channel Grouping Options for Safety;"
-            "Manual: you must specify 'zoneDefinitions' setting",
-            options=["manual"],
         ),
         setting.Setting(
             CONF_AXIAL_MESH_REFINEMENT_FACTOR,
@@ -672,9 +663,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_ZONE_DEFINITIONS,
             default=[],
             label="Zone Definitions",
-            description="Definitions of zones as lists of assembly locations (e.g. "
-            "'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used by "
-            "various summary and calculation routines.",
+            description="Manual definitions of zones as lists of assembly locations "
+            "(e.g. 'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used "
+            "by various summary and calculation routines.",
         ),
         setting.Setting(
             CONF_ACCEPTABLE_BLOCK_AREA_ERROR,

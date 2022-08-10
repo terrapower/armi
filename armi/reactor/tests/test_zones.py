@@ -144,7 +144,7 @@ class TestZones(unittest.TestCase):
         self.o, self.r = test_reactors.loadTestReactor()
 
         # build some generic test zones to get started with
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings = {}
         newSettings["zoneDefinitions"] = [
             "ring-1: 001-001",
             "ring-2: 002-001, 002-002",
@@ -186,7 +186,7 @@ class TestZones(unittest.TestCase):
 
     def test_buildManualZones(self):
         # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings = {}
         newSettings["zoneDefinitions"] = [
             "ring-1: 001-001",
             "ring-2: 002-001, 002-002",
@@ -196,12 +196,12 @@ class TestZones(unittest.TestCase):
         zonez = zones.buildZones(self.r.core, cs)
 
         self.assertEqual(len(list(zonez)), 3)
-        self.assertIn("003-002", zonez["ring-3"])
+        self.assertIn("002-001", zonez["ring-2"])
         self.assertIn("003-002", zonez["ring-3"])
 
     def test_findZoneItIsIn(self):
         # customize settings for this test
-        newSettings = {globalSettings.CONF_ZONING_STRATEGY: "manual"}
+        newSettings = {}
         newSettings["zoneDefinitions"] = [
             "ring-1: 001-001",
             "ring-2: 002-001, 002-002",
