@@ -17,6 +17,7 @@ from statistics import mean
 from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
+from armi.reactor.components import UnshapedComponent
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -466,22 +467,32 @@ def _determineLinked(componentA, componentB):
         and isinstance(componentA, type(componentB))
         and (componentA.getDimension("mult") == componentB.getDimension("mult"))
     ):
-        idA, odA = (
-            componentA.getCircleInnerDiameter(cold=True),
-            componentA.getBoundingCircleOuterDiameter(cold=True),
-        )
-        idB, odB = (
-            componentB.getCircleInnerDiameter(cold=True),
-            componentB.getBoundingCircleOuterDiameter(cold=True),
-        )
-
-        biggerID = max(idA, idB)
-        smallerOD = min(odA, odB)
-        if biggerID >= smallerOD:
-            # one object fits inside the other
+        if isinstance(componentA, UnshapedComponent):
+            runLog.warning(
+                f"Components {componentA} and {componentB} are UnshapedComponents "
+                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                "nor is it physical to do so. Instead of crashing and raising an error, "
+                "they are going to be assumed to not be linked.",
+                single=True,
+            )
             linked = False
         else:
-            linked = True
+            idA, odA = (
+                componentA.getCircleInnerDiameter(cold=True),
+                componentA.getBoundingCircleOuterDiameter(cold=True),
+            )
+            idB, odB = (
+                componentB.getCircleInnerDiameter(cold=True),
+                componentB.getBoundingCircleOuterDiameter(cold=True),
+            )
+
+            biggerID = max(idA, idB)
+            smallerOD = min(odA, odB)
+            if biggerID >= smallerOD:
+                # one object fits inside the other
+                linked = False
+            else:
+                linked = True
 
     else:
         linked = False
