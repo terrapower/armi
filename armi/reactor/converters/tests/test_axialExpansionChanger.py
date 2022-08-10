@@ -942,6 +942,11 @@ class TestLinkage(unittest.TestCase):
         liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
         self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
 
+    def test_unshapedComponentAndCircle(self):
+        comp1 = Circle(*self.common, od=1.0, id=0.0)
+        comp2 = UnshapedComponent(*self.common, area=1.0)
+        self.assertFalse(_determineLinked(comp1, comp2))
+
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
     """Create test assembly consisting of list of fake material
