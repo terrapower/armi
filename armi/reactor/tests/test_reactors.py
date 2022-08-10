@@ -873,10 +873,12 @@ class HexReactorTests(ReactorTests):
         for a in assemsToChange:
             for b in a[1:]:
                 oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=True)
+        self.r.core._updateBlockBOLHeights(
+            assemsToChange, dbLoad=True, blueprintsMesh=assemsToChange[0].getAxialMesh()
+        )
         for a in assemsToChange:
             for b in a[1:]:
-                self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+                self.assertAlmostEqual(oldBlockBOLHeights[b], b.p.heightBOL)
 
     def test_nonUniformAssems(self):
         o, r = loadTestReactor(

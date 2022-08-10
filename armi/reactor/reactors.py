@@ -2278,7 +2278,8 @@ class Core(composites.Composite):
                 )
                 self._updateBlockBOLHeights(
                     self.parent.blueprints.assemblies.values(),
-                    dbLoad
+                    dbLoad,
+                    finestAssemblyMesh,
                 )
 
         else:
@@ -2296,10 +2297,7 @@ class Core(composites.Composite):
                 runLog.header(
                     "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
                 )
-                self._updateBlockBOLHeights(
-                    self.getAssemblies(includeAll=True),
-                    dbLoad
-                )
+                self._updateBlockBOLHeights(self.getAssemblies(includeAll=True), dbLoad)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2326,7 +2324,9 @@ class Core(composites.Composite):
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
 
-    def _updateBlockBOLHeights(self, assems: list, dbLoad: bool):
+    def _updateBlockBOLHeights(
+        self, assems: list, dbLoad: bool, blueprintsMesh: list = []
+    ):
         """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights"""
         axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
         for a in assems:
@@ -2342,10 +2342,8 @@ class Core(composites.Composite):
             )
             self.p.axialMesh = self.findAllAxialMeshPoints()
         elif not self._detailedAxialExpansion:
-            # calculate refMesh once for efficiency
-            refMesh = self.refAssem.getAxialMesh()
             for a in assems:
-                a.setBlockMesh(refMesh)
+                a.setBlockMesh(blueprintsMesh)
         # update block BOL heights
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
