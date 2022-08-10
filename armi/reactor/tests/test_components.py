@@ -218,7 +218,6 @@ class TestUnshapedComponent(TestGeneralComponents):
         )
 
         # show that area expansion is consistent with the density change in the material
-        self.component.applyHotHeightDensityReduction()
         hotDensity = self.component.density()
         hotArea = self.component.getArea()
         thermalExpansionFactor = self.component.getThermalExpansionFactor(
@@ -234,7 +233,6 @@ class TestUnshapedComponent(TestGeneralComponents):
                 area=math.pi,
             )
         )
-        coldComponent.applyHotHeightDensityReduction()
         coldDensity = coldComponent.density()
         coldArea = coldComponent.getArea()
 
@@ -502,7 +500,6 @@ class TestCircle(TestShapedComponent):
         ###########
         #   # 1 2D Expansion
         ###########
-        # expansion only happens in 2D so only area is necessary
 
         # when comparing to 3D density, the comparison is not quite correct.
         # We need a bigger delta, this will be investigated/fixed in another PR
@@ -512,47 +509,52 @@ class TestCircle(TestShapedComponent):
         tHotC = 500
         circle2 = Circle("circle", "HT9", 20, tHotC, 1.0)
         self.assertAlmostEqual(
-            circle1.p.numberDensities["FE"] * circle1.getArea(),
-            circle2.p.numberDensities["FE"] * circle2.getArea(),
+            circle1.p.numberDensities["FE"]
+            * circle1.getArea()
+            * circle1.getThermalExpansionFactor(),
+            circle2.p.numberDensities["FE"]
+            * circle2.getArea()
+            * circle2.getThermalExpansionFactor(),
         )
         # material.density is the 2D density of a material
         # material.density3 is true density and not equal in this case
         # density must be density by calling applyHotHeightDensityReduction
         # or other methods (see rest of test).
         for circle in [circle1, circle2]:
+            # 2D density is not equal because of applyHotHeightDensityReduction
             self.assertAlmostEqual(
-                circle.getMassDensity(),
+                circle.getMassDensity() * circle.getThermalExpansionFactor(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
-            # True density not equal because we expand in 2D
-            self.assertNotAlmostEqual(
-                circle.getMassDensity(),
-                circle.material.density3(Tc=circle.temperatureInC),
-                delta=biggerDelta,
-            )
-            # True density off by factor of thermal expansion
-            expFac = circle.getThermalExpansionFactor()
             self.assertAlmostEqual(
-                circle.getMassDensity() / expFac,
+                circle.getMassDensity(),
                 circle.material.density3(Tc=circle.temperatureInC),
                 delta=biggerDelta,
             )
         # Change temp forward and backward and show equal
         oldArea = circle1.getArea()
         circle1.setTemperature(tHotC)
+        circle1.applyHotHeightDensityReduction()
         self.assertAlmostEqual(
             circle1.p.numberDensities["FE"],
             circle2.p.numberDensities["FE"],
+            delta=biggerDelta,
         )
         self.assertAlmostEqual(
             circle1.getMassDensity(),
-            circle1.material.density(Tc=circle2.temperatureInC),
+            circle1.material.density3(Tc=circle2.temperatureInC),
+            delta=biggerDelta,
         )
         circle1.setTemperature(tCold)
+        circle1.applyHotHeightDensityReduction()
         self.assertAlmostEqual(oldArea, circle1.getArea())
         self.assertAlmostEqual(
-            circle1.p.numberDensities["FE"] * circle1.getArea(),
-            circle2.p.numberDensities["FE"] * circle2.getArea(),
+            circle1.p.numberDensities["FE"]
+            * circle1.getArea()
+            * circle1.getThermalExpansionFactor(),
+            circle2.p.numberDensities["FE"]
+            * circle2.getArea()
+            * circle2.getThermalExpansionFactor(),
         )
 
         ###########

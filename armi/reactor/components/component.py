@@ -348,10 +348,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
         )
+        self.applyHotHeightDensityReduction()
 
     def applyHotHeightDensityReduction(self):
         """
-        Adjust number densities to account for prescribed hot block heights (axial expansion).
+        Adjust number densities to account for hot block heights (axial expansion)
+        (crucial for preserving 3D density).
 
         Notes
         -----

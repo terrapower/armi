@@ -759,6 +759,11 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
+                if bStd.hasFlags(Flags.FUEL):
+                    self.assertTrue(bExp.hasFlags(Flags.FUEL))
+                    # fuel mass should grow because heights are considered cold heights
+                    # and a cold 1 cm column has more mass than a hot 1 cm column
+                    self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
