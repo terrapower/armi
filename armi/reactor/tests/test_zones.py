@@ -151,7 +151,8 @@ class TestZones(unittest.TestCase):
             "ring-3: 003-001, 003-002, 003-003",
         ]
         cs = self.o.cs.modified(newSettings=newSettings)
-        self.zonez = zones.buildZones(self.r.core, cs)
+        zones.buildZones(self.r.core, cs)
+        self.zonez = self.r.core.zones
         self.r.zones = self.zonez
         self.r.core.zones = self.zonez
 
@@ -185,7 +186,7 @@ class TestZones(unittest.TestCase):
         self.assertIn("003-002", ring3)
 
     def test_buildManualZones(self):
-        # customize settings for this test
+        # define some manual zones in the settings
         newSettings = {}
         newSettings["zoneDefinitions"] = [
             "ring-1: 001-001",
@@ -193,11 +194,22 @@ class TestZones(unittest.TestCase):
             "ring-3: 003-001, 003-002, 003-003",
         ]
         cs = self.o.cs.modified(newSettings=newSettings)
-        zonez = zones.buildZones(self.r.core, cs)
+        zones.buildZones(self.r.core, cs)
 
+        zonez = self.r.core.zones
         self.assertEqual(len(list(zonez)), 3)
         self.assertIn("002-001", zonez["ring-2"])
         self.assertIn("003-002", zonez["ring-3"])
+
+    def test_buildManualZonesEmpty(self):
+        # ensure there are no zone definitions in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = []
+        cs = self.o.cs.modified(newSettings=newSettings)
+
+        # verify that buildZones behaves well when no zones are defined
+        zones.buildZones(self.r.core, cs)
+        self.assertEqual(len(list(self.r.core.zones)), 0)
 
     def test_findZoneItIsIn(self):
         # customize settings for this test
@@ -208,7 +220,8 @@ class TestZones(unittest.TestCase):
         ]
         cs = self.o.cs.modified(newSettings=newSettings)
 
-        daZones = zones.buildZones(self.r.core, cs)
+        zones.buildZones(self.r.core, cs)
+        daZones = self.r.core.zones
         for zone in daZones:
             a = self.r.core.getAssemblyWithStringLocation(sorted(zone.locs)[0])
             aZone = daZones.findZoneItIsIn(a)

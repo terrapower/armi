@@ -120,7 +120,7 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
    user settings. This also predated the plugin infrastructure, and may one day be
    replaced with plugin-based fuel handler logic.
 """
-from typing import Dict, Union, Callable, TYPE_CHECKING
+from typing import Callable, Dict, List, Union, TYPE_CHECKING
 
 import pluggy
 
@@ -146,7 +146,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def exposeInterfaces(cs):
+    def exposeInterfaces(cs) -> List:
         """
         Function for exposing interface(s) to other code.
 
@@ -166,7 +166,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineParameters():
+    def defineParameters() -> Dict:
         """
         Function for defining additional parameters.
 
@@ -197,7 +197,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def afterConstructionOfAssemblies(assemblies, cs):
+    def afterConstructionOfAssemblies(assemblies, cs) -> None:
         """
         Function to call after a set of assemblies are constructed.
 
@@ -217,7 +217,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def onProcessCoreLoading(core, cs):
+    def onProcessCoreLoading(core, cs) -> None:
         """
         Function to call whenever a Core object is newly built.
 
@@ -256,7 +256,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineBlockTypes():
+    def defineBlockTypes() -> List:
         """
         Function for providing novel Block types from a plugin.
 
@@ -265,12 +265,15 @@ class ArmiPlugin:
         corresponding ``Component`` type that should activate it. For instance a
         ``HexBlock`` would be created when the largest component is a ``Hexagon``::
 
-            return [(Hexagon, HexBlock)]
+        Returns
+        -------
+        list
+            [(Hexagon, HexBlock)]
         """
 
     @staticmethod
     @HOOKSPEC
-    def defineAssemblyTypes():
+    def defineAssemblyTypes() -> List:
         """
         Function for providing novel Assembly types from a plugin.
 
@@ -287,11 +290,24 @@ class ArmiPlugin:
             probably be better suited elsewhere. Moving this code around would let us
             eliminate the specialized Assembly subclasses altogether. In such a case,
             this API will be removed from the framework.
+
+        Example
+        -------
+        [
+            (HexBlock, HexAssembly),
+            (CartesianBlock, CartesianAssembly),
+            (ThRZBlock, ThRZAssembly),
+        ]
+
+        Returns
+        -------
+        list
+            List of new Block&Assembly types
         """
 
     @staticmethod
     @HOOKSPEC
-    def defineBlueprintsSections():
+    def defineBlueprintsSections() -> List:
         """
         Return new sections for the blueprints input method.
 
@@ -327,7 +343,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineEntryPoints():
+    def defineEntryPoints() -> List:
         """
         Return new entry points for the ARMI CLI
 
@@ -342,7 +358,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineSettings():
+    def defineSettings() -> List:
         """
         Define configuration settings for this plugin.
 
@@ -373,7 +389,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineSettingsValidators(inspector):
+    def defineSettingsValidators(inspector) -> List:
         """
         Define the high-level settings input validators by adding them to an inspector.
 
@@ -432,7 +448,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineGuiWidgets():
+    def defineGuiWidgets() -> List:
         """
         Define which settings should go in the GUI.
 
@@ -473,7 +489,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineParameterRenames():
+    def defineParameterRenames() -> Dict:
         """
         Return a mapping from old parameter names to new parameter names.
 
@@ -597,11 +613,17 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineZoningStrategy(core, cs) -> None:
+    def defineZoningStrategy(core, cs) -> int:
         """
-        TODO
+        Function for defining Zones directly on the Core.
 
-        TODO: Returns?
+        This will take in a Core object, and use any arbitrary logic to create from scratch
+        or modify Core.zones.
+
+        Returns
+        -------
+        int
+            Number of Zones created
         """
 
 

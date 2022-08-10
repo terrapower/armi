@@ -170,6 +170,10 @@ class Zones:
         for nm in sorted(self._zones.keys()):
             yield self._zones[nm]
 
+    def __len__(self) -> int:
+        """Return the number of Zone objects"""
+        return len(self._zones)
+
     def addZone(self, zone: Zone) -> None:
         """Add a zone to the collection.
 
@@ -448,8 +452,7 @@ def _getZoneAxialPowerDistribution(core, zoneName):
     return slabPowList
 
 
-# TODO: How do we support zoningStrategies in external codebases?
-def buildZones(core, cs):
+def buildZones(core, cs) -> None:
     """
     Build/update the Zones.
 
@@ -468,29 +471,23 @@ def buildZones(core, cs):
 
     Returns
     -------
-    Zones
-        The zones built by some other routine.
+    None
     """
-    zones = Zones()
+    zoneCounts = getPluginManagerOrFail().hook.defineZoningStrategy(core=core, cs=cs)
 
-    strategies = getPluginManagerOrFail().hook.defineZoningStrategy(core=core, cs=cs)
+    if len(zoneCounts) > 1:
+        runLog.warning("Multiple plugins registered Zoning Strategies; this is risky.")
 
-    if len(strategies) > 1:
-        # TODO: Throw error
-        pass
-    elif len(strategies) == 1:
-        # TODO: Use the strategy
-        pass
-    else:
+    if len(zoneCounts) == 0:
+        zones = Zones()
         zones.addZones(buildManualZones(cs))
+        core.zones = zones
 
-    return zones
 
-
-# TODO: Make sure this gracefully handles no manual zones. (Maybe throw a debug) (Add a test!)
 def buildManualZones(cs):
     """
-    Build the Zones that are defined manually in the give CaseSettings File
+    Build the Zones that are defined manually in the given CaseSettings file,
+    in the `zoneDefinitions` setting.
 
     Parameters
     ----------
@@ -515,20 +512,21 @@ def buildManualZones(cs):
     Returns
     -------
     Zones
-        One ore more zones, as defined in the CaseSettings.
+        One or more zones, as defined in the `zoneDefinitions` setting.
     """
-    runLog.extra(
-        "Building Zones by manual zone definitions in `zoneDefinitions` setting"
-    )
+    runLog.debug("Building Zones by manual definitions in `zoneDefinitions` setting")
     stripper = lambda s: s.strip()
     zones = Zones()
 
-    # read input zones from the YAML definition
+    # parse the special input string for zone definitions
     for zoneString in cs["zoneDefinitions"]:
         zoneName, zoneLocs = zoneString.split(":")
         zoneLocs = zoneLocs.split(",")
         zone = Zone(zoneName.strip())
         zone.addLocs(map(stripper, zoneLocs))
         zones.addZone(zone)
+
+    if not len(zones):
+        runLog.debug("No manual zones defined in `zoneDefinitions` setting")
 
     return zones

@@ -1760,10 +1760,9 @@ class Core(composites.Composite):
         assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
 
-    # TODO: Zones.buildZones() is called here! How will this work with external plugins???
     def buildZones(self, cs):
         """Update the zones on the reactor."""
-        self.zones = zones.buildZones(self, cs)
+        zones.buildZones(self, cs)
 
     def getCoreRadius(self):
         """Returns a radius that the core would fit into."""
