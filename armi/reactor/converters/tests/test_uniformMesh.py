@@ -159,7 +159,9 @@ class TestUniformMesh(unittest.TestCase):
         )  # this changes the mass of everything in the core
         perturbedCoreMass = self.r.core.getMass("U235")
         self.assertNotEqual(refMass, perturbedCoreMass)
-        uniformReactor = self.converter.convert(self.r)
+        self.converter.convert(self.r)
+
+        uniformReactor = self.converter.convReactor
         uniformMass = uniformReactor.core.getMass("U235")
 
         self.assertAlmostEqual(
