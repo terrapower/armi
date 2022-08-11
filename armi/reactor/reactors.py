@@ -31,13 +31,13 @@ from typing import Optional
 import collections
 import copy
 import itertools
-import logging
 import os
 import tabulate
 import time
 
 import numpy
 
+from armi import runLog
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
@@ -56,9 +56,6 @@ from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
-
-# init logger
-runLog = logging.getLogger(__name__)
 
 
 class Reactor(composites.Composite):
@@ -316,6 +313,11 @@ class Core(composites.Composite):
     @lib.setter
     def lib(self, value):
         """Set the microscopic cross section library."""
+        runLog.extra(
+            f"Updating cross section library on {self}.\n"
+            f"Initial: {self._lib}\n"
+            f"Updated: {value}."
+        )
         self._lib = value
 
     @property

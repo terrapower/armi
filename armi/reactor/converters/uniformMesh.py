@@ -43,7 +43,8 @@ Requirements
 Examples
 --------
 converter = uniformMesh.NeutronicsUniformMeshConverter()
-uniformReactor = converter.convert(reactor)
+converter.convert(reactor)
+uniformReactor = converter.convReactor
 # do calcs, then:
 converter.applyStateToOriginal()
 
@@ -103,19 +104,26 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._computeAverageAxialMesh()
         self._buildAllUniformAssemblies()
 
-        # Clear the state of the converted reactor that was just built
-        # to ensure that there is no stale data from creation a new
-        # reactor. The caching is disabled in this case because we don't
-        # care about storing this data since it might be overwritten later.
+        # Clear the state of the converted reactor to ensure there is
+        # no data from the creation of a new reactor core
         self._clearStateOnReactor(self.convReactor, cache=False)
         self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
         self.convReactor.core.updateAxialMesh()
+
+        self._newAssembliesAdded = self.convReactor.core.getAssemblies()
+
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
         )
-        return self.convReactor
+
+    def reset(self):
+        self.blockDetailedAxialExpansionParamNames = []
+        self.reactorParamNames = []
+        self._cachedReactorCoreParamData = {}
+        self._cachedBlockParamData = collections.defaultdict(dict)
+        super().reset()
 
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
@@ -137,6 +145,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         bp = copy.deepcopy(sourceReactor.blueprints)
         newReactor = Reactor(sourceReactor.name, bp)
         coreDesign = bp.systemDesigns["core"]
+
+        # The source reactor may not have an operator available. This can occur
+        # when a different geometry converter is chained together with this. For
+        # instance, using the `HexToRZThetaConverter`, the converted reactor
+        # does not have an operator attached. In this case, we still need some
+        # settings to construct the new core.
         if sourceReactor.o is None:
             cs = settings.getMasterCs()
         else:
@@ -354,10 +368,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._cachedBlockParamData = collections.defaultdict(dict)
         self._clearStateOnReactor(self._sourceReactor, cache=True)
         self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
+        self._sourceReactor.core.lib = self.convReactor.core.lib
         completeEndTime = timer()
         runLog.extra(
             f"Parameter remapping time: {completeEndTime-completeStartTime} seconds"
         )
+        self.reset()
 
     def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
         """
@@ -541,6 +557,11 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                     globalFluxInterface.calcReactionRates(
                         b, destReactor.core.p.keff, destReactor.core.lib
                     )
+
+        # Clear the cached data after it has been mapped to prevent issues with
+        # holding on to block data long-term.
+        self._cachedReactorCoreParamData = {}
+        self._cachedBlockParamData = collections.defaultdict(dict)
 
         self._cachedReactorCoreParamData = {}
         self._cachedBlockParamData = collections.defaultdict(dict)
