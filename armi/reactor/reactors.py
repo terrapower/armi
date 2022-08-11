@@ -405,7 +405,7 @@ class Core(composites.Composite):
         -----
         Please expect this method will delete your assembly (instead of moving it to a
         Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
-        
+
         Originally, this held onto all assemblies in the spend fuel pool. However, having
         this sitting in memory becomes constraining for large simulations. It is more
         memory-efficient to only save the assemblies that are required for detailed
