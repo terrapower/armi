@@ -392,17 +392,15 @@ This can be done by sublassing :py:class:`armi.plugins.UserPlugin`:
 
     class UserPluginExample(plugins.UserPlugin):
         """
-        This plugin flex-tests the onProcessCoreLoading() hook,
-        and arbitrarily adds "1" to the height of every block,
-        after the DB is loaded.
+        This plugin flex-tests the onProcessCoreLoading() hook, and
+        arbitrarily adds "1" to the power ever each fuel block.
         """
 
         @staticmethod
-        @HOOKSPEC
+        @plugins.HOOKIMPL
         def onProcessCoreLoading(core, cs):
-            blocks = core.getBlocks(Flags.FUEL)
-            for b in blocks:
-                b.p.height += 1.0
+        for b in core.getBlocks(Flags.FUEL):
+            b.p.power += 1.0
 
 In most ways, ``UserPluginExample`` above is just a normal
 :py:class:`ArmiPlugin <armi.plugins.ArmiPlugin>`. You can implement any of the normal
@@ -424,7 +422,7 @@ file:
 
 .. code-block::
 
-  userPlugins::
+  userPlugins:
     - armi.tests.test_user_plugins.UserPlugin0
     - //path/to/my/pluginz.py:UserPlugin1
     - C:\\path\to\my\pluginZ.py:UserPlugin2

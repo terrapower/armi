@@ -47,6 +47,7 @@ from typing import Sequence, Optional, Pattern, Tuple
 import collections
 import os
 import re
+import traceback
 
 from tabulate import tabulate
 import h5py
@@ -360,8 +361,15 @@ def _diffSpecialData(
     if not attrsMatch:
         return
 
-    src = database3.unpackSpecialData(srcData[()], srcData.attrs, paramName)
-    ref = database3.unpackSpecialData(refData[()], refData.attrs, paramName)
+    try:
+        src = database3.unpackSpecialData(srcData[()], srcData.attrs, paramName)
+        ref = database3.unpackSpecialData(refData[()], refData.attrs, paramName)
+    except Exception:
+        runLog.error(
+            f"Unable to unpack special data for paramName {paramName}. "
+            f"{traceback.format_exc()}",
+        )
+        return
 
     diff = []
     for dSrc, dRef in zip(src.tolist(), ref.tolist()):

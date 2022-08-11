@@ -33,7 +33,7 @@ import trace
 import time
 import textwrap
 import ast
-from typing import Dict, Optional, Sequence, Set
+from typing import Dict, Optional, Sequence, Set, Union
 import glob
 import tabulate
 import six
@@ -715,113 +715,163 @@ class Case:
             self.cs.writeToYamlFile(self.title + ".yaml")
 
 
+def _copyInputsHelper(
+    fileDescription: str,
+    sourcePath: str,
+    destPath: str,
+    origFile: str,
+) -> str:
+    """
+    Helper function for copyInterfaceInputs: Creates an absolute file path, and
+    copies the file to that location. If that file path does not exist, returns
+    the file path from the original settings file.
+
+    Parameters
+    ----------
+    fileDescription : str
+        A file description for the copyOrWarn method
+
+    sourcePath : str
+        The absolute file path of the file to copy
+
+    destPath : str
+        The target directory to copy input files to
+
+    origFile : str
+        File path as defined in the original settings file
+
+    Returns
+    -------
+    destFilePath (or origFile) : str
+    """
+    sourceName = os.path.basename(sourcePath)
+    destFilePath = os.path.join(destPath, sourceName)
+    try:
+        pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
+        if pathlib.Path(destFilePath).exists():
+            return destFilePath
+        else:
+            return origFile
+    except Exception:
+        return origFile
+
+
 def copyInterfaceInputs(
     cs, destination: str, sourceDir: Optional[str] = None
-) -> Dict[str, str]:
+) -> Dict[str, Union[str, list]]:
     """
-    Copy sets of files that are considered "input" from each active interface.
+    Ping active interfaces to determine which files are considered "input". This
+    enables developers to add new inputs in a plugin-dependent/ modular way.
 
-    This enables developers to add new inputs in a plugin-dependent/ modular way.
+    This function should now be able to handle the updating of:
+      - a single file (relative or absolute)
+      - a list of files (relative or absolute), and
+      - a file entry that has a wildcard processing into multiple files.
+        Glob is used to offer support for wildcards.
 
-    In parameter sweeps, these often have a sourceDir associated with them that is
-    different from the cs.inputDirectory.
+    If the file paths are absolute, do nothing. The case will be able to find the file.
+
+    In case suites or parameter sweeps, these files often have a sourceDir associated
+    with them that is different from the cs.inputDirectory. So, if relative or wildcard,
+    update the file paths to be absolute in the case settings and copy the file to the
+    destination directory.
 
     Parameters
     ----------
     cs : CaseSettings
         The source case settings to find input files
 
-    destination: str
+    destination : str
         The target directory to copy input files to
 
-    sourceDir: str, optional
+    sourceDir : str, optional
         The directory from which to copy files. Defaults to cs.inputDirectory
+
+    Returns
+    -------
+    newSettings : dict
+        A new settings object that contains settings for the keys and values that are
+        either an absolute file path, a list of absolute file paths, or the original
+        file path if absolute paths could not be resolved
 
     Notes
     -----
 
-    This may seem a bit overly complex, but a lot of the behavior is important. Relative
-    paths are copied into the target directory, which in some cases requires updating
-    the setting that pointed to the file in the first place. This is necessary to avoid
-    case dependencies in relavive locations above the input directory, which can lead to
-    issues when cloneing case suites. In the future this could be simplified by adding a
-    concept for a suite root directory, below which it is safe to copy files without
-    needing to update settings that point with a relative path to files that are below
-    it.
-
+    Regarding the handling of relative file paths: In the future this could be
+    simplified by adding a concept for a suite root directory, below which it is safe
+    to copy files without needing to update settings that point with a relative path
+    to files that are below it.
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
     sourceDirPath = pathlib.Path(sourceDir)
-    destPath = pathlib.Path(destination)
+
+    assert pathlib.Path(destination).is_dir()
 
     newSettings = {}
 
-    assert destPath.is_dir()
-
     for klass, _ in activeInterfaces:
         interfaceFileNames = klass.specifyInputs(cs)
-        # returned files can be absolute paths, relative paths, or even glob patterns.
-        # Since we don't have an explicit way to signal about these, we sort of have to
-        # guess. In future, it might be nice to have interfaces specify which
-        # explicitly.
         for key, files in interfaceFileNames.items():
-
             if not isinstance(key, settings.Setting):
                 try:
                     key = cs.getSetting(key)
                 except NonexistentSetting(key):
                     raise ValueError(
-                        "{} is not a valid setting. Ensure the relevant specifyInputs method uses a correct setting name.".format(
-                            key
-                        )
+                        f"{key} is not a valid setting. Ensure the relevant specifyInputs "
+                        f"method uses a correct setting name."
                     )
             label = key.name
 
+            newFiles = []
             for f in files:
+                WILDCARD = False
+                RELATIVE = False
+                if "*" in f:
+                    WILDCARD = True
+                if ".." in f:
+                    RELATIVE = True
+
                 path = pathlib.Path(f)
-                if path.is_absolute() and path.exists() and path.is_file():
-                    # looks like an extant, absolute path; no need to do anything
-                    pass
-                else:
-                    # An OSError can occur if a wildcard is included in the file name so
-                    # this is wrapped in a try/except to circumvent instances where an
-                    # interface requests to copy multiple files based on some prefix/suffix.
+                if not WILDCARD and not RELATIVE:
                     try:
-                        if not (path.exists() and path.is_file()):
-                            runLog.extra(
-                                f"Input file `{f}` not found. Checking for file at path `{sourceDirPath}`"
-                            )
+                        if path.is_absolute() and path.exists() and path.is_file():
+                            # Path is absolute, no settings modification or filecopy needed
+                            pass
                     except OSError:
                         pass
-
-                    # relative path/glob. Should be safe to just use glob resolution.
-                    # Note that `glob.glob` is being used here rather than `pathlib.glob` because
-                    # `pathlib.glob` for Python 3.7.2 does not handle case sensitivity for file and
-                    # path names. This is required for copying and using Python scripts (e.g., fuel management,
-                    # control logic, etc.).
-                    srcFiles = [
+                # Attempt to construct an absolute file path
+                sourceFullPath = os.path.join(sourceDirPath, f)
+                if WILDCARD:
+                    globFilePaths = [
                         pathlib.Path(os.path.join(sourceDirPath, g))
-                        for g in glob.glob(os.path.join(sourceDirPath, f))
+                        for g in glob.glob(sourceFullPath)
                     ]
-                    for sourceFullPath in srcFiles:
-                        if not sourceFullPath:
-                            continue
-                        sourceName = os.path.basename(sourceFullPath.name)
-                        destFilePath = os.path.abspath(destPath / sourceName)
-                        pathTools.copyOrWarn(label, sourceFullPath, destFilePath)
-                    if len(srcFiles) == 0:
-                        runLog.warning(
-                            f"No input files for `{label}` could be resolved "
-                            f"with the following file path: `{f}`."
-                        )
-                    elif len(srcFiles) > 1:
-                        runLog.warning(
-                            f"Input files for `{label}` resolved to more "
-                            f"than one file; cannot update settings safely. "
-                            f"Discovered input files: {srcFiles}"
-                        )
-                    elif len(srcFiles) == 1:
-                        newSettings[label] = str(destFilePath)
+                    if len(globFilePaths) == 0:
+                        destFilePath = f
+                        newFiles.append(str(destFilePath))
+                    else:
+                        for gFile in globFilePaths:
+                            destFilePath = _copyInputsHelper(
+                                label, gFile, destination, f
+                            )
+                            newFiles.append(str(destFilePath))
+                else:
+                    destFilePath = _copyInputsHelper(
+                        label, sourceFullPath, destination, f
+                    )
+                    newFiles.append(str(destFilePath))
+                if destFilePath == f:
+                    runLog.info(
+                        f"No input files for `{label}` setting could be resolved with "
+                        f"the following path: `{sourceFullPath}`. Will not update "
+                        f"`{label}`."
+                    )
 
+            # Some settings are a single filename. Others are lists of files. Make
+            # sure we are returning what the setting expects
+            if len(files) == 1 and not WILDCARD:
+                newSettings[label] = newFiles[0]
+            else:
+                newSettings[label] = newFiles
     return newSettings

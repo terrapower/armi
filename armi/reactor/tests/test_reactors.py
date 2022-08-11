@@ -178,7 +178,6 @@ def loadTestReactor(
         runLog.setVerbosity("error")
 
     newSettings = {}
-    newSettings["stationaryBlocks"] = []
     cs = cs.modified(newSettings=newSettings)
     settings.setMasterCs(cs)
 
@@ -832,6 +831,21 @@ class HexReactorTests(ReactorTests):
         for b in self.r.core.getBlocks():
             coords = b.getPinCoordinates()
             self.assertGreater(len(coords), -1)
+
+    def test_nonUniformAssems(self):
+        o, r = loadTestReactor(
+            customSettings={"nonUniformAssemFlags": ["primary control"]}
+        )
+        a = o.r.core.getFirstAssembly(Flags.FUEL)
+        self.assertTrue(all(b.p.topIndex != 0 for b in a[1:]))
+        a = o.r.core.getFirstAssembly(Flags.PRIMARY)
+        self.assertTrue(all(b.p.topIndex == 0 for b in a))
+        originalHeights = [b.p.height for b in a]
+        differntMesh = [val + 2 for val in r.core.p.referenceBlockAxialMesh]
+        # wont change because nonUnfiform assem doesn't conform to reference mesh
+        a.setBlockMesh(differntMesh)
+        heights = [b.p.height for b in a]
+        self.assertEqual(originalHeights, heights)
 
 
 class CartesianReactorTests(ReactorTests):
