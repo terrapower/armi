@@ -2283,10 +2283,6 @@ class Core(composites.Composite):
                 )
 
         else:
-            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
-                applySubMesh=False
-            )
-            self.p.axialMesh = self.findAllAxialMeshPoints()
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
@@ -2298,6 +2294,10 @@ class Core(composites.Composite):
                     "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
                 )
                 self._updateBlockBOLHeights(self.getAssemblies(includeAll=True), dbLoad)
+            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
+                applySubMesh=False
+            )
+            self.p.axialMesh = self.findAllAxialMeshPoints()
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2337,10 +2337,6 @@ class Core(composites.Composite):
         # resolve axially disjoint mesh (if needed)
         if not dbLoad:
             axialExpChngr.manageCoreMesh(self.parent)
-            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
-                applySubMesh=False
-            )
-            self.p.axialMesh = self.findAllAxialMeshPoints()
         elif not self._detailedAxialExpansion:
             for a in assems:
                 a.setBlockMesh(blueprintsMesh)
