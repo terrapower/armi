@@ -613,9 +613,9 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineZoningStrategy(core, cs) -> int:
+    def applyZoningStrategy(core, cs) -> int:
         """
-        Function for defining Zones directly on the Core.
+        Function for adding Zones directly on the Core.
 
         This will take in a Core object, and use any arbitrary logic to create from scratch
         or modify Core.zones.

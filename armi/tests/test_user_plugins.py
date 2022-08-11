@@ -111,13 +111,13 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
 class UserPluginDefineZoningStrategy(plugins.UserPlugin):
     """
-    This plugin flex-tests the defineZoningStrategy() hook,
+    This plugin flex-tests the applyZoningStrategy() hook,
     and puts every Assembly into its own Zone.
     """
 
     @staticmethod
     @plugins.HOOKIMPL
-    def defineZoningStrategy(core, cs):
+    def applyZoningStrategy(core, cs):
         core.zones = zones.Zones()
         assems = core.getAssemblies()
         for a in assems:
@@ -272,24 +272,25 @@ class TestUserPlugins(unittest.TestCase):
     def test_userPluginDefineZoningStrategy(self):
         """
         Test that a UserPlugin can affect the Reactor state,
-        by implementing defineZoningStrategy() to arbitrarily put each
+        by implementing applyZoningStrategy() to arbitrarily put each
         Assembly in the test reactor into its own Zone.
         """
         # register the plugin
         app = getApp()
         name = "UserPluginDefineZoningStrategy"
 
+        # register the zoning plugin
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertNotIn(name, pluginNames)
         app.pluginManager.register(UserPluginDefineZoningStrategy)
+
+        # also register another plugin, to test a more complicated situation
+        app.pluginManager.register(UserPluginOnProcessCoreLoading)
 
         # validate the plugins was registered
         pluginz = app.pluginManager.list_name_plugin()
         pluginNames = [p[0] for p in pluginz]
         self.assertIn(name, pluginNames)
-
-        # grab the loaded plugin
-        plug0 = [p[1] for p in pluginz if p[0] == name][0]
 
         # load a reactor and grab the fuel assemblies
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
@@ -298,6 +299,34 @@ class TestUserPlugins(unittest.TestCase):
         self.assertEqual(len(r.core.zones), len(r.core.getAssemblies()))
         name0 = r.core.zones.names[0]
         self.assertIn(name0, r.core.zones[name0])
+
+    def test_userPluginDefineZoningStrategyMultipleFail(self):
+        """Ensure that multiple plugins registering Zoning stragies raises an Error"""
+
+        class DuplicateZoner(UserPluginDefineZoningStrategy):
+            pass
+
+        # register the plugin
+        app = getApp()
+        name0 = "UserPluginDefineZoningStrategy"
+        name1 = "DuplicateZoner"
+
+        # register the zoning plugin
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn(name0, pluginNames)
+        self.assertNotIn(name1, pluginNames)
+        app.pluginManager.register(UserPluginDefineZoningStrategy)
+        app.pluginManager.register(DuplicateZoner)
+
+        # validate the plugins was registered
+        pluginz = app.pluginManager.list_name_plugin()
+        pluginNames = [p[0] for p in pluginz]
+        self.assertIn(name0, pluginNames)
+        self.assertIn(name1, pluginNames)
+
+        # trying to load a Reactor should raise an error
+        with self.assertRaises(RuntimeError):
+            o, r = test_reactors.loadTestReactor(TEST_ROOT)
 
     def test_userPluginWithInterfaces(self):
         """Test that UserPlugins can correctly inject an interface into the stack"""

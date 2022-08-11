@@ -473,10 +473,10 @@ def buildZones(core, cs) -> None:
     -------
     None
     """
-    zoneCounts = getPluginManagerOrFail().hook.defineZoningStrategy(core=core, cs=cs)
+    zoneCounts = getPluginManagerOrFail().hook.applyZoningStrategy(core=core, cs=cs)
 
     if len(zoneCounts) > 1:
-        runLog.warning("Multiple plugins registered Zoning Strategies; this is risky.")
+        raise RuntimeError("Only one plugin can register a Zoning Strategy.")
 
     if len(zoneCounts) == 0:
         zones = Zones()
