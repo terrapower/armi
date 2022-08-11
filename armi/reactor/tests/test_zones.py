@@ -153,7 +153,6 @@ class TestZones(unittest.TestCase):
         cs = self.o.cs.modified(newSettings=newSettings)
         zones.buildZones(self.r.core, cs)
         self.zonez = self.r.core.zones
-        self.r.zones = self.zonez
         self.r.core.zones = self.zonez
 
     def test_dictionaryInterface(self):
@@ -185,32 +184,6 @@ class TestZones(unittest.TestCase):
         self.assertEqual(len(ring3), 3)
         self.assertIn("003-002", ring3)
 
-    def test_buildManualZones(self):
-        # define some manual zones in the settings
-        newSettings = {}
-        newSettings["zoneDefinitions"] = [
-            "ring-1: 001-001",
-            "ring-2: 002-001, 002-002",
-            "ring-3: 003-001, 003-002, 003-003",
-        ]
-        cs = self.o.cs.modified(newSettings=newSettings)
-        zones.buildZones(self.r.core, cs)
-
-        zonez = self.r.core.zones
-        self.assertEqual(len(list(zonez)), 3)
-        self.assertIn("002-001", zonez["ring-2"])
-        self.assertIn("003-002", zonez["ring-3"])
-
-    def test_buildManualZonesEmpty(self):
-        # ensure there are no zone definitions in the settings
-        newSettings = {}
-        newSettings["zoneDefinitions"] = []
-        cs = self.o.cs.modified(newSettings=newSettings)
-
-        # verify that buildZones behaves well when no zones are defined
-        zones.buildZones(self.r.core, cs)
-        self.assertEqual(len(list(self.r.core.zones)), 0)
-
     def test_findZoneItIsIn(self):
         # customize settings for this test
         newSettings = {}
@@ -237,23 +210,50 @@ class TestZones(unittest.TestCase):
         # ensure that we can no longer find the assembly in the zone
         self.assertEqual(daZones.findZoneItIsIn(a), None)
 
-    def test_zoneSummary(self):
+    def test_summary(self):
         # make sure we have a couple of zones to test on
         for name0 in ["ring-1", "ring-2", "ring-3"]:
             self.assertIn(name0, self.zonez.names)
 
         # test the summary (in the log)
         with mockRunLogs.BufferLog() as mock:
-            runLog.LOG.startLog("test_zoneSummary")
+            runLog.LOG.startLog("test_summary")
             runLog.LOG.setVerbosity(logging.INFO)
-
             self.assertEqual("", mock._outputStream)
 
-            zones.zoneSummary(self.r.core)
+            self.zonez.summary()
 
-            self.assertIn("Zone Summary", mock._outputStream)
-            self.assertIn("Zone Power", mock._outputStream)
-            self.assertIn("Zone Average Flow", mock._outputStream)
+            self.assertIn("zoneDefinitions:", mock._outputStream)
+            self.assertIn("- ring-1: ", mock._outputStream)
+            self.assertIn("- ring-2: ", mock._outputStream)
+            self.assertIn("- ring-3: ", mock._outputStream)
+            self.assertIn("003-001, 003-002, 003-003", mock._outputStream)
+
+    def test_buildManualZones(self):
+        # define some manual zones in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+            "ring-3: 003-001, 003-002, 003-003",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        zones.buildZones(self.r.core, cs)
+
+        zonez = self.r.core.zones
+        self.assertEqual(len(list(zonez)), 3)
+        self.assertIn("002-001", zonez["ring-2"])
+        self.assertIn("003-002", zonez["ring-3"])
+
+    def test_buildManualZonesEmpty(self):
+        # ensure there are no zone definitions in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = []
+        cs = self.o.cs.modified(newSettings=newSettings)
+
+        # verify that buildZones behaves well when no zones are defined
+        zones.buildZones(self.r.core, cs)
+        self.assertEqual(len(list(self.r.core.zones)), 0)
 
 
 if __name__ == "__main__":

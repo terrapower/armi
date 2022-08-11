@@ -64,8 +64,6 @@ class ReportInterface(interfaces.Interface):
         runLog.info(report.ALL[report.RUN_META])
 
     def interactEveryNode(self, cycle, node):
-        if self.cs["zoneFlowSummary"]:
-            reportingUtils.summarizeZones(self.r.core, self.cs)
         if self.cs["assemPowSummary"]:
             reportingUtils.summarizePower(self.r.core)
 

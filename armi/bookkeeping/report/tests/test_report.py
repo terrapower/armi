@@ -25,7 +25,6 @@ from armi.bookkeeping.report.reportingUtils import (
     summarizePinDesign,
     summarizePower,
     summarizePowerPeaking,
-    summarizeZones,
     writeAssemblyMassSummary,
     writeCycleSummary,
 )
@@ -108,11 +107,6 @@ class TestReport(unittest.TestCase):
             self.assertIn("Core Average", mock._outputStream)
             self.assertIn("Outlet Temp", mock._outputStream)
             self.assertIn("End of Cycle", mock._outputStream)
-            mock._outputStream = ""
-
-            # this report won't do much for the test reactor - improve test reactor
-            summarizeZones(r.core, o.cs)
-            self.assertEqual(len(mock._outputStream), 0)
             mock._outputStream = ""
 
             # this report won't do much for the test reactor - improve test reactor

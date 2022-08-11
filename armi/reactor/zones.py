@@ -323,133 +323,27 @@ class Zones:
 
         return None
 
+    def summary(self) -> None:
+        """
+        Summarize the zone defintions clearly, and in a way that can be copy/pasted
+        back into a settings file under "zoneDefinitions", if the user wants to
+        manually re-use these zones later.
 
-# TODO: This only works for Assemblies!
-def zoneSummary(core, zoneNames=None):
-    """
-    Print out power distribution of fuel assemblies this/these zone.
+        Examples
+        --------
+        zoneDefinitions:
+        - ring-1: 001-001
+        - ring-2: 002-001, 002-002
+        - ring-3: 003-001, 003-002, 003-003
+        """
+        # log a quick header
+        runLog.info("zoneDefinitions:")
 
-    Parameters
-    ----------
-    core : Core
-        A fully-initialized Core object
-    zoneNames : list, optional
-        The names of the zones you want to inspect. Leave blank to summarize all zones.
-
-    Returns
-    -------
-    None
-    """
-    if zoneNames is None:
-        zoneNames = core.zones.names
-
-    msg = "Zone Summary"
-    if core.r is not None:
-        msg += " at Cycle {0}, timenode {1}".format(core.r.p.cycle, core.r.p.timeNode)
-
-    runLog.info(msg)
-    totalPower = 0.0
-
-    for zoneName in sorted(zoneNames):
-        runLog.info("zone {0}".format(zoneName))
-        massFlow = 0.0
-
-        # find the maximum power to flow in each zone
-        maxPower = -1.0
-        fuelAssemsInZone = core.getAssemblies(Flags.FUEL, zones=zoneName)
-        a = []
-        for a in fuelAssemsInZone:
-            flow = a.p.THmassFlowRate * a.getSymmetryFactor()
-            aPow = a.calcTotalParam("power", calcBasedOnFullObj=True)
-            if aPow > maxPower:
-                maxPower = aPow
-
-            if not flow:
-                runLog.important(
-                    "No TH data. Run with thermal hydraulics activated. "
-                    "Zone report will have flow rate of zero",
-                    single=True,
-                    label="Cannot summarize zone T/H",
-                )
-                # no TH for some reason
-                flow = 0.0
-
-            massFlow += flow
-
-        # Get power from the extracted power method.
-        slabPowList = _getZoneAxialPowerDistribution(core, zoneName)
-        if not slabPowList or not fuelAssemsInZone:
-            runLog.important("No fuel assemblies exist in zone {0}".format(zoneName))
-            return
-
-        # loop over the last assembly to produce the final output.
-        z = 0.0
-        totalZonePower = 0.0
-        for zi, b in enumerate(a):
-            slabHeight = b.getHeight()
-            thisSlabPow = slabPowList[zi]
-            runLog.info(
-                "  Power of {0:8.3f} cm slab at z={1:8.3f} (W): {2:12.5E}"
-                "".format(slabHeight, z, thisSlabPow)
-            )
-            z += slabHeight
-            totalZonePower += thisSlabPow
-
-        runLog.info("  Total Zone Power (Watts): {0:.3E}".format(totalZonePower))
-        runLog.info(
-            "  Zone Average Flow rate (kg/s): {0:.3f}"
-            "".format(massFlow / len(fuelAssemsInZone))
-        )
-        runLog.info(
-            "  There are {0} assemblies in this zone"
-            "".format(len(fuelAssemsInZone) * core.powerMultiplier)
-        )
-
-        totalPower += totalZonePower
-
-    runLog.info("Total power of fuel in all zones is {0:.6E} Watts".format(totalPower))
-
-
-def _getZoneAxialPowerDistribution(core, zoneName):
-    """
-    Return a list of powers in watts of the axial levels of zone.
-    (Helper method for Zones summary.)
-
-    Parameters
-    ----------
-    core : Core
-        A fully-initialized Core object
-    zoneName : str
-        The name of the zone you want to inspect.
-
-    See Also
-    --------
-    zoneSummary
-
-    Returns
-    -------
-    list
-        Block powers, ordered by axial position.
-    """
-    slabPower = {}
-    zi = 0
-    for a in core.getAssemblies(Flags.FUEL, zones=[zoneName]):
-        # Add up slab power and flow rates
-        for zi, b in enumerate(a):
-            slabPower[zi] = (
-                slabPower.get(zi, 0.0)
-                + b.p.power * b.getSymmetryFactor() * core.powerMultiplier
-            )
-
-    # reorder the dictionary into a list, knowing that zi is stopped at the highest block
-    slabPowList = []
-    for i in range(zi + 1):
-        try:
-            slabPowList.append(slabPower[i])
-        except:
-            runLog.warning("slabPower {} zone {}".format(slabPower, zoneName))
-
-    return slabPowList
+        # log the zone definitions in a way that can be copy/pasted back into a settings file
+        for name in sorted(self._zones.keys()):
+            locs = sorted(self._zones[name].locs)
+            line = "- {0}: ".format(name) + ", ".join(locs)
+            runLog.info(line)
 
 
 def buildZones(core, cs) -> None:
