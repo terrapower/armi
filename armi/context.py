@@ -142,7 +142,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
         except OSError as e:
             pass
     if not os.path.isdir(APP_DATA):
-        raise e
+        raise OSError("Directory doesn't exist {0}".format(APP_DATA))
 
 if MPI_COMM is not None:
     MPI_COMM.barrier()  # make sure app data exists before workers proceed.
