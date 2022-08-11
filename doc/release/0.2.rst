@@ -48,6 +48,7 @@ Bug fixes
 #. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
 #. Bug fix in ``armi/reactor/components/component.py::getReac``
 #. Bug fix in ``armi/reactor/converters/uniformMesh.py`` to prevent `_mapStateFromReactorToOther` from clearing out unchanged parameter data.
+#. Migration of the `axialMesh` core parameter from the `neutronics` category to be general to prevent inconsistencies in the axial core mesh and the assembly meshes.
 #. TBD
 
 ARMI v0.2.3
