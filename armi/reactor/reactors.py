@@ -401,16 +401,16 @@ class Core(composites.Composite):
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
 
+        Notes
+        -----
+        Please expect this method will delete your assembly (instead of moving it to a
+        Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
+
         Originally, this held onto all assemblies in the spend fuel pool. However, having
         this sitting in memory becomes constraining for large simulations. It is more
         memory-efficient to only save the assemblies that are required for detailed
         history tracking. In fact, there's no need to save the assembly object at all,
         just have the history interface save the relevant parameters.
-
-        Notes
-        -----
-        Please expect this method will delete your assembly (instead of moving it to a
-        Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
 
         See Also
         --------
