@@ -301,7 +301,7 @@ blocks:
         fuel:
             shape: Circle
             material: UZr
-            Tinput: 20.0
+            Tinput: 25.0
             Thot: 600.0
             id: 0.600
             mult: 169.0

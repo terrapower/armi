@@ -845,7 +845,9 @@ class HexReactorTests(ReactorTests):
         Notes:
         ------
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        - to maintain code coverage, _updateBlockBOLHeights is called via processLoading
         """
+        self.o.cs["inputHeightsConsideredHot"] = False
         ## PART 1: Test core expansion based on core construction
         assemsToChange = self.r.core.getAssembliesOfType(Flags.FUEL)
         # stash original axial mesh info
@@ -855,7 +857,7 @@ class HexReactorTests(ReactorTests):
         for a in assemsToChange:
             for b in a[1:]:
                 oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core._updateBlockBOLHeights(assemsToChange, dbLoad=False)
+        self.r.core.processLoading(self.o.cs, dbLoad=False)
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
             self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
         for i, val in enumerate(oldAxialMesh[1:]):
@@ -873,12 +875,14 @@ class HexReactorTests(ReactorTests):
         for a in assemsToChange:
             for b in a[1:]:
                 oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core._updateBlockBOLHeights(
-            assemsToChange, dbLoad=True, blueprintsMesh=assemsToChange[0].getAxialMesh()
-        )
+        self.r.core.processLoading(self.o.cs, dbLoad=True)
         for a in assemsToChange:
-            for b in a[1:]:
-                self.assertAlmostEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+            if a.getComponentsOfMaterial(materialName="UZr"):
+                for b in a[1:]:
+                    self.assertAlmostEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+            else:
+                for b in a[1:]:
+                    self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
 
     def test_nonUniformAssems(self):
         o, r = loadTestReactor(
