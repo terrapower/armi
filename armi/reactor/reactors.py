@@ -2279,7 +2279,7 @@ class Core(composites.Composite):
                 self._applyThermalExpansion(
                     self.parent.blueprints.assemblies.values(),
                     dbLoad,
-                    finestMeshAssembly.getAxialMesh(),
+                    finestMeshAssembly,
                 )
 
         else:
@@ -2326,7 +2326,7 @@ class Core(composites.Composite):
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
 
     def _applyThermalExpansion(
-        self, assems: list, dbLoad: bool, blueprintsMesh: list = None
+        self, assems: list, dbLoad: bool, referenceAssembly=None
     ):
         """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
 
@@ -2336,8 +2336,9 @@ class Core(composites.Composite):
             list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
         dbLoad: bool
             boolean to determine if Core::processLoading is loading a database or constructing a Core
-        blueprintsMesh: optional, list
-            if detailedAxialExpansion: False, is the axial mesh to set the blueprints assemblies to
+        referenceAssembly: optional, :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            is the thermally expanded assembly whose axial mesh is used to snap the
+            blueprints assemblies axial mesh to
         """
         axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
         for a in assems:
@@ -2350,7 +2351,8 @@ class Core(composites.Composite):
             axialExpChngr.manageCoreMesh(self.parent)
         elif not self._detailedAxialExpansion:
             for a in assems:
-                a.setBlockMesh(blueprintsMesh)
+                if not a.hasFlags(Flags.CONTROL):
+                    a.setBlockMesh(referenceAssembly.getAxialMesh())
         # update block BOL heights to reflect hot heights
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):

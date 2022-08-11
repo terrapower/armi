@@ -833,23 +833,16 @@ class HexReactorTests(ReactorTests):
             coords = b.getPinCoordinates()
             self.assertGreater(len(coords), -1)
 
-    def test_updateBlockBOLHeights(self):
-        """test Core::_updateBlockBOLHeights
-
-        Testing consists of two parts:
-          1. core expansion based on core contruction (dbLoad: False)
-          2. blueprints assem expansion (dbLoad: True).
-             - since there isn't a DB to load in armi, we will use the expanded
-               core from part 1 to act as our DB.
+    def test_applyThermalExpansion_CoreConstruct(self):
+        """test Core::_applyThermalExpansion for core construction
 
         Notes:
         ------
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
-        - to maintain code coverage, _updateBlockBOLHeights is called via processLoading
+        - to maintain code coverage, _applyThermalExpansion is called via processLoading
         """
         self.o.cs["inputHeightsConsideredHot"] = False
-        ## PART 1: Test core expansion based on core construction
-        assemsToChange = self.r.core.getAssembliesOfType(Flags.FUEL)
+        assemsToChange = self.r.core.getAssemblies()
         # stash original axial mesh info
         oldRefBlockAxialMesh = self.r.core.p.referenceBlockAxialMesh
         oldAxialMesh = self.r.core.p.axialMesh
@@ -863,26 +856,34 @@ class HexReactorTests(ReactorTests):
         for i, val in enumerate(oldAxialMesh[1:]):
             self.assertNotEqual(val, self.r.core.p.axialMesh[i])
         for a in assemsToChange:
-            for b in a[1:]:
-                self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a[1:]:
+                    self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
 
-        ## PART 2: Test dbLoad
-        assemsToChange = [
-            a for a in self.r.blueprints.assemblies.values() if a.hasFlags(Flags.FUEL)
-        ]
+    def test_updateBlockBOLHeights_DBLoad(self):
+        """test Core::_applyThermalExpansion for db load
+
+        Notes:
+        ------
+        - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        - to maintain code coverage, _applyThermalExpansion is called via processLoading
+        """
+        self.o.cs["inputHeightsConsideredHot"] = False
         # stash original blueprint assemblies axial mesh info
         oldBlockBOLHeights = {}
+        assemsToChange = [a for a in self.r.blueprints.assemblies.values()]
         for a in assemsToChange:
             for b in a[1:]:
                 oldBlockBOLHeights[b] = b.p.heightBOL
         self.r.core.processLoading(self.o.cs, dbLoad=True)
         for a in assemsToChange:
-            if a.getComponentsOfMaterial(materialName="UZr"):
+            if not a.hasFlags(Flags.CONTROL):
                 for b in a[1:]:
-                    self.assertAlmostEqual(oldBlockBOLHeights[b], b.p.heightBOL)
-            else:
-                for b in a[1:]:
-                    self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+                    self.assertNotEqual(
+                        oldBlockBOLHeights[b],
+                        b.p.heightBOL,
+                        msg="{0}, {1}".format(a, b),
+                    )
 
     def test_nonUniformAssems(self):
         o, r = loadTestReactor(
