@@ -1181,7 +1181,6 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     --------
     >>> converter = ThirdCoreHexToFullCoreChanger()
     >>> converter.convert(myReactor)
-
     """
 
     EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
@@ -1215,14 +1214,13 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         ----------
         sourceReactor : Reactor object
             The reactor to convert.
-
         """
         if r.core.isFullCore:
             # already full core from geometry file. No need to copy symmetry over.
             runLog.important(
                 "Detected that full core reactor already exists. Cannot expand."
             )
-            return r
+            return
         elif not (
             r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
             and r.core.geomType == geometry.GeomType.HEX
@@ -1328,7 +1326,6 @@ class EdgeAssemblyChanger(GeometryChanger):
         See Also
         --------
         removeEdgeAssemblies : removes the edge assemblies
-
         """
         if core.isFullCore:
             return
@@ -1337,7 +1334,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             runLog.important(
                 "Skipping addition of edge assemblies because they are already there"
             )
-            return False
+            return
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
             grids.BOUNDARY_0_DEGREES

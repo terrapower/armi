@@ -481,7 +481,7 @@ def __readRiplDecayData():
 
     riplPath = os.environ.get(_riplEnvironVariable, None)
     if riplPath is None:
-        return None
+        return
 
     path = pathlib.Path(riplPath)
     if not path.exists() or not path.is_dir():
@@ -817,11 +817,12 @@ class INuclide(NuclideInterface):
         Returns
         -------
         decay : :py:class:`DecayModes <armi.nucDirectory.transmutations.DecayMode>`
-
         """
         for d in self.decays:
             if d.type == decayType:
                 return d
+
+        return None
 
     def isFissile(self):
         r"""Determine if the nuclide is fissile.

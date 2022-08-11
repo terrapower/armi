@@ -47,7 +47,6 @@ def insertGeneralReportContent(cs, r, report, stage):
         r : reactor
         report : ReportContents object
         blueprint : blueprint
-
     """
     # These items only happen once at BOL
     if stage == newReports.ReportStage.Begin:
@@ -500,6 +499,8 @@ def getPinDesignTable(core):
     except Exception as error:  # pylint: disable=broad-except
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
+
+    return None
 
 
 def insertAreaFractionsReport(block, report):

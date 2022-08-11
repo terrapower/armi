@@ -839,14 +839,15 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
+        err = f"No parent is defined for {self}. Cannot compute its volume fraction."
         if self.parent is None:
-            raise ValueError(
-                f"No parent is defined for {self}. Cannot compute its volume fraction."
-            )
+            raise ValueError(err)
 
         for child, frac in self.parent.getVolumeFractions():
             if child is self:
                 return frac
+
+        raise ValueError(err)
 
     def getMaxArea(self):
         """ "
@@ -3267,6 +3268,7 @@ def gatherMaterialsByVolume(
             volumes[matName] = volumes.get(matName, 0.0) + vol
             if matName not in samples:
                 samples[matName] = c.material
+
     return volumes, samples
 
 
@@ -3279,7 +3281,6 @@ def getDominantMaterial(
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.
         Thus clients that use it from here should expect to need updates soon.
-
     """
     volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
 
@@ -3290,3 +3291,5 @@ def getDominantMaterial(
         # has properties like Zr-frac, enrichment, etc. then this will
         # just return one in the batch, not an average.
         return samples[maxMatName]
+
+    return None

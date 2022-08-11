@@ -374,6 +374,9 @@ def getCycleNodeFromCumulativeStep(timeStepNum, cs):
         if timeStepNum <= cSteps:
             return (i, timeStepNum - (cSteps - stepsPerCycle[i]) - 1)
 
+    i = len(stepsPerCycle) - 1
+    return (i, timeStepNum - (cSteps - stepsPerCycle[i]) - 1)
+
 
 def getCycleNodeFromCumulativeNode(timeNodeNum, cs):
     """
@@ -406,6 +409,9 @@ def getCycleNodeFromCumulativeNode(timeNodeNum, cs):
         cNodes += nodesPerCycle[i]
         if timeNodeNum < cNodes:
             return (i, timeNodeNum - (cNodes - nodesPerCycle[i]))
+
+    i = len(nodesPerCycle) - 1
+    return (i, timeNodeNum - (cNodes - nodesPerCycle[i]))
 
 
 def getNodesPerCycle(cs):

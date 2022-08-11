@@ -478,7 +478,7 @@ def isHeavyMetal(name):
     try:
         return getNuclide(name).isHeavyMetal()
     except AttributeError:
-        AttributeError(
+        raise AttributeError(
             "The nuclide {0} is not found in the nuclide directory".format(name)
         )
 
@@ -487,7 +487,7 @@ def isFissile(name):
     try:
         return getNuclide(name).isFissile()
     except AttributeError:
-        AttributeError(
+        raise AttributeError(
             "The nuclide {0} is not found in the nuclide directory".format(name)
         )
 

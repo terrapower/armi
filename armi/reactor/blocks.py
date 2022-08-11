@@ -1087,11 +1087,14 @@ class Block(composites.Composite):
         --------
         >>> getDim(Flags.WIRE,'od')
         0.01
-
         """
         for c in self:
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
+
+        raise ValueError(
+            "Cannot get Dimension because Flag not found: {0}".format(typeSpec)
+        )
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
@@ -2063,17 +2066,15 @@ class HexBlock(Block):
         -------
         pinPitch : float
             pin pitch in cm
-
         """
         try:
             clad = self.getComponent(Flags.CLAD)
             wire = self.getComponent(Flags.WIRE)
         except ValueError:
-            runLog.info(
+            raise ValueError(
                 "Block {} has multiple clad and wire components,"
                 " so pin pitch is not well-defined.".format(self)
             )
-            return
 
         if wire and clad:
             return clad.getDimension("od", cold=cold) + wire.getDimension(

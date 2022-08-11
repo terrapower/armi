@@ -1172,12 +1172,13 @@ class Core(composites.Composite):
         Returns
         -------
         b : Block object (or None if no such block exists)
-
         """
         for a in self:
             for b in a:
                 if b.hasFlags(blockType, exact):
                     return b
+
+        return None
 
     def getFirstAssembly(self, typeSpec=None, exact=False):
         """
@@ -1458,7 +1459,6 @@ class Core(composites.Composite):
         getAssemblyByName
         getAssemblyWithStringLocation
         getLocationContents : a much more efficient way to look up assemblies in a list of locations
-
         """
         if assemblyName:
             return self.getAssemblyByName(assemblyName)
@@ -1468,6 +1468,8 @@ class Core(composites.Composite):
                 return a
             if a.getNum() == assemNum:
                 return a
+
+        return None
 
     def getAssemblyWithAssemNum(self, assemNum):
         """
@@ -2234,7 +2236,6 @@ class Core(composites.Composite):
         See Also
         --------
         updateAxialMesh : Perturbs the axial mesh originally set up here.
-
         """
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
