@@ -259,8 +259,6 @@ class App:
         because they are defined during run time, not import time. As such, we
         restrict their flexibility and power as compared to the usual ArmiPlugins.
         """
-        self.__initNewPlugins()
-
         for pluginPath in pluginPaths:
             if ".py:" in pluginPath:
                 # The path is of the form: /path/to/why.py:MyPlugin

@@ -113,29 +113,6 @@ def isStableReleaseVersion(version=None):
     return "-" not in version
 
 
-def _registerUserPlugin(plugManager, userPluginName):
-    """Register one individual user plugin by name."""
-    try:
-        pluginMod = importlib.import_module(userPluginName)
-    except ImportError:
-        runLog.error(
-            f"The plugin `{userPluginName}` could not be imported. Verify it is installed "
-            "in your current environment or adjust the active user plugins."
-        )
-        raise
-
-    # Each plugin must have a constant called PLUGIN pointing to the plugin class.
-    # This allows discoverability without being overly restrictive in class names
-    try:
-        plugManager.register(pluginMod.PLUGIN)
-    except AttributeError:
-        runLog.error(
-            f"The plugin `{userPluginName}` does not have a PLUGIN constant defined. "
-            "This constant is required in user plugins. Please adjust plugin."
-        )
-        raise
-
-
 def init(choice=None, fName=None, cs=None):
     """
     Scan a directory for armi inputs and load one to interact with.
