@@ -716,20 +716,21 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     """verify thermal expansion for process loading of core"""
 
     def setUp(self):
-        """provide the base case"""
+        """This test uses a different armiRun.yaml than the default"""
+
         _o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            {"inputHeightsConsideredHot": True},
+            customSettings={"inputHeightsConsideredHot": True},
         )
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            {"inputHeightsConsideredHot": False},
+            customSettings={"inputHeightsConsideredHot": False},
         )
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
-    def test_coldAssemblyHeight(self):
+    def test_coldAssemblyExpansion(self):
         """block heights are cold and should be expanded
 
         Notes
@@ -760,10 +761,13 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
                 if bStd.hasFlags(Flags.FUEL):
-                    self.assertTrue(bExp.hasFlags(Flags.FUEL))
                     # fuel mass should grow because heights are considered cold heights
                     # and a cold 1 cm column has more mass than a hot 1 cm column
-                    self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+                    if not isinstance(
+                        bStd.getComponent(Flags.FUEL).material, custom.Custom
+                    ):
+                        # custom materials don't expand
+                        self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):

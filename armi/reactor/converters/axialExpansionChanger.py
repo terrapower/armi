@@ -124,6 +124,23 @@ class AxialExpansionChanger:
         self.expansionData = ExpansionData(a, setFuel)
         self._isTopDummyBlockPresent()
 
+    def applyColdHeightMassIncrease(self):
+        """
+        Increase component mass because they are declared at cold dims
+
+        Notes
+        -----
+        A cold 1 cm tall component will have more mass that a component with the
+        same mass/length as a component with a hot height of 1 cm. This should be
+        called when the setting `inputHeightsConsideredHot` is used. This basically
+        undoes component.applyHotHeightDensityReduction
+        """
+        for c in self.linked.a.getComponents():
+            axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(
+                c.temperatureInC, c.inputTemperatureInC
+            )
+            c.changeNDensByFactor(axialExpansionFactor)
+
     def _isTopDummyBlockPresent(self):
         """determines if top most block of assembly is a dummy block
 
@@ -174,9 +191,10 @@ class AxialExpansionChanger:
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
-            # if not in the dummy block, get expansion factor, do alignment, and modify block
-            if ib < (numOfBlocks - 1):
+            isDummyBlock = ib == (numOfBlocks - 1)
+            if not isDummyBlock:
                 for c in b:
+
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(
                         msg="      Component {0}, growFrac = {1:.4e}".format(
@@ -221,8 +239,9 @@ class AxialExpansionChanger:
             # see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
             oldComponentVolumes = [c.getVolume() for c in b]
-            oldHeight = b.getHeight()
+            oldHeight = b.p.height
             b.p.height = b.p.ztop - b.p.zbottom
+
             _checkBlockHeight(b)
             _conserveComponentMass(b, oldHeight, oldComponentVolumes)
             # set block mid point and redo mesh

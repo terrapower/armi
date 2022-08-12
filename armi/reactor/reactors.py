@@ -215,7 +215,6 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
-        self._inputHeightsConsideredHot = True
         self._detailedAxialExpansion = False
 
     def setOptionsFromCs(self, cs):
@@ -227,7 +226,6 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
-        self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
         self._detailedAxialExpansion = cs["detailedAxialExpansion"]
 
     def __getstate__(self):
@@ -2293,6 +2291,12 @@ class Core(composites.Composite):
                 for a in self.getAssemblies():
                     if not a.hasFlags(Flags.CONTROL):
                         axialExpChngr.setAssembly(a)
+                        # this doesn't get applied to control rods, so CR will be interpreted
+                        # as hot. This should be conservative because the control rods will
+                        # be modeled as slightly shorter with the correct hot density. Density
+                        # is more important than height, so we are forcing density to be correct
+                        # since we can't do axial expansion (yet)
+                        axialExpChngr.applyColdHeightMassIncrease()
                         axialExpChngr.expansionData.computeThermalExpansionFactors()
                         axialExpChngr.axiallyExpandAssembly(thermal=True)
                 axialExpChngr.manageCoreMesh(self.parent)

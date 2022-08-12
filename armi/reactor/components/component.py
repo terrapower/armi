@@ -365,6 +365,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         self.applyMaterialMassFracsToNumberDensities
         """
+        # this is the same as getThermalExpansionFactor but doesn't fail
+        # on non-fluid materials that have 0 or undefined thermal expansion
+        # (we don't want materials to fail on  __init__ which calls this)
         axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
             self.temperatureInC, self.inputTemperatureInC
         )
