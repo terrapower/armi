@@ -23,7 +23,7 @@ from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components import DerivedShape
+from armi.reactor.components import DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import (
     Circle,
     Hexagon,
@@ -634,6 +634,12 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+    def test_determineLinked(self):
+        compDims = {"Tinput": 25.0, "Thot": 25.0}
+        compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
+        compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
+        self.assertFalse(_determineLinked(compA, compB))
+
 
 class TestDetermineTargetComponent(unittest.TestCase):
     """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
@@ -944,6 +950,11 @@ class TestLinkage(unittest.TestCase):
         }
         liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
         self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
+
+    def test_unshapedComponentAndCircle(self):
+        comp1 = Circle(*self.common, od=1.0, id=0.0)
+        comp2 = UnshapedComponent(*self.common, area=1.0)
+        self.assertFalse(_determineLinked(comp1, comp2))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):

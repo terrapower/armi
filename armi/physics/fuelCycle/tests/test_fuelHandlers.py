@@ -582,168 +582,238 @@ class TestFuelHandler(ArmiTestHelper):
         locSchedule = fh.buildEqRingSchedule([2, 1])
         self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
-    def test_swapFluxParamSameLength(self):
+    def test_transferStationaryBlocks(self):
         """
-        Test the _swapFluxParams method for the usual case,
-        where each of the input assembles have the same number of assemblies,
-        on the same mesh
+        Test the _transferStationaryBlocks method .
         """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
         # grab the assemblies
-        assems = self.r.core.getAssemblies(Flags.FEED)
-        self.assertEqual(len(assems), 14)
+        assems = self.r.core.getAssemblies(Flags.FUEL)
 
-        for a in assems:
-            self.assertEqual(len(a.getBlocks()), 5)
+        # grab two arbitrary assemblies
+        a1 = assems[1]
+        a2 = assems[2]
 
-        # make two copies of an arbitraty assembly
-        a1 = copy.deepcopy(list(assems)[1])
-        a2 = copy.deepcopy(list(assems)[1])
-        blocks1 = list(a1.getBlocks())
-        blocks2 = list(a2.getBlocks())
-        self.assertEqual(len(blocks1), 5)
-        self.assertEqual(len(blocks2), 5)
-        self.assertEqual(blocks1[3].p.height, 25)
-        self.assertEqual(blocks2[3].p.height, 25)
+        # grab the stationary blocks pre swap
+        a1PreSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
 
-        # 1. alter the values of a single block in assembly 2
-        b2 = list(blocks2)[1]
-        b2.p.flux = b2.p.flux * 2
-        b2.p.power = 1000
-        b2.p.pdens = b2.p.power / b2.getVolume()
+        a2PreSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
 
-        # grab the power before the swap
-        power1 = sum([b.p.power for b in a1.getBlocks()])
-        power2 = sum([b.p.power for b in a2.getBlocks()])
-
-        # 2. validate the situation is as you'd expect
-        self.assertEqual(list(a1.getBlocks())[1].p.flux, 50000000000.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.flux, 100000000000.0)
-        self.assertEqual(list(a1.getBlocks())[1].p.power, 0.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.power, 1000.0)
-        self.assertEqual(list(a1.getBlocks())[1].p.pdens, 0.0)
-        self.assertGreater(list(a2.getBlocks())[1].p.pdens, 0.0)
-
-        # 3. do the swap
+        # swap the stationary blocks
         fh = fuelHandlers.FuelHandler(self.o)
-        fh._swapFluxParam(a1, a2)
+        fh._transferStationaryBlocks(a1, a2)
 
-        # 4. validate the swap worked
-        self.assertEqual(list(a1.getBlocks())[1].p.flux, 100000000000.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.flux, 50000000000.0)
-        self.assertEqual(list(a1.getBlocks())[1].p.power, 1000.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.power, 0.0)
-        self.assertGreater(list(a1.getBlocks())[1].p.pdens, 0.0)
-        self.assertEqual(list(a2.getBlocks())[1].p.pdens, 0.0)
-        self.assertEqual(sum([b.p.power for b in a1.getBlocks()]), power2)
-        self.assertEqual(sum([b.p.power for b in a2.getBlocks()]), power1)
+        # grab the stationary blocks post swap
+        a1PostSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
 
-    def test_swapFluxParamDifferentLengths(self):
+        a2PostSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        # validate the stationary blocks have swapped locations and are aligned
+        self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
+        self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
+
+    def test_transferIncompatibleStationaryBlocks(self):
         """
-        Test the _swapFluxParams method for the less common, and more complicated case,
-        where the input assembles have different numbers of blocks, potentially on
-        wildly different point meshes.
+        Test the _transferStationaryBlocks method
+        for the case where the input assemblies have
+        different numbers as well as unaligned locations of stationary blocks.
         """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
         # grab the assemblies
-        assems = self.r.core.getAssemblies(Flags.FEED)
+        assems = self.r.core.getAssemblies(Flags.FUEL)
 
-        # make two copies of an arbitraty assembly
-        a1 = copy.deepcopy(list(assems)[1])
-        a2 = copy.deepcopy(list(assems)[1])
-        height2 = 25.0
-        self.assertEqual(list(a1.getBlocks())[3].p.height, height2)
-        self.assertEqual(list(a2.getBlocks())[3].p.height, height2)
+        # grab two arbitrary assemblies
+        a1 = assems[1]
+        a2 = assems[2]
 
-        # grab the blocks from the second assembly
-        blocks2 = list(a2.getBlocks())
-        self.assertEqual(len(blocks2), 5)
+        # change a block in assembly 1 to be flagged as a stationary block
+        for block in a1:
+            if not any(block.hasFlags(sbf) for sbf in sBFList):
+                a1[block.spatialLocator.k].setType(
+                    a1[block.spatialLocator.k].p.type, sBFList[0]
+                )
+                self.assertTrue(any(block.hasFlags(sbf) for sbf in sBFList))
+                break
 
-        # grab a single block from the second assembly, to be altered
-        b2 = list(blocks2)[1]
-        self.assertEqual(b2.p.height, height2)
-        self.assertEqual(b2.p.flux, 50000000000.0)
-        self.assertIsNone(b2.p.mgFlux)
-        self.assertEqual(b2.p.power, 0.0)
-        self.assertEqual(b2.p.pdens, 0.0)
-        volume2 = 6074.356
-        self.assertAlmostEqual(b2.getVolume(), volume2, delta=0.1)
-
-        # split the the block into two of half the heights
-        b20 = copy.deepcopy(b2)
-        b21 = copy.deepcopy(b2)
-        b20.setHeight(height2 / 2)
-        b21.setHeight(height2 / 2)
-        self.assertAlmostEqual(b20.getVolume(), volume2 / 2, delta=0.1)
-        self.assertAlmostEqual(b21.getVolume(), volume2 / 2, delta=0.1)
-
-        # give the two new (smaller) blocks some power/pdens
-        b20.p.power = 1000
-        b21.p.power = 2000
-        b20.p.pdens = b20.p.power / b20.getVolume()
-        b21.p.pdens = b21.p.power / b21.getVolume()
-        self.assertEqual(b20.p.power, 1000.0)
-        self.assertEqual(b21.p.power, 2000.0)
-        self.assertAlmostEqual(b20.p.pdens, 0.3292, delta=0.1)
-        self.assertAlmostEqual(b21.p.pdens, 0.6585, delta=0.1)
-
-        # give the second assembly the new blocks
-        a2.removeAll()
-        a2.setChildren([blocks2[0]] + [b20, b21] + blocks2[2:])
-
-        # validate the situation is as you'd expect
-        self.assertEqual(len(a1.getBlocks()), 5)
-        self.assertEqual(len(a2.getBlocks()), 6)
-
-        # validate the power before the swap
-        power1 = [b.p.power for b in a1.getBlocks()]
-        power2 = [b.p.power for b in a2.getBlocks()]
-
-        self.assertEqual(power1, [0, 0, 0, 0, 0])
-        self.assertEqual(power2, [0, 1000, 2000, 0, 0, 0])
-
-        # validate the power density before the swap
-        for b in a1.getBlocks():
-            self.assertEqual(b.p.pdens, 0.0)
-
-        pdens2i = [0, 0.32925299379047496, 0.6585059875809499, 0, 0, 0]
-        for i, b in enumerate(a2.getBlocks()):
-            self.assertAlmostEqual(b.p.pdens, pdens2i[i], msg=i)
-
-        # validate the flux before the swap
-        for b in a1.getBlocks():
-            self.assertEqual(b.p.flux, 50000000000.0)
-
-        for b in a2.getBlocks():
-            self.assertEqual(b.p.flux, 50000000000.0)
-
-        # do the swap, using averages
+        # try to swap stationary blocks between assembly 1 and 2
         fh = fuelHandlers.FuelHandler(self.o)
-        fh._swapFluxParam(a1, a2)
+        with self.assertRaises(ValueError):
+            fh._transferStationaryBlocks(a1, a2)
 
-        # grab the power after the swap
-        power1f = [b.p.power for b in a1.getBlocks()]
-        power2f = [b.p.power for b in a2.getBlocks()]
+        # re-initialize assemblies
+        self.setUp()
+        assems = self.r.core.getAssemblies(Flags.FUEL)
+        a1 = assems[1]
+        a2 = assems[2]
 
-        # validate the swap worked
-        self.assertEqual(len(a1.getBlocks()), 5)
-        self.assertEqual(len(a2.getBlocks()), 6)
+        # move location of a stationary flag in assembly 1
+        for block in a1:
+            if any(block.hasFlags(sbf) for sbf in sBFList):
+                # change flag of first identified stationary block to fuel
+                a1[block.spatialLocator.k].setType(
+                    a1[block.spatialLocator.k].p.type, Flags.FUEL
+                )
+                self.assertTrue(a1[block.spatialLocator.k].hasFlags(Flags.FUEL))
+                # change next or previous block flag to stationary flag
+                try:
+                    a1[block.spatialLocator.k + 1].setType(
+                        a1[block.spatialLocator.k + 1].p.type, sBFList[0]
+                    )
+                    self.assertTrue(
+                        any(
+                            a1[block.spatialLocator.k + 1].hasFlags(sbf)
+                            for sbf in sBFList
+                        )
+                    )
+                except:
+                    a1[block.spatialLocator.k - 1].setType(
+                        a1[block.spatialLocator.k - 1].p.type, sBFList[0]
+                    )
+                    self.assertTrue(
+                        any(
+                            a1[block.spatialLocator.k - 1].hasFlags(sbf)
+                            for sbf in sBFList
+                        )
+                    )
+                break
 
-        self.assertEqual(power1f, [0, 3000, 0, 0, 0])
-        self.assertEqual(power2f, [0, 0, 0, 0, 0, 0])
+        # try to swap stationary blocks between assembly 1 and 2
+        with self.assertRaises(ValueError):
+            fh._transferStationaryBlocks(a1, a2)
 
-        # validate the power density after the swap
-        pdens1f = [0, 0.4938794906857124, 0, 0, 0]
-        for i, b in enumerate(a1.getBlocks()):
-            self.assertAlmostEqual(b.p.pdens, pdens1f[i], msg=i)
+    def test_dischargeSwap(self):
+        """
+        Test the dischargeSwap method.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
 
-        for i, b in enumerate(a2.getBlocks()):
-            self.assertAlmostEqual(b.p.pdens, 0, msg=i)
+        # grab an arbitrary fuel assembly from the core and from the SFP
+        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
 
-        # validate the flux after the swap
-        for b in a1.getBlocks():
-            self.assertEqual(b.p.flux, 50000000000.0)
+        # grab the stationary blocks pre swap
+        a1PreSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
 
-        for b in a2.getBlocks():
-            self.assertEqual(b.p.flux, 50000000000.0)
+        a2PreSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        # test discharging assembly 1 and replacing with assembly 2
+        fh = fuelHandlers.FuelHandler(self.o)
+        fh.dischargeSwap(a2, a1)
+        self.assertTrue(a1.getLocation() in a1.NOT_IN_CORE)
+        self.assertTrue(a2.getLocation() not in a2.NOT_IN_CORE)
+
+        # grab the stationary blocks post swap
+        a1PostSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        a2PostSwapStationaryBlocks = [
+            [block.getName(), block.spatialLocator.k]
+            for block in a2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+
+        # validate the stationary blocks have swapped locations correctly and are aligned
+        self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
+        self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
+
+    def test_dischargeSwapIncompatibleStationaryBlocks(self):
+        """
+        Test the _transferStationaryBlocks method
+        for the case where the input assemblies have
+        different numbers as well as unaligned locations of stationary blocks.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab an arbitrary fuel assembly from the core and from the SFP
+        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+
+        # change a block in assembly 1 to be flagged as a stationary block
+        for block in a1:
+            if not any(block.hasFlags(sbf) for sbf in sBFList):
+                a1[block.spatialLocator.k].setType(
+                    a1[block.spatialLocator.k].p.type, sBFList[0]
+                )
+                self.assertTrue(any(block.hasFlags(sbf) for sbf in sBFList))
+                break
+
+        # try to discharge assembly 1 and replace with assembly 2
+        fh = fuelHandlers.FuelHandler(self.o)
+        with self.assertRaises(ValueError):
+            fh.dischargeSwap(a2, a1)
+
+        # re-initialize assemblies
+        self.setUp()
+        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+
+        # move location of a stationary flag in assembly 1
+        for block in a1:
+            if any(block.hasFlags(sbf) for sbf in sBFList):
+                # change flag of first identified stationary block to fuel
+                a1[block.spatialLocator.k].setType(
+                    a1[block.spatialLocator.k].p.type, Flags.FUEL
+                )
+                self.assertTrue(a1[block.spatialLocator.k].hasFlags(Flags.FUEL))
+                # change next or previous block flag to stationary flag
+                try:
+                    a1[block.spatialLocator.k + 1].setType(
+                        a1[block.spatialLocator.k + 1].p.type, sBFList[0]
+                    )
+                    self.assertTrue(
+                        any(
+                            a1[block.spatialLocator.k + 1].hasFlags(sbf)
+                            for sbf in sBFList
+                        )
+                    )
+                except:
+                    a1[block.spatialLocator.k - 1].setType(
+                        a1[block.spatialLocator.k - 1].p.type, sBFList[0]
+                    )
+                    self.assertTrue(
+                        any(
+                            a1[block.spatialLocator.k - 1].hasFlags(sbf)
+                            for sbf in sBFList
+                        )
+                    )
+                break
+
+        # try to discharge assembly 1 and replace with assembly 2
+        with self.assertRaises(ValueError):
+            fh.dischargeSwap(a2, a1)
 
 
 class TestFuelPlugin(unittest.TestCase):

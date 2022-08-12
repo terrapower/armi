@@ -17,6 +17,7 @@ from statistics import mean
 from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
+from armi.reactor.components import UnshapedComponent
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -268,6 +269,8 @@ class AxialExpansionChanger:
         -----
         - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
         - update average core mesh values with call to r.core.updateAxialMesh()
+        - oldMesh will be None during initial core construction at processLoading as it has not yet
+          been set.
         """
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
@@ -276,9 +279,10 @@ class AxialExpansionChanger:
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()
-        runLog.extra("Updated r.core.p.axialMesh (old, new)")
-        for old, new in zip(oldMesh, r.core.p.axialMesh):
-            runLog.extra(f"{old:.6e}\t{new:.6e}")
+        if oldMesh:
+            runLog.extra("Updated r.core.p.axialMesh (old, new)")
+            for old, new in zip(oldMesh, r.core.p.axialMesh):
+                runLog.extra(f"{old:.6e}\t{new:.6e}")
 
 
 def _conserveComponentMass(b, oldHeight, oldVolume):
@@ -485,22 +489,32 @@ def _determineLinked(componentA, componentB):
         and isinstance(componentA, type(componentB))
         and (componentA.getDimension("mult") == componentB.getDimension("mult"))
     ):
-        idA, odA = (
-            componentA.getCircleInnerDiameter(cold=True),
-            componentA.getBoundingCircleOuterDiameter(cold=True),
-        )
-        idB, odB = (
-            componentB.getCircleInnerDiameter(cold=True),
-            componentB.getBoundingCircleOuterDiameter(cold=True),
-        )
-
-        biggerID = max(idA, idB)
-        smallerOD = min(odA, odB)
-        if biggerID >= smallerOD:
-            # one object fits inside the other
+        if isinstance(componentA, UnshapedComponent):
+            runLog.warning(
+                f"Components {componentA} and {componentB} are UnshapedComponents "
+                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                "nor is it physical to do so. Instead of crashing and raising an error, "
+                "they are going to be assumed to not be linked.",
+                single=True,
+            )
             linked = False
         else:
-            linked = True
+            idA, odA = (
+                componentA.getCircleInnerDiameter(cold=True),
+                componentA.getBoundingCircleOuterDiameter(cold=True),
+            )
+            idB, odB = (
+                componentB.getCircleInnerDiameter(cold=True),
+                componentB.getBoundingCircleOuterDiameter(cold=True),
+            )
+
+            biggerID = max(idA, idB)
+            smallerOD = min(odA, odB)
+            if biggerID >= smallerOD:
+                # one object fits inside the other
+                linked = False
+            else:
+                linked = True
 
     else:
         linked = False
