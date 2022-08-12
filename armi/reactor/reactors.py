@@ -2261,9 +2261,9 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # Apply mesh snapping for self.parent.blueprints.assemblies
                 # This is stored as a param for assemblies in-core, so only blueprints assemblies are
-                # considereed here. To guarantee mesh snapping will function, makeAxialSnapList
+                # considered here. To guarantee mesh snapping will function, makeAxialSnapList
                 # should be in reference to the assembly with the finest mesh as defined in the blueprints.
-                finestAssemblyMesh = sorted(
+                finestMeshAssembly = sorted(
                     self.parent.blueprints.assemblies.values(),
                     key=lambda a: len(a),
                     reverse=True,
@@ -2271,31 +2271,34 @@ class Core(composites.Composite):
                 for a in self.parent.blueprints.assemblies.values():
                     if a.hasFlags(nonUniformAssems, exact=True):
                         continue
-                    a.makeAxialSnapList(refAssem=finestAssemblyMesh)
+                    a.makeAxialSnapList(refAssem=finestMeshAssembly)
+            if not cs["inputHeightsConsideredHot"]:
+                runLog.header(
+                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
+                )
+                self._applyThermalExpansion(
+                    self.parent.blueprints.assemblies.values(),
+                    dbLoad,
+                    finestMeshAssembly,
+                )
 
         else:
-            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
-                applySubMesh=False
-            )
-            self.p.axialMesh = self.findAllAxialMeshPoints()
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
                     if a.hasFlags(nonUniformAssems, exact=True):
                         continue
                     a.makeAxialSnapList(self.refAssem)
-
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
-                    "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
+                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
                 )
-                axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
-                for a in self.getAssemblies():
-                    if not a.hasFlags(Flags.CONTROL):
-                        axialExpChngr.setAssembly(a)
-                        axialExpChngr.expansionData.computeThermalExpansionFactors()
-                        axialExpChngr.axiallyExpandAssembly(thermal=True)
-                axialExpChngr.manageCoreMesh(self.parent)
+                self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
+
+            self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
+                applySubMesh=False
+            )
+            self.p.axialMesh = self.findAllAxialMeshPoints()
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2315,3 +2318,37 @@ class Core(composites.Composite):
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+
+    def _applyThermalExpansion(
+        self, assems: list, dbLoad: bool, referenceAssembly=None
+    ):
+        """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
+
+        Parameters
+        ----------
+        assems: list
+            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
+        dbLoad: bool
+            boolean to determine if Core::processLoading is loading a database or constructing a Core
+        referenceAssembly: optional, :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            is the thermally expanded assembly whose axial mesh is used to snap the
+            blueprints assemblies axial mesh to
+        """
+        axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                axialExpChngr.setAssembly(a)
+                axialExpChngr.expansionData.computeThermalExpansionFactors()
+                axialExpChngr.axiallyExpandAssembly(thermal=True)
+        # resolve axially disjoint mesh (if needed)
+        if not dbLoad:
+            axialExpChngr.manageCoreMesh(self.parent)
+        elif not self._detailedAxialExpansion:
+            for a in assems:
+                if not a.hasFlags(Flags.CONTROL):
+                    a.setBlockMesh(referenceAssembly.getAxialMesh())
+        # update block BOL heights to reflect hot heights
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a:
+                    b.p.heightBOL = b.getHeight()

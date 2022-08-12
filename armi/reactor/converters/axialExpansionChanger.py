@@ -250,6 +250,8 @@ class AxialExpansionChanger:
         -----
         - if no detailedAxialExpansion, then do "cheap" approach to uniformMesh converter.
         - update average core mesh values with call to r.core.updateAxialMesh()
+        - oldMesh will be None during initial core construction at processLoading as it has not yet
+          been set.
         """
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
@@ -258,9 +260,10 @@ class AxialExpansionChanger:
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()
-        runLog.extra("Updated r.core.p.axialMesh (old, new)")
-        for old, new in zip(oldMesh, r.core.p.axialMesh):
-            runLog.extra(f"{old:.6e}\t{new:.6e}")
+        if oldMesh:
+            runLog.extra("Updated r.core.p.axialMesh (old, new)")
+            for old, new in zip(oldMesh, r.core.p.axialMesh):
+                runLog.extra(f"{old:.6e}\t{new:.6e}")
 
 
 def _conserveComponentMass(b, oldHeight, oldVolume):
