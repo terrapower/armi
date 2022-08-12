@@ -17,7 +17,7 @@
 import os
 from statistics import mean
 import unittest
-from numpy import linspace, ones, array, vstack, zeros
+from numpy import linspace, array, vstack, zeros
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
@@ -39,6 +39,7 @@ from armi.reactor.flags import Flags
 from armi import materials
 from armi.utils import units
 from armi.materials import custom
+from armi.tests import mockRunLogs
 
 # set namespace order for materials so that fake HT9 material can be found
 materials.setMaterialNamespaceOrder(
@@ -478,6 +479,12 @@ class TestConservation(Base, unittest.TestCase):
             msg="ACLP ztop has changed. It should not with fuel component only expansion!",
         )
 
+    def test_reset(self):
+        self.obj.setAssembly(self.a)
+        self.obj.reset()
+        self.assertIsNone(self.obj.linked)
+        self.assertIsNone(self.obj.expansionData)
+
 
 class TestManageCoreMesh(unittest.TestCase):
     """verify that manage core mesh unifies the mesh for detailedAxialExpansion: False"""
@@ -640,6 +647,15 @@ class TestExceptions(Base, unittest.TestCase):
         compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
         self.assertFalse(_determineLinked(compA, compB))
 
+    def test_getLinkedComponents(self):
+        """test for multiple component axial linkage"""
+        shieldBlock = self.obj.linked.a[0]
+        shieldComp = shieldBlock[0]
+        shieldComp.setDimension("od", 0.785, cold=True)
+        with self.assertRaises(RuntimeError) as cm:
+            self.obj.linked._getLinkedComponents(shieldBlock, shieldComp)
+            self.assertEqual(cm.exception, 3)
+
 
 class TestDetermineTargetComponent(unittest.TestCase):
     """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
@@ -702,12 +718,14 @@ class TestDetermineTargetComponent(unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+        # check that target component is explicitly specified
         b.setAxialExpTargetComp(dummy)
         self.assertEqual(
             b.axialExpTargetComponent,
             dummy,
         )
 
+        # check that target component is stored on expansionData object correctly
         self.obj.expansionData._componentDeterminesBlockHeight[
             b.axialExpTargetComponent
         ] = True
@@ -716,6 +734,24 @@ class TestDetermineTargetComponent(unittest.TestCase):
                 b.axialExpTargetComponent
             ]
         )
+
+        # get coverage for runLog statements on origination of target components
+        # axial exp changer skips formal expansion of the top most block so we
+        # need three blocks.
+        b0 = _buildTestBlock("b0", "FakeMat", 25.0, 10.0)
+        b2 = _buildTestBlock("b1", "FakeMat", 25.0, 10.0)
+        assembly = HexAssembly("testAssemblyType")
+        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid.armiObject = assembly
+        assembly.add(b0)
+        assembly.add(b)
+        assembly.add(b2)
+        assembly.calculateZCoords()
+        assembly.reestablishBlockOrder()
+        with mockRunLogs.BufferLog() as mock:
+            self.obj.performPrescribedAxialExpansion(assembly, [dummy], [0.01])
+            self.assertIn("(blueprints defined)", mock._outputStream)
+            self.assertIn("(inferred)", mock._outputStream)
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
