@@ -446,6 +446,7 @@ def getPinDesignTable(core):
     """
     designInfo = collections.defaultdict(list)
 
+    tableRows = newReports.Table("Pin Design", header=None)
     try:
         for b in core.getBlocks(Flags.FUEL):
             fuel = b.getComponent(Flags.FUEL)
@@ -477,7 +478,6 @@ def getPinDesignTable(core):
 
         # assumption made that all lists contain only numerical data
         designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
-        tableRows = newReports.Table("Pin Design", header=None)
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():
             dim = "{0:10s}".format(key)
@@ -494,13 +494,11 @@ def getPinDesignTable(core):
         tableRows.addRow(
             ["Plenum Height (cm):", "{0:.2f}".format(a.getHeight(Flags.PLENUM))]
         )
-
-        return tableRows
     except Exception as error:  # pylint: disable=broad-except
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 
-    return None
+    return tableRows
 
 
 def insertAreaFractionsReport(block, report):

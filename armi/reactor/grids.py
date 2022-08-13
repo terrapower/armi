@@ -1254,13 +1254,14 @@ class CartesianGrid(Grid):
     def getMinimumRings(self, n):
         """Return the minimum number of rings needed to fit ``n`` objects."""
         numPositions = 0
+        ring = 0
         for ring in itertools.count(1):
             ringPositions = self.getPositionsInRing(ring)
             numPositions += ringPositions
             if numPositions >= n:
-                return ring
+                break
 
-        return None
+        return ring
 
     def getPositionsInRing(self, ring):
         """

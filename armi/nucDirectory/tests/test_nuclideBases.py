@@ -273,6 +273,11 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
             self.assertTrue(nb.isHeavyMetal())
 
+    def test_getDecay(self):
+        nb = list(nuclideBases.where(lambda nn: nn.z == 89))[0]
+        # This test is a bit boring, because the test nuclide library is a bit boring.
+        self.assertIsNone(nb.getDecay("sf"))
+
     def test_getEndfMatNum(self):
         self.assertEqual(nuclideBases.byName["U235"].getEndfMatNum(), "9228")
         self.assertEqual(nuclideBases.byName["U238"].getEndfMatNum(), "9237")

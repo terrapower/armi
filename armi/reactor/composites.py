@@ -839,15 +839,14 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getVolumeFraction(self):
         """Return the volume fraction that this object takes up in its parent."""
-        err = f"No parent is defined for {self}. Cannot compute its volume fraction."
-        if self.parent is None:
-            raise ValueError(err)
+        if self.parent is not None:
+            for child, frac in self.parent.getVolumeFractions():
+                if child is self:
+                    return frac
 
-        for child, frac in self.parent.getVolumeFractions():
-            if child is self:
-                return frac
-
-        raise ValueError(err)
+        raise ValueError(
+            f"No parent is defined for {self}. Cannot compute its volume fraction."
+        )
 
     def getMaxArea(self):
         """ "

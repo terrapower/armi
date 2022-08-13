@@ -177,7 +177,8 @@ class Group:
             runLog.warning(
                 "Given name {} not present in report group {}".format(name, self.title)
             )
-            return None
+
+        return None
 
     def __setitem__(self, name, value):
         self.data[name] = value
