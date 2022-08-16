@@ -85,7 +85,12 @@ class AxialExpansionChanger:
         self.axiallyExpandAssembly(thermal=False)
 
     def performThermalAxialExpansion(
-        self, a, tempGrid: list, tempField: list, setFuel=True
+        self,
+        a,
+        tempGrid: list,
+        tempField: list,
+        setFuel: bool = True,
+        updateNDensForRadialExp: bool = True,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field
 
@@ -102,7 +107,9 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
+        self.expansionData.updateComponentTempsBy1DTempField(
+            tempGrid, tempField, updateNDensForRadialExp
+        )
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly(thermal=True)
 

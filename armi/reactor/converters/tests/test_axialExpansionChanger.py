@@ -280,7 +280,11 @@ class TestConservation(Base, unittest.TestCase):
         )
         for idt in range(self.temp.tempSteps):
             self.obj.performThermalAxialExpansion(
-                self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
+                self.a,
+                self.temp.tempGrid,
+                self.temp.tempField[idt, :],
+                setFuel=True,
+                updateNDensForRadialExp=False,
             )
             self._getConservationMetrics(self.a)
 
@@ -299,7 +303,9 @@ class TestConservation(Base, unittest.TestCase):
         for temp in isothermalTempList:
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
+            axialExpChngr.performThermalAxialExpansion(
+                a, tempGrid, tempField, updateNDensForRadialExp=False
+            )
             if temp == 25.0:
                 for new, old in zip(
                     a.getAxialMesh()[:-1], originalMesh[:-1]
@@ -341,7 +347,9 @@ class TestConservation(Base, unittest.TestCase):
         for temp in isothermalTempList:
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
+            axialExpChngr.performThermalAxialExpansion(
+                a, tempGrid, tempField, updateNDensForRadialExp=False
+            )
             if temp == 250.0:
                 for new, old in zip(
                     a.getAxialMesh()[:-1], originalMesh[:-1]
