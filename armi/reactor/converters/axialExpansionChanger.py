@@ -184,7 +184,7 @@ class AxialExpansionChanger:
                             c, growFrac
                         )
                     )
-                    if thermal and self.expansionData.componentReferenceHeight:
+                    if thermal and c in self.expansionData.componentReferenceHeight:
                         blockHeight = self.expansionData.componentReferenceHeight[c]
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
@@ -598,30 +598,43 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self.componentReferenceHeight[c] = b.getHeight()
-                # store the temperature from previous state (i.e., reference temp)
-                self.componentReferenceTemperature[c] = c.temperatureInC
-                # set component volume to be evaluated at reference temp
-                c.p.volume = (
-                    c.getArea(cold=self.componentReferenceTemperature[c])
-                    * c.parent.getHeight()
-                )
-                # DO NOT use self.setTemperature(). This calls changeNDensByFactor(f)
-                # and ruins mass conservation via number densities. Instead, set manually.
-                c.temperatureInC = blockAveTemp
+                self.updateComponentTemp(b, c, blockAveTemp)
+
+    def updateComponentTemp(
+        self, b, c, temp: float, updateNDensForRadialExp: bool = True
+    ):
+        """update component temperatures with a provided temperature"""
+        self.componentReferenceHeight[c] = b.getHeight()
+        # store the temperature from previous state (i.e., reference temp)
+        self.componentReferenceTemperature[c] = c.temperatureInC
+        # set component volume to be evaluated at reference temp
+        c.p.volume = (
+            c.getArea(cold=self.componentReferenceTemperature[c]) * b.getHeight()
+        )
+        if not updateNDensForRadialExp:
+            # Set manually to avoid the call to changeNDensByFactor(f) within c.setTemperature().
+            # This isolates the number density changes due to the temp change to just the axial dim.
+            c.temperatureInC = temp
+        else:
+            c.setTemperature(temp)
 
     def computeThermalExpansionFactors(self):
         """computes expansion factors for all components via thermal expansion"""
 
         for b in self._a:
             for c in b:
-                if self.componentReferenceTemperature:
+                if c in self.componentReferenceTemperature:
                     self._expansionFactors[c] = (
                         c.getThermalExpansionFactor(
                             T0=self.componentReferenceTemperature[c]
                         )
                         - 1.0
                     )
+                elif self.componentReferenceTemperature:
+                    # we want expansion factors for the self._a relative
+                    # not relative to Tinput. But there isn't a componentReferenceTemperature
+                    # for this component, so we'll assume that the expansion factor is 0.0.
+                    self._expansionFactors[c] = 0.0
                 else:
                     self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
