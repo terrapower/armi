@@ -545,7 +545,9 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self._expansionFactors[c] = p
 
-    def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
+    def updateComponentTempsBy1DTempField(
+        self, tempGrid, tempField, updateNDensForRadialExp: bool = True
+    ):
         """assign a block-average axial temperature to components
 
         Parameters
@@ -554,19 +556,15 @@ class ExpansionData:
             1D axial temperature grid (i.e., physical locations where temp is stored)
         tempField : numpy array
             temperature values along grid
+        updateNDensForRadialExp: optional, bool
+            boolean to determine whether or not the component number densities should be updated
+            to account for radial expansion/contraction
 
         Notes
         -----
-        - maps a 1D axial temperature distribution to components
-        - searches for temperatures that fall within the bounds of a block,
-          averages them, and assigns them as appropriate
-        - Updating component volume is functionally very similar to c.computeVolume().
-          However, this implementation differs in the temperatures that get used to compute dimensions.
-            - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
-              cold=False results in self.getDimension to use the cold/input component temperature.
-            - However, we want the temperature from the previous state to be used (the reference temperature).
-              So, here we manually call c.getArea() and pass in the reference temperature. This ensures that
-              as the component is expanded its mass is conserved.
+        - given a 1D axial temperature grid and distribution, searches for temperatures that fall
+          within the bounds of a block, and averages them
+        - this average temperature is then passed to self.updateComponentTemp()
 
         Raises
         ------
@@ -598,12 +596,35 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self.updateComponentTemp(b, c, blockAveTemp)
+                self.updateComponentTemp(b, c, blockAveTemp, updateNDensForRadialExp)
 
     def updateComponentTemp(
         self, b, c, temp: float, updateNDensForRadialExp: bool = True
     ):
-        """update component temperatures with a provided temperature"""
+        """update component temperatures with a provided temperature
+
+        Parameters
+        ----------
+        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+            parent block for c
+        c : py:class:`Component <armi.reactor.components.component.Component>` object
+            component object to which the temperature, temp, is to be applied
+        temp : float
+            new component temperature in C
+        updateNDensForRadialExp : bool
+            boolean to determine whether or not the component number densities should be updated
+            to account for radial expansion/contraction
+
+        Notes
+        -----
+        - Updating component volume is functionally very similar to c.computeVolume().
+          However, this implementation differs in the temperatures that get used to compute dimensions.
+            - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
+              cold=False results in self.getDimension to use the cold/input component temperature.
+            - However, we want the temperature from the previous state to be used (the reference temperature).
+              So, here we manually call c.getArea() and pass in the reference temperature. This ensures that
+              as the component is expanded its mass is conserved.
+        """
         self.componentReferenceHeight[c] = b.getHeight()
         # store the temperature from previous state (i.e., reference temp)
         self.componentReferenceTemperature[c] = c.temperatureInC
