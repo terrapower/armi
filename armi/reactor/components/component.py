@@ -329,13 +329,14 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def applyMaterialMassFracsToNumberDensities(self):
         """
-        Set number densities for the component based on material mass fractions using hot temperatures.
+        Set the hot number densities for the component based on material mass fractions/density.
 
         Notes
         -----
-        - the density returned accounts for the radial expansion of the component
+        - the density returned accounts for the expansion of the component
           due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - axial expansion effects are not included here.
+        - After the expansion, the density of the component should reflect the 3d
+          density of the material
 
         See Also
         --------

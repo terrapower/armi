@@ -495,21 +495,27 @@ class TestCircle(TestShapedComponent):
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
 
-    def test_demonstrateWaysToExpand(self):
-        """Demonstrate that material is conserved at during expansion"""
-        # when comparing to 3D density, the comparison is not quite correct.
-        # We need a bigger delta, this will be investigated/fixed in another PR
-        biggerDelta = 0.01  # g/cc
 
-        ###########
-        #   # 1 height taken as hot height (how components defined by default)
-        ###########
+class TestComponentExpansion(unittest.TestCase):
+    # when comparing to 3D density, the comparison is not quite correct.
+    # We need a bigger delta, this will be investigated/fixed in another PR
+    biggerDelta = 0.01  # g/cc
+    tWarm = 50
+    tHot = 500
+
+    def test_ExpansionConservationHotHeightDefined(self):
+        """
+        Demonstrate tutorial for how to expand and relation ships conserved at during expansion.
+
+        Notes
+        -----
+        - height taken as hot height and show how quantity is conserved with
+          inputHeightsConsideredHot = True (the default)
+        """
         hotHeight = 1.0
-        tWarm = 50
         coldOuterDiameter = 1.0
-        circle1 = Circle("circle", "HT9", 20, tWarm, coldOuterDiameter)
-        tHot = 500
-        circle2 = Circle("circle", "HT9", 20, tHot, coldOuterDiameter)
+        circle1 = Circle("circle", "HT9", 20, self.tWarm, coldOuterDiameter)
+        circle2 = Circle("circle", "HT9", 20, self.tHot, coldOuterDiameter)
 
         # mass density is proportional to Fe number density and derived from
         # all the number densities and atomic masses
@@ -549,7 +555,7 @@ class TestCircle(TestShapedComponent):
             self.assertAlmostEqual(
                 circle.getMassDensity(),
                 circle.material.density3(Tc=circle.temperatureInC),
-                delta=biggerDelta,
+                delta=self.biggerDelta,
             )
         # Change temp forward and backward and show equal
         oldArea = circle1.getArea()
@@ -573,7 +579,7 @@ class TestCircle(TestShapedComponent):
 
         # undo the old applyHotHeightDensityReduction
         circle1.changeNDensByFactor(factorToUndoHotHeight)
-        circle1.setTemperature(tHot)
+        circle1.setTemperature(self.tHot)
         circle1.applyHotHeightDensityReduction()  # apply at new temp
 
         # now its density is same as hot component
@@ -592,17 +598,17 @@ class TestCircle(TestShapedComponent):
         # you can calculate the height exp factor directly this way
         self.assertAlmostEqual(
             circle1.getThermalExpansionFactor() / factorToUndoHotHeight,
-            circle1.getThermalExpansionFactor(Tc=circle1.temperatureInC, T0=tWarm),
+            circle1.getThermalExpansionFactor(Tc=circle1.temperatureInC, T0=self.tWarm),
         )
 
         self.assertAlmostEqual(
             circle1.getMassDensity(),
             circle1.material.density3(Tc=circle2.temperatureInC),
-            delta=biggerDelta,
+            delta=self.biggerDelta,
         )
         # change back to old temp
         circle1.changeNDensByFactor(circle1.getThermalExpansionFactor())
-        circle1.setTemperature(tWarm)
+        circle1.setTemperature(self.tWarm)
         circle1.applyHotHeightDensityReduction()
 
         # check for consistency
@@ -612,21 +618,26 @@ class TestCircle(TestShapedComponent):
             mass1, circle1.getMassDensity() * circle1.getArea() * hotHeight
         )
 
-        ###########
-        #   # 2 height taken as cold height and show how quantity is
-        #       conserved with inputHeightsConsideredHot = False
-        ###########
+    def test_ExpansionConservationColdHeightDefined(self):
+        """
+        Demonstrate that material is conserved at during expansion
+
+        Notes
+        -----
+        - height taken as cold height and show how quantity is conserved with
+          inputHeightsConsideredHot = False
+        """
         coldHeight = 1.0
-        circle1 = Circle("circle", "HT9", 20, tWarm, 1.0)
-        circle2 = Circle("circle", "HT9", 20, tHot, 1.0)
+        circle1 = Circle("circle", "HT9", 20, self.tWarm, 1.0)
+        circle2 = Circle("circle", "HT9", 20, self.tHot, 1.0)
         # same as 1 but we will make like 2
-        circle1AdjustTo2 = Circle("circle", "HT9", 20, tWarm, 1.0)
+        circle1AdjustTo2 = Circle("circle", "HT9", 20, self.tWarm, 1.0)
 
         # make it hot like 2
         circle1AdjustTo2.changeNDensByFactor(
             circle1AdjustTo2.getThermalExpansionFactor()
         )
-        circle1AdjustTo2.setTemperature(tHot)
+        circle1AdjustTo2.setTemperature(self.tHot)
         circle1AdjustTo2.applyHotHeightDensityReduction()
         # check that its like 2
         self.assertAlmostEqual(
@@ -639,7 +650,7 @@ class TestCircle(TestShapedComponent):
             self.assertAlmostEqual(
                 circle.getMassDensity(),
                 circle.material.density3(Tc=circle.temperatureInC),
-                delta=biggerDelta,
+                delta=self.biggerDelta,
             )
             # total mass consistent between hot and cold
             # Hot height will be taller
@@ -649,7 +660,7 @@ class TestCircle(TestShapedComponent):
                 * circle.getArea(cold=True)
                 * circle.material.density3(Tc=circle.inputTemperatureInC),
                 hotHeight * circle.getArea() * circle.getMassDensity(),
-                delta=biggerDelta,
+                delta=self.biggerDelta,
             )
 
 
