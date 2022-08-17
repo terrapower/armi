@@ -339,20 +339,9 @@ class TestGriddedBlock(unittest.TestCase):
             delta=biggerDelta,
         )
 
-        # This should be equal, but block construction calls applyHotHeightDensityReduction
-        # while programmatic construction allows components to exist in a state where
-        # their density is not consistent with material density.
-        self.assertNotAlmostEqual(
+        self.assertAlmostEqual(
             clad.getMassDensity(),
             programaticClad.getMassDensity(),
-            delta=biggerDelta,
-        )
-        # its off by a factor of thermal expansion
-        self.assertNotAlmostEqual(
-            clad.getMassDensity(),
-            programaticClad.getMassDensity()
-            * programaticClad.getThermalExpansionFactor(),
-            delta=biggerDelta,
         )
 
 
