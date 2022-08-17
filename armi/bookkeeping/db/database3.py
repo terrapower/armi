@@ -891,6 +891,10 @@ class Database3(database.Database):
                     pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
                 ).read()
             else:
+                runLog.warning(
+                    f"Blueprints file not found at {bpPath}"
+                    "not writing blueprints to database."
+                )
                 bpString = ""
 
         self.h5db["inputs/settings"] = csString

@@ -2257,30 +2257,32 @@ class Core(composites.Composite):
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
             # but for DB load, this is not called so it must be here.
             # pylint: disable=protected-access
-            self.parent.blueprints._prepConstruction(cs)
-            if not cs["detailedAxialExpansion"]:
-                # Apply mesh snapping for self.parent.blueprints.assemblies
-                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
-                # considered here. To guarantee mesh snapping will function, makeAxialSnapList
-                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
-                finestMeshAssembly = sorted(
-                    self.parent.blueprints.assemblies.values(),
-                    key=lambda a: len(a),
-                    reverse=True,
-                )[0]
-                for a in self.parent.blueprints.assemblies.values():
-                    if a.hasFlags(nonUniformAssems, exact=True):
-                        continue
-                    a.makeAxialSnapList(refAssem=finestMeshAssembly)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(
-                    self.parent.blueprints.assemblies.values(),
-                    dbLoad,
-                    finestMeshAssembly,
-                )
+            if not self.parent.blueprints:
+                # we don't require reactors to have blueprints
+                self.parent.blueprints._prepConstruction(cs)
+                if not cs["detailedAxialExpansion"]:
+                    # Apply mesh snapping for self.parent.blueprints.assemblies
+                    # This is stored as a param for assemblies in-core, so only blueprints assemblies are
+                    # considered here. To guarantee mesh snapping will function, makeAxialSnapList
+                    # should be in reference to the assembly with the finest mesh as defined in the blueprints.
+                    finestMeshAssembly = sorted(
+                        self.parent.blueprints.assemblies.values(),
+                        key=lambda a: len(a),
+                        reverse=True,
+                    )[0]
+                    for a in self.parent.blueprints.assemblies.values():
+                        if a.hasFlags(nonUniformAssems, exact=True):
+                            continue
+                        a.makeAxialSnapList(refAssem=finestMeshAssembly)
+                if not cs["inputHeightsConsideredHot"]:
+                    runLog.header(
+                        "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
+                    )
+                    self._applyThermalExpansion(
+                        self.parent.blueprints.assemblies.values(),
+                        dbLoad,
+                        finestMeshAssembly,
+                    )
 
         else:
             if not cs["detailedAxialExpansion"]:
