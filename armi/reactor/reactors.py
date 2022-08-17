@@ -2253,12 +2253,13 @@ class Core(composites.Composite):
 
         nonUniformAssems = [Flags.fromString(t) for t in cs["nonUniformAssemFlags"]]
         if dbLoad:
-            # reactor.blueprints.assemblies need to be populated
-            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
-            # but for DB load, this is not called so it must be here.
-            # pylint: disable=protected-access
-            if not self.parent.blueprints:
-                # we don't require reactors to have blueprints
+            # we don't require reactors to have blueprints
+            if self.parent.blueprints:
+
+                # reactor.blueprints.assemblies need to be populated
+                # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
+                # but for DB load, this is not called so _prepConstruction must be here.
+                # pylint: disable=protected-access
                 self.parent.blueprints._prepConstruction(cs)
                 if not cs["detailedAxialExpansion"]:
                     # Apply mesh snapping for self.parent.blueprints.assemblies
