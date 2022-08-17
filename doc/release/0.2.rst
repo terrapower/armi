@@ -46,6 +46,7 @@ Bug fixes
 #. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
 #. Bug fix in ``armi/reactor/components/component.py::getReac``
 #. Store thermally expanded block heights at BOL (via ``b.p.heightBOL``) when thermally expanding assemblies in ``armi/reactor/reactors.py::Core::processLoading``.
+#. Fixed bug where components were different if initialized through blueprints vs init (bug active for ~ 2 months).
 #. TBD
 
 
