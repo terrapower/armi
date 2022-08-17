@@ -2267,7 +2267,6 @@ class MassConservationTests(unittest.TestCase):
         and hot height.
         """
         fuel = self.b.getComponent(Flags.FUEL)
-        fuel.applyHotHeightDensityReduction()
         # set ref (input/cold) temperature.
         Thot = fuel.temperatureInC
         Tcold = fuel.inputTemperatureInC
