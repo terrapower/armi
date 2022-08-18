@@ -493,6 +493,35 @@ class TestConservation(Base, unittest.TestCase):
         self.assertIsNone(self.obj.linked)
         self.assertIsNone(self.obj.expansionData)
 
+    def test_computeThermalExpansionFactors(self):
+        """ensure expansion factors are as expected"""
+        self.obj.setAssembly(self.a)
+        stdThermExpFactor = {}
+        newTemp = 500.0
+        # apply new temp to the pin and clad components of each block
+        for b in self.a:
+            for c in b[0:2]:
+                stdThermExpFactor[c] = c.getThermalExpansionFactor() - 1.0
+                self.obj.expansionData.updateComponentTemp(b, c, newTemp)
+
+        self.obj.expansionData.computeThermalExpansionFactors()
+
+        # skip dummy block, it's just coolant and doesn't expand.
+        for b in self.a[:-1]:
+            for ic, c in enumerate(b):
+                if ic <= 1:
+                    self.assertNotEqual(
+                        stdThermExpFactor[c],
+                        self.obj.expansionData.getExpansionFactor(c),
+                        msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
+                    )
+                else:
+                    self.assertEqual(
+                        self.obj.expansionData.getExpansionFactor(c),
+                        0.0,
+                        msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
+                    )
+
 
 class TestManageCoreMesh(unittest.TestCase):
     """verify that manage core mesh unifies the mesh for detailedAxialExpansion: False"""

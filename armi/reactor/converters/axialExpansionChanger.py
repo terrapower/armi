@@ -639,31 +639,25 @@ class ExpansionData:
             new component temperature in C
         updateNDensForRadialExp : bool
             boolean to determine whether or not the component number densities should be updated
-            to account for radial expansion/contraction
+            to account for the radial expansion/contraction associated with the new temperature
 
         Notes
         -----
-        - Updating component volume is functionally very similar to c.computeVolume().
-          However, this implementation differs in the temperatures that get used to compute dimensions.
-            - In c.getArea() -> c.getComponentArea(cold=cold) -> self.getDimension(str, cold=cold),
-              cold=False results in self.getDimension to use the cold/input component temperature.
-            - However, we want the temperature from the previous state to be used (the reference temperature).
-              So, here we manually call c.getArea() and pass in the reference temperature. This ensures that
-              as the component is expanded its mass is conserved.
+        - "reference" height and temperature are the current states; i.e. before
+           1) the new temperature, temp, is applied to the component, and
+           2) the component is axially expanded
         """
         self.componentReferenceHeight[c] = b.getHeight()
-        # store the temperature from previous state (i.e., reference temp)
         self.componentReferenceTemperature[c] = c.temperatureInC
-        # set component volume to be evaluated at reference temp
-        c.p.volume = (
-            c.getArea(cold=self.componentReferenceTemperature[c]) * b.getHeight()
-        )
         if not updateNDensForRadialExp:
-            # Set manually to avoid the call to changeNDensByFactor(f) within c.setTemperature().
+            # Update component temp manually to avoid the call to changeNDensByFactor(f) within c.setTemperature().
             # This isolates the number density changes due to the temp change to just the axial dim.
+            # This is useful for testing.
             c.temperatureInC = temp
+            c.p.volume = c.getArea(cold=True) * b.getHeight()
         else:
             c.setTemperature(temp)
+            c.p.volume = c.getArea(cold=False) * b.getHeight()
 
     def computeThermalExpansionFactors(self):
         """computes expansion factors for all components via thermal expansion"""
@@ -678,9 +672,9 @@ class ExpansionData:
                         - 1.0
                     )
                 elif self.componentReferenceTemperature:
-                    # we want expansion factors for the self._a relative
-                    # not relative to Tinput. But there isn't a componentReferenceTemperature
-                    # for this component, so we'll assume that the expansion factor is 0.0.
+                    # we want expansion factors relative to componentReferenceTemperature not Tinput.
+                    # But for this component there isn't a componentReferenceTemperature,
+                    # so we'll assume that the expansion factor is 0.0.
                     self._expansionFactors[c] = 0.0
                 else:
                     self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
