@@ -729,7 +729,7 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Neutron flux above 100keV at hexagon block corners",
             location=ParamLocation.CORNERS,
-            saveToDB=False,
+            saveToDB=True,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
@@ -739,7 +739,7 @@ def _getNeutronicsBlockParams():
             units=None,
             description="Fraction of flux above 100keV at points within the block",
             location=ParamLocation.CHILDREN,
-            saveToDB=False,
+            saveToDB=True,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
@@ -750,7 +750,7 @@ def _getNeutronicsBlockParams():
             description="displacements per atom at points within the block",
             location=ParamLocation.CHILDREN,
             categories=["cumulative"],
-            saveToDB=False,
+            saveToDB=True,
             default=0.0,
         )
 
@@ -761,7 +761,7 @@ def _getNeutronicsBlockParams():
             units="dpa/s",
             description="Current time derivative of the displacement per atoms at points within the block",
             location=ParamLocation.CHILDREN,
-            saveToDB=False,
+            saveToDB=True,
         )
 
         pb.defParam(
