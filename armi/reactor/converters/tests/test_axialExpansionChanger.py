@@ -810,6 +810,17 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     ):
                         # custom materials don't expand
                         self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+                if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
+                    if not hasCustomMaterial:
+                        # skip blocks of custom material where liner is merged with clad
+                        for cExp in bExp:
+                            if not isinstance(cExp.material, custom.Custom):
+                                self.assertAlmostEqual(
+                                    cExp.material.density3(Tc=cExp.temperatureInC),
+                                    cExp.getMassDensity(),
+                                    delta=0.001, # g/cc
+                                    msg=f"{cExp} {cExp.material} in {bExp} was not at correct density, expansion = {bExp.p.height / bStd.p.height}",
+                                )
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
