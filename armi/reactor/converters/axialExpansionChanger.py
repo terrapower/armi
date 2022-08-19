@@ -16,6 +16,7 @@
 from statistics import mean
 from numpy import array
 from armi import runLog
+from armi.materials import material
 from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
 from armi.utils import densityTools
@@ -184,6 +185,7 @@ class AxialExpansionChanger:
             "for each block in assembly {0}.".format(self.linked.a)
         )
         for ib, b in enumerate(self.linked.a):
+
             runLog.debug(msg="  Block {0}".format(b))
             if thermal:
                 blockHeight = b.p.heightBOL
@@ -195,8 +197,7 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in b:
-
+                for c in _getSolidMaterials(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(
                         msg="      Component {0}, growFrac = {1:.4e}".format(
@@ -299,15 +300,21 @@ class AxialExpansionChanger:
             list containing component volumes pre-expansion
         """
 
+        solidMaterials = _getSolidMaterials(b)
         for ic, c in enumerate(b):
             c.p.volume = oldVolume[ic] * b.p.height / oldHeight
-            growFrac = self.expansionData.getExpansionFactor(c)
-            if growFrac >= 0.0:
-                growth = 1.0 + growFrac
-            else:
-                growth = 1.0 / (1.0 - growFrac)
-            for key in c.getNuclides():
-                c.setNumberDensity(key, c.getNumberDensity(key) / growth)
+            if c in solidMaterials:
+                growFrac = self.expansionData.getExpansionFactor(c)
+                if growFrac >= 0.0:
+                    growth = 1.0 + growFrac
+                else:
+                    growth = 1.0 / (1.0 - growFrac)
+                for key in c.getNuclides():
+                    c.setNumberDensity(key, c.getNumberDensity(key) / growth)
+
+
+def _getSolidMaterials(b):
+    return [c for c in b if not isinstance(c.material, material.Fluid)]
 
 
 def _checkBlockHeight(b):
