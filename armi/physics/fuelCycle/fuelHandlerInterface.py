@@ -14,8 +14,8 @@
 
 """A place for the FuelHandler's Interface"""
 
-from armi import runLog
-from armi import interfaces
+
+from armi import interfaces, runLog
 from armi.utils import plotting
 from armi.physics.fuelCycle import fuelHandlerFactory
 
@@ -34,11 +34,11 @@ class FuelHandlerInterface(interfaces.Interface):
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
+        self.cycle = 0
         # assembly name key, (x, y) values. used for making shuffle arrows.
         self.oldLocations = {}
         # need order due to nature of moves but with fast membership tests
         self.moved = []
-        self.cycle = 0
         # filled during summary of EOC time in years of each cycle (time at which shuffling occurs)
         self.cycleTime = {}
 
@@ -55,11 +55,11 @@ class FuelHandlerInterface(interfaces.Interface):
 
     def interactBOC(self, cycle=None):
         """
-        Move and/or process fuel.
+        Beginning of cycle hook. Initiate all cyclical fuel management processes.
 
-        Also, if requested, first have the lattice physics system update XS.
+        If requested, first have the lattice physics system update XS.
         """
-        # if lattice physics is requested, compute it here instead of after fuel management.
+        # if requested, compute lattice physics here instead of after fuel management.
         # This enables XS to exist for branch searching, etc.
         mc2 = self.o.getInterface(function="latticePhysics")
         if mc2 and self.cs["runLatticePhysicsBeforeShuffling"]:
@@ -71,11 +71,14 @@ class FuelHandlerInterface(interfaces.Interface):
 
         if self.enabled():
             self.manageFuel(cycle)
+        self.validateLocations()
 
     def interactEOC(self, cycle=None):
-        timeYears = self.r.p.time
+        """
+        End of cycle hook. Record cycle time and report number of assemblies in SFP.
+        """
         # keep track of the EOC time in years.
-        self.cycleTime[cycle] = timeYears
+        self.cycleTime[cycle] = self.r.p.time
         runLog.extra(
             "There are {} assemblies in the Spent Fuel Pool".format(
                 len(self.r.core.sfp)
@@ -83,19 +86,21 @@ class FuelHandlerInterface(interfaces.Interface):
         )
 
     def interactEOL(self):
-        """Make reports at EOL"""
+        """
+        End of life hook. Generate operator life shuffle report.
+        """
         self.makeShuffleReport()
 
     def manageFuel(self, cycle):
-        """Perform the fuel management for this cycle."""
+        """
+        Perform the fuel management for a given cycle.
+        """
         fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
-        fh.prepCore()
-        fh.prepShuffleMap()
-        # take note of where each assembly is located before the outage
-        # for mapping after the outage
-        self.r.core.locateAllAssemblies()
-        shuffleFactors, _ = fh.getFactorList(cycle)
-        fh.outage(shuffleFactors)  # move the assemblies around
+        fh.preoutage()
+        ## is the factor list useful at this point?
+        shuffleFactors = fh.getFactorList(cycle)
+        fh.outage(shuffleFactors)
+
         if self.cs["plotShuffleArrows"]:
             arrows = fh.makeShuffleArrows()
             plotting.plotFaceMap(
@@ -107,13 +112,26 @@ class FuelHandlerInterface(interfaces.Interface):
             )
             plotting.close()
 
+    def validateLocations(self):
+        """
+        Check that all assemblies have a unique location in the core.
+        """
+        locations = [
+            assembly.getLocation()
+            for assembly in self.r.core.getAssemblies(includeAll=True)
+            if assembly.getLocation()[:3].isnumeric()
+        ]
+
+        if len(locations) != len(set(locations)):
+            raise ValueError("Two or more assemblies share the same core location")
+
     def makeShuffleReport(self):
         """
         Create a data file listing all the shuffles that occurred in a case.
 
-        This can be used to export shuffling to an external code or to
-        perform explicit repeat shuffling in a restart.
-        It creates a ``*SHUFFLES.txt`` file based on the Reactor.moveList structure
+        This can be used to export shuffling to an external code or to perform
+        explicit repeat shuffling in a restart. It creates a *SHUFFLES.txt file
+        based on the Reactor.moveList structure
 
         See Also
         --------
@@ -123,10 +141,9 @@ class FuelHandlerInterface(interfaces.Interface):
         fname = self.cs.caseTitle + "-SHUFFLES.txt"
         out = open(fname, "w")
         for cycle in range(self.cs["nCycles"]):
-            # do cycle+1 because cycle 0 at t=0 isn't usually interesting
-            # remember, we put cycle 0 in so we could do BOL branch searches.
-            # This also syncs cycles up with external physics kernel cycles.
+            # Write cycle header to the report
             out.write("Before cycle {0}:\n".format(cycle + 1))
+            # Pull move list for the cycle
             movesThisCycle = self.r.core.moveList.get(cycle)
             if movesThisCycle is not None:
                 for (

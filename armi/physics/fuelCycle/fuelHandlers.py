@@ -31,8 +31,6 @@ import re
 import warnings
 
 import numpy
-
-
 from armi import runLog
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
@@ -53,6 +51,9 @@ class FuelHandler:
     To use this, simply create an input Python file and point to it by path
     with the ``fuelHandler`` setting. In that file, subclass this object.
     """
+
+    # Import functions
+    from armi.physics.fuelCycle import translationFunctions
 
     def __init__(self, operator):
         # we need access to the operator to find the core, get settings, grab
@@ -89,6 +90,11 @@ class FuelHandler:
     def r(self):
         """Link to the Reactor object."""
         return self.o.r
+
+    def preoutage(self):
+        self.prepCore()
+        self.prepShuffleMap()
+        self.r.core.locateAllAssemblies()
 
     def outage(self, factor=1.0):
         r"""
@@ -1155,13 +1161,39 @@ class FuelHandler:
             if a not in self.moved:
                 self.moved.append(a)
         oldA1Location = a1.spatialLocator
-        self._transferStationaryBlocks(a1, a2)
-        a1.moveTo(a2.spatialLocator)
+        oldA2Location = a2.spatialLocator
+        a1StationaryBlocks, a2StationaryBlocks = self._transferStationaryBlocks(a1, a2)
+        a1.moveTo(oldA2Location)
         a2.moveTo(oldA1Location)
+
+        self._validateAssemblySwap(
+            a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
+        )
+
+        self._swapFluxParam(a1, a2)
+
+    def _validateAssemblySwap(
+        self, a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
+    ):
+        """
+        Detect whether any blocks containing stationary components were moved
+        after a swap.
+        """
+        for assemblyBlocks, oldLocation in [
+            [a1StationaryBlocks, oldA1Location],
+            [a2StationaryBlocks, oldA2Location],
+        ]:
+            for block in assemblyBlocks:
+                if block.parent.spatialLocator != oldLocation:
+                    raise ValueError(
+                        """Stationary block {} has been moved. Expected to be in location {}. Was moved to {}.""".format(
+                            block, oldLocation, block.parent.spatialLocator
+                        )
+                    )
 
     def _transferStationaryBlocks(self, assembly1, assembly2):
         """
-        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies
+        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies.
 
         These blocks in effect are not moved at all.
         """
@@ -1202,6 +1234,10 @@ class FuelHandler:
             # insert stationary blocks
             assembly1.insert(assem1BlockIndex, assem2Block)
             assembly2.insert(assem2BlockIndex, assem1Block)
+
+        return [item[0] for item in a1StationaryBlocks], [
+            item[0] for item in a2StationaryBlocks
+        ]
 
     def dischargeSwap(self, incoming, outgoing):
         r"""
