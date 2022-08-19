@@ -1171,7 +1171,6 @@ class FuelHandler:
             a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
         )
 
-        self._swapFluxParam(a1, a2)
 
     def _validateAssemblySwap(
         self, a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
