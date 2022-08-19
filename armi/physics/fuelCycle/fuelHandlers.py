@@ -1167,7 +1167,6 @@ class FuelHandler:
         a1.moveTo(oldA2Location)
         a2.moveTo(oldA1Location)
 
-
         self._validateAssemblySwap(
             a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
         )
@@ -1192,7 +1191,6 @@ class FuelHandler:
                             block, oldLocation, block.parent.spatialLocator
                         )
                     )
-
 
     def _transferStationaryBlocks(self, assembly1, assembly2):
         """
@@ -1241,7 +1239,6 @@ class FuelHandler:
         return [item[0] for item in a1StationaryBlocks], [
             item[0] for item in a2StationaryBlocks
         ]
-
 
     def dischargeSwap(self, incoming, outgoing):
         r"""
