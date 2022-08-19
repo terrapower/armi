@@ -870,7 +870,6 @@ class TestFuelHandler(ArmiTestHelper):
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
         a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
 
-
         # move location of a stationary flag in assembly 1
         for block in a1:
             if any(block.hasFlags(sbf) for sbf in sBFList):
@@ -901,7 +900,6 @@ class TestFuelHandler(ArmiTestHelper):
                         )
                     )
                 break
-
 
         # try to discharge assembly 1 and replace with assembly 2
         with self.assertRaises(ValueError):

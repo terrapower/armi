@@ -661,7 +661,6 @@ def defineSettings() -> List[setting.Setting]:
             label="stationary Block Flags",
             description="Blocks with these flags will not move in moves. "
             "Used for fuel management.",
-
         ),
         setting.Setting(
             CONF_STATIONARY_BLOCKS,
@@ -670,7 +669,6 @@ def defineSettings() -> List[setting.Setting]:
             description="Blocks with these indices (int values) will not move in "
             "moves. Used for fuel management. "
             "Deprecated setting, use CONF_STATIONARY_BLOCK_FLAGS",
-
         ),
         setting.Setting(
             CONF_TARGET_K,
