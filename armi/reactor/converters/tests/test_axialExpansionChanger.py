@@ -197,7 +197,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
                 self.assertAlmostEqual(
                     self.trueZtop[ib, idt],
                     self.blockHeights[b.name][idt][1],
-                    places=7,
+                    places=5,
                     msg="Block height is not correct.\
                          Temp Step = {0:d}, Block ID = {1:}.".format(
                         idt, b.name
@@ -389,10 +389,10 @@ class TestConservation(Base, unittest.TestCase):
             else:
                 percents = -0.01 + zeros(len(componentLst))
             # set the expansion factors
-            oldMasses = [c.getMass() for b in a for c in b]
+            oldMasses = [c.getMass() for b in a for c in b] #if obj.expansionData.isTargetComponent(c)]
             # do the expansion
             obj.performPrescribedAxialExpansion(a, componentLst, percents, setFuel=True)
-            newMasses = [c.getMass() for b in a for c in b]
+            newMasses = [c.getMass() for b in a for c in b] #if obj.expansionData.isTargetComponent(c)]
             for old, new in zip(oldMasses, newMasses):
                 self.assertAlmostEqual(old, new)
 
@@ -760,6 +760,9 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def setUp(self):
         """This test uses a different armiRun.yaml than the default"""
 
+        materials.setMaterialNamespaceOrder(
+            ["terrapower.twr.materials", "armi.materials"]
+        )
         _o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
@@ -799,7 +802,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     isinstance(c.material, custom.Custom) for c in bStd
                 )
                 if (aStd.hasFlags(Flags.CONTROL)) or (hasCustomMaterial):
-                    checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
+                    checkColdBlockHeight(bStd, bExp, self.assertAlmostEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
                 if bStd.hasFlags(Flags.FUEL):
@@ -815,10 +818,12 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                         # skip blocks of custom material where liner is merged with clad
                         for cExp in bExp:
                             if not isinstance(cExp.material, custom.Custom):
+                                matDens = cExp.material.density3(Tc=cExp.temperatureInC)
+                                compDens = cExp.getMassDensity()
                                 self.assertAlmostEqual(
                                     cExp.material.density3(Tc=cExp.temperatureInC),
                                     cExp.getMassDensity(),
-                                    delta=0.001,  # g/cc
+                                    places=4,
                                     msg=f"{cExp} {cExp.material} in {bExp} was not at correct density, expansion = {bExp.p.height / bStd.p.height}",
                                 )
 
