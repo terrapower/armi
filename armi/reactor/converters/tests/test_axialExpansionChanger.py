@@ -818,7 +818,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                                 self.assertAlmostEqual(
                                     cExp.material.density3(Tc=cExp.temperatureInC),
                                     cExp.getMassDensity(),
-                                    delta=0.001, # g/cc
+                                    delta=0.001,  # g/cc
                                     msg=f"{cExp} {cExp.material} in {bExp} was not at correct density, expansion = {bExp.p.height / bStd.p.height}",
                                 )
 

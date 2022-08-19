@@ -18,6 +18,7 @@ from numpy import array
 from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
+from armi.utils import densityTools
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -244,7 +245,7 @@ class AxialExpansionChanger:
             b.p.height = b.p.ztop - b.p.zbottom
 
             _checkBlockHeight(b)
-            _conserveComponentMass(b, oldHeight, oldComponentVolumes)
+            self._conserveComponentDensity(b, oldHeight, oldComponentVolumes)
             # set block mid point and redo mesh
             # - functionality based on assembly.calculateZCoords()
             b.p.z = b.p.zbottom + b.p.height / 2.0
@@ -284,24 +285,29 @@ class AxialExpansionChanger:
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
+    def _conserveComponentDensity(self, b, oldHeight, oldVolume):
+        """Update block height dependent component parameters
 
-def _conserveComponentMass(b, oldHeight, oldVolume):
-    """Update block height dependent component parameters
+        1) update component volume (used to compute block volume)
+        2) update number density
 
-    1) update component volume (used to compute block volume)
-    2) update number density
+        Parameters
+        ----------
+        oldHeight : list of floats
+            list containing block heights pre-expansion
+        oldVolume : list of floats
+            list containing component volumes pre-expansion
+        """
 
-    Parameters
-    ----------
-    oldHeight : list of floats
-        list containing block heights pre-expansion
-    oldVolume : list of floats
-        list containing component volumes pre-expansion
-    """
-    for ic, c in enumerate(b):
-        c.p.volume = oldVolume[ic] * b.p.height / oldHeight
-        for key in c.getNuclides():
-            c.setNumberDensity(key, c.getNumberDensity(key) * oldHeight / b.p.height)
+        for ic, c in enumerate(b):
+            c.p.volume = oldVolume[ic] * b.p.height / oldHeight
+            growFrac = self.expansionData.getExpansionFactor(c)
+            if growFrac >= 0.0:
+                growth = 1.0 + growFrac
+            else:
+                growth = 1.0 / (1.0 - growFrac)
+            for key in c.getNuclides():
+                c.setNumberDensity(key, c.getNumberDensity(key) / growth)
 
 
 def _checkBlockHeight(b):
