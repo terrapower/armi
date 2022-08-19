@@ -215,7 +215,6 @@ class Core(composites.Composite):
         self._circularRingPitch = 1.0
         self._automaticVariableMesh = False
         self._minMeshSizeRatio = 0.15
-        self._inputHeightsConsideredHot = True
         self._detailedAxialExpansion = False
 
     def setOptionsFromCs(self, cs):
@@ -227,7 +226,6 @@ class Core(composites.Composite):
         self._circularRingPitch = cs["circularRingPitch"]
         self._automaticVariableMesh = cs["automaticVariableMesh"]
         self._minMeshSizeRatio = cs["minMeshSizeRatio"]
-        self._inputHeightsConsideredHot = cs["inputHeightsConsideredHot"]
         self._detailedAxialExpansion = cs["detailedAxialExpansion"]
 
     def __getstate__(self):
@@ -401,16 +399,16 @@ class Core(composites.Composite):
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
 
+        Notes
+        -----
+        Please expect this method will delete your assembly (instead of moving it to a
+        Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
+
         Originally, this held onto all assemblies in the spend fuel pool. However, having
         this sitting in memory becomes constraining for large simulations. It is more
         memory-efficient to only save the assemblies that are required for detailed
         history tracking. In fact, there's no need to save the assembly object at all,
         just have the history interface save the relevant parameters.
-
-        Notes
-        -----
-        Please expect this method will delete your assembly (instead of moving it to a
-        Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
 
         See Also
         --------
@@ -2251,6 +2249,7 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
+        nonUniformAssems = [Flags.fromString(t) for t in cs["nonUniformAssemFlags"]]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2260,43 +2259,51 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # Apply mesh snapping for self.parent.blueprints.assemblies
                 # This is stored as a param for assemblies in-core, so only blueprints assemblies are
-                # considereed here. To guarantee mesh snapping will function, makeAxialSnapList
+                # considered here. To guarantee mesh snapping will function, makeAxialSnapList
                 # should be in reference to the assembly with the finest mesh as defined in the blueprints.
-                finestAssemblyMesh = sorted(
+                finestMeshAssembly = sorted(
                     self.parent.blueprints.assemblies.values(),
                     key=lambda a: len(a),
                     reverse=True,
                 )[0]
                 for a in self.parent.blueprints.assemblies.values():
-                    a.makeAxialSnapList(refAssem=finestAssemblyMesh)
+                    if a.hasFlags(nonUniformAssems, exact=True):
+                        continue
+                    a.makeAxialSnapList(refAssem=finestMeshAssembly)
+            if not cs["inputHeightsConsideredHot"]:
+                runLog.header(
+                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
+                )
+                self._applyThermalExpansion(
+                    self.parent.blueprints.assemblies.values(),
+                    dbLoad,
+                    finestMeshAssembly,
+                )
 
         else:
+            if not cs["detailedAxialExpansion"]:
+                # prepare core for mesh snapping during axial expansion
+                for a in self.getAssemblies(includeAll=True):
+                    if a.hasFlags(nonUniformAssems, exact=True):
+                        continue
+                    a.makeAxialSnapList(self.refAssem)
+            if not cs["inputHeightsConsideredHot"]:
+                runLog.header(
+                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+                )
+                self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
+
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 applySubMesh=False
             )
             self.p.axialMesh = self.findAllAxialMeshPoints()
-            if not cs["detailedAxialExpansion"]:
-                # prepare core for mesh snapping during axial expansion
-                for a in self.getAssemblies(includeAll=True):
-                    a.makeAxialSnapList(self.refAssem)
-
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding all (except control) assemblies from Tinput to Thot ==========="
-                )
-                axialExpChngr = AxialExpansionChanger(cs["detailedAxialExpansion"])
-                for a in self.getAssemblies():
-                    if not a.hasFlags(Flags.CONTROL):
-                        axialExpChngr.setAssembly(a)
-                        axialExpChngr.expansionData.computeThermalExpansionFactors()
-                        axialExpChngr.axiallyExpandAssembly(thermal=True)
-                axialExpChngr.manageCoreMesh(self.parent)
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
         self.getNuclideCategories()
 
         # Generate list of flags that are to be stationary during assembly shuffling
+
 
         if len(cs["stationaryBlocks"]) >= 1:
             self.ValueError(
@@ -2308,6 +2315,7 @@ class Core(composites.Composite):
         for stationaryBlockFlagString in cs["stationaryBlockFlags"]:
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
+
         self.stationaryBlockFlagsList = stationaryBlockFlags
 
         # Perform initial zoning task
@@ -2316,3 +2324,43 @@ class Core(composites.Composite):
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+
+    def _applyThermalExpansion(
+        self, assems: list, dbLoad: bool, referenceAssembly=None
+    ):
+        """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
+
+        Parameters
+        ----------
+        assems: list
+            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
+        dbLoad: bool
+            boolean to determine if Core::processLoading is loading a database or constructing a Core
+        referenceAssembly: optional, :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            is the thermally expanded assembly whose axial mesh is used to snap the
+            blueprints assemblies axial mesh to
+        """
+        axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                axialExpChngr.setAssembly(a)
+                # this doesn't get applied to control assems, so CR will be interpreted
+                # as hot. This should be conservative because the control rods will
+                # be modeled as slightly shorter with the correct hot density. Density
+                # is more important than height, so we are forcing density to be correct
+                # since we can't do axial expansion (yet)
+                axialExpChngr.applyColdHeightMassIncrease()
+                axialExpChngr.expansionData.computeThermalExpansionFactors()
+                axialExpChngr.axiallyExpandAssembly(thermal=True)
+        # resolve axially disjoint mesh (if needed)
+        if not dbLoad:
+            axialExpChngr.manageCoreMesh(self.parent)
+        elif not self._detailedAxialExpansion:
+            for a in assems:
+                if not a.hasFlags(Flags.CONTROL):
+                    a.setBlockMesh(referenceAssembly.getAxialMesh())
+        # update block BOL heights to reflect hot heights
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a:
+                    b.p.heightBOL = b.getHeight()

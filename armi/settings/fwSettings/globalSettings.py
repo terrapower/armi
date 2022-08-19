@@ -106,6 +106,7 @@ CONF_DEFERRED_INTERFACE_NAMES = "deferredInterfaceNames"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
+CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
@@ -163,6 +164,17 @@ def defineSettings() -> List[setting.Setting]:
             description=(
                 "Allow each assembly to expand independently of the others. Results in non-uniform "
                 "axial mesh. Neutronics kernel must be able to handle."
+            ),
+        ),
+        setting.Setting(
+            CONF_NON_UNIFORM_ASSEM_FLAGS,
+            default=[],
+            label="Non Uniform Assem Flags",
+            description=(
+                "Assemblies that match a flag group on this list will not have their "
+                "mesh changed with the reference mesh of the core for uniform mesh cases (non-"
+                "detailed axial expansion). Another plugin may need to make the mesh uniform if "
+                "necessary."
             ),
         ),
         setting.Setting(
@@ -556,7 +568,9 @@ def defineSettings() -> List[setting.Setting]:
             label="Number of Cycles",
             description="Number of cycles that will be simulated. Fuel management "
             "happens at the beginning of each cycle. Can include active (full-power) "
-            "cycles as well as post-shutdown decay-heat steps.",
+            "cycles as well as post-shutdown decay-heat steps. For restart cases, "
+            "this value should include both cycles from the restart plus any additional "
+            "cycles to be run after `startCycle`.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
         ),
         setting.Setting(
@@ -647,6 +661,7 @@ def defineSettings() -> List[setting.Setting]:
             label="stationary Block Flags",
             description="Blocks with these flags will not move in moves. "
             "Used for fuel management.",
+
         ),
         setting.Setting(
             CONF_STATIONARY_BLOCKS,
@@ -655,6 +670,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Blocks with these indices (int values) will not move in "
             "moves. Used for fuel management. "
             "Deprecated setting, use CONF_STATIONARY_BLOCK_FLAGS",
+
         ),
         setting.Setting(
             CONF_TARGET_K,

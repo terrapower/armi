@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for block blueprints."""
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import io
+import unittest
 
-from armi.reactor import blueprints
 from armi import settings
+from armi.reactor import blueprints
 from armi.reactor.flags import Flags
+from armi.reactor.tests import test_blocks
 
 FULL_BP = """
 blocks:
@@ -29,15 +31,15 @@ blocks:
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            od: 0.86602
+            od: 0.7
             latticeIDs: [1]
-        clad:
+        clad: # same args as test_blocks (except mult)
             shape: Circle
             material: HT9
             Tinput: 25.0
-            Thot: 470.0
-            id: 1.0
-            od: 1.09
+            Thot: 450.0
+            id: .77
+            od: .80
             latticeIDs: [1,2]
         coolant:
             shape: DerivedShape
@@ -69,15 +71,15 @@ blocks:
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            od: 0.86602
+            od: 0.67
             latticeIDs: [1]
         clad:
             shape: Circle
             material: HT9
             Tinput: 25.0
-            Thot: 470.0
-            id: 1.0
-            od: 1.09
+            Thot: 450.0
+            id: .77
+            od: .80
             latticeIDs: [1,2]
         coolant:
             shape: DerivedShape
@@ -316,6 +318,31 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertEqual(a1.p.flags, Flags.FUEL)
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
+
+    # TODO: This test passes, but shouldn't.
+    def test_densityConsistentWithComponentConstructor(self):
+        # when comparing to 3D density, the comparison is not quite correct.
+        # We need a bigger delta, this will be investigated/fixed in another PR
+        biggerDelta = 0.001  # g/cc
+        a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
+            self.cs, self.blueprints
+        )
+        fuelBlock = a1[0]
+        clad = fuelBlock.getComponent(Flags.CLAD)
+
+        # now construct clad programmatically like in test_Blocks
+        programmaticBlock = test_blocks.buildSimpleFuelBlock()
+        programaticClad = programmaticBlock.getComponent(Flags.CLAD)
+        self.assertAlmostEqual(
+            clad.getMassDensity(),
+            clad.material.density3(Tc=clad.temperatureInC),
+            delta=biggerDelta,
+        )
+
+        self.assertAlmostEqual(
+            clad.getMassDensity(),
+            programaticClad.getMassDensity(),
+        )
 
 
 if __name__ == "__main__":

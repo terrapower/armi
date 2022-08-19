@@ -24,6 +24,9 @@ What's new in ARMI
 #. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
 #. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
 #. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
+#. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
+#. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
+#. Added setting nonUniformAssemFlags that allows specific assems to not conform to uniform mesh.
 #. TBD
 
 Bug fixes
@@ -42,6 +45,8 @@ Bug fixes
 #. Bug fix and clarity improvements for how number densities are initialized for components.
 #. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
 #. Bug fix in ``armi/reactor/components/component.py::getReac``
+#. Store thermally expanded block heights at BOL (via ``b.p.heightBOL``) when thermally expanding assemblies in ``armi/reactor/reactors.py::Core::processLoading``.
+#. Fixed bug where components were different if initialized through blueprints vs init (bug active for ~ 2 months).
 #. TBD
 
 
