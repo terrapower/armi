@@ -19,6 +19,7 @@ from statistics import mean
 import unittest
 from numpy import linspace, array, vstack, zeros
 from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.materials import material
 from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
@@ -389,10 +390,20 @@ class TestConservation(Base, unittest.TestCase):
             else:
                 percents = -0.01 + zeros(len(componentLst))
             # set the expansion factors
-            oldMasses = [c.getMass() for b in a for c in b] #if obj.expansionData.isTargetComponent(c)]
+            oldMasses = [
+                c.getMass()
+                for b in a
+                for c in b
+                if not isinstance(c.material, material.Fluid)
+            ]
             # do the expansion
             obj.performPrescribedAxialExpansion(a, componentLst, percents, setFuel=True)
-            newMasses = [c.getMass() for b in a for c in b] #if obj.expansionData.isTargetComponent(c)]
+            newMasses = [
+                c.getMass()
+                for b in a
+                for c in b
+                if not isinstance(c.material, material.Fluid)
+            ]
             for old, new in zip(oldMasses, newMasses):
                 self.assertAlmostEqual(old, new)
 
@@ -704,7 +715,7 @@ class TestDetermineTargetComponent(unittest.TestCase):
             ),
         )
 
-    def test_specifyTargetComponet_BlueprintSpecifed(self):
+    def test_specifyTargetComponet_BlueprintSpecified(self):
         b = HexBlock("SodiumBlock", height=10.0)
         sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
         dummy = Hexagon("coolant", "Sodium", **sodiumDims)
@@ -760,9 +771,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def setUp(self):
         """This test uses a different armiRun.yaml than the default"""
 
-        materials.setMaterialNamespaceOrder(
-            ["terrapower.twr.materials", "armi.materials"]
-        )
         _o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
