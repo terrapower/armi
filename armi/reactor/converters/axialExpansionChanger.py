@@ -289,8 +289,8 @@ class AxialExpansionChanger:
     def _conserveComponentDensity(self, b, oldHeight, oldVolume):
         """Update block height dependent component parameters
 
-        1) update component volume (used to compute block volume)
-        2) update number density
+        1) update component volume for all materials (used to compute block volume)
+        2) update number density for solid materials only (no fluid)
 
         Parameters
         ----------
@@ -300,7 +300,7 @@ class AxialExpansionChanger:
             list containing component volumes pre-expansion
         """
 
-        solidMaterials = _getSolidMaterials(b)
+        solidMaterials = _getSolidComponents(b)
         for ic, c in enumerate(b):
             c.p.volume = oldVolume[ic] * b.p.height / oldHeight
             if c in solidMaterials:
@@ -313,7 +313,15 @@ class AxialExpansionChanger:
                     c.setNumberDensity(key, c.getNumberDensity(key) / growth)
 
 
-def _getSolidMaterials(b):
+def _getSolidComponents(b):
+    """
+    Return list of components in the block that have solid material.
+
+    Notes
+    -----
+    Axial expansion only needs to be applied to solid materials. We should not update
+    number densities on fluid materials to account for changes in block height.
+    """
     return [c for c in b if not isinstance(c.material, material.Fluid)]
 
 
