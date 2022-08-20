@@ -718,10 +718,13 @@ class TestDetermineTargetComponent(unittest.TestCase):
     def test_specifyTargetComponet_BlueprintSpecified(self):
         b = HexBlock("SodiumBlock", height=10.0)
         sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 16, "ip": 15.0, "mult": 1.0}
         dummy = Hexagon("coolant", "Sodium", **sodiumDims)
+        dummyDuct = Hexagon("duct", "FakeMat", **sodiumDims)
         b.add(dummy)
+        b.add(dummyDuct)
         b.getVolumeFractions()
-        b.setType("SodiumBlock")
+        b.setType("DuctBlock")
 
         # check for no target component found
         with self.assertRaises(RuntimeError) as cm:
@@ -730,10 +733,10 @@ class TestDetermineTargetComponent(unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
         # check that target component is explicitly specified
-        b.setAxialExpTargetComp(dummy)
+        b.setAxialExpTargetComp(dummyDuct)
         self.assertEqual(
             b.axialExpTargetComponent,
-            dummy,
+            dummyDuct,
         )
 
         # check that target component is stored on expansionData object correctly
