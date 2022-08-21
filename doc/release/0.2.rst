@@ -27,6 +27,8 @@ What's new in ARMI
 #. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
 #. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
 #. Added setting nonUniformAssemFlags that allows specific assems to not conform to uniform mesh.
+#. Added reporting of neutron and gamma energy groups in the XS library `__repr__` for clearer tracking of which cross sections are applied to the core state.
+#. Removed `quiet` kwarg from geometry and block converters as this was generally unused in the code base and was only implemented for developmental debugging.
 #. TBD
 
 Bug fixes
@@ -45,10 +47,11 @@ Bug fixes
 #. Bug fix and clarity improvements for how number densities are initialized for components.
 #. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
 #. Bug fix in ``armi/reactor/components/component.py::getReac``
+#. Bug fix in ``armi/reactor/converters/uniformMesh.py`` to prevent `_mapStateFromReactorToOther` from clearing out unchanged parameter data.
+#. Migration of the `axialMesh` core parameter from the `neutronics` category to be general to prevent inconsistencies in the axial core mesh and the assembly meshes.
 #. Store thermally expanded block heights at BOL (via ``b.p.heightBOL``) when thermally expanding assemblies in ``armi/reactor/reactors.py::Core::processLoading``.
 #. Fixed bug where components were different if initialized through blueprints vs init (bug active for ~ 2 months).
 #. TBD
-
 
 ARMI v0.2.3
 ===========

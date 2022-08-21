@@ -18,6 +18,7 @@ Tests for the uniform mesh geometry converter
 import os
 import random
 import unittest
+import collections
 
 import numpy
 
@@ -158,7 +159,9 @@ class TestUniformMesh(unittest.TestCase):
         )  # this changes the mass of everything in the core
         perturbedCoreMass = self.r.core.getMass("U235")
         self.assertNotEqual(refMass, perturbedCoreMass)
-        uniformReactor = self.converter.convert(self.r)
+        self.converter.convert(self.r)
+
+        uniformReactor = self.converter.convReactor
         uniformMass = uniformReactor.core.getMass("U235")
 
         self.assertAlmostEqual(
@@ -194,6 +197,7 @@ class TestUniformMesh(unittest.TestCase):
 
         for b in self.r.core.getBlocks():
             self.assertAlmostEqual(b.p.flux, 5.0)
+            self.assertAlmostEqual(b.p.pdens, 0.5)
 
         for expectedPower, a in zip(assemblyPowers, self.r.core):
             self.assertAlmostEqual(a.calcTotalParam("power"), expectedPower)
@@ -227,8 +231,21 @@ class TestParamConversion(unittest.TestCase):
         self.sourceAssem[1].setHeight(self.height2)
         self.sourceAssem[1].p.flux = 10.0
         self.sourceAssem.calculateZCoords()
+
         self.destinationAssem[0].setHeight(self.height1 + self.height2)
         self.destinationAssem.calculateZCoords()
+
+        # This sets up a caching for the `mgNeutronVelocity` block
+        # parameter on each of the blocks of the destination assembly
+        # without setting the data on the blocks of the source assembly
+        # to demonstrate that only new parameters set on the source assembly will be
+        # mapped to the destination assembly. This ensures that parameters
+        # that are not being set on the source assembly are not cleared
+        # out on the destination assembly with `_setStateFromOverlaps`
+        # is called.
+        self._cachedBlockParamData = collections.defaultdict(dict)
+        for b in self.destinationAssem:
+            self._cachedBlockParamData[b]["mgNeutronVelocity"] = [1.0] * 33
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter()
 
@@ -252,7 +269,12 @@ class TestParamConversion(unittest.TestCase):
 
         # pylint: disable=protected-access
         uniformMesh._setStateFromOverlaps(
-            self.sourceAssem, self.destinationAssem, setter, getter, paramList
+            self.sourceAssem,
+            self.destinationAssem,
+            setter,
+            getter,
+            paramList + ["mgNeutronVelocity"],
+            self._cachedBlockParamData,
         )
 
         sourceFlux1 = self.sourceAssem[0].p.flux
@@ -262,6 +284,14 @@ class TestParamConversion(unittest.TestCase):
             (sourceFlux1 * self.height1 + sourceFlux2 * self.height2)
             / (self.height1 + self.height2),
         )
+        for b in self.sourceAssem:
+            self.assertIsNone(b.p.mgNeutronVelocity)
+
+        for b in self.destinationAssem:
+            self.assertListEqual(
+                b.p.mgNeutronVelocity,
+                self._cachedBlockParamData[b]["mgNeutronVelocity"],
+            )
 
 
 if __name__ == "__main__":
