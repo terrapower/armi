@@ -105,6 +105,16 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
+        updateNDensForRadialExp: optional, bool
+            boolean to determine whether or not the component number densities should be updated
+            to account for radial expansion/contraction
+
+        Notes
+        -----
+        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
+          temp change to just the axial dim. This is useful for testing. However, in practical use
+          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
+          effects associated with updating the component temperature.
         """
         self.setAssembly(a, setFuel)
         self.expansionData.updateComponentTempsBy1DTempField(
@@ -591,6 +601,10 @@ class ExpansionData:
         - given a 1D axial temperature grid and distribution, searches for temperatures that fall
           within the bounds of a block, and averages them
         - this average temperature is then passed to self.updateComponentTemp()
+        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
+          temp change to just the axial dim. This is useful for testing. However, in practical use
+          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
+          effects associated with updating the component temperature.
 
         Raises
         ------
@@ -646,6 +660,10 @@ class ExpansionData:
         - "reference" height and temperature are the current states; i.e. before
            1) the new temperature, temp, is applied to the component, and
            2) the component is axially expanded
+        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
+          temp change to just the axial dim. This is useful for testing. However, in practical use
+          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
+          effects associated with updating the component temperature.
         """
         self.componentReferenceHeight[c] = b.getHeight()
         self.componentReferenceTemperature[c] = c.temperatureInC
