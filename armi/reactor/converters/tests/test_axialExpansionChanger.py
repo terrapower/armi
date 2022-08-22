@@ -831,11 +831,16 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                             if not isinstance(cExp.material, custom.Custom):
                                 matDens = cExp.material.density3(Tc=cExp.temperatureInC)
                                 compDens = cExp.getMassDensity()
+                                msg = (
+                                    f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
+                                    + f"expansion = {bExp.p.height / bStd.p.height} \n"
+                                    + f"density3 = {matDens}, component density = {compDens} \n"
+                                )
                                 self.assertAlmostEqual(
-                                    cExp.material.density3(Tc=cExp.temperatureInC),
-                                    cExp.getMassDensity(),
+                                    matDens,
+                                    compDens,
                                     places=7,
-                                    msg=f"{cExp} {cExp.material} in {bExp} was not at correct density, expansion = {bExp.p.height / bStd.p.height}",
+                                    msg=msg,
                                 )
 
 
