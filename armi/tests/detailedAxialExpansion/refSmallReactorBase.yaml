@@ -251,7 +251,7 @@ blocks:
         fuel:
             shape: Circle
             material: UZr
-            Tinput: 25.0
+            Tinput: 45.187
             Thot: 600.0
             id: 0.0
             isotopics: PuUZr
@@ -311,7 +311,7 @@ blocks:
         outer liner:
             shape: Circle
             material: Zr
-            Tinput: 19.85
+            Tinput: 18.474
             Thot: 430.0
             id: 0.898
             mult: fuel.mult
