@@ -735,20 +735,36 @@ def _getNeutronicsBlockParams():
         # This quantity should eventually be part of category 'detailedAxialExpansion'
         # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsFastFluxFr",
+            "pointsCornerFastFluxFr",
             units=None,
-            description="Fraction of flux above 100keV at points within the block",
-            location=ParamLocation.CHILDREN,
+            description="Fraction of flux above 100keV at corners of the block",
+            location=ParamLocation.CORNERS,
+            saveToDB=True,
+        )
+        pb.defParam(
+            "pointsEdgeFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at edsges of the block",
+            location=ParamLocation.EDGES,
             saveToDB=True,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
         # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsDpa",
+            "pointsCornerDpa",
             units="dpa",
-            description="displacements per atom at points within the block",
-            location=ParamLocation.CHILDREN,
+            description="displacements per atom at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["cumulative"],
+            saveToDB=True,
+            default=0.0,
+        )
+        pb.defParam(
+            "pointsEdgeDpa",
+            units="dpa",
+            description="displacements per atom at edges of the block",
+            location=ParamLocation.EDGES,
             categories=["cumulative"],
             saveToDB=True,
             default=0.0,
@@ -757,10 +773,17 @@ def _getNeutronicsBlockParams():
         # This quantity should eventually be part of category 'detailedAxialExpansion'
         # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsDpaRate",
+            "pointsCornerDpaRate",
             units="dpa/s",
-            description="Current time derivative of the displacement per atoms at points within the block",
-            location=ParamLocation.CHILDREN,
+            description="Current time derivative of the displacement per atoms at corners of the block",
+            location=ParamLocation.CORNERS,
+            saveToDB=True,
+        )
+        pb.defParam(
+            "pointsEdgeDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at edges of the block",
+            location=ParamLocation.EDGES,
             saveToDB=True,
         )
 
