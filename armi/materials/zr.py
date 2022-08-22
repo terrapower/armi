@@ -79,7 +79,7 @@ class Zr(Material):
 
     def __init__(self):
         Material.__init__(self)
-        referenceTemp = 291.62
+        referenceTemp = 298.15
         referenceDensity = self._computeReferenceDensity(Tk=referenceTemp)
         self.p.refTempK = referenceTemp
         self.p.refDens = referenceDensity
@@ -130,7 +130,7 @@ class Zr(Material):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
-        if Tk >= self.p.refTempK and Tk < 1137:
+        if Tk >= 291.62 and Tk < 1137:
             return (
                 -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk ** 2) - (1.768e-10 * Tk ** 3)
             )
