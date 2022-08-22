@@ -300,10 +300,10 @@ class AxialExpansionChanger:
             list containing component volumes pre-expansion
         """
 
-        solidMaterials = _getSolidComponents(b)
+        solidComponents = _getSolidComponents(b)
         for ic, c in enumerate(b):
             c.p.volume = oldVolume[ic] * b.p.height / oldHeight
-            if c in solidMaterials:
+            if c in solidComponents:
                 growFrac = self.expansionData.getExpansionFactor(c)
                 if growFrac >= 0.0:
                     growth = 1.0 + growFrac
