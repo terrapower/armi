@@ -198,7 +198,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
                 self.assertAlmostEqual(
                     self.trueZtop[ib, idt],
                     self.blockHeights[b.name][idt][1],
-                    places=5,
+                    places=7,
                     msg="Block height is not correct.\
                          Temp Step = {0:d}, Block ID = {1:}.".format(
                         idt, b.name
