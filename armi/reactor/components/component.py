@@ -232,10 +232,26 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
+        self.tInputWarning(Tinput)
         self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+
+    def tInputWarning(self, Tinput):
+        """
+        Check whether thermal expansion factor is 0.0% exactly at T=Tinput
+        """
+        expansionFactor = (
+            self.material.linearExpansionPercent(Tc=self.inputTemperatureInC) / 100.0
+        )
+        if not (abs(expansionFactor) < 1.0e-6):
+            runLog.warning(
+                f"Thermal expansion for {self.material} at Tinput = {Tinput} is non-zero "
+                f"({expansionFactor}). The modeled density for this material will be off "
+                f"by a factor of {(1 + expansionFactor) ** 2}.",
+                single=True,
+            )
 
     @property
     def temperatureInC(self):

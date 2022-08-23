@@ -16,8 +16,10 @@
 from statistics import mean
 from numpy import array
 from armi import runLog
+from armi.materials import material
 from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
+from armi.utils import densityTools
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -200,6 +202,7 @@ class AxialExpansionChanger:
             "for each block in assembly {0}.".format(self.linked.a)
         )
         for ib, b in enumerate(self.linked.a):
+
             runLog.debug(msg="  Block {0}".format(b))
             if thermal:
                 blockHeight = b.p.heightBOL
@@ -211,8 +214,7 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in b:
-
+                for c in _getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(
                         msg="      Component {0}, growFrac = {1:.4e}".format(
@@ -261,7 +263,7 @@ class AxialExpansionChanger:
             b.p.height = b.p.ztop - b.p.zbottom
 
             _checkBlockHeight(b)
-            _conserveComponentMass(b, oldHeight, oldComponentVolumes)
+            self._conserveComponentDensity(b, oldHeight, oldComponentVolumes)
             # set block mid point and redo mesh
             # - functionality based on assembly.calculateZCoords()
             b.p.z = b.p.zbottom + b.p.height / 2.0
@@ -301,24 +303,43 @@ class AxialExpansionChanger:
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
+    def _conserveComponentDensity(self, b, oldHeight, oldVolume):
+        """Update block height dependent component parameters
 
-def _conserveComponentMass(b, oldHeight, oldVolume):
-    """Update block height dependent component parameters
+        1) update component volume for all materials (used to compute block volume)
+        2) update number density for solid materials only (no fluid)
 
-    1) update component volume (used to compute block volume)
-    2) update number density
+        Parameters
+        ----------
+        oldHeight : list of floats
+            list containing block heights pre-expansion
+        oldVolume : list of floats
+            list containing component volumes pre-expansion
+        """
 
-    Parameters
-    ----------
-    oldHeight : list of floats
-        list containing block heights pre-expansion
-    oldVolume : list of floats
-        list containing component volumes pre-expansion
+        solidComponents = _getSolidComponents(b)
+        for ic, c in enumerate(b):
+            c.p.volume = oldVolume[ic] * b.p.height / oldHeight
+            if c in solidComponents:
+                growFrac = self.expansionData.getExpansionFactor(c)
+                if growFrac >= 0.0:
+                    growth = 1.0 + growFrac
+                else:
+                    growth = 1.0 / (1.0 - growFrac)
+                for key in c.getNuclides():
+                    c.setNumberDensity(key, c.getNumberDensity(key) / growth)
+
+
+def _getSolidComponents(b):
     """
-    for ic, c in enumerate(b):
-        c.p.volume = oldVolume[ic] * b.p.height / oldHeight
-        for key in c.getNuclides():
-            c.setNumberDensity(key, c.getNumberDensity(key) * oldHeight / b.p.height)
+    Return list of components in the block that have solid material.
+
+    Notes
+    -----
+    Axial expansion only needs to be applied to solid materials. We should not update
+    number densities on fluid materials to account for changes in block height.
+    """
+    return [c for c in b if not isinstance(c.material, material.Fluid)]
 
 
 def _checkBlockHeight(b):
