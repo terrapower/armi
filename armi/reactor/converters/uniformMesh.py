@@ -331,6 +331,36 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _setParamsToUpdate(self):
         """Gather a list of parameters that will be mapped between reactors."""
+        
+    @staticmethod
+    def clearStateOnAssemblies(assems, paramNames, cache):
+        """
+        Clears the parameter state of blocks for a list of assemblies.
+        
+        Parameters
+        ----------
+        assems : List 
+            List of assembly objects.
+        
+        paramNames : List[str]
+            A list of block parameter names to clear
+            
+        cache : bool
+            If True, the block parameters that were cleared are stored
+            and returned as a dictionary of ``{b: {param1: val1, param2: val2}, b2: {...}, ...}``
+        """
+        cachedBlockParamData = collections.defaultdict(dict)
+        
+        blocks = []
+        for a in assems:
+            blocks.extend(a.getBlocks())
+        for b in blocks:
+            for bp in paramNames:
+                if cache:
+                    cachedBlockParamData[b][bp] = b.p[bp]
+                b.p[bp] = 0.0
+                
+        return cachedBlockParamData
 
     def _clearStateOnReactor(self, reactor, cache):
         """
@@ -344,11 +374,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
             reactor.core.p[rp] = 0.0
 
-        for b in reactor.core.getBlocks():
-            for bp in self.blockDetailedAxialExpansionParamNames:
-                if cache:
-                    self._cachedBlockParamData[b][bp] = b.p[bp]
-                b.p[bp] = 0.0
+        paramNames = self.blockDetailedAxialExpansionParamNames
+        cachedBlockParamData = self.clearStateOnAssemblies(reactor.core.getAssemblies(), 
+                                                           paramNames=paramNames, 
+                                                           cache=cache)
+        #self._cachedBlockParamData
+
 
     def applyStateToOriginal(self):
         """
@@ -468,6 +499,10 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             f"Block params that will be mapped are: {self.blockMultigroupParamNames + self.blockDetailedAxialExpansionParamNames}"
         )
 
+    @staticmethod
+    def clearStateOnAssembly(a, cache):
+        
+
     def _clearStateOnReactor(self, reactor, cache):
         """
         Clear all multi-group block parameters.
@@ -483,34 +518,6 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         UniformMeshGeometryConverter._mapStateFromReactorToOther(
             self, sourceReactor, destReactor
         )
-
-        def paramSetter(block, vals, paramNames):
-            for paramName, val in zip(paramNames, vals):
-                block.p[paramName] = val
-
-        def paramGetter(block, paramNames):
-            paramVals = []
-            for paramName in paramNames:
-                val = block.p[paramName]
-                if not val:
-                    paramVals.append(None)
-                else:
-                    paramVals.append(val)
-            return numpy.array(paramVals, dtype=object)
-
-        def multiGroupParamSetter(block, multiGroupVals, paramNames):
-            for paramName, val in zip(paramNames, multiGroupVals):
-                block.p[paramName] = numpy.array(val)
-
-        def multiGroupParamGetter(block, paramNames):
-            paramVals = []
-            for paramName in paramNames:
-                val = block.p[paramName]
-                if val is None or len(val) == 0:
-                    paramVals.append(None)
-                else:
-                    paramVals.append(numpy.array(val))
-            return numpy.array(paramVals, dtype=object)
 
         # Map reactor core parameters
         for paramName in self.reactorParamNames:
@@ -534,8 +541,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             _setStateFromOverlaps(
                 aSource,
                 aDest,
-                multiGroupParamSetter,
-                multiGroupParamGetter,
+                UniformMeshParameters.multiGroupParamSetter,
+                UniformMeshParameters.multiGroupParamGetter,
                 self.blockMultigroupParamNames,
                 self._cachedBlockParamData,
             )
@@ -544,8 +551,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             _setStateFromOverlaps(
                 aSource,
                 aDest,
-                paramSetter,
-                paramGetter,
+                UniformMeshParameters.paramSetter,
+                UniformMeshParameters.paramGetter,
                 self.blockDetailedAxialExpansionParamNames,
                 self._cachedBlockParamData,
             )
@@ -565,6 +572,51 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
         self._cachedReactorCoreParamData = {}
         self._cachedBlockParamData = collections.defaultdict(dict)
+
+
+class UniformMeshParameters:
+    """
+    Light-weight container for parameter setters/getters that can be used when
+    transferring data from one assembly to another during the mesh
+    conversion process.
+    """
+
+    @staticmethod
+    def paramSetter(block, vals, paramNames):
+        """Assigns a set of float/integer/string values to a given set of parameters on a block."""        
+        for paramName, val in zip(paramNames, vals):
+            block.p[paramName] = val
+    
+    @staticmethod
+    def paramGetter(block, paramNames):
+        """Returns a set of float/integer/string values for a given set of parameters on a block."""
+        paramVals = []
+        for paramName in paramNames:
+            val = block.p[paramName]
+            if not val:
+                paramVals.append(None)
+            else:
+                paramVals.append(val)
+        return numpy.array(paramVals, dtype=object)
+    
+    @staticmethod
+    def multiGroupParamSetter(block, multiGroupVals, paramNames):
+        """Assigns a set of list/array values to a given set of parameters on a block."""
+        for paramName, val in zip(paramNames, multiGroupVals):
+            block.p[paramName] = numpy.array(val)
+    
+    @staticmethod
+    def multiGroupParamGetter(block, paramNames):
+        """Returns a set of list/array values for a given set of parameters on a block."""
+        paramVals = []
+        for paramName in paramNames:
+            val = block.p[paramName]
+            if val is None or len(val) == 0:
+                paramVals.append(None)
+            else:
+                paramVals.append(numpy.array(val))
+        return numpy.array(paramVals, dtype=object)
+
 
 
 def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
