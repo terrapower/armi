@@ -51,6 +51,7 @@ Bug fixes
 #. Migration of the `axialMesh` core parameter from the `neutronics` category to be general to prevent inconsistencies in the axial core mesh and the assembly meshes.
 #. Store thermally expanded block heights at BOL (via ``b.p.heightBOL``) when thermally expanding assemblies in ``armi/reactor/reactors.py::Core::processLoading``.
 #. Fixed bug where components were different if initialized through blueprints vs init (bug active for ~ 2 months).
+#. Fixed bug where component mass was being conserved in axial expansion instead of correct density (`PR#846 <https://github.com/terrapower/armi/pull/846>`_)
 #. TBD
 
 ARMI v0.2.3
