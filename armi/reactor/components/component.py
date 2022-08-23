@@ -249,7 +249,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             runLog.warning(
                 f"Thermal expansion for {self.material} at Tinput = {Tinput} is non-zero "
                 f"({expansionFactor}). The modeled density for this material will be off "
-                f"by a factor of {(1 + expansionFactor) ** 2}."
+                f"by a factor of {(1 + expansionFactor) ** 2}.",
+                single=True,
             )
 
     @property
