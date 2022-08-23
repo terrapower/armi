@@ -730,6 +730,7 @@ def _getNeutronicsBlockParams():
             description="Neutron flux above 100keV at hexagon block corners",
             location=ParamLocation.CORNERS,
             saveToDB=True,
+            default=None,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
@@ -740,13 +741,15 @@ def _getNeutronicsBlockParams():
             description="Fraction of flux above 100keV at corners of the block",
             location=ParamLocation.CORNERS,
             saveToDB=True,
+            default=None,
         )
         pb.defParam(
             "pointsEdgeFastFluxFr",
             units=None,
-            description="Fraction of flux above 100keV at edsges of the block",
+            description="Fraction of flux above 100keV at edges of the block",
             location=ParamLocation.EDGES,
             saveToDB=True,
+            default=None,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
@@ -758,7 +761,7 @@ def _getNeutronicsBlockParams():
             location=ParamLocation.CORNERS,
             categories=["cumulative"],
             saveToDB=True,
-            default=0.0,
+            default=None,
         )
         pb.defParam(
             "pointsEdgeDpa",
@@ -767,7 +770,7 @@ def _getNeutronicsBlockParams():
             location=ParamLocation.EDGES,
             categories=["cumulative"],
             saveToDB=True,
-            default=0.0,
+            default=None,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
@@ -778,6 +781,7 @@ def _getNeutronicsBlockParams():
             description="Current time derivative of the displacement per atoms at corners of the block",
             location=ParamLocation.CORNERS,
             saveToDB=True,
+            default=None,
         )
         pb.defParam(
             "pointsEdgeDpaRate",
@@ -785,6 +789,7 @@ def _getNeutronicsBlockParams():
             description="Current time derivative of the displacement per atoms at edges of the block",
             location=ParamLocation.EDGES,
             saveToDB=True,
+            default=None,
         )
 
         pb.defParam(
@@ -807,6 +812,14 @@ def _getNeutronicsCoreParams():
             description="All available lambda-eigenvalues of reactor.",
             default=None,  # will be a list though, can't set default to mutable type.
             location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "axialMesh",
+            units="cm",
+            description="Global axial mesh from bottom to top used in structured-mesh neutronics simulations.",
+            default=None,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(
