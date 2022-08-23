@@ -35,13 +35,12 @@ hexes = grids.HexGrid.fromPitch(1.0)
 
 polys = []
 fig, ax = plt.subplots()
-ax.set_aspect('equal')
+ax.set_aspect("equal")
 ax.set_axis_off()
 
 for hex_i in hexes.generateSortedHexLocationList(127):
     x, y, z = hex_i.getGlobalCoordinates()
-    ax.text(x, y, f"{hex_i.i},{hex_i.j}", 
-            ha="center", va="center", fontsize=8)
+    ax.text(x, y, f"{hex_i.i},{hex_i.j}", ha="center", va="center", fontsize=8)
     polys.append(
         mpatches.RegularPolygon(
             (x, y), numVertices=6, radius=1 / math.sqrt(3), orientation=math.pi / 2
