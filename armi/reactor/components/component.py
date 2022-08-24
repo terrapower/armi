@@ -1149,7 +1149,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                 pinFluxes = self.parent.p.pinMgFluxesAdj
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
-        return pinFluxes[self.p.pinNum - 1] * self.getVolume()
+
+        # If there are no pin fluxes then just return 0.0
+        if pinFluxes is not None:
+            return pinFluxes[self.p.pinNum - 1] * self.getVolume()
+        else:
+            return numpy.zeros(1)
 
     def density(self):
         """Returns the mass density of the object in g/cc."""

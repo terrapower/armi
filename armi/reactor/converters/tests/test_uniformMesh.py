@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Tests for the uniform mesh geometry converter
 """
@@ -47,11 +46,13 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
     def test_makeAssemWithUniformMesh(self):
 
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
+
         self.converter._computeAverageAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem, self.converter._uniformMesh
         )
 
+        prevB = None
         for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
             if newB.isFuel() and sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
@@ -63,10 +64,24 @@ class TestDetailedAxialExpansionComponents(unittest.TestCase):
                 self.assertEqual(newB.p["xsType"], prevB.p["xsType"])
             elif sourceB.isFuel() and not newB.isFuel():
                 raise ValueError(
-                    f"The soure block {sourceB} is fuel but uniform mesh converter"
+                    f"The source block {sourceB} is fuel but uniform mesh converter"
                     f"created a nonfuel block {newB}."
                 )
             prevB = newB
+
+        newAssemNumberDens = newAssem.getNumberDensities()
+        for nuc, val in sourceAssem.getNumberDensities().items():
+            self.assertAlmostEqual(val, newAssemNumberDens[nuc])
+
+        for nuc, val in sourceAssem.getNumberDensities().items():
+            if not val:
+                continue
+            self.assertAlmostEqual(
+                newAssem.getNumberOfAtoms(nuc) / sourceAssem.getNumberOfAtoms(nuc), 1.0
+            )
+
+    def test_makeAssemUniformMeshParamMapping(self):
+        """Tests creating a uniform mesh assembly while mapping both number densities and specified parameters."""
 
 
 class TestUniformMeshComponents(unittest.TestCase):
@@ -150,7 +165,9 @@ class TestUniformMesh(unittest.TestCase):
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(
+            calcReactionRates=True
+        )
 
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
@@ -241,13 +258,14 @@ class TestParamConversion(unittest.TestCase):
         # to demonstrate that only new parameters set on the source assembly will be
         # mapped to the destination assembly. This ensures that parameters
         # that are not being set on the source assembly are not cleared
-        # out on the destination assembly with `_setStateFromOverlaps`
+        # out on the destination assembly with `setStateFromOverlaps`
         # is called.
         self._cachedBlockParamData = collections.defaultdict(dict)
         for b in self.destinationAssem:
             self._cachedBlockParamData[b]["mgNeutronVelocity"] = [1.0] * 33
-
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
+            b.p["mgNeutronVelocity"] = self._cachedBlockParamData[b][
+                "mgNeutronVelocity"
+            ]
 
     def test_setStateFromOverlaps(self):
         """
@@ -260,30 +278,22 @@ class TestParamConversion(unittest.TestCase):
             for b in self.sourceAssem:
                 b.p[pName] = 3
 
-        def setter(block, vals, paramNames):
-            for pName, val in zip(paramNames, vals):
-                block.p[pName] = val
-
-        def getter(block, paramNames):
-            return numpy.array([block.p[pName] for pName in paramNames])
-
-        # pylint: disable=protected-access
-        uniformMesh._setStateFromOverlaps(
+        uniformMesh.setStateFromOverlaps(
             self.sourceAssem,
             self.destinationAssem,
-            setter,
-            getter,
-            paramList + ["mgNeutronVelocity"],
-            self._cachedBlockParamData,
+            blockScalarParamNames=paramList,
+            blockArrayParamNames=["mgNeutronVelocity"],
         )
 
-        sourceFlux1 = self.sourceAssem[0].p.flux
-        sourceFlux2 = self.sourceAssem[1].p.flux
-        self.assertAlmostEqual(
-            self.destinationAssem[0].p.flux,
-            (sourceFlux1 * self.height1 + sourceFlux2 * self.height2)
-            / (self.height1 + self.height2),
-        )
+        for paramName in paramList:
+            sourceVal1 = self.sourceAssem[0].p[paramName]
+            sourceVal2 = self.sourceAssem[1].p[paramName]
+            self.assertAlmostEqual(
+                self.destinationAssem[0].p[paramName],
+                (sourceVal1 * self.height1 + sourceVal2 * self.height2)
+                / (self.height1 + self.height2),
+            )
+
         for b in self.sourceAssem:
             self.assertIsNone(b.p.mgNeutronVelocity)
 
