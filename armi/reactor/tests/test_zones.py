@@ -80,11 +80,24 @@ class TestZone(unittest.TestCase):
 
         self.assertRaises(AssertionError, zone.addItem, "nope")
 
+    def test_removeItem(self):
+        zone = zones.Zone("test_removeItem", [a.getLocation() for a in self.aList])
+        zone.removeItem(self.aList[0])
+        self.assertNotIn(self.aList[0].getLocation(), zone)
+
+        self.assertRaises(AssertionError, zone.removeItem, "also nope")
+
     def test_addItems(self):
         zone = zones.Zone("test_addItems")
         zone.addItems(self.aList)
         for a in self.aList:
             self.assertIn(a.getLocation(), zone)
+
+    def test_removeItems(self):
+        zone = zones.Zone("test_removeItems", [a.getLocation() for a in self.aList])
+        zone.removeItems(self.aList)
+        for a in self.aList:
+            self.assertNotIn(a.getLocation(), zone)
 
     def test_addLoc(self):
         zone = zones.Zone("test_addLoc")
@@ -93,11 +106,24 @@ class TestZone(unittest.TestCase):
 
         self.assertRaises(AssertionError, zone.addLoc, 1234)
 
+    def test_removeLoc(self):
+        zone = zones.Zone("test_removeLoc", [a.getLocation() for a in self.aList])
+        zone.removeLoc(self.aList[0].getLocation())
+        self.assertNotIn(self.aList[0].getLocation(), zone)
+
+        self.assertRaises(AssertionError, zone.removeLoc, 1234)
+
     def test_addLocs(self):
         zone = zones.Zone("test_addLocs")
         zone.addLocs([a.getLocation() for a in self.aList])
         for a in self.aList:
             self.assertIn(a.getLocation(), zone)
+
+    def test_removeLocs(self):
+        zone = zones.Zone("test_removeLocs", [a.getLocation() for a in self.aList])
+        zone.removeLocs([a.getLocation() for a in self.aList])
+        for a in self.aList:
+            self.assertNotIn(a.getLocation(), zone)
 
     def test_iteration(self):
         locs = [a.getLocation() for a in self.aList]
