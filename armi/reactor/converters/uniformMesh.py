@@ -78,7 +78,17 @@ from armi.physics.neutronics.globalFlux import globalFluxInterface
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
-    """Build uniform mesh version of the source reactor"""
+    """
+    This geometry converter can be used to change the axial mesh structure of the reactor core.
+
+    Notes
+    -----
+    There are several staticmethods available on this class that allow for:
+        - Creation of a new reactor without applying a new uniform axial mesh. See: `<UniformMeshGeometryConverter.initNewReactor>`
+        - Creation of a new assembly with a new axial mesh applied. See: `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+        - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+        - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+    """
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -93,10 +103,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # This prevents clearing out data on the original reactor that should
         # be preserved since no changes were applied.
         self._cachedReactorCoreParamData = {}
-        self._cachedBlockParamData = collections.defaultdict(dict)
 
     def convert(self, r=None):
-        """Create a new reactor with a uniform mesh."""
+        """Create a new reactor core with a uniform mesh."""
+        if r is None:
+            raise ValueError(f"No reactor provided in {self}")
+
         runLog.extra("Building copy of {} with a uniform axial mesh".format(r))
         completeStartTime = timer()
         self._sourceReactor = r
@@ -154,9 +166,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return newReactor
 
     def applyStateToOriginal(self):
-        """
-        Now that state is computed on the uniform mesh, map it back to ARMI mesh.
-        """
+        """Apply the state of the converted reactor back to the original reactor, mapping number densities and block parameters."""
         runLog.extra(
             f"Applying uniform neutronics mesh results from {self.convReactor} to ARMI mesh on {self._sourceReactor}"
         )
@@ -168,7 +178,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # after the mapping has been applied, we can recover data from any
         # parameters that did not change.
         self._cachedReactorCoreParamData = {}
-        self._cachedBlockParamData = collections.defaultdict(dict)
         self._clearStateOnReactor(self._sourceReactor, cache=True)
         self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
         self._sourceReactor.core.lib = self.convReactor.core.lib
@@ -185,14 +194,32 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         Build new assembly based on a source assembly but apply the uniform mesh.
 
-        The new assemblies must have appropriately mapped number densities as
-        input for a neutronics solve. They must also have other relevant
-        state parameters for follow-on steps. Thus, this maps many parameters
-        from the ARMI mesh to the uniform mesh.
+        Notes
+        -----
+        This creates a new assembly based on the provided source assembly, applies
+        a new uniform mesh and then maps number densities and block-level parameters
+        to the new assembly from the source assembly.
 
+        Parameters
+        ----------
+        sourceAssem : `Assembly <armi.reactor.assemblies.Assembly>` object
+            Assembly that is used to map number densities and block-level parameters to
+            a new mesh structure.
+        newMesh : List[float]
+            A list of the new axial mesh coordinates of the blocks. Note that these mesh
+            coordinates are in cm and should represent the top axial mesh coordinates of
+            the new blocks.
+         blockScalarParamNames : List[str], optional
+            A list of block parameter names that can be assigned scalar values (i.e., int/float/string).
+            Examples: `flux`, `power`. If this is not provided then no scalar parameters will be mapped.
+        blockArrayParamNames : List[str], optional
+            A list of block parameter names that can be assigned array values (i.e., numpy.array/list).
+            Example: `mgFlux`. If this is not provided then no array parameters will be mapped.
         See Also
         --------
-        applyStateToOriginal : basically the reverse on the way out.
+        setAssemblyStateFromOverlaps
+            This can be used to reverse the number density and parameter mappings
+            between two assemblies.
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
@@ -265,10 +292,202 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newAssem.reestablishBlockOrder()
         newAssem.calculateZCoords()
 
-        setStateFromOverlaps(
+        UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssem, newAssem, blockScalarParamNames, blockArrayParamNames
         )
         return newAssem
+
+    @staticmethod
+    def setAssemblyStateFromOverlaps(
+        sourceAssembly,
+        destinationAssembly,
+        blockScalarParamNames=None,
+        blockArrayParamNames=None,
+    ):
+        """
+        Set state data (i.e., number densities and block-level parameters) on a assembly based on a source
+        assembly with a different axial mesh.
+
+        This solves an averaging equation from the source to the destination.
+
+        .. math::
+            <P> = \frac{\int_{z_1}^{z_2} P(z) dz}{\int_{z_1}^{z_2} dz}
+
+        which can be solved piecewise for z-coordinates along the source blocks.
+
+        Parameters
+        ----------
+        sourceAssembly : Assembly
+            assem that has the state
+        destinationAssembly : Assembly
+            assem that has is getting the state from sourceAssembly
+        blockScalarParamNames : List[str], optional
+            A list of block parameter names that can be assigned scalar values (i.e., int/float/string).
+            Examples: `flux`, `power`. If this is not provided then no scalar parameters will be mapped.
+        blockArrayParamNames : List[str], optional
+            A list of block parameter names that can be assigned array values (i.e., numpy.array/list).
+            Example: `mgFlux`. If this is not provided then no array parameters will be mapped.
+
+        Notes
+        -----
+        setter and getter are meant to be generated with particular state info (e.g. mgFlux or params).
+
+        See Also
+        --------
+        _setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
+        """
+        if blockScalarParamNames is None:
+            blockScalarParamNames = []
+        if blockArrayParamNames is None:
+            blockArrayParamNames = []
+
+        if not isinstance(blockScalarParamNames, list):
+            raise TypeError(
+                f"The ``blockScalarParamNames`` parameters names are not provided "
+                f"as a list. Value(s) given: {blockScalarParamNames}"
+            )
+        if not isinstance(blockArrayParamNames, list):
+            raise TypeError(
+                f"The ``blockArrayParamNames`` parameters names are not provided "
+                f"as a list. Value(s) given: {blockArrayParamNames}"
+            )
+
+        cachedParams = UniformMeshGeometryConverter.clearStateOnAssemblies(
+            [destinationAssembly],
+            blockScalarParamNames,
+            blockArrayParamNames,
+            cache=True,
+        )
+        for destBlock in destinationAssembly:
+
+            # Check that the parameters on the destination block have been cleared first before attempting to
+            # map the data. These parameters should be cleared using ``UniformMeshGeometryConverter.clearStateOnAssemblies``.
+            for getter, paramNames in [
+                (BlockParamMapper.scalarParamGetter, blockScalarParamNames),
+                (BlockParamMapper.arrayParamGetter, blockArrayParamNames),
+            ]:
+
+                existingDestBlockParamVals = getter(destBlock, paramNames)
+                clearedValues = [
+                    True if not val else False for val in existingDestBlockParamVals
+                ]
+                if not all(clearedValues):
+                    raise ValueError(
+                        f"The state of {destBlock} on {destinationAssembly} "
+                        f"was not cleared prior to calling ``setAssemblyStateFromOverlaps``. "
+                        f"This is an implementation bug in the mesh converter that should "
+                        f"be reported to the developers. The following parameters should be cleared:\n"
+                        f"Parameters: {paramNames}\n"
+                        f"Values: {existingDestBlockParamVals}"
+                    )
+
+        # The destination assembly is the assembly that the results are being mapped to
+        # whereas the source assembly is the assembly that is from the uniform model. This
+        # loop iterates over each block in the destination assembly and determines the mesh
+        # coordinates that the uniform mesh (source assembly) will be mapped to.
+        for destBlock in destinationAssembly:
+
+            zLower = destBlock.p.zbottom
+            zUpper = destBlock.p.ztop
+            destinationBlockHeight = destBlock.getHeight()
+            # Determine which blocks in the uniform mesh source assembly are
+            # within the lower and upper bounds of the destination block.
+            sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
+
+            if not sourceBlocksInfo:
+                raise ValueError(
+                    f"An error occurred when attempting to map to the "
+                    f"results from {sourceAssembly} to {destinationAssembly}. "
+                    f"No blocks in {sourceAssembly} exist between the axial "
+                    f"elevations of {zLower:<8.3e} cm and {zUpper:<8.3e} cm. "
+                    f"This a major bug in the uniform mesh converter that should "
+                    f"be reported to the developers."
+                )
+
+            # Iterate over each of the blocks that were found in the uniform mesh
+            # source assembly within the lower and upper bounds of the destination
+            # block and perform the parameter mapping.
+            updatedDestVals = collections.defaultdict(float)
+
+            _setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
+
+            for setter, getter, paramNames in [
+                (
+                    BlockParamMapper.scalarParamSetter,
+                    BlockParamMapper.scalarParamGetter,
+                    blockScalarParamNames,
+                ),
+                (
+                    BlockParamMapper.arrayParamSetter,
+                    BlockParamMapper.arrayParamGetter,
+                    blockArrayParamNames,
+                ),
+            ]:
+
+                for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
+                    sourceBlockVals = getter(sourceBlock, paramNames)
+                    sourceBlockHeight = sourceBlock.getHeight()
+
+                    for paramName, sourceBlockVal in zip(paramNames, sourceBlockVals):
+                        # The value can be `None` if it has not been set yet. In this case,
+                        # the mapping should be skipped.
+                        if sourceBlockVal is None:
+                            continue
+
+                        # Determine if the parameter is volumed integrated or not.
+                        isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
+                            parameters.ParamLocation.VOLUME_INTEGRATED
+                        )
+
+                        # If the parameter is volume integrated (e.g., flux, linear power)
+                        # then calculate the fractional contribution from the source block.
+                        if isVolIntegrated:
+                            integrationFactor = (
+                                sourceBlockOverlapHeight / sourceBlockHeight
+                            )
+
+                        # If the parameter is not volume integrated (e.g., volumetric reaction rate)
+                        # then calculate the fraction contribution on the destination block.
+                        # This smears the parameter over the destination block.
+                        else:
+                            integrationFactor = (
+                                sourceBlockOverlapHeight / destinationBlockHeight
+                            )
+
+                        updatedDestVals[paramName] += sourceBlockVal * integrationFactor
+
+                    setter(destBlock, updatedDestVals.values(), updatedDestVals.keys())
+
+                # For parameters that have not been set on the destination block, recover these
+                # back to their originals based on the cached values.
+                for paramName in paramNames:
+
+                    # Skip over any parameter names that were not previously cached.
+                    if paramName not in cachedParams[destBlock]:
+                        continue
+
+                    if isinstance(destBlock.p[paramName], numpy.ndarray):
+                        # Using just all() on the list/array is not sufficient because if a zero value exists
+                        # in the data then this would then lead to overwritting the data. This is an edge case see
+                        # in the testing, so this excludes zero values on the check.
+                        if (
+                            not all(
+                                [val for val in destBlock.p[paramName] if val != 0.0]
+                            )
+                            or not destBlock.p[paramName].size > 0
+                        ):
+                            destBlock.p[paramName] = cachedParams[destBlock][paramName]
+                    elif isinstance(destBlock.p[paramName], list):
+                        if (
+                            not all(
+                                [val for val in destBlock.p[paramName] if val != 0.0]
+                            )
+                            or not destBlock.p[paramName]
+                        ):
+                            destBlock.p[paramName] = cachedParams[destBlock][paramName]
+                    else:
+                        if not destBlock.p[paramName]:
+                            destBlock.p[paramName] = cachedParams[destBlock][paramName]
 
     @staticmethod
     def clearStateOnAssemblies(
@@ -279,12 +498,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Parameters
         ----------
-        assems : List
+        assems : List[`Assembly <armi.reactor.assemblies.Assembly>`]
             List of assembly objects.
-
-        paramNames : List[str]
-            A list of block parameter names to clear
-
+        blockScalarParamNames : List[str], optional
+            A list of block parameter names that can be assigned scalar values (i.e., int/float/string).
+            Examples: `flux`, `power`. If this is not provided then no scalar parameters will be mapped.
+        blockArrayParamNames : List[str], optional
+            A list of block parameter names that can be assigned array values (i.e., numpy.array/list).
+            Example: `mgFlux`. If this is not provided then no array parameters will be mapped.
         cache : bool
             If True, the block parameters that were cleared are stored
             and returned as a dictionary of ``{b: {param1: val1, param2: val2}, b2: {...}, ...}``
@@ -303,15 +524,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
             for scalarParam in blockScalarParamNames:
                 if cache:
                     cachedBlockParamData[b][scalarParam] = b.p[scalarParam]
-                b.p[scalarParam] = 0.0
+                b.p[scalarParam] = b.p.pDefs[scalarParam].default
             for arrayParam in blockArrayParamNames:
                 if cache:
                     cachedBlockParamData[b][arrayParam] = b.p[arrayParam]
-                b.p[arrayParam] = []
+                b.p[arrayParam] = b.p.pDefs[arrayParam].default
 
         return cachedBlockParamData
 
     def plotConvertedReactor(self):
+        """Generate a radial layout image of the converted reactor core."""
         bpAssems = list(self.convReactor.blueprints.assemblies.values())
         assemsToPlot = []
         for bpAssem in bpAssems:
@@ -347,11 +569,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
             )
 
     def reset(self):
+        """Clear out stored attributes and reset the global assembly number."""
         self.reactorParamNames = []
         self.blockScalarParamNames = []
         self.blockArrayParamNames = []
         self._cachedReactorCoreParamData = {}
-        self._cachedBlockParamData = collections.defaultdict(dict)
         super().reset()
 
     def _setParamsToUpdate(self):
@@ -362,11 +584,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
+        pass
 
     def _computeAverageAxialMesh(self):
-        """
-        Computes an average axial mesh based on the first fuel assembly
-        """
+        """Computes an average axial mesh based on the core's reference assembly."""
         src = self._sourceReactor
         refAssem = src.core.refAssem
         refNumPoints = (
@@ -420,16 +641,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         Map parameters from one reactor to another.
 
-        Used for preparing a uniform reactor as well as for mapping its results
-        back to the original reactor.
+        Notes
+        -----
+        This can be implemented in sub-classes to map specific reactor and assembly data.
         """
+        pass
 
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
     A uniform mesh converter that specifically maps neutronics parameters.
-
-    This is useful for codes like DIF3D.
 
     Notes
     -----
@@ -523,7 +744,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         # Map block parameters
         for aSource in sourceReactor.core:
             aDest = destReactor.core.getAssemblyByName(aSource.getName())
-            setStateFromOverlaps(
+            UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
                 aSource, aDest, self.blockScalarParamNames, self.blockArrayParamNames
             )
 
@@ -538,10 +759,6 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
         self._cachedReactorCoreParamData = {}
-        self._cachedBlockParamData = collections.defaultdict(dict)
-
-        self._cachedReactorCoreParamData = {}
-        self._cachedBlockParamData = collections.defaultdict(dict)
 
 
 class BlockParamMapper:
@@ -600,11 +817,6 @@ def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
     .. math::
 
         N^{\prime} =  \sum_i N_i \frac{h_i}{H}
-
-
-    See Also
-    --------
-    setStateFromOverlaps : does this for state other than number densities.
     """
     totalDensities = {}
     block.clearNumberDensities()
@@ -616,185 +828,3 @@ def _setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
                 + numberDensity * overlappingHeightInCm / blockHeightInCm
             )
     block.setNumberDensities(totalDensities)
-
-
-def setStateFromOverlaps(
-    sourceAssembly,
-    destinationAssembly,
-    blockScalarParamNames=None,
-    blockArrayParamNames=None,
-):
-    r"""
-    Set state info on a assembly based on a source assembly with a different axial mesh
-
-    This solves an averaging equation from the source to the destination.
-
-    .. math::
-        <P> = \frac{\int_{z_1}^{z_2} P(z) dz}{\int_{z_1}^{z_2} dz}
-
-    which can be solved piecewise for z-coordinates along the source blocks.
-
-    Parameters
-    ----------
-    sourceAssembly : Assembly
-        assem that has the state
-    destinationAssembly : Assembly
-        assem that has is getting the state from sourceAssembly
-    setter : function
-        A function that takes (block, val) and sets val as state on block.
-    getter : function
-        takes block as an argument, returns relevant state that has __add__ capabilities.
-    paramNames : list
-        List of param names to set/get.
-
-    Notes
-    -----
-    setter and getter are meant to be generated with particular state info (e.g. mgFlux or params).
-
-    See Also
-    --------
-    _setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
-    """
-    if blockScalarParamNames is None:
-        blockScalarParamNames = []
-    if blockArrayParamNames is None:
-        blockArrayParamNames = []
-
-    if not isinstance(blockScalarParamNames, list):
-        raise TypeError(
-            f"The ``blockScalarParamNames`` parameters names are not provided "
-            f"as a list. Value(s) given: {blockScalarParamNames}"
-        )
-    if not isinstance(blockArrayParamNames, list):
-        raise TypeError(
-            f"The ``blockScalarParamNames`` parameters names are not provided "
-            f"as a list. Value(s) given: {blockArrayParamNames}"
-        )
-
-    cachedParams = UniformMeshGeometryConverter.clearStateOnAssemblies(
-        [destinationAssembly], blockScalarParamNames, blockArrayParamNames, cache=True
-    )
-    for destBlock in destinationAssembly:
-
-        # Check that the parameters on the destination block have been cleared first before attempting to
-        # map the data. These parameters should be cleared using ``UniformMeshGeometryConverter.clearStateOnAssemblies``.
-        for getter, paramNames in [
-            (BlockParamMapper.scalarParamGetter, blockScalarParamNames),
-            (BlockParamMapper.arrayParamGetter, blockArrayParamNames),
-        ]:
-
-            existingDestBlockParamVals = getter(destBlock, paramNames)
-            clearedValues = [
-                True if not val else False for val in existingDestBlockParamVals
-            ]
-            if not all(clearedValues):
-                raise ValueError(
-                    f"The state of {destBlock} on {destinationAssembly} "
-                    f"was not cleared prior to calling ``setStateFromOverlaps``. "
-                    f"This is an implementation bug in the mesh converter that should "
-                    f"be reported to the developers. The following parameters should be cleared:\n"
-                    f"Parameters: {paramNames}\n"
-                    f"Values: {existingDestBlockParamVals}"
-                )
-
-    # The destination assembly is the assembly that the results are being mapped to
-    # whereas the source assembly is the assembly that is from the uniform model. This
-    # loop iterates over each block in the destination assembly and determines the mesh
-    # coordinates that the uniform mesh (source assembly) will be mapped to.
-    for destBlock in destinationAssembly:
-
-        zLower = destBlock.p.zbottom
-        zUpper = destBlock.p.ztop
-        destinationBlockHeight = destBlock.getHeight()
-        # Determine which blocks in the uniform mesh source assembly are
-        # within the lower and upper bounds of the destination block.
-        sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
-
-        if not sourceBlocksInfo:
-            raise ValueError(
-                f"An error occurred when attempting to map to the "
-                f"results from {sourceAssembly} to {destinationAssembly}. "
-                f"No blocks in {sourceAssembly} exist between the axial "
-                f"elevations of {zLower:<8.3e} cm and {zUpper:<8.3e} cm. "
-                f"This a major bug in the uniform mesh converter that should "
-                f"be reported to the developers."
-            )
-
-        # Iterate over each of the blocks that were found in the uniform mesh
-        # source assembly within the lower and upper bounds of the destination
-        # block and perform the parameter mapping.
-        updatedDestVals = collections.defaultdict(float)
-
-        _setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
-
-        for setter, getter, paramNames in [
-            (
-                BlockParamMapper.scalarParamSetter,
-                BlockParamMapper.scalarParamGetter,
-                blockScalarParamNames,
-            ),
-            (
-                BlockParamMapper.arrayParamSetter,
-                BlockParamMapper.arrayParamGetter,
-                blockArrayParamNames,
-            ),
-        ]:
-
-            for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
-                sourceBlockVals = getter(sourceBlock, paramNames)
-                sourceBlockHeight = sourceBlock.getHeight()
-
-                for paramName, sourceBlockVal in zip(paramNames, sourceBlockVals):
-                    # The value can be `None` if it has not been set yet. In this case,
-                    # the mapping should be skipped.
-                    if sourceBlockVal is None:
-                        continue
-
-                    # Determine if the parameter is volumed integrated or not.
-                    isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
-                        parameters.ParamLocation.VOLUME_INTEGRATED
-                    )
-
-                    # If the parameter is volume integrated (e.g., flux, linear power)
-                    # then calculate the fractional contribution from the source block.
-                    if isVolIntegrated:
-                        integrationFactor = sourceBlockOverlapHeight / sourceBlockHeight
-
-                    # If the parameter is not volume integrated (e.g., volumetric reaction rate)
-                    # then calculate the fraction contribution on the destination block.
-                    # This smears the parameter over the destination block.
-                    else:
-                        integrationFactor = (
-                            sourceBlockOverlapHeight / destinationBlockHeight
-                        )
-
-                    updatedDestVals[paramName] += sourceBlockVal * integrationFactor
-
-                setter(destBlock, updatedDestVals.values(), updatedDestVals.keys())
-
-            # For parameters that have not been set on the destination block, recover these
-            # back to their originals based on the cached values.
-            for paramName in paramNames:
-
-                # Skip over any parameter names that were not previously cached.
-                if paramName not in cachedParams[destBlock]:
-                    continue
-
-                if isinstance(destBlock.p[paramName], numpy.ndarray):
-                    # Using just all() on the list/array is not sufficient because if a zero value exists
-                    # in the data then this would then lead to overwritting the data. This is an edge case see
-                    # in the testing, so this excludes zero values on the check.
-                    if (
-                        not all([val for val in destBlock.p[paramName] if val != 0.0])
-                        or not destBlock.p[paramName].size > 0
-                    ):
-                        destBlock.p[paramName] = cachedParams[destBlock][paramName]
-                elif isinstance(destBlock.p[paramName], list):
-                    if (
-                        not all([val for val in destBlock.p[paramName] if val != 0.0])
-                        or not destBlock.p[paramName]
-                    ):
-                        destBlock.p[paramName] = cachedParams[destBlock][paramName]
-                else:
-                    if not destBlock.p[paramName]:
-                        destBlock.p[paramName] = cachedParams[destBlock][paramName]
