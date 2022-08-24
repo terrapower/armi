@@ -141,7 +141,7 @@ class UpInterface(interfaces.Interface):
 
 
 class UserPluginWithInterface(plugins.UserPlugin):
-    """A little test UserPlugin, just to show how to add an Inteface through a UserPlugin"""
+    """A little test UserPlugin, just to show how to add an Interface through a UserPlugin"""
 
     @staticmethod
     @plugins.HOOKIMPL

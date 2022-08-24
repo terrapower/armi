@@ -23,8 +23,6 @@ from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
-from armi.reactor.flags import Flags
-from armi.settings.fwSettings import globalSettings
 
 
 class Zone:
@@ -81,8 +79,8 @@ class Zone:
 
         Parameters
         ----------
-        items : list
-            List of str objects
+        loc : str
+            Location within the Core.
 
         Notes
         -----
@@ -98,9 +96,32 @@ class Zone:
         assert isinstance(loc, str), "The location must be a str: {0}".format(loc)
         self.locs.add(loc)
 
+    def removeLoc(self, loc: str) -> None:
+        """
+        Removes the location from this Zone.
+
+        Parameters
+        ----------
+        loc : str
+            Location within the Core.
+
+        Notes
+        -----
+        This method does not validate that the location given is somehow "valid".
+        We are not doing any reverse lookups in the Reactor to prove that the type
+        or location is valid. Because this would require heavier computation, and
+        would add some chicken-and-the-egg problems into instantiating a new Reactor.
+
+        Returns
+        -------
+        None
+        """
+        assert isinstance(loc, str), "The location must be a str: {0}".format(loc)
+        self.locs.remove(loc)
+
     def addLocs(self, locs: List) -> None:
         """
-        Adds the locations to this Zone
+        Adds the locations to this Zone.
 
         Parameters
         ----------
@@ -109,6 +130,18 @@ class Zone:
         """
         for loc in locs:
             self.addLoc(loc)
+
+    def removeLocs(self, locs: List) -> None:
+        """
+        Removes the locations from this Zone.
+
+        Parameters
+        ----------
+        items : list
+            List of str objects
+        """
+        for loc in locs:
+            self.removeLoc(loc)
 
     def addItem(self, item: Union[Assembly, Block]) -> None:
         """
@@ -124,6 +157,20 @@ class Zone:
         ), "The item ({0}) but be have a type in: {1}".format(item, Zone.VALID_TYPES)
         self.addLoc(item.getLocation())
 
+    def removeItem(self, item: Union[Assembly, Block]) -> None:
+        """
+        Removes the location of an Assembly or Block from a zone
+
+        Parameters
+        ----------
+        item : Assembly or Block
+            A single item with Core location (Assembly or Block)
+        """
+        assert issubclass(
+            type(item), self.zoneType
+        ), "The item ({0}) but be have a type in: {1}".format(item, Zone.VALID_TYPES)
+        self.removeLoc(item.getLocation())
+
     def addItems(self, items: List) -> None:
         """
         Adds the locations of a list of Assemblies or Blocks to a zone
@@ -135,6 +182,18 @@ class Zone:
         """
         for item in items:
             self.addItem(item)
+
+    def removeItems(self, items: List) -> None:
+        """
+        Removes the locations of a list of Assemblies or Blocks from a zone
+
+        Parameters
+        ----------
+        items : list
+            List of Assembly/Block objects
+        """
+        for item in items:
+            self.removeItem(item)
 
 
 class Zones:
@@ -214,7 +273,7 @@ class Zones:
         self.checkDuplicates()
 
     def removeZone(self, name: str) -> None:
-        """delete a zone by name
+        """Delete a zone by name
 
         Parameters
         ----------
@@ -226,6 +285,22 @@ class Zones:
         None
         """
         del self[name]
+
+    def removeZones(self, names: List) -> None:
+        """
+        Delete multiple zones by name
+
+        Parameters
+        ----------
+        names: List (or names)
+            Multiple Zone names to remove from this collection.
+
+        Returns
+        -------
+        None
+        """
+        for name in names:
+            self.removeZone(name)
 
     def checkDuplicates(self) -> None:
         """
@@ -322,6 +397,17 @@ class Zones:
             runLog.warning("Was not able to find which zone {} is in".format(a))
 
         return None
+
+    def sortZones(self, reverse=False) -> None:
+        """Sorts the Zone objects alphabetically.
+
+        Parameters
+        ----------
+        reverse : bool, optional
+            Whether to sort in reverse order, by default False
+        """
+
+        self._zones = dict(sorted(self._zones.items(), reverse=reverse))
 
     def summary(self) -> None:
         """
