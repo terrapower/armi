@@ -467,6 +467,16 @@ class Inspector:
         )
 
         self.addQuery(
+            lambda: self.cs["startCycle"]
+            and self.cs["nCycles"] < self.cs["startCycle"],
+            "nCycles must be greater than or equal to startCycle in restart cases. nCycles"
+            " is the _total_ number of cycles in the completed run (i.e. restarted +"
+            " continued cycles). Please update the case settings.",
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
             lambda: self.cs["nCycles"] in [0, None],
             "Cannot run 0 cycles. Set burnSteps to 0 to activate a single time-independent case.",
             "Set 1 cycle and 0 burnSteps for single time-independent case?",

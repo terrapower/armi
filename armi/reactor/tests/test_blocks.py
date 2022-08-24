@@ -1559,6 +1559,29 @@ class Block_TestCase(unittest.TestCase):
         hasPitch = self.block.hasPinPitch()
         self.assertTrue(hasPitch)
 
+    def test_getReactionRates(self):
+        block = blocks.HexBlock("HexBlock")
+        block.setType("defaultType")
+        comp = components.basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
+        block.add(comp)
+        block.setHeight(1)
+        block.p.xsType = "A"
+
+        r = tests.getEmptyHexReactor()
+        assembly = makeTestAssembly(1, 1, r=r)
+        assembly.add(block)
+        r.core.add(assembly)
+        r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        block.p.mgFlux = 1
+
+        self.assertEqual(
+            block.getReactionRates("PU239")["nG"],
+            block.getNumberDensity("PU239") * sum(r.core.lib["PU39AA"].micros.nGamma),
+        )
+
+        with self.assertRaises(KeyError):
+            block.getReactionRates("PU39")
+
 
 class Test_NegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
@@ -2094,21 +2117,6 @@ class CartesianBlock_TestCase(unittest.TestCase):
             _ = self.cartesianBlock.getHydraulicDiameter()
 
 
-class PointTests(unittest.TestCase):
-    def setUp(self):
-        self.point = blocks.Point()
-
-    def test_getters(self):
-        self.assertEqual(1.0, self.point.getVolume())
-        self.assertEqual(1.0, self.point.getBurnupPeakingFactor())
-
-    def test_getWettedPerimeter(self):
-        self.assertEqual(0.0, self.point.getWettedPerimeter())
-
-    def test_getHydraulicDiameter(self):
-        self.assertEqual(0.0, self.point.getHydraulicDiameter())
-
-
 class MassConservationTests(unittest.TestCase):
     r"""
     Tests designed to verify mass conservation during thermal expansion
@@ -2263,7 +2271,6 @@ class MassConservationTests(unittest.TestCase):
         and hot height.
         """
         fuel = self.b.getComponent(Flags.FUEL)
-        fuel.applyHotHeightDensityReduction()
         # set ref (input/cold) temperature.
         Thot = fuel.temperatureInC
         Tcold = fuel.inputTemperatureInC

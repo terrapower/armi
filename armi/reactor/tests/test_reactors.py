@@ -178,7 +178,6 @@ def loadTestReactor(
         runLog.setVerbosity("error")
 
     newSettings = {}
-    newSettings["stationaryBlocks"] = []
     cs = cs.modified(newSettings=newSettings)
     settings.setMasterCs(cs)
 
@@ -832,6 +831,73 @@ class HexReactorTests(ReactorTests):
         for b in self.r.core.getBlocks():
             coords = b.getPinCoordinates()
             self.assertGreater(len(coords), -1)
+
+    def test_applyThermalExpansion_CoreConstruct(self):
+        """test Core::_applyThermalExpansion for core construction
+
+        Notes:
+        ------
+        - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        - to maintain code coverage, _applyThermalExpansion is called via processLoading
+        """
+        self.o.cs["inputHeightsConsideredHot"] = False
+        assemsToChange = self.r.core.getAssemblies()
+        # stash original axial mesh info
+        oldRefBlockAxialMesh = self.r.core.p.referenceBlockAxialMesh
+        oldAxialMesh = self.r.core.p.axialMesh
+        oldBlockBOLHeights = {}
+        for a in assemsToChange:
+            for b in a[1:]:
+                oldBlockBOLHeights[b] = b.p.heightBOL
+        self.r.core.processLoading(self.o.cs, dbLoad=False)
+        for i, val in enumerate(oldRefBlockAxialMesh[1:]):
+            self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
+        for i, val in enumerate(oldAxialMesh[1:]):
+            self.assertNotEqual(val, self.r.core.p.axialMesh[i])
+        for a in assemsToChange:
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a[1:]:
+                    self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+
+    def test_updateBlockBOLHeights_DBLoad(self):
+        """test Core::_applyThermalExpansion for db load
+
+        Notes:
+        ------
+        - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        - to maintain code coverage, _applyThermalExpansion is called via processLoading
+        """
+        self.o.cs["inputHeightsConsideredHot"] = False
+        # stash original blueprint assemblies axial mesh info
+        oldBlockBOLHeights = {}
+        assemsToChange = [a for a in self.r.blueprints.assemblies.values()]
+        for a in assemsToChange:
+            for b in a[1:]:
+                oldBlockBOLHeights[b] = b.p.heightBOL
+        self.r.core.processLoading(self.o.cs, dbLoad=True)
+        for a in assemsToChange:
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a[1:]:
+                    self.assertNotEqual(
+                        oldBlockBOLHeights[b],
+                        b.p.heightBOL,
+                        msg="{0}, {1}".format(a, b),
+                    )
+
+    def test_nonUniformAssems(self):
+        o, r = loadTestReactor(
+            customSettings={"nonUniformAssemFlags": ["primary control"]}
+        )
+        a = o.r.core.getFirstAssembly(Flags.FUEL)
+        self.assertTrue(all(b.p.topIndex != 0 for b in a[1:]))
+        a = o.r.core.getFirstAssembly(Flags.PRIMARY)
+        self.assertTrue(all(b.p.topIndex == 0 for b in a))
+        originalHeights = [b.p.height for b in a]
+        differntMesh = [val + 2 for val in r.core.p.referenceBlockAxialMesh]
+        # wont change because nonUnfiform assem doesn't conform to reference mesh
+        a.setBlockMesh(differntMesh)
+        heights = [b.p.height for b in a]
+        self.assertEqual(originalHeights, heights)
 
 
 class CartesianReactorTests(ReactorTests):

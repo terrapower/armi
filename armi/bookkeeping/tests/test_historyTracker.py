@@ -19,30 +19,31 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access
 import os
 import pathlib
 import shutil
+import unittest
 
-from armi.context import ROOT
-from armi import init as armi_init
+from armi import settings
 from armi import utils
 from armi.bookkeeping import historyTracker
-from armi.reactor import blocks
-from armi.reactor.flags import Flags
-from armi import settings
-from armi.utils import directoryChangers
-from armi.reactor import grids
-from armi.cases import case
-from armi.tests import ArmiTestHelper
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
+from armi.cases import case
+from armi.context import ROOT
+from armi.reactor import blocks
+from armi.reactor import grids
+from armi.reactor.flags import Flags
+from armi.tests import ArmiTestHelper
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
+CASE_TITLE = "anl-afci-177"
 THIS_DIR = os.path.dirname(__file__)  # b/c tests don't run in this folder
 TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
-CASE_TITLE = "anl-afci-177"
 
 
 def runTutorialNotebook():
+    # pylint: disable=import-outside-toplevel
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor
 
@@ -57,34 +58,13 @@ class TestHistoryTracker(ArmiTestHelper):
 
     @classmethod
     def setUpClass(cls):
-        # Not using a directory changer since it isn't important that we go back in the
-        # first place, and we don't want to get tangled with the directory change below.
-        # We need to be in the TUTORIAL_DIR in the first place so that for `filesToMove`
-        # to work right.
+        # We need to be in the TUTORIAL_DIR so that for `filesToMove` to work right.
         os.chdir(TUTORIAL_DIR)
 
-        # Make sure to do this work in a temporary directory to avoid race conditions
-        # when running tests in parallel with xdist.
-        cls.dirChanger = directoryChangers.TemporaryDirectoryChanger(
-            filesToMove=TUTORIAL_FILES
-        )
+        # Do this work in a temp dir, to avoid race conditions.
+        cls.dirChanger = TemporaryDirectoryChanger(filesToMove=TUTORIAL_FILES)
         cls.dirChanger.__enter__()
         runTutorialNotebook()
-
-        reloadCs = settings.Settings(f"{CASE_TITLE}.yaml")
-
-        newSettings = {}
-        newSettings["db"] = True
-        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        newSettings["runType"] = "Snapshots"
-        newSettings["loadStyle"] = "fromDB"
-        newSettings["detailAssemLocationsBOL"] = ["001-001"]
-
-        reloadCs = reloadCs.modified(newSettings=newSettings)
-        reloadCs.caseTitle = "armiRun"
-
-        o = armi_init(cs=reloadCs)
-        cls.o = o
 
     @classmethod
     def tearDownClass(cls):
@@ -94,13 +74,13 @@ class TestHistoryTracker(ArmiTestHelper):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
-        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
-        newSettings["loadStyle"] = "fromDB"
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
+        newSettings["loadStyle"] = "fromDB"
+        newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
         newSettings["startNode"] = 1
         cs = cs.modified(newSettings=newSettings)
 
-        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 
         c = case.Case(cs)
@@ -151,9 +131,8 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-            mgFlux = (
-                hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
-            )  #  b.p.mgFlux is vol integrated
+            #  b.p.mgFlux is vol integrated
+            mgFlux = hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             timeInSec = years * 365 * 24 * 3600
             if mgFluence is None:
                 mgFluence = timeInSec * mgFlux
@@ -161,6 +140,11 @@ class TestHistoryTracker(ArmiTestHelper):
                 mgFluence += timeInSec * mgFlux
 
         self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
+
+        # test that unloadBlockHistoryVals() is working
+        self.assertIsNotNone(hti._preloadedBlockHistory)
+        hti.unloadBlockHistoryVals()
+        self.assertIsNone(hti._preloadedBlockHistory)
 
     def test_historyReport(self):
         """
@@ -183,13 +167,23 @@ class TestHistoryTracker(ArmiTestHelper):
         shutil.move(fileName, os.path.join(THIS_DIR, fileName))
 
         self.compareFilesLineByLine(expectedFileName, actualFilePath)
-        # clean file created at interactEOL
-        os.remove("armiRun.locationHistory.txt")
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
         history.addAllFuelAssems()
         self.assertEqual(len(history.detailAssemblyNames), 51)
+
+    def test_getBlockInAssembly(self):
+        history = self.o.getInterface("history")
+        aFuel = self.o.r.core.getFirstAssembly(Flags.FUEL)
+
+        b = history._getBlockInAssembly(aFuel)
+        self.assertGreater(b.p.height, 1.0)
+        self.assertEqual(b.getType(), "fuel")
+
+        with self.assertRaises(RuntimeError):
+            aShield = self.o.r.core.getFirstAssembly(Flags.SHIELD)
+            history._getBlockInAssembly(aShield)
 
 
 class TestHistoryTrackerNoModel(unittest.TestCase):

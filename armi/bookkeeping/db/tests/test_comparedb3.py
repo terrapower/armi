@@ -204,6 +204,21 @@ class TestCompareDB3(unittest.TestCase):
                 self.assertEqual(dr.nDiffs(), 0)
                 self.assertIn("Special formatting parameters for", mock._outputStream)
 
+            # make an H5 datasets that will cause unpackSpecialData to fail
+            f4 = h5py.File("test_diffSpecialData4.hdf5", "w")
+            refData4 = f4.create_dataset("numberDensities", data=a2)
+            refData4.attrs["shapes"] = "2"
+            refData4.attrs["numDens"] = a2
+            f5 = h5py.File("test_diffSpecialData5.hdf5", "w")
+            srcData5 = f5.create_dataset("numberDensities", data=a2)
+            srcData5.attrs["shapes"] = "2"
+            srcData5.attrs["numDens"] = a2
+
+            # there should an exception
+            with self.assertRaises(Exception) as e:
+                _diffSpecialData(refData4, srcData5, out, dr)
+                self.assertIn("Unable to unpack special data for paramName", e)
+
     def test_diffSimpleData(self):
         dr = DiffResults(0.01)
 

@@ -14,13 +14,21 @@ What's new in ARMI
 #. Minor code re-org, moving math utilities into their own module.
 #. Removed the ``PyYaml`` dependency.
 #. Removed all bare ``import armi`` statements, for code clarity.
+#. Replaced setting ``stationaryBlocks`` (now deprecated) with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`_)
 #. Renamed control rod assembly parameters for generic implementations of control rod handling.
 #. Changed the default Git branch name to ``main``.
 #. Changed the default value of the ``trackAssems`` setting to ``False``.
+#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
 #. Added new ``UserPlugin`` functionality.
 #. Made the min/max temperatures of ``Material`` curves discoverable.
 #. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
 #. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
+#. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
+#. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
+#. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
+#. Added setting nonUniformAssemFlags that allows specific assems to not conform to uniform mesh.
+#. Added reporting of neutron and gamma energy groups in the XS library `__repr__` for clearer tracking of which cross sections are applied to the core state.
+#. Removed `quiet` kwarg from geometry and block converters as this was generally unused in the code base and was only implemented for developmental debugging.
 #. TBD
 
 Bug fixes

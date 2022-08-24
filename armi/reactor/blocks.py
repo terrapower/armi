@@ -97,6 +97,7 @@ class Block(composites.Composite):
 
         self.points = []
         self.macros = None
+        self.axialExpTargetComponent = None
 
         # flag to indicated when DerivedShape children must be updated.
         self.derivedMustUpdate = False
@@ -1529,6 +1530,20 @@ class Block(composites.Composite):
         """
         raise NotImplementedError
 
+    def setAxialExpTargetComp(self, targetComponent):
+        """sets the targetComponent for the axial expansion changer
+
+        Parameter
+        ---------
+        targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
+            component specified to be target component for axial expansion changer
+
+        See Also
+        --------
+        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
+        """
+        self.axialExpTargetComponent = targetComponent
+
     def getPinCoordinates(self):
         """
         Compute the local centroid coordinates of any pins in this block.
@@ -2207,40 +2222,3 @@ class ThRZBlock(Block):
     def verifyBlockDims(self):
         """Perform dimension checks related to ThetaRZ blocks."""
         return
-
-
-class Point(Block):
-    """
-    Points quack like blocks.
-    This Point object represents a single point in space within a Block.
-    The Point object masquerades as a Block so that any Block parameter
-    (such as DPA) can be assigned to it with the same functionality.
-    """
-
-    def __init__(self, name=None):
-
-        super(Point, self).__init__(name)
-
-        self.xyz = [
-            0.0,
-            0.0,
-            0.0,
-        ]  # initialize the x,y,z coordinates of this Point object.
-
-        params = ["detailedDpaRate", "detailedDpaPeakRate"]
-        for param in params:
-            self.p[param] = 0.0
-
-    def getVolume(self):
-        """points have no volume scaling; point flux are not volume-integrated"""
-        return 1.0
-
-    def getBurnupPeakingFactor(self):
-        """peaking makes no sense for points"""
-        return 1.0
-
-    def getWettedPerimeter(self):
-        return 0.0
-
-    def getHydraulicDiameter(self):
-        return 0.0
