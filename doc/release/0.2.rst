@@ -32,13 +32,13 @@ Bug fixes
 #. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
 #. Fixed bugs in the ARMI memory profiler.
 #. Fixed linear expansion in ``Alloy200``.
-#. Remove ``copy.deepcopy`` from ``armi/reactor/converters/uniformMesh.py``.
-#. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``.
-#. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``.
+#. Remove ``copy.deepcopy`` from ``armi/reactor/converters/uniformMesh.py``
+#. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``
+#. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
 #. Fixed issue with axial expansion changer and axial meshing in ``armi/reactor/reactors.py::Core::processLoading``.
 #. Bug fix and clarity improvements for how number densities are initialized for components.
-#. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``.
-#. Bug fix in ``armi/reactor/components/component.py::getReac``.
+#. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
+#. Bug fix in ``armi/reactor/components/component.py::getReac``
 #. Bug fix in ``armi/reactor/converters/uniformMesh.py`` to prevent `_mapStateFromReactorToOther` from clearing out unchanged parameter data.
 #. Migration of the `axialMesh` core parameter from the `neutronics` category to be general to prevent inconsistencies in the axial core mesh and the assembly meshes.
 #. Store thermally expanded block heights at BOL (via ``b.p.heightBOL``) when thermally expanding assemblies in ``armi/reactor/reactors.py::Core::processLoading``.
@@ -46,12 +46,6 @@ Bug fixes
 #. Fixed bug where component mass was being conserved in axial expansion instead of correct density (`PR#846 <https://github.com/terrapower/armi/pull/846>`_)
 #. Fixed bug in ``armi/reactor/blocks.py::HexBlock::rotatePins`` that failed to modify pinLocation parameter (`#855 <https://github.com/terrapower/armi/pull/855>`_).
 #. TBD
-
-
-
-
-
-
 
 ARMI v0.2.3
 ===========
