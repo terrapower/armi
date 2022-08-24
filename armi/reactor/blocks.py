@@ -1803,7 +1803,9 @@ class HexBlock(Block):
         # with new numbers
         if not justCompute:
             self.setRotationNum(rotNum)
-            self.p["pinLocation"] = [*rotateIndexLookup.values()]
+            self.p["pinLocation"] = [
+                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+            ]
 
         return rotateIndexLookup
 
