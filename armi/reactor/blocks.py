@@ -1657,22 +1657,30 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, deg):
-        """Function for rotating a block's spatially varying variables by a specified angle.
+    def rotate(self, rad):
+        """
+        Rotates a block's spatially varying parameters by a specified angle in the
+        counter-clockwise direction.
 
-        Rotates the pins and then also any parameters that defined on the corners or edges.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
+        Python list of length 6 in order to be eligible for rotation; all parameters that
+        do not meet these two criteria are not rotated.
+
+        The pin indexing, as stored on the pinLocation parameter, is also updated via
+        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
 
         Parameters
         ----------
-        deg - float
-            number specifying the angle of counter clockwise rotation
+        rad: float, required
+            Angle of counter-clockwise rotation in units of radians. Rotations must be
+            in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
+            and 2 * PI)
 
         See Also
         --------
-        armi.reactor.blocks.HexBlock.rotatePins
-            Rotates the pins only and not the duct.
+        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
-        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
+        rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self.rotatePins(rotNum)
         params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
         params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
@@ -1684,20 +1692,22 @@ class HexBlock(Block):
                     # List hasn't been defined yet, no warning needed.
                     pass
                 else:
-                    runLog.warning(
-                        "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
-                            param
-                        )
+                    msg = (
+                        "No rotation method defined for spatial parameters that aren't "
+                        "defined once per hex edge/corner. No rotation performed "
+                        f"on {param}"
                     )
+                    runLog.warning(msg)
             else:
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
+        # This specifically uses the .get() functionality to avoid an error if this
+        # parameter does not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
-            self.p.displacementX = dispx * math.cos(deg) - dispy * math.sin(deg)
-            self.p.displacementY = dispx * math.sin(deg) + dispy * math.cos(deg)
+            self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
+            self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
     def rotatePins(self, rotNum, justCompute=False):
         """
