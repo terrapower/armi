@@ -1712,7 +1712,28 @@ class HexBlock(Block):
     def rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
-        not rotate all block quantities.
+        not rotate all block quantities, just the pins.
+
+        Parameters
+        ----------
+        rotNum : int, required
+            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
+            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
+
+        justCompute : boolean, optional
+            If True, rotateIndexLookup will be returned but NOT assigned to the object parameter
+            self.p.pinLocation. If False, rotateIndexLookup will be returned AND assigned to the
+            object variable self.p.pinLocation.  Useful for figuring out which rotation is best
+            to minimize burnup, etc.
+
+        Returns
+        -------
+        rotateIndexLookup : dict of ints
+            This is an index lookup (or mapping) between pin ids and pin locations. The pin
+            indexing is 1-D (not ring,pos or GEODST). The "ARMI pin ordering" is used for location,
+            which is counter-clockwise from 1 o'clock. Pin ids are always consecutively
+            ordered starting at 1, while pin locations are not once a rotation has been
+            applied.
 
         Notes
         -----
@@ -1731,28 +1752,7 @@ class HexBlock(Block):
         fluxRecon, which interpolates the flux spatially, or subchannel codes, which needs to know where the
         power is) need to map through the pinLocation parameters.
 
-        This method rotates the pins by changing the pinLocations.
-
-        Parameters
-        ----------
-        rotNum : int
-            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
-            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
-
-        justCompute : Boolean, optional
-            If True, rotateIndexLookup will be returned but NOT assigned to the object variable
-            self.rotateIndexLookup.
-            If False, rotateIndexLookup will be returned AND assigned to the object variable
-            self.rotateIndexLookup.  Useful for figuring out which rotation is best to minimize
-            burnup, etc.
-
-        Returns
-        -------
-        rotateIndexLookup : dict of ints
-            This is an index lookup (or mapping) between pin ids and pin locations
-            The pin indexing is 1-D (not ring,pos or GEODST).
-            The "ARMI pin ordering" is used for location, which is counter-clockwise from 3 o'clock.
-            Pin numbers start at 1, pin locations also start at 1.
+        This method rotates the pins by changing the pinLocation parameter.
 
         See Also
         --------
@@ -1767,38 +1767,43 @@ class HexBlock(Block):
             raise ValueError(
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
-        # pin numbers start at 1.
-        numPins = self.getNumComponents(Flags.CLAD)  # number of pins in this assembly
+
+        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
+        # cladding count.
+        numPins = self.getNumComponents(Flags.CLAD)
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
-        # look up the current orientation and add this to it. The math below just rotates from the
-        # reference point so we need a total rotation.
+        # Look up the current orientation and add this to it. The math below just rotates
+        # from the reference point so we need a total rotation.
         rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
         for pinNum in range(2, numPins + 1):
             if rotNum == 0:
-                # rotation to reference orientation. Pin locations are pin IDs.
+                # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring (courtesy of Robert Petroski from subchan.py). Rotation does not change the pin ring!
+                # Determine the pin ring. Rotation does not change the pin ring!
                 ring = int(
                     math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
                 )
+
                 # Rotate the pin position (within the ring, which does not change)
                 tot_pins = 1 + 3 * ring * (ring - 1)
                 newPinLocation = pinNum + (ring - 1) * rotNum
                 if newPinLocation > tot_pins:
                     newPinLocation -= (ring - 1) * 6
+
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
-            if not justCompute:
-                self.p["pinLocation", rotateIndexLookup[pinNum]] = pinNum
-
+        # Because the above math creates indices based on the absolute rotation number,
+        # the old values of pinLocation (if they've been set in the past) can be overwritten
+        # with new numbers
         if not justCompute:
             self.setRotationNum(rotNum)
+            self.p["pinLocation"] = [*rotateIndexLookup.values()]
 
         return rotateIndexLookup
 
