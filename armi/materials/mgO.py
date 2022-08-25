@@ -53,6 +53,6 @@ class MgO(Material):
         This is based on a 3rd order polynomial fit of the data in Table I.
         """
         Tc = getTc(Tc, Tk)
-        Tk = getTk(Tc, Tk)
+        Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("linear expansion percent", Tk)
         return 1.0489e-5 * Tc + 6.0458e-9 * Tc ** 2 - 2.6875e-12 * Tc ** 3
