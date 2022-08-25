@@ -168,7 +168,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def applyStateToOriginal(self):
         """Apply the state of the converted reactor back to the original reactor, mapping number densities and block parameters."""
         runLog.extra(
-            f"Applying uniform neutronics mesh results from {self.convReactor} to ARMI mesh on {self._sourceReactor}"
+            f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
         )
         completeStartTime = timer()
 
