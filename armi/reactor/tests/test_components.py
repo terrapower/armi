@@ -578,20 +578,15 @@ class TestComponentExpansion(unittest.TestCase):
         self.assertAlmostEqual(warmMass, hotMass)
         circle1.setTemperature(self.tWarm)
 
-        # Change temp forward and backward with axial expansion and show equal
+        # Change temp to circle 2 temp  to show equal to circle2
+        # and then change back to show recoverable to original values
         oldArea = circle1.getArea()
         initialDens = circle1.getMassDensity()
-        # this math is done in applyMaterialMassFracsToNumberDensities
-        coldMatAxialExpansionFactor = 1.0 + circle1.material.linearExpansionFactor(
-            circle1.temperatureInC, circle1.inputTemperatureInC
-        )
-        factorToUndoHotHeight = circle1.getThermalExpansionFactor()
+
         # when block.setHeight is called (which effectively changes component height)
         # component.setNumberDensity is called (for solid isotopes) to adjust the number
         # density so that now the 2D expansion will be approximated/expanded around
         # the hot temp which is akin to these adjustments
-
-        # change to self.THot
         heightFactor = circle1.getHeightFactor(self.tHot)
         circle1.adjustDensityForHeightExpansion(self.tHot)  # apply temp at new height
         circle1.setTemperature(self.tHot)
