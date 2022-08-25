@@ -337,10 +337,6 @@ class Component(composites.Composite, metaclass=ComponentType):
           due to the difference in self.inputTemperatureInC and self.temperatureInC
         - After the expansion, the density of the component should reflect the 3d
           density of the material
-
-        See Also
-        --------
-        self.applyHotHeightDensityReduction
         """
         # note, that this is not the actual material density, but rather 2D expanded
         # `density3` is 3D density
@@ -350,41 +346,31 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
         )
-        self.applyHotHeightDensityReduction(initialColdMaterialExpansion=True)
 
-    def applyHotHeightDensityReduction(self, initialColdMaterialExpansion=False):
+        # material needs to be expanded from the material's cold temp to hot,
+        # not components cold temp, so we don't use mat.linearExpansionFactor or
+        # component.getThermalExpansionFactor.
+        # Materials don't typically define the temperature for which their references
+        # density is defined so linearExpansionPercent must be called
+        coldMatAxialExpansionFactor = (
+            1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
+        )
+        self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
+
+    def adjustDensityForHeightExpansion(self):
         """
-        Adjust number densities to account for hot block heights (axial expansion)
-        (crucial for preserving 3D density).
+        Change the densities in cases where height of the block/component is increasing
 
         Notes
         -----
-        - We apply this hot height density reduction to account for pre-expanded
-          block heights in blueprints.
-        - This is called when inputHeightsConsideredHot: True.
-
-        See Also
-        --------
-        self.applyMaterialMassFracsToNumberDensities
+        Call after setTemperature.
+        This works well if there is only 1 solid component.
+        If there are multiple components expanding at different rates during thermal
+        expansion this becomes more complicated and, and axial expansion should be used.
+        Multiple expansion rates cannot trivially be accommodated.
+        See AxialExpansionChanger.
         """
-        if initialColdMaterialExpansion:
-            # material needs to be expanded from the material's cold temp to hot,
-            # not components cold temp, so we don't use mat.linearExpansionFactor or
-            # component.getThermalExpansionFactor.
-            # materials don't typically define the temperature for which their ref dens
-            # is defined so linearExpansionPercent must be called
-            coldMatAxialExpansionFactor = (
-                1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
-            )
-            self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
-        else:
-            # this is the same as getThermalExpansionFactor but doesn't fail
-            # on non-fluid materials that have 0 or undefined thermal expansion
-            # (we don't want materials to fail on  __init__ which calls this)
-            # axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
-            #     self.temperatureInC, self.inputTemperatureInC
-            # )
-            self.changeNDensByFactor(1.0 / self.getThermalExpansionFactor())
+        self.changeNDensByFactor(1.0 / self.getThermalExpansionFactor())
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""
