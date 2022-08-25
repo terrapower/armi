@@ -80,11 +80,24 @@ class TestZone(unittest.TestCase):
 
         self.assertRaises(AssertionError, zone.addItem, "nope")
 
+    def test_removeItem(self):
+        zone = zones.Zone("test_removeItem", [a.getLocation() for a in self.aList])
+        zone.removeItem(self.aList[0])
+        self.assertNotIn(self.aList[0].getLocation(), zone)
+
+        self.assertRaises(AssertionError, zone.removeItem, "also nope")
+
     def test_addItems(self):
         zone = zones.Zone("test_addItems")
         zone.addItems(self.aList)
         for a in self.aList:
             self.assertIn(a.getLocation(), zone)
+
+    def test_removeItems(self):
+        zone = zones.Zone("test_removeItems", [a.getLocation() for a in self.aList])
+        zone.removeItems(self.aList)
+        for a in self.aList:
+            self.assertNotIn(a.getLocation(), zone)
 
     def test_addLoc(self):
         zone = zones.Zone("test_addLoc")
@@ -93,11 +106,24 @@ class TestZone(unittest.TestCase):
 
         self.assertRaises(AssertionError, zone.addLoc, 1234)
 
+    def test_removeLoc(self):
+        zone = zones.Zone("test_removeLoc", [a.getLocation() for a in self.aList])
+        zone.removeLoc(self.aList[0].getLocation())
+        self.assertNotIn(self.aList[0].getLocation(), zone)
+
+        self.assertRaises(AssertionError, zone.removeLoc, 1234)
+
     def test_addLocs(self):
         zone = zones.Zone("test_addLocs")
         zone.addLocs([a.getLocation() for a in self.aList])
         for a in self.aList:
             self.assertIn(a.getLocation(), zone)
+
+    def test_removeLocs(self):
+        zone = zones.Zone("test_removeLocs", [a.getLocation() for a in self.aList])
+        zone.removeLocs([a.getLocation() for a in self.aList])
+        for a in self.aList:
+            self.assertNotIn(a.getLocation(), zone)
 
     def test_iteration(self):
         locs = [a.getLocation() for a in self.aList]
@@ -184,6 +210,14 @@ class TestZones(unittest.TestCase):
         self.assertEqual(len(ring3), 3)
         self.assertIn("003-002", ring3)
 
+        # validate that removeZones() works
+        zonesToRemove = [z.name for z in self.zonez]
+        zs.removeZones(zonesToRemove)
+        self.assertEqual(len(zs.names), 0)
+        self.assertFalse("ring-1" in zs)
+        self.assertFalse("ring-2" in zs)
+        self.assertFalse("ring-3" in zs)
+
     def test_findZoneItIsIn(self):
         # customize settings for this test
         newSettings = {}
@@ -254,6 +288,26 @@ class TestZones(unittest.TestCase):
         # verify that buildZones behaves well when no zones are defined
         zones.buildZones(self.r.core, cs)
         self.assertEqual(len(list(self.r.core.zones)), 0)
+
+    def test_sortZones(self):
+        # create some zones in non-alphabetical order
+        zs = zones.Zones()
+        zs.addZone(self.zonez["ring-3"])
+        zs.addZone(self.zonez["ring-1"])
+        zs.addZone(self.zonez["ring-2"])
+
+        # check the initial order of the zones
+        self.assertEqual(list(zs._zones.keys())[0], "ring-3")
+        self.assertEqual(list(zs._zones.keys())[1], "ring-1")
+        self.assertEqual(list(zs._zones.keys())[2], "ring-2")
+
+        # sort the zones
+        zs.sortZones()
+
+        # check the final order of the zones
+        self.assertEqual(list(zs._zones.keys())[0], "ring-1")
+        self.assertEqual(list(zs._zones.keys())[1], "ring-2")
+        self.assertEqual(list(zs._zones.keys())[2], "ring-3")
 
 
 if __name__ == "__main__":
