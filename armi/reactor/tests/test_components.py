@@ -501,6 +501,7 @@ class TestComponentExpansion(unittest.TestCase):
     # We need a bigger delta, this will be investigated/fixed in another PR
     tWarm = 50
     tHot = 500
+    coldOuterDiameter = 1.0
 
     def test_ExpansionConservationHotHeightDefined(self):
         """
@@ -512,9 +513,9 @@ class TestComponentExpansion(unittest.TestCase):
           inputHeightsConsideredHot = True (the default)
         """
         hotHeight = 1.0
-        coldOuterDiameter = 1.0
-        circle1 = Circle("circle", "HT9", 20, self.tWarm, coldOuterDiameter)
-        circle2 = Circle("circle", "HT9", 20, self.tHot, coldOuterDiameter)
+
+        circle1 = Circle("circle", "HT9", 20, self.tWarm, self.coldOuterDiameter)
+        circle2 = Circle("circle", "HT9", 20, self.tHot, self.coldOuterDiameter)
 
         # mass density is proportional to Fe number density and derived from
         # all the number densities and atomic masses
@@ -627,8 +628,8 @@ class TestComponentExpansion(unittest.TestCase):
           inputHeightsConsideredHot = False
         """
         coldHeight = 1.0
-        circle1 = Circle("circle", "HT9", 20, self.tWarm, 1.0)
-        circle2 = Circle("circle", "HT9", 20, self.tHot, 1.0)
+        circle1 = Circle("circle", "HT9", 20, self.tWarm, self.coldOuterDiameter)
+        circle2 = Circle("circle", "HT9", 20, self.tHot, self.coldOuterDiameter)
         # same as 1 but we will make like 2
         circle1AdjustTo2 = Circle("circle", "HT9", 20, self.tWarm, 1.0)
 
