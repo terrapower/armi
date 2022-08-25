@@ -118,15 +118,12 @@ def getTk(Tc=None, Tk=None):
     TypeError
         The temperature was not provided as an int or float.
     """
-    if Tk is not None:
-        return float(Tk)
-    if Tc is not None:
-        return Tc + C_TO_K
-    raise TypeError(
-        "Cannot produce T in K from Tc={0} and Tk={1}. Please supply a temperature.".format(
-            Tc, Tk
+    if not ((Tc is not None) ^ (Tk is not None)):
+        raise ValueError(
+            f"Cannot produce T in K from Tc={Tc} and Tk={Tk}. "
+            "Please supply a single temperature."
         )
-    )
+    return float(Tk) if Tk is not None else Tc + C_TO_K
 
 
 def getTc(Tc=None, Tk=None):
@@ -143,15 +140,12 @@ def getTc(Tc=None, Tk=None):
     TypeError
         The temperature was not provided as an int or float.
     """
-    if Tc is not None:
-        return float(Tc)
-    if Tk is not None:
-        return Tk - C_TO_K
-    raise TypeError(
-        "Cannot produce T in C from Tc={0} and Tk={1}. Supply a temperature. ".format(
-            Tc, Tk
+    if not ((Tc is not None) ^ (Tk is not None)):
+        raise ValueError(
+            f"Cannot produce T in C from Tc={Tc} and Tk={Tk}. "
+            "Please supply a single temperature."
         )
-    )
+    return float(Tc) if Tc is not None else Tk - C_TO_K
 
 
 def getTf(Tc=None, Tk=None):
@@ -168,15 +162,7 @@ def getTf(Tc=None, Tk=None):
     TypeError
         The temperature was not provided as an int or float.
     """
-    if Tc is not None:
-        return 9.0 * Tc / 5.0 + 32.0
-    if Tk is not None:
-        return 9.0 * (Tk - C_TO_K) / 5.0 + 32.0
-    raise TypeError(
-        "Cannot produce T in F from Tc={0} and Tk={1}. Supply a temperature. ".format(
-            Tc, Tk
-        )
-    )
+    return 1.8 * getTc(Tc, Tk) + 32.0
 
 
 def getTemperature(Tc=None, Tk=None, tempUnits=None):

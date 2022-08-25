@@ -65,7 +65,6 @@ class Sodium(material.Fluid):
         density : float
             mass density in g/cc
         """
-        Tk = getTk(Tc, Tk)
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("density", Tc)
 
@@ -130,7 +129,7 @@ class Sodium(material.Fluid):
             thermal conductivity of Sodium (W/m-K)
 
         """
-        Tc = getTc(Tc, Tk)
+        Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
             124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
