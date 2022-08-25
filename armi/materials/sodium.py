@@ -65,7 +65,6 @@ class Sodium(material.Fluid):
         density : float
             mass density in g/cc
         """
-        Tk = getTk(Tc, Tk)
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("density", Tc)
 
