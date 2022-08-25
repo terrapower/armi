@@ -586,19 +586,15 @@ class TestComponentExpansion(unittest.TestCase):
             circle1.temperatureInC, circle1.inputTemperatureInC
         )
         factorToUndoHotHeight = circle1.getThermalExpansionFactor()
-        self.assertAlmostEqual(
-            coldMatAxialExpansionFactor,
-            factorToUndoHotHeight,
-        )
         # when block.setHeight is called (which effectively changes component height)
         # component.setNumberDensity is called (for solid isotopes) to adjust the number
         # density so that now the 2D expansion will be approximated/expanded around
         # the hot temp which is akin to these adjustments
 
-        # undo the old coldMatAxialExpansionFactor
-        circle1.changeNDensByFactor(factorToUndoHotHeight)
+        # change to self.THot
+        heightFactor = circle1.getHeightFactor(self.tHot)
+        circle1.adjustDensityForHeightExpansion(self.tHot)  # apply temp at new height
         circle1.setTemperature(self.tHot)
-        circle1.adjustDensityForHeightExpansion()  # apply at new temp
 
         # now its density is same as hot component
         self.assertAlmostEqual(
@@ -607,16 +603,9 @@ class TestComponentExpansion(unittest.TestCase):
         )
 
         # show that mass is conserved after expansion
-        circle1NewHotHeight = (
-            hotHeight * circle1.getThermalExpansionFactor() / factorToUndoHotHeight
-        )
+        circle1NewHotHeight = hotHeight * heightFactor
         self.assertAlmostEqual(
             mass1, circle1.getMassDensity() * circle1.getArea() * circle1NewHotHeight
-        )
-        # you can calculate the height exp factor directly this way
-        self.assertAlmostEqual(
-            circle1.getThermalExpansionFactor() / factorToUndoHotHeight,
-            circle1.getThermalExpansionFactor(Tc=circle1.temperatureInC, T0=self.tWarm),
         )
 
         self.assertAlmostEqual(
@@ -624,9 +613,8 @@ class TestComponentExpansion(unittest.TestCase):
             circle1.material.density3(Tc=circle1.temperatureInC),
         )
         # change back to old temp
-        circle1.changeNDensByFactor(circle1.getThermalExpansionFactor())
+        circle1.adjustDensityForHeightExpansion(self.tWarm)
         circle1.setTemperature(self.tWarm)
-        circle1.adjustDensityForHeightExpansion()
 
         # check for consistency
         self.assertAlmostEqual(initialDens, circle1.getMassDensity())
@@ -651,11 +639,8 @@ class TestComponentExpansion(unittest.TestCase):
         circle1AdjustTo2 = Circle("circle", "HT9", 20, self.tWarm, 1.0)
 
         # make it hot like 2
-        circle1AdjustTo2.changeNDensByFactor(
-            circle1AdjustTo2.getThermalExpansionFactor()
-        )
+        circle1AdjustTo2.adjustDensityForHeightExpansion(self.tHot)
         circle1AdjustTo2.setTemperature(self.tHot)
-        circle1AdjustTo2.adjustDensityForHeightExpansion()
         # check that its like 2
         self.assertAlmostEqual(
             circle2.getMassDensity(), circle1AdjustTo2.getMassDensity()

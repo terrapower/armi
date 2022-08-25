@@ -357,20 +357,30 @@ class Component(composites.Composite, metaclass=ComponentType):
         )
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
-    def adjustDensityForHeightExpansion(self):
+    def adjustDensityForHeightExpansion(self, newHot):
         """
-        Change the densities in cases where height of the block/component is increasing
+        Change the densities in cases where height of the block/component is changing with expansion.
 
         Notes
         -----
-        Call after setTemperature.
+        Call before setTemperature since we need old hot temp.
         This works well if there is only 1 solid component.
         If there are multiple components expanding at different rates during thermal
         expansion this becomes more complicated and, and axial expansion should be used.
         Multiple expansion rates cannot trivially be accommodated.
         See AxialExpansionChanger.
         """
-        self.changeNDensByFactor(1.0 / self.getThermalExpansionFactor())
+        self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
+
+    def getHeightFactor(self, newHot):
+        """
+        Return the factor by which height would change by if we did 3D expansion.
+
+        Notes
+        -----
+        Call before setTemperature since we need old hot temp.
+        """
+        return self.getThermalExpansionFactor(Tc=newHot, T0=self.temperatureInC)
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""
