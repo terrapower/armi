@@ -180,6 +180,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._cachedReactorCoreParamData = {}
         self._clearStateOnReactor(self._sourceReactor, cache=True)
         self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
+
+        # We want to map the converted reactor core's library to the source reactor
+        # because in some instances this has changed (i.e., when generating cross sections).
         self._sourceReactor.core.lib = self.convReactor.core.lib
         completeEndTime = timer()
         runLog.extra(
@@ -375,7 +378,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     raise ValueError(
                         f"The state of {destBlock} on {destinationAssembly} "
                         f"was not cleared prior to calling ``setAssemblyStateFromOverlaps``. "
-                        f"This is an implementation bug in the mesh converter that should "
+                        f"This indicates an implementation bug in the mesh converter that should "
                         f"be reported to the developers. The following parameters should be cleared:\n"
                         f"Parameters: {paramNames}\n"
                         f"Values: {existingDestBlockParamVals}"
@@ -458,36 +461,48 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
                     setter(destBlock, updatedDestVals.values(), updatedDestVals.keys())
 
-                # For parameters that have not been set on the destination block, recover these
-                # back to their originals based on the cached values.
-                for paramName in paramNames:
+                UniformMeshGeometryConverter._applyCachedParamValues(
+                    destBlock, paramNames, cachedParams
+                )
 
-                    # Skip over any parameter names that were not previously cached.
-                    if paramName not in cachedParams[destBlock]:
-                        continue
+    @staticmethod
+    def _applyCachedParamValues(destBlock, paramNames, cachedParams):
+        """
+        Applies the cached parameter values back to the destination block, if there are any.
 
-                    if isinstance(destBlock.p[paramName], numpy.ndarray):
-                        # Using just all() on the list/array is not sufficient because if a zero value exists
-                        # in the data then this would then lead to overwritting the data. This is an edge case see
-                        # in the testing, so this excludes zero values on the check.
-                        if (
-                            not all(
-                                [val for val in destBlock.p[paramName] if val != 0.0]
-                            )
-                            or not destBlock.p[paramName].size > 0
-                        ):
-                            destBlock.p[paramName] = cachedParams[destBlock][paramName]
-                    elif isinstance(destBlock.p[paramName], list):
-                        if (
-                            not all(
-                                [val for val in destBlock.p[paramName] if val != 0.0]
-                            )
-                            or not destBlock.p[paramName]
-                        ):
-                            destBlock.p[paramName] = cachedParams[destBlock][paramName]
-                    else:
-                        if not destBlock.p[paramName]:
-                            destBlock.p[paramName] = cachedParams[destBlock][paramName]
+        Notes
+        -----
+        This is implemented to ensure that if certain parameters are not set on the original
+        block that the destination block has the parameter data recovered rather than zeroing
+        the data out. The destination block is cleared before the mapping occurs in ``clearStateOnAssemblies``.
+        """
+
+        # For parameters that have not been set on the destination block, recover these
+        # back to their originals based on the cached values.
+        for paramName in paramNames:
+
+            # Skip over any parameter names that were not previously cached.
+            if paramName not in cachedParams[destBlock]:
+                continue
+
+            if isinstance(destBlock.p[paramName], numpy.ndarray):
+                # Using just all() on the list/array is not sufficient because if a zero value exists
+                # in the data then this would then lead to overwritting the data. This is an edge case see
+                # in the testing, so this excludes zero values on the check.
+                if (
+                    not all([val for val in destBlock.p[paramName] if val != 0.0])
+                    or not destBlock.p[paramName].size > 0
+                ):
+                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
+            elif isinstance(destBlock.p[paramName], list):
+                if (
+                    not all([val for val in destBlock.p[paramName] if val != 0.0])
+                    or not destBlock.p[paramName]
+                ):
+                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
+            else:
+                if not destBlock.p[paramName]:
+                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
 
     @staticmethod
     def clearStateOnAssemblies(
@@ -521,14 +536,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         for a in assems:
             blocks.extend(a.getBlocks())
         for b in blocks:
-            for scalarParam in blockScalarParamNames:
+            for paramName in blockScalarParamNames + blockArrayParamNames:
                 if cache:
-                    cachedBlockParamData[b][scalarParam] = b.p[scalarParam]
-                b.p[scalarParam] = b.p.pDefs[scalarParam].default
-            for arrayParam in blockArrayParamNames:
-                if cache:
-                    cachedBlockParamData[b][arrayParam] = b.p[arrayParam]
-                b.p[arrayParam] = b.p.pDefs[arrayParam].default
+                    cachedBlockParamData[b][paramName] = b.p[paramName]
+                b.p[paramName] = b.p.pDefs[paramName].default
 
         return cachedBlockParamData
 
@@ -587,15 +598,27 @@ class UniformMeshGeometryConverter(GeometryConverter):
         pass
 
     def _computeAverageAxialMesh(self):
-        """Computes an average axial mesh based on the core's reference assembly."""
+        """
+        Computes an average axial mesh based on the core's reference assembly.
+
+        Notes
+        -----
+        This iterates over all the assemblies in the core and collects all assembly meshes
+        that have the same number of fine-mesh points as the `refAssem` for the core. Based on
+        this, the proposed uniform mesh will be some average of many assemblies in the core.
+        The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
+        may have a different mesh due to differences in thermal and/or burn-up expansion.
+        """
         src = self._sourceReactor
         refAssem = src.core.refAssem
+        # Get the number of reference mesh points, including the sub-mesh. This subtracts 1
+        # to remove the first value (typically zero).
         refNumPoints = (
             len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=True)) - 1
-        )  # pop off zero
-        # skip the first value of the mesh (0.0)
+        )
         allMeshes = []
         for a in src.core:
+            # Get the mesh points of the assembly, neglecting the first coordinate (typically zero).s
             aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=True)[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
@@ -771,7 +794,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
 class BlockParamMapper:
     """
-    Light-weight container for parameter setters/getters that can be used when
+    Namespace for parameter setters/getters that can be used when
     transferring data from one assembly to another during the mesh
     conversion process.
     """
