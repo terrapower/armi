@@ -752,6 +752,14 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             # mapped neutron flux and the XS library.
             if self.calcReactionRates:
                 for b in aDest:
+                    # Checks if the block has a multi-group flux defined and if it
+                    # does not then this will skip the reaction rate calculation. This
+                    # is captured by the TypeError, due to a `NoneType` divide by float
+                    # error.
+                    try:
+                        b.getMgFlux()
+                    except TypeError:
+                        continue
                     globalFluxInterface.calcReactionRates(
                         b, destReactor.core.p.keff, destReactor.core.lib
                     )

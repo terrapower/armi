@@ -1470,10 +1470,7 @@ class Block(composites.Composite):
         else:
             integratedFlux = self.p.mgFlux
 
-        if integratedFlux is not None:
-            return numpy.array(integratedFlux)
-        else:
-            return numpy.zeros(1)
+        return numpy.array(integratedFlux)
 
     def getLumpedFissionProductCollection(self):
         """
