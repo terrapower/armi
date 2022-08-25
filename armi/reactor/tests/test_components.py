@@ -621,7 +621,7 @@ class TestComponentExpansion(unittest.TestCase):
 
         self.assertAlmostEqual(
             circle1.getMassDensity(),
-            circle1.material.density3(Tc=circle2.temperatureInC),
+            circle1.material.density3(Tc=circle1.temperatureInC),
         )
         # change back to old temp
         circle1.changeNDensByFactor(circle1.getThermalExpansionFactor())
