@@ -84,7 +84,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         for b in sourceAssem:
             b.p.flux = 1.0
             b.p.power = 10.0
-            b.p.mgFlux = [1.0]
+            b.p.mgFlux = [1.0, 2.0]
 
         # Create a new assembly that has the same mesh as the source assem, but also
         # demonstrates the transfer of number densities and parameter data as a 1:1 mapping
@@ -98,7 +98,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         for b, origB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 1.0)
             self.assertEqual(b.p.power, 10.0)
-            self.assertListEqual(list(b.p.mgFlux), [1.0])
+            self.assertListEqual(list(b.p.mgFlux), [1.0, 2.0])
 
             self.assertEqual(b.p.flux, origB.p.flux)
             self.assertEqual(b.p.power, origB.p.power)
@@ -112,7 +112,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         for b in newAssem:
             b.p.flux = 2.0
             b.p.power = 20.0
-            b.p.mgFlux = [2.0]
+            b.p.mgFlux = [2.0, 4.0]
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssembly=newAssem,
             destinationAssembly=sourceAssem,
@@ -122,7 +122,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         for b, updatedB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 2.0)
             self.assertEqual(b.p.power, 20.0)
-            self.assertListEqual(list(b.p.mgFlux), [2.0])
+            self.assertListEqual(list(b.p.mgFlux), [2.0, 4.0])
 
             self.assertEqual(b.p.flux, updatedB.p.flux)
             self.assertEqual(b.p.power, updatedB.p.power)
@@ -137,12 +137,12 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         for b in sourceAssem:
             b.p.flux = 1.0
             b.p.power = 10.0
-            b.p.mgFlux = [1.0]
+            b.p.mgFlux = [1.0, 2.0]
 
         for b in sourceAssem:
             self.assertEqual(b.p.flux, 1.0)
             self.assertEqual(b.p.power, 10.0)
-            self.assertListEqual(list(b.p.mgFlux), [1.0])
+            self.assertListEqual(list(b.p.mgFlux), [1.0, 2.0])
 
         # Let's test the clearing of the assigned parameters on the source assembly.
         cachedBlockParams = (
@@ -160,7 +160,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
             self.assertEqual(cachedBlockParams[b]["flux"], 1.0)
             self.assertEqual(cachedBlockParams[b]["power"], 10.0)
-            self.assertListEqual(list(cachedBlockParams[b]["mgFlux"]), [1.0])
+            self.assertListEqual(list(cachedBlockParams[b]["mgFlux"]), [1.0, 2.0])
 
 
 class TestUniformMeshComponents(unittest.TestCase):

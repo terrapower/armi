@@ -811,8 +811,8 @@ class BlockParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            if not val:
-                paramVals.append(None)
+            if val == block.p.pDefs[paramName].default:
+                paramVals.append(block.p.pDefs[paramName].default)
             else:
                 paramVals.append(val)
         return numpy.array(paramVals, dtype=object)
@@ -820,19 +820,22 @@ class BlockParamMapper:
     @staticmethod
     def arrayParamSetter(block, multiGroupVals, paramNames):
         """Assigns a set of list/array values to a given set of parameters on a block."""
-        for paramName, val in zip(paramNames, multiGroupVals):
-            block.p[paramName] = numpy.array(val)
+        for paramName, vals in zip(paramNames, multiGroupVals):
+            if vals is None:
+                continue
+            block.p[paramName] = numpy.array(vals)
 
     @staticmethod
     def arrayParamGetter(block, paramNames):
         """Returns a set of list/array values for a given set of parameters on a block."""
         paramVals = []
         for paramName in paramNames:
-            val = block.p[paramName]
-            if val is None or len(val) == 0:
+            vals = block.p[paramName]
+            if vals is None or len(vals) == 0:
                 paramVals.append(None)
             else:
-                paramVals.append(numpy.array(val))
+                paramVals.append(numpy.array(vals))
+
         return numpy.array(paramVals, dtype=object)
 
 
