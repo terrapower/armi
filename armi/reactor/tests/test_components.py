@@ -499,7 +499,6 @@ class TestCircle(TestShapedComponent):
 class TestComponentExpansion(unittest.TestCase):
     # when comparing to 3D density, the comparison is not quite correct.
     # We need a bigger delta, this will be investigated/fixed in another PR
-    biggerDelta = 0.01  # g/cc
     tWarm = 50
     tHot = 500
 
@@ -547,15 +546,16 @@ class TestComponentExpansion(unittest.TestCase):
                 circle.getMassDensity(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
-            # 2D density is off by the thermal exp factor
+            # 2D density is off by the material thermal exp factor
+            percent = circle.material.linearExpansionPercent(Tc=circle.temperatureInC)
+            thermalExpansionFactorFromColdMatTemp = 1 + percent / 100
             self.assertAlmostEqual(
-                circle.getMassDensity() * circle.getThermalExpansionFactor(),
+                circle.getMassDensity() * thermalExpansionFactorFromColdMatTemp,
                 circle.material.density(Tc=circle.temperatureInC),
             )
             self.assertAlmostEqual(
                 circle.getMassDensity(),
                 circle.material.density3(Tc=circle.temperatureInC),
-                delta=self.biggerDelta,
             )
         # Change temp forward and backward and show equal
         oldArea = circle1.getArea()
@@ -604,7 +604,6 @@ class TestComponentExpansion(unittest.TestCase):
         self.assertAlmostEqual(
             circle1.getMassDensity(),
             circle1.material.density3(Tc=circle2.temperatureInC),
-            delta=self.biggerDelta,
         )
         # change back to old temp
         circle1.changeNDensByFactor(circle1.getThermalExpansionFactor())
@@ -650,7 +649,6 @@ class TestComponentExpansion(unittest.TestCase):
             self.assertAlmostEqual(
                 circle.getMassDensity(),
                 circle.material.density3(Tc=circle.temperatureInC),
-                delta=self.biggerDelta,
             )
             # total mass consistent between hot and cold
             # Hot height will be taller
@@ -660,7 +658,6 @@ class TestComponentExpansion(unittest.TestCase):
                 * circle.getArea(cold=True)
                 * circle.material.density3(Tc=circle.inputTemperatureInC),
                 hotHeight * circle.getArea() * circle.getMassDensity(),
-                delta=self.biggerDelta,
             )
 
 

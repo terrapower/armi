@@ -232,26 +232,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self.tInputWarning(Tinput)
         self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
-
-    def tInputWarning(self, Tinput):
-        """
-        Check whether thermal expansion factor is 0.0% exactly at T=Tinput
-        """
-        expansionFactor = (
-            self.material.linearExpansionPercent(Tc=self.inputTemperatureInC) / 100.0
-        )
-        if not (abs(expansionFactor) < 1.0e-6):
-            runLog.warning(
-                f"Thermal expansion for {self.material} at Tinput = {Tinput} is non-zero "
-                f"({expansionFactor}). The modeled density for this material will be off "
-                f"by a factor of {(1 + expansionFactor) ** 2}.",
-                single=True,
-            )
 
     @property
     def temperatureInC(self):
@@ -360,14 +344,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # note, that this is not the actual material density, but rather 2D expanded
         # `density3` is 3D density
+        # call getProperty to cache and improve speed
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
         )
-        self.applyHotHeightDensityReduction()
+        self.applyHotHeightDensityReduction(initialColdMaterialExpansion=True)
 
-    def applyHotHeightDensityReduction(self):
+    def applyHotHeightDensityReduction(self, initialColdMaterialExpansion=False):
         """
         Adjust number densities to account for hot block heights (axial expansion)
         (crucial for preserving 3D density).
@@ -382,13 +367,24 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         self.applyMaterialMassFracsToNumberDensities
         """
-        # this is the same as getThermalExpansionFactor but doesn't fail
-        # on non-fluid materials that have 0 or undefined thermal expansion
-        # (we don't want materials to fail on  __init__ which calls this)
-        axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
-            self.temperatureInC, self.inputTemperatureInC
-        )
-        self.changeNDensByFactor(1.0 / axialExpansionFactor)
+        if initialColdMaterialExpansion:
+            # material needs to be expanded from the material's cold temp to hot,
+            # not components cold temp, so we don't use mat.linearExpansionFactor or
+            # component.getThermalExpansionFactor.
+            # materials don't typically define the temperature for which their ref dens
+            # is defined so linearExpansionPercent must be called
+            coldMatAxialExpansionFactor = (
+                1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
+            )
+            self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
+        else:
+            # this is the same as getThermalExpansionFactor but doesn't fail
+            # on non-fluid materials that have 0 or undefined thermal expansion
+            # (we don't want materials to fail on  __init__ which calls this)
+            # axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
+            #     self.temperatureInC, self.inputTemperatureInC
+            # )
+            self.changeNDensByFactor(1.0 / self.getThermalExpansionFactor())
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""
