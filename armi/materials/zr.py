@@ -130,7 +130,7 @@ class Zr(Material):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
-        if Tk >= 291.62 and Tk < 1137:
+        if Tk >= 293 and Tk < 1137:
             return (
                 -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk ** 2) - (1.768e-10 * Tk ** 3)
             )
