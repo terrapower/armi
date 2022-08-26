@@ -152,8 +152,8 @@ class AxialExpansionChanger:
         -----
         A cold 1 cm tall component will have more mass that a component with the
         same mass/length as a component with a hot height of 1 cm. This should be
-        called when the setting `inputHeightsConsideredHot` is used. This basically
-        undoes component.applyHotHeightDensityReduction
+        called when the setting `inputHeightsConsideredHot` is used. This adjusts
+        the expansion factor applied during applyMaterialMassFracsToNumberDensities.
         """
         for c in self.linked.a.getComponents():
             axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(
