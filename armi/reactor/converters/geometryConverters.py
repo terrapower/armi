@@ -1222,7 +1222,6 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     --------
     >>> converter = ThirdCoreHexToFullCoreChanger()
     >>> converter.convert(myReactor)
-
     """
 
     EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
@@ -1256,7 +1255,6 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         ----------
         sourceReactor : Reactor object
             The reactor to convert.
-
         """
         self._sourceReactor = r
 
@@ -1377,7 +1375,6 @@ class EdgeAssemblyChanger(GeometryChanger):
         See Also
         --------
         removeEdgeAssemblies : removes the edge assemblies
-
         """
         if core.isFullCore:
             return
@@ -1386,7 +1383,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             runLog.important(
                 "Skipping addition of edge assemblies because they are already there"
             )
-            return False
+            return
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
             grids.BOUNDARY_0_DEGREES

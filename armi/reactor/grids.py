@@ -1245,24 +1245,23 @@ class CartesianGrid(Grid):
 
     @staticmethod
     def getIndicesFromRingAndPos(ring, pos):
-        """
-        Not implemented for Cartesian-see getRingPos notes.
-        """
+        """Not implemented for Cartesian-see getRingPos notes."""
         raise NotImplementedError(
             "Cartesian should not need need ring/pos, use i, j indices."
             "See getRingPos doc string notes for more information/example."
         )
 
     def getMinimumRings(self, n):
-        """
-        Return the minimum number of rings needed to fit ``n`` objects.
-        """
+        """Return the minimum number of rings needed to fit ``n`` objects."""
         numPositions = 0
+        ring = 0
         for ring in itertools.count(1):
             ringPositions = self.getPositionsInRing(ring)
             numPositions += ringPositions
             if numPositions >= n:
-                return ring
+                break
+
+        return ring
 
     def getPositionsInRing(self, ring):
         """
