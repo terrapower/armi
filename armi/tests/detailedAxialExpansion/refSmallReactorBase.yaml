@@ -23,7 +23,7 @@ blocks:
         grid:
             shape: Hexagon
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             ip: 15.277
             mult: 1.0
@@ -60,7 +60,7 @@ blocks:
         shield:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 600.0
             id: 0.0
             mult: 169.0
@@ -76,7 +76,7 @@ blocks:
         clad:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 470.0
             id: 1.0
             mult: shield.mult
@@ -84,7 +84,7 @@ blocks:
         wire:
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 30.15
             helixDiameter: 1.19056
@@ -95,7 +95,7 @@ blocks:
         duct: &component_fuel_duct
             shape: Hexagon
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             ip: 16.0
             mult: 1.0
@@ -113,7 +113,7 @@ blocks:
         fuel: &component_fuel_fuel
             shape: Circle
             material: UZr
-            Tinput: 25.0
+            Tinput: 45.187
             Thot: 600.0
             id: 0.0
             mult: 169.0
@@ -129,7 +129,7 @@ blocks:
         clad: &component_fuel_clad
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 470.0
             id: 1.0
             mult: fuel.mult
@@ -137,7 +137,7 @@ blocks:
         wire: &component_fuel_wire
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 30.15
             helixDiameter: 1.19056
@@ -160,7 +160,7 @@ blocks:
         clad: &component_plenum_clad
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 470.0
             id: 1.0
             mult: 169.0
@@ -168,7 +168,7 @@ blocks:
         wire: &component_plenum_wire
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 30.15
             helixDiameter: 1.19056
@@ -187,7 +187,7 @@ blocks:
         duct:
             shape: Hexagon
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             ip: 16.0
             mult: 1.0
@@ -215,7 +215,7 @@ blocks:
         liner2: &component_fuel2_liner2
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 600.0
             id: 0.98
             mergeWith: clad
@@ -224,7 +224,7 @@ blocks:
         liner1: &component_fuel2_liner1
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 600.0
             id: 0.99
             mergeWith: clad
@@ -236,7 +236,7 @@ blocks:
         duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
     
-    lta1 fuel: &block_lta1_fuel
+    lta fuel a: &block_lta1_fuel
         fuel: *component_fuel_fuel
         bond: *component_fuel_bond
         liner2: *component_fuel2_liner2
@@ -247,11 +247,11 @@ blocks:
         duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
     
-    lta2 fuel: &block_lta2_fuel
+    lta fuel b: &block_lta2_fuel
         fuel:
             shape: Circle
             material: UZr
-            Tinput: 25.0
+            Tinput: 45.187
             Thot: 600.0
             id: 0.0
             isotopics: PuUZr
@@ -278,7 +278,7 @@ blocks:
         fuel:
             shape: Circle
             material: UZr
-            Tinput: 25.0
+            Tinput: 45.187
             Thot: 600.0
             id: 0.600
             mult: 169.0
@@ -295,7 +295,7 @@ blocks:
         inner liner:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 430.0
             id: 0.878
             mult: fuel.mult
@@ -311,7 +311,7 @@ blocks:
         outer liner:
             shape: Circle
             material: Zr
-            Tinput: 25.0
+            Tinput: 18.474
             Thot: 430.0
             id: 0.898
             mult: fuel.mult
@@ -327,7 +327,7 @@ blocks:
         clad:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 430.0
             id: 0.900
             mult: fuel.mult
@@ -344,7 +344,7 @@ blocks:
         duct: &component_control_duct
             shape: Hexagon
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             ip: 15.277
             mult: 1.0
@@ -378,7 +378,7 @@ blocks:
         clad:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             id: 1.358
             mult: control.mult
@@ -386,7 +386,7 @@ blocks:
         wire:
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 50.0
             helixDiameter: 1.771
@@ -396,7 +396,7 @@ blocks:
         innerDuct:
             shape: Hexagon
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             ip: 14.268
             mult: 1.0
@@ -417,7 +417,7 @@ blocks:
         clad:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             id: 1.358
             mult: 61.0
@@ -425,7 +425,7 @@ blocks:
         wire:
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 30.15
             helixDiameter: 1.19056
@@ -442,7 +442,7 @@ blocks:
         shield:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 600.0
             id: 0.0
             mult: 169.0
@@ -458,7 +458,7 @@ blocks:
         clad:
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             id: 0.90562
             mult: shield.mult
@@ -466,7 +466,7 @@ blocks:
         wire:
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 30.15
             helixDiameter: 16.85056
@@ -489,7 +489,7 @@ blocks:
         clad: &component_radial_shield_clad
             shape: Circle
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             id: 0.90562
             mult: 169.0
@@ -497,7 +497,7 @@ blocks:
         wire: &component_radial_shield_plenum_wire
             shape: Helix
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             axialPitch: 30.15
             helixDiameter: 1.19056
@@ -516,7 +516,7 @@ blocks:
         duct:
             shape: Hexagon
             material: HT9
-            Tinput: 25.0
+            Tinput: 27.548
             Thot: 450.0
             ip: 16.0
             mult: 1.0
@@ -547,7 +547,7 @@ assemblies:
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
-    lta fuel:
+    lead test fuel:
         specifier: LA
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum,  *block_aclp, *block_plenum, *block_dummy]
         height: *highOffset_height
@@ -556,7 +556,7 @@ assemblies:
             U235_wt_frac: &lta_fuel_u235_wt_frac ['', '', 0.2, 0.2, 0.2, '', '', '', '']
             ZR_wt_frac: &lta_fuel_zr_wt_frac ['', '', 0.07, 0.07, 0.06, '', '', '', '']
         xs types: *igniter_fuel_xs_types
-    lta fuel b:
+    lead test fuel b:
         specifier: LB
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta2_fuel, *block_lta2_fuel, *block_lta2_fuel, *block_plenum, *block_aclp, *block_plenum, *block_dummy]
         height: *highOffset_height

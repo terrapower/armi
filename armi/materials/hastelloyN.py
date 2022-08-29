@@ -87,7 +87,7 @@ class HastelloyN(Material):
         Hastelloy N thermal conductivity (W/m-K)
         """
         Tc = getTc(Tc, Tk)
-        Tk = getTk(Tc, Tk)
+        Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("thermal conductivity", Tk)
         return 1.92857e-05 * Tc ** 2 + 3.12857e-03 * Tc + 1.17743e01  # W/m-K
 
@@ -109,7 +109,7 @@ class HastelloyN(Material):
         Hastelloy N specific heat capacity (J/kg-C)
         """
         Tc = getTc(Tc, Tk)
-        Tk = getTk(Tc, Tk)
+        Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("heat capacity", Tk)
         return (
             +3.19981e02
@@ -157,6 +157,6 @@ class HastelloyN(Material):
         mean coefficient of thermal expansion in m/m/C
         """
         Tc = getTc(Tc, Tk)
-        Tk = getTk(Tc, Tk)
+        Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("thermal expansion", Tk)
         return 2.60282e-12 * Tc ** 2 + 7.69859e-10 * Tc + 1.21036e-05

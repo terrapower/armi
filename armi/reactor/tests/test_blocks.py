@@ -1302,16 +1302,20 @@ class Block_TestCase(unittest.TestCase):
         index = b.rotatePins(1)
         self.assertEqual(b.getRotationNum(), 1)
         self.assertEqual(index[2], 3)
+        self.assertEqual(b.p.pinLocation[1], 3)
 
         index = b.rotatePins(1)
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
+        self.assertEqual(b.p.pinLocation[1], 4)
 
         index = b.rotatePins(2)
         index = b.rotatePins(4)  # over-rotate to check modulus
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(index[6], 2)
+        self.assertEqual(b.p.pinLocation[1], 4)
+        self.assertEqual(b.p.pinLocation[5], 2)
 
         self.assertRaises(ValueError, b.rotatePins, -1)
         self.assertRaises(ValueError, b.rotatePins, 10)
@@ -2113,21 +2117,6 @@ class CartesianBlock_TestCase(unittest.TestCase):
             _ = self.cartesianBlock.getHydraulicDiameter()
 
 
-class PointTests(unittest.TestCase):
-    def setUp(self):
-        self.point = blocks.Point()
-
-    def test_getters(self):
-        self.assertEqual(1.0, self.point.getVolume())
-        self.assertEqual(1.0, self.point.getBurnupPeakingFactor())
-
-    def test_getWettedPerimeter(self):
-        self.assertEqual(0.0, self.point.getWettedPerimeter())
-
-    def test_getHydraulicDiameter(self):
-        self.assertEqual(0.0, self.point.getHydraulicDiameter())
-
-
 class MassConservationTests(unittest.TestCase):
     r"""
     Tests designed to verify mass conservation during thermal expansion
@@ -2282,7 +2271,6 @@ class MassConservationTests(unittest.TestCase):
         and hot height.
         """
         fuel = self.b.getComponent(Flags.FUEL)
-        fuel.applyHotHeightDensityReduction()
         # set ref (input/cold) temperature.
         Thot = fuel.temperatureInC
         Tcold = fuel.inputTemperatureInC

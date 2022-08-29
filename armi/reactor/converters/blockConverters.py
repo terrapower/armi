@@ -36,7 +36,7 @@ SIN60 = math.sin(math.radians(60.0))
 class BlockConverter:
     """Converts a block."""
 
-    def __init__(self, sourceBlock, quiet=False):
+    def __init__(self, sourceBlock):
         """
         Parameters
         ----------
@@ -45,7 +45,6 @@ class BlockConverter:
         quite : boolean, optional
             If True, less information is output in the runLog.
         """
-        self._quiet = quiet
         self._sourceBlock = sourceBlock
         self.convertedBlock = None  # the new block that is created.
 
@@ -73,12 +72,11 @@ class BlockConverter:
         recommended that these blocks be made right before the physics calculation of interest and be immediately
         discarded. Attaching them to the reactor is not recommended.
         """
-        if not self._quiet:
-            runLog.extra(
-                "Homogenizing the {} component into the {} component in block {}".format(
-                    soluteName, solventName, self._sourceBlock
-                )
+        runLog.extra(
+            "Homogenizing the {} component into the {} component in block {}".format(
+                soluteName, solventName, self._sourceBlock
             )
+        )
         # break up dimension links since we will be messing with this block's components
         newBlock = copy.deepcopy(self._sourceBlock)
         # cannot pass components directly since the new block will have new components
@@ -213,7 +211,7 @@ class BlockConverter:
 class ComponentMerger(BlockConverter):
     """For a provided block, merged the solute component into the solvent component."""
 
-    def __init__(self, sourceBlock, soluteName, solventName, quiet=False):
+    def __init__(self, sourceBlock, soluteName, solventName):
         """
         Parameters
         ----------
@@ -226,7 +224,7 @@ class ComponentMerger(BlockConverter):
         quite : boolean, optional
             If True, less information is output in the runLog.
         """
-        BlockConverter.__init__(self, sourceBlock, quiet=quiet)
+        BlockConverter.__init__(self, sourceBlock)
         self.soluteName = soluteName
         self.solventName = solventName
 
@@ -250,9 +248,7 @@ class MultipleComponentMerger(BlockConverter):
     do single and multiple components with the same code.
     """
 
-    def __init__(
-        self, sourceBlock, soluteNames, solventName, specifiedMinID=0.0, quiet=False
-    ):
+    def __init__(self, sourceBlock, soluteNames, solventName, specifiedMinID=0.0):
         """
         Parameters
         ----------
@@ -268,7 +264,7 @@ class MultipleComponentMerger(BlockConverter):
         quite : boolean, optional
             If True, less information is output in the runLog.
         """
-        BlockConverter.__init__(self, sourceBlock, quiet=quiet)
+        BlockConverter.__init__(self, sourceBlock)
         self.soluteNames = soluteNames
         self.solventName = solventName
         self.specifiedMinID = specifiedMinID
@@ -318,10 +314,9 @@ class BlockAvgToCylConverter(BlockConverter):
         driverFuelBlock=None,
         numInternalRings=1,
         numExternalRings=None,
-        quiet=False,
     ):
 
-        BlockConverter.__init__(self, sourceBlock, quiet=quiet)
+        BlockConverter.__init__(self, sourceBlock)
         self._driverFuelBlock = driverFuelBlock
         self._numExternalRings = numExternalRings
         self.convertedBlock = blocks.ThRZBlock(
@@ -489,14 +484,12 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         driverFuelBlock=None,
         numExternalRings=None,
         mergeIntoClad=None,
-        quiet=False,
     ):
         BlockAvgToCylConverter.__init__(
             self,
             sourceBlock,
             driverFuelBlock=driverFuelBlock,
             numExternalRings=numExternalRings,
-            quiet=quiet,
         )
         if not isinstance(sourceBlock, blocks.HexBlock):
             raise TypeError(

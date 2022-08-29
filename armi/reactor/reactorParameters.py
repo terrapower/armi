@@ -214,6 +214,16 @@ def defineCoreParameters():
             ),
         )
 
+    with pDefs.createBuilder() as pb:
+
+        pb.defParam(
+            "axialMesh",
+            units="cm",
+            description="Global axial mesh of the reactor core from bottom to top.",
+            default=None,
+            location=ParamLocation.TOP,
+        )
+
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
 
         pb.defParam(

@@ -208,8 +208,8 @@ class TestUserPlugins(unittest.TestCase):
             },
         )
 
-        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
-        self.assertNotIn("UserPluginFlags3", pluginNames)
+        pNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn("UserPluginFlags3", pNames)
 
         cs.registerUserPlugins()
 
@@ -253,8 +253,8 @@ class TestUserPlugins(unittest.TestCase):
         # register the plugin
         app = getApp()
 
-        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
-        self.assertNotIn("UserPluginWithInterface", pluginNames)
+        pNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn("UserPluginWithInterface", pNames)
 
         # register custom UserPlugin, that has an
         plugins = ["armi.tests.test_user_plugins.UserPluginWithInterface"]

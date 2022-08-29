@@ -729,39 +729,67 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Neutron flux above 100keV at hexagon block corners",
             location=ParamLocation.CORNERS,
-            saveToDB=False,
+            saveToDB=True,
+            default=None,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
         # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsFastFluxFr",
+            "pointsCornerFastFluxFr",
             units=None,
-            description="Fraction of flux above 100keV at points within the block",
-            location=ParamLocation.CHILDREN,
-            saveToDB=False,
+            description="Fraction of flux above 100keV at corners of the block",
+            location=ParamLocation.CORNERS,
+            saveToDB=True,
+            default=None,
+        )
+        pb.defParam(
+            "pointsEdgeFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at edges of the block",
+            location=ParamLocation.EDGES,
+            saveToDB=True,
+            default=None,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
         # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsDpa",
+            "pointsCornerDpa",
             units="dpa",
-            description="displacements per atom at points within the block",
-            location=ParamLocation.CHILDREN,
+            description="displacements per atom at corners of the block",
+            location=ParamLocation.CORNERS,
             categories=["cumulative"],
-            saveToDB=False,
-            default=0.0,
+            saveToDB=True,
+            default=None,
+        )
+        pb.defParam(
+            "pointsEdgeDpa",
+            units="dpa",
+            description="displacements per atom at edges of the block",
+            location=ParamLocation.EDGES,
+            categories=["cumulative"],
+            saveToDB=True,
+            default=None,
         )
 
         # This quantity should eventually be part of category 'detailedAxialExpansion'
         # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsDpaRate",
+            "pointsCornerDpaRate",
             units="dpa/s",
-            description="Current time derivative of the displacement per atoms at points within the block",
-            location=ParamLocation.CHILDREN,
-            saveToDB=False,
+            description="Current time derivative of the displacement per atoms at corners of the block",
+            location=ParamLocation.CORNERS,
+            saveToDB=True,
+            default=None,
+        )
+        pb.defParam(
+            "pointsEdgeDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at edges of the block",
+            location=ParamLocation.EDGES,
+            saveToDB=True,
+            default=None,
         )
 
         pb.defParam(
@@ -784,14 +812,6 @@ def _getNeutronicsCoreParams():
             description="All available lambda-eigenvalues of reactor.",
             default=None,  # will be a list though, can't set default to mutable type.
             location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "axialMesh",
-            units="cm",
-            description="Global axial mesh from bottom to top used in structured-mesh neutronics simulations.",
-            default=None,
-            location=ParamLocation.TOP,
         )
 
         pb.defParam(

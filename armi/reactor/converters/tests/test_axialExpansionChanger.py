@@ -17,8 +17,9 @@
 import os
 from statistics import mean
 import unittest
-from numpy import linspace, ones, array, vstack, zeros
+from numpy import linspace, array, vstack, zeros
 from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.materials import material
 from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
@@ -39,6 +40,7 @@ from armi.reactor.flags import Flags
 from armi import materials
 from armi.utils import units
 from armi.materials import custom
+from armi.tests import mockRunLogs
 
 # set namespace order for materials so that fake HT9 material can be found
 materials.setMaterialNamespaceOrder(
@@ -280,7 +282,11 @@ class TestConservation(Base, unittest.TestCase):
         )
         for idt in range(self.temp.tempSteps):
             self.obj.performThermalAxialExpansion(
-                self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
+                self.a,
+                self.temp.tempGrid,
+                self.temp.tempField[idt, :],
+                setFuel=True,
+                updateNDensForRadialExp=False,
             )
             self._getConservationMetrics(self.a)
 
@@ -299,7 +305,9 @@ class TestConservation(Base, unittest.TestCase):
         for temp in isothermalTempList:
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
+            axialExpChngr.performThermalAxialExpansion(
+                a, tempGrid, tempField, updateNDensForRadialExp=False
+            )
             if temp == 25.0:
                 for new, old in zip(
                     a.getAxialMesh()[:-1], originalMesh[:-1]
@@ -341,7 +349,9 @@ class TestConservation(Base, unittest.TestCase):
         for temp in isothermalTempList:
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
+            axialExpChngr.performThermalAxialExpansion(
+                a, tempGrid, tempField, updateNDensForRadialExp=False
+            )
             if temp == 250.0:
                 for new, old in zip(
                     a.getAxialMesh()[:-1], originalMesh[:-1]
@@ -388,10 +398,20 @@ class TestConservation(Base, unittest.TestCase):
             else:
                 percents = -0.01 + zeros(len(componentLst))
             # set the expansion factors
-            oldMasses = [c.getMass() for b in a for c in b]
+            oldMasses = [
+                c.getMass()
+                for b in a
+                for c in b
+                if not isinstance(c.material, material.Fluid)
+            ]
             # do the expansion
             obj.performPrescribedAxialExpansion(a, componentLst, percents, setFuel=True)
-            newMasses = [c.getMass() for b in a for c in b]
+            newMasses = [
+                c.getMass()
+                for b in a
+                for c in b
+                if not isinstance(c.material, material.Fluid)
+            ]
             for old, new in zip(oldMasses, newMasses):
                 self.assertAlmostEqual(old, new)
 
@@ -477,6 +497,41 @@ class TestConservation(Base, unittest.TestCase):
             aclp.p.ztop,
             msg="ACLP ztop has changed. It should not with fuel component only expansion!",
         )
+
+    def test_reset(self):
+        self.obj.setAssembly(self.a)
+        self.obj.reset()
+        self.assertIsNone(self.obj.linked)
+        self.assertIsNone(self.obj.expansionData)
+
+    def test_computeThermalExpansionFactors(self):
+        """ensure expansion factors are as expected"""
+        self.obj.setAssembly(self.a)
+        stdThermExpFactor = {}
+        newTemp = 500.0
+        # apply new temp to the pin and clad components of each block
+        for b in self.a:
+            for c in b[0:2]:
+                stdThermExpFactor[c] = c.getThermalExpansionFactor() - 1.0
+                self.obj.expansionData.updateComponentTemp(b, c, newTemp)
+
+        self.obj.expansionData.computeThermalExpansionFactors()
+
+        # skip dummy block, it's just coolant and doesn't expand.
+        for b in self.a[:-1]:
+            for ic, c in enumerate(b):
+                if ic <= 1:
+                    self.assertNotEqual(
+                        stdThermExpFactor[c],
+                        self.obj.expansionData.getExpansionFactor(c),
+                        msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
+                    )
+                else:
+                    self.assertEqual(
+                        self.obj.expansionData.getExpansionFactor(c),
+                        0.0,
+                        msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
+                    )
 
 
 class TestManageCoreMesh(unittest.TestCase):
@@ -640,6 +695,15 @@ class TestExceptions(Base, unittest.TestCase):
         compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
         self.assertFalse(_determineLinked(compA, compB))
 
+    def test_getLinkedComponents(self):
+        """test for multiple component axial linkage"""
+        shieldBlock = self.obj.linked.a[0]
+        shieldComp = shieldBlock[0]
+        shieldComp.setDimension("od", 0.785, cold=True)
+        with self.assertRaises(RuntimeError) as cm:
+            self.obj.linked._getLinkedComponents(shieldBlock, shieldComp)
+            self.assertEqual(cm.exception, 3)
+
 
 class TestDetermineTargetComponent(unittest.TestCase):
     """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
@@ -688,13 +752,16 @@ class TestDetermineTargetComponent(unittest.TestCase):
             ),
         )
 
-    def test_specifyTargetComponet_BlueprintSpecifed(self):
+    def test_specifyTargetComponet_BlueprintSpecified(self):
         b = HexBlock("SodiumBlock", height=10.0)
         sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 16, "ip": 15.0, "mult": 1.0}
         dummy = Hexagon("coolant", "Sodium", **sodiumDims)
+        dummyDuct = Hexagon("duct", "FakeMat", **sodiumDims)
         b.add(dummy)
+        b.add(dummyDuct)
         b.getVolumeFractions()
-        b.setType("SodiumBlock")
+        b.setType("DuctBlock")
 
         # check for no target component found
         with self.assertRaises(RuntimeError) as cm:
@@ -702,12 +769,14 @@ class TestDetermineTargetComponent(unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-        b.setAxialExpTargetComp(dummy)
+        # check that target component is explicitly specified
+        b.setAxialExpTargetComp(dummyDuct)
         self.assertEqual(
             b.axialExpTargetComponent,
-            dummy,
+            dummyDuct,
         )
 
+        # check that target component is stored on expansionData object correctly
         self.obj.expansionData._componentDeterminesBlockHeight[
             b.axialExpTargetComponent
         ] = True
@@ -717,25 +786,44 @@ class TestDetermineTargetComponent(unittest.TestCase):
             ]
         )
 
+        # get coverage for runLog statements on origination of target components
+        # axial exp changer skips formal expansion of the top most block so we
+        # need three blocks.
+        b0 = _buildTestBlock("b0", "FakeMat", 25.0, 10.0)
+        b2 = _buildTestBlock("b1", "FakeMat", 25.0, 10.0)
+        assembly = HexAssembly("testAssemblyType")
+        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid.armiObject = assembly
+        assembly.add(b0)
+        assembly.add(b)
+        assembly.add(b2)
+        assembly.calculateZCoords()
+        assembly.reestablishBlockOrder()
+        with mockRunLogs.BufferLog() as mock:
+            self.obj.performPrescribedAxialExpansion(assembly, [dummy], [0.01])
+            self.assertIn("(blueprints defined)", mock._outputStream)
+            self.assertIn("(inferred)", mock._outputStream)
+
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
     """verify thermal expansion for process loading of core"""
 
     def setUp(self):
-        """provide the base case"""
+        """This test uses a different armiRun.yaml than the default"""
+
         _o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            {"inputHeightsConsideredHot": True},
+            customSettings={"inputHeightsConsideredHot": True},
         )
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            {"inputHeightsConsideredHot": False},
+            customSettings={"inputHeightsConsideredHot": False},
         )
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
-    def test_coldAssemblyHeight(self):
+    def test_coldAssemblyExpansion(self):
         """block heights are cold and should be expanded
 
         Notes
@@ -762,9 +850,35 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     isinstance(c.material, custom.Custom) for c in bStd
                 )
                 if (aStd.hasFlags(Flags.CONTROL)) or (hasCustomMaterial):
-                    checkColdBlockHeight(bStd, bExp, self.assertEqual, "the same")
+                    checkColdBlockHeight(bStd, bExp, self.assertAlmostEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
+                if bStd.hasFlags(Flags.FUEL):
+                    # fuel mass should grow because heights are considered cold heights
+                    # and a cold 1 cm column has more mass than a hot 1 cm column
+                    if not isinstance(
+                        bStd.getComponent(Flags.FUEL).material, custom.Custom
+                    ):
+                        # custom materials don't expand
+                        self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+                if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
+                    if not hasCustomMaterial:
+                        # skip blocks of custom material where liner is merged with clad
+                        for cExp in bExp:
+                            if not isinstance(cExp.material, custom.Custom):
+                                matDens = cExp.material.density3(Tc=cExp.temperatureInC)
+                                compDens = cExp.getMassDensity()
+                                msg = (
+                                    f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
+                                    + f"expansion = {bExp.p.height / bStd.p.height} \n"
+                                    + f"density3 = {matDens}, component density = {compDens} \n"
+                                )
+                                self.assertAlmostEqual(
+                                    matDens,
+                                    compDens,
+                                    places=7,
+                                    msg=msg,
+                                )
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):

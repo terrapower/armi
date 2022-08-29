@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the App class."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,import-outside-toplevel
 import copy
 import unittest
 
@@ -21,6 +22,7 @@ from armi import configure
 from armi import context
 from armi import getApp
 from armi import getDefaultPluginManager
+from armi import isStableReleaseVersion
 from armi import meta
 from armi import plugins
 from armi.__main__ import main
@@ -179,6 +181,24 @@ class TestApps(unittest.TestCase):
         self.assertIn("version", splash)
         self.assertIn(meta.__version__, splash)
         self.assertIn("DifferentApp", splash)
+
+    def test_isStableReleaseVersion(self):
+        self.assertTrue(isStableReleaseVersion(None))
+        self.assertTrue(isStableReleaseVersion("0.1.2"))
+        self.assertFalse(isStableReleaseVersion("1.2.3-asda132a"))
+
+    def test_disableFutureConfigures(self):
+        import armi
+
+        # save off, in in case of poorly parallelized tests
+        old = armi._ignoreConfigures
+
+        # test it works (should be False to start)
+        armi.disableFutureConfigures()
+        self.assertTrue(armi._ignoreConfigures)
+
+        # reset, in case of poorly parallelized tests
+        armi._ignoreConfigures = old
 
 
 class TestArmi(unittest.TestCase):
