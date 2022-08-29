@@ -2274,11 +2274,16 @@ class MassConservationTests(unittest.TestCase):
         # set ref (input/cold) temperature.
         Thot = fuel.temperatureInC
         Tcold = fuel.inputTemperatureInC
+
+        # change temp to cold
         fuel.setTemperature(Tcold)
         massCold = fuel.getMass()
         fuelArea = fuel.getArea()
+        # we are at cold temp so cold and hot area are equal
+        self.assertAlmostEqual(fuel.getArea(cold=True), fuel.getArea())
         height = self.b.getHeight()  # hot height.
-        rho = fuel.getProperties().density(Tc=Tcold)
+        rho = fuel.getProperties().density3(Tc=Tcold)
+        # can't use getThermalExpansionFactor since hot=cold so it would be 0
         dllHot = fuel.getProperties().linearExpansionFactor(Tc=Thot, T0=Tcold)
         coldHeight = height / (1 + dllHot)
         theoreticalMass = fuelArea * coldHeight * rho
@@ -2287,7 +2292,7 @@ class MassConservationTests(unittest.TestCase):
             massCold,
             theoreticalMass,
             7,
-            "Cold mass of fuel ({0}) != theoretical mass {1}.  "
+            msg="Cold mass of fuel ({0}) != theoretical mass {1}.  "
             "Check calculation of cold mass".format(massCold, theoreticalMass),
         )
 
