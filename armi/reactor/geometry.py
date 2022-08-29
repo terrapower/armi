@@ -97,26 +97,24 @@ class GeomType(enum.Enum):
     @property
     def label(self):
         """Human-presentable label"""
-
         if self == self.HEX:
             return "Hexagonal"
         elif self == self.CARTESIAN:
             return "Cartesian"
         elif self == self.RZT:
             return "R-Z-Theta"
-        elif self == self.RZ:
+        else:
             return "R-Z"
 
     def __str__(self):
         """Inverse of fromStr()"""
-
         if self == self.HEX:
             return HEX
         elif self == self.CARTESIAN:
             return CARTESIAN
         elif self == self.RZT:
             return RZT
-        elif self == self.RZ:
+        else:
             return RZ
 
 
@@ -177,7 +175,8 @@ class DomainType(enum.Enum):
             return "Eighth"
         elif self == self.SIXTEENTH_CORE:
             return "Sixteenth"
-        elif self == self.NULL:
+        else:
+            # is NULL
             return ""
 
     def __str__(self):
@@ -192,7 +191,8 @@ class DomainType(enum.Enum):
             return EIGHTH_CORE
         elif self == self.SIXTEENTH_CORE:
             return SIXTEENTH_CORE
-        elif self == self.NULL:
+        else:
+            # is NULL
             return ""
 
     def symmetryFactor(self) -> float:
@@ -258,7 +258,7 @@ class BoundaryType(enum.Enum):
             return "No Symmetry"
         elif self == self.REFLECTIVE:
             return "Reflective"
-        elif self == self.PERIODIC:
+        else:
             return "Periodic"
 
     def __str__(self):
@@ -267,7 +267,7 @@ class BoundaryType(enum.Enum):
             return ""
         elif self == self.PERIODIC:
             return PERIODIC
-        elif self == self.REFLECTIVE:
+        else:
             return REFLECTIVE
 
     def hasSymmetry(self):

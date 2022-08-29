@@ -134,7 +134,7 @@ class ExtractInputs(EntryPoint):
                 runLog.error("`{}` already exists. Aborting.".format(path))
                 bail = True
         if bail:
-            return -1
+            return
 
         for path, data, inp in [
             (settingsPath, settings, "settings"),
@@ -184,7 +184,7 @@ class InjectInputs(EntryPoint):
                 "No settings, blueprints, or geometry files specified; "
                 "nothing to do."
             )
-            return -1
+            return
 
         bp = None
         settings = None

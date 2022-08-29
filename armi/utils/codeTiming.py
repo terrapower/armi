@@ -404,13 +404,12 @@ class _Timer:
         cur_time = MasterTimer.time()
 
         if self._frozen:
-            return
-
-        if self.isActive:
-            self.over_start += (
-                1  # call was made on an active timer, we're now over-started
-            )
+            return cur_time
+        elif self.isActive:
+            # call was made on an active timer, we're now over-started
+            self.over_start += 1
             self._close_time_pair(cur_time)
+
         self._active = True
         self._open_time_pair(cur_time)
 
@@ -420,9 +419,10 @@ class _Timer:
         cur_time = MasterTimer.time()
 
         if self._frozen:
-            return
+            return cur_time
 
-        if self.over_start:  # can't end the timer as it's over-started
+        if self.over_start:
+            # can't end the timer as it's over-started
             self.over_start -= 1
         elif self.isActive:
             self._active = False
