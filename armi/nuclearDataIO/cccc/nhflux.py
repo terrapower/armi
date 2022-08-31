@@ -157,7 +157,7 @@ class NHFLUX(cccc.DataContainer):
         self.metadata["variantFlag"] = variant
         self.metadata["numDataSetsToRead"] = numDataSetsToRead
 
-        # Initialize class array variables.
+        # Initialize instance array variables
         self.incomingPointersToAllAssemblies: np.ndarray = np.array([])
         self.externalCurrentPointers: np.ndarray = np.array([])
         self.geodstCoordMap: np.ndarray = np.array([])
@@ -165,6 +165,7 @@ class NHFLUX(cccc.DataContainer):
             self.outgoingPCSymSecPointers: np.ndarray = np.array([])
             self.ingoingPCSymSecPointers: np.ndarray = np.array([])
         self.fluxMoments: np.ndarray = np.array([])
+        self.fluxMomentsOdd: np.ndarray = np.array([])
         self.partialCurrentsHex: np.ndarray = np.array([])
         self.partialCurrentsHex_ext: np.ndarray = np.array([])
         self.partialCurrentsZ: np.ndarray = np.array([])
@@ -236,6 +237,10 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             self._data.fluxMoments = np.zeros(
                 (self._metadata["nintxy"], nz, self._metadata["nMom"], ng)
             )
+            if self._metadata["variantFlag"] and self._metadata["nMoms"] > 0:
+                self._data.fluxMomentsOdd = np.zeros(
+                    (self._metadata["nintxy"], nz, self._metadata["nMoms"], ng)
+                )
             if self._metadata["iwnhfl"] != 1:
                 self._data.partialCurrentsHex = np.zeros(
                     (self._metadata["nintxy"], nz, self._metadata["nSurf"], ng)
@@ -323,10 +328,18 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         """
         Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.)
         """
+        # Dummy values are stored because sometimes they get assigned
+        # unexpected values anyway, and so we still want to preserve those values anyway
         if self._metadata["variantFlag"]:
-            keys = FILE_SPEC_1D_KEYS + FILE_SPEC_1D_KEYS_VARIANT11 + ("IDUM",) * 6
+            keys = (
+                FILE_SPEC_1D_KEYS
+                + FILE_SPEC_1D_KEYS_VARIANT11
+                + tuple(f"IDUM{e:>02}" for e in range(1, 7))
+            )
         else:
-            keys = FILE_SPEC_1D_KEYS + ("IDUM",) * 11
+            keys = FILE_SPEC_1D_KEYS + tuple(
+                tuple(f"IDUM{e:>02}" for e in range(1, 12))
+            )
 
         with self.createRecord() as record:
             self._metadata.update(record.rwImplicitlyTypedMap(keys, self._metadata))
