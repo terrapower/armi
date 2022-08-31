@@ -13,14 +13,11 @@
 # limitations under the License.
 
 """A place for the FuelHandler's Interface"""
-import logging
 
+from armi import runLog
 from armi import interfaces
 from armi.utils import plotting
-from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import fuelHandlerFactory
-
-runLog = logging.getLogger(__name__)
 
 
 class FuelHandlerInterface(interfaces.Interface):

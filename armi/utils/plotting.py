@@ -343,7 +343,10 @@ def plotFaceMap(
     # allow a color bar option
     if makeColorBar:
         collection2 = PatchCollection(patches, cmap=cmapName, alpha=1.0)
-        collection2.set_array(numpy.array(data))
+        if minScale and maxScale:
+            collection2.set_array(numpy.array([minScale, maxScale]))
+        else:
+            collection2.set_array(numpy.array(data))
 
         if "radial" in cBarLabel:
             colbar = fig.colorbar(
