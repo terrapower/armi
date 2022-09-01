@@ -1213,8 +1213,6 @@ class Core(composites.Composite):
         self._getAssembliesByName()
         self._genBlocksByName()
         runLog.important("Regenerating Core Zones")
-        # TODO: this call is questionable... the cs should correspond to analysis
-        self.buildZones(settings.getMasterCs())
         self._genChildByLocationLookupTable()
 
     def getAllXsSuffixes(self):
@@ -1760,10 +1758,6 @@ class Core(composites.Composite):
         assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
 
-    def buildZones(self, cs):
-        """Update the zones on the reactor."""
-        zones.buildZones(self, cs)
-
     def getCoreRadius(self):
         """Returns a radius that the core would fit into."""
         return self.getNumRings(indexBased=True) * self.getFirstBlock().getPitch()
@@ -2306,9 +2300,6 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
-
-        # Perform initial zoning task
-        self.buildZones(cs)
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
