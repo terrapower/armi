@@ -2,14 +2,13 @@
 Software Requirement Specification Document (SRSD)
 **************************************************
 
+
 ---------------
 Business Impact
 ---------------
 
-..
-   TODO: Do this by topic
-
 #. The ``database`` package is used to restart runs, analyze results, and determine when changes are introduced to otherwise identical cases in ARMI. The ``database`` package is considered high risk.
+#. The ``report`` package is one of many tools available for viewing case details and is intended purely for developer or analyst feedback on run specifications and results, not as a means of altering the run. Thus the ``report`` package is low risk.
 
 
 --------------------
@@ -24,6 +23,35 @@ Applicable Documents
 Functional Requirements
 -----------------------
 
+.. req:: The database shall maintain fidelity of data.
+   :id: REQ_DB_FIDELITY
+   :status: implemented, needs test
+
+The database shall faithfully represent the possessed information and not alter its contents, retrieving the data exactly as input.
+
+.. req:: The database shall allow case restarts.
+   :id: REQ_DB_RESTARTS
+   :status: implemented, needs test
+
+The state information representing as near as possible the entirety of the run when the database write was executed, shall be retrievable to restore the previous case to a particular point in time for further use by analysts.
+
+.. req:: The database shall accept all pythonic primitive data types.
+   :id: REEQ_DB_PRIMITIVES
+   :status: implemented, needs test
+
+To facilitate the storage of data, any Pythonic primitive data type shall be valid as an entrant into the database.
+
+.. req:: The database shall not accept abstract data types excluding pythonic ``None``.
+   :id: REQ_DB_NONE
+   :status: implemented, needs test
+
+Given the ubiquity of Python's ``None`` the database shall support its inclusion as a valid entry for data. There will be no support for any abstract data type beyond None.
+
+.. req:: The report package shall maintain data fidelity.
+   :id: REQ_REPORT_FIDELITY
+   :status: implemented, needs more tests
+
+The report package shall not modify or subvert data integrity as it reports the information out to the user.
 
 .. req:: ARMI shall be able to represent a user-specified reactor.
    :id: REQ_REACTOR
@@ -104,7 +132,7 @@ Functional Requirements
    shall fully define how all aspects of state may be accessed and modified and shall
    reflect any new state after it is applied.
 
-   State shall be represented as evolving eitehr through time (i.e. in a typical cycle-
+   State shall be represented as evolving either through time (i.e. in a typical cycle-
    by-cycle analysis) or through a series of control configurations.
 
 
@@ -112,25 +140,50 @@ Functional Requirements
 Performance Requirements
 ------------------------
 
-..
-   TODO: Do this by topic
+.. req:: The database representation on disk shall be smaller than the the in-memory Python representation
+   :id: REQ_DB_PERFORMANCE
+   :status: implemented, needs test
 
+The database implementation shall use lossless compression to reduce the database size.
+
+.. req:: The report package shall present no burden.
+   :id: REQ_REPORT_PERFORMANCE
+   :status: implemented, needs test
+
+As the report package is a lightweight interface to write data out to a text based format, and render a few images, the performance costs are entirely negligible and should not burden the run, nor the user's computer in both memory and processor time.
 
 -------------------
 Software Attributes
 -------------------
 
-..
-   TODO: Do this by topic
+.. req:: The database produced shall be easily accessible in a variety of operating systems.
+    :id: REQ_DB_OS
+    :status: implemented, needs test
+
+.. req:: The database produced shall be easily accessible in a variety of programming environments beyond Python.
+    :id: REQ_DB_LANGUAGE
+    :status: implemented, needs test
+
+.. req:: The report package shall be easily accessible in a variety of operating systems.
+    :id: REQ_REPORT_OS
+    :status: implemented, needs test
 
 
 ---------------------------
 Software Design Constraints
 ---------------------------
 
-..
-   TODO: Do this by topic
+.. req:: The database package shall provide compatability with all previously generated databases.
+    :id: REQ_DB_BACKWARDS_COMPAT
+    :status: implemented, needs test
 
+With very few redesign exceptions, as qualified cases are produced for analysis and rerunning, it is imperative the data always be in an accesible form.
+
+.. req:: The report package shall not burden new developers with grasping a complex system.
+    :id: REQ_REPORT_TECH
+    :status: implemented, needs test
+
+Given the functional requirements of the report package, new developers should be able to understand how to contribute to a report nigh instantly. No new technologies should be introduced to the system as HTML and ASCII are both purely text-based.
 
 --------------------------
 Interface I/O Requirements
