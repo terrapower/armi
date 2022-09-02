@@ -691,6 +691,27 @@ class Fluid(Material):
 
 
 class SimpleSolid(Material):
+    """
+    Base material for a simple material that primarily defines density
+    
+    Notes
+    -----
+    This function assumed the density is defined on the _density method and
+    this base class keeps density, density3 and linearExpansion all in sync
+    
+    class SimpleMaterial(SimpleSolid):
+    
+        def _density(self, Tk=None, Tc=None):
+            "
+            density that preserves mass when thermally expanded in 3D.
+            "
+            ...
+    
+    See Also
+    --------
+    armi.materials.density:
+    armi.materials.density3:
+    """
     
     refTempK = 300
     
@@ -708,7 +729,8 @@ class SimpleSolid(Material):
     
     def _density(self, Tk:float=None, Tc:float=None)->float:
         return 0.0
-    
+
+   
 class FuelMaterial(SimpleSolid):
     """
     Material that is considered a nuclear fuel.

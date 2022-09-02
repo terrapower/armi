@@ -38,17 +38,6 @@ class MgO(Material):
         r"""mass fractions"""
         self.setMassFrac("MG", 0.603035897)
         self.setMassFrac("O16", 0.396964103)
-    #
-    # def _density(self, Tk=None, Tc=None):
-    #
-    #     Tk = getTk(Tc, Tk)
-    #     rho0 = 3.58
-    #     self.checkPropertyTempRange("density", Tk)
-    #     dLL = self.linearExpansionPercent(Tk=Tk)
-    #
-    #     dRho = (1 - (1 + dLL) ** 3) / (1 + dLL) ** 3
-    #     density = rho0 * (1 + dRho)
-    #     return density
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """THE COEFFICIENT OF EXPANSION OF MAGNESIUM OXIDE

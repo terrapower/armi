@@ -66,9 +66,6 @@ class TZM(Material):
         self.setMassFrac("ZR", 0.000761199)
         self.setMassFrac("MO", 0.996711222)
 
-    # def density(self, Tk=None, Tc=None):
-    #     return 10.16  # g/cc
-
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
         return linear expansion in %dL/L from interpolation of tabular data.

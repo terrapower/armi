@@ -655,7 +655,7 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         """
         this material has no density function
         """
-        pass
+        self.assertEqual(self.mat.density(500), 0)
     
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
