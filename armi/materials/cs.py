@@ -16,11 +16,11 @@
 Cesium
 """
 
-from armi.materials.material import Material
+from armi.materials.material import Fluid
 from armi.utils.units import getTk
 
 
-class Cs(Material):
+class Cs(Fluid):
 
     name = "Cesium"
 

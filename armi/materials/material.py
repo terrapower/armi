@@ -409,7 +409,7 @@ class Material(composites.Leaf):
         f = (1.0 + dLL / 100.0) ** 3
         dRhoOverRho = (1.0 - f) / f
         return refD * (dRhoOverRho + 1)
-
+    
     def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
 
@@ -690,7 +690,26 @@ class Fluid(Material):
         return self.density(Tk=Tk, Tc=Tc)
 
 
-class FuelMaterial(Material):
+class SimpleSolid(Material):
+    
+    refTempK = 300
+    
+    def __init__(self):
+        Material.__init__(self)
+        self.p.refDens = self._density(Tc=self.refTempK)
+    
+    def linearExpansionPercent(self, Tk:float=None, Tc:float=None)->float:
+        density1 = self._density(Tc=self.refTempK)
+        density2 = self._density(Tk=Tk, Tc=Tc)
+        return densityTools.calculateLinearExpansionPercent(density1, density2)
+        
+    def density3(self, Tk:float=None, Tc:float=None)->float:
+        return self._density(Tk=Tk, Tc=Tc)
+    
+    def _density(self, Tk:float=None, Tc:float=None)->float:
+        return 0.0
+    
+class FuelMaterial(SimpleSolid):
     """
     Material that is considered a nuclear fuel.
 

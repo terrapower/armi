@@ -375,6 +375,16 @@ def getChemicals(nuclideInventory):
 
     return chemicals
 
+def calculateLinearExpansion(density1, density2):
+    """
+    
+    """
+    return (density1/density2)**(1./3.) - 1
+
+def calculateLinearExpansionPercent(density1, density2):
+    """
+    """
+    return calculateLinearExpansion(density1, density2)*100
 
 def applyIsotopicsMix(
     material, enrichedMassFracs: Dict[str, float], fertileMassFracs: Dict[str, float]

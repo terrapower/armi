@@ -16,10 +16,10 @@
 Inconel is a austenitic nickel-chromium superalloy.
 """
 
-from armi.materials.material import Material
+from armi.materials.material import SimpleSolid
 
 
-class Inconel(Material):
+class Inconel(SimpleSolid):
     name = "Inconel"
     references = {
         "mass fractions": "https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf",
@@ -41,5 +41,8 @@ class Inconel(Material):
         self.setMassFrac("B10", 0.00003 * 0.1997)
         self.setMassFrac("B11", 0.00003 * (1.0 - 0.1997))
 
-    def density(self, Tk=None, Tc=None):
+    def _density(self, Tk=None, Tc=None):
         return 8.3600
+
+class Inconel617(Inconel):
+    pass 
