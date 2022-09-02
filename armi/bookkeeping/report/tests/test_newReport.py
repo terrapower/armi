@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test reports."""
+"""Test new reports"""
 import collections
 import os
 import unittest
@@ -20,7 +20,7 @@ import unittest
 import htmltree
 
 from armi import getPluginManagerOrFail
-from armi.bookkeeping import newReports
+from armi.bookkeeping.report import newReports
 from armi.bookkeeping.report import data
 from armi.physics.neutronics.reports import neutronicsPlotting
 from armi.reactor.tests import test_reactors

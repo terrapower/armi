@@ -15,7 +15,7 @@ import webbrowser
 
 from armi import getPluginManagerOrFail
 from armi import settings
-from armi.bookkeeping import newReports as reports
+from armi.bookkeeping.report import newReports as reports
 from armi.bookkeeping.db import databaseFactory
 from armi.cli import entryPoint
 from armi.reactor import blueprints
