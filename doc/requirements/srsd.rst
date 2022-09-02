@@ -9,6 +9,8 @@ Business Impact
 
 #. The ``database`` package is used to restart runs, analyze results, and determine when changes are introduced to otherwise identical cases in ARMI. The ``database`` package is considered high risk.
 #. The ``report`` package is one of many tools available for viewing case details and is intended purely for developer or analyst feedback on run specifications and results, not as a means of altering the run. Thus the ``report`` package is low risk.
+#. The ``blueprints`` package interprets user input into an ARMI reactor model. If done incorrectly, ARMI simulations would be unreliable and inaccurate. ARMI is used for informing core designs, engineering calculations, and safety bases; therefore, the bluperints package is considered high risk.
+#. The ``settings`` package contains a substantive amount of the run's definition. Problems in the settings system can invalidate runs. If a user supplies one piece of input, say the setting value that dictates which reactor-defining loading blueprints files to use, and the system performs misleadingly then any subsequent analysis would be invalidated. As this is the principle system of user interaction with ARMI, poor system design choices would aggravate the user experience and decrease user engagement. Fortunately, the errors are easily traced and replicated as the system itself is not complicated. Therefore, the settings package is considered high risk.
 
 
 --------------------
@@ -52,6 +54,10 @@ Given the ubiquity of Python's ``None`` the database shall support its inclusion
    :status: implemented, needs more tests
 
 The report package shall not modify or subvert data integrity as it reports the information out to the user.
+
+..
+   TODO: blueprints need some interface and I/O reqs
+
 
 .. req:: ARMI shall be able to represent a user-specified reactor.
    :id: REQ_REACTOR
@@ -188,6 +194,9 @@ Given the functional requirements of the report package, new developers should b
 --------------------------
 Interface I/O Requirements
 --------------------------
+
+..
+   TODO: blueprints need some interface and I/O reqs
 
 ..
    TODO: Do this by topic
