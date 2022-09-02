@@ -64,11 +64,6 @@ class NHFLUX(cccc.DataContainer):
     produced by v11.0 of the solver.
 
     .. warning::
-        This class was originally written for DIF3D-Nodal, and so it is not currently set
-        up to read all content of a DIF3D-VARIANT NHFLUX file; specifically, it cannot read
-        the odd-parity flux moments and partial current moments beyond the zeroth-order.
-
-    .. warning::
         DIF3D outputs NHFLUX at every time node, but REBUS outputs NHFLUX only at every cycle.
 
     See also [VARIANT-95]_ and [VARIANT-2014]_.
@@ -115,26 +110,30 @@ class NHFLUX(cccc.DataContainer):
         This is an index map for the ingoing (or incoming) partial currents on the symmetric
         and sector lateral boundary. It is only present for DIF3D-VARIANT for hexagonal cores.
 
-    fluxMoments : 4-D list of floats
+    fluxMomentsAll : 4-D list of floats
         This contains all the flux moments for all core assemblies. The jth planar flux moment
         of assembly i in group g in axial node k is fluxMoments[i][k][j][g]. The
-        assemblies are ordered according to the geodstCoordMap attribute.
+        assemblies are ordered according to the geodstCoordMap attribute. For DIF3D-VARIANT,
+        this includes both even and odd parity moments.
 
-    partialCurrentsHex : 4-D list of floats
+    partialCurrentsHexAll : 5-D list of floats
         This contains all the OUTGOING partial currents for all core assemblies. The OUTGOING
         partial current on surface j in assembly i in axial node k in group g is
-        partialCurrentsHex[i][k][j][g]. The assemblies are ordered according to the
-        geodstCoordMap attribute.
+        partialCurrentsHex[i][k][j][g][m], where m=0. The assemblies are ordered according to the
+        geodstCoordMap attribute. For DIF3D-VARIANT, higher-order data is available for the
+        m axis.
 
-    partialCurrentsHex_ext : 3-D list of floats
+    partialCurrentsHex_ext : 4-D list of floats
         This contains all the INCOMING partial currents on "external surfaces", which are
         adjacent to the reactor outer boundary (usually vacuum). Internal reflective surfaces
         are NOT included in this! These "external surfaces" are ordered according to
-        externalCurrentPointers.
+        externalCurrentPointers. For DIF3D-VARIANT, higher-order data is available for the
+        last axis.
 
-    partialCurrentsZ : 4-D list of floats
+    partialCurrentsZ : 5-D list of floats
         This contains all the upward and downward partial currents for all core assemblies
-        The assemblies are ordered according to the geodstCoordMap attribute.
+        The assemblies are ordered according to the geodstCoordMap attribute. For DIF3D-VARIANT,
+        higher-order data is available for the last axis.
     """
 
     def __init__(self, fName="NHFLUX", variant=False, numDataSetsToRead=1):
@@ -149,9 +148,7 @@ class NHFLUX(cccc.DataContainer):
         variant : bool, optional
             Whether or not this NHFLUX/NAFLUX file has the DIF3D-VARIANT output format, which
             is different than the DIF3D-Nodal format.
-
         """
-
         cccc.DataContainer.__init__(self)
 
         self.metadata["variantFlag"] = variant
@@ -164,11 +161,15 @@ class NHFLUX(cccc.DataContainer):
         if self.metadata["variantFlag"]:
             self.outgoingPCSymSecPointers: np.ndarray = np.array([])
             self.ingoingPCSymSecPointers: np.ndarray = np.array([])
-        self.fluxMoments: np.ndarray = np.array([])
-        self.fluxMomentsOdd: np.ndarray = np.array([])
+        self.fluxMomentsAll: np.ndarray = np.array([])
         self.partialCurrentsHexAll: np.ndarray = np.array([])
         self.partialCurrentsHex_extAll: np.ndarray = np.array([])
         self.partialCurrentsZAll: np.ndarray = np.array([])
+
+    @property
+    def fluxMoments(self):
+        nMom = self.metadata["nMom"]
+        return self.fluxMomentsAll[..., :nMom, :]
 
     @property
     def partialCurrentsHex(self):
@@ -243,16 +244,17 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # Typically, flux and current data has units of n/cm^2/s. However, when reading
         # an NHFLUX file produced by VARPOW (where 'iwnhfl'=1), the flux-only data has units
         # of W/cc (there is no current data written to the file).
-        if self._data.fluxMoments.size == 0:
+        if self._data.fluxMomentsAll.size == 0:
 
             # Initialize using metadata info for reading
-            self._data.fluxMoments = np.zeros(
-                (self._metadata["nintxy"], nz, self._metadata["nMom"], ng)
+            totalMoments = (
+                self._metadata["nMom"]
+                if not self._metadata["variantFlag"]
+                else (self._metadata["nMom"] + self._metadata["nMoms"])
             )
-            if self._metadata["variantFlag"] and self._metadata["nMoms"] > 0:
-                self._data.fluxMomentsOdd = np.zeros(
-                    (self._metadata["nintxy"], nz, self._metadata["nMoms"], ng)
-                )
+            self._data.fluxMomentsAll = np.zeros(
+                (self._metadata["nintxy"], nz, totalMoments, ng)
+            )
 
             if self._metadata["iwnhfl"] != 1:
                 self._data.partialCurrentsHexAll = np.zeros(
@@ -287,15 +289,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                 for z in range(nz):
 
                     # Process flux moments
-                    self._data.fluxMoments[:, z, :, gEff] = self._rwFluxMoments3D(
-                        self._data.fluxMoments[:, z, :, gEff]
+                    self._data.fluxMomentsAll[:, z, :, gEff] = self._rwFluxMoments3D(
+                        self._data.fluxMomentsAll[:, z, :, gEff]
                     )
-                    if self._metadata["variantFlag"] and self._metadata["nMoms"] > 0:
-                        self._data.fluxMomentsOdd[
-                            :, z, :, gEff
-                        ] = self._rwFluxMoments3D(
-                            self._data.fluxMomentsOdd[:, z, :, gEff]
-                        )
 
                 # Process currents
                 if self._metadata["iwnhfl"] != 1:
@@ -472,15 +468,25 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         nMom can also be nMoms when reading/writing for VARIANT.
         """
-        nintxy = contents.shape[0]
-
-        # This can represent either nMom or nMoms
-        numTerms = contents.shape[1]
-
+        nMom = self._metadata["nMom"]
         with self.createRecord() as record:
-            fluxMoments = record.rwDoubleMatrix(contents.T, nintxy, numTerms)
+            result = record.rwDoubleMatrix(
+                contents[:, :nMom].T,
+                self._metadata["nintxy"],
+                nMom,
+            )
+            contents[:, :nMom] = result.T
 
-        return fluxMoments.T
+            # If we have VARIANT data, then we also need to process the odd-parity moments.
+            if self._metadata["variantFlag"] and self._metadata["nMoms"] > 0:
+                result = record.rwDoubleMatrix(
+                    contents[nMom + 1 :, :],
+                    self._metadata["nintxy"],
+                    self._metadata["nMoms"],
+                )
+                contents[:, nMom + 1 :] = result
+
+        return contents
 
     def _rwHexPartialCurrents4D(self, surfCurrents, externalSurfCurrents):
         r"""
