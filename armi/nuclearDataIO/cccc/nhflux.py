@@ -480,11 +480,11 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # If we have VARIANT data, then we also need to process the odd-parity moments.
             if self._metadata["variantFlag"] and self._metadata["nMoms"] > 0:
                 result = record.rwDoubleMatrix(
-                    contents[nMom + 1 :, :],
+                    contents[:, nMom:].T,
                     self._metadata["nintxy"],
                     self._metadata["nMoms"],
                 )
-                contents[:, nMom + 1 :] = result
+                contents[:, nMom:] = result.T
 
         return contents
 
