@@ -9,6 +9,8 @@ Business Impact
 ..
    TODO: Do this by topic
 
+#. The ``database`` package is used to restart runs, analyze results, and determine when changes are introduced to otherwise identical cases in ARMI. The ``database`` package is considered high risk.
+
 
 --------------------
 Applicable Documents
