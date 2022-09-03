@@ -13,6 +13,7 @@
 # limitations under the License.
 """Test densityTools."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+import math
 import unittest
 
 from armi.utils import densityTools
@@ -100,6 +101,19 @@ class Test_densityTools(unittest.TestCase):
         )  # HM blended
         self.assertAlmostEqual(uo2.p.massFrac["O"], massFracO)  # non-HM stays unchanged
 
+    def test_linearExpansion(self):
+        """ensure linear expansion functions are self consistent with good materials"""
+        
+        from armi.materials.ht9 import HT9
+        
+        mat = HT9()
+        for Tk in range(400, 1000, 50):
+            ref_dLL = mat.linearExpansionPercent(Tk=Tk)
+            rho2 = mat.density3(Tk=Tk)
+            test_dLL = densityTools.calculateLinearExpansionPercent(mat.p.refDens, rho2)
+            error = math.fabs((test_dLL - ref_dLL)/ref_dLL)
+            
+            self.assertLess(error, .0001)
 
 if __name__ == "__main__":
     unittest.main()
