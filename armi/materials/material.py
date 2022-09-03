@@ -409,7 +409,7 @@ class Material(composites.Leaf):
         f = (1.0 + dLL / 100.0) ** 3
         dRhoOverRho = (1.0 - f) / f
         return refD * (dRhoOverRho + 1)
-    
+
     def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
 
@@ -693,44 +693,44 @@ class Fluid(Material):
 class SimpleSolid(Material):
     """
     Base material for a simple material that primarily defines density
-    
+
     Notes
     -----
     This function assumed the density is defined on the _density method and
     this base class keeps density, density3 and linearExpansion all in sync
-    
+
     class SimpleMaterial(SimpleSolid):
-    
+
         def _density(self, Tk=None, Tc=None):
             "
             density that preserves mass when thermally expanded in 3D.
             "
             ...
-    
+
     See Also
     --------
     armi.materials.density:
     armi.materials.density3:
     """
-    
+
     refTempK = 300
-    
+
     def __init__(self):
         Material.__init__(self)
         self.p.refDens = self._density(Tc=self.refTempK)
-    
-    def linearExpansionPercent(self, Tk:float=None, Tc:float=None)->float:
+
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         density1 = self._density(Tc=self.refTempK)
         density2 = self._density(Tk=Tk, Tc=Tc)
         return densityTools.calculateLinearExpansionPercent(density1, density2)
-        
-    def density3(self, Tk:float=None, Tc:float=None)->float:
+
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
         return self._density(Tk=Tk, Tc=Tc)
-    
-    def _density(self, Tk:float=None, Tc:float=None)->float:
+
+    def _density(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 
-   
+
 class FuelMaterial(SimpleSolid):
     """
     Material that is considered a nuclear fuel.

@@ -29,14 +29,14 @@ class ThoriumOxide(FuelMaterial):
     name = "ThO2"
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
     theoreticalDensityFrac = 1.0
-    
+
     def __init__(self):
         FuelMaterial.__init__(self)
         self.adjustTD(self.theoreticalDensityFrac)
-    
+
     def adjustTD(self, val):
         self.theoreticalDensityFrac = val
-        self.p.refDens = 10.00*val
+        self.p.refDens = 10.00 * val
 
     def getTD(self):
         return self.theoreticalDensityFrac
@@ -78,10 +78,10 @@ class ThoriumOxide(FuelMaterial):
         Mass fractions are computed from this."""
         self.setMassFrac("TH232", 0.8788)
         self.setMassFrac("O16", 0.1212)
-    
-    def density3(self, Tk:float=None, Tc:float=None)->float:
+
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
         return Material.density(self, Tk=Tk, Tc=Tc)
-    
+
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TE 1450"""
         Tk = getTk(Tc, Tk)

@@ -22,11 +22,11 @@ class Y2O3(Material):
     name = "Y2O3"
 
     propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
-    
+
     def __init__(self):
         Material.__init__(self)
         self.p.refDens = 5.03
-        
+
     def setDefaultMassFracs(self):
         self.setMassFrac("Y89", 0.7875)
         self.setMassFrac("O16", 0.2125)

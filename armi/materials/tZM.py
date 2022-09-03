@@ -55,11 +55,11 @@ class TZM(Material):
         4.68e-01,
         5.04e-01,
     ]
-    
+
     def __init__(self):
         Material.__init__(self)
         self.p.refDens = 10.16
-    
+
     def setDefaultMassFracs(self):
         self.setMassFrac("C", 2.50749e-05)
         self.setMassFrac("TI", 0.002502504)

@@ -27,11 +27,11 @@ from armi.utils.units import getTk
 class Thorium(Material):
     name = "Thorium metal"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
-    
+
     def __init__(self):
         Material.__init__(self)
         self.p.refDens = 11.68
-        
+
     def setDefaultMassFracs(self):
         self.setMassFrac("TH232", 1.0)
 

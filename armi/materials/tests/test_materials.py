@@ -47,8 +47,9 @@ class _Material_Test:
 
     def test_density3(self):
         """Test that all materials produce a zero density from density3"""
-        
+
         self.assertNotEqual(self.mat.density3(500), 0)
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
@@ -90,7 +91,7 @@ class MaterialFindingTests(unittest.TestCase):
 
 
 class Californium_TestCase(_Material_Test, unittest.TestCase):
-    
+
     MAT_CLASS = materials.Californium
 
     def test_density(self):
@@ -193,7 +194,7 @@ class MOX_TestCase(_Material_Test, unittest.TestCase):
         ref = 10.926
         delta = ref * 0.0001
         self.assertAlmostEqual(cur, ref, delta=delta)
-        print('Hell')
+        print("Hell")
 
     def test_getMassFracPuO2(self):
         ref = 0.176067
@@ -392,13 +393,13 @@ class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
 
 class Uranium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Uranium
-    
+
     def test_density3(self):
         """
         this material has no density function
         """
         pass
-    
+
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
         ref = 28.489312629207500293659904855
@@ -535,7 +536,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
         ref_density = 10.86792660463439e3
         test_density = self.mat.density3KgM3(Tc=expectedTemperature)
-        error = math.fabs((ref_density - test_density)/ref_density)
+        error = math.fabs((ref_density - test_density) / ref_density)
         self.assertLess(error, 0.005)
 
     def test_removeNucMassFrac(self):
@@ -656,7 +657,7 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         this material has no density function
         """
         self.assertEqual(self.mat.density(500), 0)
-    
+
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
         cur = self.mat.p.density

@@ -45,10 +45,10 @@ class UZr(material.FuelMaterial):
     enrichedNuclide = "U235"
     zrFracDefault = 0.10
     uFracDefault = 1.0 - zrFracDefault
-    
+
     def __init__(self):
         material.Material.__init__(self)
-        
+
     def setDefaultMassFracs(self):
         r"""U-Pu-Zr mass fractions"""
         u235Enrichment = 0.1
@@ -72,10 +72,10 @@ class UZr(material.FuelMaterial):
         self.setMassFrac("U238", (1.0 - U235_wt_frac) * self.p.uFrac)
         self._calculateReferenceDensity()
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
-    
-    def density3(self, Tk:float=None, Tc:float=None)->float:
+
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
         return material.Material.density3(self, Tk=Tk, Tc=Tc)
-    
+
     def _calculateReferenceDensity(self):
         """
         Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law

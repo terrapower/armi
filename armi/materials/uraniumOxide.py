@@ -42,9 +42,9 @@ class UraniumOxide(material.FuelMaterial):
     name = "Uranium Oxide"
 
     enrichedNuclide = "U235"
-    
+
     REFERENCE_TEMPERATURE = 27
-    
+
     # ORNL/TM-2000/351 section 4.3
     heatCapacityConstants = HeatCapacityConstants(
         c1=302.27, c2=8.463e-3, c3=8.741e7, theta=548.68, Ea=18531.7

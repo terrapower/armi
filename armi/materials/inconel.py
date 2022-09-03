@@ -44,5 +44,6 @@ class Inconel(SimpleSolid):
     def _density(self, Tk=None, Tc=None):
         return 8.3600
 
+
 class Inconel617(Inconel):
-    pass 
+    pass

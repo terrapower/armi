@@ -20,8 +20,9 @@ from armi.materials.material import Material
 
 class Sc2O3(Material):
     name = "Sc2O3"
-    
+
     propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
+
     def __init__(self):
         Material.__init__(self)
         """
