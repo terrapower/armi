@@ -31,9 +31,6 @@ class Y2O3(Material):
         self.setMassFrac("Y89", 0.7875)
         self.setMassFrac("O16", 0.2125)
 
-    # def density(self, Tk=None, Tc=None):
-    #     return 5.03
-
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
         Return the linear expansion percent for Yttrium Oxide (Yttria).
