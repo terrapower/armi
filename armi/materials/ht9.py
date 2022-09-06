@@ -46,6 +46,7 @@ class HT9(materials.Material):
         HT9 mass fractions
 
         From E.2-1 of [MFH]_.
+        https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
         """
         self.setMassFrac("C", 0.002)
         self.setMassFrac("MN", 0.005)
@@ -57,7 +58,7 @@ class HT9(materials.Material):
         self.setMassFrac("V", 0.0030)
         self.setMassFrac("FE", 1.0 - sum(self.p.massFrac.values()))
 
-        self.p.refDens = 8.86
+        self.p.refDens = 7.778
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
