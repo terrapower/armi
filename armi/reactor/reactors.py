@@ -1212,7 +1212,6 @@ class Core(composites.Composite):
         """
         self._getAssembliesByName()
         self._genBlocksByName()
-        runLog.important("Regenerating Core Zones")
         self._genChildByLocationLookupTable()
 
     def getAllXsSuffixes(self):
