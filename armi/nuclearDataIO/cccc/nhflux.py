@@ -123,14 +123,14 @@ class NHFLUX(cccc.DataContainer):
         geodstCoordMap attribute. For DIF3D-VARIANT, higher-order data is available for the
         m axis.
 
-    partialCurrentsHex_ext : 4-D list of floats
+    partialCurrentsHex_extAll : 4-D list of floats
         This contains all the INCOMING partial currents on "external surfaces", which are
         adjacent to the reactor outer boundary (usually vacuum). Internal reflective surfaces
         are NOT included in this! These "external surfaces" are ordered according to
         externalCurrentPointers. For DIF3D-VARIANT, higher-order data is available for the
         last axis.
 
-    partialCurrentsZ : 5-D list of floats
+    partialCurrentsZAll : 5-D list of floats
         This contains all the upward and downward partial currents for all core assemblies
         The assemblies are ordered according to the geodstCoordMap attribute. For DIF3D-VARIANT,
         higher-order data is available for the last axis.
@@ -168,19 +168,46 @@ class NHFLUX(cccc.DataContainer):
 
     @property
     def fluxMoments(self):
+        """
+        For DIF3D-Nodal, this property is equivalent to the attribute `fluxMomentsAll`. For
+        DIF3D-VARIANT, this property represents the even-parity flux moments.
+
+        Read-only property (there is no setter).
+        """
         nMom = self.metadata["nMom"]
         return self.fluxMomentsAll[..., :nMom, :]
 
     @property
     def partialCurrentsHex(self):
+        """
+        For DIF3D-Nodal, this property is almost always equivalent to the attribute
+        `partialCurrentsHex`. For DIF3D-VARIANT, this property returns the zeroth-order
+        moment of the outgoing radial currents.
+
+        Read-only property (there is no setter).
+        """
         return self.partialCurrentsHexAll[..., 0]
 
     @property
     def partialCurrentsHex_ext(self):
+        """
+        For DIF3D-Nodal, this property is almost always equivalent to the attribute
+        `partialCurrentsHex_ext`. For DIF3D-VARIANT, this property returns the zeroth-order
+        moment of the incoming/ingoing radial currents.
+
+        Read-only property (there is no setter).
+        """
         return self.partialCurrentsHex_extAll[..., 0]
 
     @property
     def partialCurrentsZ(self):
+        """
+        For DIF3D-Nodal, this property is almost always equivalent to the attribute
+        `partialCurrentsZ`. For DIF3D-VARIANT, this property returns the zeroth-order
+        moment of the axial currents.
+
+        Read-only property (there is no setter).
+        """
         return self.partialCurrentsZAll[..., 0]
 
 
