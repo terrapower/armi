@@ -109,8 +109,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
         """
         from armi.cli import reportsEntryPoint
-        from armi.bookkeeping import newReports as reports
-        from armi.bookkeeping import newReportUtils
+        from armi.bookkeeping.report import newReports as reports
+        from armi.bookkeeping.report import newReportUtils
 
         if stage == reports.ReportStage.Begin:
             newReportUtils.insertGeneralReportContent(cs, r, report, stage)
