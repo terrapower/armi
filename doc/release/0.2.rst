@@ -30,6 +30,7 @@ What's new in ARMI
 #. Added reporting of neutron and gamma energy groups in the XS library `__repr__` for clearer tracking of which cross sections are applied to the core state.
 #. Removed `quiet` kwarg from geometry and block converters as this was generally unused in the code base and was only implemented for developmental debugging.
 #. Refactored the ``UniformMeshGeometryConverter`` to allow for mapping of number densities and parameters to and from a single assembly rather than requiring an entire core.
+#. The ``newReports`` were moved into their final location in ``armi/bookkeeping/report/``.
 #. TBD
 
 Bug fixes

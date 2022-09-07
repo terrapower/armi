@@ -18,7 +18,7 @@ import numpy
 from armi.reactor.components import component
 from armi import runLog
 from armi.reactor.flags import Flags
-from armi.bookkeeping import newReports
+from armi.bookkeeping.report import newReports
 from armi.utils import (
     units,
     plotting,
