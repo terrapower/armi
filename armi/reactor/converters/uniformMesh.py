@@ -397,12 +397,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # within the lower and upper bounds of the destination block.
             sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
 
-            if not sourceBlocksInfo:
+            if abs(zUpper - zLower) < 1e-6 and not sourceBlocksInfo:
+                continue
+            elif not sourceBlocksInfo:
                 raise ValueError(
                     f"An error occurred when attempting to map to the "
                     f"results from {sourceAssembly} to {destinationAssembly}. "
                     f"No blocks in {sourceAssembly} exist between the axial "
-                    f"elevations of {zLower:<8.3e} cm and {zUpper:<8.3e} cm. "
+                    f"elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} cm. "
                     f"This a major bug in the uniform mesh converter that should "
                     f"be reported to the developers."
                 )
@@ -411,9 +413,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # source assembly within the lower and upper bounds of the destination
             # block and perform the parameter mapping.
             updatedDestVals = collections.defaultdict(float)
-
             _setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
-
             for setter, getter, paramNames in [
                 (
                     BlockParamMapper.scalarParamSetter,
