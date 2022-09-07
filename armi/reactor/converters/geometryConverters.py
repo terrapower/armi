@@ -800,6 +800,9 @@ class HexToRZThetaConverter(GeometryConverter):
             newBlock.p.zbottom = lowerAxialZ
             newBlock.p.ztop = upperAxialZ
 
+            fpi = self._o.getInterface("fissionProducts")
+            newBlock.setLumpedFissionProducts(fpi.getGlobalLumpedFissionProducts())
+
             # Assign the new block cross section type and burn up group
             newBlock.setType(newBlockType)
             newXsType, newBuGroup = self._createBlendedXSID(newBlock)
