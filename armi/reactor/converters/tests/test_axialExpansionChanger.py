@@ -1164,7 +1164,7 @@ class FakeMat(materials.ht9.HT9):
         materials.ht9.HT9.__init__(self)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        """ A fake linear expansion percent"""
+        """A fake linear expansion percent"""
         Tc = units.getTc(Tc, Tk)
         return 0.02 * Tc
 
@@ -1184,6 +1184,6 @@ class FakeMatException(materials.ht9.HT9):
         materials.ht9.HT9.__init__(self)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        """ A fake linear expansion percent"""
+        """A fake linear expansion percent"""
         Tc = units.getTc(Tc, Tk)
         return 0.08 * Tc
