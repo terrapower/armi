@@ -396,7 +396,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # Determine which blocks in the uniform mesh source assembly are
             # within the lower and upper bounds of the destination block.
             sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
-            
+
             if abs(zUpper - zLower) < 1e-6 and not sourceBlocksInfo:
                 continue
             elif not sourceBlocksInfo:
