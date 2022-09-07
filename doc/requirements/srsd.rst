@@ -222,6 +222,12 @@ The database implementation shall use lossless compression to reduce the databas
 
 As the report package is a lightweight interface to write data out to a text based format, and render a few images, the performance costs are entirely negligible and should not burden the run, nor the user's computer in both memory and processor time.
 
+.. req:: The settings package shall present no burden.
+   :id: REQ_SETTINGS_PERFORMANCE
+   :status: implemented, needs test
+
+The settings package shall be optimized as necessary. In theory it should not present a burden on performance although it is used very frequently.
+
 -------------------
 Software Attributes
 -------------------
@@ -269,8 +275,13 @@ Interface I/O Requirements
 ..
    TODO: blueprints need some interface and I/O reqs
 
-..
-   TODO: Do this by topic
+.. req:: The setting system shall render a view of every defined setting as well as the key attributes associated with it
+   :id: REQ_SETTINGS_REPORT
+   :status: implemented, needs more tests
+
+Utilizing the documentation of the ARMI project the settings system shall contribute a page containing a table summary of the settings included in the system.
+
+TODO: This is completed by the :doc:`Settings Report </user/inputs/settings_report>`.
 
 
 --------------------
@@ -295,4 +306,3 @@ Appendices
 
 ..
    TODO
-
