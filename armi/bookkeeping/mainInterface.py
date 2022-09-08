@@ -139,7 +139,7 @@ class MainInterface(interfaces.Interface):
                 pass
             else:
                 with Database3(self.cs["reloadDBName"], "r") as db:
-                    r = db.load(cycle, node, self.cs, self.r.blueprints)
+                    r = db.load(cycle, node, self.cs)
 
                 self.o.reattach(r, self.cs)
 

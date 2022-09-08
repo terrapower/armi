@@ -421,7 +421,6 @@ class DatabaseInterface(interfaces.Interface):
                         timeNode,
                         statePointName=timeStepName,
                         cs=self.cs,
-                        bp=self.r.blueprints,
                         allowMissing=True,
                         updateGlobalAssemNum=updateGlobalAssemNum,
                     )
@@ -1081,18 +1080,16 @@ class Database3(database.Database):
         cycle,
         node,
         cs=None,
-        bp=None,
         statePointName=None,
         allowMissing=False,
         updateGlobalAssemNum=True,
     ):
         """Load a new reactor from (cycle, node).
 
-        Case settings, blueprints, and geom can be provided by the client, or read from
-        the database itself. Providing these from the client could be useful when
-        performing snapshot runs or the like, where it is expected to use results from a
-        run using different settings, then continue with new settings. Even in this
-        case, the blueprints and geom should probably be the same as the original run.
+        Case settings can be provided by the client, or read from the database itself.
+        Providing these from the client could be useful when performing snapshot runs
+        or where it is expected to use results from a run using different settings and
+        continue with new settings. Blueprints and geom are read from the database itself.
 
         Parameters
         ----------
@@ -1101,8 +1098,6 @@ class Database3(database.Database):
         node : int
             time node
         cs : armi.settings.Settings (optional)
-            if not provided one is read from the database
-        bp : armi.reactor.Blueprints (Optional)
             if not provided one is read from the database
         statePointName : str
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
@@ -1123,7 +1118,7 @@ class Database3(database.Database):
         cs = cs or self.loadCS()
         # apply to avoid defaults in getMasterCs calls
         settings.setMasterCs(cs)
-        bp = bp or self.loadBlueprints()
+        bp = self.loadBlueprints()
 
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 
