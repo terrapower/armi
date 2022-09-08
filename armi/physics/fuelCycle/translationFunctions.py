@@ -329,7 +329,7 @@ def getBatchZoneAssembliesFromLocation(
     ------------------------
     core assembly: "xxx-xxx"
     new assembly: "new: assemType"
-    new assembly with modified enrichment: "new: assemType, enrichment: value"
+    new assembly with modified enrichment: "new: assemType; enrichment: value"
     sfp assembly: "sfp: assemName"
 
     Parameters
