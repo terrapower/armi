@@ -123,7 +123,12 @@ class FuelHandlerInterface(interfaces.Interface):
         ]
 
         if len(locations) != len(set(locations)):
-            raise ValueError("Two or more assemblies share the same core location")
+            duplicateLocations = set([i for i in locations if locations.count(i) > 1])
+            raise ValueError(
+                "Two or more assemblies share the same core location ({})".format(
+                    duplicateLocations
+                )
+            )
 
     def makeShuffleReport(self):
         """
