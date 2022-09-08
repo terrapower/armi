@@ -93,8 +93,12 @@ class FuelHandler:
         return self.o.r
 
     def preoutage(self):
+        r"""
+        Stores locations of assemblies before they are shuffled to support generation of shuffle reports, etc.
+        Also performs any additional functionality before shuffling.
+        """
         self.prepCore()
-        self.prepShuffleMap()
+        self._prepShuffleMap()
         self.r.core.locateAllAssemblies()
 
     def outage(self, factor=1.0):
@@ -892,249 +896,6 @@ class FuelHandler:
 
         return assemblyList
 
-    def buildRingSchedule(
-        self,
-        chargeRing=None,
-        dischargeRing=None,
-        jumpRingFrom=None,
-        jumpRingTo=None,
-        coarseFactor=0.0,
-    ):
-        r"""
-        Build a ring schedule for shuffling.
-
-        Notes
-        -----
-        General enough to do convergent, divergent, or any combo, plus jumprings.
-
-        The center of the core is ring 1, based on the DIF3D numbering scheme.
-
-        Jump ring behavior can be generalized by first building a base ring list
-        where assemblies get charged to H and discharge from A::
-
-            [A,B,C,D,E,F,G,H]
-
-
-        If a jump should be placed where it jumps from ring G to C, reversed back to F, and then discharges from A,
-        we simply reverse the sublist [C,D,E,F], leaving us with::
-
-            [A,B,F,E,D,C,G,H]
-
-
-        A less-complex, more standard convergent-divergent scheme is a subcase of this, where the
-        sublist [A,B,C,D,E] or so is reversed, leaving::
-
-            [E,D,C,B,A,F,G,H]
-
-
-        So the task of this function is simply to determine what subsection, if any, to reverse of
-        the baselist.
-
-        Parameters
-        ----------
-        chargeRing : int, optional
-            The peripheral ring into which an assembly enters the core. Default is outermost ring.
-
-        dischargeRing : int, optional
-            The last ring an assembly sits in before discharging. Default is jumpRing-1
-
-        jumpRingFrom : int
-            The last ring an assembly sits in before jumping to the center
-
-        jumpRingTo : int, optional
-            The inner ring into which a jumping assembly jumps. Default is 1.
-
-        coarseFactor : float, optional
-            A number between 0 and 1 where 0 hits all rings and 1 only hits the outer, rJ, center, and rD rings.
-            This allows coarse shuffling, with large jumps. Default: 0
-
-        Returns
-        -------
-        ringSchedule : list
-            A list of rings in order from discharge to charge.
-
-        ringWidths : list
-            A list of integers corresponding to the ringSchedule determining the widths of each ring area
-
-        Examples
-        -------
-        >>> f.buildRingSchedule(17,1,jumpRingFrom=14)
-        ([13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-
-        See Also
-        --------
-        findAssembly
-
-        """
-        maxRingInCore = self.r.core.getNumRings()
-        if dischargeRing > maxRingInCore:
-            runLog.warning(
-                f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). "
-                "Changing it to be the max ring"
-            )
-            dischargeRing = maxRingInCore
-        if chargeRing > maxRingInCore:
-            runLog.warning(
-                f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). "
-                "Changing it to be the max ring."
-            )
-            chargeRing = maxRingInCore
-
-        # process arguments
-        if dischargeRing is None:
-            # No discharge ring given, so we default to converging from outside to inside
-            # and therefore discharging from the center
-            dischargeRing = 1
-        if chargeRing is None:
-            # Charge ring not specified. Since we default to convergent shuffling, we
-            # must insert the fuel at the periphery.
-            chargeRing = maxRingInCore
-        if jumpRingFrom is not None and not (1 < jumpRingFrom < maxRingInCore):
-            raise ValueError(f"JumpRingFrom {jumpRingFrom} is not in the core.")
-        if jumpRingTo is not None and not (1 <= jumpRingTo < maxRingInCore):
-            raise ValueError(f"JumpRingTo {jumpRingTo} is not in the core.")
-
-        if chargeRing > dischargeRing and jumpRingTo is None:
-            # a convergent shuffle with no jumping. By setting
-            # jumpRingTo to be 1, no jumping will be activated
-            # in the later logic.
-            jumpRingTo = 1
-        elif jumpRingTo is None:
-            # divergent case. Disable jumping by putting jumpring
-            # at periphery.
-            if self.r:
-                jumpRingTo = maxRingInCore
-            else:
-                jumpRingTo = 18
-
-        if (
-            chargeRing > dischargeRing
-            and jumpRingFrom is not None
-            and jumpRingFrom < jumpRingTo
-        ):
-            raise RuntimeError("Cannot have outward jumps in convergent cases.")
-        if (
-            chargeRing < dischargeRing
-            and jumpRingFrom is not None
-            and jumpRingFrom > jumpRingTo
-        ):
-            raise RuntimeError("Cannot have inward jumps in divergent cases.")
-
-        # step 1: build the base rings
-        numSteps = int((abs(dischargeRing - chargeRing) + 1) * (1.0 - coarseFactor))
-        if numSteps < 2:
-            # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
-            numSteps = 2
-        baseRings = [
-            int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
-        ]
-        # eliminate duplicates.
-        newBaseRings = []
-        for br in baseRings:
-            if br not in newBaseRings:
-                newBaseRings.append(br)
-        baseRings = newBaseRings
-        # baseRings = list(set(baseRings)) # eliminate duplicates. but ruins order.
-        # build widths
-        widths = []
-        for i, ring in enumerate(baseRings[:-1]):
-            # 0 is the most restrictive, meaning don't even look in other rings.
-            widths.append(abs(baseRings[i + 1] - ring) - 1)
-        widths.append(0)  # add the last ring with width 0.
-
-        # step 2: locate which rings should be reversed to give the jump-ring effect.
-        if jumpRingFrom is not None:
-            _closestRingFrom, jumpRingFromIndex = findClosest(
-                baseRings, jumpRingFrom, indx=True
-            )
-            _closestRingTo, jumpRingToIndex = findClosest(
-                baseRings, jumpRingTo, indx=True
-            )
-        else:
-            jumpRingToIndex = 0
-
-        # step 3: build the final ring list, potentially with a reversed section
-        newBaseRings = []
-        newWidths = []
-        # add in the non-reversed section before the reversed section
-
-        if jumpRingFrom is not None:
-            newBaseRings.extend(baseRings[:jumpRingToIndex])
-            newWidths.extend(widths[:jumpRingToIndex])
-            # add in reversed section that is jumped
-            newBaseRings.extend(reversed(baseRings[jumpRingToIndex:jumpRingFromIndex]))
-            newWidths.extend(reversed(widths[jumpRingToIndex:jumpRingFromIndex]))
-            # add the rest.
-            newBaseRings.extend(baseRings[jumpRingFromIndex:])
-            newWidths.extend(widths[jumpRingFromIndex:])
-        else:
-            # no jump section. Just fill in the rest.
-            newBaseRings.extend(baseRings[jumpRingToIndex:])
-            newWidths.extend(widths[jumpRingToIndex:])
-
-        return newBaseRings, newWidths
-
-    def buildConvergentRingSchedule(
-        self, dischargeRing=1, chargeRing=None, coarseFactor=0.0
-    ):
-        r"""
-        Builds a ring schedule for convergent shuffling from chargeRing to dischargeRing
-
-        Parameters
-        ----------
-        dischargeRing : int, optional
-            The last ring an assembly sits in before discharging. If no discharge, this is the one that
-            gets placed where the charge happens. Default: Innermost ring
-
-        chargeRing : int, optional
-            The peripheral ring into which an assembly enters the core. Default is outermost ring.
-
-        coarseFactor : float, optional
-            A number between 0 and 1 where 0 hits all rings and 1 only hits the outer, rJ, center, and rD rings.
-            This allows coarse shuffling, with large jumps. Default: 0
-
-        Returns
-        -------
-        convergent : list
-            A list of rings in order from discharge to charge.
-
-        conWidths : list
-            A list of integers corresponding to the ringSchedule determining the widths of each ring area
-
-        Examples
-        -------
-
-        See Also
-        --------
-        findAssembly
-
-        """
-        # process arguments
-        if chargeRing is None:
-            chargeRing = self.r.core.getNumRings()
-
-        # step 1: build the convergent rings
-        numSteps = int((chargeRing - dischargeRing + 1) * (1.0 - coarseFactor))
-        if numSteps < 2:
-            # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
-            numSteps = 2
-        convergent = [
-            int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
-        ]
-
-        # step 2. eliminate duplicates
-        convergent = sorted(list(set(convergent)))
-
-        # step 3. compute widths
-        conWidths = []
-        for i, ring in enumerate(convergent[:-1]):
-            conWidths.append(convergent[i + 1] - ring)
-        conWidths.append(1)
-
-        # step 4. assemble and return
-        return convergent, conWidths
-
     def swapAssemblies(self, a1, a2):
         r"""
         Moves a whole assembly from one place to another
@@ -1170,7 +931,6 @@ class FuelHandler:
         self._validateAssemblySwap(
             a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
         )
-
 
     def _validateAssemblySwap(
         self, a1StationaryBlocks, oldA1Location, a2StationaryBlocks, oldA2Location
@@ -1900,7 +1660,7 @@ class FuelHandler:
         """Handle a mpi command on the worker nodes."""
         pass
 
-    def prepShuffleMap(self):
+    def _prepShuffleMap(self):
         """Prepare a table of current locations for plotting shuffle maneuvers."""
         self.oldLocations = {}
         for a in self.r.core.getAssemblies():
