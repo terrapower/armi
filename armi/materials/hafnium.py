@@ -17,17 +17,17 @@ Hafnium is an element that has high capture cross section across multiple isotop
 """
 
 from armi.nucDirectory import nucDir
-from armi.materials.material import Material
+from armi.materials.material import SimpleSolid
 
 
-class Hafnium(Material):
+class Hafnium(SimpleSolid):
     name = "Hafnium"
 
     def setDefaultMassFracs(self):
         for a, abund in nucDir.getNaturalMassIsotopics("HF"):
             self.setMassFrac("HF{0}".format(a), abund)
 
-    def density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         r"""
         http://www.lenntech.com/periodic/elements/hf.htm
         """

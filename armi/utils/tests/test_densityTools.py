@@ -13,6 +13,7 @@
 # limitations under the License.
 """Test densityTools."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+import math
 import unittest
 
 from armi.utils import densityTools

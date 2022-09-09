@@ -14,6 +14,7 @@
 """
 Tests for graphite material
 """
+import math
 import unittest
 
 from armi.materials.graphite import Graphite
@@ -42,6 +43,29 @@ class Graphite_TestCase(unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+    def test_density(self):
+        """
+        test to reproduce density measurements results in table 2 from
+        [INL-EXT-16-38241]
+        """
+        uncertainty = 0.01
+
+        for Tc, ref_rho in [
+            # sample G-348-1
+            (22.6, 1.8885),
+            (401.6, 1.8772),
+            (801.3, 1.8634),
+            # sample G-348-2
+            (23.5, 1.9001),
+            (401.0, 1.8888),
+            (800.9, 1.8748),
+        ]:
+
+            test_rho = self.mat.density3(Tc=Tc)
+            error = math.fabs((ref_rho - test_rho) / ref_rho)
+
+            self.assertLess(error, uncertainty)
 
 
 if __name__ == "__main__":

@@ -56,14 +56,15 @@ class TZM(Material):
         5.04e-01,
     ]
 
+    def __init__(self):
+        Material.__init__(self)
+        self.p.refDens = 10.16
+
     def setDefaultMassFracs(self):
         self.setMassFrac("C", 2.50749e-05)
         self.setMassFrac("TI", 0.002502504)
         self.setMassFrac("ZR", 0.000761199)
         self.setMassFrac("MO", 0.996711222)
-
-    def density(self, Tk=None, Tc=None):
-        return 10.16  # g/cc
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
