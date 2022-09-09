@@ -375,6 +375,7 @@ def getChemicals(nuclideInventory):
 
     return chemicals
 
+
 def applyIsotopicsMix(
     material, enrichedMassFracs: Dict[str, float], fertileMassFracs: Dict[str, float]
 ):
