@@ -296,6 +296,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.isRestart = None
         self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
         self.detailedAxialExpansion = None
+        self.nonUniformAssems = None
         self.boundaries = None
         self.xsKernel = None
 
@@ -327,6 +328,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self.nonUniformAssems = len(cs["nonUniformAssemFlags"]) > 0
         self.eigenvalueProblem = cs["eigenProb"]
 
         # dose/dpa specific (should be separate subclass?)
@@ -402,7 +404,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 + "This is a programming error and requires further investigation."
             )
         neutronicsReactor = self.r
-        if self.options.detailedAxialExpansion:
+        if self.options.detailedAxialExpansion or self.options.nonUniformAssems:
             converter = self.geomConverters.get("axial")
             if not converter:
                 converter = uniformMesh.NeutronicsUniformMeshConverter(
