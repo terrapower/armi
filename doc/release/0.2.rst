@@ -32,6 +32,7 @@ What's new in ARMI
 #. Refactored the ``UniformMeshGeometryConverter`` to allow for mapping of number densities and parameters to and from a single assembly rather than requiring an entire core.
 #. Updated NHFLUX reader to store VARIANT data that was being discarded. Reading/writing VARIANT NHFLUX files now show binary equivalance.
 #. The ``newReports`` were moved into their final location in ``armi/bookkeeping/report/``.
+#. Refactored the ``UniformMeshGeometryConverter`` again to auto-detect if block-level parameters are scalar or array values and implemented a feature to optionally disable number density mapping.
 #. TBD
 
 Bug fixes
