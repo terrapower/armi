@@ -15,7 +15,6 @@
 """Tests for simplified UZr material."""
 import unittest
 
-
 from armi.materials.uZr import UZr
 from armi.materials.tests import test_materials
 
@@ -24,7 +23,7 @@ class UZR_TestCase(test_materials._Material_Test, unittest.TestCase):
     MAT_CLASS = UZr
 
     def test_density(self):
-        cur = self.mat.density(400)
+        cur = self.mat.density3(400)
         ref = 15.94
         delta = ref * 0.01
         self.assertAlmostEqual(cur, ref, delta=delta)

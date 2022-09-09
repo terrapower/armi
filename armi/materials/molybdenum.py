@@ -16,15 +16,15 @@
 Molybdenum
 """
 
-from armi.materials.material import Material
+from armi.materials.material import SimpleSolid
 
 
-class Molybdenum(Material):
+class Molybdenum(SimpleSolid):
     name = "Molybdenum"
 
     def setDefaultMassFracs(self):
         """Moly mass fractions."""
         self.setMassFrac("MO", 1.0)
 
-    def density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         return 10.28  # g/cc
