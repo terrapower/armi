@@ -164,7 +164,7 @@ class UraniumOxide(material.FuelMaterial):
         """
         return self.__meltingPoint
 
-    def _density(self, Tk: float = None, Tc: float = None) -> float:
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Density in (g/cc)
 

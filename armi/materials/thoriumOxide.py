@@ -80,7 +80,7 @@ class ThoriumOxide(FuelMaterial):
         self.setMassFrac("O16", 0.1212)
 
     def density3(self, Tk: float = None, Tc: float = None) -> float:
-        return Material.density(self, Tk=Tk, Tc=Tc)
+        return Material.density3(self, Tk=Tk, Tc=Tc)
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TE 1450"""

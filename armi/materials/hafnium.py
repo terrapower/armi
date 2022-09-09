@@ -27,7 +27,7 @@ class Hafnium(SimpleSolid):
         for a, abund in nucDir.getNaturalMassIsotopics("HF"):
             self.setMassFrac("HF{0}".format(a), abund)
 
-    def _density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         r"""
         http://www.lenntech.com/periodic/elements/hf.htm
         """

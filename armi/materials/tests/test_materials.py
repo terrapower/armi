@@ -190,11 +190,10 @@ class MOX_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.MOX
 
     def test_density(self):
-        cur = self.mat._density(333)
+        cur = self.mat.density3(333)
         ref = 10.926
         delta = ref * 0.0001
         self.assertAlmostEqual(cur, ref, delta=delta)
-        print("Hell")
 
     def test_getMassFracPuO2(self):
         ref = 0.176067
@@ -213,11 +212,11 @@ class NaCl_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.NaCl
 
     def test_density(self):
-        cur = self.mat._density(Tc=100)
+        cur = self.mat.density3(Tc=100)
         ref = 2.113204
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
-        cur = self.mat._density(Tc=300)
+        cur = self.mat.density3(Tc=300)
         ref = 2.050604
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 

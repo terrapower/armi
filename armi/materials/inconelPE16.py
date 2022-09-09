@@ -58,7 +58,7 @@ class InconelPE16(SimpleSolid):
         for element, massFrac in massFracs.items():
             self.setMassFrac(element, massFrac)
 
-    def _density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         runLog.warning(
             "PE16 mass density is not temperature dependent, using room temperature value",
             single=True,
