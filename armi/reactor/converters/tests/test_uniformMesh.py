@@ -92,8 +92,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
             sourceAssem.getAxialMesh(),
-            blockScalarParamNames=["flux", "power"],
-            blockArrayParamNames=["mgFlux"],
+            blockParamNames=["flux", "power", "mgFlux"],
         )
         for b, origB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 1.0)
@@ -116,8 +115,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssembly=newAssem,
             destinationAssembly=sourceAssem,
-            blockScalarParamNames=["flux", "power"],
-            blockArrayParamNames=["mgFlux"],
+            blockParamNames=["flux", "power", "mgFlux"],
         )
         for b, updatedB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 2.0)
@@ -148,8 +146,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         cachedBlockParams = (
             uniformMesh.UniformMeshGeometryConverter.clearStateOnAssemblies(
                 [sourceAssem],
-                blockScalarParamNames=["flux", "power"],
-                blockArrayParamNames=["mgFlux"],
+                blockParamNames=["flux", "power", "mgFlux"],
                 cache=True,
             )
         )
@@ -360,8 +357,7 @@ class TestParamConversion(unittest.TestCase):
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             self.sourceAssem,
             self.destinationAssem,
-            blockScalarParamNames=paramList,
-            blockArrayParamNames=["mgNeutronVelocity"],
+            blockParamNames=paramList + ["mgNeutronVelocity"],
         )
 
         for paramName in paramList:
