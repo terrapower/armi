@@ -15,6 +15,7 @@ Business Impact
 #. The ``fissionProductModel`` package has substantial impact on the results of the neutronic calculations that affect the plant design. Thus, it falls under the **high risk** impact level.
 #. The ``reactor`` package contains the majority of state information throughout a case. Issues in it
 could propagate and invalidate results derived from ARMI to perform design and analysis. Therefore, the ``reactor`` package is considered *high risk*.
+#. The ``nucDirectory`` package contains nuclide-level information including names, weights, symbols, decay-chain, and transmutation information. This information is used for converting mass fractions to number densities, and identifying specific nuclides to be used in used in performing flux and burn-up calculations. Therefore, the nucDirectory package is considered high risk.
 
 
 --------------------
@@ -31,25 +32,25 @@ Functional Requirements
 
 .. req:: The database shall maintain fidelity of data.
    :id: REQ_DB_FIDELITY
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 The database shall faithfully represent the possessed information and not alter its contents, retrieving the data exactly as input.
 
 .. req:: The database shall allow case restarts.
    :id: REQ_DB_RESTARTS
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 The state information representing as near as possible the entirety of the run when the database write was executed, shall be retrievable to restore the previous case to a particular point in time for further use by analysts.
 
 .. req:: The database shall accept all pythonic primitive data types.
    :id: REEQ_DB_PRIMITIVES
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 To facilitate the storage of data, any Pythonic primitive data type shall be valid as an entrant into the database.
 
 .. req:: The database shall not accept abstract data types excluding pythonic ``None``.
    :id: REQ_DB_NONE
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 Given the ubiquity of Python's ``None`` the database shall support its inclusion as a valid entry for data. There will be no support for any abstract data type beyond None.
 
@@ -199,7 +200,7 @@ TODO: This may be tested by unit tests loading and checking settings that have a
 
 .. req:: ARMI shall represent and reflect the evolving state of a reactor.
    :id: REQ_1
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
    The state shale be made available to users and modules, which may in turn modify the
    state (e.g. for analysis or based on the results of a physical calculation). ARMI
@@ -211,52 +212,59 @@ TODO: This may be tested by unit tests loading and checking settings that have a
 
 .. req:: The operator package shall provide a means by which to communicate inputs and results between analysis modules.
    :id: REQ_operator_io
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 The operator package shall receive output from calculation modules and store the results on a well-defined central model. A composite pattern shall be used, with a Reactor containing Assemblies containing Blocks, etc.
 
 .. req:: The operator package shall provide a means to perform computations in parallel on a high performance computer.
    :id: REQ_operator_parallel
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 Many analysis tasks require high performance computing (HPC), and the operator package shall contain utilities and routines to communicate with an HPC and to facilitate execution of simulations in parallel.
 
 .. req:: The operator package shall allow physics coupling between analysis modules.
    :id: REQ_operator_coupling
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 For coupled physics (e.g. neutronics depends on thermal hydraulics depends on neutronics), the operator package shall allow loose and/or tight coupling. Loose coupling is using the values from the previous timestep to update the next timestep. Tight is an operator-splitting iteration until convergence between one or more modules.
 
 .. req:: The operator package shall allow analysis modules to be replaced without affecting interfaces in other modules.
    :id: REQ_operator_analysis
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 Often, a module is replaced with a new module fulfilling some new requirement. When this happens, the operator package shall isolate required changes to the new module. For example, if a fuel performance module needs temperatures but the temperature-computing module is replaced, the fuel performance module should require no changes to work with the drop-in replacement. This requires modular design and standardization in state names.
 
 .. req:: The operator package shall coordinate calls to the various modules.
    :id: REQ_operator_coord
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 Based on user settings, the ordering, initialization, and calls to other modules shall be coordinated by the operator package. The operator package must therefore be aware of dependencies of each module.
 
 .. req:: The latticePhysics package will execute the lattice physics code in a parallel, serial, or distributed fashion depending on the mode.
    :id: REQ_lattice_execute
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
+.. req:: The nucDirectory package shall contain basic nuclide information for a wide range of nuclides.
+   :id: REQ_NUCDIR_DATA
+   :status: needs implementation, needs test
 
-.. reg:: The reactor package shall represent the user-specified reactor.
-   :id: REQ_reator_user
-   :status: implemented, needs test
+The nucDirectory package shall contain the following general information for each nuclide:
 
-Given user input describing a reactor system, the reactor package shall construct with equivalent fidelity
-a software model of the reactor. In particular, the reactor package
-shall appropriately represent the shape, arrangement, connectivity, dimensions,
-materials (including thermo-mechanical properties), isotopic composition, and temperatures of the reactor.
+- name
+- symbol
+- natural isotopic abundance of elements
+- atomic number (Z)
+- mass number (A)
+- atomic weight
+- meta stable state
 
-TODO: This may be tested by:
+.. req:: The nucDirectory package shall store data separately from code.
+   :id: REQ_NUCDIR_FILES
+   :status: needs implementation, needs test
 
-#. Evidence that input quantities are accessible from the reactor model
-#. Validation that an input benchmark performs within measured quantities
+The software shall be made flexible such that the definition of specific nuclides available (i.e. those used in a version of MC**2), can be updated without modifying the code.
+
+TODO: This can be tested by inspecting the logic of the code to retrieve data from a resource file, or by modifying the resource file to create an expected outcome.
 
 
 ------------------------
@@ -265,18 +273,28 @@ Performance Requirements
 
 .. req:: The database representation on disk shall be smaller than the the in-memory Python representation
    :id: REQ_DB_PERFORMANCE
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 The database implementation shall use lossless compression to reduce the database size.
 
 .. req:: The report package shall present no burden.
    :id: REQ_REPORT_PERFORMANCE
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 As the report package is a lightweight interface to write data out to a text based format, and render a few images, the performance costs are entirely negligible and should not burden the run, nor the user's computer in both memory and processor time.
 
-..
-   TODO: Let's do a top-level redesign of the performance requirements.
+.. req:: The reactor package shall allow rapid synchronization of state across the network to parallel processors.
+   :id: REQ_REACTOR_PARALLEL
+   :status: needs implementation, needs test
+
+For performance, many physics calculations are done in parallel. The reactor must be able to synchronize
+the state on multiple processors efficiently.
+
+.. req:: The nucDirectory package shall, wherever possible, the software shall prevent duplication of data to limit the memory footprint of this information.
+   :id: REQ_NUCDIR_DUPLICATION
+   :status: needs implementation, needs test
+
+TODO: Is this testable?
 
 
 -------------------
@@ -285,15 +303,15 @@ Software Attributes
 
 .. req:: The database produced shall be easily accessible in a variety of operating systems.
     :id: REQ_DB_OS
-    :status: implemented, needs test
+    :status: needs implementation, needs test
 
 .. req:: The database produced shall be easily accessible in a variety of programming environments beyond Python.
     :id: REQ_DB_LANGUAGE
-    :status: implemented, needs test
+    :status: needs implementation, needs test
 
 .. req:: The report package shall be easily accessible in a variety of operating systems.
     :id: REQ_REPORT_OS
-    :status: implemented, needs test
+    :status: needs implementation, needs test
 
 
 .. req:: The settings package shall use human-readable, plain-text files as input.
@@ -309,15 +327,21 @@ Software Design Constraints
 
 .. req:: The database package shall provide compatability with all previously generated databases.
     :id: REQ_DB_BACKWARDS_COMPAT
-    :status: implemented, needs test
+    :status: needs implementation, needs test
 
 With very few redesign exceptions, as qualified cases are produced for analysis and rerunning, it is imperative the data always be in an accesible form.
 
 .. req:: The report package shall not burden new developers with grasping a complex system.
     :id: REQ_REPORT_TECH
-    :status: implemented, needs test
+    :status: needs implementation, needs test
 
 Given the functional requirements of the report package, new developers should be able to understand how to contribute to a report nigh instantly. No new technologies should be introduced to the system as HTML and ASCII are both purely text-based.
+
+.. req:: The reactor package shall not exhibit any stochastic behavior.
+    :id: REQ_REACTOR_STOCHASTIC
+    :status: needs implementation, needs test
+
+Given a set of input the same reactor design and run should be proceed in a fixed fashion for reproduction.
 
 --------------------------
 Interface I/O Requirements
@@ -336,11 +360,18 @@ TODO: This is completed by the :doc:`Settings Report </user/inputs/settings_repo
 
 .. req:: The latticePhysics package will write input files for the desired code for each representative block to be modeled.
    :id: REQ_lattice_inputs
-   :status: implemented, needs test
+   :status: needs implementation, needs test
 
 .. req:: The latticePhysics package will use the output(s) to create a reactor library, ``ISOTXS`` or ``COMPXS``, used in the global flux solution.
    :id: REQ_lattice_outputs
-   :status: implemented, needs test
+   :status: needs implementation, needs test
+
+.. reg:: The reactor package shall check input for basic correctness.
+   :id: REQ_reator_correctness
+   :status: needs implementation, needs test
+
+The reactor package shall check its input for certain obvious errors including unphysical densities and proper fit.
+
 
 
 --------------------
