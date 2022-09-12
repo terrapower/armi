@@ -9,13 +9,14 @@ Business Impact
 
 #. The ``database`` package is used to restart runs, analyze results, and determine when changes are introduced to otherwise identical cases in ARMI. The ``database`` package is considered high risk.
 #. The ``report`` package is one of many tools available for viewing case details and is intended purely for developer or analyst feedback on run specifications and results, not as a means of altering the run. Thus the ``report`` package is low risk.
-#. The ``blueprints`` package interprets user input into an ARMI reactor model. If done incorrectly, ARMI simulations would be unreliable and inaccurate. ARMI is used for informing core designs, engineering calculations, and safety bases; therefore, the bluperints package is considered high risk.
-#. The ``settings`` package contains a substantive amount of the run's definition. Problems in the settings system can invalidate runs. If a user supplies one piece of input, say the setting value that dictates which reactor-defining loading blueprints files to use, and the system performs misleadingly then any subsequent analysis would be invalidated. As this is the principle system of user interaction with ARMI, poor system design choices would aggravate the user experience and decrease user engagement. Fortunately, the errors are easily traced and replicated as the system itself is not complicated. Therefore, the settings package is considered high risk.
-#. The ``operator`` package is paramount to every facility the code offers, affecting every aspect of design. Thus, the data model modules are high risk.
+#. The ``blueprints`` package interprets user input into an ARMI reactor model. If done incorrectly, ARMI simulations would be unreliable and inaccurate. ARMI is used for informing core designs, engineering calculations, and safety bases; therefore, the ``bluperints`` package is considered high risk.
+#. The ``settings`` package contains a substantive amount of the run's definition. Problems in the settings system can invalidate runs. If a user supplies one piece of input, say the setting value that dictates which reactor-defining loading blueprints files to use, and the system performs misleadingly then any subsequent analysis would be invalidated. As this is the principle system of user interaction with ARMI, poor system design choices would aggravate the user experience and decrease user engagement. Fortunately, the errors are easily traced and replicated as the system itself is not complicated. Therefore, the ``settings`` package is considered high risk.
+#. The ``operator`` package is paramount to every facility the code offers, affecting every aspect of design. Thus, the ``operator`` packages is high risk.
 #. The ``fissionProductModel`` package has substantial impact on the results of the neutronic calculations that affect the plant design. Thus, it falls under the **high risk** impact level.
 #. The ``reactor`` package contains the majority of state information throughout a case. Issues in it
 could propagate and invalidate results derived from ARMI to perform design and analysis. Therefore, the ``reactor`` package is considered *high risk*.
-#. The ``nucDirectory`` package contains nuclide-level information including names, weights, symbols, decay-chain, and transmutation information. This information is used for converting mass fractions to number densities, and identifying specific nuclides to be used in used in performing flux and burn-up calculations. Therefore, the nucDirectory package is considered high risk.
+#. The ``nucDirectory`` package contains nuclide-level information including names, weights, symbols, decay-chain, and transmutation information. This information is used for converting mass fractions to number densities, and identifying specific nuclides to be used in used in performing flux and burn-up calculations. Therefore, the ``nucDirectory`` package is considered high risk.
+#. The ``nuclearDataIO`` package is used to read and write nuclear data files which are used as input to global flux solvers, and eventually input into safety calculations via reactivity coefficients. Therefore, the ``nuclearDataIO`` package is considered high risk.
 
 
 --------------------
@@ -353,6 +354,84 @@ The user supplies the nuclides to be modeled in the simulation; therefore, it is
 
 TODO: A unit test can be generated with faulty decay chains to determine that they do not work.
 
+.. req:: The nuclearDataIO package shall read and write ISOTXS files.
+   :id: REQ_NUCDATA_ISOTXS
+   :status: needs implementation, needs test
+
+ISOTXS files contain the multi-group microscopic cross sections, and other nuclear data, for each nuclide being modeled. The multi-group cross sections are used throughout ARMI.
+
+The software shall be capable of reading an ISOTXS file, as defined in `CCCC-IV <https://code.terrapower.com/terrapower/tparmi/blob/develop/doc/reference/nuclearDataIO.rst#cccc-iv>`_, into memory, and writing it out to a file that is exactly the same as the original.
+
+TODO: A unit test can be created with reads an ISOTXS file generated by MCC, and then writes out the file to another name. The two files can then be compared using a binary file comparison to demonstrate that the contents of the files are identical.
+
+.. req:: The nuclearDataIO package shall read and write GAMISO files.
+   :id: REQ_NUCDATA_GAMISO
+   :status: needs implementation, needs test
+
+GAMISO files are generated by MCC-v3, and are the same format as an ISOTXS file. The file contains photon interaction cross sections instead of neutron cross sections.
+
+The software shall be capable of reading a GAMISO file into memory, and writing it out into a file that is exactly the same as the original.
+
+TODO: This can be covered in a unit test; the unit test can be the same as described for ISOTXS files.
+
+.. req:: The nuclearDataIO package shall read and write PMATRX files.
+   :id: REQ_NUCDATA_PMATRX
+   :status: needs implementation, needs test
+
+PMATRX files contain the gamma production matrix resulting from fission or capture events. Given a neutron flux distribution, and a PMATRX file, the gamma source can be computed and then used to determine gamma transport and heating.
+
+.. req:: The nuclearDataIO package shall be capable of reading a PMATRX file into memory, and writing it out into a file that is exactly the same as the original.
+
+TODO: This can be covered in a unit test; the unit test can be the same as described for ISOTXS files.
+
+.. req:: The nuclearDataIO package shall read and write DLAYXS files
+DLAYXS files contain delayed neutron data, such as precursor decay constants and number of neutrons emitted, :math:`\nu_{\mathrm{delay}}`. The DLAYXS data is used to calculate :math:`\beta_{\rm{eff}}`, which is used to calculate reactivity coefficients, and consequently in AOO and accident simulations.
+
+The software shall be capable of reading a DLAYXS, as defined in `CCCC-IV <https://code.terrapower.com/terrapower/tparmi/blob/develop/doc/reference/nuclearDataIO.rst#cccc-iv>`_, file into memory, and writing it out into a file that is exactly the same as the original.
+
+TODO: This can be covered in a unit test; the unit test can be the same as described for ISOTXS files.
+
+.. req:: The nuclearDataIO package shall merge files of the same type.
+   :id: REQ_NUCDATA_MERGE
+   :status: needs implementation, needs test
+
+The software shall be capable merging multiple files of the same type (ISOTXS, PMATRX, etc.) into a single file meeting the specifications. The software shall fail with a descriptive error message if any two nuclides have the same name.
+
+This can be covered in a unit test which runs 3 MCC-v3 cases.
+
+1. Generate cross sections for a set of nuclides with the xsID=AA 1. Generate cross sections for a set of nuclides with the xsID=AB 1. Generate cross sections with two regions using an input file containing the nuclides of the above two cases.
+
+The third MCC-v3 case will produce a merged ISOTXS file which can be compared to an ISOTXS file generated by merging the output ISOTXS from cases 1 and 2.
+
+.. req:: The nuclearDataIO package shall make the data programmatically available.
+   :id: REQ_NUCDATA_AVAIL
+   :status: needs implementation, needs test
+
+The software shall make the nuclear data provided in ISOTXS, GAMISO, PMATRX and DLAYXS available in the form of Python objects, such that it can be used elsewhere in the code, such as in the depletion, nuclear uncertainty quantification, and `\beta` calculations.
+
+   .. req:: The nuclearDataIO package shall key nuclear data based on nuclide label and xsID.
+      :id: REQ_NUCDATA_AVAIL_LABEL
+      :status: needs implementation, needs test
+
+When nuclear data files are read, they should be made available in a container object, such as a dictionary, and keyed on the nuclide label (a unique four character nuclide identifier) and the cross section ID, a two character identifier for block type and burnup group.
+
+TODO: This can be covered by a unit test which reads an ISOTXS into a container object, and then obtaining cross sections by using the nuclide label and xsID.
+
+   .. req:: The nuclearDataIO package shall be able to remove nuclides from specifc nuclear data files.
+      :id: REQ_NUCDATA_AVAIL_FILES
+      :status: needs implementation, needs test
+
+ARMI has a concept of "lumped fission products" that result in more nuclides being in ISOTXS, GAMISO, and PMATRX files than are needed for subsequent calculations. The software shall be capable of removing the unused nuclides from ISOTXS, GAMISO, and PMATRX files. This generally does not apply to DLAYXS files, because they typically only contain nuclides that fission.
+
+TODO: This can be covered by a unit test where a file is read in, a nuclide removed, and then rewritten and reread. The reread file should not contain the removed nuclides.
+
+   .. req:: The nuclearDataIO package shall be able to modify the nuclear data.
+      :id: REQ_NUCDATA_AVAIL_MODIFY
+      :status: needs implementation, needs test
+
+In order to calculate the uncertainties of our methodology introduced by nuclear data uncertainty, it is necessary to be able to perturb (i.e. modify) specific values within the nuclear data files.
+
+TODO: This can be covered by a unit test where a file is read in, a cross section or relevant piece of data modified, and then rewritten and reread. The reread file should contain the modified data.
 
 ------------------------
 Performance Requirements
