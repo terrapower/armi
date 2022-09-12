@@ -262,9 +262,96 @@ The nucDirectory package shall contain the following general information for eac
    :id: REQ_NUCDIR_FILES
    :status: needs implementation, needs test
 
-The software shall be made flexible such that the definition of specific nuclides available (i.e. those used in a version of MC**2), can be updated without modifying the code.
+The software shall be made flexible such that the definition of specific nuclides available (i.e. those used in a version of MCC), can be updated without modifying the code.
 
 TODO: This can be tested by inspecting the logic of the code to retrieve data from a resource file, or by modifying the resource file to create an expected outcome.
+
+.. req:: The nucDirectory package shall enforce unique nuclide names.
+   :id: REQ_NUCDIR_UNIQUE
+   :status: needs implementation, needs test
+
+The nuclides names shall be unique, and consist of the nuclide's symbol, mass number, and an indication if it is in a meta-stable state. Elemental nuclides shall omit the mass number, since they represent more than a single mass number. Lumped nuclides shall also have unqiue, user-data identified names.
+
+TODO: A unit test can be used to demonstrate that all nuclide names are unique.
+
+.. req:: The nucDirectory package shall be capable of generating unique 4-character labels.
+   :id: REQ_NUCDIR_LABELS
+   :status: needs implementation, needs test
+
+Versions 2 and 3 of MCC allow for unique 6 character labels to be used to reference nuclides. Two characters need to be used to describe the differen cross section sets used by the problem. Therefore, every nuclide in ARMI needs to have a unique 4 character representation to use in MCC and the downstream global flux solver.
+
+TODO: A unit test can be used to demonstrate that all nuclides have unique 4-character labels.
+
+.. req:: The nucDirectory package shall allow for use of lumped nuclides.
+   :id: REQ_NUCDIR_LUMPED
+   :status: needs implementation, needs test
+
+Lumped nuclides are bulk defined nuclides that are typically used when modeling fission products. Lumping the nuclides during burnup calculations lowers the problem size without having a significant impact on the results. Consequently, they do not always need to be modeled individually, but can be grouped.
+
+A unit test can be used to demonstrate that lumped nuclides can be used and created.
+
+.. req:: The nucDirectory package shall allow for elemental nuclides.
+   :id: REQ_NUCDIR_ELEMENTALS
+   :status: needs implementation, needs test
+
+The nuclear data libraries available in versions 2 and 3 of MCC do not always allow for nuclide input, and some materials are grouped into elemental nuclides. Iron is an example of this in MCC version 2. Consequently, ARMI needs to be able to model elemental nuclides which represent the entire element, as well as the individual nuclides.
+
+.. req:: The nucDirectory package shall allow for dummy nuclides.
+   :id: REQ_NUCDIR_DUMMY
+   :status: needs implementation, needs test
+
+Dummy nuclides, typically written in all capitals as "DUMMY", are used to truncate the burn chain in order to reduce the problem size without compromising the results.
+
+.. req:: The nucDirectory package shall allow for indexing of nuclide information.
+   :id: REQ_NUCDIR_INDEX
+   :status: needs implementation, needs test
+
+The nuclear data files created by physics codes such as MCC and DIF3D may not necessary correspond to the name used within ARMI, it will be necessary to load nuclide information based on a non-ARMI name. The software shall provide lookup mechanisms for nuclide objects based on:
+
+- Name
+- 4-character label
+- MCC versions 2 and 3 IDs
+
+.. req:: The nucDirectory package shall contain decay chain data.
+   :id: REQ_NUCDIR_DECAY_CHAIN
+   :status: needs implementation, needs test
+
+The decay chain is an important step in performing burn-up calculations. The nucDirectory shall contain necessary decay mechanisms:
+
+- `\beta^-`
+- `\beta^+`
+- `\alpha`
+- Electron capture
+- Spontaneous fission
+
+The nucDirectory shall contain the half-life, decay mode(s) with corresponding branch ratio(s) and daughter nuclide(s) of each decay mode being modeled. Since it is possible for the user to define specific nuclides to be modeled, the nucDirectory shall allow for use of different daughter nuclides.
+
+TODO: A unit test can be generated to test that the correct decay chain is present, and that the data matches other resources.
+
+.. req:: The nucDirectory package shall contain transmutation data.
+   :id: REQ_NUCDIR_TRANSMUTE
+   :status: needs implementation, needs test
+
+In addition to the decay chain, nuclides may transmute through interactions into other nuclides. The nucDirectory shall contain the transmutations necessary for modeling a TWR, including:
+
+- `n,2n`
+- `n,p`
+- `n,t`
+- fission
+- `n,\gamma`
+- `n,\alpha`
+
+The nucDirectory shall contain the transmutation mechanism, branch ratio, and product nuclides of each transmutation being modeled. The nucDirectory shall not contain the cross sections, as these are calculated using lattice physics codes, such as MCC. Since it is possible for the user to define specific nuclides to be modeled, the nucDirectory shall allow optional daughter nuclides.
+
+TODO: A unit test can be generated to test that the correct transmutations are present, and corresponding data matches other resources.
+
+.. req:: The nucDirectory package shall warn the user if there are potential burn-chain faults.
+   :id: REQ_NUCDIR_BURN_CHAIN
+   :status: needs implementation, needs test
+
+The user supplies the nuclides to be modeled in the simulation; therefore, it is possible that the user may inadvertently describe a burn-chain that is not complete. The software shall be capable of detecting erroneous user input and terminate the program.
+
+TODO: A unit test can be generated with faulty decay chains to determine that they do not work.
 
 
 ------------------------
@@ -342,6 +429,11 @@ Given the functional requirements of the report package, new developers should b
     :status: needs implementation, needs test
 
 Given a set of input the same reactor design and run should be proceed in a fixed fashion for reproduction.
+
+The nucDirectory package shall use nuclear data that is contained within the ARMI code base. That is, the data will not be retrieved from online sources. The intent here is to prevent inadvertent security risks.
+
+The nucDirectory package shall follow a particular naming convention. Other physics codes use the name Am-242 for the metastable state of Am-242, and use Am-242g for the ground state.
+
 
 --------------------------
 Interface I/O Requirements
