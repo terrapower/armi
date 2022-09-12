@@ -304,10 +304,20 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self._assembliesBySpecifier.clear()
             self.assemblies.clear()
 
+            # retrieve current count of assemblies to restore after
+            # creating blueprints assemblies. This is particularly useful for
+            # doing snapshot based runs with database loads where the
+            # assembly counter is likely not equal to 0.
+            currentCount = assemblies.getAssemNum()
+            # reset the assembly counter so that blueprints assemblies are always
+            # numbered 0 to len(self.assemDesigns)
+            assemblies.resetAssemNumCounter()
             for aDesign in self.assemDesigns:
                 a = aDesign.construct(cs, self)
                 self._assembliesBySpecifier[aDesign.specifier] = a
                 self.assemblies[aDesign.name] = a
+            if currentCount != 0:
+                assemblies.setAssemNumCounter(currentCount)
 
             self._checkAssemblyAreaConsistency(cs)
 
