@@ -31,13 +31,24 @@ This is the principle design restraint for the settings package. In addition to 
 
 Historically developers are used to looking up the name of their setting by using a string fed into a collection object and having the value associated with the name returned back. The same behavior was used to assign a new value to the given name in the shared object. This constitutes the vast majority of external interactions with the settings system.
 
+Reactor Overview
+----------------
+
+..
+   TODO
+
+
 ------
 Design
 ------
 
 TODO
 
-#. The ``blueprints`` package makes extensive use of the ``yamlize`` library, which provides a mechanism for serializing and deserializing blueprints to and from YAML files.
+Blueprints Design
+-----------------
+
+The ``blueprints`` package makes extensive use of the ``yamlize`` library, which provides a mechanism for serializing and deserializing blueprints to and from YAML files.
+
 
 Settings Design
 ---------------
@@ -126,6 +137,121 @@ Each setting is intended to present a way of answering a question to the user fr
 The provided rules for how a setting behaves varies by subtype (i.e. Numeric settings possess valid maximums and minimums, whereas strings can be matched against a set of acceptable values). Given the extensibility of the setting system there is no limitation currently imposed by the system on what rules may apply. Only a basic set of rules currently exists but that has been found to be more than sufficient in modeling developer specifications for settings thus far.
 
 Most of these customized behaviors are directly linked with how the GUI representation of the settings restrict interactions with the user. For instance values outside of the allowable range for numeric settings will reject the change with an immediate reversion to the previously accepted value, or string settings with a restricted set of acceptable values will only display those in a drop down menu.
+
+
+Reactor Design
+--------------
+
+The physical hierarchy typical in a nuclear reactor is reflected in the design of the reactor package.
+It uses a `Composite Design Pattern <https://en.wikipedia.org/wiki/Composite_pattern>`_ to represent
+part-whole hierarchies. In other words, a Reactor is typically made of Assemblies, which are made of Blocks,
+which are made of Components, and so on. Requirements regarding the representation of a user-specified reactor
+are satisfied by the objects in this hierarchy.
+
+At each level of the hierarchy, the state can be found as a state variable called a *Parameter*. The parameter
+system is designed and implemented to satisfy the requirements related to storing and updating a dynamic state.
+
+
+Spatial Arrangements
+^^^^^^^^^^^^^^^^^^^^
+
+The :py:mod:`grids module  <armi.reactor.grids>` define where objects currently are in a regular, structured
+grid. In particular, *Assemblies* sit in the 2-D grid on the reactor and *Blocks* sit in 1-D grids on Assemblies.
+
+Setting and getting state variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The *state* is stored on component-level *parameters*. The design and implementation of this subpackage is fully described in
+:py:mod:`armi.reactor.parameters`.
+
+
+Averaging over children
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Member objects of the ``reactor`` hierarchy have several capacities to average over their children.
+This is useful for collecting information at levels necessary for meaningful analysis, for example
+figuring out a core-averaged temperature or for homogenizing regions in preparation of neutronics models.
+
+
+Computing Homogenized Number Densities
+""""""""""""""""""""""""""""""""""""""
+Objects can compute homogenized number densities of each nuclide as required in many nuclear simulations (e.g. DIF3D).
+The components contained in each block have heterogeneous compositions and dimensions that must be smeared into
+a homogeneous block, as shown in figure 1.
+
+To homogenize number densities, conservation of atoms is applied. Consider a a collection of :math:`I` components, each with
+heterogeneous number density :math:`N_i` and volumes :math:`V_i`. The number of atoms in
+component :math:`i` is :math:`N_i V_i`. Thus, to conserve this number of atoms over a
+total volume :math:`V_b = \sum_i V_i`, we calculate the homogenized number density :math:`\bar{N_i}`
+of component :math:`i` as
+
+.. math::
+    :label: conserveAtoms
+		N_i V_i = \bar{N_i} V_b \\
+		\bar{N_i} = \frac{N_i V_i}{V_b}
+Thus, homogenized number densities are equal to heterogeneous number densities multiplied by the component volume
+fraction.
+
+This calculation is performed in :py:meth:`armi.reactor.composites.ArmiObject.getNumberDensity`.
+
+.. figure:: /.static/block_homogenization.png
+    :align: center
+
+    **Figure 1.** Homogenizing pins, duct, wire, cladding, and coolant into a uniform block
+
+Similarly, :py:meth:`~armi.reactor.composites.ArmiObject.getMass` can get the mass of some or all
+nuclides in a structure and :py:meth:`~armi.reactor.composites.ArmiObject.getNumberOfAtoms` can get the number
+of atoms.
+
+Calculation Of Volume Fractions
+"""""""""""""""""""""""""""""""
+To support the homogenization responsibility, the ``reactor`` package is responsible for computing the volume fractions
+:math:`v_i` of each component. Generally, ``components`` are responsible for computing their own volume :math:`V_i`, and
+other levels of the hierarchy simply have to evaluate the simple formula,
+
+.. math::
+    :label: areaFraction
+		v_i = \frac{V_i}{\sum_j V_j}
+.. WARNING::
+	Often, components only compute their area and their height is inherited as the height of the
+ 	containing block. There are exceptions for more complex geometries.
+
+For user convenience, the dimensions of one component may be left undefined in input. If one and only one
+component has undefined area, then the block will compute the area automatically. This is useful, for example,
+when a complex shape exists for the coolant material between all pins. In this scenario, the maximum block
+area is computed using the largest pitch :math:`p_{max}` (generally the interstitial gap). For hex geometry, the missing area :math:`A_{missing}`
+is computed as:
+
+.. math::
+    :label: missingArea
+		A_{missing} = p_{max}^2 \frac{\sqrt{3}}{2} - \sum_{i \neq missing}{A_i}
+
+Hot and input dimensions
+^^^^^^^^^^^^^^^^^^^^^^^^
+ARMI treats dimensions and material properties as functions of temperature. However, a pure
+physical analogy is challenging for several reasons. These reasons and
+the implementation details are explained here.
+
+For a typical ``component``, users may define most dimensions at any temperature they desire
+(the *Input temperature*), as explained in :doc:`/user/inputs/composition_file`. These
+dimensions will be thermally-expanded up to the *Hot temperature* as input. For most shapes and
+components, this works as expected, however:
+
+* In Hex geometries, the outer hexagonal boundary is currently limited to be consistent across
+  all objects in a core. This stems from some physics solver requirements of structured meshes.
+  Users should set the hot dimension on input. Models that change pitch
+  as functions of grid-plate and load pad temperatures may be developed in the future.
+* The axial heights of **blocks** is complicated to model explicitly because different components
+  of different materials expand differently at the same temperature. Pure physical analogy would
+  require independent meshes for the duct, clad, and fuel of every pin. To deal with this, ARMI implements
+  *exclusively radial thermal expansion* (more details are available in
+  :doc:`/reference/materials`). As a result of this, users should input the desired hot axial dimensions
+  of all blocks. Advanced models with multiple axial meshes may be developed at a later time.
+
+**Component** dimensions are stored as *parameters* at the input temperature and thermally expanded
+to the current temperature of the component upon access. To run a case at a specific temperature,
+the user sould set the hot and input temperatures to the same value. This can be used to study
+isothermal conditions during outages and startup.
 
 -------------------
 Requirements Review
