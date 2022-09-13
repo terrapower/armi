@@ -244,7 +244,7 @@ class TestUserPlugins(unittest.TestCase):
 
         # prove that our plugin affects the core in the desired way
         heights = [float(f.p.height) for f in fuels]
-        plug0.onProcessCoreLoading(core=r.core, cs=o.cs)
+        plug0.onProcessCoreLoading(core=r.core, cs=o.cs, dbLoad=False)
         for i, height in enumerate(heights):
             self.assertEqual(fuels[i].p.height, height + 1.0)
 
