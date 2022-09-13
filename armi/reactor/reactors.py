@@ -2318,7 +2318,9 @@ class Core(composites.Composite):
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
-        getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs, dbLoad=dbLoad)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(
+            core=self, cs=cs, dbLoad=dbLoad
+        )
 
     def _applyThermalExpansion(
         self, assems: list, dbLoad: bool, referenceAssembly=None
