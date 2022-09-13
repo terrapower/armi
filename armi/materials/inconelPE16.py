@@ -16,12 +16,12 @@
 Inconel PE16
 """
 
-from armi.materials.material import Material
+from armi.materials.material import SimpleSolid
 from armi.nucDirectory import nuclideBases
 from armi import runLog
 
 
-class InconelPE16(Material):
+class InconelPE16(SimpleSolid):
     name = "InconelPE16"
     references = {
         "mass fractions": r"http://www.specialmetals.com/assets/documents/alloys/nimonic/nimonic-alloy-pe16.pdf",
@@ -58,7 +58,7 @@ class InconelPE16(Material):
         for element, massFrac in massFracs.items():
             self.setMassFrac(element, massFrac)
 
-    def density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         runLog.warning(
             "PE16 mass density is not temperature dependent, using room temperature value",
             single=True,

@@ -27,22 +27,17 @@ class MgO(Material):
         "linear expansion percent": ((273.15, 1273.15), "K"),
     }
 
+    def __init__(self):
+        Material.__init__(self)
+        """same reference as linear expansion. Table II.
+        Reference density is from Wolfram Alpha At STP (273 K)"""
+
+        self.p.refDens = 3.58
+
     def setDefaultMassFracs(self):
         r"""mass fractions"""
         self.setMassFrac("MG", 0.603035897)
         self.setMassFrac("O16", 0.396964103)
-
-    def density(self, Tk=None, Tc=None):
-        """same reference as linear expansion. Table II.
-        Reference density is from Wolfram Alpha At STP (273 K)"""
-        Tk = getTk(Tc, Tk)
-        rho0 = 3.58
-        self.checkPropertyTempRange("density", Tk)
-        dLL = self.linearExpansionPercent(Tk=Tk)
-
-        dRho = (1 - (1 + dLL) ** 3) / (1 + dLL) ** 3
-        density = rho0 * (1 + dRho)
-        return density
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """THE COEFFICIENT OF EXPANSION OF MAGNESIUM OXIDE

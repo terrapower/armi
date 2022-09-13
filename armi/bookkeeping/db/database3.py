@@ -101,7 +101,6 @@ from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
-from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
 from armi.utils import getPreviousTimeNode, getStepLengths
 from armi.utils.textProcessors import resolveMarkupInclusions
@@ -523,7 +522,7 @@ class DatabaseInterface(interfaces.Interface):
         return histories
 
 
-class Database3(database.Database):
+class Database3:
     """
     Version 3 of the ARMI Database, handling serialization and loading of Reactor states.
 
