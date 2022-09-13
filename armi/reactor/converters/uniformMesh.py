@@ -115,7 +115,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._setParamsToUpdate()
         self._computeAverageAxialMesh()
         self._buildAllUniformAssemblies()
-        self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
+        self._mapStateFromReactorToOther(
+            self._sourceReactor, self.convReactor, mapNumberDensities=False
+        )
         self.convReactor.core.updateAxialMesh()
 
         self._newAssembliesAdded = self.convReactor.core.getAssemblies()
@@ -178,7 +180,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # parameters that did not change.
         self._cachedReactorCoreParamData = {}
         self._clearStateOnReactor(self._sourceReactor, cache=True)
-        self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
+        self._mapStateFromReactorToOther(
+            self.convReactor, self._sourceReactor, mapNumberDensities=False
+        )
 
         # We want to map the converted reactor core's library to the source reactor
         # because in some instances this has changed (i.e., when generating cross sections).
@@ -595,7 +599,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             src.core.findAllAxialMeshPoints([src.core.refAssem], applySubMesh=True)[1:]
         )
 
-
     @staticmethod
     def _createNewAssembly(sourceAssembly):
         a = sourceAssembly.__class__(sourceAssembly.getType())
@@ -632,7 +635,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
             reactor.core.p[rp] = 0.0
 
-    def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
+    def _mapStateFromReactorToOther(
+        self, sourceReactor, destReactor, mapNumberDensities=True
+    ):
         """
         Map parameters from one reactor to another.
 
@@ -717,9 +722,14 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                         f"user-input power ({expectedPow})."
                     )
 
-    def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
+    def _mapStateFromReactorToOther(
+        self, sourceReactor, destReactor, mapNumberDensities=True
+    ):
         UniformMeshGeometryConverter._mapStateFromReactorToOther(
-            self, sourceReactor, destReactor
+            self,
+            sourceReactor,
+            destReactor,
+            mapNumberDensities,
         )
 
         # Map reactor core parameters
@@ -743,6 +753,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 aSource,
                 aDest,
                 self.blockParamNames,
+                mapNumberDensities,
             )
 
             # If requested, the reaction rates will be calculated based on the
