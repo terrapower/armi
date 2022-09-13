@@ -54,7 +54,6 @@ from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDE
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
-from armi.utils.mathematics import average1DWithinTolerance
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
@@ -1862,21 +1861,14 @@ class Core(composites.Composite):
         # depending on what makes the most sense
         refAssem = self.refAssem
         refMesh = self.findAllAxialMeshPoints([refAssem])
-        avgHeight = average1DWithinTolerance(
-            numpy.array(
-                [
-                    [
-                        h
-                        for b in a
-                        for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
-                    ]
-                    for a in self
-                    if self.findAllAxialMeshPoints([a]) == refMesh
-                ]
-            )
+        meshHeights = numpy.array(
+            [
+                h
+                for b in refAssem
+                for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
+            ]
         )
-
-        self.p.axialMesh = list(numpy.append([0.0], avgHeight.cumsum()))
+        self.p.axialMesh = list(numpy.append([0.0], meshHeights.cumsum()))
 
     def findAxialMeshIndexOf(self, heightCm):
         """
@@ -2252,7 +2244,6 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        nonUniformAssems = [Flags.fromString(t) for t in cs["nonUniformAssemFlags"]]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2270,8 +2261,6 @@ class Core(composites.Composite):
                     reverse=True,
                 )[0]
                 for a in self.parent.blueprints.assemblies.values():
-                    if a.hasFlags(nonUniformAssems, exact=True):
-                        continue
                     a.makeAxialSnapList(refAssem=finestMeshAssembly)
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
@@ -2287,8 +2276,6 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
-                    if a.hasFlags(nonUniformAssems, exact=True):
-                        continue
                     a.makeAxialSnapList(self.refAssem)
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
