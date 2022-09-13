@@ -101,7 +101,7 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def onProcessCoreLoading(core, cs):
+    def onProcessCoreLoading(core, cs, dbLoad):
         blocks = core.getBlocks(Flags.FUEL)
         for b in blocks:
             b.p.height += 1.0
