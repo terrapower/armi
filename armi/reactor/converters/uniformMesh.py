@@ -592,7 +592,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
         may have a different mesh due to differences in thermal and/or burn-up expansion.
         """
-
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
