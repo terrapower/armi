@@ -722,24 +722,22 @@ def _getNeutronicsBlockParams():
             categories=["detailedAxialExpansion"],
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
             "cornerFastFlux",
             units="n/cm^2/s",
             description="Neutron flux above 100keV at hexagon block corners",
             location=ParamLocation.CORNERS,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
             "pointsCornerFastFluxFr",
             units=None,
             description="Fraction of flux above 100keV at corners of the block",
             location=ParamLocation.CORNERS,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
         )
@@ -748,18 +746,17 @@ def _getNeutronicsBlockParams():
             units=None,
             description="Fraction of flux above 100keV at edges of the block",
             location=ParamLocation.EDGES,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
             "pointsCornerDpa",
             units="dpa",
             description="displacements per atom at corners of the block",
             location=ParamLocation.CORNERS,
-            categories=["cumulative"],
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
         )
@@ -768,18 +765,17 @@ def _getNeutronicsBlockParams():
             units="dpa",
             description="displacements per atom at edges of the block",
             location=ParamLocation.EDGES,
-            categories=["cumulative"],
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
             "pointsCornerDpaRate",
             units="dpa/s",
             description="Current time derivative of the displacement per atoms at corners of the block",
             location=ParamLocation.CORNERS,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
         )
@@ -787,6 +783,7 @@ def _getNeutronicsBlockParams():
             "pointsEdgeDpaRate",
             units="dpa/s",
             description="Current time derivative of the displacement per atoms at edges of the block",
+            categories=["detailedAxialExpansion", "depletion"],
             location=ParamLocation.EDGES,
             saveToDB=True,
             default=None,
