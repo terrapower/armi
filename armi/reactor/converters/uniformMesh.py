@@ -596,16 +596,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumFinePoints = len(
-            src.core.findAllAxialMeshPoints([refAssem], applySubMesh=True)
-        )
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=False)) - 1
         allMeshes = []
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
             # (typically zero).s
-            nFineMesh = len(src.core.findAllAxialMeshPoints([a]))
-            if nFineMesh == refNumFinePoints:
-                aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=False)[1:]
+            aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=False)[1:]
+            if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
         self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
 
