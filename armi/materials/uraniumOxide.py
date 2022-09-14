@@ -38,7 +38,7 @@ HeatCapacityConstants = collections.namedtuple(
 )
 
 
-class UraniumOxide(material.FuelMaterial):
+class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     name = "Uranium Oxide"
 
     enrichedNuclide = "U235"
@@ -102,7 +102,10 @@ class UraniumOxide(material.FuelMaterial):
         1.847,
         1.718,
     ]
-
+    
+    def __init__(self):
+        material.SimpleSolid.__init__(self)
+    
     def adjustTD(self, val: float) -> None:
         self.theoreticalDensityFrac = val
 
