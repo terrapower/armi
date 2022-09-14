@@ -306,8 +306,11 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             # retrieve current count of assemblies to restore after
             # creating blueprints assemblies. This is particularly useful for
-            # doing snapshot based runs with database loads where the
-            # assembly counter is likely not equal to 0.
+            # doing snapshot based runs and multiple database loads, and ensures
+            # that each database load/snapshot to not cumulative increase the assembly
+            # count during creation of blueprints assemblies. During initial
+            # constructions the first N numbers are reserved for blueprints, so this
+            # ensures consistency.
             currentCount = assemblies.getAssemNum()
             # reset the assembly counter so that blueprints assemblies are always
             # numbered 0 to len(self.assemDesigns)
