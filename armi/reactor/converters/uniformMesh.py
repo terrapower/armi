@@ -592,12 +592,22 @@ class UniformMeshGeometryConverter(GeometryConverter):
         The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
         may have a different mesh due to differences in thermal and/or burn-up expansion.
         """
-        # Get the number of reference mesh points, including the sub-mesh. This subtracts 1
-        # to remove the first value (typically zero).
+
         src = self._sourceReactor
-        self._uniformMesh = numpy.array(
-            src.core.findAllAxialMeshPoints([src.core.refAssem], applySubMesh=True)[1:]
+        refAssem = src.core.refAssem
+
+        refNumFinePoints = len(
+            src.core.findAllAxialMeshPoints([refAssem], applySubMesh=True)
         )
+        allMeshes = []
+        for a in src.core:
+            # Get the mesh points of the assembly, neglecting the first coordinate
+            # (typically zero).s
+            nFineMesh = len(src.core.findAllAxialMeshPoints([a]))
+            if nFineMesh == refNumFinePoints:
+                aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=False)[1:]
+                allMeshes.append(aMesh)
+        self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
 
     @staticmethod
     def _createNewAssembly(sourceAssembly):

@@ -54,6 +54,7 @@ from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDE
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
+from armi.utils.mathematics import average1DWithinTolerance
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
@@ -1861,14 +1862,20 @@ class Core(composites.Composite):
         # depending on what makes the most sense
         refAssem = self.refAssem
         refMesh = self.findAllAxialMeshPoints([refAssem])
-        meshHeights = numpy.array(
-            [
-                h
-                for b in refAssem
-                for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
-            ]
+        avgHeight = average1DWithinTolerance(
+            numpy.array(
+                [
+                    [
+                        h
+                        for b in a
+                        for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
+                    ]
+                    for a in self
+                    if self.findAllAxialMeshPoints([a]) == refMesh
+                ]
+            )
         )
-        self.p.axialMesh = list(numpy.append([0.0], meshHeights.cumsum()))
+        self.p.axialMesh = list(numpy.append([0.0], avgHeight.cumsum()))
 
     def findAxialMeshIndexOf(self, heightCm):
         """
