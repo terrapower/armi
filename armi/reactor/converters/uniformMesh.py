@@ -596,7 +596,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=False)) - 1
+        refNumPoints = (
+            len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=False)) - 1
+        )
         allMeshes = []
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
