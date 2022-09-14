@@ -859,3 +859,7 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
                 + numberDensity * overlappingHeightInCm / blockHeightInCm
             )
     block.setNumberDensities(totalDensities)
+    # Set the volume of each component in the block to `None` so that the
+    # volume of each volume is recomputed.
+    for c in block:
+        c.p.volume = None

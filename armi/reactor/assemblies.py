@@ -946,6 +946,7 @@ class Assembly(composites.Composite):
         EPS = 1e-10
         blocksHere = []
         allMeshPoints = set()
+
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
                 allMeshPoints.add(b.p.zbottom)
