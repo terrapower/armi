@@ -40,7 +40,7 @@ class TestDatabase3(unittest.TestCase):
 
         self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: db.Database3 = self.dbi.database
+        self.db: database3.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -332,18 +332,18 @@ class TestDatabase3(unittest.TestCase):
         from armi.reactor import assemblies
         from armi.reactor.assemblies import resetAssemNumCounter
 
-        self.makeShuffleHistory()
+        self.makeHistory()
 
         resetAssemNumCounter()
         self.assertEqual(assemblies._assemNum, 0)
 
-        # there will 77 assemblies added to the newly created core
+        # there will 77 assemblies (73 core and 4 sfp) added to the newly created core
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85)
+        self.assertEqual(assemblies._assemNum, 77)
 
         # now do the same call again and show that the global _assemNum just keeps going up
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85 * 2)
+        self.assertEqual(assemblies._assemNum, 77 * 2)
 
         # now load but also updateGlobalAssemNum and show that it updates to the value
         # stored in self.r.p.maxAssemNum plus 1
