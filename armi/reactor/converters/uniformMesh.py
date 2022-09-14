@@ -300,7 +300,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             block = copy.deepcopy(sourceBlock)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
-            block.p.axMesh = 1
+            block.p.axMesh = sourceBlock.p.axMesh
             newAssem.add(block)
             bottom = topMeshPoint
 
