@@ -717,7 +717,7 @@ class SimpleSolid(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = self.density3(Tc=self.refTempK)
+        self.p.refDens = self.density3(Tk=self.refTempK)
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -742,7 +742,7 @@ class SimpleSolid(Material):
         the density3 function returns 'free expansion' density as a function
         temperature
         """
-        density1 = self.density3(Tc=self.refTempK)
+        density1 = self.density3(Tk=self.refTempK)
         density2 = self.density3(Tk=Tk, Tc=Tc)
 
         if density1 == density2:
@@ -754,7 +754,7 @@ class SimpleSolid(Material):
         return 0.0
 
 
-class FuelMaterial(SimpleSolid):
+class FuelMaterial(Material):
     """
     Material that is considered a nuclear fuel.
 
