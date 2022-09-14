@@ -217,7 +217,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def onProcessCoreLoading(core, cs) -> None:
+    def onProcessCoreLoading(core, cs, dbLoad) -> None:
         """
         Function to call whenever a Core object is newly built.
 
