@@ -337,16 +337,23 @@ class TestDatabase3(unittest.TestCase):
         resetAssemNumCounter()
         self.assertEqual(assemblies._assemNum, 0)
 
-        # there will 77 assemblies (73 core and 4 sfp) added to the newly created core
+        # there will 77 assemblies (73 core and 4 blueprints sfp grid) added to the newly created core
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
         self.assertEqual(assemblies._assemNum, 77)
 
-        # now do the same call again and show that the global _assemNum just keeps going up
+        # now do the same call again and show that the global _assemNum keeps going up.
+        # in db.load, rector objects are built in layout._initComps() so the global assem num
+        # will continue to grow (in this case, double).
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
         self.assertEqual(assemblies._assemNum, 77 * 2)
 
-        # now load but also updateGlobalAssemNum and show that it updates to the value
-        # stored in self.r.p.maxAssemNum plus 1
+        # now load but set updateGlobalAssemNum=True and show that the global assem num
+        # is updated and equal to self.r.p.maxAssemNum + 1
+        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
+        self.assertEqual(assemblies._assemNum, self.r.core.p.maxAssemNum + 1)
+
+        # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
+        # do not continue to increase the global assem num.
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
         self.assertEqual(assemblies._assemNum, self.r.core.p.maxAssemNum + 1)
 
