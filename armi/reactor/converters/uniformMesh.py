@@ -300,7 +300,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             block = copy.deepcopy(sourceBlock)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
-            block.p.axMesh = sourceBlock.p.axMesh
+            block.p.axMesh = 1
             newAssem.add(block)
             bottom = topMeshPoint
 
@@ -596,14 +596,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = (
-            len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=False)) - 1
-        )
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
         allMeshes = []
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
-            # (typically zero).s
-            aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=False)[1:]
+            # (typically zero).
+            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
         self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
