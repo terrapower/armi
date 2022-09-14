@@ -946,6 +946,7 @@ class Assembly(composites.Composite):
         EPS = 1e-10
         blocksHere = []
         allMeshPoints = set()
+
         for b in self:
             if b.p.ztop >= zLower and b.p.zbottom <= zUpper:
                 allMeshPoints.add(b.p.zbottom)
@@ -954,6 +955,8 @@ class Assembly(composites.Composite):
                 top = min(b.p.ztop, zUpper)
                 bottom = max(b.p.zbottom, zLower)
                 heightHere = top - bottom
+                if not heightHere:
+                    continue
 
                 # Filter out blocks that have an extremely small height fraction
                 if heightHere / b.getHeight() > EPS:
