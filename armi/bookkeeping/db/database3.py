@@ -420,7 +420,6 @@ class DatabaseInterface(interfaces.Interface):
                         timeNode,
                         statePointName=timeStepName,
                         cs=self.cs,
-                        bp=self.r.blueprints,
                         allowMissing=True,
                         updateGlobalAssemNum=updateGlobalAssemNum,
                     )
@@ -1087,11 +1086,11 @@ class Database3:
     ):
         """Load a new reactor from (cycle, node).
 
-        Case settings, blueprints, and geom can be provided by the client, or read from
-        the database itself. Providing these from the client could be useful when
-        performing snapshot runs or the like, where it is expected to use results from a
-        run using different settings, then continue with new settings. Even in this
-        case, the blueprints and geom should probably be the same as the original run.
+        Case settings and blueprints can be provided by the client, or read from the database itself.
+        Providing these from the client could be useful when performing snapshot runs
+        or where it is expected to use results from a run using different settings and
+        continue with new settings (or if blueprints are not on the database).
+        Geom is read from the database itself.
 
         Parameters
         ----------
@@ -1101,7 +1100,7 @@ class Database3:
             time node
         cs : armi.settings.Settings (optional)
             if not provided one is read from the database
-        bp : armi.reactor.Blueprints (Optional)
+        bp : armi.reactor.Blueprints (optional)
             if not provided one is read from the database
         statePointName : str
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")

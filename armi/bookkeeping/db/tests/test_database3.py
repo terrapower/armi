@@ -40,7 +40,7 @@ class TestDatabase3(unittest.TestCase):
 
         self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: db.Database3 = self.dbi.database
+        self.db: database3.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -332,23 +332,34 @@ class TestDatabase3(unittest.TestCase):
         from armi.reactor import assemblies
         from armi.reactor.assemblies import resetAssemNumCounter
 
-        self.makeShuffleHistory()
+        self.makeHistory()
 
         resetAssemNumCounter()
         self.assertEqual(assemblies._assemNum, 0)
 
-        # there will 77 assemblies added to the newly created core
-        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85)
+        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
+        #  len(r.core.sfp) is zero but these nums are still reserved
+        numSFPBlueprints = 4
+        expectedNum = len(r.core) + numSFPBlueprints
+        self.assertEqual(assemblies._assemNum, expectedNum)
 
-        # now do the same call again and show that the global _assemNum just keeps going up
+        # now do the same call again and show that the global _assemNum keeps going up.
+        # in db.load, rector objects are built in layout._initComps() so the global assem num
+        # will continue to grow (in this case, double).
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85 * 2)
+        self.assertEqual(assemblies._assemNum, expectedNum * 2)
 
-        # now load but also updateGlobalAssemNum and show that it updates to the value
-        # stored in self.r.p.maxAssemNum plus 1
+        # now load but set updateGlobalAssemNum=True and show that the global assem num
+        # is updated and equal to self.r.p.maxAssemNum + 1 which is equal to the number of
+        # assemblies in blueprints/core.
+        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
+        expected = len(self.r.core) + len(self.r.blueprints.assemblies.values())
+        self.assertEqual(assemblies._assemNum, expected)
+
+        # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
+        # do not continue to increase the global assem num.
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        self.assertEqual(assemblies._assemNum, self.r.core.p.maxAssemNum + 1)
+        self.assertEqual(assemblies._assemNum, expected)
 
     def test_history(self):
         self.makeShuffleHistory()
