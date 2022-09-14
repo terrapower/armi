@@ -73,9 +73,6 @@ class UZr(material.FuelMaterial):
         self._calculateReferenceDensity()
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
-    def density3(self, Tk: float = None, Tc: float = None) -> float:
-        return material.Material.density3(self, Tk=Tk, Tc=Tc)
-
     def _calculateReferenceDensity(self):
         """
         Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law
