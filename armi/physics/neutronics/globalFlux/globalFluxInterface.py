@@ -418,6 +418,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 if self.options.detailedAxialExpansion:
                     converter.convert(self.r)
                     neutronicsReactor = converter.convReactor
+                    self.r = neutronicsReactor
 
                 # Here we are taking a short cut to homogenizing the core by only focusing on the
                 # core assemblies that need to be homogenized. This will have a large speed up
@@ -450,7 +451,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         self.options.nonUniformMeshFlags
                     ):
                         storedAssem = copy.deepcopy(assem)
-                        core.sfp.add(storedAssem)
+                        self.r.core.sfp.add(storedAssem)
                         converter.makeAssemWithUniformMesh(
                             assem, uniformMesh, blockParamNames
                         )
@@ -463,10 +464,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
             converter = self.geomConverters.get(
                 "edgeAssems", geometryConverters.EdgeAssemblyChanger()
             )
-            converter.addEdgeAssemblies(neutronicsReactor.core)
+            converter.addEdgeAssemblies(self.r.core)
             self.geomConverters["edgeAssems"] = converter
-
-        self.r = neutronicsReactor
 
     @codeTiming.timed
     def _undoGeometryTransformations(self):
