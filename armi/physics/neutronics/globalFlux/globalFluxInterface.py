@@ -434,7 +434,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         None,
                         calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
                     )
-                    uniformMesh = converter._computeAverageAxialMesh()
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
                     self.blockParamNames.extend(
@@ -453,7 +452,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         storedAssem = copy.deepcopy(assem)
                         self.r.core.sfp.add(storedAssem)
                         converter.makeAssemWithUniformMesh(
-                            assem, uniformMesh, blockParamNames
+                            assem, self.r.core.refAssem.getAxialMesh(), blockParamNames
                         )
 
                     if makePlots:
