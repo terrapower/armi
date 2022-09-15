@@ -455,6 +455,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         converter.makeAssemWithUniformMesh(
                             assem, self.r.core.refAssem.getAxialMesh(), blockParamNames
                         )
+                        self.r.core.updateAxialMesh()
 
                     if makePlots:
                         converter.plotConvertedReactor()
@@ -530,6 +531,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                                 self.r.core.remove(assem)
                                 self.r.core.add(storedAssem)
                                 break
+
+                    self.r.core.updateAxialMesh()
                 else:
                     meshConverter.applyStateToOriginal()
                     self.r = (
