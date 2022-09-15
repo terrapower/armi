@@ -456,7 +456,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         storedAssem = copy.deepcopy(assem)
                         self.r.core.sfp.add(storedAssem)
                         converter.makeAssemWithUniformMesh(
-                            assem, self.r.core.p.axialMesh, blockParamNames
+                            assem, self.r.core.p.axialMesh[1:], blockParamNames
                         )
 
                     if makePlots:
