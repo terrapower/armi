@@ -438,9 +438,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
                     for category in converter.BLOCK_PARAM_MAPPING_CATEGORIES:
-                        blockParamNames.extend(
-                            b.p.paramDefs.inCategory(category).names
-                        )
+                        blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
                     for assem in self.r.core.getAssemblies(
                         self.options.nonUniformMeshFlags
                     ):
@@ -504,9 +502,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
                     for category in meshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
-                        blockParamNames.extend(
-                            b.p.paramDefs.inCategory(category).names
-                        )
+                        blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
                     for assem in self.r.core.getAssemblies(
                         self.options.nonUniformMeshFlags
                     ):
@@ -518,6 +514,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                                     blockParamNames,
                                     mapNumberDensities=False,
                                 )
+                                self.r.core.sfp.remove(storedAssem)
                                 storedAssem.spatialLocator = assem.spatialLocator
                                 self.r.core.removeAssembly(assem, discharge=False)
                                 self.r.core.add(storedAssem)
