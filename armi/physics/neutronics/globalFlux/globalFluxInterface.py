@@ -431,6 +431,9 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     not self.options.detailedAxialExpansion
                     and self.options.hasNonUniformAssems
                 ):
+                    # Here we update the axial mesh so that we can use it below
+                    # as the basis for homogenizing each assembly.
+                    self.r.core.updateAxialMesh()
                     converter = uniformMesh.NeutronicsUniformMeshConverter(
                         None,
                         calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
@@ -453,9 +456,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         storedAssem = copy.deepcopy(assem)
                         self.r.core.sfp.add(storedAssem)
                         converter.makeAssemWithUniformMesh(
-                            assem, self.r.core.refAssem.getAxialMesh(), blockParamNames
+                            assem, self.r.core.p.axialMesh, blockParamNames
                         )
-                        self.r.core.updateAxialMesh()
 
                     if makePlots:
                         converter.plotConvertedReactor()
