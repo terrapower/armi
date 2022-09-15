@@ -90,6 +90,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
     """
 
+    REACTOR_PARAM_MAPPING_CATEGORIES = []
+    BLOCK_PARAM_MAPPING_CATEGORIES = []
+
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
         self._uniformMesh = None
@@ -667,6 +670,12 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     back to the source reactor.
     """
 
+    REACTOR_PARAM_MAPPING_CATEGORIES = [parameters.Category.neutronics]
+    BLOCK_PARAM_MAPPING_CATEGORIES = [
+        parameters.Category.detailedAxialExpansion,
+        parameters.Category.multiGroupQuantities,
+    ]
+
     def __init__(self, cs=None, calcReactionRates=True):
         """
         Parameters
@@ -686,19 +695,14 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         """Activate conversion of various neutronics-only paramters."""
         UniformMeshGeometryConverter._setParamsToUpdate(self)
 
-        self.reactorParamNames.extend(
-            self._sourceReactor.core.p.paramDefs.inCategory(
-                parameters.Category.neutronics
-            ).names
-        )
+        for category in self.REACTOR_PARAM_MAPPING_CATEGORIES:
+            self.reactorParamNames.extend(
+                self._sourceReactor.core.p.paramDefs.inCategory(category).names
+            )
 
         b = self._sourceReactor.core.getFirstBlock()
-        self.blockParamNames.extend(
-            b.p.paramDefs.inCategory(parameters.Category.detailedAxialExpansion).names
-        )
-        self.blockParamNames.extend(
-            b.p.paramDefs.inCategory(parameters.Category.multiGroupQuantities).names
-        )
+        for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
+            self.blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
 
     def _checkConversion(self):
         """

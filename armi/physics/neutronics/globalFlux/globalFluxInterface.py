@@ -437,26 +437,19 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     )
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
-                    blockParamNames.extend(
-                        b.p.paramDefs.inCategory(
-                            parameters.Category.detailedAxialExpansion
-                        ).names
-                    )
-                    blockParamNames.extend(
-                        b.p.paramDefs.inCategory(
-                            parameters.Category.multiGroupQuantities
-                        ).names
-                    )
+                    for category in converter.BLOCK_PARAM_MAPPING_CATEGORIES:
+                        self.blockParamNames.extend(
+                            b.p.paramDefs.inCategory(category).names
+                        )
                     for assem in self.r.core.getAssemblies(
                         self.options.nonUniformMeshFlags
                     ):
-                        storedAssem = copy.deepcopy(assem)
-                        self.r.core.sfp.add(storedAssem)
                         homogAssem = converter.makeAssemWithUniformMesh(
                             assem, self.r.core.refAssem.getAxialMesh(), blockParamNames
                         )
                         homogAssem.spatialLocator = assem.spatialLocator
-                        self.r.core.remove(assem)
+                        self.r.core.removeAssembly(assem, discharge=False)
+                        self.r.core.sfp.add(assem)
                         self.r.core.add(homogAssem)
 
                     self.r.core.updateAxialMesh()
@@ -510,16 +503,10 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 if self.options.hasNonUniformAssems:
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
-                    blockParamNames.extend(
-                        b.p.paramDefs.inCategory(
-                            parameters.Category.detailedAxialExpansion
-                        ).names
-                    )
-                    blockParamNames.extend(
-                        b.p.paramDefs.inCategory(
-                            parameters.Category.multiGroupQuantities
-                        ).names
-                    )
+                    for category in meshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
+                        self.blockParamNames.extend(
+                            b.p.paramDefs.inCategory(category).names
+                        )
                     for assem in self.r.core.getAssemblies(
                         self.options.nonUniformMeshFlags
                     ):
@@ -532,7 +519,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                                     mapNumberDensities=False,
                                 )
                                 storedAssem.spatialLocator = assem.spatialLocator
-                                self.r.core.remove(assem)
+                                self.r.core.removeAssembly(assem, discharge=False)
                                 self.r.core.add(storedAssem)
                                 break
 
