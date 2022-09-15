@@ -519,7 +519,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     for assem in self.r.core.getAssemblies(
                         self.options.nonUniformMeshFlags
                     ):
-                        for storedAssem in self.r.core.sfr.getChildren():
+                        for storedAssem in self.r.core.sfp.getChildren():
                             if storedAssem.getName() == assem.getName():
                                 meshConverter.setAssemblyStateFromOverlaps(
                                     assem,
