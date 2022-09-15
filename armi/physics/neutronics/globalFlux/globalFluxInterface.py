@@ -438,7 +438,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
                     for category in converter.BLOCK_PARAM_MAPPING_CATEGORIES:
-                        self.blockParamNames.extend(
+                        blockParamNames.extend(
                             b.p.paramDefs.inCategory(category).names
                         )
                     for assem in self.r.core.getAssemblies(
@@ -504,7 +504,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
                     for category in meshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
-                        self.blockParamNames.extend(
+                        blockParamNames.extend(
                             b.p.paramDefs.inCategory(category).names
                         )
                     for assem in self.r.core.getAssemblies(
