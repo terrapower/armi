@@ -17,7 +17,7 @@ The settings package is a long-time feature of ARMI. It was made to fill the nic
 
 A good roadmap to understanding the settings system would be to look at the following principle design considerations, going into each one in detail.
 
-* Keep the user's experience with settings as simple as possible.
+* Keep the user's experience with settings as simple as possible
 * Remove setting definitions from code, centralize them, and facilitate definition change
 * Don't break backwards compatibility
 * Improve safety around possible misuses and accidents of the settings
@@ -29,7 +29,6 @@ Keep the user's experience with settings as simple as possible
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the principle design restraint for the settings package. In addition to raw implementation complexity, asking developers and users to relearn any alterations to the existing system counts towards total complexity; deeming migration to an equally complex system not worth the effort without stronger incentives.
 
-Historically developers are used to looking up the name of their setting by using a string fed into a collection object and having the value associated with the name returned back. The same behavior was used to assign a new value to the given name in the shared object. This constitutes the vast majority of external interactions with the settings system.
 
 Reactor Overview
 ----------------
@@ -76,18 +75,9 @@ how the object itself behaves. A prime example of this is the GUI.
 
 Improve safety around possible misuses and accidents of the settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-While simplicity remains a principle concern, some allotment for error prevention has to be allowed. A basic system that can be misused wildly is inherently more complex than one with a little overhead that works to keep nasty surprises as bay.
+While simplicity remains a principle concern, some allotment for error prevention has to be allowed. A basic system that can be misused wildly is inherently more complex than one with a little overhead that works to keep nasty surprises at bay.
 
 The settings system is written in a defensive fashion, as it's the most frequent location for possible developer and user misuse. Given this, any method from accessing non-existent settings to trying to supply duplicate settings has been written with fail-fast behavior.
-
-In some cases there may be an automated solution to a possible misuse. In general there's nothing overtly wrong
-with the litany of checks for safety but it does make the system appear more convoluted to newcomers. Of course,
-This small cost is outweighed by the time saved from working through the same resolvable problem in use many times.
-
-There will always be a need for knowledgable users to communicate with however, as it is unreasonable to attempt to
-program in a fool-proof understanding of the physics coded for in the settings system. Such an endeavor would come with great developmental and maintenance costs.
-
-Most problems these days arise when users make typos or simple editing mistakes when manually adjusting some values in the case settings input files.
 
 Non-dynamic data typing
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -124,13 +114,9 @@ As mutable objects are encompassed in the list of supported data types, it becam
 	# if we stop the code here, the value in cs['myListSetting'] will not contain
 	# the bad value appended thanks to myList being a deep-copied value
 
-	# the following will run 'myList' against any error checking in the system
-	# either crashing the run or accepting the new value for later use.
-	cs['myListSetting'] = myList # good!
-
 The customizability of settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Yet another error prevention tool is the customizability of individual settings. As mentioned previously a complete understanding of the complex meaning involved in setting values can't be programmed. However by giving each setting more character in the system to stand up on its own against mistakes (e.g. a temperature below absolute zero) can chip away at the burden of the user to need to understand the entirety.
+Yet another error prevention tool is the customizability of individual settings. As mentioned previously, a complete understanding of the complex meaning involved in setting values can't be programmed. However, when the user creates a setting, they have the ability to control default values, valid ranges, and other basic sanity checking parameters.
 
 Each setting is intended to present a way of answering a question to the user from the system. For example many settings ask questions like what external code engine to utilize for advanced calculations, or what temperature to apply to a particular component. These questions are not open ended and as such usually have a set of rules surrounding their use like no temperatures below absolute zero, or only code engines specified by the following three strings are valid.
 
@@ -161,8 +147,7 @@ grid. In particular, *Assemblies* sit in the 2-D grid on the reactor and *Blocks
 Setting and getting state variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The *state* is stored on component-level *parameters*. The design and implementation of this subpackage is fully described in
-:py:mod:`armi.reactor.parameters`.
+The *state* is stored in *parameters* at the ``block`` level and higher. The design and implementation of this subpackage is fully described in :py:mod:`armi.reactor.parameters`.
 
 
 Averaging over children
@@ -177,7 +162,7 @@ Computing Homogenized Number Densities
 """"""""""""""""""""""""""""""""""""""
 Objects can compute homogenized number densities of each nuclide as required in many nuclear simulations (e.g. DIF3D).
 The components contained in each block have heterogeneous compositions and dimensions that must be smeared into
-a homogeneous block, as shown in figure 1.
+a homogeneous block, as shown in Figure 1.
 
 To homogenize number densities, conservation of atoms is applied. Consider a a collection of :math:`I` components, each with
 heterogeneous number density :math:`N_i` and volumes :math:`V_i`. The number of atoms in
@@ -228,30 +213,11 @@ is computed as:
 
 Hot and input dimensions
 ^^^^^^^^^^^^^^^^^^^^^^^^
-ARMI treats dimensions and material properties as functions of temperature. However, a pure
-physical analogy is challenging for several reasons. These reasons and
-the implementation details are explained here.
+ARMI treats dimensions and material properties as functions of temperature. However, a pure physical analogy is challenging for several reasons. These reasons and the implementation details are explained here.
 
-For a typical ``component``, users may define most dimensions at any temperature they desire
-(the *Input temperature*), as explained in :doc:`/user/inputs/composition_file`. These
-dimensions will be thermally-expanded up to the *Hot temperature* as input. For most shapes and
-components, this works as expected, however:
+For a typical ``component``, users may define most dimensions at any temperature they desire (the *Input temperature*), as explained in :doc:`/user/inputs/blueprints`. These dimensions will be thermally-expanded up to the *Hot temperature* as input. For most shapes and components, this works as expected. However, in Hex geometries the outer hexagonal boundary is currently limited to be consistent across all assemblies in a core. This stems from some physics solver requirements of structured meshes. Users should set the hot dimension on input. Models that change pitch as functions of grid-plate and load pad temperatures may be developed in the future.
 
-* In Hex geometries, the outer hexagonal boundary is currently limited to be consistent across
-  all objects in a core. This stems from some physics solver requirements of structured meshes.
-  Users should set the hot dimension on input. Models that change pitch
-  as functions of grid-plate and load pad temperatures may be developed in the future.
-* The axial heights of **blocks** is complicated to model explicitly because different components
-  of different materials expand differently at the same temperature. Pure physical analogy would
-  require independent meshes for the duct, clad, and fuel of every pin. To deal with this, ARMI implements
-  *exclusively radial thermal expansion* (more details are available in
-  :doc:`/reference/materials`). As a result of this, users should input the desired hot axial dimensions
-  of all blocks. Advanced models with multiple axial meshes may be developed at a later time.
-
-**Component** dimensions are stored as *parameters* at the input temperature and thermally expanded
-to the current temperature of the component upon access. To run a case at a specific temperature,
-the user sould set the hot and input temperatures to the same value. This can be used to study
-isothermal conditions during outages and startup.
+**Component** dimensions are stored as *parameters* at the input temperature and thermally expanded to the current temperature of the component upon access. To run a case at a specific temperature, the user should set the hot and input temperatures to the same value. This can be used to study isothermal conditions during outages and startup.
 
 -------------------
 Requirements Review
