@@ -446,7 +446,15 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                             assem, self.r.core.refAssem.getAxialMesh(), blockParamNames
                         )
                         homogAssem.spatialLocator = assem.spatialLocator
-                        self.r.core.removeAssembly(assem, discharge=False)
+
+                        # Remove this assembly from the core and add it to the
+                        # SFP so that it can be replaced with the homogenized assembly.
+                        # Note that we do not call the `removeAssembly` method because
+                        # this will delete the core assembly from existence rather than
+                        # only stripping its spatialLocator away.
+                        if assem.spatialLocator in self.r.core.childrenByLocator:
+                            self.r.core.childrenByLocator.pop(assem.spatialLocator)
+                        self.r.core.remove(assem)
                         self.r.core.sfp.add(assem)
                         self.r.core.add(homogAssem)
 
@@ -514,11 +522,28 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                                     blockParamNames,
                                     mapNumberDensities=False,
                                 )
-                                self.r.core.sfp.remove(storedAssem)
+
+                                # Remove the stored assembly from the spent fuel pool
+                                # and replace the current assembly with it.
                                 storedAssem.spatialLocator = assem.spatialLocator
+                                if (
+                                    storedAssem.spatialLocator
+                                    in self.r.core.sfp.childrenByLocator
+                                ):
+                                    self.r.core.sfp.childrenByLocator.pop(
+                                        storedAssem.spatialLocator
+                                    )
+                                self.r.core.sfp.remove(storedAssem)
                                 self.r.core.removeAssembly(assem, discharge=False)
                                 self.r.core.add(storedAssem)
                                 break
+                        else:
+                            runLog.error(
+                                f"No assembly matching name {assem.getName()} "
+                                f"was found in the spent fuel pool. {assem} "
+                                f"will persist as an axially unified assembly. "
+                                f"This is likely not intended."
+                            )
 
                     self.r.core.updateAxialMesh()
                 else:
