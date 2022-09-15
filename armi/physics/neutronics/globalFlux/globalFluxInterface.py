@@ -527,8 +527,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                                     blockParamNames,
                                     mapNumberDensities=False,
                                 )
-                                self.r.core.remove(assem)
                                 storedAssem.spatialLocator = assem.spatialLocator
+                                self.r.core.remove(assem)
                                 self.r.core.add(storedAssem)
                                 break
                 else:
