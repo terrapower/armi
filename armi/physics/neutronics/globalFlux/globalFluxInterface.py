@@ -436,12 +436,12 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     )
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
-                    self.blockParamNames.extend(
+                    blockParamNames.extend(
                         b.p.paramDefs.inCategory(
                             parameters.Category.detailedAxialExpansion
                         ).names
                     )
-                    self.blockParamNames.extend(
+                    blockParamNames.extend(
                         b.p.paramDefs.inCategory(
                             parameters.Category.multiGroupQuantities
                         ).names
@@ -504,12 +504,12 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 if self.options.hasNonUniformAssems:
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
-                    self.blockParamNames.extend(
+                    blockParamNames.extend(
                         b.p.paramDefs.inCategory(
                             parameters.Category.detailedAxialExpansion
                         ).names
                     )
-                    self.blockParamNames.extend(
+                    blockParamNames.extend(
                         b.p.paramDefs.inCategory(
                             parameters.Category.multiGroupQuantities
                         ).names
