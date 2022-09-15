@@ -15,6 +15,7 @@
 """
 The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
 """
+import copy
 import math
 from typing import Dict, Optional
 
@@ -328,7 +329,10 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs["detailedAxialExpansion"]
-        self.hasNonUniformAssems = any(cs["nonUniformAssemFlags"])
+        self.nonUniformMeshFlags = [
+            Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
+        ]
+        self.hasNonUniformAssems = any(self.nonUniformMeshFlags)
         self.eigenvalueProblem = cs["eigenProb"]
 
         # dose/dpa specific (should be separate subclass?)
@@ -411,11 +415,49 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     None,
                     calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
                 )
-                converter.convert(self.r)
-                neutronicsReactor = converter.convReactor
-                if makePlots:
-                    converter.plotConvertedReactor()
-                self.geomConverters["axial"] = converter
+                if self.options.detailedAxialExpansion:
+                    converter.convert(self.r)
+                    neutronicsReactor = converter.convReactor
+
+                # Here we are taking a short cut to homogenizing the core by only focusing on the
+                # core assemblies that need to be homogenized. This will have a large speed up
+                # since we don't have to create an entirely new reactor perform the data mapping.
+                # We are using the Spent Fuel Pool (SFP) as a container just to temporarily store
+                # the detailed assembly so that it can be recovered later when the geometry
+                # conversions are undone.
+                elif (
+                    not self.options.detailedAxialExpansion
+                    and self.options.hasNonUniformAssems
+                ):
+                    converter = uniformMesh.NeutronicsUniformMeshConverter(
+                        None,
+                        calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
+                    )
+                    uniformMesh = converter._computeAverageAxialMesh()
+                    b = self.r.core.getFirstBlock()
+                    blockParamNames = []
+                    self.blockParamNames.extend(
+                        b.p.paramDefs.inCategory(
+                            parameters.Category.detailedAxialExpansion
+                        ).names
+                    )
+                    self.blockParamNames.extend(
+                        b.p.paramDefs.inCategory(
+                            parameters.Category.multiGroupQuantities
+                        ).names
+                    )
+                    for assem in self.r.core.getAssemblies(
+                        self.options.nonUniformMeshFlags
+                    ):
+                        storedAssem = copy.deepcopy(assem)
+                        core.sfp.add(storedAssem)
+                        converter.makeAssemWithUniformMesh(
+                            assem, uniformMesh, blockParamNames
+                        )
+
+                    if makePlots:
+                        converter.plotConvertedReactor()
+                    self.geomConverters["axial"] = converter
 
         if self.edgeAssembliesAreNeeded():
             converter = self.geomConverters.get(
@@ -457,15 +499,49 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         meshConverter = self.geomConverters.get("axial")
         if meshConverter:
             if self.options.applyResultsToReactor:
-                meshConverter.applyStateToOriginal()
 
-            self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
+                # For the case of having non-uniform assemblies in the core,
+                # we are undoing the modifications using a short cut that doesn't
+                # require the entire reactor to be mapped back.
+                if self.options.hasNonUniformAssems:
+                    b = self.r.core.getFirstBlock()
+                    blockParamNames = []
+                    self.blockParamNames.extend(
+                        b.p.paramDefs.inCategory(
+                            parameters.Category.detailedAxialExpansion
+                        ).names
+                    )
+                    self.blockParamNames.extend(
+                        b.p.paramDefs.inCategory(
+                            parameters.Category.multiGroupQuantities
+                        ).names
+                    )
+                    for assem in self.r.core.getAssemblies(
+                        self.options.nonUniformMeshFlags
+                    ):
+                        for storedAssem in self.r.core.sfr.getChildren():
+                            if storedAssem.getName() == assem.getName():
+                                meshConverter.setAssemblyStateFromOverlaps(
+                                    assem,
+                                    storedAssem,
+                                    blockParamNames,
+                                    mapNumberDensities=False,
+                                )
+                                self.r.core.remove(assem)
+                                storedAssem.spatialLocator = assem.spatialLocator
+                                self.r.core.add(storedAssem)
+                                break
+                else:
+                    meshConverter.applyStateToOriginal()
+                    self.r = (
+                        meshConverter._sourceReactor
+                    )  # pylint: disable=protected-access;
 
-            # Resets the stored attributes on the converter to
-            # ensure that there is state data that is long-lived on the
-            # object in case the garbage collector does not remove it.
-            # Additionally, this will reset the global assembly counter.
-            meshConverter.reset()
+                    # Resets the stored attributes on the converter to
+                    # ensure that there is state data that is long-lived on the
+                    # object in case the garbage collector does not remove it.
+                    # Additionally, this will reset the global assembly counter.
+                    meshConverter.reset()
 
         # clear the converters in case this function gets called twice
         self.geomConverters = {}

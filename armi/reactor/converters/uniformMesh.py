@@ -450,9 +450,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
                     updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
-                BlockParamMapper.paramSetter(
-                    destBlock, updatedDestVals.values(), updatedDestVals.keys()
-                )
+            BlockParamMapper.paramSetter(
+                destBlock, updatedDestVals.values(), updatedDestVals.keys()
+            )
 
             UniformMeshGeometryConverter._applyCachedParamValues(
                 destBlock, blockParamNames, cachedParams
