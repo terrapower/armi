@@ -393,7 +393,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
         changer.convert(self.r)
 
-        converter = uniformMesh.NeutronicsUniformMeshConverter()
+        converter = uniformMesh.NeutronicsUniformMeshConverter(self.o.cs)
         newR = converter.initNewReactor(self.r)
 
         # Check the full core conversion is successful
