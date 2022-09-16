@@ -155,12 +155,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             self.convReactor.core.updateAxialMesh()
 
-            self._checkConversion()
-            completeEndTime = timer()
-            runLog.extra(
-                f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
-            )
-
         else:
             self.convReactor = self.initNewReactor(r)
             self._setParamsToUpdate()
@@ -173,7 +167,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
-            self._checkConversion()
+        self._checkConversion()
         completeEndTime = timer()
         runLog.extra(
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
