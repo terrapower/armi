@@ -44,7 +44,7 @@ The database shall faithfully represent the possessed information and not alter 
 The state information representing as near as possible the entirety of the run when the database write was executed, shall be retrievable to restore the previous case to a particular point in time for further use by analysts.
 
 .. req:: The database shall accept all pythonic primitive data types.
-   :id: REEQ_DB_PRIMITIVES
+   :id: REQ_DB_PRIMITIVES
    :status: needs implementation, needs test
 
 Given the ubiquity of Python's ``None`` the database shall support its inclusion as a valid entry for data. There will be no support for any abstract data type beyond None.
@@ -79,7 +79,7 @@ TODO: This may be tested by a unit test loading in duplicate setting definitions
       :id: REQ_SETTINGS_UNAMBIGUOUS_TYPE
       :status: implemented, needs more tests
 
-   Settings shall exist exclusively as a well-defined datatype, as chosen by the setting definition.
+   Settings shall exist exclusively as a well-defined data type, as chosen by the setting definition.
 
    TODO: This may be tested by unit tests attempting to subvert the contained data type.
 
@@ -528,7 +528,7 @@ TODO: This is completed by the :doc:`Settings Report </user/inputs/settings_repo
    :id: REQ_REACTOR_CORRECTNESS
    :status: needs implementation, needs test
 
-The reactor package shall check its inputs for certain obvious errors including unphysical quantities. At a deep level, the reactor package will not attempt to full validate subtle engineering aspects of the reactor; that is more generally the reason users will want to fully simulate a reactor and cannot be done at input time.
+The reactor package shall check its inputs for certain obvious errors including unphysical quantities. At a deep level, the reactor package will not attempt to fully validate subtle engineering aspects of the reactor; that is more generally the reason users will want to fully simulate a reactor and cannot be done at input time.
 
 
 --------------------
