@@ -90,6 +90,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
     """
 
+    REACTOR_PARAM_MAPPING_CATEGORIES = []
+    BLOCK_PARAM_MAPPING_CATEGORIES = []
+    _TEMP_STORAGE_NAME_SUFFIX = "-TEMP"
+
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
         self._uniformMesh = None
@@ -103,23 +107,70 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # be preserved since no changes were applied.
         self._cachedReactorCoreParamData = {}
 
+        self._nonUniformMeshFlags = None
+        self._hasNonUniformAssems = None
+        self._nonUniformAssemStorage = set()
+        if cs is not None:
+            self._nonUniformMeshFlags = [
+                Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
+            ]
+            self._hasNonUniformAssems = any(self._nonUniformMeshFlags)
+
     def convert(self, r=None):
         """Create a new reactor core with a uniform mesh."""
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
-        runLog.extra("Building copy of {} with a uniform axial mesh".format(r))
         completeStartTime = timer()
         self._sourceReactor = r
-        self.convReactor = self.initNewReactor(r)
-        self._setParamsToUpdate()
-        self._computeAverageAxialMesh()
-        self._buildAllUniformAssemblies()
-        self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
+
+        # Here we are taking a short cut to homogenizing the core by only focusing on the
+        # core assemblies that need to be homogenized. This will have a large speed up
+        # since we don't have to create an entirely new reactor perform the data mapping.
+        if self._hasNonUniformAssems:
+            runLog.extra(
+                f"Replacing non-uniform assemblies in reactor {r}, "
+                f"with assemblies whose axial mesh is uniform with "
+                f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
+            )
+            self.convReactor = self._sourceReactor
+            self._setParamsToUpdate()
+            for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
+                homogAssem = self.makeAssemWithUniformMesh(
+                    assem,
+                    self.convReactor.core.refAssem.getAxialMesh(),
+                    self.blockParamNames,
+                )
+                homogAssem.spatialLocator = assem.spatialLocator
+
+                # Remove this assembly from the core and add it to the
+                # temporary storage list so that it can be replaced with the homogenized assembly.
+                # Note that we do not call the `removeAssembly` method because
+                # this will delete the core assembly from existence rather than
+                # only stripping its spatialLocator away.
+                if assem.spatialLocator in self.convReactor.core.childrenByLocator:
+                    self.convReactor.core.childrenByLocator.pop(assem.spatialLocator)
+                self.convReactor.core.remove(assem)
+                self.convReactor.core.assembliesByName.pop(assem.getName(), None)
+                for b in assem:
+                    self.convReactor.core.blocksByName.pop(b.getName(), None)
+
+                assem.setName(assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX)
+                self._nonUniformAssemStorage.add(assem)
+                self.convReactor.core.add(homogAssem)
+
+        else:
+            runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
+            self.convReactor = self.initNewReactor(r)
+            self._setParamsToUpdate()
+            self._computeAverageAxialMesh()
+            self._buildAllUniformAssemblies()
+            self._mapStateFromReactorToOther(
+                self._sourceReactor, self.convReactor, mapNumberDensities=False
+            )
+            self._newAssembliesAdded = self.convReactor.core.getAssemblies()
+
         self.convReactor.core.updateAxialMesh()
-
-        self._newAssembliesAdded = self.convReactor.core.getAssemblies()
-
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(
@@ -171,18 +222,58 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         completeStartTime = timer()
 
-        # Clear the state of the original source reactor to ensure that
-        # a clean mapping between the converted reactor for data that has been
-        # changed. In this case, we cache the original reactor's data so that
-        # after the mapping has been applied, we can recover data from any
-        # parameters that did not change.
-        self._cachedReactorCoreParamData = {}
-        self._clearStateOnReactor(self._sourceReactor, cache=True)
-        self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
+        # If we have non-uniform mesh assemblies then we need to apply a
+        # different approach to undo the geometry transformations on an
+        # assembly by assembly basis.
+        if self._hasNonUniformAssems:
+            for assem in self._sourceReactor.core.getAssemblies(
+                self._nonUniformMeshFlags
+            ):
+                for storedAssem in self._nonUniformAssemStorage:
+                    if (
+                        storedAssem.getName()
+                        == assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX
+                    ):
+                        self.setAssemblyStateFromOverlaps(
+                            assem,
+                            storedAssem,
+                            self.blockParamNames,
+                            mapNumberDensities=False,
+                        )
 
-        # We want to map the converted reactor core's library to the source reactor
-        # because in some instances this has changed (i.e., when generating cross sections).
-        self._sourceReactor.core.lib = self.convReactor.core.lib
+                        # Remove the stored assembly from the temporary storage list
+                        # and replace the current assembly with it.
+                        storedAssem.spatialLocator = assem.spatialLocator
+                        storedAssem.setName(assem.getName())
+                        self._nonUniformAssemStorage.remove(storedAssem)
+                        self._sourceReactor.core.removeAssembly(assem, discharge=False)
+                        self._sourceReactor.core.add(storedAssem)
+                        break
+                else:
+                    runLog.error(
+                        f"No assembly matching name {assem.getName()} "
+                        f"was found in the temporary storage list. {assem} "
+                        f"will persist as an axially unified assembly. "
+                        f"This is likely not intended."
+                    )
+
+            self._sourceReactor.core.updateAxialMesh()
+        else:
+            # Clear the state of the original source reactor to ensure that
+            # a clean mapping between the converted reactor for data that has been
+            # changed. In this case, we cache the original reactor's data so that
+            # after the mapping has been applied, we can recover data from any
+            # parameters that did not change.
+            self._cachedReactorCoreParamData = {}
+            self._clearStateOnReactor(self._sourceReactor, cache=True)
+            self._mapStateFromReactorToOther(
+                self.convReactor, self._sourceReactor, mapNumberDensities=True
+            )
+
+            # We want to map the converted reactor core's library to the source reactor
+            # because in some instances this has changed (i.e., when generating cross sections).
+            self._sourceReactor.core.lib = self.convReactor.core.lib
+
         completeEndTime = timer()
         runLog.extra(
             f"Parameter remapping time: {completeEndTime-completeStartTime} seconds"
@@ -446,9 +537,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
                     updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
-                BlockParamMapper.paramSetter(
-                    destBlock, updatedDestVals.values(), updatedDestVals.keys()
-                )
+            BlockParamMapper.paramSetter(
+                destBlock, updatedDestVals.values(), updatedDestVals.keys()
+            )
 
             UniformMeshGeometryConverter._applyCachedParamValues(
                 destBlock, blockParamNames, cachedParams
@@ -590,15 +681,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         src = self._sourceReactor
         refAssem = src.core.refAssem
-        # Get the number of reference mesh points, including the sub-mesh. This subtracts 1
-        # to remove the first value (typically zero).
-        refNumPoints = (
-            len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=True)) - 1
-        )
+
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
         allMeshes = []
         for a in src.core:
-            # Get the mesh points of the assembly, neglecting the first coordinate (typically zero).s
-            aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=True)[1:]
+            # Get the mesh points of the assembly, neglecting the first coordinate
+            # (typically zero).
+            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
         self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
@@ -639,7 +728,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
             reactor.core.p[rp] = 0.0
 
-    def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
+    def _mapStateFromReactorToOther(
+        self, sourceReactor, destReactor, mapNumberDensities=True
+    ):
         """
         Map parameters from one reactor to another.
 
@@ -663,6 +754,12 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     back to the source reactor.
     """
 
+    REACTOR_PARAM_MAPPING_CATEGORIES = [parameters.Category.neutronics]
+    BLOCK_PARAM_MAPPING_CATEGORIES = [
+        parameters.Category.detailedAxialExpansion,
+        parameters.Category.multiGroupQuantities,
+    ]
+
     def __init__(self, cs=None, calcReactionRates=True):
         """
         Parameters
@@ -682,19 +779,14 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         """Activate conversion of various neutronics-only paramters."""
         UniformMeshGeometryConverter._setParamsToUpdate(self)
 
-        self.reactorParamNames.extend(
-            self._sourceReactor.core.p.paramDefs.inCategory(
-                parameters.Category.neutronics
-            ).names
-        )
+        for category in self.REACTOR_PARAM_MAPPING_CATEGORIES:
+            self.reactorParamNames.extend(
+                self._sourceReactor.core.p.paramDefs.inCategory(category).names
+            )
 
         b = self._sourceReactor.core.getFirstBlock()
-        self.blockParamNames.extend(
-            b.p.paramDefs.inCategory(parameters.Category.detailedAxialExpansion).names
-        )
-        self.blockParamNames.extend(
-            b.p.paramDefs.inCategory(parameters.Category.multiGroupQuantities).names
-        )
+        for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
+            self.blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
 
     def _checkConversion(self):
         """
@@ -724,9 +816,14 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                         f"user-input power ({expectedPow})."
                     )
 
-    def _mapStateFromReactorToOther(self, sourceReactor, destReactor):
+    def _mapStateFromReactorToOther(
+        self, sourceReactor, destReactor, mapNumberDensities=True
+    ):
         UniformMeshGeometryConverter._mapStateFromReactorToOther(
-            self, sourceReactor, destReactor
+            self,
+            sourceReactor,
+            destReactor,
+            mapNumberDensities,
         )
 
         # Map reactor core parameters
@@ -750,6 +847,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 aSource,
                 aDest,
                 self.blockParamNames,
+                mapNumberDensities,
             )
 
             # If requested, the reaction rates will be calculated based on the
@@ -860,6 +958,6 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
             )
     block.setNumberDensities(totalDensities)
     # Set the volume of each component in the block to `None` so that the
-    # volume of each volume is recomputed.
+    # volume of each component is recomputed.
     for c in block:
         c.p.volume = None
