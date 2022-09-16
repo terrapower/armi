@@ -411,26 +411,13 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         controlAssems = self.r.core.getAssemblies(Flags.PRIMARY | Flags.CONTROL)
         self.converter.convert(self.r)
 
-        print(self.r.core.sfp.getChildren())
         self.assertEqual(
             len(controlAssems),
-            len(
-                [
-                    a
-                    for a in self.r.core.sfp.getChildren()
-                    if self.converter._SFP_TEMP_STORAGE_SUFFIX in a.getName()
-                ]
-            ),
+            len(self.converter._nonUniformAssemStorage),
         )
         self.converter.applyStateToOriginal()
         self.assertEqual(
-            len(
-                [
-                    a
-                    for a in self.r.core.sfp.getChildren()
-                    if self.converter._SFP_TEMP_STORAGE_SUFFIX in a.getName()
-                ]
-            ),
+            len(self.converter._nonUniformAssemStorage),
             0,
         )
 

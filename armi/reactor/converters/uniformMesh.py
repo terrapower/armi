@@ -92,7 +92,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     REACTOR_PARAM_MAPPING_CATEGORIES = []
     BLOCK_PARAM_MAPPING_CATEGORIES = []
-    _SFP_TEMP_STORAGE_SUFFIX = "-TEMP"
+    _TEMP_STORAGE_NAME_SUFFIX = "-TEMP"
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -106,9 +106,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # This prevents clearing out data on the original reactor that should
         # be preserved since no changes were applied.
         self._cachedReactorCoreParamData = {}
-        
+
         self._nonUniformMeshFlags = None
         self._hasNonUniformAssems = None
+        self._nonUniformAssemStorage = set()
         if cs is not None:
             self._nonUniformMeshFlags = [
                 Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
@@ -120,7 +121,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
-        runLog.extra(f"Building with uniform axial mesh reactor from {r}")
         completeStartTime = timer()
         self._sourceReactor = r
 
@@ -131,6 +131,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # the detailed assembly so that it can be recovered later when the geometry
         # conversions are undone.
         if self._hasNonUniformAssems:
+            runLog.extra(
+                f"Replacing non-uniform assemblies in reactor {r}, "
+                f"with assemblies whose axial mesh is uniform with "
+                f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
+            )
             self.convReactor = self._sourceReactor
             self._setParamsToUpdate()
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
@@ -153,13 +158,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 for b in assem:
                     self.convReactor.core.blocksByName.pop(b.getName(), None)
 
-                assem.setName(assem.getName() + self._SFP_TEMP_STORAGE_SUFFIX)
-                self.convReactor.core.sfp.add(assem)
+                assem.setName(assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX)
+                self._nonUniformAssemStorage.add(assem)
                 self.convReactor.core.add(homogAssem)
 
-            self.convReactor.core.updateAxialMesh()
-
         else:
+            runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r)
             self._setParamsToUpdate()
             self._computeAverageAxialMesh()
@@ -167,10 +171,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._mapStateFromReactorToOther(
                 self._sourceReactor, self.convReactor, mapNumberDensities=False
             )
-            self.convReactor.core.updateAxialMesh()
-
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
+        self.convReactor.core.updateAxialMesh()
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(
@@ -229,10 +232,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
             for assem in self._sourceReactor.core.getAssemblies(
                 self._nonUniformMeshFlags
             ):
-                for storedAssem in self._sourceReactor.core.sfp.getChildren():
+                for storedAssem in self._nonUniformAssemStorage:
                     if (
                         storedAssem.getName()
-                        == assem.getName() + self._SFP_TEMP_STORAGE_SUFFIX
+                        == assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX
                     ):
                         self.setAssemblyStateFromOverlaps(
                             assem,
@@ -253,7 +256,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                                 storedAssem.spatialLocator
                             )
 
-                        self._sourceReactor.core.sfp.remove(storedAssem)
+                        self._nonUniformAssemStorage.remove(storedAssem)
                         self._sourceReactor.core.removeAssembly(assem, discharge=False)
                         self._sourceReactor.core.add(storedAssem)
                         break
