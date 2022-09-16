@@ -127,9 +127,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # Here we are taking a short cut to homogenizing the core by only focusing on the
         # core assemblies that need to be homogenized. This will have a large speed up
         # since we don't have to create an entirely new reactor perform the data mapping.
-        # We are using the Spent Fuel Pool (SFP) as a container just to temporarily store
-        # the detailed assembly so that it can be recovered later when the geometry
-        # conversions are undone.
         if self._hasNonUniformAssems:
             runLog.extra(
                 f"Replacing non-uniform assemblies in reactor {r}, "
@@ -248,14 +245,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         # and replace the current assembly with it.
                         storedAssem.spatialLocator = assem.spatialLocator
                         storedAssem.setName(assem.getName())
-                        if (
-                            storedAssem.spatialLocator
-                            in self._sourceReactor.core.sfp.childrenByLocator
-                        ):
-                            self._sourceReactor.core.sfp.childrenByLocator.pop(
-                                storedAssem.spatialLocator
-                            )
-
                         self._nonUniformAssemStorage.remove(storedAssem)
                         self._sourceReactor.core.removeAssembly(assem, discharge=False)
                         self._sourceReactor.core.add(storedAssem)
@@ -263,7 +252,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 else:
                     runLog.error(
                         f"No assembly matching name {assem.getName()} "
-                        f"was found in the spent fuel pool. {assem} "
+                        f"was found in the temporary storage list. {assem} "
                         f"will persist as an axially unified assembly. "
                         f"This is likely not intended."
                     )
