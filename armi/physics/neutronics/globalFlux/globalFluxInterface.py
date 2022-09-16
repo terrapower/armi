@@ -420,6 +420,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     converter.convert(self.r)
                     neutronicsReactor = converter.convReactor
                     self.r = neutronicsReactor
+                    if makePlots:
+                        converter.plotConvertedReactor()
 
                 # Here we are taking a short cut to homogenizing the core by only focusing on the
                 # core assemblies that need to be homogenized. This will have a large speed up
@@ -455,14 +457,16 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         if assem.spatialLocator in self.r.core.childrenByLocator:
                             self.r.core.childrenByLocator.pop(assem.spatialLocator)
                         self.r.core.remove(assem)
+                        self.r.core.assembliesByName.pop(assem.getName(), None)
+                        for b in assem:
+                            self.r.core.blocksByName.pop(b.getName(), None)
+
                         self.r.core.sfp.add(assem)
                         self.r.core.add(homogAssem)
 
                     self.r.core.updateAxialMesh()
 
-                    if makePlots:
-                        converter.plotConvertedReactor()
-                    self.geomConverters["axial"] = converter
+                self.geomConverters["axial"] = converter
 
         if self.edgeAssembliesAreNeeded():
             converter = self.geomConverters.get(
@@ -501,62 +505,68 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         meshConverter = self.geomConverters.get("axial")
         if meshConverter:
-            if self.options.applyResultsToReactor:
+            if (
+                self.options.applyResultsToReactor
+                and not self.options.hasNonUniformAssems
+            ):
+                meshConverter.applyStateToOriginal()
+                self.r = (
+                    meshConverter._sourceReactor
+                )  # pylint: disable=protected-access;
 
-                # For the case of having non-uniform assemblies in the core,
-                # we are undoing the modifications using a short cut that doesn't
-                # require the entire reactor to be mapped back.
-                if self.options.hasNonUniformAssems:
-                    b = self.r.core.getFirstBlock()
+                # Resets the stored attributes on the converter to
+                # ensure that there is state data that is long-lived on the
+                # object in case the garbage collector does not remove it.
+                # Additionally, this will reset the global assembly counter.
+                meshConverter.reset()
+            # If we have non-uniform mesh assemblies then we need to apply a
+            # different approach to undo the geometry transformations on an
+            # assembly by assembly basis.
+            else:
+                b = self.r.core.getFirstBlock()
+                blockParamNames = None
+                # If we are applying the results back then set the block-level
+                # parameters.
+                if self.options.applyResultsToReactor:
                     blockParamNames = []
                     for category in meshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
                         blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
-                    for assem in self.r.core.getAssemblies(
-                        self.options.nonUniformMeshFlags
-                    ):
-                        for storedAssem in self.r.core.sfp.getChildren():
-                            if storedAssem.getName() == assem.getName():
-                                meshConverter.setAssemblyStateFromOverlaps(
-                                    assem,
-                                    storedAssem,
-                                    blockParamNames,
-                                    mapNumberDensities=False,
-                                )
-
-                                # Remove the stored assembly from the spent fuel pool
-                                # and replace the current assembly with it.
-                                storedAssem.spatialLocator = assem.spatialLocator
-                                if (
-                                    storedAssem.spatialLocator
-                                    in self.r.core.sfp.childrenByLocator
-                                ):
-                                    self.r.core.sfp.childrenByLocator.pop(
-                                        storedAssem.spatialLocator
-                                    )
-                                self.r.core.sfp.remove(storedAssem)
-                                self.r.core.removeAssembly(assem, discharge=False)
-                                self.r.core.add(storedAssem)
-                                break
-                        else:
-                            runLog.error(
-                                f"No assembly matching name {assem.getName()} "
-                                f"was found in the spent fuel pool. {assem} "
-                                f"will persist as an axially unified assembly. "
-                                f"This is likely not intended."
+                for assem in self.r.core.getAssemblies(
+                    self.options.nonUniformMeshFlags
+                ):
+                    for storedAssem in self.r.core.sfp.getChildren():
+                        if storedAssem.getName() == assem.getName():
+                            meshConverter.setAssemblyStateFromOverlaps(
+                                assem,
+                                storedAssem,
+                                blockParamNames,
+                                mapNumberDensities=False,
                             )
 
-                    self.r.core.updateAxialMesh()
-                else:
-                    meshConverter.applyStateToOriginal()
-                    self.r = (
-                        meshConverter._sourceReactor
-                    )  # pylint: disable=protected-access;
+                            # Remove the stored assembly from the spent fuel pool
+                            # and replace the current assembly with it.
+                            storedAssem.spatialLocator = assem.spatialLocator
+                            if (
+                                storedAssem.spatialLocator
+                                in self.r.core.sfp.childrenByLocator
+                            ):
+                                self.r.core.sfp.childrenByLocator.pop(
+                                    storedAssem.spatialLocator
+                                )
 
-                    # Resets the stored attributes on the converter to
-                    # ensure that there is state data that is long-lived on the
-                    # object in case the garbage collector does not remove it.
-                    # Additionally, this will reset the global assembly counter.
-                    meshConverter.reset()
+                            self.r.core.sfp.remove(storedAssem)
+                            self.r.core.removeAssembly(assem, discharge=False)
+                            self.r.core.add(storedAssem)
+                            break
+                    else:
+                        runLog.error(
+                            f"No assembly matching name {assem.getName()} "
+                            f"was found in the spent fuel pool. {assem} "
+                            f"will persist as an axially unified assembly. "
+                            f"This is likely not intended."
+                        )
+
+                self.r.core.updateAxialMesh()
 
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
