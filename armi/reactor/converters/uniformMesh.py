@@ -106,17 +106,21 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # This prevents clearing out data on the original reactor that should
         # be preserved since no changes were applied.
         self._cachedReactorCoreParamData = {}
-        self._nonUniformMeshFlags = [
-            Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
-        ]
-        self._hasNonUniformAssems = any(self._nonUniformMeshFlags)
+        
+        self._nonUniformMeshFlags = None
+        self._hasNonUniformAssems = None
+        if cs is not None:
+            self._nonUniformMeshFlags = [
+                Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
+            ]
+            self._hasNonUniformAssems = any(self._nonUniformMeshFlags)
 
     def convert(self, r=None):
         """Create a new reactor core with a uniform mesh."""
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
-        runLog.extra(f"Building with a uniform axial mesh reactor from {r}")
+        runLog.extra(f"Building with uniform axial mesh reactor from {r}")
         completeStartTime = timer()
         self._sourceReactor = r
 
