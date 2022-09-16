@@ -46,6 +46,7 @@ tags
 .externalToolBuilders/
 .cache/
 .pytest_cache/
+pytestdebug.log
 dump-temp-*
 .vim-bookmarks
 venv*/
