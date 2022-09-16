@@ -92,6 +92,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     REACTOR_PARAM_MAPPING_CATEGORIES = []
     BLOCK_PARAM_MAPPING_CATEGORIES = []
+    _SFP_TEMP_STORAGE_SUFFIX = "-TEMP"
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -105,27 +106,74 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # This prevents clearing out data on the original reactor that should
         # be preserved since no changes were applied.
         self._cachedReactorCoreParamData = {}
+        self._nonUniformMeshFlags = [
+            Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
+        ]
+        self._hasNonUniformAssems = any(self._nonUniformMeshFlags)
 
     def convert(self, r=None):
         """Create a new reactor core with a uniform mesh."""
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
-        runLog.extra("Building copy of {} with a uniform axial mesh".format(r))
+        runLog.extra(f"Building with a uniform axial mesh reactor from {r}")
         completeStartTime = timer()
         self._sourceReactor = r
-        self.convReactor = self.initNewReactor(r)
-        self._setParamsToUpdate()
-        self._computeAverageAxialMesh()
-        self._buildAllUniformAssemblies()
-        self._mapStateFromReactorToOther(
-            self._sourceReactor, self.convReactor, mapNumberDensities=False
-        )
-        self.convReactor.core.updateAxialMesh()
 
-        self._newAssembliesAdded = self.convReactor.core.getAssemblies()
+        # Here we are taking a short cut to homogenizing the core by only focusing on the
+        # core assemblies that need to be homogenized. This will have a large speed up
+        # since we don't have to create an entirely new reactor perform the data mapping.
+        # We are using the Spent Fuel Pool (SFP) as a container just to temporarily store
+        # the detailed assembly so that it can be recovered later when the geometry
+        # conversions are undone.
+        if self._hasNonUniformAssems:
+            self.convReactor = self._sourceReactor
+            self._setParamsToUpdate()
+            for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
+                homogAssem = self.makeAssemWithUniformMesh(
+                    assem,
+                    self.convReactor.core.refAssem.getAxialMesh(),
+                    self.blockParamNames,
+                )
+                homogAssem.spatialLocator = assem.spatialLocator
 
-        self._checkConversion()
+                # Remove this assembly from the core and add it to the
+                # SFP so that it can be replaced with the homogenized assembly.
+                # Note that we do not call the `removeAssembly` method because
+                # this will delete the core assembly from existence rather than
+                # only stripping its spatialLocator away.
+                if assem.spatialLocator in self.convReactor.core.childrenByLocator:
+                    self.convReactor.core.childrenByLocator.pop(assem.spatialLocator)
+                self.convReactor.core.remove(assem)
+                self.convReactor.core.assembliesByName.pop(assem.getName(), None)
+                for b in assem:
+                    self.convReactor.core.blocksByName.pop(b.getName(), None)
+
+                assem.setName(assem.getName() + self._SFP_TEMP_STORAGE_SUFFIX)
+                self.convReactor.core.sfp.add(assem)
+                self.convReactor.core.add(homogAssem)
+
+            self.convReactor.core.updateAxialMesh()
+
+            self._checkConversion()
+            completeEndTime = timer()
+            runLog.extra(
+                f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
+            )
+
+        else:
+            self.convReactor = self.initNewReactor(r)
+            self._setParamsToUpdate()
+            self._computeAverageAxialMesh()
+            self._buildAllUniformAssemblies()
+            self._mapStateFromReactorToOther(
+                self._sourceReactor, self.convReactor, mapNumberDensities=False
+            )
+            self.convReactor.core.updateAxialMesh()
+
+            self._newAssembliesAdded = self.convReactor.core.getAssemblies()
+
+            self._checkConversion()
         completeEndTime = timer()
         runLog.extra(
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
@@ -176,20 +224,66 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         completeStartTime = timer()
 
-        # Clear the state of the original source reactor to ensure that
-        # a clean mapping between the converted reactor for data that has been
-        # changed. In this case, we cache the original reactor's data so that
-        # after the mapping has been applied, we can recover data from any
-        # parameters that did not change.
-        self._cachedReactorCoreParamData = {}
-        self._clearStateOnReactor(self._sourceReactor, cache=True)
-        self._mapStateFromReactorToOther(
-            self.convReactor, self._sourceReactor, mapNumberDensities=False
-        )
+        # If we have non-uniform mesh assemblies then we need to apply a
+        # different approach to undo the geometry transformations on an
+        # assembly by assembly basis.
+        if self._hasNonUniformAssems:
+            for assem in self._sourceReactor.core.getAssemblies(
+                self._nonUniformMeshFlags
+            ):
+                for storedAssem in self._sourceReactor.core.sfp.getChildren():
+                    if (
+                        storedAssem.getName()
+                        == assem.getName() + self._SFP_TEMP_STORAGE_SUFFIX
+                    ):
+                        self.setAssemblyStateFromOverlaps(
+                            assem,
+                            storedAssem,
+                            self.blockParamNames,
+                            mapNumberDensities=False,
+                        )
 
-        # We want to map the converted reactor core's library to the source reactor
-        # because in some instances this has changed (i.e., when generating cross sections).
-        self._sourceReactor.core.lib = self.convReactor.core.lib
+                        # Remove the stored assembly from the spent fuel pool
+                        # and replace the current assembly with it.
+                        storedAssem.spatialLocator = assem.spatialLocator
+                        storedAssem.setName(assem.getName())
+                        if (
+                            storedAssem.spatialLocator
+                            in self._sourceReactor.core.sfp.childrenByLocator
+                        ):
+                            self._sourceReactor.core.sfp.childrenByLocator.pop(
+                                storedAssem.spatialLocator
+                            )
+
+                        self._sourceReactor.core.sfp.remove(storedAssem)
+                        self._sourceReactor.core.removeAssembly(assem, discharge=False)
+                        self._sourceReactor.core.add(storedAssem)
+                        break
+                else:
+                    runLog.error(
+                        f"No assembly matching name {assem.getName()} "
+                        f"was found in the spent fuel pool. {assem} "
+                        f"will persist as an axially unified assembly. "
+                        f"This is likely not intended."
+                    )
+
+            self._sourceReactor.core.updateAxialMesh()
+        else:
+            # Clear the state of the original source reactor to ensure that
+            # a clean mapping between the converted reactor for data that has been
+            # changed. In this case, we cache the original reactor's data so that
+            # after the mapping has been applied, we can recover data from any
+            # parameters that did not change.
+            self._cachedReactorCoreParamData = {}
+            self._clearStateOnReactor(self._sourceReactor, cache=True)
+            self._mapStateFromReactorToOther(
+                self.convReactor, self._sourceReactor, mapNumberDensities=False
+            )
+
+            # We want to map the converted reactor core's library to the source reactor
+            # because in some instances this has changed (i.e., when generating cross sections).
+            self._sourceReactor.core.lib = self.convReactor.core.lib
+
         completeEndTime = timer()
         runLog.extra(
             f"Parameter remapping time: {completeEndTime-completeStartTime} seconds"

@@ -38,7 +38,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         self.o, self.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
         )
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
 
     def test_makeAssemWithUniformMesh(self):
@@ -178,7 +178,7 @@ class TestUniformMeshComponents(unittest.TestCase):
         a[2].setHeight(a[2].getHeight() * 1.05)
 
     def setUp(self):
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter()
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
 
     def test_computeAverageAxialMesh(self):
@@ -242,7 +242,7 @@ class TestUniformMesh(unittest.TestCase):
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(
-            calcReactionRates=True
+            cs=self.o.cs, calcReactionRates=True
         )
 
     def test_convertNumberDensities(self):
@@ -377,6 +377,62 @@ class TestParamConversion(unittest.TestCase):
                 b.p.mgNeutronVelocity,
                 self._cachedBlockParamData[b]["mgNeutronVelocity"],
             )
+
+
+class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
+    """
+    Tests a reactor conversion with only a subset of assemblies being
+    defined as having a non-uniform mesh.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        # random seed to support random mesh in unit tests below
+        random.seed(987324987234)
+
+    def setUp(self):
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT,
+            customSettings={
+                "xsKernel": "MC2v2",
+                "nonUniformAssemFlags": ["primary control"],
+            },
+        )
+        self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        self.r.core.p.keff = 1.0
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(
+            cs=self.o.cs, calcReactionRates=True
+        )
+
+    def test_reactorConversion(self):
+        """Tests the reactor conversion to and from the original reactor."""
+        self.assertTrue(self.converter._hasNonUniformAssems)
+
+        controlAssems = self.r.core.getAssemblies(Flags.PRIMARY | Flags.CONTROL)
+        self.converter.convert(self.r)
+
+        print(self.r.core.sfp.getChildren())
+        self.assertEqual(
+            len(controlAssems),
+            len(
+                [
+                    a
+                    for a in self.r.core.sfp.getChildren()
+                    if self.converter._SFP_TEMP_STORAGE_SUFFIX in a.getName()
+                ]
+            ),
+        )
+        self.converter.applyStateToOriginal()
+        self.assertEqual(
+            len(
+                [
+                    a
+                    for a in self.r.core.sfp.getChildren()
+                    if self.converter._SFP_TEMP_STORAGE_SUFFIX in a.getName()
+                ]
+            ),
+            0,
+        )
 
 
 if __name__ == "__main__":
