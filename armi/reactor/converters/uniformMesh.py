@@ -147,7 +147,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 homogAssem.spatialLocator = assem.spatialLocator
 
                 # Remove this assembly from the core and add it to the
-                # SFP so that it can be replaced with the homogenized assembly.
+                # temporary storage list so that it can be replaced with the homogenized assembly.
                 # Note that we do not call the `removeAssembly` method because
                 # this will delete the core assembly from existence rather than
                 # only stripping its spatialLocator away.
@@ -244,7 +244,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                             mapNumberDensities=False,
                         )
 
-                        # Remove the stored assembly from the spent fuel pool
+                        # Remove the stored assembly from the temporary storage list
                         # and replace the current assembly with it.
                         storedAssem.spatialLocator = assem.spatialLocator
                         storedAssem.setName(assem.getName())
