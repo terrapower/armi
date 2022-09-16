@@ -28,7 +28,7 @@ from armi.utils import units, codeTiming, getMaxBurnSteps
 from armi.reactor import parameters
 from armi.reactor import geometry
 from armi.reactor import reactors
-from armi.reactor.converters import uniformMesh
+from armi.reactor.converters.uniformMesh import NeutronicsUniformMeshConverter
 from armi.reactor.converters import geometryConverters
 from armi.reactor import assemblies
 from armi.reactor.flags import Flags
@@ -412,11 +412,11 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
             converter = self.geomConverters.get("axial")
             if not converter:
-                converter = uniformMesh.NeutronicsUniformMeshConverter(
-                    None,
-                    calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
-                )
                 if self.options.detailedAxialExpansion:
+                    converter = NeutronicsUniformMeshConverter(
+                        None,
+                        calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
+                    )
                     converter.convert(self.r)
                     neutronicsReactor = converter.convReactor
                     self.r = neutronicsReactor
@@ -433,19 +433,21 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                     not self.options.detailedAxialExpansion
                     and self.options.hasNonUniformAssems
                 ):
-                    converter = uniformMesh.NeutronicsUniformMeshConverter(
-                        None,
-                        calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
-                    )
                     b = self.r.core.getFirstBlock()
                     blockParamNames = []
-                    for category in converter.BLOCK_PARAM_MAPPING_CATEGORIES:
+                    for (
+                        category
+                    ) in NeutronicsUniformMeshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
                         blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
                     for assem in self.r.core.getAssemblies(
                         self.options.nonUniformMeshFlags
                     ):
-                        homogAssem = converter.makeAssemWithUniformMesh(
-                            assem, self.r.core.refAssem.getAxialMesh(), blockParamNames
+                        homogAssem = (
+                            NeutronicsUniformMeshConverter.makeAssemWithUniformMesh(
+                                assem,
+                                self.r.core.refAssem.getAxialMesh(),
+                                blockParamNames,
+                            )
                         )
                         homogAssem.spatialLocator = assem.spatialLocator
 
@@ -504,39 +506,23 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
             geomConverter.removeEdgeAssemblies(self.r.core)
 
         meshConverter = self.geomConverters.get("axial")
-        if meshConverter:
-            if (
-                self.options.applyResultsToReactor
-                and not self.options.hasNonUniformAssems
-            ):
-                meshConverter.applyStateToOriginal()
-                self.r = (
-                    meshConverter._sourceReactor
-                )  # pylint: disable=protected-access;
-
-                # Resets the stored attributes on the converter to
-                # ensure that there is state data that is long-lived on the
-                # object in case the garbage collector does not remove it.
-                # Additionally, this will reset the global assembly counter.
-                meshConverter.reset()
+        if self.options.applyResultsToReactor:
             # If we have non-uniform mesh assemblies then we need to apply a
             # different approach to undo the geometry transformations on an
             # assembly by assembly basis.
-            else:
+            if not meshConverter and self.options.hasNonUniformAssems:
                 b = self.r.core.getFirstBlock()
-                blockParamNames = None
-                # If we are applying the results back then set the block-level
-                # parameters.
-                if self.options.applyResultsToReactor:
-                    blockParamNames = []
-                    for category in meshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
-                        blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
+                blockParamNames = []
+                for (
+                    category
+                ) in NeutronicsUniformMeshConverter.BLOCK_PARAM_MAPPING_CATEGORIES:
+                    blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
                 for assem in self.r.core.getAssemblies(
                     self.options.nonUniformMeshFlags
                 ):
                     for storedAssem in self.r.core.sfp.getChildren():
                         if storedAssem.getName() == assem.getName():
-                            meshConverter.setAssemblyStateFromOverlaps(
+                            NeutronicsUniformMeshConverter.setAssemblyStateFromOverlaps(
                                 assem,
                                 storedAssem,
                                 blockParamNames,
@@ -567,6 +553,17 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                         )
 
                 self.r.core.updateAxialMesh()
+            elif meshConverter:
+                meshConverter.applyStateToOriginal()
+                self.r = (
+                    meshConverter._sourceReactor
+                )  # pylint: disable=protected-access;
+
+                # Resets the stored attributes on the converter to
+                # ensure that there is state data that is long-lived on the
+                # object in case the garbage collector does not remove it.
+                # Additionally, this will reset the global assembly counter.
+                meshConverter.reset()
 
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
