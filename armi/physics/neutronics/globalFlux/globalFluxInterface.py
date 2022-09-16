@@ -329,9 +329,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs["detailedAxialExpansion"]
         self.hasNonUniformAssems = any(
-            [
-                Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
-            ].nonUniformMeshFlags
+            [Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]]
         )
         self.eigenvalueProblem = cs["eigenProb"]
 
