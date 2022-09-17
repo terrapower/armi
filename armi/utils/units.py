@@ -297,7 +297,6 @@ def sanitizeAngle(theta):
     theta : float
         an angle between 0 and 2*pi
     """
-
     if theta < 0:
         theta = theta + (1 + -1 * int(theta / (math.pi * 2.0))) * math.pi * 2.0
 
@@ -344,7 +343,6 @@ def getXYLineParameters(theta, x=0, y=0):
     -----
     the line is in the form of A*x + B*y + C*z - D = 0 -- this corresponds to a MCNP arbitrary line equation
     """
-
     theta = sanitizeAngle(theta)
 
     if (
