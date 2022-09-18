@@ -179,7 +179,7 @@ class TempFileMixin:
     """really a test case"""
 
     @property
-    def test_fileName(self):
+    def testFileName(self):
         return os.path.join(
             THIS_DIR,
             "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
