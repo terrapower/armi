@@ -14,12 +14,11 @@
 
 r"""
 Tests the workings of the library wrappers.
-
 """
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import os
 import filecmp
 import unittest
-import os
 
 from armi import nuclearDataIO
 from armi.nuclearDataIO.cccc import pmatrx
