@@ -27,8 +27,18 @@ plant-wide state variables such as keff, cycle, and node.
    The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
    each contain a collection of Blocks.
 """
-from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
+import collections
+import copy
+import itertools
+import os
+import time
+from typing import Optional
+
+import numpy
+import tabulate
+
 from armi import runLog
+from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -39,22 +49,13 @@ from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import systemLayoutInput
 from armi.reactor import zones
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
-import collections
-import copy
-import itertools
-import os
-import time
-from typing import Optional
-
-import numpy
-import tabulate
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
 class Reactor(composites.Composite):
