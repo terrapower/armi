@@ -845,19 +845,37 @@ class HexReactorTests(ReactorTests):
         # stash original axial mesh info
         oldRefBlockAxialMesh = self.r.core.p.referenceBlockAxialMesh
         oldAxialMesh = self.r.core.p.axialMesh
-        oldBlockBOLHeights = {}
-        for a in assemsToChange:
-            for b in a[1:]:
-                oldBlockBOLHeights[b] = b.p.heightBOL
+
+        nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
+        equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
+
+        oldBlockParameters = {}
+        for param in nonEqualParameters + equalParameters:
+            oldBlockParameters[param] = {}
+            for a in assemsToChange:
+                for b in a[1:]:
+                    oldBlockParameters[param][b] = b.p[param]
+
         self.r.core.processLoading(self.o.cs, dbLoad=False)
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
             self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
         for i, val in enumerate(oldAxialMesh[1:]):
             self.assertNotEqual(val, self.r.core.p.axialMesh[i])
+
         for a in assemsToChange:
             if not a.hasFlags(Flags.CONTROL):
                 for b in a[1:]:
-                    self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+                    for param in nonEqualParameters:
+                        if oldBlockParameters[param][b] and b.p[param]:
+                            self.assertNotEqual(
+                                oldBlockParameters[param][b], b.p[param]
+                            )
+                        else:
+                            self.assertAlmostEqual(
+                                oldBlockParameters[param][b], b.p[param]
+                            )
+                    for param in equalParameters:
+                        self.assertAlmostEqual(oldBlockParameters[param][b], b.p[param])
 
     def test_updateBlockBOLHeights_DBLoad(self):
         """test Core::_applyThermalExpansion for db load
@@ -868,21 +886,33 @@ class HexReactorTests(ReactorTests):
         - to maintain code coverage, _applyThermalExpansion is called via processLoading
         """
         self.o.cs["inputHeightsConsideredHot"] = False
-        # stash original blueprint assemblies axial mesh info
-        oldBlockBOLHeights = {}
         assemsToChange = [a for a in self.r.blueprints.assemblies.values()]
-        for a in assemsToChange:
-            for b in a[1:]:
-                oldBlockBOLHeights[b] = b.p.heightBOL
+        # stash original blueprint assemblies axial mesh info
+        nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
+        equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
+        oldBlockParameters = {}
+        for param in nonEqualParameters + equalParameters:
+            oldBlockParameters[param] = {}
+            for a in assemsToChange:
+                for b in a[1:]:
+                    oldBlockParameters[param][b] = b.p[param]
+
         self.r.core.processLoading(self.o.cs, dbLoad=True)
+
         for a in assemsToChange:
             if not a.hasFlags(Flags.CONTROL):
                 for b in a[1:]:
-                    self.assertNotEqual(
-                        oldBlockBOLHeights[b],
-                        b.p.heightBOL,
-                        msg="{0}, {1}".format(a, b),
-                    )
+                    for param in nonEqualParameters:
+                        if oldBlockParameters[param][b] and b.p[param]:
+                            self.assertNotEqual(
+                                oldBlockParameters[param][b], b.p[param]
+                            )
+                        else:
+                            self.assertAlmostEqual(
+                                oldBlockParameters[param][b], b.p[param]
+                            )
+                    for param in equalParameters:
+                        self.assertAlmostEqual(oldBlockParameters[param][b], b.p[param])
 
 
 class CartesianReactorTests(ReactorTests):

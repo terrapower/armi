@@ -58,6 +58,7 @@ Bug fixes
 #. Fixed bug where components were different if initialized through blueprints vs init (bug active for ~ 2 months).
 #. Fixed bug where component mass was being conserved in axial expansion instead of correct density (`PR#846 <https://github.com/terrapower/armi/pull/846>`_)
 #. Fixed bug in ``armi/reactor/blocks.py::HexBlock::rotatePins`` that failed to modify pinLocation parameter (`#855 <https://github.com/terrapower/armi/pull/855>`_).
+#. Fixed bug in ``armi/reactor.py::Core::_applyThermalExpansion`` that failed to call the ``block.completeInitiaLoading`` (`#885 <https://github.com/terrapower/armi/pull/885>`_).
 #. TBD
 
 ARMI v0.2.3
