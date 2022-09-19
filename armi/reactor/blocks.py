@@ -765,11 +765,6 @@ class Block(composites.Composite):
         -------
         hmDens : float
             The heavy metal number density of this block.
-
-        See Also
-        --------
-        Reactor.importGeom
-        depletion._updateBlockParametersAfterDepletion
         """
         if bolBlock is None:
             bolBlock = self
