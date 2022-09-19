@@ -27,15 +27,15 @@ plant-wide state variables such as keff, cycle, and node.
    The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
    each contain a collection of Blocks.
 """
-from typing import Optional
 import collections
 import copy
 import itertools
 import os
-import tabulate
 import time
+from typing import Optional
 
 import numpy
+import tabulate
 
 from armi import runLog
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
@@ -2355,3 +2355,4 @@ class Core(composites.Composite):
             if not a.hasFlags(Flags.CONTROL):
                 for b in a:
                     b.p.heightBOL = b.getHeight()
+                    b.completeInitialLoading()
