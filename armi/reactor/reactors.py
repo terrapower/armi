@@ -2355,3 +2355,4 @@ class Core(composites.Composite):
             if not a.hasFlags(Flags.CONTROL):
                 for b in a:
                     b.p.heightBOL = b.getHeight()
+                    b.completeInitialLoading()
