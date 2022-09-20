@@ -201,32 +201,6 @@ def getTmev(Tc=None, Tk=None):
     return BOLTZMAN_CONSTANT * Tk
 
 
-def convertPascalToPascal(pascal):
-    """Converts pressure from pascal to pascal.
-
-    Parameters
-    ----------
-    pascal : float
-        pressure in pascal
-
-    Returns
-    -------
-    pascal : float
-        pressure in pascal
-
-    Note
-    ----
-    a function is used so all the calculatePressure function can use a
-    consistent algorithm -- including converting pressure to pascal using a
-    function
-
-    See Also
-    --------
-    armi.materials.chlorides.chloride.calculatePressure
-    """
-    return pascal
-
-
 def convertMmhgToPascal(mmhg):
     """Converts pressure from mmhg to pascal.
 
@@ -276,7 +250,7 @@ def convertAtmToPascal(pAtm):
 
 
 PRESSURE_CONVERTERS = {
-    "Pa": convertPascalToPascal,
+    "Pa": lambda pa: pa,
     "bar": convertBarToPascal,
     "mmHg": convertMmhgToPascal,
     "atm": convertAtmToPascal,

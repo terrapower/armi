@@ -73,10 +73,10 @@ class TestUnits(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Tc=0 and Tk=200"):
             units.getTf(Tc=0, Tk=200)
 
-    def test_convertPascalToPascal(self):
-        """This is a pass-through function"""
+    def test_pressure_converter(self):
+        """Converter Pascals to Pascals should just be a pass-through"""
         for val in [0.0, -99.141, 123, 3.14159, -2.51212e-12]:
-            self.assertEqual(val, units.convertPascalToPascal(val))
+            self.assertEqual(val, units.PRESSURE_CONVERTERS["Pa"](val))
 
     def test_getTmev(self):
         val = units.getTmev(Tc=45.0)
