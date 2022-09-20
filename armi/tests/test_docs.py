@@ -14,9 +14,9 @@
 """Test that the code examples in the docs are valid"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
+import doctest
 import os
 import unittest
-import doctest
 
 from armi import DOC
 

@@ -201,32 +201,6 @@ def getTmev(Tc=None, Tk=None):
     return BOLTZMAN_CONSTANT * Tk
 
 
-def convertPascalToPascal(pascal):
-    """Converts pressure from pascal to pascal.
-
-    Parameters
-    ----------
-    pascal : float
-        pressure in pascal
-
-    Returns
-    -------
-    pascal : float
-        pressure in pascal
-
-    Note
-    ----
-    a function is used so all the calculatePressure function can use a
-    consistent algorithm -- including converting pressure to pascal using a
-    function
-
-    See Also
-    --------
-    armi.materials.chlorides.chloride.calculatePressure
-    """
-    return pascal
-
-
 def convertMmhgToPascal(mmhg):
     """Converts pressure from mmhg to pascal.
 
@@ -276,7 +250,7 @@ def convertAtmToPascal(pAtm):
 
 
 PRESSURE_CONVERTERS = {
-    "Pa": convertPascalToPascal,
+    "Pa": lambda pa: pa,
     "bar": convertBarToPascal,
     "mmHg": convertMmhgToPascal,
     "atm": convertAtmToPascal,
@@ -297,7 +271,6 @@ def sanitizeAngle(theta):
     theta : float
         an angle between 0 and 2*pi
     """
-
     if theta < 0:
         theta = theta + (1 + -1 * int(theta / (math.pi * 2.0))) * math.pi * 2.0
 
@@ -344,7 +317,6 @@ def getXYLineParameters(theta, x=0, y=0):
     -----
     the line is in the form of A*x + B*y + C*z - D = 0 -- this corresponds to a MCNP arbitrary line equation
     """
-
     theta = sanitizeAngle(theta)
 
     if (

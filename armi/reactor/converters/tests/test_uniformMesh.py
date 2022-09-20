@@ -14,17 +14,18 @@
 """
 Tests for the uniform mesh geometry converter
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import collections
 import os
 import random
 import unittest
-import collections
 
-from armi.reactor.tests import test_reactors
-from armi.reactor.tests import test_assemblies
-from armi.tests import TEST_ROOT, ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
+from armi.reactor.tests import test_assemblies
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT, ISOAA_PATH
 
 
 class TestAssemblyUniformMesh(unittest.TestCase):

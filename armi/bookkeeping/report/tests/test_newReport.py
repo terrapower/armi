@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test new reports"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import os
 import unittest

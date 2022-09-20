@@ -14,22 +14,6 @@
 """
 Dynamic importing help
 """
-import glob
-import os
-from importlib import import_module
-
-
-def importEntirePackage(module):
-    """Load every module in a package
-
-    Notes
-    -----
-    This method may only work for a flat directory
-    """
-    modules = glob.glob(os.path.dirname(module.__file__) + "/*.py")
-    names = [os.path.basename(f)[:-3] for f in modules]
-    for name in names:
-        import_module(module.__package__ + "." + name)
 
 
 def getEntireFamilyTree(cls):

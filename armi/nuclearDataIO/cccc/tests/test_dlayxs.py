@@ -15,10 +15,11 @@
 """
 Tests for DELAYXS
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
-import os
 import filecmp
+import os
+import unittest
 
 import numpy
 

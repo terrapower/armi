@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-Unit tests for transmutations
-"""
-import unittest
-import string
+r"""Unit tests for transmutations"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import random
+import string
+import unittest
 
 from armi.nucDirectory import transmutations
 

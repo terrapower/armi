@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers"""
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
-
-from armi.cases.inputModifiers import pinTypeInputModifiers
-from armi.cases.inputModifiers.tests.test_inputModifiers import BLUEPRINT_INPUT
+import unittest
 
 from armi import settings
+from armi.cases.inputModifiers import pinTypeInputModifiers
+from armi.cases.inputModifiers.tests.test_inputModifiers import BLUEPRINT_INPUT
 from armi.reactor import blueprints
 
 
