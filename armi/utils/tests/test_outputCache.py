@@ -47,6 +47,50 @@ class TestOutputCache(unittest.TestCase):
             outputCache.deleteCache(outDir)
             self.assertFalse(os.path.exists(outDir))
 
+    def test_getCachedFolder(self):
+        with directoryChangers.TemporaryDirectoryChanger() as _:
+            exePath = "/path/to/what.exe"
+            inputPaths = ["/path/to/something.txt", "/path/what/some.ini"]
+            cacheDir = "/tmp/thing/what/"
+            with self.assertRaises(FileNotFoundError):
+                _ = outputCache._getCachedFolder(exePath, inputPaths, cacheDir)
+
+            fakeExe = "what_getCachedFolder.exe"
+            with open(fakeExe, "w") as f:
+                f.write("hi")
+
+            with self.assertRaises(FileNotFoundError):
+                _ = outputCache._getCachedFolder(fakeExe, inputPaths, cacheDir)
+
+            fakeIni = "fake_getCachedFolder.ini"
+            with open(fakeIni, "w") as f:
+                f.write("hey")
+
+            folder = outputCache._getCachedFolder(fakeExe, [fakeIni], cacheDir)
+            self.assertTrue(folder.startswith("/tmp/thing/what/what_getCachedFolder"))
+
+    def test_makeOutputManifest(self):
+        with directoryChangers.TemporaryDirectoryChanger() as _:
+            # validate manifest doesn't exist yet
+            manifest = "test_makeOutputManifest/CRC-manifest.json"
+            self.assertFalse(os.path.exists(manifest))
+
+            # create some temp file
+            outFile = "something_makeOutputManifest.txt"
+            with open(outFile, "w") as f:
+                f.write("test")
+
+            # create an output location
+            folderLoc = "test_makeOutputManifest"
+            os.mkdir(folderLoc)
+
+            # do the worK: call the function that creates the manifest
+            outputCache._makeOutputManifest([outFile], folderLoc)
+
+            # validate manifest was created
+            manifest = "test_makeOutputManifest/CRC-manifest.json"
+            self.assertTrue(os.path.exists(manifest))
+
 
 if __name__ == "__main__":
     unittest.main()

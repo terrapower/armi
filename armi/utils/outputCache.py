@@ -120,6 +120,7 @@ def _hashFiles(paths):
     for path in paths[1:]:
         with open(path, "rb") as binaryF:
             md5Hash.update(binaryF.read())
+
     return md5Hash.hexdigest()
 
 
