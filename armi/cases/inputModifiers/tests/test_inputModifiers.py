@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers"""
-import unittest
-import os
-import io
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from ruamel import yaml
+import io
+import os
+import unittest
 
 from armi.utils import directoryChangers
 from armi import cases

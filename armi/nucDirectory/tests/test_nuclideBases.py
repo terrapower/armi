@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for nuclideBases.
-"""
-import unittest
+"""Tests for nuclideBases"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import random
 import re
+import unittest
 
-from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
-
+from armi.nucDirectory import nuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 
 

@@ -13,14 +13,14 @@
 # limitations under the License.
 
 """Tests the Interface"""
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 import os
 
 from armi import interfaces
-from armi.utils import textProcessors
 from armi import settings
 from armi.tests import TEST_ROOT
+from armi.utils import textProcessors
 
 
 class DummyInterface(interfaces.Interface):
