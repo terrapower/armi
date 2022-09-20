@@ -260,7 +260,6 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     nuclideVector : dict
         dictionary of values indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
     """
-
     normalizationFactor = sum(nuclideVector.values()) / normalization
 
     for nucName, mFrac in nuclideVector.items():
