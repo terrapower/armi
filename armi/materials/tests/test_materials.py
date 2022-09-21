@@ -47,7 +47,6 @@ class _Material_Test:
 
     def test_density3(self):
         """Test that all materials produce a zero density from density3"""
-
         self.assertNotEqual(self.mat.density3(500), 0)
 
 
@@ -1607,23 +1606,22 @@ class YttriumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-@unittest.skip("The results of linear expansion test are suspicous")
 class ZincOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.ZnO
 
     def test_density(self):
         cur = 5.61
 
-        ref = self.mat.density(Tk=10.12)
+        ref = self.mat.density3(Tk=10.12)
         self.assertAlmostEqual(cur, ref, 2)
 
     def test_linearExpansionPercent(self):
         ref = self.mat.linearExpansionPercent(Tc=100)
-        cur = -99670.4933
+        cur = 0.04899694350661124
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
-        ref = self.mat.linearExpansionPercent(Tc=100)
-        cur = -99670.4933
+        ref = self.mat.linearExpansionPercent(Tc=300)
+        cur = 0.15825020246870625
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
     def test_propertyValidTemperature(self):
