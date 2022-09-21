@@ -164,10 +164,11 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
     def test_modifyCaseSettingsCommandBasics(self):
         mcs = ModifyCaseSettingsCommand()
         mcs.addOptions()
-        mcs.parse_args(["/path/to/fake.yaml"])
+        mcs.parse_args(["--rootDir", "/path/to/", "fake.yaml"])
 
         self.assertEqual(mcs.name, "modify")
-        self.assertEqual(mcs.args.patterns, ["/path/to/fake.yaml"])
+        self.assertEqual(mcs.args.rootDir, "/path/to/")
+        self.assertEqual(mcs.args.patterns, ["fake.yaml"])
 
 
 class TestReportsEntryPoint(unittest.TestCase):
