@@ -2281,12 +2281,6 @@ class Core(composites.Composite):
                     dbLoad,
                     finestMeshAssembly,
                 )
-                # after initial thermal expansion, delete axialSnapList for non-uniform assemblies
-                #for a in self.parent.blueprints.assemblies.values():
-                #    if any(a.hasFlags(f) for f in nonUniformAssems):
-                #        runLog.info("No axialSnapList for nonuniform assembly {a}")
-                #        for b in a:
-                #            b.p.topIndex = 0
 
         else:
             if not cs["detailedAxialExpansion"]:
@@ -2300,12 +2294,6 @@ class Core(composites.Composite):
                     "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
                 )
                 self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
-                # after initial thermal expansion, delete axialSnapList for non-uniform assemblies
-                #for a in self.parent.blueprints.assemblies.values():
-                #    if any(a.hasFlags(f) for f in nonUniformAssems):
-                #        runLog.info("No axialSnapList for nonuniform assembly {a}")
-                #        for b in a:
-                #            b.p.topIndex = 0
 
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 applySubMesh=False
