@@ -12,33 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Some generic neutronics-related settings."""
+"""Some generic neutronics-related settings"""
+from armi import runLog
+from armi.operators import settingsValidation
+from armi.physics.neutronics.const import ALL
+from armi.physics.neutronics.const import NEUTRON
+from armi.physics.neutronics.const import NEUTRONGAMMA
+from armi.physics.neutronics.energyGroups import getGroupStructure
 from armi.settings import setting
 from armi.settings.settingsRules import include_as_rule
-from armi import runLog
-
-from .const import NEUTRON
-from .const import NEUTRONGAMMA
-from .const import ALL
-
-from .energyGroups import getGroupStructure
 
 
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
 
-CONF_BOUNDARIES = "boundaries"
 CONF_BC_COEFFICIENT = "bcCoefficient"
+CONF_BOUNDARIES = "boundaries"
 CONF_DPA_PER_FLUENCE = "dpaPerFluence"
+CONF_EIGEN_PROB = "eigenProb"
+CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_GEN_XS = "genXS"  # gamma stuff and neutronics plugin/lattice physics
 CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
-CONF_EIGEN_PROB = "eigenProb"
-CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
-CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
-CONF_RESTART_NEUTRONICS = "restartNeutronics"
-CONF_OUTERS_ = "outers"
 CONF_INNERS_ = "inners"
+CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
+CONF_OUTERS_ = "outers"
+CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
@@ -46,11 +45,11 @@ CONF_EPS_FSPOINT = "epsFSPoint"
 
 # used for dpa/dose analysis. These should be relocated to more
 # design-specific places
-CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
-CONF_LOAD_PAD_LENGTH = "loadPadLength"
 CONF_ACLP_DOSE_LIMIT = "aclpDoseLimit"
 CONF_DPA_XS_SET = "dpaXsSet"
 CONF_GRID_PLATE_DPA_XS_SET = "gridPlateDpaXsSet"
+CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
+CONF_LOAD_PAD_LENGTH = "loadPadLength"
 
 CONF_OPT_DPA = [
     "",
@@ -258,7 +257,6 @@ def defineSettings():
             description="The cross sections to use when computing displacements per atom.",
             options=CONF_OPT_DPA,
         ),
-        # moved from XSsettings
         setting.Setting(
             CONF_CLEAR_XS,
             default=False,
@@ -342,7 +340,10 @@ def defineSettings():
     return settings
 
 
-# OLD STYLE settings rules from settingsRules.py. Prefer validators moving forward.
+def getFuelCycleSettingValidators(inspector):
+    queries = []
+
+    return queries
 
 
 @include_as_rule("genXS")
@@ -378,6 +379,7 @@ def newGenXSOptions(_cs, name, value):
     return {name: newValue}
 
 
+# TODO: I believe we are going to stop auto-migrating settings.
 @include_as_rule("existingFIXSRC")
 def newFixedSourceOption(cs, _name, value):
     """
@@ -426,6 +428,7 @@ def migrateNormalBCSetting(_cs, name, value):
     return {name: newValue}
 
 
+# TODO: Deprecation Warnings don't really work in the new Validators
 @include_as_rule("asymptoticExtrapolationPowerIters")
 def deprecateAsymptoticExtrapolationPowerIters(_cs, _name, _value):
     """
@@ -451,7 +454,6 @@ def deprecateAsymptoticExtrapolationPowerIters(_cs, _name, _value):
 
 @include_as_rule("groupStructure")
 def updateXSGroupStructure(cs, name, value):
-
     try:
         getGroupStructure(value)
         return {name: value}
@@ -529,6 +531,7 @@ def resetNeutronicsOutputsToSaveAfterRename(_cs, _name, value):
     return {newName: newValue}
 
 
+# TODO: I believe we are going to stop auto-migrating settings.
 @include_as_rule("gammaTransportActive")
 def removeGammaTransportActive(cs, _name, value):
     """

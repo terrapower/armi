@@ -40,8 +40,8 @@ OLD_TAGS = {
     "list": "list",
 }
 
-TARGETED_CONVERSIONS = {}
 GENERAL_CONVERSIONS = []
+TARGETED_CONVERSIONS = {}
 
 
 def include_as_rule(*args):
