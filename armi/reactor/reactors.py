@@ -2251,6 +2251,7 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
+        nonUniformAssems = [Flags.fromString(t) for t in cs["nonUniformAssemFlags"]]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2278,6 +2279,11 @@ class Core(composites.Composite):
                     dbLoad,
                     finestMeshAssembly,
                 )
+                # after initial thermal expansion, delete axialSnapList for non-uniform assemblies
+                for a in self.parent.blueprints.assemblies.values():
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
+                        for b in a:
+                            b.p.topIndex = 0
 
         else:
             if not cs["detailedAxialExpansion"]:
@@ -2289,6 +2295,11 @@ class Core(composites.Composite):
                     "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
                 )
                 self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
+                # after initial thermal expansion, delete axialSnapList for non-uniform assemblies
+                for a in self.parent.blueprints.assemblies.values():
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
+                        for b in a:
+                            b.p.topIndex = 0
 
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 applySubMesh=False
