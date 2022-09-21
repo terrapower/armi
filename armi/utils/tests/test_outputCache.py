@@ -109,7 +109,7 @@ class TestOutputCache(unittest.TestCase):
             manifest = "{0}/CRC-manifest.json".format(cacheDir)
             self.assertTrue(os.path.exists(manifest))
 
-            # create a dummy file (not excutable), to stand in for the executable
+            # create a dummy file (not executable), to stand in for the executable
             fakeExe = "what_{0}.exe".format(cacheDir)
             with open(fakeExe, "w") as f:
                 f.write("hi")
