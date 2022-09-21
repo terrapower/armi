@@ -2251,7 +2251,9 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        nonUniformAssems = [Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]]
+        nonUniformAssems = [
+            Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+        ]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
