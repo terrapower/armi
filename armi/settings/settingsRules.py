@@ -97,36 +97,10 @@ def applyVerbosity(cs, name, value):
     return {name: value}
 
 
-@include_as_rule("fpModel")
-def oldFourPass(_cs, name, value):
-    if value == "oldFourPass":
-        runLog.warning(
-            'The fpModel setting value of "oldFourPass" is no longer valid, '
-            'changing to "infinitelyDilute"'
-        )
-        value = "infinitelyDilute"
-
-    return {name: value}
-
-
 @include_as_rule("fuelPerformanceEngine")
 def squashNoneFP(_cs, name, value):
     if value == "None":
         value = ""
-    return {name: value}
-
-
-@include_as_rule("assemblyRotationAlgorithm")
-def assemblyRotationAlgorithmStringNone(_cs, name, value):
-    """Some users experienced a string None being introduced into this setting
-    and we want to provide a smooth fix
-
-    See T1345
-
-    """
-    if value == "None":
-        value = ""
-
     return {name: value}
 
 
@@ -151,17 +125,6 @@ def sensitivityCoefficientsCommonCapitalizationMistake(_cs, name, value):
         newval = value
 
     return {name: newval}
-
-
-@include_as_rule("twrcOption")
-def twrcOptionConversion(_cs, name, value):
-    """
-    Deprecated `twrcOption` is warned about here.
-    """
-    raise ValueError(
-        "The `twrcOption` setting has been removed and cannot be migrated automatically. Please "
-        "`sasPlantModelInputFile` settings as appropriate."
-    )
 
 
 @include_as_rule("PumpInertiaPercentChange")
