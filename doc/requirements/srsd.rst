@@ -222,7 +222,7 @@ Based on user settings, the ordering, initialization, and calls to other plugins
    :status: needs implementation, needs test
 
 .. req:: The nucDirectory package shall contain basic nuclide information for a wide range of nuclides.
-   :id: REQ_NUCDIR_DATA
+   :id: REQ_NUCDIR_INFO
    :status: needs implementation, needs test
 
 The nucDirectory package shall contain the following general information for each nuclide:
