@@ -263,10 +263,14 @@ class SettingsReader:
         # general needs to come first for things like renaming.
         settingsToApply = {}
         for func in settingsRules.GENERAL_CONVERSIONS:
+            print("TODO: GENERAL_CONVERSIONS", func, name, value)
+            assert False
             settingsToApply.update(func(self.cs, name, value))
 
         func = settingsRules.TARGETED_CONVERSIONS.get(name, None)
         if func is not None:
+            print("TODO: TARGETED_CONVERSIONS", func, name, value)
+            assert False
             settingsToApply.update(func(self.cs, name, value))
 
         return settingsToApply
