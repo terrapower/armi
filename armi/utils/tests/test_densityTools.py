@@ -13,7 +13,6 @@
 # limitations under the License.
 """Test densityTools."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
-import math
 import unittest
 
 from armi.utils import densityTools
@@ -100,6 +99,42 @@ class Test_densityTools(unittest.TestCase):
             uo2.p.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
         )  # HM blended
         self.assertAlmostEqual(uo2.p.massFrac["O"], massFracO)  # non-HM stays unchanged
+
+    def test_getMassFractions(self):
+        numDens = {"O17": 0.1512, "PU239": 1.5223, "U234": 0.135}
+        massFracs = densityTools.getMassFractions(numDens)
+
+        self.assertAlmostEqual(massFracs["O17"], 0.006456746320668389)
+        self.assertAlmostEqual(massFracs["PU239"], 0.9141724414849527)
+        self.assertAlmostEqual(massFracs["U234"], 0.07937081219437897)
+
+    def test_calculateNumberDensity(self):
+        nDens = densityTools.calculateNumberDensity("U235", 1, 1)
+        self.assertAlmostEqual(nDens, 0.0025621344549254283)
+
+        nDens = densityTools.calculateNumberDensity("PU239", 0.00012, 0.001)
+        self.assertAlmostEqual(nDens, 0.0003023009578309138)
+
+        nDens = densityTools.calculateNumberDensity("N15", 111, 222)
+        self.assertAlmostEqual(nDens, 0.020073659896941428)
+
+    def test_getMassInGrams(self):
+        m = densityTools.getMassInGrams("N16", 1.001, None)
+        self.assertEqual(m, 0)
+
+        m = densityTools.getMassInGrams("O17", 1.001, 0.00123)
+        self.assertAlmostEqual(m, 0.034754813848559635)
+
+        m = densityTools.getMassInGrams("PU239", 1.001, 2.123)
+        self.assertAlmostEqual(m, 843.5790671316283)
+
+    def test_normalizeNuclideList(self):
+        nList = {"PU239": 23.2342, "U234": 0.001234, "U235": 34.152}
+        norm = densityTools.normalizeNuclideList(nList)
+
+        self.assertAlmostEqual(norm["PU239"], 0.40486563661306063)
+        self.assertAlmostEqual(norm["U234"], 2.1502965265880334e-05)
+        self.assertAlmostEqual(norm["U235"], 0.5951128604216736)
 
 
 if __name__ == "__main__":
