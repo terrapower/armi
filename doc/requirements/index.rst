@@ -20,4 +20,6 @@ be linked to both unit tests and source code within the ARMI repository.
    :glob:
 
    srsd
+   sdid
+   str
    *
