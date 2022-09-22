@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""unit tests for water materials"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 from armi.materials.water import SaturatedWater, SaturatedSteam
-
-"""
-unit tests for water materials
-"""
 
 
 class Test_Water(unittest.TestCase):

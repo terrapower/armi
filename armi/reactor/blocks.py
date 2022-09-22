@@ -1087,11 +1087,14 @@ class Block(composites.Composite):
         --------
         >>> getDim(Flags.WIRE,'od')
         0.01
-
         """
         for c in self:
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
+
+        raise ValueError(
+            "Cannot get Dimension because Flag not found: {0}".format(typeSpec)
+        )
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
@@ -1672,22 +1675,30 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, deg):
-        """Function for rotating a block's spatially varying variables by a specified angle.
+    def rotate(self, rad):
+        """
+        Rotates a block's spatially varying parameters by a specified angle in the
+        counter-clockwise direction.
 
-        Rotates the pins and then also any parameters that defined on the corners or edges.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
+        Python list of length 6 in order to be eligible for rotation; all parameters that
+        do not meet these two criteria are not rotated.
+
+        The pin indexing, as stored on the pinLocation parameter, is also updated via
+        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
 
         Parameters
         ----------
-        deg - float
-            number specifying the angle of counter clockwise rotation
+        rad: float, required
+            Angle of counter-clockwise rotation in units of radians. Rotations must be
+            in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
+            and 2 * PI)
 
         See Also
         --------
-        armi.reactor.blocks.HexBlock.rotatePins
-            Rotates the pins only and not the duct.
+        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
-        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
+        rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self.rotatePins(rotNum)
         params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
         params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
@@ -1699,25 +1710,48 @@ class HexBlock(Block):
                     # List hasn't been defined yet, no warning needed.
                     pass
                 else:
-                    runLog.warning(
-                        "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
-                            param
-                        )
+                    msg = (
+                        "No rotation method defined for spatial parameters that aren't "
+                        "defined once per hex edge/corner. No rotation performed "
+                        f"on {param}"
                     )
+                    runLog.warning(msg)
             else:
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
+        # This specifically uses the .get() functionality to avoid an error if this
+        # parameter does not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
-            self.p.displacementX = dispx * math.cos(deg) - dispy * math.sin(deg)
-            self.p.displacementY = dispx * math.sin(deg) + dispy * math.cos(deg)
+            self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
+            self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
     def rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
-        not rotate all block quantities.
+        not rotate all block quantities, just the pins.
+
+        Parameters
+        ----------
+        rotNum : int, required
+            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
+            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
+
+        justCompute : boolean, optional
+            If True, rotateIndexLookup will be returned but NOT assigned to the object parameter
+            self.p.pinLocation. If False, rotateIndexLookup will be returned AND assigned to the
+            object variable self.p.pinLocation.  Useful for figuring out which rotation is best
+            to minimize burnup, etc.
+
+        Returns
+        -------
+        rotateIndexLookup : dict of ints
+            This is an index lookup (or mapping) between pin ids and pin locations. The pin
+            indexing is 1-D (not ring,pos or GEODST). The "ARMI pin ordering" is used for location,
+            which is counter-clockwise from 1 o'clock. Pin ids are always consecutively
+            ordered starting at 1, while pin locations are not once a rotation has been
+            applied.
 
         Notes
         -----
@@ -1736,28 +1770,7 @@ class HexBlock(Block):
         fluxRecon, which interpolates the flux spatially, or subchannel codes, which needs to know where the
         power is) need to map through the pinLocation parameters.
 
-        This method rotates the pins by changing the pinLocations.
-
-        Parameters
-        ----------
-        rotNum : int
-            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
-            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
-
-        justCompute : Boolean, optional
-            If True, rotateIndexLookup will be returned but NOT assigned to the object variable
-            self.rotateIndexLookup.
-            If False, rotateIndexLookup will be returned AND assigned to the object variable
-            self.rotateIndexLookup.  Useful for figuring out which rotation is best to minimize
-            burnup, etc.
-
-        Returns
-        -------
-        rotateIndexLookup : dict of ints
-            This is an index lookup (or mapping) between pin ids and pin locations
-            The pin indexing is 1-D (not ring,pos or GEODST).
-            The "ARMI pin ordering" is used for location, which is counter-clockwise from 3 o'clock.
-            Pin numbers start at 1, pin locations also start at 1.
+        This method rotates the pins by changing the pinLocation parameter.
 
         See Also
         --------
@@ -1772,38 +1785,45 @@ class HexBlock(Block):
             raise ValueError(
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
-        # pin numbers start at 1.
-        numPins = self.getNumComponents(Flags.CLAD)  # number of pins in this assembly
+
+        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
+        # cladding count.
+        numPins = self.getNumComponents(Flags.CLAD)
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
-        # look up the current orientation and add this to it. The math below just rotates from the
-        # reference point so we need a total rotation.
+        # Look up the current orientation and add this to it. The math below just rotates
+        # from the reference point so we need a total rotation.
         rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
         for pinNum in range(2, numPins + 1):
             if rotNum == 0:
-                # rotation to reference orientation. Pin locations are pin IDs.
+                # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring (courtesy of Robert Petroski from subchan.py). Rotation does not change the pin ring!
+                # Determine the pin ring. Rotation does not change the pin ring!
                 ring = int(
                     math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
                 )
+
                 # Rotate the pin position (within the ring, which does not change)
                 tot_pins = 1 + 3 * ring * (ring - 1)
                 newPinLocation = pinNum + (ring - 1) * rotNum
                 if newPinLocation > tot_pins:
                     newPinLocation -= (ring - 1) * 6
+
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
-            if not justCompute:
-                self.p["pinLocation", rotateIndexLookup[pinNum]] = pinNum
-
+        # Because the above math creates indices based on the absolute rotation number,
+        # the old values of pinLocation (if they've been set in the past) can be overwritten
+        # with new numbers
         if not justCompute:
             self.setRotationNum(rotNum)
+            self.p["pinLocation"] = [
+                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+            ]
 
         return rotateIndexLookup
 
@@ -2063,17 +2083,15 @@ class HexBlock(Block):
         -------
         pinPitch : float
             pin pitch in cm
-
         """
         try:
             clad = self.getComponent(Flags.CLAD)
             wire = self.getComponent(Flags.WIRE)
         except ValueError:
-            runLog.info(
+            raise ValueError(
                 "Block {} has multiple clad and wire components,"
                 " so pin pitch is not well-defined.".format(self)
             )
-            return
 
         if wire and clad:
             return clad.getDimension("od", cold=cold) + wire.getDimension(
@@ -2205,40 +2223,3 @@ class ThRZBlock(Block):
     def verifyBlockDims(self):
         """Perform dimension checks related to ThetaRZ blocks."""
         return
-
-
-class Point(Block):
-    """
-    Points quack like blocks.
-    This Point object represents a single point in space within a Block.
-    The Point object masquerades as a Block so that any Block parameter
-    (such as DPA) can be assigned to it with the same functionality.
-    """
-
-    def __init__(self, name=None):
-
-        super(Point, self).__init__(name)
-
-        self.xyz = [
-            0.0,
-            0.0,
-            0.0,
-        ]  # initialize the x,y,z coordinates of this Point object.
-
-        params = ["detailedDpaRate", "detailedDpaPeakRate"]
-        for param in params:
-            self.p[param] = 0.0
-
-    def getVolume(self):
-        """points have no volume scaling; point flux are not volume-integrated"""
-        return 1.0
-
-    def getBurnupPeakingFactor(self):
-        """peaking makes no sense for points"""
-        return 1.0
-
-    def getWettedPerimeter(self):
-        return 0.0
-
-    def getHydraulicDiameter(self):
-        return 0.0

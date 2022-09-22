@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test reports."""
+"""Test new reports"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import os
 import unittest
@@ -20,7 +21,7 @@ import unittest
 import htmltree
 
 from armi import getPluginManagerOrFail
-from armi.bookkeeping import newReports
+from armi.bookkeeping.report import newReports
 from armi.bookkeeping.report import data
 from armi.physics.neutronics.reports import neutronicsPlotting
 from armi.reactor.tests import test_reactors
@@ -33,7 +34,7 @@ class TestReportContentCreation(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_TimeSeries(self):
+    def test_timeSeries(self):
         """Test execution of TimeSeries object."""
         with directoryChangers.TemporaryDirectoryChanger():
             times = [0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3]
@@ -56,7 +57,7 @@ class TestReportContentCreation(unittest.TestCase):
             series.plot()
             self.assertTrue(os.path.exists("ReactorName.plotexample.png"))
 
-    def test_TableCreation(self):
+    def test_tableCreation(self):
         header = ["item", "value"]
         table = newReports.Table("Assembly Table", "table of assemblies", header)
 
@@ -66,7 +67,7 @@ class TestReportContentCreation(unittest.TestCase):
         result = table.render(0)
         self.assertTrue(isinstance(result, htmltree.HtmlElement))
 
-    def test_ReportContents(self):
+    def test_reportContents(self):
         with directoryChangers.TemporaryDirectoryChanger():
             reportTest = newReports.ReportContent("Test")
 
@@ -80,6 +81,27 @@ class TestReportContentCreation(unittest.TestCase):
 
             self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
             self.assertIn("Comprehensive Report", reportTest.sections)
+            self.assertIn("Design", reportTest.sections)
+            self.assertIn("Neutronics", reportTest.sections)
+            self.assertTrue(
+                isinstance(reportTest.tableOfContents(), htmltree.HtmlElement)
+            )
+
+    def test_reportContentsEnd(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            reportTest = newReports.ReportContent("Test")
+
+            getPluginManagerOrFail().hook.getReportContents(
+                r=self.r,
+                cs=self.o.cs,
+                report=reportTest,
+                stage=newReports.ReportStage.End,
+                blueprint=self.r.blueprints,
+            )
+
+            self.assertTrue(isinstance(reportTest.sections, collections.OrderedDict))
+            self.assertNotIn("Comprehensive Report", reportTest.sections)
+            self.assertIn("Design", reportTest.sections)
             self.assertIn("Neutronics", reportTest.sections)
             self.assertTrue(
                 isinstance(reportTest.tableOfContents(), htmltree.HtmlElement)

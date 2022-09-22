@@ -15,6 +15,7 @@
 """
 Tests for Cartesian reactors
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.reactor import geometry

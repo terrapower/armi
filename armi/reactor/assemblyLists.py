@@ -20,7 +20,7 @@ originally developed to serve as things like spent-fuel pools and the like, wher
 spatial location of Assemblies need not be quite as precise.
 
 Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel pool
-`self.sfp`. We are in the process of removing these as instance attributes of the 
+`self.sfp`. We are in the process of removing these as instance attributes of the
 ``Core``, and moving them into sibling systems on the root :py:class:`armi.reactor.reactors.Reactor` object.
 """
 import abc
@@ -80,6 +80,8 @@ class RowMajorAutoFiller(AutoFiller):
             loc = grid[i, j, 0]
             if loc not in filledLocations:
                 return loc
+
+        return None
 
     def assemblyAdded(self, a):
         """
@@ -161,12 +163,12 @@ class AssemblyList(composites.Composite):
         self._filler.assemblyAdded(assem)
 
     def getAssembly(self, name):
-        """
-        Get a specific Assembly by name.
-        """
+        """Get a specific Assembly by name."""
         for a in self.getChildren():
             if a.getName() == name:
                 return a
+
+        return None
 
     def count(self):
         if not self.getChildren():

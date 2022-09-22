@@ -15,8 +15,9 @@
 """
 Test the reading and writing of the DIF3D/VARIANT LABELS interface file
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 from armi.nuclearDataIO.cccc import labels
 

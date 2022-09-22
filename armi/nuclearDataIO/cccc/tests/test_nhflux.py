@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test reading/writing of NHFLUX dataset."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import re
 import shutil
@@ -240,11 +241,15 @@ class TestNhfluxVariant(unittest.TestCase):
 
     def test_write(self):
         """
-        Verify binary equivalence of written binary file. This test is not currently
-        possible because all of the partial current moments are not stored by the reader,
-        so the missing moments cannot be written to the file.
+        Verify binary equivalence of written binary file.
         """
-        pass
+        nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
+        with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open("NHFLUX2", "rb") as f2:
+            expectedData = f1.read()
+            actualData = f2.read()
+        for expected, actual in zip(expectedData, actualData):
+            self.assertEqual(expected, actual)
+        os.remove("NHFLUX2")
 
 
 if __name__ == "__main__":

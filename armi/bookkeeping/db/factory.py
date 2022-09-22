@@ -41,7 +41,6 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
     interrogate the type of the returned object to figure out to do based on whatever it
     needs.
     """
-
     import h5py
 
     dbPath = pathlib.Path(dbName)
@@ -89,3 +88,5 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
             )
         if majorversion == "3":
             return Database3(dbPath, permission)
+
+    return None

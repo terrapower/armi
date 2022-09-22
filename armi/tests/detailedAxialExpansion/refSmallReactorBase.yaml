@@ -236,7 +236,7 @@ blocks:
         duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
     
-    lta1 fuel: &block_lta1_fuel
+    lta fuel a: &block_lta1_fuel
         fuel: *component_fuel_fuel
         bond: *component_fuel_bond
         liner2: *component_fuel2_liner2
@@ -247,7 +247,7 @@ blocks:
         duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
     
-    lta2 fuel: &block_lta2_fuel
+    lta fuel b: &block_lta2_fuel
         fuel:
             shape: Circle
             material: UZr
@@ -547,7 +547,7 @@ assemblies:
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
-    lta fuel:
+    lead test fuel:
         specifier: LA
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum,  *block_aclp, *block_plenum, *block_dummy]
         height: *highOffset_height
@@ -556,7 +556,7 @@ assemblies:
             U235_wt_frac: &lta_fuel_u235_wt_frac ['', '', 0.2, 0.2, 0.2, '', '', '', '']
             ZR_wt_frac: &lta_fuel_zr_wt_frac ['', '', 0.07, 0.07, 0.06, '', '', '', '']
         xs types: *igniter_fuel_xs_types
-    lta fuel b:
+    lead test fuel b:
         specifier: LB
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta2_fuel, *block_lta2_fuel, *block_lta2_fuel, *block_plenum, *block_aclp, *block_plenum, *block_dummy]
         height: *highOffset_height

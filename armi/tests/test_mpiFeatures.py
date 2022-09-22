@@ -23,7 +23,7 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-# pylint: disable=abstract-method,no-self-use,unused-argument
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from distutils.spawn import find_executable
 import os
 import unittest
@@ -133,8 +133,9 @@ class BcastAction1(mpiActions.MpiAction):
         allResults = self.gather(results)
 
         if allResults:
-            # this is confounding!!!!
             return [allResults[ai % context.MPI_SIZE][ai] for ai in range(nItems)]
+        else:
+            return []
 
 
 class BcastAction2(mpiActions.MpiAction):
@@ -146,6 +147,8 @@ class BcastAction2(mpiActions.MpiAction):
         allResults = self.gather(results)
         if allResults:
             return self.mpiFlatten(allResults)
+        else:
+            return []
 
 
 class MpiDistributeStateTests(unittest.TestCase):
@@ -175,7 +178,7 @@ class MpiDistributeStateTests(unittest.TestCase):
             # remove values that are *expected to be* different...
             # crossSectionControl is removed because unittest is being mean about
             # comparing dicts...
-            for key in ["stationaryBlocks", "verbosity", "crossSectionControl"]:
+            for key in ["stationaryBlockFlags", "verbosity", "crossSectionControl"]:
                 if key in original:
                     del original[key]
                 if key in current:

@@ -329,44 +329,58 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def applyMaterialMassFracsToNumberDensities(self):
         """
-        Set number densities for the component based on material mass fractions using hot temperatures.
+        Set the hot number densities for the component based on material mass fractions/density.
 
         Notes
         -----
-        - the density returned accounts for the radial expansion of the component
+        - the density returned accounts for the expansion of the component
           due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - axial expansion effects are not included here.
-
-        See Also
-        --------
-        self.applyHotHeightDensityReduction
+        - After the expansion, the density of the component should reflect the 3d
+          density of the material
         """
         # note, that this is not the actual material density, but rather 2D expanded
         # `density3` is 3D density
+        # call getProperty to cache and improve speed
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
         )
 
-    def applyHotHeightDensityReduction(self):
+        # material needs to be expanded from the material's cold temp to hot,
+        # not components cold temp, so we don't use mat.linearExpansionFactor or
+        # component.getThermalExpansionFactor.
+        # Materials don't typically define the temperature for which their references
+        # density is defined so linearExpansionPercent must be called
+        coldMatAxialExpansionFactor = (
+            1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
+        )
+        self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
+
+    def adjustDensityForHeightExpansion(self, newHot):
         """
-        Adjust number densities to account for prescribed hot block heights (axial expansion).
+        Change the densities in cases where height of the block/component is changing with expansion.
 
         Notes
         -----
-        - We apply this hot height density reduction to account for pre-expanded
-          block heights in blueprints.
-        - This is called when inputHeightsConsideredHot: True.
-
-        See Also
-        --------
-        self.applyMaterialMassFracsToNumberDensities
+        Call before setTemperature since we need old hot temp.
+        This works well if there is only 1 solid component.
+        If there are multiple components expanding at different rates during thermal
+        expansion this becomes more complicated and, and axial expansion should be used.
+        Multiple expansion rates cannot trivially be accommodated.
+        See AxialExpansionChanger.
         """
-        axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
-            self.temperatureInC, self.inputTemperatureInC
-        )
-        self.changeNDensByFactor(1.0 / axialExpansionFactor)
+        self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
+
+    def getHeightFactor(self, newHot):
+        """
+        Return the factor by which height would change by if we did 3D expansion.
+
+        Notes
+        -----
+        Call before setTemperature since we need old hot temp.
+        """
+        return self.getThermalExpansionFactor(Tc=newHot, T0=self.temperatureInC)
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""

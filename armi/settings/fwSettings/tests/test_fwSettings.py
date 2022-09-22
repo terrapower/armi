@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the framework settings"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 import voluptuous as vol

@@ -296,6 +296,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.isRestart = None
         self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
         self.detailedAxialExpansion = None
+
         self.boundaries = None
         self.xsKernel = None
 
@@ -327,6 +328,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self.hasNonUniformAssems = any(
+            [Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]]
+        )
         self.eigenvalueProblem = cs["eigenProb"]
 
         # dose/dpa specific (should be separate subclass?)
@@ -336,6 +340,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadLength = cs["loadPadLength"]
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
+        self.cs = cs
 
     def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
@@ -402,16 +407,19 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 + "This is a programming error and requires further investigation."
             )
         neutronicsReactor = self.r
-        if self.options.detailedAxialExpansion:
-            converter = self.geomConverters.get("axial")
-            if not converter:
+        converter = self.geomConverters.get("axial")
+        if not converter:
+            if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
                 converter = uniformMesh.NeutronicsUniformMeshConverter(
-                    None,
+                    cs=self.options.cs,
                     calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
                 )
-                neutronicsReactor = converter.convert(self.r)
+                converter.convert(self.r)
+                neutronicsReactor = converter.convReactor
+
                 if makePlots:
                     converter.plotConvertedReactor()
+
                 self.geomConverters["axial"] = converter
 
         if self.edgeAssembliesAreNeeded():
@@ -443,21 +451,26 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
             geomConverter.scaleParamsRelatedToSymmetry(
                 self.r, paramsToScaleSubset=self.options.paramsToScaleSubset
             )
+
+            # Resets the reactor core model to the correct symmetry and removes
+            # stored attributes on the converter to ensure that there is
+            # state data that is long-lived on the object in case the garbage
+            # collector does not remove it. Additionally, this will reset the
+            # global assembly counter.
             geomConverter.removeEdgeAssemblies(self.r.core)
 
         meshConverter = self.geomConverters.get("axial")
+
         if meshConverter:
-            if self.options.applyResultsToReactor:
+            if self.options.applyResultsToReactor or self.options.hasNonUniformAssems:
                 meshConverter.applyStateToOriginal()
             self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
 
-        nAssemsBeforeConversion = [
-            converter.getAssemblyModuleCounter()
-            for converter in (geomConverter, meshConverter)
-            if converter is not None
-        ]
-        if nAssemsBeforeConversion:
-            assemblies.setAssemNumCounter(min(nAssemsBeforeConversion))
+            # Resets the stored attributes on the converter to
+            # ensure that there is state data that is long-lived on the
+            # object in case the garbage collector does not remove it.
+            # Additionally, this will reset the global assembly counter.
+            meshConverter.reset()
 
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
@@ -1065,10 +1078,10 @@ def calcReactionRates(obj, keff, lib):
 
         nucMc = lib.getNuclide(nucName, obj.getMicroSuffix())
         micros = nucMc.micros
-        for g, groupGlux in enumerate(obj.getMgFlux()):
+        for g, groupFlux in enumerate(obj.getMgFlux()):
 
             # dE = flux_e*dE
-            dphi = numberDensity * groupGlux
+            dphi = numberDensity * groupFlux
 
             tot += micros.total[g, 0] * dphi
             # absorption is fission + capture (no n2n here)

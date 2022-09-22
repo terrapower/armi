@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test block conversions."""
-import unittest
+"""Test block conversions"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 import numpy
 
@@ -55,7 +56,6 @@ class TestBlockConverter(unittest.TestCase):
         "Give the component different ref and hot temperatures than in test_Blocks."
         c = block.getComponent(Flags.fromString(cName))
         c.refTemp, c.refHot = tCold, tHot
-        c.applyHotHeightDensityReduction()
         c.setTemperature(tHot)
         return block
 

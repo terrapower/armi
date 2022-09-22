@@ -137,7 +137,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def onProcessCoreLoading(core, cs):
+    def onProcessCoreLoading(core, cs, dbLoad):
         applyEffectiveDelayedNeutronFractionToCore(core, cs)
 
     @staticmethod

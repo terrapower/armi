@@ -66,7 +66,6 @@ class TestSpatialLocator(unittest.TestCase):
         is in the center of the central cube radially and the bottom axially due
         to the different way steps and bounds are set up.
         """
-
         core = MockArmiObject()
         assem = MockArmiObject(core)
         block = MockArmiObject(assem)
@@ -512,6 +511,10 @@ class TestCartesianGrid(unittest.TestCase):
                 ring, pos = grid.getRingPos((i, j))
                 self.assertEqual(ring, expectedRing[j + 3][i + 3])
                 self.assertEqual(pos, expectedPos[j + 3][i + 3])
+
+        # Bonus test of getMinimumRings() using the above grid
+        self.assertEqual(grid.getMinimumRings(7), 2)
+        self.assertEqual(grid.getMinimumRings(17), 3)
 
     def test_ringPosSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0)

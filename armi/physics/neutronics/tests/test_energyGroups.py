@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Energy group tests."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-
-from .. import energyGroups
+from armi.physics.neutronics import energyGroups
 
 
 class TestEnergyGroups(unittest.TestCase):

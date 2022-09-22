@@ -29,17 +29,16 @@ import math
 import os
 import re
 import warnings
-import logging
 
 import numpy
 
+
+from armi import runLog
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
 from armi.utils.mathematics import findClosest, resampleStepwise
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
-
-runLog = logging.getLogger(__name__)
 
 
 class FuelHandler:
@@ -1160,25 +1159,49 @@ class FuelHandler:
         a1.moveTo(a2.spatialLocator)
         a2.moveTo(oldA1Location)
 
-        self._swapFluxParam(a1, a2)
-
     def _transferStationaryBlocks(self, assembly1, assembly2):
         """
         Exchange the stationary blocks (e.g. grid plate) between the moving assemblies
 
         These blocks in effect are not moved at all.
         """
-        for index in self.cs["stationaryBlocks"]:
-            # this block swap is designed to ensure that all blocks have the
-            # correct parents and children structure at the end of the swaps.
-            tempBlock1 = assembly1[index]
-            assembly1.remove(tempBlock1)
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
 
-            tempBlock2 = assembly2[index]
-            assembly2.remove(tempBlock2)
+        # identify stationary blocks for assembly 1
+        a1StationaryBlocks = [
+            [block, block.spatialLocator.k]
+            for block in assembly1
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
+        # identify stationary blocks for assembly 2
+        a2StationaryBlocks = [
+            [block, block.spatialLocator.k]
+            for block in assembly2
+            if any(block.hasFlags(sbf) for sbf in sBFList)
+        ]
 
-            assembly1.insert(index, tempBlock2)
-            assembly2.insert(index, tempBlock1)
+        # check for any inconsistencies in stationary blocks and ensure alignment
+        if [block[1] for block in a1StationaryBlocks] != [
+            block[1] for block in a2StationaryBlocks
+        ]:
+            raise ValueError(
+                """Different number and/or locations of stationary blocks 
+                 between {} (Stationary Blocks: {}) and {} (Stationary Blocks: {}).""".format(
+                    assembly1, a1StationaryBlocks, assembly2, a2StationaryBlocks
+                )
+            )
+
+        # swap stationary blocks
+        for (assem1Block, assem1BlockIndex), (assem2Block, assem2BlockIndex) in zip(
+            a1StationaryBlocks, a2StationaryBlocks
+        ):
+            # remove stationary blocks
+            assembly1.remove(assem1Block)
+            assembly2.remove(assem2Block)
+            # insert stationary blocks
+            assembly1.insert(assem1BlockIndex, assem2Block)
+            assembly2.insert(assem2BlockIndex, assem1Block)
 
     def dischargeSwap(self, incoming, outgoing):
         r"""
@@ -1224,93 +1247,6 @@ class FuelHandler:
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
-
-        self._swapFluxParam(incoming, outgoing)
-
-    def _swapFluxParam(self, incoming, outgoing):
-        """
-        Set the flux and power params of the new blocks to that of the old and vice versa.
-
-        This is essential for getting loosely-coupled flux-averaged cross sections from things like
-        :py:class:`armi.physics.neutronics.crossSectionGroupManager.BlockCollectionAverageFluxWeighted`
-
-        Parameters
-        ----------
-        incoming, outgoing : Assembly
-            Assembly objects to be swapped
-        """
-        # Find the block-based mesh points for each assembly
-        meshIn = self.r.core.findAllAxialMeshPoints([incoming], False)
-        meshOut = self.r.core.findAllAxialMeshPoints([outgoing], False)
-
-        # If the assembly mesh points don't match, the swap won't be easy
-        if meshIn != meshOut:
-            runLog.debug(
-                "{0} and {1} have different meshes, resampling.".format(
-                    incoming, outgoing
-                )
-            )
-
-            # grab the current values for incoming and outgoing
-            fluxIn = [b.p.flux for b in incoming]
-            mgFluxIn = [b.p.mgFlux for b in incoming]
-            powerIn = [b.p.power for b in incoming]
-            fluxOut = [b.p.flux for b in outgoing]
-            mgFluxOut = [b.p.mgFlux for b in outgoing]
-            powerOut = [b.p.power for b in outgoing]
-
-            # resample incoming to outgoing, and vice versa
-            fluxOutNew = resampleStepwise(meshIn, fluxIn, meshOut)
-            mgFluxOutNew = resampleStepwise(meshIn, mgFluxIn, meshOut)
-            powerOutNew = resampleStepwise(meshIn, powerIn, meshOut, avg=False)
-            fluxInNew = resampleStepwise(meshOut, fluxOut, meshIn)
-            mgFluxInNew = resampleStepwise(meshOut, mgFluxOut, meshIn)
-            powerInNew = resampleStepwise(meshOut, powerOut, meshIn, avg=False)
-
-            # load the new outgoing values into place
-            for b, flux, mgFlux, power in zip(
-                outgoing, fluxOutNew, mgFluxOutNew, powerOutNew
-            ):
-                b.p.flux = flux
-                b.p.mgFlux = mgFlux
-                b.p.power = power
-                b.p.pdens = power / b.getVolume()
-
-            # load the new incoming values into place
-            for b, flux, mgFlux, power in zip(
-                incoming, fluxInNew, mgFluxInNew, powerInNew
-            ):
-                b.p.flux = flux
-                b.p.mgFlux = mgFlux
-                b.p.power = power
-                b.p.pdens = power / b.getVolume()
-
-            return
-
-        # Since the axial mesh points match, do the simple swap
-        for bi, (bIncoming, bOutgoing) in enumerate(zip(incoming, outgoing)):
-            if bi in self.cs["stationaryBlocks"]:
-                # stationary blocks are already swapped
-                continue
-
-            incomingFlux = bIncoming.p.flux
-            incomingMgFlux = bIncoming.p.mgFlux
-            incomingPower = bIncoming.p.power
-            outgoingFlux = bOutgoing.p.flux
-            outgoingMgFlux = bOutgoing.p.mgFlux
-            outgoingPower = bOutgoing.p.power
-
-            if outgoingFlux > 0.0:
-                bIncoming.p.flux = outgoingFlux
-                bIncoming.p.mgFlux = outgoingMgFlux
-                bIncoming.p.power = outgoingPower
-                bIncoming.p.pdens = outgoingPower / bIncoming.getVolume()
-
-            if incomingFlux > 0.0:
-                bOutgoing.p.flux = incomingFlux
-                bOutgoing.p.mgFlux = incomingMgFlux
-                bOutgoing.p.power = incomingPower
-                bOutgoing.p.pdens = incomingPower / bOutgoing.getVolume()
 
     def swapCascade(self, assemList):
         """

@@ -1068,7 +1068,7 @@ class GridGui(wx.ScrolledWindow):
     def onMouse(self, event):
         if event.RightUp():
             self.onContextMenu(event)
-            return
+            return event.Skip()
 
         if event.LeftDown():
             _ = event.GetX()

@@ -14,10 +14,9 @@
 
 from collections import defaultdict
 
-from armi.bookkeeping import newReportUtils
-from armi.bookkeeping import newReports
+from armi.bookkeeping.report import newReportUtils
+from armi.bookkeeping.report import newReports
 from armi.reactor.flags import Flags
-from armi.bookkeeping import newReports
 
 
 def insertNeutronicsReport(r, cs, report, stage):
@@ -32,7 +31,6 @@ def insertNeutronicsReport(r, cs, report, stage):
         Begining, Standard, or End to denote what stage of report we are
         collecting contents for.
     """
-
     if stage == newReports.ReportStage.Begin:
         insertNeutronicsBOLContent(r, cs, report)
 
@@ -52,7 +50,6 @@ def insertNeutronicsBOLContent(r, cs, report):
     r: Reactor
     cs: Case Settings
     report: ReportContent
-
     """
     section = report[newReportUtils.COMPREHENSIVE_REPORT]
     table = section.get(
@@ -73,7 +70,6 @@ def neutronicsPlotting(r, report, cs):
     report: ReportContent
     cs: Case Settings
     """
-
     # Make K-Effective Plot
     labels = ["k-effective", "keff-uncontrolled"]
     neutronicsSection = report[NEUTRONICS_SECTION]

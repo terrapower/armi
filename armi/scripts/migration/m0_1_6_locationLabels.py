@@ -98,3 +98,5 @@ def getIndicesFromDIF3DStyleLocatorLabel(label):
         else:
             k = None
         return i, j, k
+
+    raise RuntimeError("No Indices found for DIF3D-style label: {0}".format(label))

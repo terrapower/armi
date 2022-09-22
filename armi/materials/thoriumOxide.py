@@ -22,7 +22,7 @@ Data is from [#IAEA-TECDOCT-1450]_.
 """
 from armi import runLog
 from armi.utils.units import getTk
-from armi.materials.material import FuelMaterial
+from armi.materials.material import Material, FuelMaterial
 
 
 class ThoriumOxide(FuelMaterial):
@@ -30,8 +30,13 @@ class ThoriumOxide(FuelMaterial):
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
     theoreticalDensityFrac = 1.0
 
+    def __init__(self):
+        FuelMaterial.__init__(self)
+        self.adjustTD(self.theoreticalDensityFrac)
+
     def adjustTD(self, val):
         self.theoreticalDensityFrac = val
+        self.p.refDens = 10.00 * val
 
     def getTD(self):
         return self.theoreticalDensityFrac
@@ -73,10 +78,6 @@ class ThoriumOxide(FuelMaterial):
         Mass fractions are computed from this."""
         self.setMassFrac("TH232", 0.8788)
         self.setMassFrac("O16", 0.1212)
-
-    def density(self, Tk=None, Tc=None):
-        """g/cc from IAEA TE 1450"""
-        return 10.00 * self.getTD()
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""m/m/K from IAEA TE 1450"""

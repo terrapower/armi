@@ -637,7 +637,7 @@ class DistributeStateAction(MpiAction):
                     iNew = self.broadcast(None)
                     runLog.debug("Received {0}".format(iNew))
                     if iNew == "quit":
-                        return True  # signal the operator to break.
+                        return
                     self.o.removeInterface(iOld)
                     self.o.addInterface(iNew)
                     iNew.interactDistributeState()  # pylint: disable=no-member

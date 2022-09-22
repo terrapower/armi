@@ -60,6 +60,19 @@ class TestReport(unittest.TestCase):
         self.assertEqual(filled_instance["banana_2"], ["sundae", "vanilla"])
         self.assertEqual(filled_instance["banana_3"], ["sundae", "chocolate"])
 
+    def test_getData(self):
+        # test the null case
+        self.assertIsNone(self.test_group["fake"])
+
+        # insert some data
+        self.test_group["banana_1"] = ["sundae", "plain"]
+
+        # validate we can pull that data back out again
+        data = self.test_group["banana_1"]
+        self.assertEqual(len(data), 2)
+        self.assertIn("sundae", data)
+        self.assertIn("plain", data)
+
     def test_reactorSpecificReporting(self):
         """Test a number of reporting utils that require reactor/core information"""
         o, r = loadTestReactor()
