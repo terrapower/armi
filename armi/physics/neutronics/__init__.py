@@ -34,14 +34,12 @@ independent interfaces:
 
 import os
 
-import yamlize
 import numpy
 import tabulate
 
 from armi import plugins
-from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.utils import directoryChangers
 from armi import runLog
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -83,7 +81,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        from . import settings as neutronicsSettings
+        from armi.physics.neutronics import settings as neutronicsSettings
         from armi.physics.neutronics import crossSectionSettings
         from armi.physics.neutronics.fissionProductModel import (
             fissionProductModelSettings,
@@ -102,38 +100,10 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettingsValidators(inspector):
-        """
-        Check neutronics settings.
-        """
-        from armi.operators import settingsValidation  # avoid cyclic import
-        from armi.scripts.migration.crossSectionBlueprintsToSettings import (
-            migrateCrossSectionsFromBlueprints,
-        )
+        """Implementation of settings inspections for neutronics settings."""
+        from armi.physics.neutronics.settings import getNeutronicsSettingValidators
 
-        queries = []
-
-        def blueprintsHasOldXSInput(path):
-            with directoryChangers.DirectoryChanger(inspector.cs.inputDirectory):
-                with open(os.path.expandvars(path)) as f:
-                    for line in f:
-                        if line.startswith("cross sections:"):
-                            return True
-            return False
-
-        queries.append(
-            settingsValidation.Query(
-                lambda: inspector.cs["loadingFile"]
-                and blueprintsHasOldXSInput(inspector.cs["loadingFile"]),
-                "The specified blueprints input file '{0}' contains compound cross section settings. "
-                "".format(inspector.cs["loadingFile"]),
-                "Automatically move them to the settings file, {}? WARNING: if multiple settings files point "
-                "to this blueprints input you must manually update the others.".format(
-                    inspector.cs.path
-                ),
-                lambda: migrateCrossSectionsFromBlueprints(inspector.cs),
-            )
-        )
-        return queries
+        return getNeutronicsSettingValidators(inspector)
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -143,25 +113,20 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def getReportContents(r, cs, report, stage, blueprint):
-        """
-        Generates the Report Content for the Neutronics Report
-
-
-        """
-
+        """Generates the Report Content for the Neutronics Report"""
         from armi.physics.neutronics import reports
 
         return reports.insertNeutronicsReport(r, cs, report, stage)
 
 
-from .const import (
+from armi.physics.neutronics.const import (
+    ALL,
+    FLUXFILES,
     GAMMA,
+    INPUTOUTPUT,
     NEUTRON,
     NEUTRONGAMMA,
-    ALL,
     RESTARTFILES,
-    INPUTOUTPUT,
-    FLUXFILES,
 )
 
 
