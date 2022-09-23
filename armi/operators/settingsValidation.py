@@ -439,6 +439,7 @@ class Inspector:
             self.NO_ACTION,
         )
 
+        # TODO: Move from nested function to staticmethod, to make this testable.
         def _willBeCopiedFrom(fName):
             for copyFile in self.cs["copyFilesFrom"]:
                 if fName == os.path.split(copyFile)[1]:
@@ -523,6 +524,7 @@ class Inspector:
             self.NO_ACTION,
         )
 
+        # TODO: Move from nested function to staticmethod, to make this testable.
         def _factorsAreValid(factors, maxVal=1.0):
             try:
                 expandedList = expandRepeatedFloats(factors)
@@ -585,6 +587,7 @@ class Inspector:
                 self.NO_ACTION,
             )
 
+            # TODO: Move from nested function to staticmethod, to make this testable.
             def decayCyclesHaveInputThatWillBeIgnored():
                 """Check if there is any decay-related input that will be ignored."""
                 try:
