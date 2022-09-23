@@ -315,9 +315,6 @@ class Inspector:
         self._assignCS("availabilityFactors", None)
         self._assignCS("cycles", [])
 
-    def _setBurnStepsToFour(self):
-        self._assignCS("burnSteps", 4)
-
     def _checkForBothSimpleAndDetailedCyclesInputs(self):
         """
         Because the only way to check if a setting has been "entered" is to check
