@@ -315,9 +315,6 @@ class Inspector:
         self._assignCS("availabilityFactors", None)
         self._assignCS("cycles", [])
 
-    def _setBurnStepsToFour(self):
-        self._assignCS("burnSteps", 4)
-
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         # import here to avoid cyclic issues
