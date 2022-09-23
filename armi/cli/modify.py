@@ -56,6 +56,12 @@ class ModifyCaseSettingsCommand(EntryPoint):
             "suppress the inspection step.",
         )
         self.parser.add_argument(
+            "--rootDir",
+            type=str,
+            default=".",
+            help="A root directory in which to search for settings files, e.g., armi/tests.",
+        )
+        self.parser.add_argument(
             "patterns",
             type=str,
             nargs="*",
@@ -70,7 +76,9 @@ class ModifyCaseSettingsCommand(EntryPoint):
                 self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
-        csInstances = settings.recursivelyLoadSettingsFiles(".", self.args.patterns)
+        csInstances = settings.recursivelyLoadSettingsFiles(
+            self.args.rootDir, self.args.patterns
+        )
         messages = (
             ("found", "listing")
             if self.args.list_setting_files
