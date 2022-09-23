@@ -30,7 +30,6 @@ from armi import runLog
 from armi.meta import __version__ as version
 from armi import context
 from armi.settings.setting import Setting
-from armi.settings import settingsRules
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
     SettingException,
