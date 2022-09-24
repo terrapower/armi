@@ -85,6 +85,22 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
         return timeDelta
 
+    def test_sequenceInit(self):
+        # init an empty sequence
+        s = iterables.Sequence()
+        for item in s:
+            self.assertTrue(False, "This shouldn't happen.")
+
+        # init a sequence with another sequence
+        example = [1, 2, 3]
+        s2 = iterables.Sequence(example)
+        s3 = iterables.Sequence(s2)
+        i = 0
+        for item in s3:
+            i += 1
+
+        self.assertEqual(i, len(example))
+
     def test_sequence(self):
         # sequentially using methods in the usual way
         s = iterables.Sequence(range(1000000))
