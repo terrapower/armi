@@ -238,7 +238,7 @@ class SettingsReader:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
     def _applySettings(self, name, val):
-        """TODO"""
+        """Add a setting, if it is valid. Capture invalid settings."""
         nameToSet, _wasRenamed = self._renamer.renameSetting(name)
 
         if name not in self.cs:
