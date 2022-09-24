@@ -344,32 +344,6 @@ def defineSettings():
     return settings
 
 
-def _migrateNormalBCSetting(inspector):
-    """The `boundary` setting is migrated from `Normal` to `Extrapolated`."""
-    inspector.cs = inspector.cs.modified(newSettings={"boundaries": "Extrapolated"})
-
-
-def _updateXSGroupStructure(inspector, value):
-    """Trying to migrate to a valid XS group structure name"""
-    newValue = value.upper()
-
-    if newValue in GROUP_STRUCTURE:
-        runLog.info(
-            "Updating the cross section group structure from {} to {}".format(
-                value, newValue
-            )
-        )
-    else:
-        newValue = inspector.cs.get("groupStructure").default
-        runLog.info(
-            "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
-                value, newValue
-            )
-        )
-
-    inspector.cs = inspector.cs.modified(newSettings={"groupStructure": newValue})
-
-
 def _blueprintsHasOldXSInput(inspector):
     path = inspector.cs["loadingFile"]
     with directoryChangers.DirectoryChanger(inspector.cs.inputDirectory):
@@ -385,7 +359,7 @@ def getNeutronicsSettingValidators(inspector):
     """The standard helper method, to provide validators to neutronics settings"""
     queries = []
 
-    def _migrateXSOption(name0):
+    def migrateXSOption(name0):
         """
         The `genXS` and `globalFluxActive` settings used to take True/False as inputs,
         this helper method migrates those to the new values.
@@ -398,13 +372,13 @@ def getNeutronicsSettingValidators(inspector):
 
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
-    def _migrateXSOptionGenXS():
-        """pass-through to _migrateXSOption(), because Query functions cannot take arguements"""
-        _migrateXSOption("genXS")
+    def migrateXSOptionGenXS():
+        """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
+        migrateXSOption("genXS")
 
-    def _migrateXSOptionGlobalFluxActive():
-        """pass-through to _migrateXSOption(), because Query functions cannot take arguements"""
-        _migrateXSOption("globalFluxActive")
+    def migrateXSOptionGlobalFluxActive():
+        """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
+        migrateXSOption("globalFluxActive")
 
     queries.append(
         settingsValidation.Query(
@@ -413,7 +387,7 @@ def getNeutronicsSettingValidators(inspector):
             'Would you like to auto-correct `genXS` to the correct value? ("" or {0})'.format(
                 NEUTRON
             ),
-            _migrateXSOptionGenXS,
+            migrateXSOptionGenXS,
         )
     )
 
@@ -424,31 +398,56 @@ def getNeutronicsSettingValidators(inspector):
             'Would you like to auto-correct `genXS` to the correct value? ("" or {0})'.format(
                 NEUTRON
             ),
-            _migrateXSOptionGlobalFluxActive,
+            migrateXSOptionGlobalFluxActive,
         )
     )
+
+    def migrateNormalBCSetting():
+        """The `boundary` setting is migrated from `Normal` to `Extrapolated`."""
+        inspector.cs = inspector.cs.modified(newSettings={"boundaries": "Extrapolated"})
 
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs["boundaries"] == "Normal",
             "The `boundaries` setting now takes `Extrapolated` instead of `Normal` as a value.",
             "Would you like to auto-correct `boundaries` from `Normal` to `Extrapolated`?",
-            _migrateNormalBCSetting,
+            migrateNormalBCSetting,
         )
     )
 
+    def updateXSGroupStructure():
+        """Trying to migrate to a valid XS group structure name"""
+        value = inspector.cs["groupStructure"]
+        newValue = value.upper()
+
+        if newValue in GROUP_STRUCTURE:
+            runLog.info(
+                "Updating the cross section group structure from {} to {}".format(
+                    value, newValue
+                )
+            )
+        else:
+            newValue = inspector.cs.getSetting("groupStructure").default
+            runLog.info(
+                "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
+                    value, newValue
+                )
+            )
+
+        inspector.cs = inspector.cs.modified(newSettings={"groupStructure": newValue})
+
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["groupStructure"] not in GROUP_STRUCTURE,
+            inspector.cs["groupStructure"] not in GROUP_STRUCTURE,
             "The given group structure {0} was not recognized.".format(
                 inspector.cs["groupStructure"]
             ),
             "Would you like to auto-correct the group structure value?",
-            _updateXSGroupStructure,
+            updateXSGroupStructure,
         )
     )
 
-    def _migrateDpa(name0):
+    def migrateDpa(name0):
         """migrating some common shortened names for dpa XS sets"""
         value = inspector.cs[name0]
         if value == "dpaHT9_33":
@@ -458,20 +457,20 @@ def getNeutronicsSettingValidators(inspector):
 
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
-    def _migrateDpaDpaXsSet():
-        """pass-through to _migrateDpa(), because Query functions cannot take arguements"""
-        _migrateDpa("dpaXsSet")
+    def migrateDpaDpaXsSet():
+        """pass-through to migrateDpa(), because Query functions cannot take arguements"""
+        migrateDpa("dpaXsSet")
 
-    def _migrateDpaGridPlate():
-        """pass-through to _migrateDpa(), because Query functions cannot take arguements"""
-        _migrateDpa("gridPlateDpaXsSet")
+    def migrateDpaGridPlate():
+        """pass-through to migrateDpa(), because Query functions cannot take arguements"""
+        migrateDpa("gridPlateDpaXsSet")
 
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs["dpaXsSet"] in ("dpaHT9_33", "dpa_SS316"),
             "It appears you are using a shortened version of the `dpaXsSet`.",
             "Would you like to auto-correct this to the full name?",
-            _migrateDpaDpaXsSet,
+            migrateDpaDpaXsSet,
         )
     )
 
@@ -480,7 +479,7 @@ def getNeutronicsSettingValidators(inspector):
             lambda: inspector.cs["gridPlateDpaXsSet"] in ("dpaHT9_33", "dpa_SS316"),
             "It appears you are using a shortened version of the `gridPlateDpaXsSet`.",
             "Would you like to auto-correct this to the full name?",
-            _migrateDpaGridPlate,
+            migrateDpaGridPlate,
         )
     )
 
