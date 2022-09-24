@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for grids."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import unittest
-import math
+"""Tests for grids"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
 from io import BytesIO
+import math
+import unittest
 
-import numpy
-from six.moves import cPickle
-
-from armi.reactor import grids
-from armi.reactor import geometry
 from numpy.testing import assert_allclose
+from six.moves import cPickle
+import numpy
+
+from armi.reactor import geometry
+from armi.reactor import grids
 
 
 class MockLocator(grids.IndexLocation):
@@ -44,9 +44,7 @@ class MockCoordLocator(grids.CoordinateLocation):
 
 
 class MockArmiObject:
-    """
-    Any sort of object that can serve as a grid's armiObject attribute.
-    """
+    """Any sort of object that can serve as a grid's armiObject attribute."""
 
     def __init__(self, parent=None):
         self.parent = parent

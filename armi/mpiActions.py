@@ -475,7 +475,7 @@ class DistributeStateAction(MpiAction):
             cs = self._distributeSettings()
 
             self._distributeReactor(cs)
-            self._distributeParamAssignments()
+            DistributeStateAction._distributeParamAssignments()
 
             if self._skipInterfaces:
                 self.o.reattach(self.r, cs)  # may be redundant?
@@ -564,7 +564,8 @@ class DistributeStateAction(MpiAction):
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
-    def _distributeParamAssignments(self):
+    @staticmethod
+    def _distributeParamAssignments():
         data = dict()
         if context.MPI_RANK == 0:
             data = {

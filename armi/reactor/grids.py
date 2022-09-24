@@ -1628,7 +1628,7 @@ class HexGrid(Grid):
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
             and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
-            return self._getSymmetricIdenticalsThird(indices)
+            return HexGrid._getSymmetricIdenticalsThird(indices)
         elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
@@ -1638,7 +1638,8 @@ class HexGrid(Grid):
                 )
             )
 
-    def _getSymmetricIdenticalsThird(self, indices):
+    @staticmethod
+    def _getSymmetricIdenticalsThird(indices):
         """This works by rotating the indices by 120 degrees twice, counterclockwise."""
         i, j = indices[:2]
         if i == 0 and j == 0:

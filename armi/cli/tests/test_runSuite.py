@@ -39,13 +39,11 @@ class TestRunSuiteSuite(unittest.TestCase):
         """Test the ArmiCLI.showVersion method"""
         from armi import cli, meta
 
-        cli = cli.ArmiCLI()
-
         origout = sys.stdout
         try:
             out = io.StringIO()
             sys.stdout = out
-            cli.showVersion()
+            cli.ArmiCLI.showVersion()
         finally:
             sys.stdout = origout
 
