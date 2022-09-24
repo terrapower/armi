@@ -26,25 +26,24 @@ from armi.settings import setting
 from armi.utils import directoryChangers
 
 
-CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
-CONF_NEUTRONICS_TYPE = "neutronicsType"
-
 CONF_BC_COEFFICIENT = "bcCoefficient"
 CONF_BOUNDARIES = "boundaries"
 CONF_DPA_PER_FLUENCE = "dpaPerFluence"
 CONF_EIGEN_PROB = "eigenProb"
+CONF_EPS_EIG = "epsEig"
+CONF_EPS_FSAVG = "epsFSAvg"
+CONF_EPS_FSPOINT = "epsFSPoint"
 CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
 CONF_GEN_XS = "genXS"  # gamma stuff and neutronics plugin/lattice physics
 CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_INNERS_ = "inners"
+CONF_LOADING_FILE = "loadingFile"
+CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
+CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
-
-CONF_EPS_EIG = "epsEig"
-CONF_EPS_FSAVG = "epsFSAvg"
-CONF_EPS_FSPOINT = "epsFSPoint"
 
 # Used for dpa/dose analysis.
 # TODO: These should be relocated to more design-specific places
@@ -345,7 +344,7 @@ def defineSettings():
 
 
 def _blueprintsHasOldXSInput(inspector):
-    path = inspector.cs["loadingFile"]
+    path = inspector.cs[CONF_LOADING_FILE]
     with directoryChangers.DirectoryChanger(inspector.cs.inputDirectory):
         with open(os.path.expandvars(path)) as f:
             for line in f:
@@ -374,18 +373,18 @@ def getNeutronicsSettingValidators(inspector):
 
     def migrateXSOptionGenXS():
         """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
-        migrateXSOption("genXS")
+        migrateXSOption(CONF_GEN_XS)
 
     def migrateXSOptionGlobalFluxActive():
         """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
-        migrateXSOption("globalFluxActive")
+        migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["genXS"] in ("True", "False"),
-            "The `genXS` setting cannot not take `True` or `False` as an exact value any more.",
-            'Would you like to auto-correct `genXS` to the correct value? ("" or {0})'.format(
-                NEUTRON
+            lambda: inspector.cs[CONF_GEN_XS] in ("True", "False"),
+            "The {0} setting cannot not take `True` or `False` as an exact value any more.",
+            'Would you like to auto-correct {0} to the correct value? ("" or {1})'.format(
+                CONF_GEN_XS, NEUTRON
             ),
             migrateXSOptionGenXS,
         )
@@ -393,10 +392,10 @@ def getNeutronicsSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["globalFluxActive"] in ("True", "False"),
-            "The `globalFluxActive` setting cannot not take `True` or `False` as an exact value any more.",
-            'Would you like to auto-correct `genXS` to the correct value? ("" or {0})'.format(
-                NEUTRON
+            lambda: inspector.cs[CONF_GLOBAL_FLUX_ACTIVE] in ("True", "False"),
+            "The {0} setting cannot not take `True` or `False` as an exact value any more.",
+            'Would you like to auto-correct {0} to the correct value? ("" or {1})'.format(
+                CONF_GLOBAL_FLUX_ACTIVE, NEUTRON
             ),
             migrateXSOptionGlobalFluxActive,
         )
@@ -404,20 +403,26 @@ def getNeutronicsSettingValidators(inspector):
 
     def migrateNormalBCSetting():
         """The `boundary` setting is migrated from `Normal` to `Extrapolated`."""
-        inspector.cs = inspector.cs.modified(newSettings={"boundaries": "Extrapolated"})
+        inspector.cs = inspector.cs.modified(
+            newSettings={CONF_BOUNDARIES: "Extrapolated"}
+        )
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["boundaries"] == "Normal",
-            "The `boundaries` setting now takes `Extrapolated` instead of `Normal` as a value.",
-            "Would you like to auto-correct `boundaries` from `Normal` to `Extrapolated`?",
+            lambda: inspector.cs[CONF_BOUNDARIES] == "Normal",
+            "The {0} setting now takes `Extrapolated` instead of `Normal` as a value.".format(
+                CONF_BOUNDARIES
+            ),
+            "Would you like to auto-correct {0} from `Normal` to `Extrapolated`?".format(
+                CONF_BOUNDARIES
+            ),
             migrateNormalBCSetting,
         )
     )
 
     def updateXSGroupStructure():
         """Trying to migrate to a valid XS group structure name"""
-        value = inspector.cs["groupStructure"]
+        value = inspector.cs[CONF_GROUP_STRUCTURE]
         newValue = value.upper()
 
         if newValue in GROUP_STRUCTURE:
@@ -427,20 +432,22 @@ def getNeutronicsSettingValidators(inspector):
                 )
             )
         else:
-            newValue = inspector.cs.getSetting("groupStructure").default
+            newValue = inspector.cs.getSetting(CONF_GROUP_STRUCTURE).default
             runLog.info(
-                "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
-                    value, newValue
+                "Unable to automatically convert the {} setting of {}. Defaulting to {}".format(
+                    CONF_GROUP_STRUCTURE, value, newValue
                 )
             )
 
-        inspector.cs = inspector.cs.modified(newSettings={"groupStructure": newValue})
+        inspector.cs = inspector.cs.modified(
+            newSettings={CONF_GROUP_STRUCTURE: newValue}
+        )
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["groupStructure"] not in GROUP_STRUCTURE,
+            lambda: inspector.cs[CONF_GROUP_STRUCTURE] not in GROUP_STRUCTURE,
             "The given group structure {0} was not recognized.".format(
-                inspector.cs["groupStructure"]
+                inspector.cs[CONF_GROUP_STRUCTURE]
             ),
             "Would you like to auto-correct the group structure value?",
             updateXSGroupStructure,
@@ -459,16 +466,18 @@ def getNeutronicsSettingValidators(inspector):
 
     def migrateDpaDpaXsSet():
         """pass-through to migrateDpa(), because Query functions cannot take arguements"""
-        migrateDpa("dpaXsSet")
+        migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
         """pass-through to migrateDpa(), because Query functions cannot take arguements"""
-        migrateDpa("gridPlateDpaXsSet")
+        migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["dpaXsSet"] in ("dpaHT9_33", "dpa_SS316"),
-            "It appears you are using a shortened version of the `dpaXsSet`.",
+            lambda: inspector.cs[CONF_DPA_XS_SET] in ("dpaHT9_33", "dpa_SS316"),
+            "It appears you are using a shortened version of the {0}.".format(
+                CONF_DPA_XS_SET
+            ),
             "Would you like to auto-correct this to the full name?",
             migrateDpaDpaXsSet,
         )
@@ -476,8 +485,11 @@ def getNeutronicsSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["gridPlateDpaXsSet"] in ("dpaHT9_33", "dpa_SS316"),
-            "It appears you are using a shortened version of the `gridPlateDpaXsSet`.",
+            lambda: inspector.cs[CONF_GRID_PLATE_DPA_XS_SET]
+            in ("dpaHT9_33", "dpa_SS316"),
+            "It appears you are using a shortened version of the {0}.".format(
+                CONF_GRID_PLATE_DPA_XS_SET
+            ),
             "Would you like to auto-correct this to the full name?",
             migrateDpaGridPlate,
         )
@@ -485,9 +497,10 @@ def getNeutronicsSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs["loadingFile"] and _blueprintsHasOldXSInput(inspector),
+            lambda: inspector.cs[CONF_LOADING_FILE]
+            and _blueprintsHasOldXSInput(inspector),
             "The specified blueprints input file '{0}' contains compound cross section settings. "
-            "".format(inspector.cs["loadingFile"]),
+            "".format(inspector.cs[CONF_LOADING_FILE]),
             "Automatically move them to the settings file, {}? WARNING: if multiple settings files point "
             "to this blueprints input you must manually update the others.".format(
                 inspector.cs.path
