@@ -438,7 +438,7 @@ def getNeutronicsSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            inspector.cs["groupStructure"] not in GROUP_STRUCTURE,
+            lambda: inspector.cs["groupStructure"] not in GROUP_STRUCTURE,
             "The given group structure {0} was not recognized.".format(
                 inspector.cs["groupStructure"]
             ),
