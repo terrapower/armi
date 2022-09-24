@@ -57,7 +57,8 @@ class Test_NeutronicsPlugin(TestPlugin):
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].geometry, "0D")
         fname = "test_setting_obj_io_.yaml"
         cs.writeToYamlFile(fname)
-        # TODO: Test SOMETHING in that file (AA, I guess).
+        outText = open(fname, "r").read()
+        self.assertIn("geometry: 0D", outText)
         os.remove(fname)
 
     def test_customSettingRoundTrip(self):
@@ -69,7 +70,9 @@ class Test_NeutronicsPlugin(TestPlugin):
         cs[CONF_CROSS_SECTION] = cs[CONF_CROSS_SECTION]
         fname = "test_setting_obj_io_round.yaml"
         cs.writeToYamlFile(fname)
-        # TODO: Test SOMETHING in that file (CONF_CROSS_SECTION, I guess).
+        outText = open(fname, "r").read()
+        self.assertIn("geometry: 0D", outText)
+        self.assertIn("geometry: 1D", outText)
         os.remove(fname)
 
     def test_neutronicsSettingsLoaded(self):
