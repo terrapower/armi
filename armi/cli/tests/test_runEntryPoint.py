@@ -42,6 +42,19 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         self.assertEqual(ci.name, "check-input")
         self.assertEqual(ci.settingsArgument, "optional")
 
+    def test_checkInputEntryPointInvoke(self):
+        ci = CheckInputEntryPoint()
+        ci.addOptions()
+        ci.parse_args(["/path/to/fake.yaml"])
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock._outputStream)
+
+            ci.invoke()
+
+            self.assertIn("/path/to/fake.yaml", mock._outputStream)
+            self.assertIn("input is self consistent", mock._outputStream)
+
 
 class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
