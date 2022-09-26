@@ -2251,6 +2251,9 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
+        nonUniformAssems = [
+            Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+        ]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2268,6 +2271,8 @@ class Core(composites.Composite):
                     reverse=True,
                 )[0]
                 for a in self.parent.blueprints.assemblies.values():
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
+                        continue
                     a.makeAxialSnapList(refAssem=finestMeshAssembly)
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
@@ -2283,6 +2288,8 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
+                        continue
                     a.makeAxialSnapList(self.refAssem)
             if not cs["inputHeightsConsideredHot"]:
                 runLog.header(
