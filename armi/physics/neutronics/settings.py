@@ -12,45 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Some generic neutronics-related settings."""
-from armi.settings import setting
-from armi.settings.settingsRules import include_as_rule
+"""Some generic neutronics-related settings"""
+import os
+
 from armi import runLog
+from armi.operators import settingsValidation
+from armi.physics.neutronics.const import NEUTRON
+from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
+from armi.scripts.migration.crossSectionBlueprintsToSettings import (
+    migrateCrossSectionsFromBlueprints,
+)
+from armi.settings import setting
+from armi.utils import directoryChangers
 
-from .const import NEUTRON
-from .const import NEUTRONGAMMA
-from .const import ALL
 
-from .energyGroups import getGroupStructure
-
-
-CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
-CONF_NEUTRONICS_TYPE = "neutronicsType"
-
-CONF_BOUNDARIES = "boundaries"
 CONF_BC_COEFFICIENT = "bcCoefficient"
+CONF_BOUNDARIES = "boundaries"
 CONF_DPA_PER_FLUENCE = "dpaPerFluence"
-CONF_GEN_XS = "genXS"  # gamma stuff and neutronics plugin/lattice physics
-CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
-CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_EIGEN_PROB = "eigenProb"
-CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
-CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
-CONF_RESTART_NEUTRONICS = "restartNeutronics"
-CONF_OUTERS_ = "outers"
-CONF_INNERS_ = "inners"
-
 CONF_EPS_EIG = "epsEig"
 CONF_EPS_FSAVG = "epsFSAvg"
 CONF_EPS_FSPOINT = "epsFSPoint"
+CONF_EXISTING_FIXED_SOURCE = "existingFixedSource"
+CONF_GEN_XS = "genXS"  # gamma stuff and neutronics plugin/lattice physics
+CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
+CONF_GROUP_STRUCTURE = "groupStructure"
+CONF_INNERS_ = "inners"
+CONF_LOADING_FILE = "loadingFile"
+CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
+CONF_NEUTRONICS_TYPE = "neutronicsType"
+CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
+CONF_OUTERS_ = "outers"
+CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
-# used for dpa/dose analysis. These should be relocated to more
-# design-specific places
-CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
-CONF_LOAD_PAD_LENGTH = "loadPadLength"
+# Used for dpa/dose analysis.
+# TODO: These should be relocated to more design-specific places
 CONF_ACLP_DOSE_LIMIT = "aclpDoseLimit"
 CONF_DPA_XS_SET = "dpaXsSet"
 CONF_GRID_PLATE_DPA_XS_SET = "gridPlateDpaXsSet"
+CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
+CONF_LOAD_PAD_LENGTH = "loadPadLength"
 
 CONF_OPT_DPA = [
     "",
@@ -78,6 +79,7 @@ CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
 
 
 def defineSettings():
+    """standard function to define settings - for neutronics"""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -258,7 +260,6 @@ def defineSettings():
             description="The cross sections to use when computing displacements per atom.",
             options=CONF_OPT_DPA,
         ),
-        # moved from XSsettings
         setting.Setting(
             CONF_CLEAR_XS,
             default=False,
@@ -342,251 +343,170 @@ def defineSettings():
     return settings
 
 
-# OLD STYLE settings rules from settingsRules.py. Prefer validators moving forward.
+def _blueprintsHasOldXSInput(inspector):
+    path = inspector.cs[CONF_LOADING_FILE]
+    with directoryChangers.DirectoryChanger(inspector.cs.inputDirectory):
+        with open(os.path.expandvars(path)) as f:
+            for line in f:
+                if line.startswith("cross sections:"):
+                    return True
+
+    return False
 
 
-@include_as_rule("genXS")
-def newGenXSOptions(_cs, name, value):
-    """
-    Set new values of 'genXS' setting based on previous setting values.
+def getNeutronicsSettingValidators(inspector):
+    """The standard helper method, to provide validators to neutronics settings"""
+    queries = []
 
-    Arguments
-    ---------
-    cs : setting object
-        ARMi object containing the default and user-specified settings.
+    def migrateXSOption(name0):
+        """
+        The `genXS` and `globalFluxActive` settings used to take True/False as inputs,
+        this helper method migrates those to the new values.
+        """
+        value = inspector.cs[name0]
+        if value == "True":
+            value = NEUTRON
+        elif value == "False":
+            value = ""
 
-    name : str
-        Setting name to be modified by this rule.
+        inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
-    value : str
-        Value of the setting identified by name.
+    def migrateXSOptionGenXS():
+        """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
+        migrateXSOption(CONF_GEN_XS)
 
-    Returns
-    -------
-    dict : dict
-        Updated setting name and or value.
-    """
-    if value == "True":
-        newValue = NEUTRON
-    elif value == "False":
-        newValue = ""
-    else:
-        newValue = value
+    def migrateXSOptionGlobalFluxActive():
+        """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
+        migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
-    if value != newValue:
-        runLog.info("The `genXS` setting has been set to {}.".format(newValue))
-    return {name: newValue}
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_GEN_XS] in ("True", "False"),
+            "The {0} setting cannot not take `True` or `False` as an exact value any more.",
+            'Would you like to auto-correct {0} to the correct value? ("" or {1})'.format(
+                CONF_GEN_XS, NEUTRON
+            ),
+            migrateXSOptionGenXS,
+        )
+    )
 
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_GLOBAL_FLUX_ACTIVE] in ("True", "False"),
+            "The {0} setting cannot not take `True` or `False` as an exact value any more.",
+            'Would you like to auto-correct {0} to the correct value? ("" or {1})'.format(
+                CONF_GLOBAL_FLUX_ACTIVE, NEUTRON
+            ),
+            migrateXSOptionGlobalFluxActive,
+        )
+    )
 
-@include_as_rule("existingFIXSRC")
-def newFixedSourceOption(cs, _name, value):
-    """
-    Migrate the deprecated setting 'existingFIXSRC' to 'existingFixedSource'.
-
-    Arguments
-    ---------
-    cs : setting object
-        ARMi object containing the default and user-specified settings.
-
-    name : str
-        Setting name to be modified by this rule.
-
-    value : str
-        Value of the setting identified by name.
-
-    Returns
-    -------
-    dict : dict
-        Updated setting name and or value.
-    """
-    newName = "existingFixedSource"
-    if value == "True":
-        newValue = "FIXSRC"
-    else:
-        newValue = ""
-
-    if value != newValue:
-        runLog.info(
-            "The `existingFixedSource` setting has been set to {} based on deprecated "
-            "`existingFIXSRC`.".format(newValue)
+    def migrateNormalBCSetting():
+        """The `boundary` setting is migrated from `Normal` to `Extrapolated`."""
+        inspector.cs = inspector.cs.modified(
+            newSettings={CONF_BOUNDARIES: "Extrapolated"}
         )
 
-    return {newName: newValue}
-
-
-@include_as_rule("boundaries")
-def migrateNormalBCSetting(_cs, name, value):
-    """
-    Boundary setting is migrated from `Normal` to `Extrapolated`.
-    """
-    newValue = value
-    if value == "Normal":
-        newValue = "Extrapolated"
-
-    return {name: newValue}
-
-
-@include_as_rule("asymptoticExtrapolationPowerIters")
-def deprecateAsymptoticExtrapolationPowerIters(_cs, _name, _value):
-    """
-    The setting `asymptoticExtrapolationPowerIters` has been deprecated and replaced by
-    three settings to remove confusion and ensure proper use.
-
-    The three new settings are:
-        - numOuterIterPriorAsympExtrap
-        - asympExtrapOfOverRelaxCalc
-        - asympExtrapOfNodalCalc
-    """
-    runLog.error(
-        "The setting `asymptoticExtrapolationPowerIters` has been deprecated and replaced "
-        "with `numOuterIterPriorAsympExtrap`, `asympExtrapOfOverRelaxCalc`, "
-        "`asympExtrapOfNodalCalc`. Please use these settings for intended behavior."
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_BOUNDARIES] == "Normal",
+            "The {0} setting now takes `Extrapolated` instead of `Normal` as a value.".format(
+                CONF_BOUNDARIES
+            ),
+            "Would you like to auto-correct {0} from `Normal` to `Extrapolated`?".format(
+                CONF_BOUNDARIES
+            ),
+            migrateNormalBCSetting,
+        )
     )
 
-    raise ValueError(
-        "Setting `asymptoticExtrapolationPowerIters` has been deprecated. "
-        "See stdout for more details."
-    )
+    def updateXSGroupStructure():
+        """Trying to migrate to a valid XS group structure name"""
+        value = inspector.cs[CONF_GROUP_STRUCTURE]
+        newValue = value.upper()
 
-
-@include_as_rule("groupStructure")
-def updateXSGroupStructure(cs, name, value):
-
-    try:
-        getGroupStructure(value)
-        return {name: value}
-    except KeyError:
-        try:
-            newValue = value.upper()
-            getGroupStructure(newValue)
+        if newValue in GROUP_STRUCTURE:
             runLog.info(
                 "Updating the cross section group structure from {} to {}".format(
                     value, newValue
                 )
             )
-            return {name: newValue}
-        except KeyError:
+        else:
+            newValue = inspector.cs.getSetting(CONF_GROUP_STRUCTURE).default
             runLog.info(
-                "Unable to automatically convert the `groupStructure` setting of {}. Defaulting to {}".format(
-                    value, cs.get("groupStructure").default
+                "Unable to automatically convert the {} setting of {}. Defaulting to {}".format(
+                    CONF_GROUP_STRUCTURE, value, newValue
                 )
             )
-            return {name: cs.get("groupStructure").default}
 
-
-def _migrateDpa(_cs, name, value):
-    newValue = value
-    if value == "dpaHT9_33":
-        newValue = "dpaHT9_ANL33_TwrBol"
-    elif value == "dpa_SS316":
-        newValue = "dpaSS316_ANL33_TwrBol"
-
-    return {name: newValue}
-
-
-@include_as_rule("gridPlateDpaXsSet")
-def migrateGridPlateDpa(_cs, name, value):
-    """Got more rigorous in dpa XS names."""
-    return _migrateDpa(_cs, name, value)
-
-
-@include_as_rule("dpaXsSet")
-def migrateDpaXs(_cs, name, value):
-    return _migrateDpa(_cs, name, value)
-
-
-@include_as_rule("saveNeutronicsOutputs")
-def resetNeutronicsOutputsToSaveAfterRename(_cs, _name, value):
-    """
-    Reset the values of 'saveNeutronicsOutputs' setting after it was migrated to 'neutronicsOutputsToSave'.
-
-    Arguments
-    ---------
-    cs : setting object
-        ARMi object containing the default and user-specified settings.
-
-    name : str
-        Setting name to be modified by this rule.
-
-    value : str
-        Value of the setting identified by name.
-
-    Returns
-    -------
-    dict : dict
-        Updated setting name and or value.
-    """
-    newName = "neutronicsOutputsToSave"
-    if value == "True":
-        newValue = ALL
-    elif value == "False":
-        newValue = ""
-
-    runLog.info(
-        "The `neutronicsOutputsToSave` setting has been set to {} based on deprecated "
-        "`saveNeutronicsOutputs`.".format(newValue)
-    )
-    return {newName: newValue}
-
-
-@include_as_rule("gammaTransportActive")
-def removeGammaTransportActive(cs, _name, value):
-    """
-    Remove 'gammaTransportActive' and set values of 'globalFluxActive' for the same functionality.
-
-    Arguments
-    ---------
-    cs : setting object
-        ARMi object containing the default and user-specified settings.
-
-    name : str
-        Setting name to be modified by this rule.
-
-    value : str
-        Value of the setting identified by name.
-    """
-    if value == "True":
-        newValue = NEUTRONGAMMA
-    elif value == "False":
-        newValue = NEUTRON
-
-    cs["globalFluxActive"] = newValue
-    runLog.info(
-        "The `globalFluxActive` setting has been set to {} based on deprecated "
-        "`gammaTransportActive`.".format(newValue)
-    )
-
-
-@include_as_rule("globalFluxActive")
-def newGlobalFluxOptions(_cs, name, value):
-    """
-    Set new values of 'globalFluxActive' setting based on previous setting values.
-
-    Arguments
-    ---------
-    cs : setting object
-        ARMi object containing the default and user-specified settings.
-
-    name : str
-        Setting name to be modified by this rule.
-
-    value : str
-        Value of the setting identified by name.
-
-    Returns
-    -------
-    dict : dict
-        Updated setting name and or value.
-    """
-    if value == "True":
-        newValue = NEUTRON
-    elif value == "False":
-        newValue = ""
-    else:
-        newValue = value
-
-    if value != newValue:
-        runLog.info(
-            "The `globalFluxActive` setting has been set to {}.".format(newValue)
+        inspector.cs = inspector.cs.modified(
+            newSettings={CONF_GROUP_STRUCTURE: newValue}
         )
-    return {name: newValue}
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_GROUP_STRUCTURE] not in GROUP_STRUCTURE,
+            "The given group structure {0} was not recognized.".format(
+                inspector.cs[CONF_GROUP_STRUCTURE]
+            ),
+            "Would you like to auto-correct the group structure value?",
+            updateXSGroupStructure,
+        )
+    )
+
+    def migrateDpa(name0):
+        """migrating some common shortened names for dpa XS sets"""
+        value = inspector.cs[name0]
+        if value == "dpaHT9_33":
+            value = "dpaHT9_ANL33_TwrBol"
+        elif value == "dpa_SS316":
+            value = "dpaSS316_ANL33_TwrBol"
+
+        inspector.cs = inspector.cs.modified(newSettings={name0: value})
+
+    def migrateDpaDpaXsSet():
+        """pass-through to migrateDpa(), because Query functions cannot take arguements"""
+        migrateDpa(CONF_DPA_XS_SET)
+
+    def migrateDpaGridPlate():
+        """pass-through to migrateDpa(), because Query functions cannot take arguements"""
+        migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_DPA_XS_SET] in ("dpaHT9_33", "dpa_SS316"),
+            "It appears you are using a shortened version of the {0}.".format(
+                CONF_DPA_XS_SET
+            ),
+            "Would you like to auto-correct this to the full name?",
+            migrateDpaDpaXsSet,
+        )
+    )
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_GRID_PLATE_DPA_XS_SET]
+            in ("dpaHT9_33", "dpa_SS316"),
+            "It appears you are using a shortened version of the {0}.".format(
+                CONF_GRID_PLATE_DPA_XS_SET
+            ),
+            "Would you like to auto-correct this to the full name?",
+            migrateDpaGridPlate,
+        )
+    )
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_LOADING_FILE]
+            and _blueprintsHasOldXSInput(inspector),
+            "The specified blueprints input file '{0}' contains compound cross section settings. "
+            "".format(inspector.cs[CONF_LOADING_FILE]),
+            "Automatically move them to the settings file, {}? WARNING: if multiple settings files point "
+            "to this blueprints input you must manually update the others.".format(
+                inspector.cs.path
+            ),
+            lambda: migrateCrossSectionsFromBlueprints(inspector.cs),
+        )
+    )
+
+    return queries

@@ -125,7 +125,6 @@ class Query:
                             raise KeyboardInterrupt
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
-
             except RunLogPromptUnresolvable:
                 self.autoResolved = False
                 self._passed = True
@@ -221,6 +220,7 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):

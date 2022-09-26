@@ -34,6 +34,7 @@ What's new in ARMI
 #. The ``newReports`` were moved into their final location in ``armi/bookkeeping/report/``.
 #. Refactored the ``UniformMeshGeometryConverter`` again to auto-detect if block-level parameters are scalar or array values and implemented a feature to optionally disable number density mapping.
 #. Remove ability for users to use separate blueprints in snapshot runs. They are only determined from database. (`PR#872 https://github.com/terrapower/armi/pull/872`)
+#. Removed the last usage of ``settingsRules``, so that everything can use ``settingsValidation`` now.
 #. TBD
 
 Bug fixes
