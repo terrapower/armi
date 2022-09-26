@@ -17,13 +17,14 @@ import io
 import sys
 import unittest
 
-from armi import cli, meta
+from armi import meta
+from armi.cli import ArmiCLI
 
 
 class TestRunSuiteSuite(unittest.TestCase):
     def test_listCommand(self):
         """Ensure run-suite entry point is registered."""
-        acli = cli.ArmiCLI()
+        acli = ArmiCLI()
 
         origout = sys.stdout
         try:
@@ -37,13 +38,11 @@ class TestRunSuiteSuite(unittest.TestCase):
 
     def test_showVersion(self):
         """Test the ArmiCLI.showVersion method"""
-        acli = cli.ArmiCLI()
-
         origout = sys.stdout
         try:
             out = io.StringIO()
             sys.stdout = out
-            acli.showVersion()
+            ArmiCLI.showVersion()
         finally:
             sys.stdout = origout
 

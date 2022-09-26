@@ -1428,7 +1428,8 @@ class FuelHandler:
         )
         return moves
 
-    def trackChain(self, moveList, startingAt, alreadyDone=None):
+    @staticmethod
+    def trackChain(moveList, startingAt, alreadyDone=None):
         r"""
         builds a chain of locations based on starting location
 
@@ -1604,7 +1605,7 @@ class FuelHandler:
 
             elif "SFP" in toLoc or "ExCore" in toLoc:
                 # discharge. Track chain.
-                chain, enrichList, assemType, loadAssemName = self.trackChain(
+                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(
                     moveList, startingAt=fromLoc
                 )
                 runLog.extra(
@@ -1629,7 +1630,7 @@ class FuelHandler:
                 continue
             else:
                 # normal move
-                chain, _enrichList, _assemType, _loadAssemName = self.trackChain(
+                chain, _enrichList, _assemType, _loadAssemName = FuelHandler.trackChain(
                     moveList, startingAt=fromLoc
                 )
                 loopChains.append(chain)

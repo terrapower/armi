@@ -146,7 +146,8 @@ class ArmiCLI:
 
         self.parser = parser
 
-    def showVersion(self):
+    @staticmethod
+    def showVersion():
         """Print the App name and version on the command line"""
         from armi import getApp  # pylint: disable=import-outside-toplevel
 
@@ -192,7 +193,7 @@ class ArmiCLI:
             self.listCommands()
             return 0
         elif args.version:
-            self.showVersion()
+            ArmiCLI.showVersion()
             return 0
         elif args.command == "help":
             self.parser.print_help()
