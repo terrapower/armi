@@ -118,7 +118,7 @@ class ReportInterface(interfaces.Interface):
 
     def interactEOL(self):
         """Adds the data to the report, and generates it"""
-        b = self.o.r.core.getFirstBlock(Flags.FUEL)
+        b = self.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
         dbi = self.o.getInterface("database")
