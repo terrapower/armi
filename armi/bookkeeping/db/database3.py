@@ -1017,7 +1017,8 @@ class Database3:
         exclude.add("layout")
         return (groupName + "/" + key for key in timeGroup.keys() if key not in exclude)
 
-    def getAuxiliaryDataPath(self, ts: Tuple[int, int], name: str) -> str:
+    @staticmethod
+    def getAuxiliaryDataPath(ts: Tuple[int, int], name: str) -> str:
         return getH5GroupName(*ts) + "/" + name
 
     def keys(self):
