@@ -20,12 +20,14 @@ import unittest
 
 from ruamel.yaml import YAML
 
+from armi.operators import settingsValidation
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
+    getNeutronicsSettingValidators,
 )
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
@@ -55,6 +57,8 @@ class Test_NeutronicsPlugin(TestPlugin):
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].geometry, "0D")
         fname = "test_setting_obj_io_.yaml"
         cs.writeToYamlFile(fname)
+        outText = open(fname, "r").read()
+        self.assertIn("geometry: 0D", outText)
         os.remove(fname)
 
     def test_customSettingRoundTrip(self):
@@ -66,6 +70,9 @@ class Test_NeutronicsPlugin(TestPlugin):
         cs[CONF_CROSS_SECTION] = cs[CONF_CROSS_SECTION]
         fname = "test_setting_obj_io_round.yaml"
         cs.writeToYamlFile(fname)
+        outText = open(fname, "r").read()
+        self.assertIn("geometry: 0D", outText)
+        self.assertIn("geometry: 1D", outText)
         os.remove(fname)
 
     def test_neutronicsSettingsLoaded(self):
@@ -89,18 +96,18 @@ class NeutronicsReactorTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directoryChanger.close()
 
+    @staticmethod
+    def __getModifiedSettings(customSettings):
+        cs = settings.Settings()
+
+        newSettings = {}
+        for key, val in customSettings.items():
+            newSettings[key] = val
+
+        return cs.modified(newSettings=newSettings)
+
     def test_kineticsParameterAssignment(self):
         """Test that the delayed neutron fraction and precursor decay constants are applied from settings."""
-
-        def _getModifiedSettings(customSettings):
-            cs = settings.Settings()
-
-            newSettings = {}
-            for key, val in customSettings.items():
-                newSettings[key] = val
-
-            return cs.modified(newSettings=newSettings)
-
         r = tests.getEmptyHexReactor()
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
@@ -109,7 +116,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Test that the group-wise beta and decay constants are assigned
         # together given that they are the same length.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={
                 "beta": [0.0] * 6,
                 "decayConstants": [1.0] * 6,
@@ -126,7 +133,7 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         # Test the assignment of total beta as a float
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={"beta": 0.00670},
         )
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -139,7 +146,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Test that nothing is assigned if the beta is specified as a list
         # without a corresponding decay constants list.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={
                 "beta": [0.0] * 6,
             },
@@ -155,7 +162,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Since beta is a list, ensure that it's assigned to the `betaComponents`
         # parameter.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={"beta": [0.0], "decayConstants": [1.0]},
         )
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -168,7 +175,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Test that decay constants are not assigned without a corresponding
         # group-wise beta input.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={"decayConstants": [1.0] * 6},
         )
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -182,7 +189,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # group-wise beta input. This also demonstrates that the total beta
         # is still assigned.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={"decayConstants": [1.0] * 6, "beta": 0.0},
         )
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -195,7 +202,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # Test the demonstrates that None values are acceptable
         # and that nothing is assigned.
         r = tests.getEmptyHexReactor()
-        cs = _getModifiedSettings(
+        cs = self.__getModifiedSettings(
             customSettings={"decayConstants": None, "beta": None},
         )
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -209,7 +216,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         # and group-wise beta are inconsistent sizes
         with self.assertRaises(ValueError):
             r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(
+            cs = self.__getModifiedSettings(
                 customSettings={"decayConstants": [1.0] * 6, "beta": [0.0]},
             )
             getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -220,12 +227,97 @@ class NeutronicsReactorTests(unittest.TestCase):
         # and group-wise beta are inconsistent sizes
         with self.assertRaises(ValueError):
             r = tests.getEmptyHexReactor()
-            cs = _getModifiedSettings(
+            cs = self.__getModifiedSettings(
                 customSettings={"decayConstants": [1.0] * 6, "beta": [0.0] * 5},
             )
             getPluginManagerOrFail().hook.onProcessCoreLoading(
                 core=r.core, cs=cs, dbLoad=dbLoad
             )
+
+    @staticmethod
+    def __autoCorrectAllQueries(settingsValidator):
+        """Force-Correct (resolve() to "YES") all queries in a Settings Validator"""
+        for query in settingsValidator:
+            try:
+                query.correction()
+            except FileNotFoundError:
+                # to make testing easier, let's ignore settings that require input files
+                pass
+
+    def test_neutronicsSettingsValidators(self):
+        # grab the neutronics validators
+        cs = settings.Settings()
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+        self.assertEqual(len(sv), 7)
+
+        # Test the Query: boundaries are now "Extrapolated", not "Normal"
+        cs = cs.modified(newSettings={"boundaries": "Normal"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["boundaries"], "Extrapolated")
+
+        # Test the Query: genXS are no longer True/False
+        cs = cs.modified(newSettings={"genXS": "True"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["genXS"], "Neutron")
+
+        cs = cs.modified(newSettings={"genXS": "False"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["genXS"], "")
+
+        # Test the Query: globalFluxActive are no longer True/False
+        cs = cs.modified(newSettings={"globalFluxActive": "True"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["globalFluxActive"], "Neutron")
+
+        cs = cs.modified(newSettings={"globalFluxActive": "False"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["globalFluxActive"], "")
+
+        # Test the Query: try to migrate the Group Structure name
+        cs = cs.modified(newSettings={"groupStructure": "armi45"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["groupStructure"], "ARMI45")
+
+        cs = cs.modified(newSettings={"groupStructure": "bad_value"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["groupStructure"], "ANL33")
+
+        # Test the Query: migrating some common shortened names for dpa XS sets
+        cs = cs.modified(newSettings={"dpaXsSet": "dpaHT9_33"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["dpaXsSet"], "dpaHT9_ANL33_TwrBol")
+
+        cs = cs.modified(newSettings={"gridPlateDpaXsSet": "dpa_SS316"})
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(inspector.cs["gridPlateDpaXsSet"], "dpaSS316_ANL33_TwrBol")
 
 
 if __name__ == "__main__":
