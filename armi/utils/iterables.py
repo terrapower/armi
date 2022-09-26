@@ -237,6 +237,7 @@ class Sequence:
         self.extend([item])
 
     def __radd__(self, other):
+        """s1 += s2"""
         new = Sequence(other)
         new += Sequence(self)
         return new
