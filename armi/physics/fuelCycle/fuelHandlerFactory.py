@@ -82,4 +82,5 @@ def fuelHandlerFactory(operator):
                     fuelHandlerModulePath, fuelHandlerClassName, cs.inputDirectory
                 )
             )
+
     return fuelHandler
