@@ -59,7 +59,6 @@ class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
     --------
     armi.operators.operator.Operator.createInterfaces
     armi.physics.neutronics.globalFlux.globalFluxInterface.ORDER
-
     """
 
     BEFORE = -0.1

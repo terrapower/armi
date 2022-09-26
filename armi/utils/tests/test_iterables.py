@@ -85,6 +85,23 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
         return timeDelta
 
+    def test_sequenceInit(self):
+        # init an empty sequence
+        s = iterables.Sequence()
+        for item in s:
+            self.assertTrue(False, "This shouldn't happen.")
+
+        # init a sequence with another sequence
+        example = [1, 2, 3]
+        s2 = iterables.Sequence(example)
+        s3 = iterables.Sequence(s2)
+
+        i = 0
+        for item in s3:
+            i += 1
+
+        self.assertEqual(i, len(example))
+
     def test_sequence(self):
         # sequentially using methods in the usual way
         s = iterables.Sequence(range(1000000))
@@ -114,6 +131,52 @@ class TestIterables(unittest.TestCase):
         s.transform(lambda i: i * 10)
         result = tuple(s)
         self.assertEqual(result, ())
+
+    def test_copySequence(self):
+        s = iterables.Sequence(range(4, 8))
+        sCopy = s.copy()
+
+        vals = [item for item in sCopy]
+        self.assertEqual(vals[0], 4)
+        self.assertEqual(vals[-1], 7)
+        self.assertEqual(len(vals), 4)
+
+    def test_extendSequence(self):
+        s = iterables.Sequence(range(3))
+        ex = range(3, 8)
+        s.extend(ex)
+
+        vals = [item for item in s]
+        self.assertEqual(vals[0], 0)
+        self.assertEqual(vals[-1], 7)
+        self.assertEqual(len(vals), 8)
+
+    def test_appendSequence(self):
+        s = iterables.Sequence(range(3))
+        s.extend([999])
+
+        vals = [item for item in s]
+        self.assertEqual(vals[0], 0)
+        self.assertEqual(vals[-1], 999)
+        self.assertEqual(len(vals), 4)
+
+    def test_addingSequences(self):
+        s1 = iterables.Sequence(range(3))
+        s2 = iterables.Sequence(range(3, 6))
+
+        s3 = s1 + s2
+
+        vals = [item for item in s3]
+        self.assertEqual(vals[0], 0)
+        self.assertEqual(vals[-1], 5)
+        self.assertEqual(len(vals), 6)
+
+        s1 += s2
+
+        vals = [item for item in s1]
+        self.assertEqual(vals[0], 0)
+        self.assertEqual(vals[-1], 5)
+        self.assertEqual(len(vals), 6)
 
 
 if __name__ == "__main__":

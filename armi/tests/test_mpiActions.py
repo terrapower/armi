@@ -17,6 +17,7 @@
 import unittest
 
 from armi.mpiActions import (
+    _diagnosePickleError,
     DistributeStateAction,
     DistributionAction,
     MpiAction,
@@ -24,6 +25,7 @@ from armi.mpiActions import (
 )
 from armi import context
 from armi.reactor.tests import test_reactors
+from armi.tests import mockRunLogs
 from armi.tests import TEST_ROOT
 from armi.utils import iterables
 
@@ -133,6 +135,27 @@ class MpiIterTests(unittest.TestCase):
         results = runActions(objs, r, o.cs, [act])
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
+
+    def test_diagnosePickleErrorTestReactor(self):
+        """Run _diagnosePickleError() on the test reactor.
+        We expect this to run all the way through the pickle diagnoser,
+        because the test reactor should be easily picklable.
+        """
+        o, _ = test_reactors.loadTestReactor(TEST_ROOT)
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock._outputStream)
+
+            # Run the diagnosis on the test reactor
+            _diagnosePickleError(o)
+
+            # Hopefully, the test reactor can be pickled, and we get no errors
+            self.assertIn("Pickle Error Detection", mock._outputStream)
+            self.assertIn("Scanning the Reactor", mock._outputStream)
+            self.assertIn("Scanning all assemblies", mock._outputStream)
+            self.assertIn("Scanning all blocks", mock._outputStream)
+            self.assertIn("Scanning blocks by name", mock._outputStream)
+            self.assertIn("Scanning the ISOTXS library", mock._outputStream)
 
 
 def passer():

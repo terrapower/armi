@@ -686,7 +686,7 @@ def _diagnosePickleError(o):
     runLog.info("Scanning the Reactor for pickle errors")
     checker(o.r)
 
-    runLog.info("Scanning All assemblies for pickle errors")
+    runLog.info("Scanning all assemblies for pickle errors")
     for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
         checker(a)
 

@@ -117,6 +117,7 @@ class CheckInputEntryPoint(EntryPoint):
             hasIssues = "UNKNOWN"
             if not self.args.skip_checks:
                 hasIssues = "PASSED" if case.checkInputs() else "HAS ISSUES"
+
             try:
                 if self.args.generate_design_summary:
                     case.summarizeDesign()
