@@ -273,13 +273,14 @@ class SettingsWriter:
         medium = "medium"
         full = "full"
 
-    def __init__(self, settings_instance, style="short", originalSettingsNames=None):
+    def __init__(self, settings_instance, style="short", settingsSetByUser=None):
         self.cs = settings_instance
         self.style = style
         if style not in {self.Styles.short, self.Styles.medium, self.Styles.full}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
-        # The writer should know about the old settings it is overwriting, sometimes
-        self.originalSettingsNames = originalSettingsNames
+        # The writer should know about the old settings it is overwriting,
+        # but only sometimes (when the style is medium)
+        self.settingsSetByUser = settingsSetByUser
 
     @staticmethod
     def _getVersion():
@@ -331,7 +332,7 @@ class SettingsWriter:
             if (
                 self.style == self.Styles.medium
                 and not settingObject.offDefault
-                and _settingName not in self.originalSettingsNames
+                and _settingName not in self.settingsSetByUser
             ):
                 continue
 

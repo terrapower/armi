@@ -369,14 +369,14 @@ class Settings:
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
-            originalSettings = self.getOriginalCaseSettings(self.path)
+            settingsSetByUser = self.getSettingsSetByUser(self.path)
         else:
-            originalSettings = None
+            settingsSetByUser = None
         with open(self.path, "w") as stream:
-            writer = self.writeToYamlStream(stream, style, originalSettings)
+            writer = self.writeToYamlStream(stream, style, settingsSetByUser)
         return writer
 
-    def getOriginalCaseSettings(self, fPath):
+    def getSettingsSetByUser(self, fPath):
         """
         Grabs the list of settings in the user-defined input file so that the settings
         can be tracked outside of a Settings Object
@@ -388,8 +388,8 @@ class Settings:
 
         Returns
         -------
-        list(originalSettings.keys()) : list
-            The keys of the settings read in from a yaml settings file
+        userSettingsNames : list
+            The settings names read in from a yaml settings file
         """
         from ruamel.yaml import YAML
 
@@ -398,10 +398,11 @@ class Settings:
         with open(fPath, "r") as stream:
             yaml = YAML()
             tree = yaml.load(stream)
-            originalSettings = tree[settingsIO.Roots.CUSTOM]
-        return list(originalSettings.keys())
+            userSettings = tree[settingsIO.Roots.CUSTOM]
+        userSettingsNames = list(userSettings.keys())
+        return userSettingsNames
 
-    def writeToYamlStream(self, stream, style="short", originalSettingsNames=None):
+    def writeToYamlStream(self, stream, style="short", settingsSetByUser=None):
         """
         Write settings in yaml format to an arbitrary stream.
 
@@ -413,8 +414,8 @@ class Settings:
         style : str
             Writing style for settings file. Can be short, medium, or full.
 
-        originalSettingsNames : list
-            List of settings names in original settings file
+        settingsSetByUser : list
+            List of settings names in user-defined settings file
 
 
         Returns
@@ -422,7 +423,7 @@ class Settings:
         writer : SettingsWriter object
         """
         writer = settingsIO.SettingsWriter(
-            self, style=style, originalSettingsNames=originalSettingsNames
+            self, style=style, settingsSetByUser=settingsSetByUser
         )
         writer.writeYaml(stream)
         return writer
