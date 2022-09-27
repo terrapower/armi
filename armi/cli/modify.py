@@ -65,7 +65,8 @@ class ModifyCaseSettingsCommand(EntryPoint):
             "--style",
             type=str,
             default="short",
-            help="Writing style for settings writer. Can be short, medium, or full",
+            help="Writing style for settings writer.",
+            choices=["short", "medium", "full"],
         )
         self.parser.add_argument(
             "patterns",
