@@ -371,7 +371,7 @@ class Settings:
         if style == "medium":
             settingsSetByUser = self.getSettingsSetByUser(self.path)
         else:
-            settingsSetByUser = None
+            settingsSetByUser = []
         with open(self.path, "w") as stream:
             writer = self.writeToYamlStream(stream, style, settingsSetByUser)
         return writer
@@ -402,7 +402,7 @@ class Settings:
         userSettingsNames = list(userSettings.keys())
         return userSettingsNames
 
-    def writeToYamlStream(self, stream, style="short", settingsSetByUser=None):
+    def writeToYamlStream(self, stream, style="short", settingsSetByUser=[]):
         """
         Write settings in yaml format to an arbitrary stream.
 

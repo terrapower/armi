@@ -273,7 +273,7 @@ class SettingsWriter:
         medium = "medium"
         full = "full"
 
-    def __init__(self, settings_instance, style="short", settingsSetByUser=None):
+    def __init__(self, settings_instance, style="short", settingsSetByUser=[]):
         self.cs = settings_instance
         self.style = style
         if style not in {self.Styles.short, self.Styles.medium, self.Styles.full}:
