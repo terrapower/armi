@@ -28,8 +28,7 @@ which block is to be deemed **representative** of an entire set of blocks in a p
 Then the representative block is sent to a lattice physics kernel for actual physics
 calculations.
 
-Generally, the cross section manager is a attribute of the lattice physics code interface (e.g.
-the :py:mod:`~terrapower.physics.neutronics.mc2.mc2Interface`.
+Generally, the cross section manager is a attribute of the lattice physics code interface
 
 Examples
 --------
@@ -191,11 +190,7 @@ class BlockCollection(list):
         .. math::
              T = \frac{\sum{n_i v_i T_i}}{\sum{n_i v_i}}
 
-        where :math:`n_i` is a number density, :math:`v_i` is a volume, and :math:`T_i` is a temperature.
-
-        See Also
-        --------
-        terrapower.physics.neutronics.mc2.mc2Writers.Mc2Writer._getAllNuclideDensities : uses these values
+        where :math:`n_i` is a number density, :math:`v_i` is a volume, and :math:`T_i` is a temperature
         """
         self.avgNucTemperatures = {}
         nvt, nv = self._getNucTempHelper()
