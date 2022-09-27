@@ -309,10 +309,6 @@ def getXYLineParameters(theta, x=0, y=0):
     D : float
         line coefficient
 
-    See Also
-    --------
-    terrapower.physics.neutronics.mcnp.mcnpInterface.getSenseWrtTheta
-
     Notes
     -----
     the line is in the form of A*x + B*y + C*z - D = 0 -- this corresponds to a MCNP arbitrary line equation

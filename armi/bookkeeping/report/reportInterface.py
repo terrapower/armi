@@ -164,23 +164,6 @@ class ReportInterface(interfaces.Interface):
     # --------------------------------------------
     def writeRunSummary(self):
         """Make a summary of the run"""
-        opt = self.o.getInterface("optimize")
-        if opt is None:
-            # The opitimization interface has some good reports that we want, even if we
-            # were not running with the optimization interface active. Try to make one.
-            # This is a proprietary plugin, and may not be present, so protect with a
-            # try/except. When the report system gets more attention and becomes more
-            # extensible in the future this will no longer be necessary
-            try:
-                from terrapower.physics.optimize import optimizationInterface
-            except ModuleNotFoundError:
-                return
-
-            opt = optimizationInterface.OptimizationInterface(self.r, self.cs)
-            self.o.addInterface(opt, enabled=False)
-            opt.interactInit()
-            opt.updateDependentVariables()
-            opt.writeOptimizationResults("{0}.optResults.dat".format(self.cs.caseTitle))
-
-        self.r.core.sfp.report()  # spent fuel pool report
+        # spent fuel pool report
+        self.r.core.sfp.report()
         self.r.core.sfp.count()
