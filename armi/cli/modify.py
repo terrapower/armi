@@ -62,10 +62,10 @@ class ModifyCaseSettingsCommand(EntryPoint):
             help="A root directory in which to search for settings files, e.g., armi/tests.",
         )
         self.parser.add_argument(
-            "--style",
+            "--settingsWriteStyle",
             type=str,
             default="short",
-            help="Writing style for settings writer.",
+            help="Writing style for which settings get written back to the settings files.",
             choices=["short", "medium", "full"],
         )
         self.parser.add_argument(
@@ -113,7 +113,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
                 inspector.run()
 
             if not self.args.list_setting_files:
-                cs.writeToYamlFile(cs.path, style=self.args.style)
+                cs.writeToYamlFile(cs.path, style=self.args.settingsWriteStyle)
 
         runLog.important(
             "Finished {} {} settings files.".format(messages[1], len(csInstances))
