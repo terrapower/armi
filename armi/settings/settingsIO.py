@@ -255,10 +255,12 @@ class SettingsReader:
 class SettingsWriter:
     """Writes settings out to files.
 
-    This can write in two styles:
+    This can write in three styles:
 
     short
         setting values that are not their defaults only
+    medium
+        preserves all settings originally in file even if they match the default value
     full
         all setting values regardless of default status
 
@@ -268,13 +270,16 @@ class SettingsWriter:
         """Enumeration of valid output styles"""
 
         short = "short"
+        medium = "medium"
         full = "full"
 
-    def __init__(self, settings_instance, style="short"):
+    def __init__(self, settings_instance, style="short", originalSettingsNames=None):
         self.cs = settings_instance
         self.style = style
-        if style not in {self.Styles.short, self.Styles.full}:
+        if style not in {self.Styles.short, self.Styles.medium, self.Styles.full}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
+        # The writer should know about the old settings it is overwriting, sometimes
+        self.originalSettingsNames = originalSettingsNames
 
     @staticmethod
     def _getVersion():
@@ -321,6 +326,13 @@ class SettingsWriter:
             sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
             if self.style == self.Styles.short and not settingObject.offDefault:
+                continue
+
+            if (
+                self.style == self.Styles.medium
+                and not settingObject.offDefault
+                and _settingName not in self.originalSettingsNames
+            ):
                 continue
 
             attribs = settingObject.getCustomAttributes().items()
