@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""
+A place for additional functionality associated with the translation of assemblies. 
+Typically these functions are utilized by a FuelHandler, including preprocessing 
+user inputs to generate universal shuffle pattern data structures.
+"""
 import json
 import math
 import numpy
