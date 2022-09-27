@@ -357,7 +357,7 @@ class Settings:
 
         Notes
         -----
-        This resets the current CS's path to the newly written path.
+        This resets the current CS's path to the newly written absolute path.
 
         Parameters
         ----------
@@ -368,13 +368,62 @@ class Settings:
             the current state of settings
         """
         self.path = pathTools.armiAbsPath(fName)
+        if style == "medium":
+            originalSettings = self.getOriginalCaseSettings(self.path)
+        else:
+            originalSettings = None
         with open(self.path, "w") as stream:
-            writer = self.writeToYamlStream(stream, style)
+            writer = self.writeToYamlStream(stream, style, originalSettings)
         return writer
 
-    def writeToYamlStream(self, stream, style="short"):
-        """Write settings in yaml format to an arbitrary stream."""
-        writer = settingsIO.SettingsWriter(self, style=style)
+    def getOriginalCaseSettings(self, fPath):
+        """
+        Grabs the list of settings in the user-defined input file so that the settings
+        can be tracked outside of a Settings Object
+
+        Parameters
+        ----------
+        fPath : str
+            The absolute file path of the settings file
+
+        Returns
+        -------
+        list(originalSettings.keys()) : list
+            The keys of the settings read in from a yaml settings file
+        """
+        from ruamel.yaml import YAML
+
+        # We do not want to load these as settings, but just grab the dictionary straight
+        # from the settings file to know which settings are user-defined
+        with open(fPath, "r") as stream:
+            yaml = YAML()
+            tree = yaml.load(stream)
+            originalSettings = tree[settingsIO.Roots.CUSTOM]
+        return list(originalSettings.keys())
+
+    def writeToYamlStream(self, stream, style="short", originalSettingsNames=None):
+        """
+        Write settings in yaml format to an arbitrary stream.
+
+        Parameters
+        ----------
+        stream : file object
+            Write-only file stream
+
+        style : str
+            Writing style for settings file. Can be short, medium, or full.
+
+        originalSettingsNames : list
+            List of settings names in original settings file
+
+
+        Returns
+        -------
+        writer : SettingsWriter object
+        """
+        writer = settingsIO.SettingsWriter(
+            self, style=style, originalSettingsNames=originalSettingsNames
+        )
         writer.writeYaml(stream)
         return writer
 
