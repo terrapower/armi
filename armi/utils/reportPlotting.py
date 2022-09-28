@@ -285,7 +285,7 @@ def xsHistoryVsTime(reactor, history, buGroups, extension=None):
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
-    if nothistory.xsHistory:
+    if not history.xsHistory:
         return
 
     colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
