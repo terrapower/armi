@@ -32,9 +32,6 @@ class TestInspector(unittest.TestCase):
         )
         self.inspector.queries = []  # clear out the auto-generated ones
 
-    def tearDown(self):
-        pass
-
     def test_query(self):
         buh = {1: 2, 3: 4}
 
@@ -57,7 +54,7 @@ class TestInspector(unittest.TestCase):
 
     def test_changeOfCS(self):
         self.inspector.addQuery(
-            lambda: self.inspector.cs["runType"] == "banane",  # german for banana
+            lambda: self.inspector.cs["runType"] == "banane",
             "babababa",
             "",
             self.inspector.NO_ACTION,
@@ -74,9 +71,7 @@ class TestInspector(unittest.TestCase):
         self.assertIsNone(self.inspector.NO_ACTION())
 
     def test_nonCorrectiveQuery(self):
-        self.inspector.addQuery(
-            lambda: True, "babababa", "", self.inspector.NO_ACTION  # dutch for false
-        )
+        self.inspector.addQuery(lambda: True, "babababa", "", self.inspector.NO_ACTION)
         self.inspector.run()
 
     def test_callableCorrectionCheck(self):
@@ -118,6 +113,28 @@ class TestInspector(unittest.TestCase):
 
         self.assertEqual(self.inspector.cs["nCycles"], 1)
         self.assertEqual(self.inspector.cs["burnSteps"], 0)
+
+    def test_checkForBothSimpleAndDetailedCyclesInputs(self):
+        self.inspector._assignCS(
+            "cycles",
+            [
+                {"cumulative days": [1, 2, 3]},
+                {"cycle length": 1},
+                {"step days": [3, 3, 3]},
+            ],
+        )
+        self.assertFalse(self.inspector._checkForBothSimpleAndDetailedCyclesInputs())
+
+        self.inspector._assignCS(
+            "cycles",
+            [
+                {"cumulative days": [1, 2, 3]},
+                {"cycle length": 1},
+                {"step days": [3, 3, 3]},
+            ],
+        )
+        self.inspector._assignCS("cycleLength", 666)
+        self.assertTrue(self.inspector._checkForBothSimpleAndDetailedCyclesInputs())
 
 
 if __name__ == "__main__":

@@ -30,7 +30,6 @@ from armi import runLog
 from armi.meta import __version__ as version
 from armi import context
 from armi.settings.setting import Setting
-from armi.settings import settingsRules
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
     SettingException,
@@ -239,37 +238,18 @@ class SettingsReader:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
     def _applySettings(self, name, val):
+        """Add a setting, if it is valid. Capture invalid settings."""
         nameToSet, _wasRenamed = self._renamer.renameSetting(name)
-        settingsToApply = self.applyConversions(nameToSet, val)
-        for settingName, value in settingsToApply.items():
-            if settingName not in self.cs:
-                self.invalidSettings.add(settingName)
-            else:
-                # apply validations
-                _settingObj = self.cs.getSetting(settingName)
 
-                # The value is automatically coerced into the expected type
-                # when set using either the default or user-defined schema
-                self.cs[settingName] = value
+        if name not in self.cs:
+            self.invalidSettings.add(name)
+        else:
+            # apply validations
+            _settingObj = self.cs.getSetting(name)
 
-    def applyConversions(self, name, value):
-        """
-        Applies conversion rules to give special behavior to certain named settings.
-
-        Intended to be applied on setting names and attributes as soon as they're read
-        in keep in mind everything in the attributes dictionary is still a string even
-        if it's intended to be something else later, that happens at a later stage.
-        """
-        # general needs to come first for things like renaming.
-        settingsToApply = {}
-        for func in settingsRules.GENERAL_CONVERSIONS:
-            settingsToApply.update(func(self.cs, name, value))
-
-        func = settingsRules.TARGETED_CONVERSIONS.get(name, None)
-        if func is not None:
-            settingsToApply.update(func(self.cs, name, value))
-
-        return settingsToApply
+            # The val is automatically coerced into the expected type
+            # when set using either the default or user-defined schema
+            self.cs[name] = val
 
 
 class SettingsWriter:

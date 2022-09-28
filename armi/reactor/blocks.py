@@ -1324,7 +1324,6 @@ class Block(composites.Composite):
         See Also
         --------
         armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxInterface.updateFluenceAndDPA : uses this
-        terrapower.physics.neutronics.depletion.depletion.DepletionInterface._updateBlockParametersAfterDepletion : also uses this
         """
         burnupPeakingFactor = settings.getMasterCs()["burnupPeakingFactor"]
         if not burnupPeakingFactor and self.p.fluxPeak:

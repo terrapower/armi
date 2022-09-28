@@ -15,6 +15,8 @@
 Test for run cli entry point
 """
 # pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
+from shutil import copyfile
+import os
 import sys
 import unittest
 
@@ -30,7 +32,8 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.tests import mockRunLogs
+from armi.tests import mockRunLogs, TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCheckInputEntryPoint(unittest.TestCase):
@@ -41,6 +44,19 @@ class TestCheckInputEntryPoint(unittest.TestCase):
 
         self.assertEqual(ci.name, "check-input")
         self.assertEqual(ci.settingsArgument, "optional")
+
+    def test_checkInputEntryPointInvoke(self):
+        ci = CheckInputEntryPoint()
+        ci.addOptions()
+        ci.parse_args(["/path/to/fake.yaml"])
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock._outputStream)
+
+            ci.invoke()
+
+            self.assertIn("/path/to/fake.yaml", mock._outputStream)
+            self.assertIn("input is self consistent", mock._outputStream)
 
 
 class TestCloneArmiRunCommandBatch(unittest.TestCase):
@@ -169,6 +185,25 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
         self.assertEqual(mcs.name, "modify")
         self.assertEqual(mcs.args.rootDir, "/path/to/")
         self.assertEqual(mcs.args.patterns, ["fake.yaml"])
+
+    def test_modifyCaseSettingsCommandInvoke(self):
+        mcs = ModifyCaseSettingsCommand()
+        mcs.addOptions()
+
+        with TemporaryDirectoryChanger():
+            # copy over settings files
+            for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
+                copyfile(os.path.join(TEST_ROOT, fileName), fileName)
+
+            # pass in --numProcessors=333
+            mcs.parse_args(["--numProcessors=333", "--rootDir", ".", "armiRun.yaml"])
+
+            # invoke the CLI
+            mcs.invoke()
+
+            # validate the change to numProcessors was made
+            txt = open("armiRun.yaml", "r").read()
+            self.assertIn("numProcessors: 333", txt)
 
 
 class TestReportsEntryPoint(unittest.TestCase):

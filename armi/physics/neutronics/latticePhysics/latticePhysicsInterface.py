@@ -282,10 +282,6 @@ class LatticePhysicsInterface(interfaces.Interface):
             A list of what this specific writer instance returns for each representative block.
             It is the responsibility of the subclassed interface to implement.
             In many cases, it is the executing agent.
-
-        See Also
-        --------
-        terrapower.physics.neutronics.mc2.mc2Writers.Mc2V2Writer.write
         """
         returnedFromWriters = []
         baseList = set(baseList or [])

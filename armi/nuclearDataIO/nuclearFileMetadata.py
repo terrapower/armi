@@ -127,9 +127,8 @@ class _Metadata:
             mergedData[key] = mergedVal
         return mergedData
 
-    def _getSkippedKeys(
-        self, other, selfContainer, otherContainer, mergedData
-    ):  # pylint: disable=unused-argument
+    # pylint: disable=unused-argument, no-self-use
+    def _getSkippedKeys(self, other, selfContainer, otherContainer, mergedData):
         return set()
 
     def _mergeLibrarySpecificData(

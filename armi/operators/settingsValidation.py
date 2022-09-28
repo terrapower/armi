@@ -125,7 +125,6 @@ class Query:
                             raise KeyboardInterrupt
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
-
             except RunLogPromptUnresolvable:
                 self.autoResolved = False
                 self._passed = True
@@ -221,6 +220,7 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
@@ -315,8 +315,38 @@ class Inspector:
         self._assignCS("availabilityFactors", None)
         self._assignCS("cycles", [])
 
-    def _setBurnStepsToFour(self):
-        self._assignCS("burnSteps", 4)
+    def _checkForBothSimpleAndDetailedCyclesInputs(self):
+        """
+        Because the only way to check if a setting has been "entered" is to check
+        against the default, if the user specifies all the simple cycle settings
+        _exactly_ as the defaults, this won't be caught. But, it would be very
+        coincidental for the user to _specify_ all the default values when
+        performing any real analysis, so whatever.
+
+        Also, we must bypass the `Settings` getter and reach directly
+        into the underlying `__settings` dict to avoid triggering an error
+        at this stage in the run. Otherwise an error will inherently be raised
+        if the detailed cycles input is used because the simple cycles inputs
+        have defaults. We don't care that those defaults are there, we only
+        have a problem with those defaults being _used_, which will be caught
+        later on.
+        """
+        bothCyclesInputTypesPresent = (
+            self.cs._Settings__settings["cycleLength"].value
+            != self.cs._Settings__settings["cycleLength"].default
+            or self.cs._Settings__settings["cycleLengths"].value
+            != self.cs._Settings__settings["cycleLengths"].default
+            or self.cs._Settings__settings["burnSteps"].value
+            != self.cs._Settings__settings["burnSteps"].default
+            or self.cs._Settings__settings["availabilityFactor"].value
+            != self.cs._Settings__settings["availabilityFactor"].default
+            or self.cs._Settings__settings["availabilityFactors"].value
+            != self.cs._Settings__settings["availabilityFactors"].default
+            or self.cs._Settings__settings["powerFractions"].value
+            != self.cs._Settings__settings["powerFractions"].default
+        ) and self.cs["cycles"] != []
+
+        return bothCyclesInputTypesPresent
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
@@ -483,29 +513,8 @@ class Inspector:
             self._correctCyclesToZeroBurnup,
         )
 
-        def _checkForBothSimpleAndDetailedCyclesInputs():
-            """
-            Note that we must bypass the `Settings` getter and reach directly
-            into the underlying `__settings` dict to avoid triggering an error
-            at this stage in the run. Otherwise an error will inherently be raised
-            if the detailed cycles input is used because the simple cycles inputs
-            have defaults. We don't care that those defaults are there, we only
-            have a problem with those defaults being _used_, which will be caught
-            later on.
-            """
-            bothCyclesInputTypesPresent = (
-                self.cs._Settings__settings["cycleLength"]
-                or self.cs._Settings__settings["cycleLengths"]
-                or self.cs._Settings__settings["burnSteps"]
-                or self.cs._Settings__settings["availabilityFactor"]
-                or self.cs._Settings__settings["availabilityFactors"]
-                or self.cs._Settings__settings["powerFractions"]
-            ) and self.cs["cycles"] != []
-
-            return bothCyclesInputTypesPresent
-
         self.addQuery(
-            _checkForBothSimpleAndDetailedCyclesInputs,
+            self._checkForBothSimpleAndDetailedCyclesInputs,
             "If specifying detailed cycle history with `cycles`, you may not"
             " also use any of the simple cycle history inputs `cycleLength(s)`,"
             " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`."
