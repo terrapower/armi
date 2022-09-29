@@ -44,7 +44,7 @@ from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor.flags import Flags
 
 
-def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
+def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None):
     """
     Generates a set of plots useful in reactor analysis given a populated reactor.
 
@@ -62,8 +62,9 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
     extension : str, optional
         The file extention for saving plots
 
+    history: armi.bookkeeping.historyTracker.HistoryTrackerInterface object
+        The history tracker interface
     """
-    dbi = reactor.o.getInterface("database")
     try:
         data = dbi.getHistory(
             reactor, params=["cycle", "time", "eFeedMT", "eSWU", "eFuelCycleCost"]
@@ -113,8 +114,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
         extension=extension,
     )
     buVsTime(reactor, scalars, extension=extension)
-    distortionVsTime(reactor, scalars, extension=extension)
-    xsHistoryVsTime(reactor, buGroups, extension=extension)
+    xsHistoryVsTime(reactor, history, buGroups, extension=extension)
     movesVsCycle(reactor, scalars, extension=extension)
 
 
@@ -146,7 +146,6 @@ def valueVsTime(reactor, x, y, key, yaxis, title, ymin=None, extension=None):
         it will be ignored.
     extension : str, optional
         The file extention for saving the figure
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -229,7 +228,6 @@ def buVsTime(reactor, scalars, extension=None):
 
     extension : str, optional
         The file extention for saving the figure
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -243,6 +241,7 @@ def buVsTime(reactor, scalars, extension=None):
         )
         plt.close(1)
         return
+
     plt.plot(scalars["time"], scalars["maxBuF"], ".-", label="Feed")
     plt.xlabel("Time (yr)")
     plt.ylabel("BU (%FIMA)")
@@ -255,6 +254,7 @@ def buVsTime(reactor, scalars, extension=None):
         plt.legend(loc="lower right")
         plt.ylabel("dpa")
         title += " and DPA"
+
     title += " for " + reactor.name
 
     plt.title(title)
@@ -266,48 +266,28 @@ def buVsTime(reactor, scalars, extension=None):
     report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
-def distortionVsTime(reactor, scalars, extension=None):
-    r"""plots max distortion vs. time if the distortion interface is attached"""
-    dd = reactor.o.getInterface("ductDistortion")
-    if not dd or not "maxSwelling" in dd.__dict__:
-        return  # skip plotting
-
-    extension = extension or settings.Settings()["outputFileExtension"]
-
-    plt.figure()
-    plt.plot(scalars["time"], dd.maxTotal, label="Total")
-    plt.plot(scalars["time"], dd.maxCreep, label="Creep")
-    plt.plot(scalars["time"], dd.maxSwelling, label="Swelling")
-    plt.xlabel("Time (yr)")
-    plt.ylabel("Distortion (mm)")
-    plt.grid(color="0.70")
-    plt.legend(loc="lower right")
-    plt.title("Maximum duct distortion for " + reactor.name)
-    figName = reactor.name + ".duct." + extension
-    plt.savefig(figName)
-    plt.close(1)
-
-    report.setData("Distortion Plot", os.path.abspath(figName), report.DISTORTION_PLOT)
-
-
-def xsHistoryVsTime(reactor, buGroups, extension=None):
+def xsHistoryVsTime(reactor, history, buGroups, extension=None):
     r"""
     Plot cross section history vs. time.
 
     Parameters
     ----------
     reactor : armi.reactor.reactors object
+
+    history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
+        The history interface.
+
     buGroups : list of float
         The burnup groups in the problem
+
     extension : str, optional
         The file extention for saving the figure
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
-    history = reactor.o.getInterface("history")
-    if not history or not history.xsHistory:
+    if not history.xsHistory:
         return
+
     colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
     plt.figure()
     maxbu = 0.0
@@ -357,7 +337,6 @@ def movesVsCycle(reactor, scalars, extension=None):
     See Also
     --------
     FuelHandler.outage : sets the number of moves in each cycle
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -367,12 +346,11 @@ def movesVsCycle(reactor, scalars, extension=None):
         if moves is None:
             moves = 0.0
         if cycle not in cycles:  # only one move per cycle
-            cycles.append(
-                cycle
-            )  # use the cycles scalar val in case burnSteps is dynamic
+            # use the cycles scalar val in case burnSteps is dynamic
+            cycles.append(cycle)
             yvals.append(moves)
 
-    plt.figure(figsize=(12, 6))  # make it wide and short.
+    plt.figure(figsize=(12, 6))  # make it wide and short
     plt.bar(cycles, yvals, align="center")
     if len(cycles) > 1:
         plt.xticks(cycles)

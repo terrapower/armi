@@ -195,7 +195,9 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     def test_blueprintCopy(self):
         """Ensure that necessary blueprint attributes are set"""
-        convReactor = self.converter.initNewReactor(self.converter._sourceReactor)
+        convReactor = self.converter.initNewReactor(
+            self.converter._sourceReactor, self.o.cs
+        )
         converted = convReactor.blueprints
         original = self.converter._sourceReactor.blueprints
         toCompare = [
