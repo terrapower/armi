@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from armi.physics.fuelCycle.fuelHandlers import FuelHandler
+from armi.physics.fuelCycle import fuelHandlerFactory
+from armi.physics.fuelCycle import fuelHandlers
 
 
-class EquilibriumShuffler(FuelHandler):
+class EquilibriumShuffler(fuelHandlers.FuelHandler):
     r"""
     Convergent divergent equilibrium shuffler
     """
 
     def chooseSwaps(self, factorList):
+        fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
+        ss = fuelHandlers.shuffleStructure.shuffleDataStructure(self)
         cycleMoves = [
             [(2, 1), (3, 3), (4, 2), (5, 1), (6, 7)],
             [(2, 2), (3, 2), (4, 1), (5, 4), (6, 4)],
@@ -32,10 +35,15 @@ class EquilibriumShuffler(FuelHandler):
             a = self.r.core.childrenByLocator[loc]
             if not a:
                 raise RuntimeError("No assembly in {0} {1}".format(ring, pos))
-            cascade.append(a)
-        self.swapCascade(cascade)
+            cascade.append(a.getLocation())
+        ss.translations = (
+            fuelHandlers.shuffleStructure.translationFunctions.getCascadesFromLocations(
+                self, [cascade]
+            )
+        )
+        self.swapCascade(ss)
         fresh = self.r.blueprints.constructAssem(self.cs, name="igniter fuel")
-        self.dischargeSwap(fresh, cascade[0])
+        self.dischargeSwap(fresh, ss.translations[0][0])
         if self.cycle > 0:
             # do a swap where the assembly comes from the sfp
             incoming = self.r.core.sfp.getChildren().pop(0)

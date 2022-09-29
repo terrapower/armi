@@ -154,30 +154,45 @@ class FuelHandlerInterface(interfaces.Interface):
                 for (
                     fromLoc,
                     toLoc,
+                    _,
+                    _,
                     chargeEnrich,
                     assemblyType,
                     movingAssemName,
                 ) in movesThisCycle:
-                    enrichLine = " ".join(
-                        ["{0:.8f}".format(enrich) for enrich in chargeEnrich]
-                    )
-                    if fromLoc in ["ExCore", "SFP"]:
-                        # this is a re-entering assembly. Give extra info so repeat shuffles can handle it
+                    if not fromLoc == toLoc:
+                        enrichLine = " ".join(
+                            ["{0:.8f}".format(enrich) for enrich in chargeEnrich]
+                        )
                         out.write(
-                            "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n"
+                            "{0} moved from {1} to {2} with assembly type {3} with enrich list: {4}\n"
                             "".format(
+                                movingAssemName,
                                 fromLoc,
                                 toLoc,
                                 assemblyType,
                                 enrichLine,
-                                movingAssemName,
                             )
                         )
-                    else:
-                        # skip extra info. regular expression in readMoves will handle it just fine.
+                for (
+                    _,
+                    toLoc,
+                    fromRot,
+                    toRot,
+                    _,
+                    _,
+                    movingAssemName,
+                ) in movesThisCycle:
+                    if not fromRot == toRot:
+                        # If assembly is entering the core, provide extra information
                         out.write(
-                            "{0} moved to {1} with assembly type {2} with enrich list: {3}\n"
-                            "".format(fromLoc, toLoc, assemblyType, enrichLine)
+                            "{0} at {1} was rotated from {2} to {3}\n"
+                            "".format(
+                                movingAssemName,
+                                toLoc,
+                                fromRot,
+                                toRot,
+                            )
                         )
             out.write("\n")
         out.close()
