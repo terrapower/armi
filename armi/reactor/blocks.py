@@ -168,16 +168,23 @@ class Block(composites.Composite):
     @property
     def r(self):
         """
-        A block should only have a reactor through a parent assembly.
+        Look through the ancestors of the Block to find a Reactor, and return it.
 
+        Notes
+        -----
+        Typical hierarchy: Reactor <- Core <- Assembly <- Block
+        A block should only have a reactor through a parent assembly.
         It may make sense to try to factor out usage of ``b.r``.
 
-        For now, this is presumptive of the structure of the composite hierarchy; i.e.
-        the parent of a CORE must be the reactor. Fortunately, we probably don't
-        ultimately want to return the reactor in the first place. Rather, we probably want the core
-        anyways, since practically all `b.r` calls are historically `b.r.core`. It may be
-        prefereable to remove this property, replace with `self.core`, which can return the core.
-        Then refactor all of the b.r.cores, to b.core.
+        Returns
+        -------
+        core.parent : armi.reactor.reactors.Reactor
+            ARMI reactor object that is an ancestor of the block.
+
+        Raises
+        ------
+        ValueError
+            If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
         """
 
         from armi.reactor.reactors import Reactor
