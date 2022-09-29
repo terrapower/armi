@@ -40,7 +40,7 @@ from armi.utils import directoryChangers
 from armi.operators import RunTypes
 
 
-from . import fuelHandlerInterface
+from . import fuelHandlers
 from . import settings
 
 ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
@@ -70,9 +70,7 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
             enabled = cs["runType"] != operators.RunTypes.SNAPSHOTS
             return [
                 interfaces.InterfaceInfo(
-                    ORDER,
-                    fuelHandlerInterface.FuelHandlerInterface,
-                    {"enabled": enabled},
+                    ORDER, fuelHandlers.FuelHandlerInterface, {"enabled": enabled}
                 )
             ]
 

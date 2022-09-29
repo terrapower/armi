@@ -386,7 +386,6 @@ class Core(composites.Composite):
         """
         for a in self.getAssemblies(includeAll=True):
             a.lastLocationLabel = a.getLocation()
-            a.lastRotationLabel = a.getRotationNum()
 
     def removeAssembly(self, a1, discharge=True):
         """
@@ -1631,11 +1630,9 @@ class Core(composites.Composite):
             raise ValueError("Too many neighbors found!")
         return None
 
-    def setMoveList(
-        self, cycle, oldLoc, newLoc, oldRot, newRot, enrichList, assemblyType, assemName
-    ):
+    def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
-        data = (oldLoc, newLoc, oldRot, newRot, enrichList, assemblyType, assemName)
+        data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
         # NOTE: moveList is actually a moveDict (misnomer)
         if self.moveList.get(cycle) is None:
             self.moveList[cycle] = []
@@ -1686,8 +1683,7 @@ class Core(composites.Composite):
 
         See Also
         --------
-
-        $$armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
+        armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
         """
         a = self.parent.blueprints.constructAssem(
             cs or settings.getMasterCs(), name=assemType

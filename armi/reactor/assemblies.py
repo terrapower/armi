@@ -106,8 +106,6 @@ class Assembly(composites.Composite):
         self.p.buLimit = self.getMaxParam("buLimit")
         self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
         self.lastLocationLabel = self.LOAD_QUEUE
-        self.p.orientation = numpy.array((0.0, 0.0, 0.0))
-        self.lastRotationLabel = self.getRotationNum()
 
     def __repr__(self):
         msg = "<{typeName} Assembly {name} at {loc}>".format(
@@ -280,29 +278,10 @@ class Assembly(composites.Composite):
 
         return sum(plenumTemps) / len(plenumTemps)
 
-    def rotatePins(self, rotNum, justCompute=False):
+    def rotatePins(self, *args, **kwargs):
         """Rotate an assembly, which means rotating the indexing of pins."""
         for b in self:
-            b.rotatePins(rotNum, justCompute=justCompute)
-
-        if not justCompute:
-            self.setRotationNum(rotNum)
-
-    def getRotationNum(self):
-        """
-        Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis.
-        """
-        return (
-            numpy.rint(self.p.orientation[2] / 360.0 * 6) % 6
-        )  # assume rotation only in Z
-
-    def setRotationNum(self, rotNum):
-        """
-        Set orientation based on a number 0 through 5 indicating number of rotations
-        counterclockwise around the z-axis.
-        """
-        rotNum = int((self.getRotationNum() + rotNum) % 6)
-        self.p.orientation[2] = 60.0 * rotNum
+            b.rotatePins(*args, **kwargs)
 
     def doubleResolution(self):
         """
