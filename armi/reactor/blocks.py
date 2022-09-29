@@ -1263,7 +1263,7 @@ class Block(composites.Composite):
         -------
         mfp, mfpAbs, diffusionLength : tuple(float, float float)
         """
-        lib = self.r.core.lib
+        lib = self.core.lib
         flux = self.getMgFlux(gamma=gamma)
         flux = [fi / max(flux) for fi in flux]
         mfpNumerator = numpy.zeros(len(flux))
@@ -1513,7 +1513,7 @@ class Block(composites.Composite):
         try:
             return components.component.getReactionRateDict(
                 nucName,
-                self.r.core.lib,
+                self.core.lib,
                 self.p.xsType,
                 self.getIntegratedMgFlux(),
                 nDensity,
@@ -1970,21 +1970,19 @@ class HexBlock(Block):
                 # central location
                 return 3.0
             else:
-                symmetryLine = self.r.core.spatialGrid.overlapsWhichSymmetryLine(
-                    indices
-                )
+                symmetryLine = self.core.spatialGrid.overlapsWhichSymmetryLine(indices)
                 # detect if upper edge assemblies are included. Doing this is the only way to know
                 # definitively whether or not the edge assemblies are half-assems or full.
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
-                upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
+                upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
                 if (
                     symmetryLine
                     in [
                         grids.BOUNDARY_0_DEGREES,
                         grids.BOUNDARY_120_DEGREES,
                     ]
-                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
                 ):
                     return 2.0
         return 1.0
@@ -2158,9 +2156,9 @@ class CartesianBlock(Block):
         Return a factor between 1 and N where 1/N is how much cut-off by symmetry lines this mesh
         cell is.
         """
-        if self.r is not None:
+        if self.core is not None:
             indices = self.spatialLocator.getCompleteIndices()
-            if self.r.core.symmetry.isThroughCenterAssembly:
+            if self.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
                     # central location
                     return 4.0
