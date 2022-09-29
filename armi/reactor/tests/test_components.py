@@ -1418,7 +1418,7 @@ class TestGetReactionRateDict(unittest.TestCase):
     def test_getReactionRateDict(self):
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
         rxRatesDict = getReactionRateDict(
-            nucName="PU239", lib=lib, xsType="A", mgFlux=1, nDens=1
+            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
         )
         self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
