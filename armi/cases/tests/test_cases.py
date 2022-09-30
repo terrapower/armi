@@ -16,6 +16,7 @@
 import copy
 import cProfile
 import io
+import logging
 import os
 import platform
 import sys
@@ -28,11 +29,14 @@ from armi import context
 from armi import getApp
 from armi import interfaces
 from armi import plugins
+from armi import runLog
 from armi import settings
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
+from armi.settings import setMasterCs
 from armi.tests import ARMI_RUN_PATH
 from armi.tests import TEST_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import directoryChangers
 
 
@@ -81,6 +85,7 @@ assemblies: {}
 """
 
 
+@unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class TestArmiCase(unittest.TestCase):
     """Class to tests armi.cases.Case methods"""
 
@@ -174,6 +179,33 @@ class TestArmiCase(unittest.TestCase):
             prof = case._startProfiling()
             case._endProfiling(prof)
             self.assertTrue(isinstance(prof, cProfile.Profile))
+
+    def test_run(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            newSettings = {
+                "branchVerbosity": "important",
+                "coverage": False,
+                "nCycles": 1,
+                "profile": False,
+                "trace": False,
+                "verbosity": "important",
+            }
+            cs = cs.modified(newSettings=newSettings)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+
+            with mockRunLogs.BufferLog() as mock:
+                # we should start with a clean slate
+                self.assertEqual("", mock._outputStream)
+                runLog.LOG.startLog("test_run")
+                runLog.LOG.setVerbosity(logging.INFO)
+
+                case.run()
+
+                self.assertIn("Triggering BOL Event", mock._outputStream)
+                self.assertIn("xsGroups", mock._outputStream)
+                self.assertIn("Completed EveryNode - cycle 0", mock._outputStream)
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):

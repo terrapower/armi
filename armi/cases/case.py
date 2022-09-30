@@ -459,7 +459,7 @@ class Case:
         statsStream = six.StringIO()
         summary = pstats.Stats(profiler, stream=statsStream).sort_stats("cumulative")
         summary.print_stats()
-        if context.MPI_SIZE > 0:
+        if context.MPI_SIZE > 0 and context.MPI_COMM is not None:
             allStats = context.MPI_COMM.gather(statsStream.getvalue(), root=0)
             if context.MPI_RANK == 0:
                 for rank, statsString in enumerate(allStats):
