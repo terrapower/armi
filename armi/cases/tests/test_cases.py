@@ -170,17 +170,10 @@ class TestArmiCase(unittest.TestCase):
             cs = cs.modified(newSettings={"profile": True})
             case = cases.Case(cs)
 
-            # capture the stdout
-            capturedOutput = io.StringIO()
-            sys.stdout = capturedOutput
-
             # run the profiler
             prof = case._startProfiling()
             case._endProfiling(prof)
-
-            # close the stdout and test
-            sys.stdout = sys.__stdout__
-            self.assertIn("Profiler statistics", capturedOutput.getvalue())
+            self.assertTrue(isinstance(prof, cProfile.Profile))
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
