@@ -118,13 +118,18 @@ class ReportInterface(interfaces.Interface):
 
     def interactEOL(self):
         """Adds the data to the report, and generates it"""
-        b = self.o.r.core.getFirstBlock(Flags.FUEL)
+        b = self.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
         dbi = self.o.getInterface("database")
         buGroups = self.cs["buGroups"]
+        history = self.o.getInterface("history")
         reportPlotting.plotReactorPerformance(
-            self.r, dbi, buGroups, extension=self.cs["outputFileExtension"]
+            self.r,
+            dbi,
+            buGroups,
+            extension=self.cs["outputFileExtension"],
+            history=history,
         )
 
         reportingUtils.setNeutronBalancesReport(self.r.core)
