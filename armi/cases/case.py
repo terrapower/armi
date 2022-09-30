@@ -370,7 +370,7 @@ class Case:
 
     def _startCoverage(self):
         """Helper to the Case.run(): spin up the code coverage tooling,
-        iff the CaseSettings file says to.
+        if the CaseSettings file says to.
 
         Returns
         -------
@@ -395,7 +395,7 @@ class Case:
     @staticmethod
     def _endCoverage(cov=None):
         """Helper to the Case.run(): stop and report code coverage,
-        iff the CaseSettings file says to.
+        if the CaseSettings file says to.
 
         Parameters
         ----------
@@ -427,7 +427,7 @@ class Case:
 
     def _startProfiling(self):
         """Helper to the Case.run(): start the Python profiling,
-        iff the CaseSettings file says to.
+        if the CaseSettings file says to.
 
         Returns
         -------
@@ -444,7 +444,7 @@ class Case:
     @staticmethod
     def _endProfiling(profiler=None):
         """Helper to the Case.run(): stop and report python profiling,
-        iff the CaseSettings file says to.
+        if the CaseSettings file says to.
 
         Parameters
         ----------
