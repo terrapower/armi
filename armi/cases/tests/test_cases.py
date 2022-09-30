@@ -11,15 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-Unit tests for Case and CaseSuite objects
-"""
+"""Unit tests for Case and CaseSuite objects"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
+import cProfile
 import io
 import os
 import platform
+import sys
 import unittest
+
+import coverage
 
 from armi import cases
 from armi import context
@@ -27,9 +29,11 @@ from armi import getApp
 from armi import interfaces
 from armi import plugins
 from armi import settings
+from armi.reactor import blueprints
+from armi.reactor import systemLayoutInput
+from armi.tests import ARMI_RUN_PATH
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
-from armi.reactor import blueprints, systemLayoutInput
 
 
 GEOM_INPUT = """<?xml version="1.0" ?>
@@ -86,7 +90,7 @@ class TestArmiCase(unittest.TestCase):
 
         Any assertions are bonus.
         """
-        with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
             cs = cs.modified(newSettings={"verbosity": "important"})
             case = cases.Case(cs)
@@ -106,7 +110,7 @@ class TestArmiCase(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         cs = cs.modified(newSettings={"verbosity": "important"})
         baseCase = cases.Case(cs, bp=bp, geom=geom)
-        with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
             case._independentVariables = vals  # pylint: disable=protected-access
@@ -115,6 +119,68 @@ class TestArmiCase(unittest.TestCase):
             newCase = cases.Case(newCs)
             for name, val in vals.items():
                 self.assertEqual(newCase.independentVariables[name], val)
+
+    def test_startCoverage(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+
+            # Test the null case
+            cs = cs.modified(newSettings={"coverage": False})
+            case = cases.Case(cs)
+            cov = case._startCoverage()
+            self.assertIsNone(cov)
+
+            # Test when we start coverage correctly
+            cs = cs.modified(newSettings={"coverage": True})
+            case = cases.Case(cs)
+            cov = case._startCoverage()
+            self.assertTrue(isinstance(cov, coverage.Coverage))
+
+    def test_endCoverage(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            cs = cs.modified(newSettings={"coverage": True})
+            case = cases.Case(cs)
+
+            outFile = "coverage_results.cov"
+            prof = case._startCoverage()
+            self.assertFalse(os.path.exists(outFile))
+            case._endCoverage(prof)
+            self.assertTrue(os.path.exists(outFile))
+
+    def test_startProfiling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+
+            # Test the null case
+            cs = cs.modified(newSettings={"profile": False})
+            case = cases.Case(cs)
+            prof = case._startProfiling()
+            self.assertIsNone(prof)
+
+            # Test when we start coverage correctly
+            cs = cs.modified(newSettings={"profile": True})
+            case = cases.Case(cs)
+            prof = case._startProfiling()
+            self.assertTrue(isinstance(prof, cProfile.Profile))
+
+    def test_endProfiling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            cs = cs.modified(newSettings={"profile": True})
+            case = cases.Case(cs)
+
+            # capture the stdout
+            capturedOutput = io.StringIO()
+            sys.stdout = capturedOutput
+
+            # run the profiler
+            prof = case._startProfiling()
+            case._endProfiling(prof)
+
+            # close the stdout and test
+            sys.stdout = sys.__stdout__
+            self.assertIn("Profiler statistics", capturedOutput.getvalue())
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):

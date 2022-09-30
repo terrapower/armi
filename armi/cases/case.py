@@ -23,21 +23,22 @@ See Also
 --------
 armi.cases.suite : A collection of Cases
 """
+from typing import Dict, Optional, Sequence, Set, Union
+import ast
 import cProfile
+import glob
 import os
 import pathlib
 import pstats
 import re
 import sys
-import trace
-import time
 import textwrap
-import ast
-from typing import Dict, Optional, Sequence, Set, Union
-import glob
-import tabulate
-import six
+import time
+import trace
+
 import coverage
+import six
+import tabulate
 
 from armi import context
 from armi import getPluginManager
@@ -53,12 +54,12 @@ from armi.reactor import reactors
 from armi.reactor import systemLayoutInput
 from armi.utils import pathTools
 from armi.utils import textProcessors
+from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
-from armi.utils.customExceptions import NonexistentSetting
 
 # change from default .coverage to help with Windows dotfile issues.
-# Must correspond with data_file entry in `coveragerc`!!
+# Must correspond with data_file entry in `coveragerc`!
 COVERAGE_RESULTS_FILE = "coverage_results.cov"
 
 
@@ -67,8 +68,8 @@ class Case:
     An ARMI Case that can be used for suite set up and post-analysis.
 
     A Case is capable of loading inputs, checking that they are valid, and
-    initializing a reactor model. Cases can also compare against
-    other cases and be collected into :py:class:`armi.cases.suite.CaseSuite`\ s.
+    initializing a reactor model. Cases can also compare against other
+    cases and be collected into multiple :py:class:`armi.cases.suite.CaseSuite`
     """
 
     def __init__(self, cs, caseSuite=None, bp=None, geom=None):
@@ -341,14 +342,41 @@ class Case:
         out of here to a more elegant place (like a context manager?).
         """
         # Start the log here so that the verbosities for the head and workers
-        # can be configured based on the user settings for the rest of the
-        # run.
+        # can be configured based on the user settings for the rest of the run
         runLog.LOG.startLog(self.cs.caseTitle)
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self.cs["verbosity"])
         else:
             runLog.setVerbosity(self.cs["branchVerbosity"])
 
+        # if in the settings, start the coverage and profiling
+        cov = self._startCoverage()
+        profiler = self._startProfiling()
+
+        self.checkInputs()
+        o = self.initializeOperator()
+
+        with o:
+            if self.cs["trace"] and context.MPI_RANK == 0:
+                # only trace primary node.
+                tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
+                tracer.runctx("o.operate()", globals(), locals())
+            else:
+                o.operate()
+
+        # if in the settings, report the coverage and profiling
+        Case._endCoverage(cov)
+        Case._endProfiling(profiler)
+
+    def _startCoverage(self):
+        """Helper to the Case.run(): spin up the code coverage tooling,
+        iff the CaseSettings file says to.
+
+        Returns
+        -------
+        coverage.Coverage
+            Coverage object for pytest or unittest
+        """
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
@@ -362,66 +390,90 @@ class Case:
                 cov.config.parallel = True
             cov.start()
 
+        return cov
+
+    @staticmethod
+    def _endCoverage(cov=None):
+        """Helper to the Case.run(): stop and report code coverage,
+        iff the CaseSettings file says to.
+
+        Parameters
+        ----------
+        cov: coverage.Coverage (optional)
+            Hopefully, a valid and non-empty set of coverage data.
+        """
+        if cov is None:
+            return
+
+        cov.stop()
+        cov.save()
+
+        if context.MPI_SIZE > 1:
+            context.MPI_COMM.barrier()  # force waiting for everyone to finish
+
+        if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
+            # combine all the parallel coverage data files into one and make
+            # the XML and HTML reports for the whole run.
+            combinedCoverage = coverage.Coverage(
+                config_file=os.path.join(context.RES, "coveragerc"),
+                debug=["dataio"],
+            )
+            combinedCoverage.config.parallel = True
+            # combine does delete the files it merges
+            combinedCoverage.combine()
+            combinedCoverage.save()
+            combinedCoverage.html_report()
+            combinedCoverage.xml_report()
+
+    def _startProfiling(self):
+        """Helper to the Case.run(): start the Python profiling,
+        iff the CaseSettings file says to.
+
+        Returns
+        -------
+        cProfile.Profile
+            Standard Python profiling object
+        """
         profiler = None
         if self.cs["profile"]:
             profiler = cProfile.Profile()
             profiler.enable(subcalls=True, builtins=True)
 
-        self.checkInputs()
-        o = self.initializeOperator()
+        return profiler
 
-        with o:
-            if self.cs["trace"] and context.MPI_RANK == 0:
-                # only trace primary node.
-                tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix], trace=1)
-                tracer.runctx("o.operate()", globals(), locals())
-            else:
-                o.operate()
+    @staticmethod
+    def _endProfiling(profiler=None):
+        """Helper to the Case.run(): stop and report python profiling,
+        iff the CaseSettings file says to.
 
-        if profiler is not None:
-            profiler.disable()
-            profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
-            statsStream = six.StringIO()
-            summary = pstats.Stats(profiler, stream=statsStream).sort_stats(
-                "cumulative"
-            )
-            summary.print_stats()
-            if context.MPI_SIZE > 0:
-                allStats = context.MPI_COMM.gather(statsStream.getvalue(), root=0)
-                if context.MPI_RANK == 0:
-                    for rank, statsString in enumerate(allStats):
-                        # using print statements because the logger has been turned off
-                        print("=" * 100)
-                        print(
-                            "{:^100}".format(
-                                " Profiler statistics for RANK={} ".format(rank)
-                            )
+        Parameters
+        ----------
+        profiler: cProfile.Profile (optional)
+            Hopefully, a valid and non-empty set of profiling data.
+        """
+        if profiler is None:
+            return
+
+        profiler.disable()
+        profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
+        statsStream = six.StringIO()
+        summary = pstats.Stats(profiler, stream=statsStream).sort_stats("cumulative")
+        summary.print_stats()
+        if context.MPI_SIZE > 0:
+            allStats = context.MPI_COMM.gather(statsStream.getvalue(), root=0)
+            if context.MPI_RANK == 0:
+                for rank, statsString in enumerate(allStats):
+                    # using print statements because the logger has been turned off
+                    print("=" * 100)
+                    print(
+                        "{:^100}".format(
+                            " Profiler statistics for RANK={} ".format(rank)
                         )
-                        print(statsString)
-                        print("=" * 100)
-            else:
-                print(statsStream.getvalue())
-
-        if cov is not None:
-            cov.stop()
-            cov.save()
-
-            if context.MPI_SIZE > 1:
-                context.MPI_COMM.barrier()  # force waiting for everyone to finish
-
-            if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
-                # combine all the parallel coverage data files into one and make
-                # the XML and HTML reports for the whole run.
-                combinedCoverage = coverage.Coverage(
-                    config_file=os.path.join(context.RES, "coveragerc"),
-                    debug=["dataio"],
-                )
-                combinedCoverage.config.parallel = True
-                # combine does delete the files it merges
-                combinedCoverage.combine()
-                combinedCoverage.save()
-                combinedCoverage.html_report()
-                combinedCoverage.xml_report()
+                    )
+                    print(statsString)
+                    print("=" * 100)
+        else:
+            print(statsStream.getvalue())
 
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
