@@ -134,23 +134,20 @@ class TestArmiCase(unittest.TestCase):
             cov = case._startCoverage()
             self.assertIsNone(cov)
 
-            # Test when we start coverage correctly
-            cs = cs.modified(newSettings={"coverage": True})
-            case = cases.Case(cs)
-            cov = case._startCoverage()
-            self.assertTrue(isinstance(cov, coverage.Coverage))
+            # NOTE: We can't test coverage=True, because it breaks coverage on CI
 
     def test_endCoverage(self):
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
-            cs = cs.modified(newSettings={"coverage": True})
+            cs = cs.modified(newSettings={"coverage": False})
             case = cases.Case(cs)
 
+            # NOTE: We can't test coverage=True, because it breaks coverage on CI
             outFile = "coverage_results.cov"
             prof = case._startCoverage()
             self.assertFalse(os.path.exists(outFile))
             case._endCoverage(prof)
-            self.assertTrue(os.path.exists(outFile))
+            self.assertFalse(os.path.exists(outFile))
 
     @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_startProfiling(self):
