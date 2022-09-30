@@ -3115,7 +3115,6 @@ class Composite(ArmiObject):
         ----
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
         """
-        from armi.reactor.components.component import getReactionRateDict
         from armi.reactor.blocks import Block
 
         if nDensity is None:
@@ -3338,3 +3337,45 @@ def getDominantMaterial(
         return samples[maxMatName]
 
     return None
+
+
+def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
+    """
+    Parameters
+    ----------
+    nucName : str
+        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
+        _label_, see the nucDirectory module for a description of the difference.
+    lib : isotxs
+        cross section library
+    xsSuffix : str
+        cross section suffix, consisting of the type followed by the burnup group,
+        e.g. 'AB' for the second burnup group of type A
+    mgFlux : numpy.nArray
+        integrated mgFlux (n-cm/s)
+    nDens : float
+        number density (atom/bn-cm)
+
+    Returns
+    -------
+    rxnRates - dict
+        dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+    Notes
+    -----
+    Assume there is no n3n cross section in ISOTXS
+    """
+    nucLabel = nuclideBases.byName[nucName].label
+    key = "{}{}".format(nucLabel, xsSuffix)
+    libNuc = lib[key]
+    rxnRates = {"n3n": 0}
+    for rxName, mgXSs in [
+        ("nG", libNuc.micros.nGamma),
+        ("nF", libNuc.micros.fission),
+        ("n2n", libNuc.micros.n2n),
+        ("nA", libNuc.micros.nalph),
+        ("nP", libNuc.micros.np),
+    ]:
+        rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
+
+    return rxnRates
