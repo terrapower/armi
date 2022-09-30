@@ -85,7 +85,6 @@ assemblies: {}
 """
 
 
-@unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class TestArmiCase(unittest.TestCase):
     """Class to tests armi.cases.Case methods"""
 
@@ -153,6 +152,7 @@ class TestArmiCase(unittest.TestCase):
             case._endCoverage(prof)
             self.assertTrue(os.path.exists(outFile))
 
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_startProfiling(self):
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
@@ -169,6 +169,7 @@ class TestArmiCase(unittest.TestCase):
             prof = case._startProfiling()
             self.assertTrue(isinstance(prof, cProfile.Profile))
 
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_endProfiling(self):
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
