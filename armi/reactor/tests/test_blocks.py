@@ -1581,8 +1581,11 @@ class Block_TestCase(unittest.TestCase):
             block.getNumberDensity("PU239") * sum(r.core.lib["PU39AA"].micros.nGamma),
         )
 
-        with self.assertRaises(KeyError):
-            block.getReactionRates("PU39")
+        # the key is invalid, so should get back all zeros
+        self.assertEqual(
+            block.getReactionRates("PU39"),
+            {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
+        )
 
 
 class Test_NegativeVolume(unittest.TestCase):
