@@ -161,7 +161,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
-            self.convReactor = self.initNewReactor(r)
+            self.convReactor = self.initNewReactor(r, self._cs)
             self._setParamsToUpdate()
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
@@ -178,13 +178,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
 
     @staticmethod
-    def initNewReactor(sourceReactor):
+    def initNewReactor(sourceReactor, cs):
         """Build a new, yet empty, reactor with the same settings as sourceReactor
 
         Parameters
         ----------
         sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             original reactor to be copied
+        cs: CaseSetting object
+            Complete settings object
         """
         # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
         # attributes are set. Simply calling blueprints.loadFromCs() just initializes
@@ -195,23 +197,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newReactor = Reactor(sourceReactor.name, bp)
         coreDesign = bp.systemDesigns["core"]
 
-        # The source reactor may not have an operator available. This can occur
-        # when a different geometry converter is chained together with this. For
-        # instance, using the `HexToRZThetaConverter`, the converted reactor
-        # does not have an operator attached. In this case, we still need some
-        # settings to construct the new core.
-        if sourceReactor.o is None:
-            cs = settings.getMasterCs()
-        else:
-            cs = sourceReactor.o.cs
-
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
 
         # check if the sourceReactor has been modified from the blueprints
         if sourceReactor.core.isFullCore and not newReactor.core.isFullCore:
-            _geometryConverter = newReactor.core.growToFullCore(sourceReactor.o.cs)
+            _geometryConverter = newReactor.core.growToFullCore(cs)
 
         return newReactor
 

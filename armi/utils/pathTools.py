@@ -201,7 +201,7 @@ def cleanPath(path, mpiRank=0):
     with full permissions on the cluster. You could accidentally delete everyone's work
     with one misplaced line! This doesn't ask questions.
 
-    Safety nets include a whitelist of paths.
+    Safety nets include an allow-list of paths.
 
     This makes use of shutil.rmtree and os.remove
 

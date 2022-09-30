@@ -168,16 +168,23 @@ class Block(composites.Composite):
     @property
     def r(self):
         """
-        A block should only have a reactor through a parent assembly.
+        Look through the ancestors of the Block to find a Reactor, and return it.
 
+        Notes
+        -----
+        Typical hierarchy: Reactor <- Core <- Assembly <- Block
+        A block should only have a reactor through a parent assembly.
         It may make sense to try to factor out usage of ``b.r``.
 
-        For now, this is presumptive of the structure of the composite hierarchy; i.e.
-        the parent of a CORE must be the reactor. Fortunately, we probably don't
-        ultimately want to return the reactor in the first place. Rather, we probably want the core
-        anyways, since practically all `b.r` calls are historically `b.r.core`. It may be
-        prefereable to remove this property, replace with `self.core`, which can return the core.
-        Then refactor all of the b.r.cores, to b.core.
+        Returns
+        -------
+        core.parent : armi.reactor.reactors.Reactor
+            ARMI reactor object that is an ancestor of the block.
+
+        Raises
+        ------
+        ValueError
+            If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
         """
 
         from armi.reactor.reactors import Reactor
@@ -1263,7 +1270,7 @@ class Block(composites.Composite):
         -------
         mfp, mfpAbs, diffusionLength : tuple(float, float float)
         """
-        lib = self.r.core.lib
+        lib = self.core.lib
         flux = self.getMgFlux(gamma=gamma)
         flux = [fi / max(flux) for fi in flux]
         mfpNumerator = numpy.zeros(len(flux))
@@ -1936,21 +1943,19 @@ class HexBlock(Block):
                 # central location
                 return 3.0
             else:
-                symmetryLine = self.r.core.spatialGrid.overlapsWhichSymmetryLine(
-                    indices
-                )
+                symmetryLine = self.core.spatialGrid.overlapsWhichSymmetryLine(indices)
                 # detect if upper edge assemblies are included. Doing this is the only way to know
                 # definitively whether or not the edge assemblies are half-assems or full.
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
-                upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
+                upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
                 if (
                     symmetryLine
                     in [
                         grids.BOUNDARY_0_DEGREES,
                         grids.BOUNDARY_120_DEGREES,
                     ]
-                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
                 ):
                     return 2.0
         return 1.0
@@ -2124,9 +2129,9 @@ class CartesianBlock(Block):
         Return a factor between 1 and N where 1/N is how much cut-off by symmetry lines this mesh
         cell is.
         """
-        if self.r is not None:
+        if self.core is not None:
             indices = self.spatialLocator.getCompleteIndices()
-            if self.r.core.symmetry.isThroughCenterAssembly:
+            if self.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
                     # central location
                     return 4.0
