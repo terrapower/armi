@@ -61,6 +61,7 @@ Bug fixes
 #. Fixed bug in ``armi/reactor/blocks.py::HexBlock::rotatePins`` that failed to modify pinLocation parameter (`#855 <https://github.com/terrapower/armi/pull/855>`_).
 #. Fixed bug in ``armi/reactor.py::Core::_applyThermalExpansion`` that failed to call the ``block.completeInitiaLoading`` (`#885 <https://github.com/terrapower/armi/pull/885>`_).
 #. Fixed bug where a settings validator would complain that both simple and detailed cycles inputs were being used even if only the detailed input was entered.
+#. Fixed a bug where `getReactionRates()` was not accounting for burnup-dependent cross-sections. This changes the signature for the `getReactionRateDict()` function.
 #. TBD
 
 ARMI v0.2.3

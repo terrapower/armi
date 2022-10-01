@@ -1187,41 +1187,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return composites.ArmiObject.getLumpedFissionProductCollection(self)
 
-    def getReactionRates(self, nucName, nDensity=None):
-        """
-        Parameters
-        ----------
-        nucName - str
-            nuclide name -- e.g. 'U235'
-        nDensity - float
-            number Density
-
-        Returns
-        -------
-        rxnRates - dict
-            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-        Note
-        ----
-        if you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
-
-        """
-        if nDensity is None:
-            nDensity = self.getNumberDensity(nucName)
-        try:
-            return getReactionRateDict(
-                nucName,
-                self.getAncestorWithFlags(Flags.CORE).lib,
-                self.parent.p.xsType,
-                self.getIntegratedMgFlux(),
-                nDensity,
-            )
-        except (AttributeError, KeyError):
-            # AttributeError because there was no library because no parent.r -- this is a armiObject without flux so
-            # send it some zeros
-            # KeyError because nucName was not in the library
-            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
-
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
 
@@ -1245,45 +1210,3 @@ class ShapedComponent(Component):
     """A component with well-defined dimensions."""
 
     pass
-
-
-def getReactionRateDict(nucName, lib, xsType, mgFlux, nDens):
-    """
-    Parameters
-    ----------
-    nucName - str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
-        _label_, see the nucDirectory module for a description of the difference.
-    lib - isotxs
-        cross section library
-    xsType - str
-        cross section type -- e.g. - 'A'
-    mgFlux - numpy.nArray
-        integrated mgFlux (n-cm/s)
-    nDens - float
-        number density (at/bn-cm)
-
-    Returns
-    -------
-    rxnRates - dict
-        dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-    Note
-    ----
-    assume there is no n3n cross section in ISOTXS
-
-    """
-    nucLabel = nuclideBases.byName[nucName].label
-    key = "{}{}A".format(nucLabel, xsType)
-    libNuc = lib[key]
-    rxnRates = {"n3n": 0}
-    for rxName, mgXSs in [
-        ("nG", libNuc.micros.nGamma),
-        ("nF", libNuc.micros.fission),
-        ("n2n", libNuc.micros.n2n),
-        ("nA", libNuc.micros.nalph),
-        ("nP", libNuc.micros.np),
-    ]:
-        rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
-
-    return rxnRates
