@@ -1496,39 +1496,6 @@ class Block(composites.Composite):
         """
         return composites.ArmiObject.getLumpedFissionProductCollection(self)
 
-    def getReactionRates(self, nucName, nDensity=None):
-        """
-        Parameters
-        ----------
-        nucName - str
-            nuclide name -- e.g. 'U235'
-        nDensity - float
-            number Density
-
-        Returns
-        -------
-        rxnRates : dict
-            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-        Note
-        ----
-        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
-        """
-        if nDensity is None:
-            nDensity = self.getNumberDensity(nucName)
-        try:
-            return components.component.getReactionRateDict(
-                nucName,
-                self.core.lib,
-                self.p.xsType,
-                self.getIntegratedMgFlux(),
-                nDensity,
-            )
-        except AttributeError:
-            # AttributeError because there was no library because no parent.r -- this is a armiObject without flux so
-            # send it some zeros
-            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
-
     def rotate(self, deg):
         """Function for rotating a block's spatially varying variables by a specified angle.
 

@@ -33,6 +33,8 @@ from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
+NUM_PINS_IN_TEST_BLOCK = 217
+
 
 def buildSimpleFuelBlock():
     """Return a simple block containing fuel, clad, duct, and coolant."""
@@ -79,7 +81,7 @@ def loadTestBlock(cold=True):
     assemNum = 3
     block = blocks.HexBlock("TestHexBlock")
     block.setType("defaultType")
-    block.p.nPins = 217
+    block.p.nPins = NUM_PINS_IN_TEST_BLOCK
     assembly = makeTestAssembly(assemNum, 1, r=r)
 
     # NOTE: temperatures are supposed to be in C
@@ -93,7 +95,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempFuel,
         "od": 0.84,
         "id": 0.6,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     fuel = components.Circle("fuel", "UZr", **fuelDims)
 
@@ -102,7 +104,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempCoolant,
         "od": "fuel.id",
         "id": 0.3,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     bondDims["components"] = {"fuel": fuel}
     bond = components.Circle("bond", "Sodium", **bondDims)
@@ -112,7 +114,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": "bond.id",
         "id": 0.0,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     annularVoidDims["components"] = {"bond": bond}
     annularVoid = components.Circle("annular void", "Void", **annularVoidDims)
@@ -122,7 +124,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": 0.90,
         "id": 0.85,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     innerLiner = components.Circle("inner liner", "Graphite", **innerLinerDims)
 
@@ -131,7 +133,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": "inner liner.id",
         "id": "fuel.od",
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     fuelLinerGapDims["components"] = {"inner liner": innerLiner, "fuel": fuel}
     fuelLinerGap = components.Circle("gap1", "Void", **fuelLinerGapDims)
@@ -141,7 +143,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": 0.95,
         "id": 0.90,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     outerLiner = components.Circle("outer liner", "HT9", **outerLinerDims)
 
@@ -150,7 +152,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": "outer liner.id",
         "id": "inner liner.od",
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     linerLinerGapDims["components"] = {
         "outer liner": outerLiner,
@@ -163,7 +165,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": 1.05,
         "id": 0.95,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     cladding = components.Circle("clad", "HT9", **claddingDims)
 
@@ -172,7 +174,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "od": "clad.id",
         "id": "outer liner.od",
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     linerCladGapDims["components"] = {"clad": cladding, "outer liner": outerLiner}
     linerCladGap = components.Circle("gap3", "Void", **linerCladGapDims)
@@ -184,7 +186,7 @@ def loadTestBlock(cold=True):
         "id": 0.0,
         "axialPitch": 30.0,
         "helixDiameter": 1.1,
-        "mult": 217.0,
+        "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     wire = components.Helix("wire", "HT9", **wireDims)
 
@@ -1574,13 +1576,16 @@ class Block_TestCase(unittest.TestCase):
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
         block.p.mgFlux = 1
 
-        self.assertEqual(
+        self.assertAlmostEqual(
             block.getReactionRates("PU239")["nG"],
             block.getNumberDensity("PU239") * sum(r.core.lib["PU39AA"].micros.nGamma),
         )
 
-        with self.assertRaises(KeyError):
-            block.getReactionRates("PU39")
+        # the key is invalid, so should get back all zeros
+        self.assertEqual(
+            block.getReactionRates("PU39"),
+            {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
+        )
 
 
 class Test_NegativeVolume(unittest.TestCase):
