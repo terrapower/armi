@@ -25,6 +25,7 @@ from armi.utils.reportPlotting import (
     buVsTime,
     createPlotMetaData,
     keffVsTime,
+    movesVsCycle,
     plotAxialProfile,
     plotCoreOverviewRadar,
     valueVsTime,
@@ -116,7 +117,16 @@ class TestRadar(unittest.TestCase):
         self.assertTrue(True)
 
     def test_movesVsCycle(self):
-        self.assertTrue(True)
+        name = "movesVsCycle"
+        scalars = {
+            "cycle": [1, 2, 3, 4],
+            "numMoves": [6, 7, 8, 9],
+        }
+        figName = name + ".moves.png"
+        movesVsCycle(name, scalars, "png")
+        self.assertTrue(os.path.exists(figName))
+        self.assertGreater(os.path.getsize(figName), 0)
+        os.remove(figName)
 
 
 if __name__ == "__main__":
