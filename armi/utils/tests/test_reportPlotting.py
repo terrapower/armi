@@ -114,22 +114,24 @@ class TestRadar(unittest.TestCase):
         self.assertGreater(os.path.getsize(figName), 0)
         os.remove(figName)
 
-    def test_xsHistoryVsTime(self):
-        name = "xsHistoryVsTime"
+    def test_movesVsCycle(self):
+        name = "movesVsCycle"
         scalars = {
-            "time": [1, 2, 3, 4],
-            "maxBuI": [6, 7, 8, 9],
+            "cycle": [1, 2, 3, 4],
             "maxBuF": [6, 7, 8, 9],
+            "maxBuI": [6, 7, 8, 9],
             "maxDPA": [6, 7, 8, 9],
+            "numMoves": [2, 2, 2, 2],
+            "time": [1, 2, 3, 4],
         }
-        figName = name + ".bu.png"
-        buVsTime(name, scalars, "png")
+        figName = name + ".moves.png"
+        movesVsCycle(name, scalars, "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
         os.remove(figName)
 
-    def test_movesVsCycle(self):
-        name = "movesVsCycle"
+    def test_xsHistoryVsTime(self):
+        name = "xsHistoryVsTime"
 
         class HistTester:
             def __init__(self):
