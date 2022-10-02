@@ -96,7 +96,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
     runLog.info("scalars for plotting {}".format(scalars))
 
     valueVsTime(
-        reactor,
+        reactor.name,
         scalars["time"],
         scalars["maxPD"],
         "maxPD",
@@ -106,7 +106,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         extension=extension,
     )
     keffVsTime(
-        reactor,
+        reactor.name,
         scalars["time"],
         scalars["keff"],
         scalars["keffUnc"],
@@ -121,16 +121,14 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
 # --------------------------
 
 
-def valueVsTime(reactor, x, y, key, yaxis, title, ymin=None, extension=None):
+def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
     r"""
     Plots a value vs. time with a standard graph format
 
     Parameters
     ----------
-    reactor : armi.reactor.reactors object
-
-    reportGroup : armi.bookkeeping.report.data.Group object
-
+    name : str
+        Reactor.name
     x : iterable
         The x-axis values (the abscissa)
     y : iterable
@@ -154,26 +152,29 @@ def valueVsTime(reactor, x, y, key, yaxis, title, ymin=None, extension=None):
     plt.xlabel("Time (yr)")
     plt.ylabel(yaxis)
     plt.grid(color="0.70")
-    plt.title(title + " for {0}".format(reactor.name))
+    plt.title(title + " for {0}".format(name))
 
     if ymin is not None and all([yi > ymin for yi in y]):
         # set ymin all values are greater than it and it exists.
         ax = plt.gca()
         ax.set_ylim(bottom=ymin)
 
-    figName = reactor.name + "." + key + "." + extension
+    figName = name + "." + key + "." + extension
     plt.savefig(figName)
+    print("----------------------->", figName)
     plt.close(1)
 
     report.setData("PlotTime", os.path.abspath(figName), report.TIME_PLOT)
 
 
-def keffVsTime(reactor, time, keff, keffUnc=None, ymin=None, extension=None):
+def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     r"""
     Plots core keff vs. time
 
     Parameters
     ----------
+    name : str
+        reactor.name
     time : list
         Time in years
     keff : list
@@ -201,14 +202,14 @@ def keffVsTime(reactor, time, keff, keffUnc=None, ymin=None, extension=None):
     plt.xlabel("Time (yr)")
     plt.ylabel("k-eff")
     plt.grid(color="0.70")
-    plt.title("k-eff vs. time" + " for {0}".format(reactor.name))
+    plt.title("k-eff vs. time" + " for {0}".format(name))
 
     if ymin is not None and all([yi > ymin for yi in keff]):
         # set ymin all values are greater than it and it exists.
         ax = plt.gca()
         ax.set_ylim(bottom=ymin)
 
-    figName = reactor.name + ".keff." + extension
+    figName = name + ".keff." + extension
     plt.savefig(figName)
     plt.close(1)
 

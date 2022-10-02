@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test plotting"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-acces
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
 import unittest
@@ -26,6 +26,7 @@ from armi.utils.reportPlotting import (
     keffVsTime,
     plotAxialProfile,
     plotCoreOverviewRadar,
+    valueVsTime,
 )
 
 
@@ -73,11 +74,20 @@ class TestRadar(unittest.TestCase):
         os.remove(fName + ".png")
 
     def test_keffVsTime(self):
-        t = list(range(75))
+        t = list(range(25))
         ext = "png"
-        keffVsTime(self.r, t, t, keffUnc=[], extension=ext)
+        keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
         os.remove("R-armiRun.keff.png")
+
+    def test_valueVsTime(self):
+        t = list(range(25))
+        ext = "png"
+        valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
+        self.assertTrue(os.path.exists("R-armiRun.val.png"))
+        self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
+        os.remove("R-armiRun.val.png")
 
 
 if __name__ == "__main__":
