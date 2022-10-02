@@ -29,6 +29,7 @@ from armi.utils.reportPlotting import (
     plotAxialProfile,
     plotCoreOverviewRadar,
     valueVsTime,
+    xsHistoryVsTime,
 )
 
 
@@ -114,16 +115,32 @@ class TestRadar(unittest.TestCase):
         os.remove(figName)
 
     def test_xsHistoryVsTime(self):
-        self.assertTrue(True)
+        name = "xsHistoryVsTime"
+        scalars = {
+            "time": [1, 2, 3, 4],
+            "maxBuI": [6, 7, 8, 9],
+            "maxBuF": [6, 7, 8, 9],
+            "maxDPA": [6, 7, 8, 9],
+        }
+        figName = name + ".bu.png"
+        buVsTime(name, scalars, "png")
+        self.assertTrue(os.path.exists(figName))
+        self.assertGreater(os.path.getsize(figName), 0)
+        os.remove(figName)
 
     def test_movesVsCycle(self):
         name = "movesVsCycle"
-        scalars = {
-            "cycle": [1, 2, 3, 4],
-            "numMoves": [6, 7, 8, 9],
-        }
-        figName = name + ".moves.png"
-        movesVsCycle(name, scalars, "png")
+
+        class HistTester:
+            def __init__(self):
+                self.xsHistory = {
+                    1: [[0, 1], [0, 2], [0, 3]],
+                    2: [[0, 5], [0, 6], [0, 7]],
+                }
+
+        history = HistTester()
+        figName = name + ".bugroups.png"
+        xsHistoryVsTime(name, history, [], "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
         os.remove(figName)
