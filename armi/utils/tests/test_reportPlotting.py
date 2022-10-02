@@ -22,6 +22,7 @@ import numpy as np
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils.reportPlotting import (
+    buVsTime,
     createPlotMetaData,
     keffVsTime,
     plotAxialProfile,
@@ -96,6 +97,26 @@ class TestRadar(unittest.TestCase):
         self.assertTrue(os.path.exists("R-armiRun.val.png"))
         self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
         os.remove("R-armiRun.val.png")
+
+    def test_buVsTime(self):
+        name = "buvstime"
+        scalars = {
+            "time": [1, 2, 3, 4],
+            "maxBuI": [6, 7, 8, 9],
+            "maxBuF": [6, 7, 8, 9],
+            "maxDPA": [6, 7, 8, 9],
+        }
+        figName = name + ".bu.png"
+        buVsTime(name, scalars, "png")
+        self.assertTrue(os.path.exists(figName))
+        self.assertGreater(os.path.getsize(figName), 0)
+        os.remove(figName)
+
+    def test_xsHistoryVsTime(self):
+        self.assertTrue(True)
+
+    def test_movesVsCycle(self):
+        self.assertTrue(True)
 
 
 if __name__ == "__main__":

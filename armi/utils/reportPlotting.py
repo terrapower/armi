@@ -161,7 +161,6 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
 
     figName = name + "." + key + "." + extension
     plt.savefig(figName)
-    print("----------------------->", figName)
     plt.close(1)
 
     report.setData("PlotTime", os.path.abspath(figName), report.TIME_PLOT)
