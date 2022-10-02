@@ -113,9 +113,9 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         ymin=1.0,
         extension=extension,
     )
-    buVsTime(reactor, scalars, extension=extension)
-    xsHistoryVsTime(reactor, history, buGroups, extension=extension)
-    movesVsCycle(reactor, scalars, extension=extension)
+    buVsTime(reactor.name, scalars, extension=extension)
+    xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
+    movesVsCycle(reactor.name, scalars, extension=extension)
 
 
 # --------------------------
@@ -216,7 +216,7 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     report.setData("K-Eff", os.path.abspath(figName), report.KEFF_PLOT)
 
 
-def buVsTime(reactor, scalars, extension=None):
+def buVsTime(name, scalars, extension=None):
     r"""
     produces a burnup and DPA vs. time plot for this case
 
@@ -224,9 +224,10 @@ def buVsTime(reactor, scalars, extension=None):
 
     Parameters
     ----------
+    name : str
+        reactor.name
     scalars : dict
         Scalar values for this case
-
     extension : str, optional
         The file extention for saving the figure
     """
@@ -256,31 +257,29 @@ def buVsTime(reactor, scalars, extension=None):
         plt.ylabel("dpa")
         title += " and DPA"
 
-    title += " for " + reactor.name
+    title += " for " + name
 
     plt.title(title)
     plt.legend(loc="lower right")
-    figName = reactor.name + ".bu." + extension
+    figName = name + ".bu." + extension
     plt.savefig(figName)
     plt.close(1)
 
     report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
-def xsHistoryVsTime(reactor, history, buGroups, extension=None):
+def xsHistoryVsTime(name, history, buGroups, extension=None):
     r"""
     Plot cross section history vs. time.
 
     Parameters
     ----------
-    reactor : armi.reactor.reactors object
-
+    name : str
+        reactor.name
     history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
         The history interface.
-
     buGroups : list of float
         The burnup groups in the problem
-
     extension : str, optional
         The file extention for saving the figure
     """
@@ -307,18 +306,18 @@ def xsHistoryVsTime(reactor, history, buGroups, extension=None):
         plt.axhline(y=upperBu)
 
     plt.legend()
-    plt.title("Block burnups used to generate XS for {0}".format(reactor.name))
+    plt.title("Block burnups used to generate XS for {0}".format(name))
     plt.xlabel("Time (years)")
     plt.ylabel("Burnup (% FIMA)")
 
     plt.ylim(0, maxbu * 1.05)
-    figName = reactor.name + ".bugroups." + extension
+    figName = name + ".bugroups." + extension
     plt.savefig(figName)
     plt.close(1)
     report.setData("Xs Plot", os.path.abspath(figName), report.XS_PLOT)
 
 
-def movesVsCycle(reactor, scalars, extension=None):
+def movesVsCycle(name, scalars, extension=None):
     r"""
     make a bar chart showing the number of moves per cycle in the full core
 
@@ -330,8 +329,8 @@ def movesVsCycle(reactor, scalars, extension=None):
 
     Parameters
     ----------
-    scalars : dict
-        The reactor-level params for this case.
+    name : str
+        reactor.name
     extension : str, optional
         The file extention for saving the figure
 
@@ -358,8 +357,8 @@ def movesVsCycle(reactor, scalars, extension=None):
     plt.grid(color="0.70")
     plt.xlabel("Cycle")
     plt.ylabel("Number of Moves")
-    plt.title("Fuel management rate for " + reactor.name)
-    figName = reactor.name + ".moves." + extension
+    plt.title("Fuel management rate for " + name)
+    figName = name + ".moves." + extension
     plt.savefig(figName)
     plt.close(1)
 

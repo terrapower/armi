@@ -74,15 +74,23 @@ class TestRadar(unittest.TestCase):
         os.remove(fName + ".png")
 
     def test_keffVsTime(self):
-        t = list(range(25))
+        t = list(range(12))
         ext = "png"
+
+        # plot with no keff function
         keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.keff.png"))
         self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
         os.remove("R-armiRun.keff.png")
 
+        # plot with a keff function
+        keffVsTime(self.r.name, t, t, t, extension=ext)
+        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        os.remove("R-armiRun.keff.png")
+
     def test_valueVsTime(self):
-        t = list(range(25))
+        t = list(range(12))
         ext = "png"
         valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.val.png"))
