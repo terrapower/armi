@@ -146,7 +146,7 @@ class CaseSuite:
             )
         )
 
-    def clone(self, oldRoot=None):
+    def clone(self, oldRoot=None, writeStyle="short"):
         """
         Clone a CaseSuite to a new place.
 
@@ -160,6 +160,8 @@ class CaseSuite:
         oldRoot : str (optional)
             root directory of original case suite used to help filter when a suite
             contains one or more cases with the same case title.
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files.
 
         Notes
         -----
@@ -185,7 +187,9 @@ class CaseSuite:
             with directoryChangers.ForcedCreationDirectoryChanger(
                 newDir, dumpOnException=False
             ):
-                clone.add(case.clone(modifiedSettings=modifiedSettings))
+                clone.add(
+                    case.clone(modifiedSettings=modifiedSettings, writeStyle=writeStyle)
+                )
         return clone
 
     def run(self):
@@ -266,9 +270,12 @@ class CaseSuite:
 
         return nIssues
 
-    def writeInputs(self):
+    def writeInputs(self, writeStyle="short"):
         """
         Write inputs for all cases in the suite.
+
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files.
 
         See Also
         --------
@@ -276,7 +283,7 @@ class CaseSuite:
             Similar to this but doesn't let you write out new geometry or blueprints objects.
         """
         for case in self:
-            case.writeInputs(sourceDir=self.cs.inputDirectory)
+            case.writeInputs(sourceDir=self.cs.inputDirectory, writeStyle=writeStyle)
 
     @staticmethod
     def writeTable(tableResults):

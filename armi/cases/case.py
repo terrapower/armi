@@ -601,7 +601,13 @@ class Case:
 
         return command
 
-    def clone(self, additionalFiles=None, title=None, modifiedSettings=None):
+    def clone(
+        self,
+        additionalFiles=None,
+        title=None,
+        modifiedSettings=None,
+        writeStyle="short",
+    ):
         """
         Clone existing ARMI inputs to current directory with optional settings modifications.
 
@@ -616,6 +622,8 @@ class Case:
             title of new case
         modifiedSettings : dict (optional)
             settings to set/modify before creating the cloned case
+        writeSyle : str (optional)
+            Writing style for which settings get written back to the settings files.
 
         Raises
         ------
@@ -644,7 +652,7 @@ class Case:
         clone.cs = newCs
 
         runLog.important("writing settings file {}".format(clone.cs.path))
-        clone.cs.writeToYamlFile(clone.cs.path)
+        clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle)
         runLog.important("finished writing {}".format(clone.cs))
 
         fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
@@ -732,7 +740,9 @@ class Case:
 
         return code
 
-    def writeInputs(self, sourceDir: Optional[str] = None):
+    def writeInputs(
+        self, sourceDir: Optional[str] = None, writeStyle: Optional[str] = "short"
+    ):
         """
         Write the inputs to disk.
 
@@ -745,6 +755,9 @@ class Case:
         sourceDir : str, optional
             The path to copy inputs from (if different from the cs.path). Needed
             in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
+
+        writeStyle: str, optional
+            Writing style for which settings get written back to the settings files.
 
         Notes
         -----
@@ -789,7 +802,7 @@ class Case:
                 newSettings[settingName] = value
 
             self.cs = self.cs.modified(newSettings=newSettings)
-            self.cs.writeToYamlFile(self.title + ".yaml")
+            self.cs.writeToYamlFile(self.title + ".yaml", style=writeStyle)
 
 
 def _copyInputsHelper(
