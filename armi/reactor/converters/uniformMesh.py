@@ -11,10 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from framework.armi.physics.neutronics.globalFlux.globalFluxInterface import (
-    calcReactionRates,
-)
-
 """
 Converts reactor with arbitrary axial meshing (e.g. multiple assemblies with different
 axial meshes) to one with a global uniform axial mesh.
@@ -75,9 +71,6 @@ from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
-
-# unfortunate physics coupling, but still in the framework
-from armi.physics.neutronics.globalFlux import globalFluxInterface
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -766,8 +759,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         If a block in the assembly does not contain any multi-group flux
         than the reaction rate calculation for this block will be skipped.
         """
+        from armi.physics.neutronics.globalFlux import globalFluxInterface
+
         for b in assem:
-            print(b)
             # Checks if the block has a multi-group flux defined and if it
             # does not then this will skip the reaction rate calculation. This
             # is captured by the TypeError, due to a `NoneType` divide by float
@@ -776,8 +770,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 b.getMgFlux()
             except TypeError:
                 continue
-
-            print(b.getMgFlux())
             globalFluxInterface.calcReactionRates(b, keff, lib)
 
 
