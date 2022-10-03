@@ -551,7 +551,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 else:
                     runLog.warning(
                         f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
-                        "will be skipped."
+                        "will be skipped.",
+                        single=True,
+                        label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
                     )
 
     @staticmethod
