@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from framework.armi.physics.neutronics.globalFlux.globalFluxInterface import calcReactionRates
+from framework.armi.physics.neutronics.globalFlux.globalFluxInterface import (
+    calcReactionRates,
+)
 
 """
 Converts reactor with arbitrary axial meshing (e.g. multiple assemblies with different
@@ -544,18 +546,20 @@ class UniformMeshGeometryConverter(GeometryConverter):
             UniformMeshGeometryConverter._applyCachedParamValues(
                 destBlock, blockParamNames, cachedParams
             )
-            
+
             # If requested, the reaction rates will be calculated based on the
             # mapped neutron flux and the XS library.
             if calcReactionRates:
-                core = destinationAssembly.getAncestor(lambda c: isinstance(c, Core))
+                core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
                 if core is not None:
-                    UniformMeshGeometryConverter._calculateReactionRates(lib=core.lib, 
-                                                                         keff=core.p.keff, 
-                                                                         assem=destinationAssembly)
+                    UniformMeshGeometryConverter._calculateReactionRates(
+                        lib=core.lib, keff=core.p.keff, assem=destinationAssembly
+                    )
                 else:
-                    runLog.warning(f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
-                                   "will be skipped.")
+                    runLog.warning(
+                        f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
+                        "will be skipped."
+                    )
 
     @staticmethod
     def _applyCachedParamValues(destBlock, paramNames, cachedParams):
@@ -751,10 +755,31 @@ class UniformMeshGeometryConverter(GeometryConverter):
         This can be implemented in sub-classes to map specific reactor and assembly data.
         """
         pass
-    
+
     @staticmethod
     def _calculateReactionRates(lib, keff, assem):
-        pass
+        """
+        Calculates the neutron reaction rates on the given assembly.
+
+        Notes
+        -----
+        If a block in the assembly does not contain any multi-group flux
+        than the reaction rate calculation for this block will be skipped.
+        """
+        for b in assem:
+            print(b)
+            # Checks if the block has a multi-group flux defined and if it
+            # does not then this will skip the reaction rate calculation. This
+            # is captured by the TypeError, due to a `NoneType` divide by float
+            # error.
+            try:
+                b.getMgFlux()
+            except TypeError:
+                continue
+
+            print(b.getMgFlux())
+            globalFluxInterface.calcReactionRates(b, keff, lib)
+
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
@@ -841,29 +866,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
         self._cachedReactorCoreParamData = {}
-    
-    @staticmethod
-    def _calculateReactionRates(self, lib, keff, assem):
-        """
-        Calculates the neutron reaction rates on the given assembly.
-        
-        Notes
-        -----
-        If a block in the assembly does not contain any multi-group flux
-        than the reaction rate calculation for this block will be skipped.
-        """
-        for b in assem:
-            # Checks if the block has a multi-group flux defined and if it
-            # does not then this will skip the reaction rate calculation. This
-            # is captured by the TypeError, due to a `NoneType` divide by float
-            # error.
-            try:
-                b.getMgFlux()
-            except TypeError:
-                continue
-            globalFluxInterface.calcReactionRates(
-                b, keff, lib
-            )
+
 
 class BlockParamMapper:
     """
