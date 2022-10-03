@@ -2,67 +2,65 @@
 ARMI v0.2 Release Notes
 =======================
 
-
-ARMI v0.2.4
+ARMI v0.2.5
 ===========
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
-#. Removed unused Thermal Hydraulics settings.
-#. Minor code re-org, moving math utilities into their own module.
-#. Removed the ``PyYaml`` dependency.
-#. Removed all bare ``import armi`` statements, for code clarity.
-#. Replaced setting ``stationaryBlocks`` (now deprecated) with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`_)
-#. Renamed control rod assembly parameters for generic implementations of control rod handling.
-#. Changed the default Git branch name to ``main``.
-#. Changed the default value of the ``trackAssems`` setting to ``False``.
-#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
-#. Added new ``UserPlugin`` functionality.
-#. Made the min/max temperatures of ``Material`` curves discoverable.
-#. Introduction of axial expansion changer to enable component-level axial expansion of assemblies.
-#. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
-#. Add blueprints setting, ``axial expansion target component``, to enable users to manually set a "target component" for axial expansion.
-#. Allow database comparison to continue even if ``unpackSpecialData`` fails. 
-#. Code clarity rewrite of ``armi/cases/case.py::copyInterfaceInputs``.
-#. Added setting nonUniformAssemFlags that allows specific assems to not conform to uniform mesh. (`PR#879 <https://github.com/terrapower/armi/pull/879>`_ and `PR#827 <https://github.com/terrapower/armi/pull/827>`_).
-#. Added reporting of neutron and gamma energy groups in the XS library `__repr__` for clearer tracking of which cross sections are applied to the core state.
-#. Removed `quiet` kwarg from geometry and block converters as this was generally unused in the code base and was only implemented for developmental debugging.
-#. Refactored the ``UniformMeshGeometryConverter`` to allow for mapping of number densities and parameters to and from a single assembly rather than requiring an entire core.
-#. Updated NHFLUX reader to store VARIANT data that was being discarded. Reading/writing VARIANT NHFLUX files now show binary equivalance.
-#. The ``newReports`` were moved into their final location in ``armi/bookkeeping/report/``.
-#. Refactored the ``UniformMeshGeometryConverter`` again to auto-detect if block-level parameters are scalar or array values and implemented a feature to optionally disable number density mapping.
-#. Remove ability for users to use separate blueprints in snapshot runs. They are only determined from database. (`PR#872 https://github.com/terrapower/armi/pull/872`)
-#. Removed the last usage of ``settingsRules``, so that everything can use ``settingsValidation`` now.
 #. TBD
 
 Bug fixes
 ---------
-#. Fixed issues finding ``ISOXX`` files cross-platform.
-#. Fixed issue with docs not correctly loading their Git submodule in TOX.
-#. Multiple bug fixes in ``growToFullCore``.
-#. ``Block.getWettedPerim`` was moved to ``HexBlock``, as that was more accurate.
-#. ``pathTools.cleanPath()`` is not much more linear, and handles the MPI use-case better.
-#. Fixed bugs in the ARMI memory profiler.
-#. Fixed linear expansion in ``Alloy200``.
-#. Remove ``copy.deepcopy`` from ``armi/reactor/converters/uniformMesh.py``
-#. Clarify docstring for ``armi/reactor/components/complexShapes.py::Helix``
-#. Bug fix in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
-#. Fixed issue with axial expansion changer and axial meshing in ``armi/reactor/reactors.py::Core::processLoading``.
-#. Bug fix and clarity improvements for how number densities are initialized for components.
-#. Bug fix in ``armi/cases/case.py::copyInterfaceInputs``
-#. Bug fix in ``armi/reactor/components/component.py::getReac``
-#. Bug fix in ``armi/reactor/converters/uniformMesh.py`` to prevent `_mapStateFromReactorToOther` from clearing out unchanged parameter data.
-#. Migration of the `axialMesh` core parameter from the `neutronics` category to be general to prevent inconsistencies in the axial core mesh and the assembly meshes.
-#. Store thermally expanded block heights at BOL (via ``b.p.heightBOL``) when thermally expanding assemblies in ``armi/reactor/reactors.py::Core::processLoading``.
-#. Fixed bug where components were different if initialized through blueprints vs init (bug active for ~ 2 months).
-#. Fixed bug where component mass was being conserved in axial expansion instead of correct density (`PR#846 <https://github.com/terrapower/armi/pull/846>`_)
-#. Fixed bug in ``armi/reactor/blocks.py::HexBlock::rotatePins`` that failed to modify pinLocation parameter (`#855 <https://github.com/terrapower/armi/pull/855>`_).
-#. Fixed bug in ``armi/reactor.py::Core::_applyThermalExpansion`` that failed to call the ``block.completeInitiaLoading`` (`#885 <https://github.com/terrapower/armi/pull/885>`_).
-#. Fixed bug where a settings validator would complain that both simple and detailed cycles inputs were being used even if only the detailed input was entered.
-#. Fixed a bug where `getReactionRates()` was not accounting for burnup-dependent cross-sections. This changes the signature for the `getReactionRateDict()` function.
 #. TBD
+
+
+ARMI v0.2.4
+===========
+Release Date: 2022-10-03
+
+What's new in ARMI
+------------------
+#. Added new ``UserPlugin`` functionality.
+#. Introduced ``axial expansion changer``.
+#. Greatly improved the ``UniformMeshGeometryConverter``.
+#. Made the min/max temperatures of ``Material`` curves discoverable.
+#. Removed the ``PyYaml`` dependency.
+#. Changed the default Git branch name to ``main``.
+#. Moved math utilities into their own module.
+#. Moved ``newReports`` into their final location in ``armi/bookkeeping/report/``.
+#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
+#. Removed the last usage of ``settingsRules``; now only use ``settingsValidation``.
+#. Removed separate blueprints in snapshot runs, they must come from the database (`PR#872 https://github.com/terrapower/armi/pull/872`)
+#. Added reporting of neutron and gamma energy groups in the XS library ``__repr__``.
+#. Updated NHFLUX reader to store VARIANT data that was being discarded.
+#. Store thermally expanded block heights at BOL in ``armi/reactor/reactors.py::Core::processLoading``.
+#. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
+#. Removed unused Thermal Hydraulics settings.
+#. Replaced setting ``stationaryBlocks`` with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`_)
+#. Changed the default value of the ``trackAssems`` setting to ``False``.
+#. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
+
+
+Bug fixes
+---------
+#. Fixed issues finding ``ISOXX`` files cross-platform.
+#. Fixed issues in ``growToFullCore``.
+#. Fixed issue in the ARMI memory profiler.
+#. Fixed issue in linear expansion in ``Alloy200``.
+#. Fixed issue in ``armi/reactor/components/complexShapes.py::Helix::getCircleInnerDiameter``
+#. Fixed issue with axial expansion changer in ``armi/reactor/reactors.py::Core::processLoading``.
+#. Fixed issue in how number densities are initialized for components.
+#. Fixed issue in ``armi/cases/case.py::copyInterfaceInputs``
+#. Fixed issue in ``armi/reactor/components/component.py::getReac``
+#. Fixed issue in ``armi/reactor/converters/uniformMesh.py`` was clearing out unchanged param data.
+#. Fixed issue where components were different if initialized through blueprints vs init.
+#. Fixed issue where component mass was conserved in axial expansion instead of density (`PR#846 <https://github.com/terrapower/armi/pull/846>`_)
+#. Fixed issue in ``HexBlock::rotatePins`` failed to modify ``pinLocation`` param (`#855 <https://github.com/terrapower/armi/pull/855>`_).
+#. Fixed issue in ``Core::_applyThermalExpansion`` failed to call ``block.completeInitiaLoading`` (`#885 <https://github.com/terrapower/armi/pull/885>`_).
+#. Fixed issue where a validator would complain both simple and detailed cycles settings were used.
+#. Fixed issue where ``getReactionRates()`` was not accounting for burnup-dependent cross-sections.
+
 
 ARMI v0.2.3
 ===========
