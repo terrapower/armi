@@ -35,6 +35,11 @@ from armi.utils.customExceptions import (
     SettingException,
 )
 
+# Constants defining valid output styles
+WRITE_SHORT = "short"
+WRITE_MEDIUM = "medium"
+WRITE_FULL = "full"
+
 
 class Roots:
     """XML tree root node common strings"""
@@ -266,17 +271,10 @@ class SettingsWriter:
 
     """
 
-    class Styles:
-        """Enumeration of valid output styles"""
-
-        short = "short"
-        medium = "medium"
-        full = "full"
-
     def __init__(self, settings_instance, style="short", settingsSetByUser=[]):
         self.cs = settings_instance
         self.style = style
-        if style not in {self.Styles.short, self.Styles.medium, self.Styles.full}:
+        if style not in {WRITE_SHORT, WRITE_MEDIUM, WRITE_FULL}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
         # The writer should know about the old settings it is overwriting,
         # but only sometimes (when the style is medium)
@@ -326,11 +324,11 @@ class SettingsWriter:
         for _settingName, settingObject in iter(
             sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
-            if self.style == self.Styles.short and not settingObject.offDefault:
+            if self.style == WRITE_SHORT and not settingObject.offDefault:
                 continue
 
             if (
-                self.style == self.Styles.medium
+                self.style == WRITE_MEDIUM
                 and not settingObject.offDefault
                 and _settingName not in self.settingsSetByUser
             ):
