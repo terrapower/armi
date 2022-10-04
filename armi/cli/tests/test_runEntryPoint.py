@@ -23,11 +23,7 @@ import unittest
 from armi.__main__ import main
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
-from armi.cli.clone import (
-    CloneArmiRunCommandBatch,
-    CloneArmiRunCommandInteractive,
-    CloneSuiteCommand,
-)
+from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
 from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
 from armi.cli.migrateInputs import MigrateInputs
@@ -37,7 +33,7 @@ from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
 from armi.settings import Settings
-from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
+from armi.tests import mockRunLogs, TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
