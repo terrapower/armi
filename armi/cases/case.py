@@ -382,7 +382,7 @@ class Case:
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
-                config_file=self._getCoverageRcFile(), debug=["dataio"]
+                config_file=Case._getCoverageRcFile(makeCopy=True), debug=["dataio"]
             )
             if context.MPI_SIZE > 1:
                 # interestingly, you cannot set the parallel flag in the constructor
@@ -417,7 +417,7 @@ class Case:
             # combine all the parallel coverage data files into one and make
             # the XML and HTML reports for the whole run.
             combinedCoverage = coverage.Coverage(
-                config_file=self._getCoverageRcFile(), debug=["dataio"]
+                config_file=Case._getCoverageRcFile(), debug=["dataio"]
             )
             combinedCoverage.config.parallel = True
             # combine does delete the files it merges
@@ -426,21 +426,29 @@ class Case:
             combinedCoverage.html_report()
             combinedCoverage.xml_report()
 
-    def _getCoverageRcFile(self):
+    @staticmethod
+    def _getCoverageRcFile(makeCopy=False):
         """Helper to provide the coverage configuration file according to the OS.
+
+        Parameters
+        ----------
+        makeCopy : bool (optional)
+            Whether or not to copy the coverage config file to an alternate file path
 
         Returns
         -------
-        covFile
+        covFile : str
             path of coveragerc file
         """
         covRcDir = os.path.abspath(os.path.join(context.ROOT, ".."))
         if platform.system() == "Windows":
-            # Make a copy of the file without the dot in the name
-            covFile = shutil.copy(
-                os.path.join(covRcDir, ".coveragerc"),
-                os.path.join(covRcDir, "coveragerc"),
-            )
+            if makeCopy == True:
+                # Make a copy of the file without the dot in the name
+                shutil.copy(
+                    os.path.join(covRcDir, ".coveragerc"),
+                    os.path.join(covRcDir, "coveragerc"),
+                )
+            covFile = os.path.join(covRcDir, "coveragerc")
         else:
             covFile = os.path.join(covRcDir, ".coveragerc")
         return covFile
