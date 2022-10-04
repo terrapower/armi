@@ -625,7 +625,7 @@ class Case:
             title of new case
         modifiedSettings : dict (optional)
             settings to set/modify before creating the cloned case
-        writeSyle : str (optional)
+        writeStyle : str (optional)
             Writing style for which settings get written back to the settings files.
 
         Raises
