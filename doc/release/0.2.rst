@@ -9,6 +9,36 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+
+#. TBD
+#. Added writer style option to ``SettingsWriter`` and added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_)
+
+Bug fixes
+---------
+#. TBD
+
+
+ARMI v0.2.4
+===========
+Release Date: 2022-10-03
+
+What's new in ARMI
+------------------
+#. Added new ``UserPlugin`` functionality.
+#. Introduced ``axial expansion changer``.
+#. Greatly improved the ``UniformMeshGeometryConverter``.
+#. Made the min/max temperatures of ``Material`` curves discoverable.
+#. Removed the ``PyYaml`` dependency.
+#. Changed the default Git branch name to ``main``.
+#. Moved math utilities into their own module.
+#. Moved ``newReports`` into their final location in ``armi/bookkeeping/report/``.
+#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
+#. Removed the last usage of ``settingsRules``; now only use ``settingsValidation``.
+#. Removed separate blueprints in snapshot runs, they must come from the database (`PR#872 https://github.com/terrapower/armi/pull/872`)
+#. Added reporting of neutron and gamma energy groups in the XS library ``__repr__``.
+#. Updated NHFLUX reader to store VARIANT data that was being discarded.
+#. Store thermally expanded block heights at BOL in ``armi/reactor/reactors.py::Core::processLoading``.
+>>>>>>> e091882 (Release notes)
 #. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
 #. Removed unused Thermal Hydraulics settings.
 #. Minor code re-org, moving math utilities into their own module.
