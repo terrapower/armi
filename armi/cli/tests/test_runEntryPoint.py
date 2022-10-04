@@ -63,19 +63,23 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
-        ca.parse_args(["--additional-files", "test"])
+        ca.parse_args(["--additional-files", "test", "--settingsWriteStyle", "full"])
 
         self.assertEqual(ca.name, "clone-batch")
         self.assertEqual(ca.settingsArgument, "required")
+        self.assertEqual(ca.args.additional_files, ["test"])
+        self.assertEqual(ca.args.settingsWriteStyle, "full")
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
     def test_cloneSuiteCommandBasics(self):
         cs = CloneSuiteCommand()
         cs.addOptions()
-        cs.parse_args(["-d", "test"])
+        cs.parse_args(["-d", "test", "--settingsWriteStyle", "medium"])
 
         self.assertEqual(cs.name, "clone-suite")
+        self.assertEqual(cs.args.directory, "test")
+        self.assertEqual(cs.args.settingsWriteStyle, "medium")
 
 
 class TestCompareCases(unittest.TestCase):
@@ -180,10 +184,13 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
     def test_modifyCaseSettingsCommandBasics(self):
         mcs = ModifyCaseSettingsCommand()
         mcs.addOptions()
-        mcs.parse_args(["--rootDir", "/path/to/", "fake.yaml"])
+        mcs.parse_args(
+            ["--rootDir", "/path/to/", "--settingsWriteStyle", "medium", "fake.yaml"]
+        )
 
         self.assertEqual(mcs.name, "modify")
         self.assertEqual(mcs.args.rootDir, "/path/to/")
+        self.assertEqual(mcs.args.settingsWriteStyle, "medium")
         self.assertEqual(mcs.args.patterns, ["fake.yaml"])
 
     def test_modifyCaseSettingsCommandInvoke(self):
