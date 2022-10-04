@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Converts reactor with arbitrary axial meshing (e.g. multiple assemblies with different
 axial meshes) to one with a global uniform axial mesh.
@@ -63,18 +62,15 @@ import numpy
 
 import armi
 from armi import runLog
-from armi import settings
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.utils import iterables
 from armi.utils import plotting
 from armi.reactor import grids
+from armi.reactor.reactors import Core
 from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
-
-# unfortunate physics coupling, but still in the framework
-from armi.physics.neutronics.globalFlux import globalFluxInterface
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -99,6 +95,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._uniformMesh = None
         self.reactorParamNames = []
         self.blockParamNames = []
+        self.calcReactionRates = False
 
         # These dictionaries represent back-up data from the source reactor
         # that can be recovered if the data is not being brought back from
@@ -231,6 +228,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                             storedAssem,
                             self.blockParamNames,
                             mapNumberDensities=False,
+                            calcReactionRates=self.calcReactionRates,
                         )
 
                         # Remove the stored assembly from the temporary storage list
@@ -397,6 +395,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         destinationAssembly,
         blockParamNames=None,
         mapNumberDensities=True,
+        calcReactionRates=False,
     ):
         """
         Set state data (i.e., number densities and block-level parameters) on a assembly based on a source
@@ -426,6 +425,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
             This can show up in specific instances with moving meshes (i.e., control rods) in some applications.
             In those cases, the mapping of number densities can be treated independent of this more general
             implementation.
+        calcReactionRates : bool, optional
+            If True, the neutron reaction rates will be calculated on each block within the destination
+            assembly. Note that this will skip the reaction rate calculations for a block if it does
+            not contain a valid multi-group flux.
 
         See Also
         --------
@@ -536,6 +539,22 @@ class UniformMeshGeometryConverter(GeometryConverter):
             UniformMeshGeometryConverter._applyCachedParamValues(
                 destBlock, blockParamNames, cachedParams
             )
+
+            # If requested, the reaction rates will be calculated based on the
+            # mapped neutron flux and the XS library.
+            if calcReactionRates:
+                core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
+                if core is not None:
+                    UniformMeshGeometryConverter._calculateReactionRates(
+                        lib=core.lib, keff=core.p.keff, assem=destinationAssembly
+                    )
+                else:
+                    runLog.warning(
+                        f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
+                        "will be skipped.",
+                        single=True,
+                        label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
+                    )
 
     @staticmethod
     def _applyCachedParamValues(destBlock, paramNames, cachedParams):
@@ -732,6 +751,29 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         pass
 
+    @staticmethod
+    def _calculateReactionRates(lib, keff, assem):
+        """
+        Calculates the neutron reaction rates on the given assembly.
+
+        Notes
+        -----
+        If a block in the assembly does not contain any multi-group flux
+        than the reaction rate calculation for this block will be skipped.
+        """
+        from armi.physics.neutronics.globalFlux import globalFluxInterface
+
+        for b in assem:
+            # Checks if the block has a multi-group flux defined and if it
+            # does not then this will skip the reaction rate calculation. This
+            # is captured by the TypeError, due to a `NoneType` divide by float
+            # error.
+            try:
+                b.getMgFlux()
+            except TypeError:
+                continue
+            globalFluxInterface.calcReactionRates(b, keff, lib)
+
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
@@ -780,34 +822,6 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
             self.blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
 
-    def _checkConversion(self):
-        """
-        Make sure both reactors have the same power and that it's equal to user-input.
-
-        On the initial neutronics run, of course source power will be zero.
-        """
-        UniformMeshGeometryConverter._checkConversion(self)
-        sourcePow = self._sourceReactor.core.getTotalBlockParam("power")
-        convPow = self.convReactor.core.getTotalBlockParam("power")
-        if sourcePow > 0.0 and convPow > 0.0:
-            if abs(sourcePow - convPow) / sourcePow > 1e-5:
-                runLog.info(
-                    f"Source reactor power ({sourcePow}) is too different from "
-                    f"converted power ({convPow})."
-                )
-
-            if self._sourceReactor.p.timeNode != 0:
-                # only check on nodes other than BOC
-                expectedPow = (
-                    self._sourceReactor.core.p.power
-                    / self._sourceReactor.core.powerMultiplier
-                )
-                if sourcePow and abs(sourcePow - expectedPow) / sourcePow > 1e-5:
-                    raise ValueError(
-                        f"Source reactor power ({sourcePow}) is too different from "
-                        f"user-input power ({expectedPow})."
-                    )
-
     def _mapStateFromReactorToOther(
         self, sourceReactor, destReactor, mapNumberDensities=True
     ):
@@ -840,23 +854,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 aDest,
                 self.blockParamNames,
                 mapNumberDensities,
+                calcReactionRates=self.calcReactionRates,
             )
-
-            # If requested, the reaction rates will be calculated based on the
-            # mapped neutron flux and the XS library.
-            if self.calcReactionRates:
-                for b in aDest:
-                    # Checks if the block has a multi-group flux defined and if it
-                    # does not then this will skip the reaction rate calculation. This
-                    # is captured by the TypeError, due to a `NoneType` divide by float
-                    # error.
-                    try:
-                        b.getMgFlux()
-                    except TypeError:
-                        continue
-                    globalFluxInterface.calcReactionRates(
-                        b, destReactor.core.p.keff, destReactor.core.lib
-                    )
 
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
