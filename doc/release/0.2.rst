@@ -9,6 +9,7 @@ Release Date: TBD
 What's new in ARMI
 ------------------
 #. TBD
+#. Added writer style option to ``SettingsWriter`` and propagated it back to allow user/CLI access to the argument (`PR#904 <https://github.com/terrapower/armi/pull/904>`_)
 
 Bug fixes
 ---------
