@@ -97,21 +97,36 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
-        ca.parse_args([ARMI_RUN_PATH, "--additional-files", "test"])
+        ca.parse_args(["--additional-files", "test", "--settingsWriteStyle", "full"])
 
         self.assertEqual(ca.name, "clone-batch")
         self.assertEqual(ca.settingsArgument, "required")
         self.assertEqual(ca.args.additional_files, ["test"])
+        self.assertEqual(ca.args.settingsWriteStyle, "full")
+
+    def test_cloneArmiRunCommandBatchWriteShort(self):
+        ca = CloneArmiRunCommandInteractive()
+        ca.addOptions()
+
+        with TemporaryDirectoryChanger():
+            copyfile(ARMI_RUN_PATH, "test.yaml")
+
+            ca.parse_args(["test.yaml"])
+            ca.invoke()
+            # validate a default value was removed
+            txt = open("test.yaml", "r").read()
+            self.assertNotIn("availabilityFactor", txt)
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
     def test_cloneSuiteCommandBasics(self):
         cs = CloneSuiteCommand()
         cs.addOptions()
-        cs.parse_args(["-d", "test"])
+        cs.parse_args(["-d", "test", "--settingsWriteStyle", "medium"])
 
         self.assertEqual(cs.name, "clone-suite")
         self.assertEqual(cs.args.directory, "test")
+        self.assertEqual(cs.args.settingsWriteStyle, "medium")
 
 
 class TestCompareCases(unittest.TestCase):
