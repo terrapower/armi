@@ -23,7 +23,11 @@ import unittest
 from armi.__main__ import main
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
-from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
+from armi.cli.clone import (
+    CloneArmiRunCommandBatch,
+    CloneArmiRunCommandInteractive,
+    CloneSuiteCommand,
+)
 from armi.cli.compareCases import CompareCases, CompareSuites
 from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
 from armi.cli.migrateInputs import MigrateInputs
@@ -32,7 +36,7 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.tests import mockRunLogs, TEST_ROOT
+from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -63,19 +67,64 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
-        ca.parse_args(["--additional-files", "test"])
+        ca.parse_args(["--additional-files", "test", "--settingsWriteStyle", "full"])
 
         self.assertEqual(ca.name, "clone-batch")
         self.assertEqual(ca.settingsArgument, "required")
+        self.assertEqual(ca.args.additional_files, ["test"])
+        self.assertEqual(ca.args.settingsWriteStyle, "full")
+
+    def test_cloneArmiRunCommandBatchWriteShort(self):
+        ca = CloneArmiRunCommandInteractive()
+        ca.addOptions()
+
+        with TemporaryDirectoryChanger():
+            copyfile(ARMI_RUN_PATH, "test.yaml")
+
+            ca.parse_args(["test.yaml"])
+            ca.invoke()
+            # validate a default value was removed
+            txt = open("test.yaml", "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+
+    # def test_cloneArmiRunCommandBatchWriteMedium(self):
+    #     ca = CloneArmiRunCommandBatch()
+    #     ca.addOptions()
+    #
+    #     with TemporaryDirectoryChanger():
+    #         # copy over settings files
+    #         for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
+    #             copyfile(os.path.join(TEST_ROOT, fileName), fileName)
+    #
+    #         # pass in default value for numProcessors
+    #         mcs.parse_args(
+    #             [
+    #                 "--numProcessors=1",
+    #                 "--rootDir",
+    #                 ".",
+    #                 "--settingsWriteStyle",
+    #                 "medium",
+    #                 "armiRun.yaml",
+    #             ]
+    #         )
+    #
+    #         # invoke the CLI
+    #         mcs.invoke()
+    #
+    #         # validate the numProcessors is written even though it is the default value
+    #         txt = open("armiRun.yaml", "r").read()
+    #         self.assertIn("numProcessors: 1", txt)
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
     def test_cloneSuiteCommandBasics(self):
         cs = CloneSuiteCommand()
         cs.addOptions()
-        cs.parse_args(["-d", "test"])
+        cs.parse_args(["-d", "test", "--settingsWriteStyle", "medium"])
 
         self.assertEqual(cs.name, "clone-suite")
+        self.assertEqual(cs.args.directory, "test")
+        self.assertEqual(cs.args.settingsWriteStyle, "medium")
 
 
 class TestCompareCases(unittest.TestCase):
@@ -180,10 +229,13 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
     def test_modifyCaseSettingsCommandBasics(self):
         mcs = ModifyCaseSettingsCommand()
         mcs.addOptions()
-        mcs.parse_args(["--rootDir", "/path/to/", "fake.yaml"])
+        mcs.parse_args(
+            ["--rootDir", "/path/to/", "--settingsWriteStyle", "medium", "fake.yaml"]
+        )
 
         self.assertEqual(mcs.name, "modify")
         self.assertEqual(mcs.args.rootDir, "/path/to/")
+        self.assertEqual(mcs.args.settingsWriteStyle, "medium")
         self.assertEqual(mcs.args.patterns, ["fake.yaml"])
 
     def test_modifyCaseSettingsCommandInvoke(self):
@@ -204,6 +256,34 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
             # validate the change to numProcessors was made
             txt = open("armiRun.yaml", "r").read()
             self.assertIn("numProcessors: 333", txt)
+
+    def test_modifyCaseSettingsCommandWriteMedium(self):
+        mcs = ModifyCaseSettingsCommand()
+        mcs.addOptions()
+
+        with TemporaryDirectoryChanger():
+            # copy over settings files
+            for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
+                copyfile(os.path.join(TEST_ROOT, fileName), fileName)
+
+            # pass in default value for numProcessors
+            mcs.parse_args(
+                [
+                    "--numProcessors=1",
+                    "--rootDir",
+                    ".",
+                    "--settingsWriteStyle",
+                    "medium",
+                    "armiRun.yaml",
+                ]
+            )
+
+            # invoke the CLI
+            mcs.invoke()
+
+            # validate the numProcessors is written even though it is the default value
+            txt = open("armiRun.yaml", "r").read()
+            self.assertIn("numProcessors: 1", txt)
 
 
 class TestReportsEntryPoint(unittest.TestCase):
