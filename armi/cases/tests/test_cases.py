@@ -543,6 +543,20 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newFilepath = os.path.join(newDir.destination, shuffleFile)
             self.assertEqual(newSettings[testSetting], newFilepath)
 
+    def test_copyInterfaceInputs_absPath(self):
+        testSetting = "shuffleLogic"
+        cs = settings.Settings(ARMI_RUN_PATH)
+        shuffleFile = cs[testSetting]
+        absFile = os.path.dirname(os.path.abspath(ARMI_RUN_PATH))
+        absFile = str(os.path.join(absFile, os.path.basename(shuffleFile)))
+        cs = cs.modified(newSettings={testSetting: absFile})
+
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            self.assertEqual(str(newSettings[testSetting]), absFile)
+
 
 if __name__ == "__main__":
     unittest.main()
