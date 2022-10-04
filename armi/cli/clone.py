@@ -28,11 +28,6 @@ class CloneArmiRunCommandBatch(EntryPoint):
     settingsArgument = "required"
 
     def addOptions(self):
-        for settingName in self.cs.keys():
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in ["verbosity", "branchVerbosity"]:
-                self.createOptionFromSetting(settingName)
         self.parser.add_argument(
             "--additional-files",
             nargs="*",
@@ -46,6 +41,11 @@ class CloneArmiRunCommandBatch(EntryPoint):
             help="Writing style for which settings get written back to the settings files.",
             choices=["short", "medium", "full"],
         )
+        for settingName in self.cs.keys():
+            # verbosity and branchVerbosity already have command line options in the default parser
+            # adding them again would result in an error from argparse.
+            if settingName not in ["verbosity", "branchVerbosity"]:
+                self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
         # get the case title.
