@@ -24,6 +24,10 @@ from armi.scripts.migration.crossSectionBlueprintsToSettings import (
 )
 from armi.settings import setting
 from armi.utils import directoryChangers
+from armi.settings.fwSettings.globalSettings import (
+    CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+)
 
 
 CONF_BC_COEFFICIENT = "bcCoefficient"
@@ -506,6 +510,19 @@ def getNeutronicsSettingValidators(inspector):
                 inspector.cs.path
             ),
             lambda: migrateCrossSectionsFromBlueprints(inspector.cs),
+        )
+    )
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_DETAILED_AXIAL_EXPANSION]
+            and inspector.cs[CONF_NON_UNIFORM_ASSEM_FLAGS],
+            f"The use of {CONF_DETAILED_AXIAL_EXPANSION} and {CONF_NON_UNIFORM_ASSEM_FLAGS} is not supported.",
+            "Automatically set non-uniform assembly treatment to its default?",
+            lambda: inspector._assignCS(
+                CONF_NON_UNIFORM_ASSEM_FLAGS,
+                inspector.cs.getSetting(CONF_NON_UNIFORM_ASSEM_FLAGS).default,
+            ),
         )
     )
 
