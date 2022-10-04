@@ -341,12 +341,14 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "linPow",
             units="W/m",
-            description=("Pin-averaged linear heat rate, which is calculated by evaluating the block power and dividing "
-                         "by the number of pins. If gamma transport is enabled, then this represents the combined "
-                         "neutron and gamma heating. If gamma transport is disabled then this represents the energy "
-                         "generation in the pin, where gammas are assumed to deposit their energy locally. Note that this "
-                         "value does not implicitly account for axial and radial peaking factors within the block. Use `linPowByPin` "
-                         "for obtaining the pin linear heat rate with peaking factors included."),
+            description=(
+                "Pin-averaged linear heat rate, which is calculated by evaluating the block power and dividing "
+                "by the number of pins. If gamma transport is enabled, then this represents the combined "
+                "neutron and gamma heating. If gamma transport is disabled then this represents the energy "
+                "generation in the pin, where gammas are assumed to deposit their energy locally. Note that this "
+                "value does not implicitly account for axial and radial peaking factors within the block. Use `linPowByPin` "
+                "for obtaining the pin linear heat rate with peaking factors included."
+            ),
             location=ParamLocation.AVERAGE,
             default=0.0,
             categories=[parameters.Category.detailedAxialExpansion],
@@ -362,11 +364,13 @@ def _getNeutronicsBlockParams():
             "linPowByPin",
             setter=linPowByPin,
             units="W/cm",
-            description=("Pin linear linear heat rate, which is calculated through flux reconstruction and "
-                         "accounts for axial and radial peaking factors. This differs from the `linPow` "
-                         "parameter, which assumes no axial and radial peaking in the block as this information "
-                         "is unavailable without detailed flux reconstruction. The same application of neutron and gamma "
-                         "heating results applies."),
+            description=(
+                "Pin linear linear heat rate, which is calculated through flux reconstruction and "
+                "accounts for axial and radial peaking factors. This differs from the `linPow` "
+                "parameter, which assumes no axial and radial peaking in the block as this information "
+                "is unavailable without detailed flux reconstruction. The same application of neutron and gamma "
+                "heating results applies."
+            ),
             location=ParamLocation.CHILDREN,
             default=None,
         )
