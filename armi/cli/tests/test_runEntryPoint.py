@@ -47,7 +47,7 @@ class TestInitializationEntryPoints(unittest.TestCase):
         # if a new ARMI framework entry point is added. This is a bit hacky,
         # but will help demonstrate that entry point classes can be initialized
         # and the `addOptions` and public API is tested.
-        self.assertEqual(len(entryPoints), 17)
+        self.assertEqual(len(entryPoints), 18)
 
         for e in entryPoints:
             entryPoint = e()
