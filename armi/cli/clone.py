@@ -29,10 +29,8 @@ class CloneArmiRunCommandBatch(EntryPoint):
 
     def addOptions(self):
         for settingName in self.cs.keys():
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in ["verbosity", "branchVerbosity"]:
-                self.createOptionFromSetting(settingName)
+            self.createOptionFromSetting(settingName)
+
         self.parser.add_argument(
             "--additional-files",
             nargs="*",
@@ -65,10 +63,8 @@ class CloneSuiteCommand(EntryPoint):
 
     def addOptions(self):
         for settingName in self.cs.environmentSettings:
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in {"verbosity", "branchVerbosity"}:
-                self.createOptionFromSetting(settingName)
+            self.createOptionFromSetting(settingName)
+
         self.parser.add_argument(
             "--directory",
             "-d",

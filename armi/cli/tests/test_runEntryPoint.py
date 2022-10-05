@@ -21,6 +21,7 @@ import sys
 import unittest
 
 from armi.__main__ import main
+from armi.cli.entryPoint import EntryPoint
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
@@ -34,6 +35,37 @@ from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
 from armi.tests import mockRunLogs, TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.dynamicImporter import getEntireFamilyTree
+
+
+class TestInitializationEntryPoints(unittest.TestCase):
+    def test_entryPointInitialization(self):
+        """Tests the initialization of all subclasses of `EntryPoint`."""
+        entryPoints = getEntireFamilyTree(EntryPoint)
+
+        # Note that this is a hard coded number that should be incremented
+        # if a new ARMI framework entry point is added. This is a bit hacky,
+        # but will help demonstrate that entry point classes can be initialized
+        # and the `addOptions` and public API is tested.
+        self.assertEqual(len(entryPoints), 17)
+
+        for e in entryPoints:
+            entryPoint = e()
+            entryPoint.addOptions()
+            settingsArg = None
+            if entryPoint.settingsArgument is not None:
+                for a in entryPoint.parser._actions:
+                    if "settings_file" in a.dest:
+                        settingsArg = a
+                        break
+                self.assertIsNotNone(
+                    settingsArg,
+                    msg=(
+                        f"A settings file argument was expected for {entryPoint}, "
+                        f"but does not exist. This is a error in the EntryPoint "
+                        f"implementation."
+                    ),
+                )
 
 
 class TestCheckInputEntryPoint(unittest.TestCase):

@@ -69,11 +69,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
             help="Pattern(s) to use to find match file names (e.g. *.yaml)",
         )
         for settingName in self.cs.keys():
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in ["verbosity", "branchVerbosity"]:
-                # can't modify case title, just use clone
-                self.createOptionFromSetting(settingName, suppressHelp=True)
+            self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
         csInstances = settings.recursivelyLoadSettingsFiles(
