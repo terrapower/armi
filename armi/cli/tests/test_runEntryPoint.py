@@ -63,23 +63,21 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
-        ca.parse_args(["--additional-files", "test", "--settingsWriteStyle", "full"])
+        ca.parse_args(["--additional-files", "test"])
 
         self.assertEqual(ca.name, "clone-batch")
         self.assertEqual(ca.settingsArgument, "required")
         self.assertEqual(ca.args.additional_files, ["test"])
-        self.assertEqual(ca.args.settingsWriteStyle, "full")
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
     def test_cloneSuiteCommandBasics(self):
         cs = CloneSuiteCommand()
         cs.addOptions()
-        cs.parse_args(["-d", "test", "--settingsWriteStyle", "medium"])
+        cs.parse_args(["-d", "test"])
 
         self.assertEqual(cs.name, "clone-suite")
         self.assertEqual(cs.args.directory, "test")
-        self.assertEqual(cs.args.settingsWriteStyle, "medium")
 
 
 class TestCompareCases(unittest.TestCase):
