@@ -29,6 +29,7 @@ import io
 import logging
 import os
 from copy import copy, deepcopy
+from ruamel.yaml import YAML
 
 from armi import context
 from armi import runLog
@@ -391,7 +392,6 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-        from ruamel.yaml import YAML
 
         # We do not want to load these as settings, but just grab the dictionary straight
         # from the settings file to know which settings are user-defined
