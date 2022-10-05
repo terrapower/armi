@@ -29,7 +29,7 @@ class CloneArmiRunCommandBatch(EntryPoint):
 
     def addOptions(self):
         for settingName in self.cs.keys():
-            self.createOptionFromSetting(settingName)
+            self.createOptionFromSetting(settingName, suppressHelp=True)
 
         self.parser.add_argument(
             "--additional-files",
