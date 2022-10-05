@@ -32,8 +32,14 @@ from armi import context
 from armi.settings.setting import Setting
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
+    InvalidSettingsStopProcess,
     SettingException,
 )
+
+# Constants defining valid output styles
+WRITE_SHORT = "short"
+WRITE_MEDIUM = "medium"
+WRITE_FULL = "full"
 
 
 class Roots:
@@ -239,7 +245,7 @@ class SettingsReader:
 
     def _applySettings(self, name, val):
         """Add a setting, if it is valid. Capture invalid settings."""
-        nameToSet, _wasRenamed = self._renamer.renameSetting(name)
+        _nameToSet, _wasRenamed = self._renamer.renameSetting(name)
 
         if name not in self.cs:
             self.invalidSettings.add(name)
@@ -255,26 +261,25 @@ class SettingsReader:
 class SettingsWriter:
     """Writes settings out to files.
 
-    This can write in two styles:
+    This can write in three styles:
 
     short
         setting values that are not their defaults only
+    medium
+        preserves all settings originally in file even if they match the default value
     full
         all setting values regardless of default status
 
     """
 
-    class Styles:
-        """Enumeration of valid output styles"""
-
-        short = "short"
-        full = "full"
-
-    def __init__(self, settings_instance, style="short"):
+    def __init__(self, settings_instance, style="short", settingsSetByUser=[]):
         self.cs = settings_instance
         self.style = style
-        if style not in {self.Styles.short, self.Styles.full}:
+        if style not in {WRITE_SHORT, WRITE_MEDIUM, WRITE_FULL}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
+        # The writer should know about the old settings it is overwriting,
+        # but only sometimes (when the style is medium)
+        self.settingsSetByUser = settingsSetByUser
 
     @staticmethod
     def _getVersion():
@@ -317,10 +322,17 @@ class SettingsWriter:
         This is general so it can be dumped to whatever file format.
         """
         settingData = collections.OrderedDict()
-        for _settingName, settingObject in iter(
+        for settingName, settingObject in iter(
             sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
-            if self.style == self.Styles.short and not settingObject.offDefault:
+            if self.style == WRITE_SHORT and not settingObject.offDefault:
+                continue
+
+            if (
+                self.style == WRITE_MEDIUM
+                and not settingObject.offDefault
+                and settingName not in self.settingsSetByUser
+            ):
                 continue
 
             attribs = settingObject.getCustomAttributes().items()

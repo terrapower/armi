@@ -29,6 +29,7 @@ import io
 import logging
 import os
 from copy import copy, deepcopy
+from ruamel.yaml import YAML
 
 from armi import context
 from armi import runLog
@@ -357,24 +358,70 @@ class Settings:
 
         Notes
         -----
-        This resets the current CS's path to the newly written path.
+        This resets the current CS's path to the newly written absolute path.
 
         Parameters
         ----------
         fName : str
             the file to write to
-        style : str
-            the method of output to be used when creating the file for
-            the current state of settings
+        style : str (optional)
+            the method of output to be used when creating the file for the current
+            state of settings
         """
         self.path = pathTools.armiAbsPath(fName)
+        if style == "medium":
+            settingsSetByUser = self.getSettingsSetByUser(self.path)
+        else:
+            settingsSetByUser = []
         with open(self.path, "w") as stream:
-            writer = self.writeToYamlStream(stream, style)
+            writer = self.writeToYamlStream(stream, style, settingsSetByUser)
         return writer
 
-    def writeToYamlStream(self, stream, style="short"):
-        """Write settings in yaml format to an arbitrary stream."""
-        writer = settingsIO.SettingsWriter(self, style=style)
+    def getSettingsSetByUser(self, fPath):
+        """
+        Grabs the list of settings in the user-defined input file so that the settings
+        can be tracked outside of a Settings Object
+
+        Parameters
+        ----------
+        fPath : str
+            The absolute file path of the settings file
+
+        Returns
+        -------
+        userSettingsNames : list
+            The settings names read in from a yaml settings file
+        """
+
+        # We do not want to load these as settings, but just grab the dictionary straight
+        # from the settings file to know which settings are user-defined
+        with open(fPath, "r") as stream:
+            yaml = YAML()
+            tree = yaml.load(stream)
+            userSettings = tree[settingsIO.Roots.CUSTOM]
+        userSettingsNames = list(userSettings.keys())
+        return userSettingsNames
+
+    def writeToYamlStream(self, stream, style="short", settingsSetByUser=[]):
+        """
+        Write settings in yaml format to an arbitrary stream.
+
+        Parameters
+        ----------
+        stream : file object
+            Writable file stream
+        style : str (optional)
+            Writing style for settings file. Can be short, medium, or full.
+        settingsSetByUser : list
+            List of settings names in user-defined settings file
+
+        Returns
+        -------
+        writer : SettingsWriter object
+        """
+        writer = settingsIO.SettingsWriter(
+            self, style=style, settingsSetByUser=settingsSetByUser
+        )
         writer.writeYaml(stream)
         return writer
 
