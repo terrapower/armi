@@ -87,8 +87,9 @@ class Mode(enum.Enum):
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.join(ROOT, "..")
 RES = os.path.join(ROOT, "resources")
-DOC = os.path.abspath(os.path.join(ROOT, "..", "doc"))
+DOC = os.path.abspath(os.path.join(PROJECT_ROOT, "doc"))
 USER = getpass.getuser()
 START_TIME = time.ctime()
 

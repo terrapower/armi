@@ -440,7 +440,7 @@ class Case:
         covFile : str
             path of coveragerc file
         """
-        covRcDir = os.path.abspath(os.path.join(context.ROOT, ".."))
+        covRcDir = os.path.abspath(context.PROJECT_ROOT)
         if platform.system() == "Windows":
             if makeCopy == True:
                 # Make a copy of the file without the dot in the name

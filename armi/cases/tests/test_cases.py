@@ -123,7 +123,7 @@ class TestArmiCase(unittest.TestCase):
 
     def test_getCoverageRcFile(self):
         case = cases.Case(settings.Settings())
-        covRcDir = os.path.abspath(os.path.join(context.ROOT, ".."))
+        covRcDir = os.path.abspath(context.PROJECT_ROOT)
         # Don't actually copy the file, just check the file paths match
         covRcFile = case._getCoverageRcFile(makeCopy=False)
         if platform.system() == "Windows":
