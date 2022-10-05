@@ -363,9 +363,9 @@ class Settings:
         ----------
         fName : str
             the file to write to
-        style : str
-            the method of output to be used when creating the file for
-            the current state of settings
+        style : str (optional)
+            the method of output to be used when creating the file for the current
+            state of settings
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
@@ -409,14 +409,11 @@ class Settings:
         Parameters
         ----------
         stream : file object
-            Write-only file stream
-
-        style : str
+            Writable file stream
+        style : str (optional)
             Writing style for settings file. Can be short, medium, or full.
-
         settingsSetByUser : list
             List of settings names in user-defined settings file
-
 
         Returns
         -------
