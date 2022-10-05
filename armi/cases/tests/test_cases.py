@@ -19,10 +19,7 @@ import io
 import logging
 import os
 import platform
-import sys
 import unittest
-
-import coverage
 
 from armi import cases
 from armi import context
@@ -123,6 +120,16 @@ class TestArmiCase(unittest.TestCase):
             newCase = cases.Case(newCs)
             for name, val in vals.items():
                 self.assertEqual(newCase.independentVariables[name], val)
+
+    def test_getCoverageRcFile(self):
+        case = cases.Case(settings.Settings())
+        covRcDir = os.path.abspath(os.path.join(context.ROOT, ".."))
+        # Don't actually copy the file, just check the file paths match
+        covRcFile = case._getCoverageRcFile(makeCopy=False)
+        if platform.system() == "Windows":
+            self.assertEqual(covRcFile, os.path.join(covRcDir, "coveragerc"))
+        else:
+            self.assertEqual(covRcFile, os.path.join(covRcDir, ".coveragerc"))
 
     def test_startCoverage(self):
         with directoryChangers.TemporaryDirectoryChanger():
