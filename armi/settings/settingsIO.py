@@ -32,6 +32,7 @@ from armi import context
 from armi.settings.setting import Setting
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
+    InvalidSettingsStopProcess,
     SettingException,
 )
 
@@ -244,7 +245,7 @@ class SettingsReader:
 
     def _applySettings(self, name, val):
         """Add a setting, if it is valid. Capture invalid settings."""
-        nameToSet, _wasRenamed = self._renamer.renameSetting(name)
+        _nameToSet, _wasRenamed = self._renamer.renameSetting(name)
 
         if name not in self.cs:
             self.invalidSettings.add(name)
@@ -321,7 +322,7 @@ class SettingsWriter:
         This is general so it can be dumped to whatever file format.
         """
         settingData = collections.OrderedDict()
-        for _settingName, settingObject in iter(
+        for settingName, settingObject in iter(
             sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
             if self.style == WRITE_SHORT and not settingObject.offDefault:
@@ -330,7 +331,7 @@ class SettingsWriter:
             if (
                 self.style == WRITE_MEDIUM
                 and not settingObject.offDefault
-                and _settingName not in self.settingsSetByUser
+                and settingName not in self.settingsSetByUser
             ):
                 continue
 
