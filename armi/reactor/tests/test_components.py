@@ -20,7 +20,6 @@ import copy
 import math
 import unittest
 
-from armi import nuclearDataIO
 from armi.reactor import components
 from armi.reactor.components import (
     Component,
@@ -46,8 +45,6 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.reactor.components.component import getReactionRateDict
-from armi.tests import ISOAA_PATH
 from armi.utils import units
 
 
@@ -1412,15 +1409,6 @@ class TestMaterialAdjustments(unittest.TestCase):
     def test_getEnrichment(self):
         self.fuel.adjustMassEnrichment(0.3)
         self.assertAlmostEqual(self.fuel.getEnrichment(), 0.3)
-
-
-class TestGetReactionRateDict(unittest.TestCase):
-    def test_getReactionRateDict(self):
-        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(
-            nucName="PU239", lib=lib, xsType="A", mgFlux=1, nDens=1
-        )
-        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
 
 if __name__ == "__main__":

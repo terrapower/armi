@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test plotting"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-acces
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
 import unittest
@@ -22,10 +22,14 @@ import numpy as np
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils.reportPlotting import (
+    buVsTime,
     createPlotMetaData,
     keffVsTime,
+    movesVsCycle,
     plotAxialProfile,
     plotCoreOverviewRadar,
+    valueVsTime,
+    xsHistoryVsTime,
 )
 
 
@@ -73,11 +77,75 @@ class TestRadar(unittest.TestCase):
         os.remove(fName + ".png")
 
     def test_keffVsTime(self):
-        t = list(range(75))
+        t = list(range(12))
         ext = "png"
-        keffVsTime(self.r, t, t, keffUnc=[], extension=ext)
+
+        # plot with no keff function
+        keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
         os.remove("R-armiRun.keff.png")
+
+        # plot with a keff function
+        keffVsTime(self.r.name, t, t, t, extension=ext)
+        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        os.remove("R-armiRun.keff.png")
+
+    def test_valueVsTime(self):
+        t = list(range(12))
+        ext = "png"
+        valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
+        self.assertTrue(os.path.exists("R-armiRun.val.png"))
+        self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
+        os.remove("R-armiRun.val.png")
+
+    def test_buVsTime(self):
+        name = "buvstime"
+        scalars = {
+            "time": [1, 2, 3, 4],
+            "maxBuI": [6, 7, 8, 9],
+            "maxBuF": [6, 7, 8, 9],
+            "maxDPA": [6, 7, 8, 9],
+        }
+        figName = name + ".bu.png"
+        buVsTime(name, scalars, "png")
+        self.assertTrue(os.path.exists(figName))
+        self.assertGreater(os.path.getsize(figName), 0)
+        os.remove(figName)
+
+    def test_movesVsCycle(self):
+        name = "movesVsCycle"
+        scalars = {
+            "cycle": [1, 2, 3, 4],
+            "maxBuF": [6, 7, 8, 9],
+            "maxBuI": [6, 7, 8, 9],
+            "maxDPA": [6, 7, 8, 9],
+            "numMoves": [2, 2, 2, 2],
+            "time": [1, 2, 3, 4],
+        }
+        figName = name + ".moves.png"
+        movesVsCycle(name, scalars, "png")
+        self.assertTrue(os.path.exists(figName))
+        self.assertGreater(os.path.getsize(figName), 0)
+        os.remove(figName)
+
+    def test_xsHistoryVsTime(self):
+        name = "xsHistoryVsTime"
+
+        class HistTester:
+            def __init__(self):
+                self.xsHistory = {
+                    1: [[0, 1], [0, 2], [0, 3]],
+                    2: [[0, 5], [0, 6], [0, 7]],
+                }
+
+        history = HistTester()
+        figName = name + ".bugroups.png"
+        xsHistoryVsTime(name, history, [], "png")
+        self.assertTrue(os.path.exists(figName))
+        self.assertGreater(os.path.getsize(figName), 0)
+        os.remove(figName)
 
 
 if __name__ == "__main__":
