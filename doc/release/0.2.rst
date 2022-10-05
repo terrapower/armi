@@ -9,6 +9,7 @@ Release Date: TBD
 What's new in ARMI
 ------------------
 #. TBD
+#. Cleanup of stale ``coveragerc`` file (`PR#923 <https://github.com/terrapower/armi/pull/923>`_)
 
 Bug fixes
 ---------
