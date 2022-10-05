@@ -274,7 +274,8 @@ class TestUniformMesh(unittest.TestCase):
         for b in self.converter.convReactor.core.getBlocks():
             b.p.mgFlux = range(33)
             b.p.adjMgFlux = range(33)
-            b.p.flux = 5
+            b.p.fastFlux = 2.0
+            b.p.flux = 5.0
             b.p.power = 5.0
             b.p.pdens = 0.5
 
@@ -292,6 +293,7 @@ class TestUniformMesh(unittest.TestCase):
         self.converter.applyStateToOriginal()
 
         for b in self.r.core.getBlocks():
+            self.assertAlmostEqual(b.p.fastFlux, 2.0)
             self.assertAlmostEqual(b.p.flux, 5.0)
             self.assertAlmostEqual(b.p.pdens, 0.5)
 

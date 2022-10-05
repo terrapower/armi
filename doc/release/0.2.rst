@@ -12,7 +12,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. TBD
+#. Fixed bug in ``fastFlux`` block parameter mapping in the ``UniformMeshConverter`` by applying it to the ``detailedAxialExpansion`` category.
 
 
 ARMI v0.2.4
