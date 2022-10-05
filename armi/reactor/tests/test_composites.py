@@ -17,6 +17,7 @@
 from copy import deepcopy
 import unittest
 
+from armi import nuclearDataIO
 from armi import runLog
 from armi import settings
 from armi.nucDirectory import nucDir, nuclideBases
@@ -28,11 +29,13 @@ from armi.reactor import components
 from armi.reactor import composites
 from armi.reactor import assemblies
 from armi.reactor.components import basicShapes
+from armi.reactor.composites import getReactionRateDict
 from armi.reactor import grids
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.tests import ISOAA_PATH
 
 
 class MockBP:
@@ -606,6 +609,15 @@ class TestMiscMethods(unittest.TestCase):
         obj2.p.percentBu = 15.2
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
+
+
+class TestGetReactionRateDict(unittest.TestCase):
+    def test_getReactionRateDict(self):
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        rxRatesDict = getReactionRateDict(
+            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
+        )
+        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
 
 if __name__ == "__main__":
