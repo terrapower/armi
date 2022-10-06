@@ -725,6 +725,7 @@ def _getNeutronicsBlockParams():
             units="1/cm^2/s",
             description="Neutron flux above 100keV",
             location=ParamLocation.AVERAGE,
+            categories=["detailedAxialExpansion"],
         )
 
         pb.defParam(

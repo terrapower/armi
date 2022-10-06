@@ -8,11 +8,14 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+
 #. TBD
+#. Cleanup of stale ``coveragerc`` file (`PR#923 <https://github.com/terrapower/armi/pull/923>`_)
+#. Added writer style option to ``SettingsWriter`` and added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_)
 
 Bug fixes
 ---------
-#. TBD
+#. Fixed bug in ``fastFlux`` block parameter mapping in the ``UniformMeshConverter`` by applying it to the ``detailedAxialExpansion`` category.
 
 
 ARMI v0.2.4
