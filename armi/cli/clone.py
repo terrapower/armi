@@ -28,15 +28,16 @@ class CloneArmiRunCommandBatch(EntryPoint):
     settingsArgument = "required"
 
     def addOptions(self):
-        for settingName in self.cs.keys():
-            self.createOptionFromSetting(settingName, suppressHelp=True)
-
         self.parser.add_argument(
             "--additional-files",
             nargs="*",
             default=[],
             help="Additional files from the source directory to copy into the target directory",
         )
+        # somehow running `armi clone-batch -h` on the command line requires this to
+        # not be first?
+        for settingName in self.cs.keys():
+            self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
         # get the case title.
