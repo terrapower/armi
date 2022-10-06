@@ -72,10 +72,11 @@ class TestCheckInputEntryPoint(unittest.TestCase):
     def test_checkInputEntryPointBasics(self):
         ci = CheckInputEntryPoint()
         ci.addOptions()
-        ci.parse_args([ARMI_RUN_PATH])
+        ci.parse_args([ARMI_RUN_PATH, "-C"])
 
         self.assertEqual(ci.name, "check-input")
-        self.assertEqual(ci.settingsArgument, "optional")
+        self.assertEqual(ci.args.patterns, [ARMI_RUN_PATH])
+        self.assertEqual(ci.args.skip_checks, True)
 
     def test_checkInputEntryPointInvoke(self):
         ci = CheckInputEntryPoint()
@@ -87,7 +88,7 @@ class TestCheckInputEntryPoint(unittest.TestCase):
 
             ci.invoke()
 
-            # self.assertIn(ARMI_RUN_PATH, mock._outputStream)
+            self.assertIn(ARMI_RUN_PATH, mock._outputStream)
             self.assertIn("input is self consistent", mock._outputStream)
 
 

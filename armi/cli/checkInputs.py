@@ -60,7 +60,6 @@ class CheckInputEntryPoint(EntryPoint):
     """
 
     name = "check-input"
-    settingsArgument = "optional"
 
     def addOptions(self):
         self.parser.add_argument(
@@ -140,4 +139,4 @@ class CheckInputEntryPoint(EntryPoint):
         )
 
         if any(t[2] != "PASSED" or t[3] != "PASSED" for t in table):
-            sys.exit(-1)
+            runLog.warning(f"Check did not pass with flying colors")
