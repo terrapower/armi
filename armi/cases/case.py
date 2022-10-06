@@ -441,16 +441,13 @@ class Case:
             path of coveragerc file
         """
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
+        covFile = os.path.join(covRcDir, ".coveragerc")
         if platform.system() == "Windows":
+            covFileWin = os.path.join(covRcDir, "coveragerc")
             if makeCopy == True:
                 # Make a copy of the file without the dot in the name
-                shutil.copy(
-                    os.path.join(covRcDir, ".coveragerc"),
-                    os.path.join(covRcDir, "coveragerc"),
-                )
-            covFile = os.path.join(covRcDir, "coveragerc")
-        else:
-            covFile = os.path.join(covRcDir, ".coveragerc")
+                shutil.copy(covFile, covFileWin)
+            return covFileWin
         return covFile
 
     def _startProfiling(self):
