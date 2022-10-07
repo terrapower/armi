@@ -15,12 +15,14 @@
 r""" Tests for the Database3 class
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+import os
 import subprocess
 import unittest
 
 import h5py
 import numpy
 
+from armi import context
 from armi.bookkeeping.db import _getH5File, database3
 from armi.reactor import grids
 from armi.reactor import parameters
@@ -682,6 +684,23 @@ class TestLocationPacking(unittest.TestCase):
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
         self.assertEqual(unpackedData[2][0], (7, 8, 9))
         self.assertEqual(unpackedData[2][1], (10, 11, 12))
+
+    def test_close(self):
+        intendedFileName = "xyz.h5"
+
+        db = database3.Database3(intendedFileName, "w")
+        self.assertEqual(db._fileName, intendedFileName)
+        self.assertIsNone(db._fullPath)  # this isn't set until the db is opened
+
+        db.open()
+        self.assertEqual(
+            db._fullPath, os.path.join(context.getFastPath(), intendedFileName)
+        )
+
+        db.close()  # this should move the file out of the FAST_PATH
+        self.assertEqual(
+            db._fullPath, os.path.join(os.path.abspath("."), intendedFileName)
+        )
 
 
 if __name__ == "__main__":
