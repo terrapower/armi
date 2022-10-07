@@ -72,10 +72,10 @@ class TestCheckInputEntryPoint(unittest.TestCase):
     def test_checkInputEntryPointBasics(self):
         ci = CheckInputEntryPoint()
         ci.addOptions()
-        ci.parse_args([ARMI_RUN_PATH, "-C"])
+        ci.parse_args(["/path/to/fake.yaml", "-C"])
 
         self.assertEqual(ci.name, "check-input")
-        self.assertEqual(ci.args.patterns, [ARMI_RUN_PATH])
+        self.assertEqual(ci.args.patterns, ["/path/to/fake.yaml"])
         self.assertEqual(ci.args.skip_checks, True)
         self.assertEqual(ci.args.generate_design_summary, False)
 
