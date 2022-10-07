@@ -70,19 +70,6 @@ class CheckInputEntryPoint(EntryPoint):
             help="Generate a report to summarize the inputs",
         )
         self.parser.add_argument(
-            "--full-core-map",
-            "-m",
-            action="store_true",
-            default=False,
-            help="Generate the full core reactor map in the design report",
-        )
-        self.parser.add_argument(
-            "--disable-block-axial-mesh",
-            action="store_true",
-            default=False,
-            help="Remove the additional block axial mesh points on the assembly type figure(s)",
-        )
-        self.parser.add_argument(
             "--recursive",
             "-r",
             action="store_true",
@@ -117,16 +104,15 @@ class CheckInputEntryPoint(EntryPoint):
             if not self.args.skip_checks:
                 hasIssues = "PASSED" if case.checkInputs() else "HAS ISSUES"
 
-            try:
-                if self.args.generate_design_summary:
+            canStart = "UNKNOWN"
+            if self.args.generate_design_summary:
+                try:
                     case.summarizeDesign()
                     canStart = "PASSED"
-                else:
-                    canStart = "UNKNOWN"
-            except Exception:
-                runLog.error("Failed to initialize/summarize {}".format(case))
-                runLog.error(traceback.format_exc())
-                canStart = "FAILED"
+                except Exception:
+                    runLog.error("Failed to initialize/summarize {}".format(case))
+                    runLog.error(traceback.format_exc())
+                    canStart = "FAILED"
 
             table.append((case.cs.path, case.title, canStart, hasIssues))
 
@@ -138,7 +124,8 @@ class CheckInputEntryPoint(EntryPoint):
             )
         )
 
-        if any(t[2] != "PASSED" or t[3] != "PASSED" for t in table):
-            runLog.error(
-                "It is possible the case either can not run or is not self consistent"
-            )
+        if any(t[3] == "HAS ISSUES" for t in table):
+            runLog.error("The case is not self consistent")
+
+        if any(t[2] == "FAILED" for t in table):
+            runLog.error("The case can not start")

@@ -77,6 +77,7 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         self.assertEqual(ci.name, "check-input")
         self.assertEqual(ci.args.patterns, [ARMI_RUN_PATH])
         self.assertEqual(ci.args.skip_checks, True)
+        self.assertEqual(ci.args.generate_design_summary, False)
 
     def test_checkInputEntryPointInvoke(self):
         ci = CheckInputEntryPoint()
