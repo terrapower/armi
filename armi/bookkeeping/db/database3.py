@@ -705,7 +705,8 @@ class Database3:
 
         if self._permission == "w":
             # move out of the FAST_PATH and into the working directory
-            shutil.move(self._fullPath, self._fileName)
+            newPath = shutil.move(self._fullPath, self._fileName)
+            self._fullPath = os.path.abspath(newPath)
 
     def splitDatabase(
         self, keepTimeSteps: Sequence[Tuple[int, int]], label: str
