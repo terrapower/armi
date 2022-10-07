@@ -139,4 +139,6 @@ class CheckInputEntryPoint(EntryPoint):
         )
 
         if any(t[2] != "PASSED" or t[3] != "PASSED" for t in table):
-            runLog.warning(f"Check did not pass with flying colors")
+            runLog.error(
+                "It is possible the case either can not run or is not self consistent"
+            )
