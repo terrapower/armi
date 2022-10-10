@@ -623,7 +623,8 @@ class Case:
         modifiedSettings : dict (optional)
             settings to set/modify before creating the cloned case
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files.
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Raises
         ------
@@ -755,8 +756,9 @@ class Case:
         sourceDir : str (optional)
             The path to copy inputs from (if different from the cs.path). Needed
             in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
-        writeStyle: str (optional)
-            Writing style for which settings get written back to the settings files.
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Notes
         -----

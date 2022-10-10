@@ -161,7 +161,8 @@ class CaseSuite:
             root directory of original case suite used to help filter when a suite
             contains one or more cases with the same case title.
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files.
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Notes
         -----
@@ -275,7 +276,8 @@ class CaseSuite:
         Write inputs for all cases in the suite.
 
         writeStyle : str (optional)
-            Writing style for which settings get written back to the settings files.
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         See Also
         --------
