@@ -125,7 +125,7 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
             self.assertEqual(ca.args.settingsWriteStyle, "short")
             clonedYaml = "armiRun.yaml"
             self.assertTrue(os.path.exists(clonedYaml))
-            # validate a default value was removed
+            # validate a setting that has a default value was removed
             txt = open(clonedYaml, "r").read()
             self.assertNotIn("availabilityFactor", txt)
 
@@ -142,7 +142,7 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
             self.assertEqual(ca.args.settingsWriteStyle, "medium")
             clonedYaml = "armiRun.yaml"
             self.assertTrue(os.path.exists(clonedYaml))
-            # validate a default value is still there
+            # validate a setting that has a  default value is still there
             txt = open(clonedYaml, "r").read()
             self.assertIn("availabilityFactor", txt)
 

@@ -230,7 +230,9 @@ class TestArmiCase(unittest.TestCase):
             clonedYaml = testTitle + ".yaml"
             self.assertTrue(os.path.exists(clonedYaml))
             self.assertTrue(shortCase.title, testTitle)
-            # Check on some expected settings, modified and removed with the write style
+            # Check on some expected settings
+            # Availability factor is in the original settings file but since it is a
+            # default value, gets removed for the write-out
             txt = open(clonedYaml, "r").read()
             self.assertNotIn("availabilityFactor", txt)
             self.assertIn("verbosity: important", txt)
@@ -243,7 +245,8 @@ class TestArmiCase(unittest.TestCase):
             case.clone(writeStyle="medium")
             clonedYaml = "armiRun.yaml"
             self.assertTrue(os.path.exists(clonedYaml))
-            # validate a default value was removed
+            # Availability factor is in the original settings file and it is a default
+            # value. While "short" (default writing style) removes, "medium" should not
             txt = open(clonedYaml, "r").read()
             self.assertIn("availabilityFactor", txt)
 
@@ -405,7 +408,8 @@ class TestExtraInputWriting(unittest.TestCase):
             case = baseCase.clone()
             case.writeInputs()
             self.assertTrue(os.path.exists(cs["shuffleLogic"]))
-            # Check expected setting is removed with the default write style
+            # Availability factor is in the original settings file but since it is a
+            # default value, gets removed for the write-out
             txt = open("armiRun.yaml", "r").read()
             self.assertNotIn("availabilityFactor", txt)
             self.assertIn("armiRun-blueprints.yaml", txt)
@@ -413,7 +417,8 @@ class TestExtraInputWriting(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             case = baseCase.clone(writeStyle="medium")
             case.writeInputs(writeStyle="medium")
-            # Check expected setting is not removed with medium write style
+            # Availability factor is in the original settings file and it is a default
+            # value. While "short" (default writing style) removes, "medium" should not
             txt = open("armiRun.yaml", "r").read()
             self.assertIn("availabilityFactor", txt)
 
