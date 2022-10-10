@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from wx.py.path import ls
+
 """Unit tests for Case and CaseSuite objects"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
@@ -211,6 +213,41 @@ class TestArmiCase(unittest.TestCase):
                 self.assertIn("Triggering BOL Event", mock._outputStream)
                 self.assertIn("xsGroups", mock._outputStream)
                 self.assertIn("Completed EveryNode - cycle 0", mock._outputStream)
+
+    def test_clone(self):
+        testTitle = "CLONE_TEST"
+        # test the short write style
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+            shortCase = case.clone(
+                additionalFiles=["ISOAA"],
+                title=testTitle,
+                modifiedSettings={"verbosity": "important"},
+            )
+            # Check additional files made it
+            self.assertTrue(os.path.exists("ISOAA"))
+            # Check title change made it
+            clonedYaml = testTitle + ".yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            self.assertTrue(shortCase.title, testTitle)
+            # Check on some expected settings, modified and remove with the write style
+            txt = open(clonedYaml, "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+            self.assertIn("verbosity: important", txt)
+
+        # test the medium write style
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+            case.clone(writeStyle="medium")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # validate a default value was removed
+            txt = open(clonedYaml, "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
