@@ -652,7 +652,7 @@ class Case:
         clone.cs = newCs
 
         runLog.important("writing settings file {}".format(clone.cs.path))
-        clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle)
+        clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
         fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
@@ -801,7 +801,13 @@ class Case:
                 newSettings[settingName] = value
 
             self.cs = self.cs.modified(newSettings=newSettings)
-            self.cs.writeToYamlFile(self.title + ".yaml", style=writeStyle)
+            if sourceDir:
+                fromPath = os.path.join(sourceDir, self.title + ".yaml")
+            else:
+                fromPath = self.cs.path
+            self.cs.writeToYamlFile(
+                self.title + ".yaml", style=writeStyle, fromFile=fromPath
+            )
 
 
 def _copyInputsHelper(

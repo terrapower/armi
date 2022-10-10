@@ -104,20 +104,39 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
         self.assertEqual(ca.args.additional_files, ["test"])
         self.assertEqual(ca.args.settingsWriteStyle, "full")
 
-    def test_cloneArmiRunCommandBatchInvoke(self):
+    def test_cloneArmiRunCommandBatchInvokeShort(self):
+        # Test short write style
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
+        ca.parse_args([ARMI_RUN_PATH])
 
         with TemporaryDirectoryChanger():
-            # copy over settings files
-            for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
-                copyfile(os.path.join(TEST_ROOT, fileName), fileName)
-            ca.parse_args(["armiRun.yaml"])
             ca.invoke()
-            # validate a default value was removed
-            # txt = open("test.yaml", "r").read()
-            # self.assertNotIn("availabilityFactor", txt)
+
             self.assertEqual(ca.settingsArgument, "required")
+            self.assertEqual(ca.args.settingsWriteStyle, "short")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # validate a default value was removed
+            txt = open(clonedYaml, "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+
+    def test_cloneArmiRunCommandBatchInvokeMedium(self):
+        # Test medium write style
+        ca = CloneArmiRunCommandBatch()
+        ca.addOptions()
+        ca.parse_args([ARMI_RUN_PATH, "--settingsWriteStyle", "medium"])
+
+        with TemporaryDirectoryChanger():
+            ca.invoke()
+
+            self.assertEqual(ca.settingsArgument, "required")
+            self.assertEqual(ca.args.settingsWriteStyle, "medium")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # validate a default value is still there
+            txt = open(clonedYaml, "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
