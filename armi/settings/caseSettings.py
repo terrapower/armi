@@ -371,13 +371,12 @@ class Settings:
             if the source file and destination file are different (i.e. for cloning),
             then this arg is used
         """
-        self.path = (
-            pathTools.armiAbsPath(fName)
-            if fromFile is None
-            else pathTools.armiAbsPath(fromFile)
+        self.path = pathTools.armiAbsPath(fName)
+        getSettingsPath = (
+            self.path if fromFile is None else pathTools.armiAbsPath(fromFile)
         )
         if style == "medium":
-            settingsSetByUser = self.getSettingsSetByUser(self.path)
+            settingsSetByUser = self.getSettingsSetByUser(getSettingsPath)
         else:
             settingsSetByUser = []
         with open(self.path, "w") as stream:
