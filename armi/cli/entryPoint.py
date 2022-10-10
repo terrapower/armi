@@ -90,18 +90,53 @@ class EntryPoint:
     def __init__(self):
         if self.name is None:
             raise AttributeError(
-                "Subclasses of EntryPoint must define a `name` class attribute"
+                f"Subclasses of EntryPoint must define a `name` class attribute"
             )
+
+        self.cs = self._initSettings()
+        settings.setMasterCs(self.cs)
 
         self.parser = argparse.ArgumentParser(
             prog="{} {}".format(context.APP_NAME, self.name),
             description=self.description or self.__doc__,
         )
+        if self.settingsArgument is not None:
+            if self.settingsArgument not in ["required", "optional"]:
+                raise AttributeError(
+                    f"Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
+                )
+            if self.settingsArgument == "optional":
+                self.parser.add_argument(
+                    "settings_file",
+                    nargs="?",
+                    action=loadSettings(self.cs),
+                    help="path to the settings file to load.",
+                )
+            elif self.settingsArgument == "required":
+                self.parser.add_argument(
+                    "settings_file",
+                    action=loadSettings(self.cs),
+                    help="path to the settings file to load.",
+                )
+
+        # optional arguments
+        self.parser.add_argument(
+            "--caseTitle",
+            type=str,
+            nargs=None,
+            action=setCaseTitle(self.cs),
+            help="update the case title of the run.",
+        )
+        self.parser.add_argument(
+            "--batch",
+            action="store_true",
+            default=False,
+            help="Run in batch mode even on TTY, silencing all queries.",
+        )
+        self.createOptionFromSetting("verbosity", "-v")
+        self.createOptionFromSetting("branchVerbosity", "-V")
 
         self.args = argparse.Namespace()
-
-        self.cs = self._initSettings()
-        settings.setMasterCs(self.cs)
         self.settingsProvidedOnCommandLine = []
 
     @staticmethod
@@ -129,7 +164,6 @@ class EntryPoint:
 
         argparse.ArgumentParser.add_argument : Often called from here using
             ``self.parser.add_argument`` to add custom argparse arguments.
-
         """
 
     def parse_args(self, args):
@@ -140,37 +174,6 @@ class EntryPoint:
         """
         Parse the command line arguments, with the command specific arguments.
         """
-
-        if self.settingsArgument == "optional":
-            self.parser.add_argument(
-                "settings_file",
-                nargs="?",
-                action=loadSettings(self.cs),
-                help="path to the settings file to load.",
-            )
-        elif self.settingsArgument == "required":
-            self.parser.add_argument(
-                "settings_file",
-                action=loadSettings(self.cs),
-                help="path to the settings file to load.",
-            )
-        # optional arguments
-        self.parser.add_argument(
-            "--caseTitle",
-            type=str,
-            nargs=None,
-            action=setCaseTitle(self.cs),
-            help="update the case title of the run.",
-        )
-        self.parser.add_argument(
-            "--batch",
-            action="store_true",
-            default=False,
-            help="Run in batch mode even on TTY, silencing all queries.",
-        )
-        self.createOptionFromSetting("verbosity", "-v")
-        self.createOptionFromSetting("branchVerbosity", "-V")
-
         self.addOptions()
         self.parse_args(args)
 
@@ -233,15 +236,21 @@ class EntryPoint:
 
             isListType = settingsInstance.underlyingType == list
 
-            self.parser.add_argument(
-                *aliases,
-                type=str,  # types are properly converted by _SetSettingAction
-                nargs="*" if isListType else None,
-                action=setSetting(self),
-                default=settingsInstance.default,
-                choices=choices,
-                help=helpMessage
-            )
+            try:
+                self.parser.add_argument(
+                    *aliases,
+                    type=str,  # types are properly converted by _SetSettingAction
+                    nargs="*" if isListType else None,
+                    action=setSetting(self),
+                    default=settingsInstance.default,
+                    choices=choices,
+                    help=helpMessage,
+                )
+            # Capture an argument error here to prevent errors when duplicate options are attempting
+            # to be added. This may also be captured by exploring the parser's `_actions` list as well
+            # but this avoid accessing a private attribute.
+            except argparse.ArgumentError:
+                pass
 
     def _createToggleFromSetting(self, settingName, helpMessage, additionalAlias=None):
         aliases = ["--" + settingName]

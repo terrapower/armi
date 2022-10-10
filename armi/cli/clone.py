@@ -28,17 +28,16 @@ class CloneArmiRunCommandBatch(EntryPoint):
     settingsArgument = "required"
 
     def addOptions(self):
-        for settingName in self.cs.keys():
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in ["verbosity", "branchVerbosity"]:
-                self.createOptionFromSetting(settingName)
         self.parser.add_argument(
             "--additional-files",
             nargs="*",
             default=[],
             help="Additional files from the source directory to copy into the target directory",
         )
+        # somehow running `armi clone-batch -h` on the command line requires this to
+        # not be first?
+        for settingName in self.cs.keys():
+            self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
         # get the case title.
@@ -65,10 +64,8 @@ class CloneSuiteCommand(EntryPoint):
 
     def addOptions(self):
         for settingName in self.cs.environmentSettings:
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in {"verbosity", "branchVerbosity"}:
-                self.createOptionFromSetting(settingName)
+            self.createOptionFromSetting(settingName)
+
         self.parser.add_argument(
             "--directory",
             "-d",
