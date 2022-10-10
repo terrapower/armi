@@ -97,7 +97,15 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
-        ca.parse_args(["--additional-files", "test", "--settingsWriteStyle", "full"])
+        ca.parse_args(
+            [
+                ARMI_RUN_PATH,
+                "--additional-files",
+                "test",
+                "--settingsWriteStyle",
+                "full",
+            ]
+        )
 
         self.assertEqual(ca.name, "clone-batch")
         self.assertEqual(ca.settingsArgument, "required")
