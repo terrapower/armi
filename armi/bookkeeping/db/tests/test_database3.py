@@ -38,7 +38,9 @@ class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
 
         self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
@@ -180,8 +182,11 @@ class TestDatabase3(unittest.TestCase):
         created here for this test.
         """
         # first successfully call to prepRestartRun
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
         cs = o.cs
+
         ratedPower = cs["power"]
         startCycle = cs["startCycle"]
         startNode = cs["startNode"]
