@@ -83,6 +83,8 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
+        CRA : boolean, optional
+            boolean to determine whether or not to use the specific control assembly expansion method
 
         Notes
         -----
