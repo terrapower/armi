@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from wx.py.path import ls
-
 """Unit tests for Case and CaseSuite objects"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
@@ -232,7 +230,7 @@ class TestArmiCase(unittest.TestCase):
             clonedYaml = testTitle + ".yaml"
             self.assertTrue(os.path.exists(clonedYaml))
             self.assertTrue(shortCase.title, testTitle)
-            # Check on some expected settings, modified and remove with the write style
+            # Check on some expected settings, modified and removed with the write style
             txt = open(clonedYaml, "r").read()
             self.assertNotIn("availabilityFactor", txt)
             self.assertIn("verbosity: important", txt)
@@ -407,6 +405,17 @@ class TestExtraInputWriting(unittest.TestCase):
             case = baseCase.clone()
             case.writeInputs()
             self.assertTrue(os.path.exists(cs["shuffleLogic"]))
+            # Check expected setting is removed with the default write style
+            txt = open("armiRun.yaml", "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+            self.assertIn("armiRun-blueprints.yaml", txt)
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            case = baseCase.clone(writeStyle="medium")
+            case.writeInputs(writeStyle="medium")
+            # Check expected setting is not removed with medium write style
+            txt = open("armiRun.yaml", "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class MultiFilesInterfaces(interfaces.Interface):
