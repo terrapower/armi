@@ -35,7 +35,6 @@ from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
     _determineLinked,
-    _getComponent,
 )
 from armi.reactor.flags import Flags
 from armi import materials
@@ -758,22 +757,6 @@ class TestExceptions(Base, unittest.TestCase):
         shieldComp.setDimension("od", 0.785, cold=True)
         with self.assertRaises(RuntimeError) as cm:
             self.obj.linked._getLinkedComponents(shieldBlock, shieldComp)
-            self.assertEqual(cm.exception, 3)
-
-    def test_getComponent(self):
-        b = HexBlock("test", height=10.0)
-        # Raise len(comps) == 0
-        with self.assertRaises(RuntimeError) as cm:
-            _getComponent(b, Flags.TEST)
-            self.assertEqual(cm.exception, 3)
-        # Raise len(comps) > 1
-        compDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        comp = Circle("test", "FakeMat", **compDims)
-        comp2 = Circle("test", "FakeMat", **compDims)
-        b.add(comp)
-        b.add(comp2)
-        with self.assertRaises(RuntimeError) as cm:
-            _getComponent(b, Flags.TEST)
             self.assertEqual(cm.exception, 3)
 
     def test_getTargetComponent(self):
