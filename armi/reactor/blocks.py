@@ -40,7 +40,6 @@ from armi.reactor import components
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.bookkeeping import report
-from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
 from armi.utils import hexagon
 from armi.utils import densityTools
@@ -1373,24 +1372,6 @@ class Block(composites.Composite):
                 c.updateDims()
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
-
-    def getDpaXs(self):
-        """Determine which cross sections should be used to compute dpa for this block."""
-        if settings.getMasterCs()["gridPlateDpaXsSet"] and self.hasFlags(
-            Flags.GRID_PLATE
-        ):
-            dpaXsSetName = settings.getMasterCs()["gridPlateDpaXsSet"]
-        else:
-            dpaXsSetName = settings.getMasterCs()["dpaXsSet"]
-
-        if not dpaXsSetName:
-            return None
-        try:
-            return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
-        except KeyError:
-            raise KeyError(
-                "DPA cross section set {} does not exist".format(dpaXsSetName)
-            )
 
     def breakFuelComponentsIntoIndividuals(self):
         """

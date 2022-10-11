@@ -21,22 +21,24 @@ from typing import Dict, Optional
 import numpy
 import scipy.integrate
 
-from armi import runLog
 from armi import interfaces
-from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi import runLog
+from armi.physics import constants
+from armi.physics import executers
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import reactors
-from armi.reactor.converters import uniformMesh
+from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
-from armi.reactor import assemblies
+from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.physics import neutronics
-from armi.physics import executers
+from armi.utils import units, codeTiming, getMaxBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
+
 
 # pylint: disable=too-many-public-methods
 class GlobalFluxInterface(interfaces.Interface):
@@ -573,6 +575,32 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         self.r.core.p.maxPD = self.r.core.getMaxParam("arealPd")
         self._updateAssemblyLevelParams()
 
+    def getDpaXs(self, b: Block):
+        """Determine which cross sections should be used to compute dpa for a block.
+
+        Parameters
+        ----------
+        b: Block
+            The block we want the cross sections for
+
+        Returns
+        -------
+            list : cross section values
+        """
+        if self.cs["gridPlateDpaXsSet"] and b.hasFlags(Flags.GRID_PLATE):
+            dpaXsSetName = self.cs["gridPlateDpaXsSet"]
+        else:
+            dpaXsSetName = self.cs["dpaXsSet"]
+
+        if not dpaXsSetName:
+            return None
+        try:
+            return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
+        except KeyError:
+            raise KeyError(
+                "DPA cross section set {} does not exist".format(dpaXsSetName)
+            )
+
     def updateDpaRate(self, blockList=None):
         """
         Update state parameters that can be known right after the flux is computed
@@ -580,13 +608,12 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         See Also
         --------
         updateFluenceAndDpa : uses values computed here to update cumulative dpa
-
         """
         if blockList is None:
             blockList = self.r.core.getBlocks()
         hasDPA = False
         for b in blockList:
-            xs = b.getDpaXs()
+            xs = self.getDpaXs(b)
             if not xs:
                 continue
             hasDPA = True
