@@ -289,9 +289,9 @@ class AxialExpansionChanger:
         # align upward expanding pin components within control rod bundle.
         # new c.height has been updated, but c.zbottom and c.ztop need to be set
         for ib, b in enumerate(self.linked.a.getChildrenWithFlags(Flags.CONTROL)):
-            c = _getComponent(b, Flags.CONTROL)
+            c = b.getComponent(Flags.CONTROL)
             if ib == 0:
-                cladComp = _getComponent(b, Flags.CLAD)
+                cladComp = b.getComponent(Flags.CLAD)
                 c.zbottom = cladComp.zbottom
             else:
                 c.zbottom = self.linked.linkedComponents[c][0].ztop
@@ -484,23 +484,6 @@ class AxialExpansionChanger:
                     growth = 1.0 / (1.0 - growFrac)
                 for key in c.getNuclides():
                     c.setNumberDensity(key, c.getNumberDensity(key) / growth)
-
-
-def _getComponent(b, componentFlag):
-    """return component (with componentFlag) in block, b"""
-    comps = b.getChildrenWithFlags(componentFlag)
-    if len(comps) > 1:
-        raise RuntimeError(
-            f"Block {b} has multiple components with flag {componentFlag}"
-            "_getComponent can only process blocks who have 1 component that"
-            "match componentFlag."
-            "Returned Components = {comps}"
-        )
-    if len(comps) == 0:
-        raise RuntimeError(
-            f"Block {b} has no components matching the flag {componentFlag}!"
-        )
-    return comps[0]
 
 
 def _getSolidComponents(b):
