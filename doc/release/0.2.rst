@@ -11,7 +11,7 @@ What's new in ARMI
 
 #. TBD
 #. Cleanup of stale ``coveragerc`` file (`PR#923 <https://github.com/terrapower/armi/pull/923>`_)
-#. Added writer style option to ``SettingsWriter`` and added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_)
+#. Added `medium` writer style option to ``SettingsWriter``. Added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_), and to clone CLI (`PR#932 <https://github.com/terrapower/armi/pull/932>`_).
 #. Update the EntryPoint class to provide user feedback on required positional arguments (`PR#922 <https://github.com/terrapower/armi/pull/922>`_)
 
 Bug fixes
