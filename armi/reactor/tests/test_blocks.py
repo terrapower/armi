@@ -715,8 +715,10 @@ class Block_TestCase(unittest.TestCase):
         cur = self.block.getWettedPerimeter()
         ref = math.pi * (
             self.block.getDim(Flags.CLAD, "od") + self.block.getDim(Flags.WIRE, "od")
-        ) + 6 * self.block.getDim(Flags.DUCT, "ip") / math.sqrt(3) / self.block.getDim(
-            Flags.CLAD, "mult"
+        ) * self.block.getDim(Flags.CLAD, "mult") + 6 * self.block.getDim(
+            Flags.DUCT, "ip"
+        ) / math.sqrt(
+            3
         )
         self.assertAlmostEqual(cur, ref)
 
@@ -727,9 +729,15 @@ class Block_TestCase(unittest.TestCase):
         ref = area / nPins
         self.assertAlmostEqual(cur, ref)
 
+    def test_getFlowArea(self):
+        area = self.block.getComponent(Flags.COOLANT).getArea()
+        cur = self.block.getFlowArea()
+        ref = area
+        self.assertAlmostEqual(cur, ref)
+
     def test_getHydraulicDiameter(self):
         cur = self.block.getHydraulicDiameter()
-        ref = 4.0 * self.block.getFlowAreaPerPin() / self.block.getWettedPerimeter()
+        ref = 4.0 * self.block.getFlowArea() / self.block.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
     def test_adjustUEnrich(self):

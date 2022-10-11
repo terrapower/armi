@@ -515,7 +515,7 @@ class Block(composites.Composite):
 
     def getFlowAreaPerPin(self):
         """
-        Return the flowing coolant area in cm^2.
+        Return the flowing coolant area of the block in cm^2, normalized to the number of pins in the block.
 
         NumPins looks for max number of fuel, clad, control, etc.
 
@@ -2076,20 +2076,76 @@ class HexBlock(Block):
             )
 
     def getWettedPerimeter(self):
-        """Return wetted perimeter per pin with duct averaged in."""
-        duct = self.getComponent(Flags.DUCT)
-        clad = self.getComponent(Flags.CLAD)
-        wire = self.getComponent(Flags.WIRE)
-        if not duct or not clad:
-            raise ValueError(
-                "Wetted perimeter cannot be computed in {}. No duct or clad components exist.".format(
-                    self
-                )
+        """Return the total wetted perimeter of the block in cm."""
+
+        # flags pertaining to hexagon components where the interior of the hexagon is wetted
+        wettedHollowHexagonComponentFlags = (
+            Flags.DUCT,
+            Flags.GRID_PLATE,
+            Flags.INLET_NOZZLE,
+            Flags.HANDLING_SOCKET,
+        )
+
+        # flags pertaining to circular pin components where the exterior of the circle is wetted
+        wettedPinComponentFlags = (
+            Flags.CLAD,
+            Flags.WIRE,
+        )
+
+        # flags pertaining to circular components where both the interior and exterior of the circle are wetted
+        wettedHollowCircleComponentFlags = (Flags.DUCT | Flags.INNER,)
+
+        # obtain all wetted components based on type
+        wettedHollowHexagonComponents = []
+        for flag in wettedHollowHexagonComponentFlags:
+            c = self.getComponent(flag, exact=True)
+            wettedHollowHexagonComponents.append(c) if c else None
+
+        wettedPinComponents = []
+        for flag in wettedPinComponentFlags:
+            c = self.getComponent(flag, exact=True)
+            wettedPinComponents.append(c) if c else None
+
+        wettedHollowCircleComponents = []
+        for flag in wettedHollowCircleComponentFlags:
+            c = self.getComponent(flag, exact=True)
+            wettedHollowCircleComponents.append(c) if c else None
+
+        # calculate wetted perimeters according to their geometries
+
+        # hollow hexagon = 6 * ip / sqrt(3)
+        wettedHollowHexagonPerimeter = 0.0
+        for c in wettedHollowHexagonComponents:
+            wettedHollowHexagonPerimeter += (
+                6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
             )
 
-        return math.pi * (
-            clad.getDimension("od") + wire.getDimension("od")
-        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+        # solid circle = od * pi
+        # NOTE: since these are pin components, multiply by the number of pins
+        wettedPinPerimeter = 0.0
+        for c in wettedPinComponents:
+            wettedPinPerimeter += c.getDimension("od") if c else 0.0
+        wettedPinPerimeter *= self.getNumPins() * math.pi
+
+        # hollow circle = (id + od) * pi
+        wettedHollowCirclePerimeter = 0.0
+        for c in wettedHollowCircleComponents:
+            wettedHollowCirclePerimeter += (
+                c.getDimension("id") + c.getDimension("od") if c else 0.0
+            )
+        wettedHollowCirclePerimeter *= math.pi
+
+        return (
+            wettedHollowHexagonPerimeter
+            + wettedPinPerimeter
+            + wettedHollowCirclePerimeter
+        )
+
+    def getFlowArea(self):
+        """
+        Return the total flowing coolant area of the block in cm^2.
+        """
+        return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
         """
@@ -2106,7 +2162,7 @@ class HexBlock(Block):
         p = sqrt(3)*s
         l = 6*p/sqrt(3)
         """
-        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+        return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
 
 class CartesianBlock(Block):
