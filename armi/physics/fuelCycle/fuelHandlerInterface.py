@@ -97,7 +97,6 @@ class FuelHandlerInterface(interfaces.Interface):
         """
         fh = fuelHandlerFactory.fuelHandlerFactory(self.o)
         fh.preoutage()
-        ## is the factor list useful at this point?
         shuffleFactors = fh.getFactorList(cycle)
         fh.outage(shuffleFactors)
 
