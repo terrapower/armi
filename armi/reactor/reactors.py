@@ -201,7 +201,7 @@ class Core(composites.Composite):
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.
         self.timeOfStart = time.time()
-        self.zones = None
+        self.zones = zones.Zones()  # initialize with empty Zones object
         # initialize the list that holds all shuffles
         self.moveList = {}
         self.scalarVals = {}
@@ -1212,9 +1212,6 @@ class Core(composites.Composite):
         """
         self._getAssembliesByName()
         self._genBlocksByName()
-        runLog.important("Regenerating Core Zones")
-        # TODO: this call is questionable... the cs should correspond to analysis
-        self.buildZones(settings.getMasterCs())
         self._genChildByLocationLookupTable()
 
     def getAllXsSuffixes(self):
@@ -1760,10 +1757,6 @@ class Core(composites.Composite):
         assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
 
-    def buildZones(self, cs):
-        """Update the zones on the reactor."""
-        zones.buildZones(self, cs)
-
     def getCoreRadius(self):
         """Returns a radius that the core would fit into."""
         return self.getNumRings(indexBased=True) * self.getFirstBlock().getPitch()
@@ -2307,9 +2300,48 @@ class Core(composites.Composite):
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
 
-        # Perform initial zoning task
-        self.buildZones(cs)
-
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+
+    def buildManualZones(self, cs):
+        """
+        Build the Zones that are defined manually in the given CaseSettings file,
+        in the `zoneDefinitions` setting.
+
+        Parameters
+        ----------
+        cs : CaseSettings
+            The standard ARMI settings object
+
+        Examples
+        --------
+        Manual zones will be defined in a special string format, e.g.:
+
+        zoneDefinitions:
+            - ring-1: 001-001
+            - ring-2: 002-001, 002-002
+            - ring-3: 003-001, 003-002, 003-003
+
+        Notes
+        -----
+        This function will just define the Zones it sees in the settings, it does
+        not do any validation against a Core object to ensure those manual zones
+        make sense.
+        """
+        runLog.debug(
+            "Building Zones by manual definitions in `zoneDefinitions` setting"
+        )
+        stripper = lambda s: s.strip()
+        self.zones = zones.Zones()
+
+        # parse the special input string for zone definitions
+        for zoneString in cs["zoneDefinitions"]:
+            zoneName, zoneLocs = zoneString.split(":")
+            zoneLocs = zoneLocs.split(",")
+            zone = zones.Zone(zoneName.strip())
+            zone.addLocs(map(stripper, zoneLocs))
+            self.zones.addZone(zone)
+
+        if not len(self.zones):
+            runLog.debug("No manual zones defined in `zoneDefinitions` setting")

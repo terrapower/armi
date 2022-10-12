@@ -27,7 +27,6 @@ from armi.reactor import grids
 from armi.reactor import reactors
 from armi.reactor import zones
 from armi.reactor.tests import test_reactors
-from armi.settings.fwSettings import globalSettings
 from armi.tests import mockRunLogs
 
 THIS_DIR = os.path.dirname(__file__)
@@ -177,9 +176,8 @@ class TestZones(unittest.TestCase):
             "ring-3: 003-001, 003-002, 003-003",
         ]
         cs = self.o.cs.modified(newSettings=newSettings)
-        zones.buildZones(self.r.core, cs)
+        self.r.core.buildManualZones(cs)
         self.zonez = self.r.core.zones
-        self.r.core.zones = self.zonez
 
     def test_dictionaryInterface(self):
         zs = zones.Zones()
@@ -227,7 +225,7 @@ class TestZones(unittest.TestCase):
         ]
         cs = self.o.cs.modified(newSettings=newSettings)
 
-        zones.buildZones(self.r.core, cs)
+        self.r.core.buildManualZones(cs)
         daZones = self.r.core.zones
         for zone in daZones:
             a = self.r.core.getAssemblyWithStringLocation(sorted(zone.locs)[0])
@@ -243,6 +241,36 @@ class TestZones(unittest.TestCase):
 
         # ensure that we can no longer find the assembly in the zone
         self.assertEqual(daZones.findZoneItIsIn(a), None)
+
+    def test_getZoneLocations(self):
+        # customize settings for this test
+        newSettings = {}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.r.core.buildManualZones(cs)
+
+        # test the retrieval of zone locations
+        self.assertEqual(
+            set(["002-001", "002-002"]), self.r.core.zones.getZoneLocations("ring-2")
+        )
+
+    def test_getAllLocations(self):
+        # customize settings for this test
+        newSettings = {}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.r.core.buildManualZones(cs)
+
+        # test the retrieval of zone locations
+        self.assertEqual(
+            set(["001-001", "002-001", "002-002"]), self.r.core.zones.getAllLocations()
+        )
 
     def test_summary(self):
         # make sure we have a couple of zones to test on
@@ -262,32 +290,6 @@ class TestZones(unittest.TestCase):
             self.assertIn("- ring-2: ", mock._outputStream)
             self.assertIn("- ring-3: ", mock._outputStream)
             self.assertIn("003-001, 003-002, 003-003", mock._outputStream)
-
-    def test_buildManualZones(self):
-        # define some manual zones in the settings
-        newSettings = {}
-        newSettings["zoneDefinitions"] = [
-            "ring-1: 001-001",
-            "ring-2: 002-001, 002-002",
-            "ring-3: 003-001, 003-002, 003-003",
-        ]
-        cs = self.o.cs.modified(newSettings=newSettings)
-        zones.buildZones(self.r.core, cs)
-
-        zonez = self.r.core.zones
-        self.assertEqual(len(list(zonez)), 3)
-        self.assertIn("002-001", zonez["ring-2"])
-        self.assertIn("003-002", zonez["ring-3"])
-
-    def test_buildManualZonesEmpty(self):
-        # ensure there are no zone definitions in the settings
-        newSettings = {}
-        newSettings["zoneDefinitions"] = []
-        cs = self.o.cs.modified(newSettings=newSettings)
-
-        # verify that buildZones behaves well when no zones are defined
-        zones.buildZones(self.r.core, cs)
-        self.assertEqual(len(list(self.r.core.zones)), 0)
 
     def test_sortZones(self):
         # create some zones in non-alphabetical order

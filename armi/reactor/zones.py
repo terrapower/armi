@@ -19,7 +19,6 @@ Together, they are used to conceptually divide the Core for analysis.
 """
 from typing import Iterator, List, Optional, Set, Union
 
-from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
@@ -368,8 +367,8 @@ class Zones:
             A combination set of all locations, from every Zone
         """
         locs = set()
-        for zoneName in self:
-            locs.update(self[zoneName])
+        for zone in self:
+            locs.update(self[zone.name])
 
         return locs
 
@@ -430,83 +429,3 @@ class Zones:
             locs = sorted(self._zones[name].locs)
             line = "- {0}: ".format(name) + ", ".join(locs)
             runLog.info(line)
-
-
-def buildZones(core, cs) -> None:
-    """
-    Build/update the Zones.
-
-    The zoning option is determined by the ``zoningStrategy`` setting.
-
-    Parameters
-    ----------
-    core : Core
-        A fully-initialized Core object
-    cs : CaseSettings
-        The standard ARMI settings object
-
-    Notes
-    -----
-    This method is being reconsidered, so it currently only supports manual zoning.
-
-    Returns
-    -------
-    None
-    """
-    zoneCounts = getPluginManagerOrFail().hook.applyZoningStrategy(core=core, cs=cs)
-
-    if len(zoneCounts) > 1:
-        raise RuntimeError("Only one plugin can register a Zoning Strategy.")
-
-    if len(zoneCounts) == 0:
-        zones = Zones()
-        zones.addZones(buildManualZones(cs))
-        core.zones = zones
-
-
-def buildManualZones(cs):
-    """
-    Build the Zones that are defined manually in the given CaseSettings file,
-    in the `zoneDefinitions` setting.
-
-    Parameters
-    ----------
-    cs : CaseSettings
-        The standard ARMI settings object
-
-    Examples
-    --------
-    Manual zones will be defined in a special string format, e.g.:
-
-    zoneDefinitions:
-        - ring-1: 001-001
-        - ring-2: 002-001, 002-002
-        - ring-3: 003-001, 003-002, 003-003
-
-    Notes
-    -----
-    This function will just define the Zones it sees in the settings, it does
-    not do any validation against a Core object to ensure those manual zones
-    make sense.
-
-    Returns
-    -------
-    Zones
-        One or more zones, as defined in the `zoneDefinitions` setting.
-    """
-    runLog.debug("Building Zones by manual definitions in `zoneDefinitions` setting")
-    stripper = lambda s: s.strip()
-    zones = Zones()
-
-    # parse the special input string for zone definitions
-    for zoneString in cs["zoneDefinitions"]:
-        zoneName, zoneLocs = zoneString.split(":")
-        zoneLocs = zoneLocs.split(",")
-        zone = Zone(zoneName.strip())
-        zone.addLocs(map(stripper, zoneLocs))
-        zones.addZone(zone)
-
-    if not len(zones):
-        runLog.debug("No manual zones defined in `zoneDefinitions` setting")
-
-    return zones
