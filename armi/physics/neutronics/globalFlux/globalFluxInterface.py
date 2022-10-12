@@ -592,8 +592,6 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         else:
             dpaXsSetName = self.cs["dpaXsSet"]
 
-        if not dpaXsSetName:
-            return None
         try:
             return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
         except KeyError:

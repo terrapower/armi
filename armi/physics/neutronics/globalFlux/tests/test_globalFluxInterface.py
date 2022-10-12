@@ -11,25 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for generic global flux interface.
-"""
+"""Tests for generic global flux interface"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 import numpy
 
 from armi import settings
-
-from armi.physics.neutronics.globalFlux import globalFluxInterface
-from armi.reactor.tests import test_reactors
-from armi.reactor.tests import test_blocks
-from armi.reactor import geometry
-from armi.tests import ISOAA_PATH
 from armi.nuclearDataIO.cccc import isotxs
+from armi.physics.neutronics.globalFlux import globalFluxInterface
+from armi.reactor import geometry
+from armi.reactor.blocks import HexBlock
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_blocks
+from armi.reactor.tests import test_reactors
+from armi.tests import ISOAA_PATH
 
-# pylint: disable=missing-class-docstring
+
 # pylint: disable=abstract-method
-# pylint: disable=protected-access
 class MockParams:
     pass
 
@@ -185,6 +184,31 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         mapper.clearFlux()
         self.assertEqual(len(block.p.mgFlux), 0)
 
+    def test_getDpaXs(self):
+        mapper = globalFluxInterface.GlobalFluxResultMapper()
+
+        # test fuel block
+        b = HexBlock("fuel", height=10.0)
+        vals = mapper.getDpaXs(b)
+        self.assertEqual(len(vals), 33)
+        self.assertAlmostEqual(vals[0], 2345.69, 1)
+
+        # build a grid plate block
+        b = HexBlock("grid_plate", height=10.0)
+        b.p.flags = Flags.GRID_PLATE
+        self.assertTrue(b.hasFlags(Flags.GRID_PLATE))
+
+        # test grid plate block
+        mapper.cs["gridPlateDpaXsSet"] = "dpa_EBRII_PE16"
+        vals = mapper.getDpaXs(b)
+        self.assertEqual(len(vals), 33)
+        self.assertAlmostEqual(vals[0], 2478.95, 1)
+
+        # test null case
+        mapper.cs["gridPlateDpaXsSet"] = "fake"
+        with self.assertRaises(KeyError):
+            vals = mapper.getDpaXs(b)
+
 
 class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
@@ -208,5 +232,4 @@ def applyDummyFlux(r, ng=33):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
