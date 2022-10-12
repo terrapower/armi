@@ -171,7 +171,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     def test_mapper(self):
         # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible
         # with actually doing some math using the ISOAA test microscopic library
-        _o, r = test_reactors.loadTestReactor(customSettings={"xsKernel": "MC2v2"})
+        o, r = test_reactors.loadTestReactor(customSettings={"xsKernel": "MC2v2"})
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
         mapper = globalFluxInterface.GlobalFluxResultMapper()
@@ -192,6 +192,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         # to exercise blockList option (does not change behavior, since this is what
         # apply() does anyway)
         opts = globalFluxInterface.GlobalFluxOptions("test")
+        opts.fromUserSettings(o.cs)
         dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
         dosemapper.apply(r, blockList=r.core.getBlocks())
         self.assertGreater(block.p.detailedDpa, 0)
@@ -223,6 +224,17 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         mapper.cs["gridPlateDpaXsSet"] = "fake"
         with self.assertRaises(KeyError):
             mapper.getDpaXs(b)
+
+    def test_getBurnupPeakingFactor(self):
+        mapper = globalFluxInterface.GlobalFluxResultMapper()
+
+        # test fuel block
+        mapper.cs["burnupPeakingFactor"] = 0.0
+        b = HexBlock("fuel", height=10.0)
+        b.p.flux = 100.0
+        b.p.fluxPeak = 250.0
+        factor = mapper.getBurnupPeakingFactor(b)
+        self.assertEqual(factor, 2.5)
 
 
 class TestGlobalFluxUtils(unittest.TestCase):

@@ -307,6 +307,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.aclpDoseLimit = None
         self.loadPadElevation = None
         self.loadPadLength = None
+        self.cs = None
 
         self._geomType: geometry.GeomType
         self.symmetry: str
@@ -600,6 +601,36 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 "DPA cross section set {} does not exist".format(dpaXsSetName)
             )
 
+    def getBurnupPeakingFactor(self, b: Block):
+        """
+        Get the radial peaking factor to be applied to burnup and DPA for a Block
+
+        This may be informed by previous runs which used
+        detailed pin reconstruction and rotation. In that case,
+        it should be set on the cs setting ``burnupPeakingFactor``.
+
+        Otherwise, it just takes the current flux peaking, which
+        is typically conservatively high.
+
+        Parameters
+        ----------
+        b: Block
+            The block we want the peaking factor for
+
+        Returns
+        -------
+        burnupPeakingFactor : float
+            The peak/avg factor for burnup and DPA.
+        """
+        burnupPeakingFactor = self.cs["burnupPeakingFactor"]
+        if not burnupPeakingFactor and b.p.fluxPeak:
+            burnupPeakingFactor = b.p.fluxPeak / b.p.flux
+        elif not burnupPeakingFactor:
+            # no peak available. Finite difference model?
+            burnupPeakingFactor = 1.0
+
+        return burnupPeakingFactor
+
     def updateDpaRate(self, blockList=None):
         """
         Update state parameters that can be known right after the flux is computed
@@ -617,7 +648,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
             hasDPA = True
             flux = b.getMgFlux()  # n/cm^2/s
             dpaPerSecond = computeDpaRate(flux, xs)
-            b.p.detailedDpaPeakRate = dpaPerSecond * b.getBurnupPeakingFactor()
+            b.p.detailedDpaPeakRate = dpaPerSecond * self.getBurnupPeakingFactor(b)
             b.p.detailedDpaRate = dpaPerSecond
 
         if not hasDPA:
@@ -689,6 +720,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
     def __init__(self, depletionSeconds, options):
         self.success = False
         self.options = options
+        self.cs = self.options.cs
         self.r = None
         self.depletionSeconds = depletionSeconds
 
@@ -749,7 +781,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             )
 
         for b in blockList:
-            burnupPeakingFactor = b.getBurnupPeakingFactor()
+            burnupPeakingFactor = self.getBurnupPeakingFactor(b)
             b.p.residence += stepTimeInSeconds / units.SECONDS_PER_DAY
             b.p.fluence += b.p.flux * stepTimeInSeconds
             b.p.fastFluence += b.p.flux * stepTimeInSeconds * b.p.fastFluxFr

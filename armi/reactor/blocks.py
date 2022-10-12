@@ -1311,35 +1311,6 @@ class Block(composites.Composite):
         # return the group the information went to
         return report.ALL[report.BLOCK_AREA_FRACS]
 
-    def getBurnupPeakingFactor(self):
-        """
-        Get the radial peaking factor to be applied to burnup and DPA
-
-        This may be informed by previous runs which used
-        detailed pin reconstruction and rotation. In that case,
-        it should be set on the cs setting ``burnupPeakingFactor``.
-
-        Otherwise, it just takes the current flux peaking, which
-        is typically conservatively high.
-
-        Returns
-        -------
-        burnupPeakingFactor : float
-            The peak/avg factor for burnup and DPA.
-
-        See Also
-        --------
-        armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxInterface.updateFluenceAndDPA : uses this
-        """
-        burnupPeakingFactor = settings.getMasterCs()["burnupPeakingFactor"]
-        if not burnupPeakingFactor and self.p.fluxPeak:
-            burnupPeakingFactor = self.p.fluxPeak / self.p.flux
-        elif not burnupPeakingFactor:
-            # no peak available. Finite difference model?
-            burnupPeakingFactor = 1.0
-
-        return burnupPeakingFactor
-
     def getBlocks(self):
         """
         This method returns all the block(s) included in this block
