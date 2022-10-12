@@ -611,21 +611,6 @@ class ArmiPlugin:
         and a ``"sfp"`` lookup, triggered to run after all other hooks have been run.
         """
 
-    @staticmethod
-    @HOOKSPEC
-    def applyZoningStrategy(core, cs) -> int:
-        """
-        Function for adding Zones directly on the Core.
-
-        This will take in a Core object, and use any arbitrary logic to create from scratch
-        or modify Core.zones.
-
-        Returns
-        -------
-        int
-            Number of Zones created
-        """
-
 
 class UserPlugin(ArmiPlugin):
     """
