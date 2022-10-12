@@ -367,8 +367,8 @@ class Zones:
             A combination set of all locations, from every Zone
         """
         locs = set()
-        for zoneName in self:
-            locs.update(self[zoneName])
+        for zone in self:
+            locs.update(self[zone.name])
 
         return locs
 
