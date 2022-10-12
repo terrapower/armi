@@ -40,7 +40,6 @@ from armi.reactor import components
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.bookkeeping import report
-from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
 from armi.utils import hexagon
 from armi.utils import densityTools
@@ -1312,35 +1311,6 @@ class Block(composites.Composite):
         # return the group the information went to
         return report.ALL[report.BLOCK_AREA_FRACS]
 
-    def getBurnupPeakingFactor(self):
-        """
-        Get the radial peaking factor to be applied to burnup and DPA
-
-        This may be informed by previous runs which used
-        detailed pin reconstruction and rotation. In that case,
-        it should be set on the cs setting ``burnupPeakingFactor``.
-
-        Otherwise, it just takes the current flux peaking, which
-        is typically conservatively high.
-
-        Returns
-        -------
-        burnupPeakingFactor : float
-            The peak/avg factor for burnup and DPA.
-
-        See Also
-        --------
-        armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxInterface.updateFluenceAndDPA : uses this
-        """
-        burnupPeakingFactor = settings.getMasterCs()["burnupPeakingFactor"]
-        if not burnupPeakingFactor and self.p.fluxPeak:
-            burnupPeakingFactor = self.p.fluxPeak / self.p.flux
-        elif not burnupPeakingFactor:
-            # no peak available. Finite difference model?
-            burnupPeakingFactor = 1.0
-
-        return burnupPeakingFactor
-
     def getBlocks(self):
         """
         This method returns all the block(s) included in this block
@@ -1373,24 +1343,6 @@ class Block(composites.Composite):
                 c.updateDims()
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
-
-    def getDpaXs(self):
-        """Determine which cross sections should be used to compute dpa for this block."""
-        if settings.getMasterCs()["gridPlateDpaXsSet"] and self.hasFlags(
-            Flags.GRID_PLATE
-        ):
-            dpaXsSetName = settings.getMasterCs()["gridPlateDpaXsSet"]
-        else:
-            dpaXsSetName = settings.getMasterCs()["dpaXsSet"]
-
-        if not dpaXsSetName:
-            return None
-        try:
-            return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
-        except KeyError:
-            raise KeyError(
-                "DPA cross section set {} does not exist".format(dpaXsSetName)
-            )
 
     def breakFuelComponentsIntoIndividuals(self):
         """
