@@ -68,7 +68,7 @@ class AxialExpansionChanger:
         componentLst: list,
         percents: list,
         setFuel: bool = True,
-        CRA: bool = False,
+        isControlAssembly: bool = False,
     ):
         """Perform axial expansion of an assembly given prescribed expansion percentages
 
@@ -83,7 +83,7 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
-        CRA : boolean, optional
+        isControlAssembly : boolean, optional
             boolean to determine whether or not to use the specific control assembly expansion method
 
         Notes
@@ -92,7 +92,7 @@ class AxialExpansionChanger:
         """
         self.setAssembly(a, setFuel)
         self.expansionData.setExpansionFactors(componentLst, percents)
-        if CRA:
+        if isControlAssembly:
             self.axiallyExpandControlAssembly(thermal=False)
         else:
             self.axiallyExpandAssembly(thermal=False)
@@ -104,7 +104,7 @@ class AxialExpansionChanger:
         tempField: list,
         setFuel: bool = True,
         updateNDensForRadialExp: bool = True,
-        CRA: bool = False,
+        isControlAssembly: bool = False,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field
 
@@ -122,7 +122,7 @@ class AxialExpansionChanger:
         updateNDensForRadialExp: optional, bool
             boolean to determine whether or not the component number densities should be updated
             to account for radial expansion/contraction
-        CRA : boolean, optional
+        isControlAssembly : boolean, optional
             boolean to determine whether or not to use the specific control assembly expansion method
 
         Notes
@@ -137,7 +137,7 @@ class AxialExpansionChanger:
             tempGrid, tempField, updateNDensForRadialExp
         )
         self.expansionData.computeThermalExpansionFactors()
-        if CRA:
+        if isControlAssembly:
             self.axiallyExpandControlAssembly(thermal=True)
         else:
             self.axiallyExpandAssembly(thermal=True)

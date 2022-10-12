@@ -285,7 +285,7 @@ class TestControlAssemblyExpansion(unittest.TestCase):
                 else:
                     percentList.append(0.0)
         self.axExpChngr.performPrescribedAxialExpansion(
-            self.a, componentList, percentList, CRA=True
+            self.a, componentList, percentList, isControlAssembly=True
         )
         for ib, b in enumerate(self.a):
             self.assertAlmostEqual(
@@ -350,7 +350,11 @@ class TestConservation(Base, unittest.TestCase):
                     assemType = "NonCR Assem -- "
                 else:
                     axialExpChngr.performThermalAxialExpansion(
-                        a, tempGrid, tempField, updateNDensForRadialExp=False, CRA=True
+                        a,
+                        tempGrid,
+                        tempField,
+                        updateNDensForRadialExp=False,
+                        isControlAssembly=True,
                     )
                     assemType = "CR Assem -- "
                 newBlockHeights = [b.getHeight() for b in a]
@@ -404,7 +408,11 @@ class TestConservation(Base, unittest.TestCase):
                     assemType = "NonCR Assem -- "
                 else:
                     axialExpChngr.performThermalAxialExpansion(
-                        a, tempGrid, tempField, updateNDensForRadialExp=False, CRA=True
+                        a,
+                        tempGrid,
+                        tempField,
+                        updateNDensForRadialExp=False,
+                        isControlAssembly=True,
                     )
                     assemType = "CR Assem -- "
                 newBlockHeights = [b.getHeight() for b in a]
