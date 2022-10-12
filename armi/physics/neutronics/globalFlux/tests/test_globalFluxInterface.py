@@ -119,6 +119,17 @@ class TestGlobalFluxInterface(unittest.TestCase):
         inf, _outf, _stdname = gfi.getIOFileNames(1, 2, 1)
         self.assertEqual(inf, "armi001_2_001.GlobalFlux.inp")
 
+    def test_getHistoryParams(self):
+        params = globalFluxInterface.GlobalFluxInterface.getHistoryParams()
+        self.assertEqual(len(params), 3)
+        self.assertIn("detailedDpa", params)
+
+    def test_checkEnergyBalance(self):
+        cs = settings.Settings()
+        _o, r = test_reactors.loadTestReactor()
+        gfi = MockGlobalFluxInterface(r, cs)
+        gfi._checkEnergyBalance()
+
 
 class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     """Tests for the default global flux execution."""
@@ -141,6 +152,10 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
     def test_calculateKeff(self):
         self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
+
+    def test_getExecuterCls(self):
+        class0 = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterCls()
+        self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
 
 
 class TestGlobalFluxResultMapper(unittest.TestCase):
@@ -207,7 +222,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         # test null case
         mapper.cs["gridPlateDpaXsSet"] = "fake"
         with self.assertRaises(KeyError):
-            vals = mapper.getDpaXs(b)
+            mapper.getDpaXs(b)
 
 
 class TestGlobalFluxUtils(unittest.TestCase):

@@ -65,7 +65,8 @@ class GlobalFluxInterface(interfaces.Interface):
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
 
-    def getHistoryParams(self):
+    @staticmethod
+    def getHistoryParams():
         """Return parameters that will be added to assembly versus time history printouts."""
         return ["detailedDpa", "detailedDpaPeak", "detailedDpaPeakRate"]
 
@@ -609,11 +610,10 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         """
         if blockList is None:
             blockList = self.r.core.getBlocks()
+
         hasDPA = False
         for b in blockList:
             xs = self.getDpaXs(b)
-            if not xs:
-                continue
             hasDPA = True
             flux = b.getMgFlux()  # n/cm^2/s
             dpaPerSecond = computeDpaRate(flux, xs)
@@ -622,13 +622,12 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
         if not hasDPA:
             return
-        self.r.core.p.peakGridDpaAt60Years = (
-            self.r.core.getMaxBlockParam(
-                "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
-            )
-            * 60.0
-            * units.SECONDS_PER_YEAR
+
+        peakRate = self.r.core.getMaxBlockParam(
+            "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
         )
+        self.r.core.p.peakGridDpaAt60Years = peakRate * 60.0 * units.SECONDS_PER_YEAR
+
         # also update maxes at this point (since this runs at every timenode, not just those w/ depletion steps)
         self.updateMaxDpaParams()
 
