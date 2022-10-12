@@ -297,7 +297,7 @@ class TestControlAssemblyExpansion(unittest.TestCase):
 
 
 class TestConservation(Base, unittest.TestCase):
-    """verify that conservation is maintained in assembly-level axial expansion"""
+    """verify that conservation of height, target component mass, and total assembly mass is maintained in assembly-level axial expansion"""
 
     def setUp(self):
         Base.setUp(self)
@@ -768,6 +768,7 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(cm.exception, 3)
 
     def test_getTargetComponent(self):
+        """test that the RuntimeError within axialExpansionChanger.py::ExpansionData::getTargetComponent is catchable"""
         b = HexBlock("test", height=10.0)
         with self.assertRaises(RuntimeError) as cm:
             self.obj.expansionData.getTargetComponent(b)
