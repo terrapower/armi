@@ -190,9 +190,9 @@ class AxialExpansionChanger:
         blkLst = self.linked.a.getBlocks()
         if not blkLst[-1].hasFlags(Flags.DUMMY):
             runLog.warning(
-                "No dummy block present at the top of {0}! "
+                f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
-                "to preserve assembly height".format(self.linked.a)
+                "to preserve assembly height"
             )
             if self._detailedAxialExpansion:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
@@ -206,11 +206,11 @@ class AxialExpansionChanger:
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
-            "for each block in assembly {0}.".format(self.linked.a)
+            f"for each block in assembly {self.linked.a}."
         )
         # grow components, align, and redistribute blocks
         for ib, b in enumerate(self.linked.a):
-            runLog.debug(msg="  Block {0}".format(b))
+            runLog.debug(msg=f"  Block {b}")
             if thermal:
                 blockHeight = b.p.heightBOL
             else:
@@ -224,11 +224,7 @@ class AxialExpansionChanger:
                 ## grow all the components
                 for c in _getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(
-                        msg="      Component {0}, growFrac = {1:.4e}".format(
-                            c, growFrac
-                        )
-                    )
+                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
                     if thermal and c in self.expansionData.componentReferenceHeight:
                         blockHeight = self.expansionData.componentReferenceHeight[c]
                     if growFrac >= 0.0:
@@ -301,7 +297,7 @@ class AxialExpansionChanger:
         adjustedLowestControlDuct = False
         for ib, b in enumerate(self.linked.a):
             c = self.expansionData.getTargetComponent(b)
-            runLog.debug("      Component {0} is target component".format(c))
+            runLog.debug(f"      Component {c} is target component")
             if 0 < ib < numOfBlocks - 1:
                 b.p.zbottom = c.zbottom
                 # correct potentially misaligned blocks
@@ -355,11 +351,11 @@ class AxialExpansionChanger:
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
-            "for each block in assembly {0}.".format(self.linked.a)
+            f"for each block in assembly {self.linked.a}."
         )
         for ib, b in enumerate(self.linked.a):
 
-            runLog.debug(msg="  Block {0}".format(b))
+            runLog.debug(msg=f"  Block {b}")
             if thermal:
                 blockHeight = b.p.heightBOL
             else:
@@ -372,11 +368,7 @@ class AxialExpansionChanger:
             if not isDummyBlock:
                 for c in _getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(
-                        msg="      Component {0}, growFrac = {1:.4e}".format(
-                            c, growFrac
-                        )
-                    )
+                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
                     if thermal and c in self.expansionData.componentReferenceHeight:
                         blockHeight = self.expansionData.componentReferenceHeight[c]
                     if growFrac >= 0.0:
@@ -400,15 +392,11 @@ class AxialExpansionChanger:
                     if self.expansionData.isTargetComponent(c):
                         if b.axialExpTargetComponent is None:
                             runLog.debug(
-                                "      Component {0} is target component (inferred)".format(
-                                    c
-                                )
+                                f"      Component {c} is target component (inferred)"
                             )
                         else:
                             runLog.debug(
-                                "      Component {0} is target component (blueprints defined)".format(
-                                    c
-                                )
+                                f"      Component {c} is target component (blueprints defined)"
                             )
                         b.p.ztop = c.ztop
 
@@ -501,15 +489,11 @@ def _getSolidComponents(b):
 def _checkBlockHeight(b):
     if b.p.height < 3.0:
         runLog.debug(
-            "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.p.height
-            )
+            f"Block {b.name:s} ({str(b.p.flags):s}) has a height less than 3.0 cm. ({b.p.height:.12e})"
         )
     if b.p.height < 0.0:
         raise ArithmeticError(
-            "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
-                b.name, str(b.p.flags), b.p.height
-            )
+            f"Block {b.name:s} ({str(b.p.flags):s}) has a negative height! ({b.p.height:.12e})"
         )
 
 
@@ -619,12 +603,10 @@ class AssemblyAxialLinkage:
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
-                                "Multiple component axial linkages have been found for "
-                                "Component {0}; Block {1}; Assembly {2}."
-                                " This is indicative of an error in the blueprints! Linked components found are"
-                                "{3} and {4}".format(
-                                    c, b, b.parent, lstLinkedC[ib], otherC
-                                )
+                                f"Multiple component axial linkages have been found for "
+                                f"Component {c}; Block {b}; Assembly {b.parent}."
+                                f"This is indicative of an error in the blueprints! Linked components found are"
+                                f"{lstLinkedC[ib]} and {otherC}"
                             )
                             runLog.error(msg=errMsg)
                             raise RuntimeError(errMsg)
@@ -748,11 +730,9 @@ class ExpansionData:
         """
         if len(componentLst) != len(percents):
             runLog.error(
-                "Number of components and percent changes must be the same!\n\
-                    len(componentLst) = {0:d}\n\
-                        len(percents) = {1:d}".format(
-                    len(componentLst), len(percents)
-                )
+                "Number of components and percent changes must be the same!\n"
+                f"    len(componentLst) = {len(componentLst):d}\n"
+                f"        len(percents) = {len(percents):d}"
             )
             raise RuntimeError
         for c, p in zip(componentLst, percents):
@@ -805,10 +785,8 @@ class ExpansionData:
 
             if len(tmpMapping) == 0:
                 raise ValueError(
-                    "Block {0:s} has no temperature points within it! \
-                        Likely need to increase the refinement of the temperature grid.".format(
-                        str(b.name)
-                    )
+                    f"Block {str(b.name):s} has no temperature points within it!\n"
+                    f"Likely need to increase the refinement of the temperature grid."
                 )
 
             blockAveTemp = mean(tmpMapping)
@@ -947,16 +925,12 @@ class ExpansionData:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:
             raise RuntimeError(
-                "No target component found!\n   Block {0}\n   Assembly {1}".format(
-                    b, b.parent
-                )
+                f"No target component found!\n   Block {b}\n   Assembly {b.parent}"
             )
         if len(componentWFlag) > 1:
             raise RuntimeError(
                 "Cannot have more than one component within a block that has the target flag!"
-                "Block {0}\nflagOfInterest {1}\nComponents {2}".format(
-                    b, flagOfInterest, componentWFlag
-                )
+                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
             )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
 
@@ -980,11 +954,9 @@ class ExpansionData:
         """
         c = b.getChildrenWithFlags(Flags.FUEL)
         if len(c) == 0:  # pylint: disable=no-else-raise
-            raise RuntimeError("No fuel component within {0}!".format(b))
+            raise RuntimeError(f"No fuel component within {b}!")
         elif len(c) > 1:
-            raise RuntimeError(
-                "Cannot have more than one fuel component within {0}!".format(b)
-            )
+            raise RuntimeError(f"Cannot have more than one fuel component within {b}!")
         self._componentDeterminesBlockHeight[c[0]] = True
 
     def isTargetComponent(self, c):
