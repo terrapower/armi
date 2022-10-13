@@ -95,7 +95,7 @@ class FuelHandler:
         Stores locations of assemblies before they are shuffled to support generation of shuffle reports, etc.
         Also performs any additional functionality before shuffling.
         """
-        self.prepCore()
+        self._prepCore()
         self._prepShuffleMap()
         self.r.core.locateAllAssemblies()
 
@@ -393,7 +393,7 @@ class FuelHandler:
             runLog.debug("Best relative rotation is {0}".format(rot))
             return rot
 
-    def prepCore(self):
+    def _prepCore(self):
         """Aux. function to run before XS generation (do moderation, etc. here)"""
 
     def prepSearch(self, *args, **kwargs):
