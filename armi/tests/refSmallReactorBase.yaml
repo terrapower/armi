@@ -77,15 +77,15 @@ blocks:
         control:
             shape: Circle
             material: B4C
-            Tinput: 450.0
-            Thot: 450.0
+            Tinput: 25.0
+            Thot: 600.0
             id: 0.0
             mult: 61.0
             od: 1.286
-        innerDuct: &component_control_duct
+        innerDuct: &component_control_innerDuct
             shape: Hexagon
             material: HT9
-            Tinput: 450.0
+            Tinput: 25.0
             Thot: 450.0
             ip: 14.268
             mult: 1.0
@@ -95,7 +95,7 @@ blocks:
         clad: &component_control_clad
             shape: Circle
             material: HT9
-            Tinput: 450.0
+            Tinput: 25.0
             Thot: 450.0
             id: 1.358
             mult: 61.0
@@ -104,7 +104,7 @@ blocks:
         wire: &component_control_wire
             shape: Helix
             material: HT9
-            Tinput: 450.0
+            Tinput: 25.0
             Thot: 450.0
             axialPitch: 50.0
             helixDiameter: 1.771
@@ -133,7 +133,7 @@ blocks:
             od: clad.id
         clad: *component_control_clad
         wire: *component_control_wire
-        ctrlDuct: *component_control_duct
+        ctrlDuct: *component_control_innerDuct
         coolant: *component_fuel_coolant
         duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
