@@ -398,7 +398,7 @@ This can be done by sublassing :py:class:`armi.plugins.UserPlugin`:
 
         @staticmethod
         @plugins.HOOKIMPL
-        def onProcessCoreLoading(core, cs):
+        def onProcessCoreLoading(core, cs, dbLoad):
         for b in core.getBlocks(Flags.FUEL):
             b.p.power += 1.0
 

@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-Unit tests for Case and CaseSuite objects
-"""
+"""Unit tests for Case and CaseSuite objects"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
+import cProfile
 import io
+import logging
 import os
 import platform
 import unittest
@@ -26,10 +26,15 @@ from armi import context
 from armi import getApp
 from armi import interfaces
 from armi import plugins
+from armi import runLog
 from armi import settings
+from armi.reactor import blueprints
+from armi.reactor import systemLayoutInput
+from armi.settings import setMasterCs
+from armi.tests import ARMI_RUN_PATH
+from armi.tests import TEST_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import directoryChangers
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
-from armi.reactor import blueprints, systemLayoutInput
 
 
 GEOM_INPUT = """<?xml version="1.0" ?>
@@ -86,7 +91,7 @@ class TestArmiCase(unittest.TestCase):
 
         Any assertions are bonus.
         """
-        with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
             cs = cs.modified(newSettings={"verbosity": "important"})
             case = cases.Case(cs)
@@ -106,7 +111,7 @@ class TestArmiCase(unittest.TestCase):
         cs = settings.Settings(ARMI_RUN_PATH)
         cs = cs.modified(newSettings={"verbosity": "important"})
         baseCase = cases.Case(cs, bp=bp, geom=geom)
-        with directoryChangers.TemporaryDirectoryChanger():  # ensure we are not in IN_USE_TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
             case._independentVariables = vals  # pylint: disable=protected-access
@@ -115,6 +120,135 @@ class TestArmiCase(unittest.TestCase):
             newCase = cases.Case(newCs)
             for name, val in vals.items():
                 self.assertEqual(newCase.independentVariables[name], val)
+
+    def test_getCoverageRcFile(self):
+        case = cases.Case(settings.Settings())
+        covRcDir = os.path.abspath(context.PROJECT_ROOT)
+        # Don't actually copy the file, just check the file paths match
+        covRcFile = case._getCoverageRcFile(makeCopy=False)
+        if platform.system() == "Windows":
+            self.assertEqual(covRcFile, os.path.join(covRcDir, "coveragerc"))
+        else:
+            self.assertEqual(covRcFile, os.path.join(covRcDir, ".coveragerc"))
+
+    def test_startCoverage(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+
+            # Test the null case
+            cs = cs.modified(newSettings={"coverage": False})
+            case = cases.Case(cs)
+            cov = case._startCoverage()
+            self.assertIsNone(cov)
+
+            # NOTE: We can't test coverage=True, because it breaks coverage on CI
+
+    def test_endCoverage(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            cs = cs.modified(newSettings={"coverage": False})
+            case = cases.Case(cs)
+
+            # NOTE: We can't test coverage=True, because it breaks coverage on CI
+            outFile = "coverage_results.cov"
+            prof = case._startCoverage()
+            self.assertFalse(os.path.exists(outFile))
+            case._endCoverage(prof)
+            self.assertFalse(os.path.exists(outFile))
+
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
+    def test_startProfiling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+
+            # Test the null case
+            cs = cs.modified(newSettings={"profile": False})
+            case = cases.Case(cs)
+            prof = case._startProfiling()
+            self.assertIsNone(prof)
+
+            # Test when we start coverage correctly
+            cs = cs.modified(newSettings={"profile": True})
+            case = cases.Case(cs)
+            prof = case._startProfiling()
+            self.assertTrue(isinstance(prof, cProfile.Profile))
+
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
+    def test_endProfiling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            cs = cs.modified(newSettings={"profile": True})
+            case = cases.Case(cs)
+
+            # run the profiler
+            prof = case._startProfiling()
+            case._endProfiling(prof)
+            self.assertTrue(isinstance(prof, cProfile.Profile))
+
+    def test_run(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            newSettings = {
+                "branchVerbosity": "important",
+                "coverage": False,
+                "nCycles": 1,
+                "profile": False,
+                "trace": False,
+                "verbosity": "important",
+            }
+            cs = cs.modified(newSettings=newSettings)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+
+            with mockRunLogs.BufferLog() as mock:
+                # we should start with a clean slate
+                self.assertEqual("", mock._outputStream)
+                runLog.LOG.startLog("test_run")
+                runLog.LOG.setVerbosity(logging.INFO)
+
+                case.run()
+
+                self.assertIn("Triggering BOL Event", mock._outputStream)
+                self.assertIn("xsGroups", mock._outputStream)
+                self.assertIn("Completed EveryNode - cycle 0", mock._outputStream)
+
+    def test_clone(self):
+        testTitle = "CLONE_TEST"
+        # test the short write style
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+            shortCase = case.clone(
+                additionalFiles=["ISOAA"],
+                title=testTitle,
+                modifiedSettings={"verbosity": "important"},
+            )
+            # Check additional files made it
+            self.assertTrue(os.path.exists("ISOAA"))
+            # Check title change made it
+            clonedYaml = testTitle + ".yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            self.assertTrue(shortCase.title, testTitle)
+            # Check on some expected settings
+            # Availability factor is in the original settings file but since it is a
+            # default value, gets removed for the write-out
+            txt = open(clonedYaml, "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+            self.assertIn("verbosity: important", txt)
+
+        # test the medium write style
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+            case.clone(writeStyle="medium")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # Availability factor is in the original settings file and it is a default
+            # value. While "short" (default writing style) removes, "medium" should not
+            txt = open(clonedYaml, "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
@@ -274,6 +408,19 @@ class TestExtraInputWriting(unittest.TestCase):
             case = baseCase.clone()
             case.writeInputs()
             self.assertTrue(os.path.exists(cs["shuffleLogic"]))
+            # Availability factor is in the original settings file but since it is a
+            # default value, gets removed for the write-out
+            txt = open("armiRun.yaml", "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+            self.assertIn("armiRun-blueprints.yaml", txt)
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            case = baseCase.clone(writeStyle="medium")
+            case.writeInputs(writeStyle="medium")
+            # Availability factor is in the original settings file and it is a default
+            # value. While "short" (default writing style) removes, "medium" should not
+            txt = open("armiRun.yaml", "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class MultiFilesInterfaces(interfaces.Interface):
@@ -453,6 +600,20 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             newFilepath = os.path.join(newDir.destination, shuffleFile)
             self.assertEqual(newSettings[testSetting], newFilepath)
+
+    def test_copyInterfaceInputs_absPath(self):
+        testSetting = "shuffleLogic"
+        cs = settings.Settings(ARMI_RUN_PATH)
+        shuffleFile = cs[testSetting]
+        absFile = os.path.dirname(os.path.abspath(ARMI_RUN_PATH))
+        absFile = str(os.path.join(absFile, os.path.basename(shuffleFile)))
+        cs = cs.modified(newSettings={testSetting: absFile})
+
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            self.assertEqual(str(newSettings[testSetting]), absFile)
 
 
 if __name__ == "__main__":

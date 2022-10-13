@@ -161,7 +161,6 @@ class FissionProductModel(interfaces.Interface):
 
         See Also
         --------
-        terrapower.physics.neutronics.depletion.depletion.DepletionInterface.buildFissionProducts
         armi.reactor.blocks.Block.getLumpedFissionProductCollection : same thing, but block-level compatible. Use this
         """
 

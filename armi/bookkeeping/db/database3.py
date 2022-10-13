@@ -101,7 +101,6 @@ from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
-from armi.bookkeeping.db import database
 from armi.reactor import systemLayoutInput
 from armi.utils import getPreviousTimeNode, getStepLengths
 from armi.utils.textProcessors import resolveMarkupInclusions
@@ -421,7 +420,6 @@ class DatabaseInterface(interfaces.Interface):
                         timeNode,
                         statePointName=timeStepName,
                         cs=self.cs,
-                        bp=self.r.blueprints,
                         allowMissing=True,
                         updateGlobalAssemNum=updateGlobalAssemNum,
                     )
@@ -524,7 +522,7 @@ class DatabaseInterface(interfaces.Interface):
         return histories
 
 
-class Database3(database.Database):
+class Database3:
     """
     Version 3 of the ARMI Database, handling serialization and loading of Reactor states.
 
@@ -707,7 +705,8 @@ class Database3(database.Database):
 
         if self._permission == "w":
             # move out of the FAST_PATH and into the working directory
-            shutil.move(self._fullPath, self._fileName)
+            newPath = shutil.move(self._fullPath, self._fileName)
+            self._fullPath = os.path.abspath(newPath)
 
     def splitDatabase(
         self, keepTimeSteps: Sequence[Tuple[int, int]], label: str
@@ -1019,7 +1018,8 @@ class Database3(database.Database):
         exclude.add("layout")
         return (groupName + "/" + key for key in timeGroup.keys() if key not in exclude)
 
-    def getAuxiliaryDataPath(self, ts: Tuple[int, int], name: str) -> str:
+    @staticmethod
+    def getAuxiliaryDataPath(ts: Tuple[int, int], name: str) -> str:
         return getH5GroupName(*ts) + "/" + name
 
     def keys(self):
@@ -1088,11 +1088,11 @@ class Database3(database.Database):
     ):
         """Load a new reactor from (cycle, node).
 
-        Case settings, blueprints, and geom can be provided by the client, or read from
-        the database itself. Providing these from the client could be useful when
-        performing snapshot runs or the like, where it is expected to use results from a
-        run using different settings, then continue with new settings. Even in this
-        case, the blueprints and geom should probably be the same as the original run.
+        Case settings and blueprints can be provided by the client, or read from the database itself.
+        Providing these from the client could be useful when performing snapshot runs
+        or where it is expected to use results from a run using different settings and
+        continue with new settings (or if blueprints are not on the database).
+        Geom is read from the database itself.
 
         Parameters
         ----------
@@ -1102,7 +1102,7 @@ class Database3(database.Database):
             time node
         cs : armi.settings.Settings (optional)
             if not provided one is read from the database
-        bp : armi.reactor.Blueprints (Optional)
+        bp : armi.reactor.Blueprints (optional)
             if not provided one is read from the database
         statePointName : str
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")

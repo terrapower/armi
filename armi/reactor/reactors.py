@@ -27,17 +27,17 @@ plant-wide state variables such as keff, cycle, and node.
    The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
    each contain a collection of Blocks.
 """
-from typing import Optional
 import collections
 import copy
 import itertools
-import logging
 import os
-import tabulate
 import time
+from typing import Optional
 
 import numpy
+import tabulate
 
+from armi import runLog
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
@@ -56,9 +56,6 @@ from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
-
-# init logger
-runLog = logging.getLogger(__name__)
 
 
 class Reactor(composites.Composite):
@@ -314,6 +311,11 @@ class Core(composites.Composite):
     @lib.setter
     def lib(self, value):
         """Set the microscopic cross section library."""
+        runLog.extra(
+            f"Updating cross section library on {self}.\n"
+            f"Initial: {self._lib}\n"
+            f"Updated: {value}."
+        )
         self._lib = value
 
     @property
@@ -1169,12 +1171,13 @@ class Core(composites.Composite):
         Returns
         -------
         b : Block object (or None if no such block exists)
-
         """
         for a in self:
             for b in a:
                 if b.hasFlags(blockType, exact):
                     return b
+
+        return None
 
     def getFirstAssembly(self, typeSpec=None, exact=False):
         """
@@ -1452,7 +1455,6 @@ class Core(composites.Composite):
         getAssemblyByName
         getAssemblyWithStringLocation
         getLocationContents : a much more efficient way to look up assemblies in a list of locations
-
         """
         if assemblyName:
             return self.getAssemblyByName(assemblyName)
@@ -1462,6 +1464,8 @@ class Core(composites.Composite):
                 return a
             if a.getNum() == assemNum:
                 return a
+
+        return None
 
     def getAssemblyWithAssemNum(self, assemNum):
         """
@@ -1862,7 +1866,6 @@ class Core(composites.Composite):
                 ]
             )
         )
-
         self.p.axialMesh = list(numpy.append([0.0], avgHeight.cumsum()))
 
     def findAxialMeshIndexOf(self, heightCm):
@@ -2223,7 +2226,6 @@ class Core(composites.Composite):
         See Also
         --------
         updateAxialMesh : Perturbs the axial mesh originally set up here.
-
         """
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
@@ -2240,7 +2242,9 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        nonUniformAssems = [Flags.fromString(t) for t in cs["nonUniformAssemFlags"]]
+        nonUniformAssems = [
+            Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+        ]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
@@ -2258,7 +2262,7 @@ class Core(composites.Composite):
                     reverse=True,
                 )[0]
                 for a in self.parent.blueprints.assemblies.values():
-                    if a.hasFlags(nonUniformAssems, exact=True):
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
                         continue
                     a.makeAxialSnapList(refAssem=finestMeshAssembly)
             if not cs["inputHeightsConsideredHot"]:
@@ -2275,7 +2279,7 @@ class Core(composites.Composite):
             if not cs["detailedAxialExpansion"]:
                 # prepare core for mesh snapping during axial expansion
                 for a in self.getAssemblies(includeAll=True):
-                    if a.hasFlags(nonUniformAssems, exact=True):
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
                         continue
                     a.makeAxialSnapList(self.refAssem)
             if not cs["inputHeightsConsideredHot"]:
@@ -2303,7 +2307,9 @@ class Core(composites.Composite):
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
-        getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs)
+        getPluginManagerOrFail().hook.onProcessCoreLoading(
+            core=self, cs=cs, dbLoad=dbLoad
+        )
 
     def buildManualZones(self, cs):
         """
@@ -2386,3 +2392,4 @@ class Core(composites.Composite):
             if not a.hasFlags(Flags.CONTROL):
                 for b in a:
                     b.p.heightBOL = b.getHeight()
+                    b.completeInitialLoading()

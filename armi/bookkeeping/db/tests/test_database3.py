@@ -15,12 +15,14 @@
 r""" Tests for the Database3 class
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+import os
 import subprocess
 import unittest
 
 import h5py
 import numpy
 
+from armi import context
 from armi.bookkeeping.db import _getH5File, database3
 from armi.reactor import grids
 from armi.reactor import parameters
@@ -36,11 +38,13 @@ class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
 
         self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: db.Database3 = self.dbi.database
+        self.db: database3.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -178,8 +182,11 @@ class TestDatabase3(unittest.TestCase):
         created here for this test.
         """
         # first successfully call to prepRestartRun
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
         cs = o.cs
+
         ratedPower = cs["power"]
         startCycle = cs["startCycle"]
         startNode = cs["startNode"]
@@ -332,23 +339,34 @@ class TestDatabase3(unittest.TestCase):
         from armi.reactor import assemblies
         from armi.reactor.assemblies import resetAssemNumCounter
 
-        self.makeShuffleHistory()
+        self.makeHistory()
 
         resetAssemNumCounter()
         self.assertEqual(assemblies._assemNum, 0)
 
-        # there will 77 assemblies added to the newly created core
-        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85)
+        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
+        #  len(r.core.sfp) is zero but these nums are still reserved
+        numSFPBlueprints = 4
+        expectedNum = len(r.core) + numSFPBlueprints
+        self.assertEqual(assemblies._assemNum, expectedNum)
 
-        # now do the same call again and show that the global _assemNum just keeps going up
+        # now do the same call again and show that the global _assemNum keeps going up.
+        # in db.load, rector objects are built in layout._initComps() so the global assem num
+        # will continue to grow (in this case, double).
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85 * 2)
+        self.assertEqual(assemblies._assemNum, expectedNum * 2)
 
-        # now load but also updateGlobalAssemNum and show that it updates to the value
-        # stored in self.r.p.maxAssemNum plus 1
+        # now load but set updateGlobalAssemNum=True and show that the global assem num
+        # is updated and equal to self.r.p.maxAssemNum + 1 which is equal to the number of
+        # assemblies in blueprints/core.
+        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
+        expected = len(self.r.core) + len(self.r.blueprints.assemblies.values())
+        self.assertEqual(assemblies._assemNum, expected)
+
+        # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
+        # do not continue to increase the global assem num.
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        self.assertEqual(assemblies._assemNum, self.r.core.p.maxAssemNum + 1)
+        self.assertEqual(assemblies._assemNum, expected)
 
     def test_history(self):
         self.makeShuffleHistory()
@@ -671,6 +689,23 @@ class TestLocationPacking(unittest.TestCase):
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
         self.assertEqual(unpackedData[2][0], (7, 8, 9))
         self.assertEqual(unpackedData[2][1], (10, 11, 12))
+
+    def test_close(self):
+        intendedFileName = "xyz.h5"
+
+        db = database3.Database3(intendedFileName, "w")
+        self.assertEqual(db._fileName, intendedFileName)
+        self.assertIsNone(db._fullPath)  # this isn't set until the db is opened
+
+        db.open()
+        self.assertEqual(
+            db._fullPath, os.path.join(context.getFastPath(), intendedFileName)
+        )
+
+        db.close()  # this should move the file out of the FAST_PATH
+        self.assertEqual(
+            db._fullPath, os.path.join(os.path.abspath("."), intendedFileName)
+        )
 
 
 if __name__ == "__main__":

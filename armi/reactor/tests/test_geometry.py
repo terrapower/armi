@@ -188,6 +188,12 @@ class TestSymmetryType(unittest.TestCase):
         )
         self.assertEqual(st.symmetryFactor(), 16.0)
 
+    def test_domainTypeNulls(self):
+        self.assertEqual(geometry.DomainType.NULL.label, "")
+        self.assertEqual(str(geometry.DomainType.NULL), "")
+        with self.assertRaises(ValueError):
+            geometry.DomainType.NULL.symmetryFactor()
+
     def test_checkValidGeomSymmetryCombo(self):
         geomHex = geometry.GeomType.HEX
         geomCart = geometry.GeomType.CARTESIAN

@@ -28,24 +28,33 @@ class CloneArmiRunCommandBatch(EntryPoint):
     settingsArgument = "required"
 
     def addOptions(self):
-        for settingName in self.cs.keys():
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in ["verbosity", "branchVerbosity"]:
-                self.createOptionFromSetting(settingName)
         self.parser.add_argument(
             "--additional-files",
             nargs="*",
             default=[],
             help="Additional files from the source directory to copy into the target directory",
         )
+        self.parser.add_argument(
+            "--settingsWriteStyle",
+            type=str,
+            default="short",
+            help="Writing style for which settings get written back to the settings files.",
+            choices=["short", "medium", "full"],
+        )
+        # somehow running `armi clone-batch -h` on the command line requires this to
+        # not be first?
+        for settingName in self.cs.keys():
+            self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
         # get the case title.
         from armi import cases
 
         inputCase = cases.Case(cs=self.cs)
-        inputCase.clone(additionalFiles=self.args.additional_files)
+        inputCase.clone(
+            additionalFiles=self.args.additional_files,
+            writeStyle=self.args.settingsWriteStyle,
+        )
 
 
 class CloneArmiRunCommandInteractive(CloneArmiRunCommandBatch):
@@ -65,10 +74,8 @@ class CloneSuiteCommand(EntryPoint):
 
     def addOptions(self):
         for settingName in self.cs.environmentSettings:
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in {"verbosity", "branchVerbosity"}:
-                self.createOptionFromSetting(settingName)
+            self.createOptionFromSetting(settingName)
+
         self.parser.add_argument(
             "--directory",
             "-d",
@@ -98,6 +105,13 @@ class CloneSuiteCommand(EntryPoint):
             default=False,
             help="Just list the settings files found, don't actually submit them.",
         )
+        self.parser.add_argument(
+            "--settingsWriteStyle",
+            type=str,
+            default="short",
+            help="Writing style for which settings get written back to the settings files.",
+            choices=["short", "medium", "full"],
+        )
 
     def invoke(self):
         from armi import cases
@@ -108,4 +122,6 @@ class CloneSuiteCommand(EntryPoint):
             rootDir=self.args.directory,
             ignorePatterns=self.args.ignore,
         )
-        suite.clone(oldRoot=self.args.directory)
+        suite.clone(
+            oldRoot=self.args.directory, writeStyle=self.args.settingsWriteStyle
+        )

@@ -65,7 +65,9 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
     if os.path.exists(cachedFolder):
         if locToRetrieveTo is None:
             locToRetrieveTo = os.path.dirname(inputPaths[0])
+
         successful = _copyOutputs(cachedFolder, locToRetrieveTo)
+
         if successful:
             runLog.extra("Retrieved cached outputs for {}".format(exePath))
             return True
@@ -75,7 +77,11 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
                 "Outputs in {} were inconsistent with manifest. "
                 "Deleting and reproducing".format(cachedFolder)
             )
-            deleteCache(cachedFolder)
+            try:
+                deleteCache(cachedFolder)
+            except Exception as e:
+                runLog.debug(e)
+
     return False
 
 
@@ -87,10 +93,14 @@ def _copyOutputs(cachedFolder, locToRetrieveTo):
 
     with open(manifest) as manifestJSON:
         storedOutputNamesToHashes = json.load(manifestJSON)
+
     copies = []
     for storedOutputName, expectedHash in storedOutputNamesToHashes.items():
         storedOutputPath = os.path.join(cachedFolder, storedOutputName)
-        if _hashFiles([storedOutputPath]) != expectedHash:
+        try:
+            if _hashFiles([storedOutputPath]) != expectedHash:
+                return False
+        except FileNotFoundError:
             return False
         copyPath = os.path.join(locToRetrieveTo, storedOutputName)
         copies.append([storedOutputPath, copyPath])
@@ -98,6 +108,7 @@ def _copyOutputs(cachedFolder, locToRetrieveTo):
     for copy in copies:
         storedOutputPath, copyPath = copy
         shutil.copy(storedOutputPath, copyPath)
+
     return True
 
 
@@ -120,6 +131,7 @@ def _hashFiles(paths):
     for path in paths[1:]:
         with open(path, "rb") as binaryF:
             md5Hash.update(binaryF.read())
+
     return md5Hash.hexdigest()
 
 
@@ -156,6 +168,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
         baseName = os.path.basename(outputFile)
         cachedLoc = os.path.join(folderLoc, baseName)
         shutil.copy(outputFile, cachedLoc)
+
     runLog.extra("Added outputs for {} to the cache.".format(exePath))
 
 
@@ -167,6 +180,7 @@ def deleteCache(cachedFolder):
     """
     if "Output_Cache" not in cachedFolder:
         raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
+
     cleanPath(cachedFolder)
     context.waitAll()
 

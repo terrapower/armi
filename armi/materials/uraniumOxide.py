@@ -38,10 +38,12 @@ HeatCapacityConstants = collections.namedtuple(
 )
 
 
-class UraniumOxide(material.FuelMaterial):
+class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     name = "Uranium Oxide"
 
     enrichedNuclide = "U235"
+
+    REFERENCE_TEMPERATURE = 27
 
     # ORNL/TM-2000/351 section 4.3
     heatCapacityConstants = HeatCapacityConstants(
@@ -100,6 +102,9 @@ class UraniumOxide(material.FuelMaterial):
         1.847,
         1.718,
     ]
+
+    def __init__(self):
+        material.SimpleSolid.__init__(self)
 
     def adjustTD(self, val: float) -> None:
         self.theoreticalDensityFrac = val
@@ -162,7 +167,7 @@ class UraniumOxide(material.FuelMaterial):
         """
         return self.__meltingPoint
 
-    def density(self, Tk: float = None, Tc: float = None) -> float:
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Density in (g/cc)
 

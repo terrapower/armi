@@ -31,18 +31,10 @@ def fuelHandlerFactory(operator):
     fuelHandlerModulePath = cs["shuffleLogic"]
 
     if not fuelHandlerClassName:
-        # User did not request a custom fuel handler.
-        # This is code coupling that should be untangled.
-        # Special case for equilibrium-mode shuffling
-        if cs["eqDirect"] and cs["runType"].lower() == RunTypes.STANDARD.lower():
-            from terrapower.physics.neutronics.equilibrium import fuelHandler as efh
-
-            return efh.EqDirectFuelHandler(operator)
-        else:
-            # give the default FuelHandler. This does not have an implemented outage, but
-            # still offers moving capabilities. Useful when you just need to make explicit
-            # moves but do not have a fully-defined fuel management input.
-            return fuelHandlers.FuelHandler(operator)
+        # give the default FuelHandler. This does not have an implemented outage, but
+        # still offers moving capabilities. Useful when you just need to make explicit
+        # moves but do not have a fully-defined fuel management input.
+        return fuelHandlers.FuelHandler(operator)
 
     # User did request a custom fuel handler. We must go find and import it
     # from the input directory.
@@ -82,4 +74,5 @@ def fuelHandlerFactory(operator):
                     fuelHandlerModulePath, fuelHandlerClassName, cs.inputDirectory
                 )
             )
+
     return fuelHandler

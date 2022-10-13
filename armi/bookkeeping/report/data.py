@@ -77,6 +77,7 @@ class Report:
             runLog.warning(
                 "Cannot locate group {} in report {}".format(group.title, self.title)
             )
+            return None
 
     def writeHTML(self):
         """Renders this report as a standalone HTML file"""
@@ -92,7 +93,6 @@ class Report:
         """A helper method to the writeHTML method process
 
         Composes the group html content, intended for use in the midst of the html document generation
-
         """
         Image.count = 0  # reset the count for this report's figure enumeration
 
@@ -177,6 +177,8 @@ class Group:
             runLog.warning(
                 "Given name {} not present in report group {}".format(name, self.title)
             )
+
+        return None
 
     def __setitem__(self, name, value):
         self.data[name] = value

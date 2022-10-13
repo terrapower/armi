@@ -475,7 +475,7 @@ class DistributeStateAction(MpiAction):
             cs = self._distributeSettings()
 
             self._distributeReactor(cs)
-            self._distributeParamAssignments()
+            DistributeStateAction._distributeParamAssignments()
 
             if self._skipInterfaces:
                 self.o.reattach(self.r, cs)  # may be redundant?
@@ -564,7 +564,8 @@ class DistributeStateAction(MpiAction):
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
-    def _distributeParamAssignments(self):
+    @staticmethod
+    def _distributeParamAssignments():
         data = dict()
         if context.MPI_RANK == 0:
             data = {
@@ -637,7 +638,7 @@ class DistributeStateAction(MpiAction):
                     iNew = self.broadcast(None)
                     runLog.debug("Received {0}".format(iNew))
                     if iNew == "quit":
-                        return True  # signal the operator to break.
+                        return
                     self.o.removeInterface(iOld)
                     self.o.addInterface(iNew)
                     iNew.interactDistributeState()  # pylint: disable=no-member
@@ -686,7 +687,7 @@ def _diagnosePickleError(o):
     runLog.info("Scanning the Reactor for pickle errors")
     checker(o.r)
 
-    runLog.info("Scanning All assemblies for pickle errors")
+    runLog.info("Scanning all assemblies for pickle errors")
     for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
         checker(a)
 

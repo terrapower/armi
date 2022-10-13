@@ -52,6 +52,7 @@ from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.utils import hexagon
 from armi.reactor.converters import blockConverters
+from armi.reactor import assemblies
 
 BLOCK_AXIAL_MESH_SPACING = (
     20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
@@ -62,29 +63,15 @@ STR_SPACE = " "
 class GeometryChanger:
     """Geometry changer class that updates the geometry (number of assems or blocks per assem) of a given reactor."""
 
-    def __init__(self, cs=None, quiet=False):
+    def __init__(self, cs=None):
         self._newAssembliesAdded = []
         self._sourceReactor = None
         self._cs = cs
-        self._assemblyModuleCounter = assemblies.getAssemNum()
-        if not quiet:
-            self._writeAssemblyModuleCounter()
 
     def __repr__(self):
         return "<{}>".format(self.__class__.__name__)
 
-    def getNewAssembliesAdded(self):
-        return self._newAssembliesAdded
-
-    def getAssemblyModuleCounter(self):
-        return self._assemblyModuleCounter
-
-    def _writeAssemblyModuleCounter(self):
-        runLog.debug(
-            "Assembly Module Counter is {}".format(self._assemblyModuleCounter)
-        )
-
-    def convert(self, r=None):
+    def convert(self, r):
         """
         Run the conversion.
 
@@ -92,14 +79,27 @@ class GeometryChanger:
         ----------
         r : Reactor object
             The reactor to convert.
-
-        Returns
-        -------
-        convReactor : Reactor object
-            the converted reactor (converters only, not changers)
-
         """
         raise NotImplementedError
+
+    def reset(self):
+        """
+        When called, the reactor core model is reset to it's original configuration, or
+        parameter data from the converted reactor core model is transformed back to the origin
+        reactor state, thus cleaning up the converted reactor core model.
+
+        Notes
+        -----
+        This should be implemented on each of the geometry converters.
+        """
+        runLog.info(
+            f"Resetting the state of the converted reactor core model in {self}"
+        )
+        currentAssemCounter = assemblies.getAssemNum()
+        assemblies.setAssemNumCounter(
+            currentAssemCounter - len(self._newAssembliesAdded)
+        )
+        self._newAssembliesAdded = []
 
 
 class GeometryConverter(GeometryChanger):
@@ -118,8 +118,8 @@ class GeometryConverter(GeometryChanger):
     >>> dif3d.writeInput('rzGeom_actual.inp')
     """
 
-    def __init__(self, cs=None, quiet=False):
-        GeometryChanger.__init__(self, cs=cs, quiet=quiet)
+    def __init__(self, cs=None):
+        GeometryChanger.__init__(self, cs=cs)
         self.convReactor = None
 
 
@@ -141,7 +141,7 @@ class FuelAssemNumModifier(GeometryChanger):
         self.ringsToAdd = []
         self.modifyReactorPower = False
 
-    def convert(self, r=None):
+    def convert(self, r):
         """
         Set the number of fuel assemblies in the reactor.
 
@@ -154,37 +154,45 @@ class FuelAssemNumModifier(GeometryChanger):
         """
         self._sourceReactor = r
 
-        if r.core.powerMultiplier != 1 and r.core.powerMultiplier != 3:
+        if (
+            self._sourceReactor.core.powerMultiplier != 1
+            and self._sourceReactor.core.powerMultiplier != 3
+        ):
             raise ValueError(
                 "Invalid reactor geometry {} in {}. Reactor must be full or third core to modify the "
                 "number of assemblies.".format(r.core.powerMultiplier, self)
             )
 
         # Set the number of fueled and non-fueled positions within the core (Full core or third-core)
-        coreGeom = "full-core" if r.core.powerMultiplier == 1 else "third-core"
+        coreGeom = (
+            "full-core"
+            if self._sourceReactor.core.powerMultiplier == 1
+            else "third-core"
+        )
         runLog.info(
             "Modifying {} geometry to have {} fuel assemblies.".format(
                 coreGeom, self.numFuelAssems
             )
         )
         nonFuelAssems = (
-            sum(not assem.hasFlags(Flags.FUEL) for assem in r.core)
-            * r.core.powerMultiplier
+            sum(not assem.hasFlags(Flags.FUEL) for assem in self._sourceReactor.core)
+            * self._sourceReactor.core.powerMultiplier
         )
-        self.numFuelAssems *= r.core.powerMultiplier
+        self.numFuelAssems *= self._sourceReactor.core.powerMultiplier
         totalCoreAssems = nonFuelAssems + self.numFuelAssems
 
         # Adjust the total power of the reactor by keeping power per assembly constant
         if self.modifyReactorPower:
-            r.core.p.power *= float(self.numFuelAssems) / (
-                len(r.core.getAssemblies(Flags.FUEL)) * r.core.powerMultiplier
+            self._sourceReactor.core.p.power *= float(self.numFuelAssems) / (
+                len(self._sourceReactor.core.getAssemblies(Flags.FUEL))
+                * self._sourceReactor.core.powerMultiplier
             )
 
         # Get the sorted assembly locations in the core (Full core or third core)
         assemOrderList = r.core.spatialGrid.generateSortedHexLocationList(
             totalCoreAssems
         )
-        if r.core.powerMultiplier == 3:
+        if self._sourceReactor.core.powerMultiplier == 3:
             assemOrderList = [
                 loc for loc in assemOrderList if r.core.spatialGrid.isInFirstThird(loc)
             ]
@@ -193,23 +201,25 @@ class FuelAssemNumModifier(GeometryChanger):
         addingFuelIsComplete = False
         numFuelAssemsAdded = 0
         for loc in assemOrderList:
-            assem = r.core.childrenByLocator.get(loc)
+            assem = self._sourceReactor.core.childrenByLocator.get(loc)
             if numFuelAssemsAdded < self.numFuelAssems:
                 if assem is None:
                     raise KeyError("Cannot find expected fuel assem in {}".format(loc))
                 # Add new fuel assembly to the core
                 if assem.hasFlags(self.overwriteList):
-                    fuelAssem = r.core.createAssemblyOfType(assemType=self.fuelType)
+                    fuelAssem = self._sourceReactor.core.createAssemblyOfType(
+                        assemType=self.fuelType
+                    )
                     # Remove existing assembly in the core location before adding new assembly
                     if assem.hasFlags(self.overwriteList):
-                        r.core.removeAssembly(assem, discharge=False)
-                    r.core.add(fuelAssem, loc)
-                    numFuelAssemsAdded += r.core.powerMultiplier
+                        self._sourceReactor.core.removeAssembly(assem, discharge=False)
+                    self._sourceReactor.core.add(fuelAssem, loc)
+                    numFuelAssemsAdded += self._sourceReactor.core.powerMultiplier
                 else:
                     # Keep the existing assembly in the core
                     if assem.hasFlags(Flags.FUEL):
                         # Count the assembly in the location if it is fuel
-                        numFuelAssemsAdded += r.core.powerMultiplier
+                        numFuelAssemsAdded += self._sourceReactor.core.powerMultiplier
                     else:
                         pass
             # Flag the completion of adding fuel assemblies (see note 1)
@@ -218,10 +228,10 @@ class FuelAssemNumModifier(GeometryChanger):
 
             # Remove the remaining assemblies in the the assembly list once all the fuel has been added
             if addingFuelIsComplete and assem is not None:
-                r.core.removeAssembly(assem, discharge=False)
+                self._sourceReactor.core.removeAssembly(assem, discharge=False)
 
         # Remove all other assemblies from the core
-        for assem in r.core.getAssemblies():
+        for assem in self._sourceReactor.core.getAssemblies():
             if (
                 assem.spatialLocator not in assemOrderList
             ):  # check if assembly is on the list
@@ -234,10 +244,14 @@ class FuelAssemNumModifier(GeometryChanger):
             self.addRing(assemType=assemType)
 
         # Complete the reactor loading
-        r.core.processLoading(self._cs)  # pylint: disable=protected-access
-        r.core.numRings = r.core.getNumRings()
-        r.core.regenAssemblyLists()
-        r.core.circularRingList = None  # need to reset this (possibly other stuff too)
+        self._sourceReactor.core.processLoading(
+            self._cs
+        )  # pylint: disable=protected-access
+        self._sourceReactor.core.numRings = self._sourceReactor.core.getNumRings()
+        self._sourceReactor.core.regenAssemblyLists()
+        self._sourceReactor.core.circularRingList = (
+            None  # need to reset this (possibly other stuff too)
+        )
 
     def addRing(self, assemType="big shield"):
         r"""
@@ -301,6 +315,10 @@ class FuelAssemNumModifier(GeometryChanger):
                     pass
             else:
                 pass
+
+    def reset(self):
+        """Resetting the reactor core model state after adding fuel assemblies is not currently supported."""
+        raise NotImplementedError
 
 
 class HexToRZThetaConverter(GeometryConverter):
@@ -441,6 +459,8 @@ class HexToRZThetaConverter(GeometryConverter):
         --------
         armi.reactor.converters.meshConverters
         """
+        runLog.info(f"Converting {r.core} using {self}")
+
         if r.core.geomType != geometry.GeomType.HEX:
             raise ValueError(
                 "Cannot use {} to convert {} reactor".format(
@@ -453,6 +473,7 @@ class HexToRZThetaConverter(GeometryConverter):
         rztSpatialGrid = self._generateConvertedReactorMesh()
         runLog.info(rztSpatialGrid)
         self._setupConvertedReactor(rztSpatialGrid)
+        self.convReactor.core.lib = self._sourceReactor.core.lib
 
         innerDiameter = 0.0
         lowerRing = 1
@@ -502,6 +523,10 @@ class HexToRZThetaConverter(GeometryConverter):
 
         self.convReactor.core.updateAxialMesh()
         self.convReactor.core.summarizeReactorStats()
+
+        # Track the new assemblies that were created when the converted reactor was
+        # initialized so that the global assembly counter can be reset later.
+        self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
     def _setNextAssemblyTypeInRadialZone(self, lowerRing, upperRing):
         """
@@ -561,10 +586,11 @@ class HexToRZThetaConverter(GeometryConverter):
         if self._cs is not None:
             core.setOptionsFromCs(self._cs)
         self.convReactor.add(core)
-        self.convReactor.core.spatialGrid = grid
+
         grid.symmetry = self._SYMMETRY_TYPE
         grid.geomType = self._GEOMETRY_TYPE
         grid.armiObject = self.convReactor.core
+        self.convReactor.core.spatialGrid = grid
         self.convReactor.core.p.power = self._sourceReactor.core.p.power
         self.convReactor.core.name += " - {0}".format(self._GEOMETRY_TYPE)
 
@@ -614,7 +640,7 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         aList = []
 
-        converter = EdgeAssemblyChanger(quiet=True)
+        converter = EdgeAssemblyChanger()
         converter.addEdgeAssemblies(core)
         for a in core:
             x, y, _ = a.spatialLocator.getLocalCoordinates()
@@ -773,6 +799,9 @@ class HexToRZThetaConverter(GeometryConverter):
             newBlock.p.axMesh = int(axialSegmentHeight / BLOCK_AXIAL_MESH_SPACING) + 1
             newBlock.p.zbottom = lowerAxialZ
             newBlock.p.ztop = upperAxialZ
+
+            fpi = self._o.getInterface("fissionProducts")
+            newBlock.setLumpedFissionProducts(fpi.getGlobalLumpedFissionProducts())
 
             # Assign the new block cross section type and burn up group
             newBlock.setType(newBlockType)
@@ -1159,6 +1188,21 @@ class HexToRZThetaConverter(GeometryConverter):
                         continue
         return nextColor
 
+    def reset(self):
+        """Clear out attribute data, including holding the state of the converted reactor core model."""
+        self._o = None
+        self.meshConverter = None
+        self._radialMeshConversionType = None
+        self._axialMeshConversionType = None
+        self._previousRadialZoneAssemTypes = None
+        self._currentRadialZoneType = None
+        self._assemsInRadialZone = collections.defaultdict(list)
+        self._newBlockNum = 0
+        self.blockMap = collections.defaultdict(list)
+        self.blockVolFracs = collections.defaultdict(dict)
+        self.convReactor = None
+        super().reset()
+
 
 class HexToRZConverter(HexToRZThetaConverter):
     r"""
@@ -1181,15 +1225,14 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     --------
     >>> converter = ThirdCoreHexToFullCoreChanger()
     >>> converter.convert(myReactor)
-
     """
 
     EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
         geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, cs=None):
+        GeometryChanger.__init__(self, cs)
         self.listOfVolIntegratedParamsToScale = []
 
     def _scaleBlockVolIntegratedParams(self, b, direction):
@@ -1207,7 +1250,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             else:
                 b.p[param] = op(b.p[param], 3)
 
-    def convert(self, r=None):
+    def convert(self, r):
         """
         Run the conversion.
 
@@ -1215,42 +1258,49 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         ----------
         sourceReactor : Reactor object
             The reactor to convert.
-
         """
-        if r.core.isFullCore:
+        self._sourceReactor = r
+
+        if self._sourceReactor.core.isFullCore:
             # already full core from geometry file. No need to copy symmetry over.
             runLog.important(
                 "Detected that full core reactor already exists. Cannot expand."
             )
-            return r
+            return self._sourceReactor
         elif not (
-            r.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
-            and r.core.geomType == geometry.GeomType.HEX
+            self._sourceReactor.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
+            and self._sourceReactor.core.geomType == geometry.GeomType.HEX
         ):
             raise ValueError(
                 "ThirdCoreHexToFullCoreChanger requires the input to have third core hex geometry. "
                 "Geometry received was {} {} {}".format(
-                    r.core.symmetry.domain, r.core.symmetry.boundary, r.core.geomType
+                    self._sourceReactor.core.symmetry.domain,
+                    self._sourceReactor.core.symmetry.boundary,
+                    self._sourceReactor.core.geomType,
                 )
             )
         edgeChanger = EdgeAssemblyChanger()
-        edgeChanger.removeEdgeAssemblies(r.core)
+        edgeChanger.removeEdgeAssemblies(self._sourceReactor.core)
         runLog.info("Expanding to full core geometry")
 
         # store a copy of the 1/3 geometry grid, so that we can use it to find symmetric
         # locations, while the core has a full-core grid so that it doesnt yell at us
         # for adding stuff outside of the first 1/3
-        grid = copy.deepcopy(r.core.spatialGrid)
+        grid = copy.deepcopy(self._sourceReactor.core.spatialGrid)
 
         # Set the core grid's symmetry early, since the core uses it for error checks
-        r.core.symmetry = geometry.SymmetryType(
+        self._sourceReactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
 
-        for a in r.core.getAssemblies():
+        for a in self._sourceReactor.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
             otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
-            thisZone = r.core.zones.findZoneItIsIn(a) if len(r.core.zones) > 0 else None
+            thisZone = (
+                self._sourceReactor.core.zones.findZoneItIsIn(a)
+                if len(self._sourceReactor.core.zones) > 0
+                else None
+            )
             angle = 2 * math.pi / (len(otherLocs) + 1)
             count = 1
             for i, j in otherLocs:
@@ -1258,7 +1308,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 newAssem.makeUnique()
                 newAssem.rotate(count * angle)
                 count += 1
-                r.core.add(newAssem, r.core.spatialGrid[i, j, 0])
+                self._sourceReactor.core.add(
+                    newAssem, self._sourceReactor.core.spatialGrid[i, j, 0]
+                )
                 if thisZone:
                     thisZone.addLoc(newAssem.getLocation())
                 self._newAssembliesAdded.append(newAssem)
@@ -1273,30 +1325,31 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                     (
                         self.listOfVolIntegratedParamsToScale,
                         _,
-                    ) = _generateListOfParamsToScale(r, paramsToScaleSubset=[])
+                    ) = _generateListOfParamsToScale(
+                        self._sourceReactor, paramsToScaleSubset=[]
+                    )
 
                 for b in a:
                     self._scaleBlockVolIntegratedParams(b, "up")
 
         # set domain after expanding, because it isnt actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
-        r.core.symmetry = geometry.SymmetryType(
+        self._sourceReactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
 
-    def restorePreviousGeometry(self, r):
+    def restorePreviousGeometry(self, r=None):
         """Undo the changes made by convert by going back to 1/3 core."""
+        r = r or self._sourceReactor
+
         # remove the assemblies that were added when the conversion happened.
-        if bool(self.getNewAssembliesAdded()):
-            for a in self.getNewAssembliesAdded():
+        if bool(self._newAssembliesAdded):
+            for a in self._newAssembliesAdded:
                 r.core.removeAssembly(a, discharge=False)
 
             r.core.symmetry = geometry.SymmetryType.fromAny(
                 self.EXPECTED_INPUT_SYMMETRY
             )
-
-            # clear the list for next time
-            self._newAssembliesAdded = []
 
             # change the central assembly params back to 1/3
             a = r.core.getAssemblyWithStringLocation("001-001")
@@ -1305,6 +1358,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             )
             for b in a:
                 self._scaleBlockVolIntegratedParams(b, "down")
+        self.reset()
 
 
 class EdgeAssemblyChanger(GeometryChanger):
@@ -1331,16 +1385,15 @@ class EdgeAssemblyChanger(GeometryChanger):
         See Also
         --------
         removeEdgeAssemblies : removes the edge assemblies
-
         """
         if core.isFullCore:
             return
 
-        if self.getNewAssembliesAdded():
+        if self._newAssembliesAdded:
             runLog.important(
                 "Skipping addition of edge assemblies because they are already there"
             )
-            return False
+            return
 
         assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
             grids.BOUNDARY_0_DEGREES
@@ -1413,8 +1466,6 @@ class EdgeAssemblyChanger(GeometryChanger):
             core.removeAssembly(a, discharge=False)
 
         if edgeAssemblies:
-            # clear list so next call knows they're gone.
-            self._newAssembliesAdded = []
             for a in assembliesOnLowerBoundary:
                 a.clearCache()  # clear cached area since symmetry factor will change
             # Reset the SINCE_LAST_GEOMETRY_TRANSFORMATION flag, so that subsequent geometry
@@ -1424,6 +1475,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             pDefs.setAssignmentFlag(SINCE_LAST_GEOMETRY_TRANSFORMATION)
         else:
             runLog.extra("No edge assemblies to remove")
+        self.reset()
 
     @staticmethod
     def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):

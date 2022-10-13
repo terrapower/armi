@@ -11,19 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 This module contains subclasses of the armi.runLog._RunLog class that can be used to determine whether or not
 one of the specific methods were called. These should only be used in testing.
 """
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import six
 import sys
 
 from armi import runLog
 
 
-class BufferLog(runLog._RunLog):  # pylint: disable=protected-access
+class BufferLog(runLog._RunLog):
     r"""Log which captures the output in attributes instead of emitting them
 
     Used mostly in testing to ensure certain things get output, or to prevent any output

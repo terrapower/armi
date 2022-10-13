@@ -337,42 +337,50 @@ class Component(composites.Composite, metaclass=ComponentType):
           due to the difference in self.inputTemperatureInC and self.temperatureInC
         - After the expansion, the density of the component should reflect the 3d
           density of the material
-
-        See Also
-        --------
-        self.applyHotHeightDensityReduction
         """
         # note, that this is not the actual material density, but rather 2D expanded
         # `density3` is 3D density
+        # call getProperty to cache and improve speed
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.p.massFrac
         )
-        self.applyHotHeightDensityReduction()
 
-    def applyHotHeightDensityReduction(self):
+        # material needs to be expanded from the material's cold temp to hot,
+        # not components cold temp, so we don't use mat.linearExpansionFactor or
+        # component.getThermalExpansionFactor.
+        # Materials don't typically define the temperature for which their references
+        # density is defined so linearExpansionPercent must be called
+        coldMatAxialExpansionFactor = (
+            1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
+        )
+        self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
+
+    def adjustDensityForHeightExpansion(self, newHot):
         """
-        Adjust number densities to account for hot block heights (axial expansion)
-        (crucial for preserving 3D density).
+        Change the densities in cases where height of the block/component is changing with expansion.
 
         Notes
         -----
-        - We apply this hot height density reduction to account for pre-expanded
-          block heights in blueprints.
-        - This is called when inputHeightsConsideredHot: True.
-
-        See Also
-        --------
-        self.applyMaterialMassFracsToNumberDensities
+        Call before setTemperature since we need old hot temp.
+        This works well if there is only 1 solid component.
+        If there are multiple components expanding at different rates during thermal
+        expansion this becomes more complicated and, and axial expansion should be used.
+        Multiple expansion rates cannot trivially be accommodated.
+        See AxialExpansionChanger.
         """
-        # this is the same as getThermalExpansionFactor but doesn't fail
-        # on non-fluid materials that have 0 or undefined thermal expansion
-        # (we don't want materials to fail on  __init__ which calls this)
-        axialExpansionFactor = 1.0 + self.material.linearExpansionFactor(
-            self.temperatureInC, self.inputTemperatureInC
-        )
-        self.changeNDensByFactor(1.0 / axialExpansionFactor)
+        self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
+
+    def getHeightFactor(self, newHot):
+        """
+        Return the factor by which height would change by if we did 3D expansion.
+
+        Notes
+        -----
+        Call before setTemperature since we need old hot temp.
+        """
+        return self.getThermalExpansionFactor(Tc=newHot, T0=self.temperatureInC)
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties."""
@@ -1179,41 +1187,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return composites.ArmiObject.getLumpedFissionProductCollection(self)
 
-    def getReactionRates(self, nucName, nDensity=None):
-        """
-        Parameters
-        ----------
-        nucName - str
-            nuclide name -- e.g. 'U235'
-        nDensity - float
-            number Density
-
-        Returns
-        -------
-        rxnRates - dict
-            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-        Note
-        ----
-        if you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
-
-        """
-        if nDensity is None:
-            nDensity = self.getNumberDensity(nucName)
-        try:
-            return getReactionRateDict(
-                nucName,
-                self.getAncestorWithFlags(Flags.CORE).lib,
-                self.parent.p.xsType,
-                self.getIntegratedMgFlux(),
-                nDensity,
-            )
-        except (AttributeError, KeyError):
-            # AttributeError because there was no library because no parent.r -- this is a armiObject without flux so
-            # send it some zeros
-            # KeyError because nucName was not in the library
-            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
-
     def getMicroSuffix(self):
         return self.parent.getMicroSuffix()
 
@@ -1237,45 +1210,3 @@ class ShapedComponent(Component):
     """A component with well-defined dimensions."""
 
     pass
-
-
-def getReactionRateDict(nucName, lib, xsType, mgFlux, nDens):
-    """
-    Parameters
-    ----------
-    nucName - str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
-        _label_, see the nucDirectory module for a description of the difference.
-    lib - isotxs
-        cross section library
-    xsType - str
-        cross section type -- e.g. - 'A'
-    mgFlux - numpy.nArray
-        integrated mgFlux (n-cm/s)
-    nDens - float
-        number density (at/bn-cm)
-
-    Returns
-    -------
-    rxnRates - dict
-        dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-    Note
-    ----
-    assume there is no n3n cross section in ISOTXS
-
-    """
-    nucLabel = nuclideBases.byName[nucName].label
-    key = "{}{}A".format(nucLabel, xsType)
-    libNuc = lib[key]
-    rxnRates = {"n3n": 0}
-    for rxName, mgXSs in [
-        ("nG", libNuc.micros.nGamma),
-        ("nF", libNuc.micros.fission),
-        ("n2n", libNuc.micros.n2n),
-        ("nA", libNuc.micros.nalph),
-        ("nP", libNuc.micros.np),
-    ]:
-        rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
-
-    return rxnRates

@@ -13,22 +13,23 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import pathlib
 import unittest
 
 import yamlize
 
+from armi import settings
+from armi.nucDirectory.elements import bySymbol
 from armi.reactor import blueprints
 from armi.reactor import parameters
+from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
+from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
 from armi.reactor.flags import Flags
-from armi.nucDirectory.elements import bySymbol
-from armi import settings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
-from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
-from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
 
 
 class TestBlueprints(unittest.TestCase):

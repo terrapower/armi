@@ -321,9 +321,6 @@ class TestGriddedBlock(unittest.TestCase):
 
     # TODO: This test passes, but shouldn't.
     def test_densityConsistentWithComponentConstructor(self):
-        # when comparing to 3D density, the comparison is not quite correct.
-        # We need a bigger delta, this will be investigated/fixed in another PR
-        biggerDelta = 0.001  # g/cc
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints
         )
@@ -336,7 +333,6 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertAlmostEqual(
             clad.getMassDensity(),
             clad.material.density3(Tc=clad.temperatureInC),
-            delta=biggerDelta,
         )
 
         self.assertAlmostEqual(

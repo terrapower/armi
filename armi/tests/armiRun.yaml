@@ -53,7 +53,6 @@ settings:
   percentNaReduction: 10.0
   power: 100000000.0
   refType: inner igniter fuel
-  reloadDBName: reloadingDB.h5
   shuffleLogic: refSmallReactorShuffleLogic.py
   smallRun: true
   summarizeAssemDesign: false

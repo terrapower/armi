@@ -14,8 +14,9 @@
 """
 Unit tests for pin type block converters
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
+import unittest
 
 from armi.reactor.flags import Flags
 
