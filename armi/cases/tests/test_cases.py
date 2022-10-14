@@ -212,6 +212,44 @@ class TestArmiCase(unittest.TestCase):
                 self.assertIn("xsGroups", mock._outputStream)
                 self.assertIn("Completed EveryNode - cycle 0", mock._outputStream)
 
+    def test_clone(self):
+        testTitle = "CLONE_TEST"
+        # test the short write style
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+            shortCase = case.clone(
+                additionalFiles=["ISOAA"],
+                title=testTitle,
+                modifiedSettings={"verbosity": "important"},
+            )
+            # Check additional files made it
+            self.assertTrue(os.path.exists("ISOAA"))
+            # Check title change made it
+            clonedYaml = testTitle + ".yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            self.assertTrue(shortCase.title, testTitle)
+            # Check on some expected settings
+            # Availability factor is in the original settings file but since it is a
+            # default value, gets removed for the write-out
+            txt = open(clonedYaml, "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+            self.assertIn("verbosity: important", txt)
+
+        # test the medium write style
+        with directoryChangers.TemporaryDirectoryChanger():
+            cs = settings.Settings(ARMI_RUN_PATH)
+            setMasterCs(cs)
+            case = cases.Case(cs)
+            case.clone(writeStyle="medium")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # Availability factor is in the original settings file and it is a default
+            # value. While "short" (default writing style) removes, "medium" should not
+            txt = open(clonedYaml, "r").read()
+            self.assertIn("availabilityFactor", txt)
+
 
 class TestCaseSuiteDependencies(unittest.TestCase):
     """CaseSuite tests"""
@@ -370,6 +408,19 @@ class TestExtraInputWriting(unittest.TestCase):
             case = baseCase.clone()
             case.writeInputs()
             self.assertTrue(os.path.exists(cs["shuffleLogic"]))
+            # Availability factor is in the original settings file but since it is a
+            # default value, gets removed for the write-out
+            txt = open("armiRun.yaml", "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+            self.assertIn("armiRun-blueprints.yaml", txt)
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            case = baseCase.clone(writeStyle="medium")
+            case.writeInputs(writeStyle="medium")
+            # Availability factor is in the original settings file and it is a default
+            # value. While "short" (default writing style) removes, "medium" should not
+            txt = open("armiRun.yaml", "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class MultiFilesInterfaces(interfaces.Interface):

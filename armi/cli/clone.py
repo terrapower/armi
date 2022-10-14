@@ -34,6 +34,13 @@ class CloneArmiRunCommandBatch(EntryPoint):
             default=[],
             help="Additional files from the source directory to copy into the target directory",
         )
+        self.parser.add_argument(
+            "--settingsWriteStyle",
+            type=str,
+            default="short",
+            help="Writing style for which settings get written back to the settings files.",
+            choices=["short", "medium", "full"],
+        )
         # somehow running `armi clone-batch -h` on the command line requires this to
         # not be first?
         for settingName in self.cs.keys():
@@ -44,7 +51,10 @@ class CloneArmiRunCommandBatch(EntryPoint):
         from armi import cases
 
         inputCase = cases.Case(cs=self.cs)
-        inputCase.clone(additionalFiles=self.args.additional_files)
+        inputCase.clone(
+            additionalFiles=self.args.additional_files,
+            writeStyle=self.args.settingsWriteStyle,
+        )
 
 
 class CloneArmiRunCommandInteractive(CloneArmiRunCommandBatch):
@@ -95,6 +105,13 @@ class CloneSuiteCommand(EntryPoint):
             default=False,
             help="Just list the settings files found, don't actually submit them.",
         )
+        self.parser.add_argument(
+            "--settingsWriteStyle",
+            type=str,
+            default="short",
+            help="Writing style for which settings get written back to the settings files.",
+            choices=["short", "medium", "full"],
+        )
 
     def invoke(self):
         from armi import cases
@@ -105,4 +122,6 @@ class CloneSuiteCommand(EntryPoint):
             rootDir=self.args.directory,
             ignorePatterns=self.args.ignore,
         )
-        suite.clone(oldRoot=self.args.directory)
+        suite.clone(
+            oldRoot=self.args.directory, writeStyle=self.args.settingsWriteStyle
+        )
