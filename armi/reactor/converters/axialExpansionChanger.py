@@ -305,7 +305,7 @@ class AxialExpansionChanger:
                     self.linked.linkedBlocks[b][0].p.ztop != c.zbottom
                     and ib < numOfBlocks - 1
                 ):
-                    b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                    self._resolveMisalignment(b, self.linked.linkedBlocks[b][0])
             if ib == numOfBlocks - 1:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             elif b.hasFlags(Flags.EXPANDABLE) and not adjustedLowestControlDuct:
@@ -315,7 +315,6 @@ class AxialExpansionChanger:
             else:
                 b.p.ztop = c.ztop
 
-        for b in self.linked.a:
             # see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
             oldComponentVolumes = [c.getVolume() for c in b]
@@ -472,6 +471,25 @@ class AxialExpansionChanger:
                     growth = 1.0 / (1.0 - growFrac)
                 for key in c.getNuclides():
                     c.setNumberDensity(key, c.getNumberDensity(key) / growth)
+
+    def _resolveMisalignment(self, b, blkBelow):
+        c = self.expansionData.getTargetComponent(b)
+        cBelow = self.expansionData.getTargetComponent(blkBelow)
+        cIdx = _getCompIndexForPreferredComp(c)
+        cBelowIdx = _getCompIndexForPreferredComp(cBelow)
+        if cIdx > cBelowIdx:
+            blkBelow.p.ztop = c.zbottom
+            blkBelow.p.height = blkBelow.p.ztop - blkBelow.p.zbottom
+        else:
+            b.p.zbottom = cBelow.ztop
+
+
+def _getCompIndexForPreferredComp(c) -> int:
+    try:
+        cIdx = TARGET_FLAGS_IN_PREFERRED_ORDER.index(c.p.flags)
+    except ValueError:
+        cIdx = -1
+    return cIdx
 
 
 def _getSolidComponents(b):
