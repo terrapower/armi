@@ -69,7 +69,12 @@ class FuelHandlerInterface(interfaces.Interface):
             )
             mc2.interactBOC(cycle=cycle)
 
-        if self.enabled():
+        if (
+            self.enabled()
+            and self.cs["startCycle"] == cycle
+            and self.cs["startNode"] == 0
+        ):
+            # in restart cases, only do this if restarting at BOC to avoid duplicating shuffles
             self.manageFuel(cycle)
 
     def interactEOC(self, cycle=None):
