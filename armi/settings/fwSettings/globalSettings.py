@@ -39,6 +39,7 @@ CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_TRACE = "trace"
 CONF_PROFILE = "profile"
 CONF_COVERAGE = "coverage"
+CONF_COVERAGE_CONFIG_FILE = "coverageConfigFile"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_CYCLE_LENGTH = "cycleLength"
 CONF_CYCLE_LENGTHS = "cycleLengths"
@@ -211,6 +212,12 @@ def defineSettings() -> List[setting.Setting]:
             description="Turn on coverage report generation which tracks all the lines "
             "of code that execute during a run",
             isEnvironment=True,
+        ),
+        setting.Setting(
+            CONF_COVERAGE_CONFIG_FILE,
+            default="",
+            label="File to Define Coverage Configuration",
+            description="User-defined coverage configuration file",
         ),
         setting.Setting(
             CONF_MIN_MESH_SIZE_RATIO,
