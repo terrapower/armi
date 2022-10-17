@@ -97,21 +97,65 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
     def test_cloneArmiRunCommandBatchBasics(self):
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
-        ca.parse_args([ARMI_RUN_PATH, "--additional-files", "test"])
+        ca.parse_args(
+            [
+                ARMI_RUN_PATH,
+                "--additional-files",
+                "test",
+                "--settingsWriteStyle",
+                "full",
+            ]
+        )
 
         self.assertEqual(ca.name, "clone-batch")
         self.assertEqual(ca.settingsArgument, "required")
         self.assertEqual(ca.args.additional_files, ["test"])
+        self.assertEqual(ca.args.settingsWriteStyle, "full")
+
+    def test_cloneArmiRunCommandBatchInvokeShort(self):
+        # Test short write style
+        ca = CloneArmiRunCommandBatch()
+        ca.addOptions()
+        ca.parse_args([ARMI_RUN_PATH])
+
+        with TemporaryDirectoryChanger():
+            ca.invoke()
+
+            self.assertEqual(ca.settingsArgument, "required")
+            self.assertEqual(ca.args.settingsWriteStyle, "short")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # validate a setting that has a default value was removed
+            txt = open(clonedYaml, "r").read()
+            self.assertNotIn("availabilityFactor", txt)
+
+    def test_cloneArmiRunCommandBatchInvokeMedium(self):
+        # Test medium write style
+        ca = CloneArmiRunCommandBatch()
+        ca.addOptions()
+        ca.parse_args([ARMI_RUN_PATH, "--settingsWriteStyle", "medium"])
+
+        with TemporaryDirectoryChanger():
+            ca.invoke()
+
+            self.assertEqual(ca.settingsArgument, "required")
+            self.assertEqual(ca.args.settingsWriteStyle, "medium")
+            clonedYaml = "armiRun.yaml"
+            self.assertTrue(os.path.exists(clonedYaml))
+            # validate a setting that has a  default value is still there
+            txt = open(clonedYaml, "r").read()
+            self.assertIn("availabilityFactor", txt)
 
 
 class TestCloneSuiteCommand(unittest.TestCase):
     def test_cloneSuiteCommandBasics(self):
         cs = CloneSuiteCommand()
         cs.addOptions()
-        cs.parse_args(["-d", "test"])
+        cs.parse_args(["-d", "test", "--settingsWriteStyle", "medium"])
 
         self.assertEqual(cs.name, "clone-suite")
         self.assertEqual(cs.args.directory, "test")
+        self.assertEqual(cs.args.settingsWriteStyle, "medium")
 
 
 class TestCompareCases(unittest.TestCase):

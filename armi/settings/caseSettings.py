@@ -352,7 +352,7 @@ class Settings:
 
         self.setModuleVerbosities(force=True)
 
-    def writeToYamlFile(self, fName, style="short"):
+    def writeToYamlFile(self, fName, style="short", fromFile=None):
         """
         Write settings to a yaml file.
 
@@ -366,11 +366,17 @@ class Settings:
             the file to write to
         style : str (optional)
             the method of output to be used when creating the file for the current
-            state of settings
+            state of settings (short, medium, or full)
+        fromFile : str (optional)
+            if the source file and destination file are different (i.e. for cloning)
+            and the style argument is ``medium``, then this arg is used
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
-            settingsSetByUser = self.getSettingsSetByUser(self.path)
+            getSettingsPath = (
+                self.path if fromFile is None else pathTools.armiAbsPath(fromFile)
+            )
+            settingsSetByUser = self.getSettingsSetByUser(getSettingsPath)
         else:
             settingsSetByUser = []
         with open(self.path, "w") as stream:
