@@ -230,7 +230,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_COVERAGE_CONFIG_FILE,
-            default="",  # should default be empty string, or the armi .coveragerc file?
+            default="",
             label="File to Define Coverage Configuration",
             description="User-defined coverage configuration file",
         ),
