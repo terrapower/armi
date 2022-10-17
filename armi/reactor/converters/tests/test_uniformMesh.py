@@ -274,7 +274,8 @@ class TestUniformMesh(unittest.TestCase):
         for b in self.converter.convReactor.core.getBlocks():
             b.p.mgFlux = range(33)
             b.p.adjMgFlux = range(33)
-            b.p.flux = 5
+            b.p.fastFlux = 2.0
+            b.p.flux = 5.0
             b.p.power = 5.0
             b.p.pdens = 0.5
 
@@ -292,6 +293,7 @@ class TestUniformMesh(unittest.TestCase):
         self.converter.applyStateToOriginal()
 
         for b in self.r.core.getBlocks():
+            self.assertAlmostEqual(b.p.fastFlux, 2.0)
             self.assertAlmostEqual(b.p.flux, 5.0)
             self.assertAlmostEqual(b.p.pdens, 0.5)
 
@@ -410,19 +412,36 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
     def test_reactorConversion(self):
         """Tests the reactor conversion to and from the original reactor."""
         self.assertTrue(self.converter._hasNonUniformAssems)
+        self.assertTrue(self.r.core.lib)
+        self.assertEqual(self.r.core.p.keff, 1.0)
 
         controlAssems = self.r.core.getAssemblies(Flags.PRIMARY | Flags.CONTROL)
+        # Add a bunch of multi-group flux to the control assemblies
+        # in the core to demonstrate that data can be mapped back
+        # to the original control rod assemblies if they are changed.
+        # Additionally, this will check that block-level reaction rates
+        # are being calculated (i.e., `rateAbs`).
+        for a in controlAssems:
+            for b in a:
+                b.p.mgFlux = [1.0] * 33
+                self.assertFalse(b.p.rateAbs)
+
         self.converter.convert(self.r)
 
         self.assertEqual(
             len(controlAssems),
             len(self.converter._nonUniformAssemStorage),
         )
+
         self.converter.applyStateToOriginal()
         self.assertEqual(
             len(self.converter._nonUniformAssemStorage),
             0,
         )
+        for a in controlAssems:
+            for b in a:
+                self.assertTrue(all(b.getMgFlux()))
+                self.assertTrue(b.p.rateAbs)
 
 
 if __name__ == "__main__":

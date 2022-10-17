@@ -341,7 +341,14 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "linPow",
             units="W/m",
-            description="Pin-averaged linear heat generation rate",
+            description=(
+                "Pin-averaged linear heat rate, which is calculated by evaluating the block power and dividing "
+                "by the number of pins. If gamma transport is enabled, then this represents the combined "
+                "neutron and gamma heating. If gamma transport is disabled then this represents the energy "
+                "generation in the pin, where gammas are assumed to deposit their energy locally. Note that this "
+                "value does not implicitly account for axial and radial peaking factors within the block. Use `linPowByPin` "
+                "for obtaining the pin linear heat rate with peaking factors included."
+            ),
             location=ParamLocation.AVERAGE,
             default=0.0,
             categories=[parameters.Category.detailedAxialExpansion],
@@ -357,7 +364,13 @@ def _getNeutronicsBlockParams():
             "linPowByPin",
             setter=linPowByPin,
             units="W/cm",
-            description="Pin linear power",
+            description=(
+                "Pin linear linear heat rate, which is calculated through flux reconstruction and "
+                "accounts for axial and radial peaking factors. This differs from the `linPow` "
+                "parameter, which assumes no axial and radial peaking in the block as this information "
+                "is unavailable without detailed flux reconstruction. The same application of neutron and gamma "
+                "heating results applies."
+            ),
             location=ParamLocation.CHILDREN,
             default=None,
         )
@@ -372,7 +385,7 @@ def _getNeutronicsBlockParams():
             "linPowByPinNeutron",
             setter=linPowByPinNeutron,
             units="W/cm",
-            description="Pin linear neutron power",
+            description="Pin linear neutron heat rate. This is the neutron heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
             default=None,
         )
@@ -387,14 +400,14 @@ def _getNeutronicsBlockParams():
             "linPowByPinGamma",
             setter=linPowByPinGamma,
             units="W/cm",
-            description="Pin linear gamma power",
+            description="Pin linear gamma heat rate. This is the gamma heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
             default=None,
         )
 
         pb.defParam(
             "reactionRates",
-            units="Reactions/sec",
+            units="#/s",
             description='List of reaction rates in specified by setting "reactionsToDB"',
             location=ParamLocation.VOLUME_INTEGRATED,
             default=None,
@@ -712,6 +725,7 @@ def _getNeutronicsBlockParams():
             units="1/cm^2/s",
             description="Neutron flux above 100keV",
             location=ParamLocation.AVERAGE,
+            categories=["detailedAxialExpansion"],
         )
 
         pb.defParam(
