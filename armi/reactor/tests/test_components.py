@@ -499,13 +499,19 @@ class TestComponentExpansion(unittest.TestCase):
     tHot = 500
     coldOuterDiameter = 1.0
 
-    def test_ComponentExpansion(self):
-        """tests (material, isotope) pairs over several conservation tests"""
-        materials = [("HT9", "FE"), ("UZr", "U235"), ("B4C", "B10")]
-        for mat, isotope in materials:
-            self.componentMassIndependentOfInputTemp(mat)
-            self.expansionConservationHotHeightDefined(mat, isotope)
-            self.expansionConservationColdHeightDefined(mat)
+    def test_HT9Expansion(self):
+        self.runExpansionTests(mat="HT9", isotope="FE")
+
+    def test_UZrExpansion(self):
+        self.runExpansionTests(mat="UZr", isotope="U235")
+
+    def test_B4CExpansion(self):
+        self.runExpansionTests(mat="B4C", isotope="B10")
+
+    def runExpansionTests(self, mat: str, isotope: str):
+        self.componentMassIndependentOfInputTemp(mat)
+        self.expansionConservationHotHeightDefined(mat, isotope)
+        self.expansionConservationColdHeightDefined(mat)
 
     def componentMassIndependentOfInputTemp(self, mat: str):
         circle1 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
