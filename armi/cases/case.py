@@ -367,7 +367,7 @@ class Case:
                 o.operate()
 
         # if in the settings, report the coverage and profiling
-        Case._endCoverage(cov)
+        Case._endCoverage(self.cs["coverageConfigFile"], cov)
         Case._endProfiling(profiler)
 
     def _startCoverage(self):
@@ -382,7 +382,10 @@ class Case:
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
-                config_file=Case._getCoverageRcFile(makeCopy=True), debug=["dataio"]
+                config_file=Case._getCoverageRcFile(
+                    userCovFile=self.cs["coverageConfigFile"], makeCopy=True
+                ),
+                debug=["dataio"],
             )
             if context.MPI_SIZE > 1:
                 # interestingly, you cannot set the parallel flag in the constructor
@@ -395,12 +398,15 @@ class Case:
         return cov
 
     @staticmethod
-    def _endCoverage(cov=None):
+    def _endCoverage(userCovFile, cov=None):
         """Helper to the Case.run(): stop and report code coverage,
         if the CaseSettings file says to.
 
         Parameters
         ----------
+        userCovFile : str
+            File path to user-supplied coverage configuration file (default setting is
+            empty string)
         cov: coverage.Coverage (optional)
             Hopefully, a valid and non-empty set of coverage data.
         """
@@ -417,7 +423,7 @@ class Case:
             # combine all the parallel coverage data files into one and make
             # the XML and HTML reports for the whole run.
             combinedCoverage = coverage.Coverage(
-                config_file=Case._getCoverageRcFile(), debug=["dataio"]
+                config_file=Case._getCoverageRcFile(userCovFile), debug=["dataio"]
             )
             combinedCoverage.config.parallel = True
             # combine does delete the files it merges
@@ -427,11 +433,15 @@ class Case:
             combinedCoverage.xml_report()
 
     @staticmethod
-    def _getCoverageRcFile(makeCopy=False):
-        """Helper to provide the coverage configuration file according to the OS.
+    def _getCoverageRcFile(userCovFile, makeCopy=False):
+        """Helper to provide the coverage configuration file according to the OS. A
+        user-supplied file will take precedence, and is not checked for a dot-filename.
 
         Parameters
         ----------
+        userCovFile : str
+            File path to user-supplied coverage configuration file (default setting is
+            empty string)
         makeCopy : bool (optional)
             Whether or not to copy the coverage config file to an alternate file path
 
@@ -440,6 +450,10 @@ class Case:
         covFile : str
             path of coveragerc file
         """
+        # User-defined file takes precedence.
+        if userCovFile:
+            return os.path.abspath(userCovFile)
+
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
         covFile = os.path.join(covRcDir, ".coveragerc")
         if platform.system() == "Windows":

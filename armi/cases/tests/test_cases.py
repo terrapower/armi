@@ -125,11 +125,15 @@ class TestArmiCase(unittest.TestCase):
         case = cases.Case(settings.Settings())
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
         # Don't actually copy the file, just check the file paths match
-        covRcFile = case._getCoverageRcFile(makeCopy=False)
+        covRcFile = case._getCoverageRcFile(userCovFile="", makeCopy=False)
         if platform.system() == "Windows":
             self.assertEqual(covRcFile, os.path.join(covRcDir, "coveragerc"))
         else:
             self.assertEqual(covRcFile, os.path.join(covRcDir, ".coveragerc"))
+
+        userFile = "UserCovRc"
+        covRcFile = case._getCoverageRcFile(userCovFile=userFile, makeCopy=False)
+        self.assertEqual(covRcFile, os.path.abspath(userFile))
 
     def test_startCoverage(self):
         with directoryChangers.TemporaryDirectoryChanger():
@@ -153,7 +157,7 @@ class TestArmiCase(unittest.TestCase):
             outFile = "coverage_results.cov"
             prof = case._startCoverage()
             self.assertFalse(os.path.exists(outFile))
-            case._endCoverage(prof)
+            case._endCoverage(userCovFile="", cov=prof)
             self.assertFalse(os.path.exists(outFile))
 
     @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
