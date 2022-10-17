@@ -64,6 +64,7 @@ Bug fixes
 #. Fixed issue in ``Core::_applyThermalExpansion`` failed to call ``block.completeInitiaLoading`` (`#885 <https://github.com/terrapower/armi/pull/885>`_).
 #. Fixed issue where a validator would complain both simple and detailed cycles settings were used.
 #. Fixed issue where ``getReactionRates()`` was not accounting for burnup-dependent cross-sections.
+#. Fixed issue where shuffles might duplicate in restart runs.
 
 
 ARMI v0.2.3
