@@ -163,7 +163,7 @@ class B4C(material.Material):
 
         Notes
         -----
-        - applies theoretical density of B4C to parent method 
+        - applies theoretical density of B4C to parent method
         """
         density = material.Material.density(self, Tk, Tc)
         theoreticalDensityFrac = self.p.theoreticalDensityFrac
@@ -182,7 +182,7 @@ class B4C(material.Material):
 
         Notes
         -----
-        - applies theoretical density of B4C to parent method 
+        - applies theoretical density of B4C to parent method
         """
         density3 = material.Material.density3(self, Tk, Tc)
         theoreticalDensityFrac = self.p.theoreticalDensityFrac
