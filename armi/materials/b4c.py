@@ -159,7 +159,11 @@ class B4C(material.Material):
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
-        mass density
+        Return density that preserves mass when thermally expanded in 2D.
+
+        Notes
+        -----
+        - applies theoretical density of B4C to parent method 
         """
         density = material.Material.density(self, Tk, Tc)
         theoreticalDensityFrac = self.p.theoreticalDensityFrac
@@ -171,6 +175,25 @@ class B4C(material.Material):
                 single=True,
             )
         return density * theoreticalDensityFrac  # g/cc
+
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Return density that preserves mass when thermally expanded in 3D.
+
+        Notes
+        -----
+        - applies theoretical density of B4C to parent method 
+        """
+        density3 = material.Material.density3(self, Tk, Tc)
+        theoreticalDensityFrac = self.p.theoreticalDensityFrac
+        if theoreticalDensityFrac is None:
+            theoreticalDensityFrac = 1.0
+            runLog.warning(
+                "Assumption: 100% theoretical density",
+                label="Assumption: B4C is at 100% theoretical density",
+                single=True,
+            )
+        return density3 * theoreticalDensityFrac  # g/cc
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""
