@@ -1085,6 +1085,7 @@ class Database3:
         statePointName=None,
         allowMissing=False,
         updateGlobalAssemNum=True,
+        updateMasterCs=True,
     ):
         """Load a new reactor from (cycle, node).
 
@@ -1100,18 +1101,23 @@ class Database3:
             cycle number
         node : int
             time node
-        cs : armi.settings.Settings (optional)
+        cs : armi.settings.Settings, optional
             if not provided one is read from the database
-        bp : armi.reactor.Blueprints (optional)
+        bp : armi.reactor.Blueprints, optional
             if not provided one is read from the database
-        statePointName : str
+        statePointName : str, optional
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
-        allowMissing : bool
+        allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
-        updateGlobalAssemNum : bool
+        updateGlobalAssemNum : bool, optional
             Whether to update the global assembly number to the value stored in
             r.core.p.maxAssemNum. Default True.
+        updateMasterCs : bool, optional
+            Whether to apply the cs (whether provided as an argument or read from
+            the database) as the primary for the case. Default True. Can be useful
+            if you don't intend to use the loaded reactor as the basis for further
+            computations in the current operator.
 
         Returns
         -------
@@ -1121,8 +1127,9 @@ class Database3:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS()
-        # apply to avoid defaults in getMasterCs calls
-        settings.setMasterCs(cs)
+        if updateMasterCs:
+            # apply to avoid defaults in getMasterCs calls
+            settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
