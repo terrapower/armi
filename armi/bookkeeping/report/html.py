@@ -199,15 +199,14 @@ def encode64(file_path):
 # ---------------------------
 
 
-def writeStandardReportTemplate(f, report):
+def writeStandardReportTemplate(f, report, caseTitle=""):
     f.write(r"<!DOCTYPE html>" + "\n")
-    cs = settings.getMasterCs()
     with Html(f):
-
         with Head(f):
             f.write(r'<meta charset="UTF-8">' + "\n")
-            with Title(f):
-                f.write(cs.caseTitle)
+            if caseTitle:
+                with Title(f):
+                    f.write(caseTitle)
 
         with Body(f):
 
@@ -244,8 +243,9 @@ def writeStandardReportTemplate(f, report):
                                 "style": "color: #d9230f;",
                             },
                         ):
-                            with B(f):
-                                f.write(cs.caseTitle)
+                            if caseTitle:
+                                with B(f):
+                                    f.write(caseTitle)
 
                         with Span(
                             f, attrs={"class": "navbar-text navbar-version pull-left"}
@@ -264,8 +264,6 @@ def writeStandardReportTemplate(f, report):
                 with Div(f, attrs={"class": "page-header"}):
                     with H1(f):
                         f.write(report.title)
-                    with P(f):
-                        f.write(cs["comment"])
 
                 report.writeGroupsHTML(f)
 
