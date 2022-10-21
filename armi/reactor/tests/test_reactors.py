@@ -19,25 +19,25 @@ import copy
 import os
 import unittest
 
-from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
+from six.moves import cPickle
 
 from armi import operators
 from armi import runLog
 from armi import settings
 from armi import tests
 from armi.materials import uZr
-from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
-from armi.reactor import grids
 from armi.reactor import geometry
+from armi.reactor import grids
 from armi.reactor import reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.flags import Flags
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -719,14 +719,14 @@ class HexReactorTests(ReactorTests):
             for i, loc in enumerate(aLoc)
             if loc in self.r.core.childrenByLocator
         }
-        self.r.core.removeAssembliesInRing(3)
+        self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
             self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         self.assertEqual(self.r.core.getNumRings(), 9)
-        self.r.core.removeAssembliesInRing(9)
+        self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)
 
     def test_removeAssembliesInRingHex(self):
@@ -736,7 +736,9 @@ class HexReactorTests(ReactorTests):
         """
         self.assertEqual(self.r.core.getNumRings(), 9)
         for ringNum in range(6, 10):
-            self.r.core.removeAssembliesInRing(ringNum, overrideCircularRingMode=True)
+            self.r.core.removeAssembliesInRing(
+                ringNum, self.o.cs, overrideCircularRingMode=True
+            )
         self.assertEqual(self.r.core.getNumRings(), 5)
 
     def test_getNozzleTypes(self):
