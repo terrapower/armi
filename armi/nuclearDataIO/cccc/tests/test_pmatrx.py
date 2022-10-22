@@ -230,13 +230,16 @@ class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
         cls.origLib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
 
     def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
         self.fname = self._testMethodName + "temp-aa.pmatrx.ascii"
         lib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
         pmatrx.writeAscii(lib, self.fname)
         self.lib = pmatrx.readAscii(self.fname)
 
-        self.td = TemporaryDirectoryChanger()
-        self.td.__enter__()
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
 
 
 if __name__ == "__main__":

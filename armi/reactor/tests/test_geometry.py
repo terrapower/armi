@@ -238,7 +238,7 @@ class TestSystemLayoutInput(unittest.TestCase):
             geom.readGeomFromFile(os.path.join(TEST_ROOT, "geom.xml"))
             self.assertEqual(str(geom.geomType), geometry.HEX)
             self.assertEqual(geom.assemTypeByIndices[(1, 1)], "IC")
-            out = os.path.join(TEST_ROOT, "geom-output.xml")
+            out = os.path.join("geom-output.xml")
             geom.writeGeom(out)
 
     def test_readReactor(self):

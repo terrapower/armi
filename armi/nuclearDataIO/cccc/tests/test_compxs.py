@@ -25,7 +25,7 @@ from scipy.sparse import csc_matrix
 from armi import nuclearDataIO
 from armi.nuclearDataIO.cccc import compxs
 from armi.nuclearDataIO.xsLibraries import CompxsLibrary
-from armi.tests import COMPXS_PATH, TEST_ROOT
+from armi.tests import COMPXS_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -34,11 +34,11 @@ class TestCompxs(unittest.TestCase):
 
     @property
     def binaryWritePath(self):
-        return os.path.join(TEST_ROOT, self._testMethodName + "compxs-b")
+        return os.path.join(self._testMethodName + "compxs-b")
 
     @property
     def asciiWritePath(self):
-        return os.path.join(TEST_ROOT, self._testMethodName + "compxs-a.txt")
+        return os.path.join(self._testMethodName + "compxs-a.txt")
 
     @classmethod
     def setUpClass(cls):
