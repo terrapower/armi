@@ -400,18 +400,6 @@ class TestFuelHandler(ArmiTestHelper):
         for a in self.r.core.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
-        if os.path.exists("armiRun2-SHUFFLES.txt"):
-            # sometimes pytest runs two of these at once.
-            os.remove("armiRun2-SHUFFLES.txt")
-
-        restartFileName = "armiRun2.restart.dat"
-        if os.path.exists(restartFileName):
-            os.remove(restartFileName)
-        for i in range(3):
-            fname = f"armiRun2.shuffles_{i}.png"
-            if os.path.exists(fname):
-                os.remove(fname)
-
     def test_readMoves(self):
         """
         Depends on the shuffleLogic created by repeatShuffles
