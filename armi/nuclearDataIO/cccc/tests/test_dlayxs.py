@@ -23,10 +23,11 @@ import unittest
 
 import numpy
 
-from armi.tests import mockRunLogs
-from armi.nuclearDataIO.cccc import dlayxs
 from armi.nucDirectory import nuclideBases
+from armi.nuclearDataIO.cccc import dlayxs
 from armi.nuclearDataIO.tests import test_xsLibraries
+from armi.tests import mockRunLogs
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class DlayxsTests(unittest.TestCase):
@@ -1078,11 +1079,11 @@ class DlayxsTests(unittest.TestCase):
             self.assertTrue(dlayxs.compare(self.dlayxs3, copy.deepcopy(self.dlayxs3)))
 
     def test_writeBinary_mcc3(self):
-        dlayxs.writeBinary(self.dlayxs3, "test_writeBinary_mcc3.temp")
-        self.assertTrue(
-            filecmp.cmp(test_xsLibraries.DLAYXS_MCC3, "test_writeBinary_mcc3.temp")
-        )
-        os.remove("test_writeBinary_mcc3.temp")
+        with TemporaryDirectoryChanger():
+            dlayxs.writeBinary(self.dlayxs3, "test_writeBinary_mcc3.temp")
+            self.assertTrue(
+                filecmp.cmp(test_xsLibraries.DLAYXS_MCC3, "test_writeBinary_mcc3.temp")
+            )
 
     def test_nuclides(self):
         nucs3 = set(
