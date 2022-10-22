@@ -11,24 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the UserPlugin class."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
 import os
 import unittest
 
-import pluggy
-
 from armi import context
 from armi import getApp
-from armi import getPluginManagerOrFail
 from armi import interfaces
 from armi import plugins
 from armi import utils
-from armi.bookkeeping.db.database3 import DatabaseInterface
-from armi.reactor import zones
-from armi.reactor.assemblies import Assembly
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
