@@ -14,14 +14,15 @@
 
 """Tests the geometry (loading input) file"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+import io
 import os
 import unittest
-import io
 
 from armi.reactor import geometry
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 GEOM_INPUT = """<?xml version="1.0" ?>
 <reactor geom="hex" symmetry="third core periodic">
@@ -232,13 +233,13 @@ class TestSymmetryType(unittest.TestCase):
 
 class TestSystemLayoutInput(unittest.TestCase):
     def test_readHexGeomXML(self):
-        geom = SystemLayoutInput()
-        geom.readGeomFromFile(os.path.join(TEST_ROOT, "geom.xml"))
-        self.assertEqual(str(geom.geomType), geometry.HEX)
-        self.assertEqual(geom.assemTypeByIndices[(1, 1)], "IC")
-        out = os.path.join(TEST_ROOT, "geom-output.xml")
-        geom.writeGeom(out)
-        os.remove(out)
+        with TemporaryDirectoryChanger():
+            geom = SystemLayoutInput()
+            geom.readGeomFromFile(os.path.join(TEST_ROOT, "geom.xml"))
+            self.assertEqual(str(geom.geomType), geometry.HEX)
+            self.assertEqual(geom.assemTypeByIndices[(1, 1)], "IC")
+            out = os.path.join(TEST_ROOT, "geom-output.xml")
+            geom.writeGeom(out)
 
     def test_readReactor(self):
         reactor = test_reactors.buildOperatorOfEmptyHexBlocks().r
@@ -265,16 +266,16 @@ class TestSystemLayoutInput(unittest.TestCase):
 
     def test_yamlIO(self):
         """Ensure we can read and write to YAML formatted streams."""
-        geom = SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
-        fName = "testYamlIO.yaml"
-        with open(fName, "w") as f:
-            geom._writeYaml(f)  # pylint: disable=protected-access
-        with open(fName) as f:
-            geom2 = SystemLayoutInput()
-            geom2._readYaml(f)  # pylint: disable=protected-access
-        self.assertEqual(geom2.assemTypeByIndices[2, 2], "A2")
-        os.remove(fName)
+        with TemporaryDirectoryChanger():
+            geom = SystemLayoutInput()
+            geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
+            fName = "testYamlIO.yaml"
+            with open(fName, "w") as f:
+                geom._writeYaml(f)  # pylint: disable=protected-access
+            with open(fName) as f:
+                geom2 = SystemLayoutInput()
+                geom2._readYaml(f)  # pylint: disable=protected-access
+            self.assertEqual(geom2.assemTypeByIndices[2, 2], "A2")
 
     def test_asciimap(self):  # pylint: disable=no-self-use
         """Ensure this can write ascii maps"""
@@ -307,16 +308,16 @@ class TestSystemLayoutInputTRZ(unittest.TestCase):
         self.assertEqual(geom.assemTypeByIndices[(0.0, 2.0, 0.0, 360.0, 1, 1)], "IC")
 
     def test_TRZyamlIO(self):
-        geom = SystemLayoutInput()
-        geom.readGeomFromFile(os.path.join(TEST_ROOT, "trz_geom.xml"))
-        fName = "testTRZYamlIO.yaml"
-        with open(fName, "w") as f:
-            geom._writeYaml(f)  # pylint: disable=protected-access
-        with open(fName) as f:
-            geom2 = SystemLayoutInput()
-            geom2._readYaml(f)  # pylint: disable=protected-access
-        self.assertEqual(geom2.assemTypeByIndices[2.0, 3.0, 0.0, 180.0, 1, 1], "MC")
-        os.remove(fName)
+        with TemporaryDirectoryChanger():
+            geom = SystemLayoutInput()
+            geom.readGeomFromFile(os.path.join(TEST_ROOT, "trz_geom.xml"))
+            fName = "testTRZYamlIO.yaml"
+            with open(fName, "w") as f:
+                geom._writeYaml(f)  # pylint: disable=protected-access
+            with open(fName) as f:
+                geom2 = SystemLayoutInput()
+                geom2._readYaml(f)  # pylint: disable=protected-access
+            self.assertEqual(geom2.assemTypeByIndices[2.0, 3.0, 0.0, 180.0, 1, 1], "MC")
 
 
 if __name__ == "__main__":
