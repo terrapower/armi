@@ -598,7 +598,6 @@ class HexReactorTests(ReactorTests):
             b.p.mgFlux = range(5)
             b.p.adjMgFlux = range(5)
         self.r.core.saveAllFlux()
-        os.remove("allFlux.txt")
 
     def test_getFluxVector(self):
         class MockLib:
