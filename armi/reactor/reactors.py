@@ -436,7 +436,7 @@ class Core(composites.Composite):
         else:
             self._removeListFromAuxiliaries(a1)
 
-    def removeAssembliesInRing(self, ringNum, overrideCircularRingMode=False):
+    def removeAssembliesInRing(self, ringNum, cs, overrideCircularRingMode=False):
         """
         Removes all of the assemblies in a given ring
 
@@ -444,7 +444,8 @@ class Core(composites.Composite):
         ----------
         ringNum : int
             The ring to remove
-
+        cs: CaseSettings
+            A relevant settings object
         overrideCircularRingMode : bool, optional
             False ~ default: use circular/square/hex rings, just as the reactor defines them
             True ~ If you know you don't want to use the circular ring mode, and instead want square or hex.
@@ -458,7 +459,7 @@ class Core(composites.Composite):
         ):
             self.removeAssembly(a)
 
-        self.processLoading(settings.getMasterCs())
+        self.processLoading(cs)
 
     def _removeListFromAuxiliaries(self, assembly):
         """
