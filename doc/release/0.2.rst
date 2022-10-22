@@ -19,6 +19,7 @@ Bug fixes
 ---------
 #. Adjusted density3 in armi/materials/b4C.py to include the theoretical density. (`PR#942 <https://github.com/terrapower/armi/pull/942>`_)
 #. Fixed bug in ``fastFlux`` block parameter mapping in the ``UniformMeshConverter`` by applying it to the ``detailedAxialExpansion`` category.
+#. Fixed issue where shuffles might duplicate in restart runs.
 
 
 ARMI v0.2.4
