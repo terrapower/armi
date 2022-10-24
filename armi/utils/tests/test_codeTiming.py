@@ -127,6 +127,13 @@ class CodeTimingTest(unittest.TestCase):
         self.assertLess(timer.time, larger_time_end - larger_time_start)
         self.assertEqual(timer.pauses, 3)
 
+        # test report
+        table = codeTiming.MasterTimer.report(inclusion_cutoff=0.01, total_time=True)
+        self.assertIn("TIMER REPORTS", table)
+        self.assertIn(name, table)
+        self.assertIn("CUMULATIVE", table)
+        self.assertIn("ACTIVE", table)
+
 
 if __name__ == "__main__":
     unittest.main()
