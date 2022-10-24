@@ -751,7 +751,7 @@ class HexReactorTests(ReactorTests):
         """Test creation of new assemblies."""
         # basic creation
         aOld = self.r.core.getFirstAssembly(Flags.FUEL)
-        aNew = self.r.core.createAssemblyOfType(aOld.getType())
+        aNew = self.r.core.createAssemblyOfType(aOld.getType(), cs=self.o.cs)
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
         # test axial mesh alignment
@@ -762,7 +762,7 @@ class HexReactorTests(ReactorTests):
             )  # use i+1 to skip 0.0
 
         # creation with modified enrichment
-        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
+        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
         fuelBlock = aNew2.getFirstBlock(Flags.FUEL)
         self.assertAlmostEqual(fuelBlock.getUraniumMassEnrich(), 0.195)
 
@@ -771,11 +771,17 @@ class HexReactorTests(ReactorTests):
         bol = self.r.blueprints.assemblies[aOld.getType()]
         changer = AxialExpansionChanger()
         changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
-        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
+        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
+
+    def test_createFreshFeed(self):
+        # basic creation
+        aOld = self.r.core.getFirstAssembly(Flags.FEED)
+        aNew = self.r.core.createFreshFeed(cs=self.o.cs)
+        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
     def test_createAssemblyOfTypeExpandedCore(self):
         """Test creation of new assemblies in an expanded core."""
@@ -793,7 +799,7 @@ class HexReactorTests(ReactorTests):
         aType = self.r.core.getFirstAssembly(Flags.FUEL).getType()
 
         # demonstrate we can still create assemblies
-        self.assertTrue(self.r.core.createAssemblyOfType(aType))
+        self.assertTrue(self.r.core.createAssemblyOfType(aType, cs=self.o.cs))
 
     def test_getAvgTemp(self):
         t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
