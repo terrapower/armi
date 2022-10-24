@@ -27,18 +27,18 @@ plant-wide state variables such as keff, cycle, and node.
    The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
    each contain a collection of Blocks.
 """
+from typing import Optional
 import collections
 import copy
 import itertools
 import os
 import time
-from typing import Optional
 
 import numpy
 import tabulate
 
-from armi import runLog
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
+from armi import runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -49,13 +49,13 @@ from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import systemLayoutInput
 from armi.reactor import zones
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
 class Reactor(composites.Composite):
@@ -164,10 +164,6 @@ class Core(composites.Composite):
 
     assemblies : list
         List of assembly objects that are currently in the core
-
-    cs : CaseSettings object
-        Global settings for the case
-
     """
 
     pDefs = reactorParameters.defineCoreParameters()
@@ -1646,20 +1642,20 @@ class Core(composites.Composite):
             self.moveList[cycle].remove(data)
         self.moveList[cycle].append(data)
 
-    def createFreshFeed(self):
+    def createFreshFeed(self, cs=None):
         """
         Creates a new feed assembly.
+
+        Parameters
+        ----------
+        cs : CaseSettings object
+            Global settings for the case
 
         See Also
         --------
         createAssemblyOfType: creates an assembly
-
-        Notes
-        -----
-        createFreshFeed and createAssemblyOfType and this
-        all need to be merged together somehow.
         """
-        return self.createAssemblyOfType(assemType=self._freshFeedType)
+        return self.createAssemblyOfType(assemType=self._freshFeedType, cs=cs)
 
     def createAssemblyOfType(self, assemType=None, enrichList=None, cs=None):
         """
@@ -1671,6 +1667,8 @@ class Core(composites.Composite):
             The assembly type to create
         enrichList : list
             weight percent enrichments of each block
+        cs : CaseSettings object
+            Global settings for the case
 
         Returns
         -------
