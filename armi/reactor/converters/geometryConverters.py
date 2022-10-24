@@ -208,7 +208,7 @@ class FuelAssemNumModifier(GeometryChanger):
                 # Add new fuel assembly to the core
                 if assem.hasFlags(self.overwriteList):
                     fuelAssem = self._sourceReactor.core.createAssemblyOfType(
-                        assemType=self.fuelType
+                        assemType=self.fuelType, cs=self._cs
                     )
                     # Remove existing assembly in the core location before adding new assembly
                     if assem.hasFlags(self.overwriteList):
@@ -308,8 +308,8 @@ class FuelAssemNumModifier(GeometryChanger):
             if dist <= newRingDist:  # check distance
                 if assem is None:  # no assembly in that position, add assembly
                     newAssem = r.core.createAssemblyOfType(
-                        assemType=assemType
-                    )  # create a fuel assembly
+                        assemType=assemType, cs=self._cs
+                    )
                     r.core.add(newAssem, locator)  # put new assembly in reactor!
                 else:  # all other types of assemblies (fuel, control, etc) leave as is
                     pass

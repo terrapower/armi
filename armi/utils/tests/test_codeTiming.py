@@ -12,23 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Unit tests for code timing.
-"""
-import unittest
+"""Unit tests for code timing"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import time
+import unittest
 
 from armi.utils import codeTiming
 
 
 class CodeTimingTest(unittest.TestCase):
     def setUp(self):
-        codeTiming._Timer._frozen = False  # pylint: disable=protected-access
-        codeTiming.MasterTimer._instance = None  # pylint: disable=protected-access
+        codeTiming._Timer._frozen = False
+        codeTiming.MasterTimer._instance = None
 
     def tearDown(self):
-        codeTiming._Timer._frozen = False  # pylint: disable=protected-access
-        codeTiming.MasterTimer._instance = None  # pylint: disable=protected-access
+        codeTiming._Timer._frozen = False
+        codeTiming.MasterTimer._instance = None
 
     def test_method_definitions(self):
         @codeTiming.timed
@@ -92,9 +91,10 @@ class CodeTimingTest(unittest.TestCase):
     def test_messy_starts_and_stops(self):
         master = codeTiming.getMasterTimer()
 
+        name = "sometimerthatihaventmadeyet"
         larger_time_start = master.time()
         time.sleep(0.01)
-        timer = master.getTimer("sometimerthatihaventmadeyet")
+        timer = master.getTimer(name)
         time.sleep(0.01)
         lesser_time_start = master.time()
 
@@ -102,6 +102,7 @@ class CodeTimingTest(unittest.TestCase):
         timer.start()  # 2nd time pair
         timer.start()  # 3rd time pair
         timer.stop()
+        self.assertIn(name, str(timer))
         self.assertTrue(timer.isActive)
 
         timer.stop()
@@ -116,6 +117,7 @@ class CodeTimingTest(unittest.TestCase):
         lesser_time_end = master.time()
         time.sleep(0.01)
         timer.stop()
+        self.assertIn(name, str(timer))
         self.assertEqual(len(timer.times), 4)
         time.sleep(0.01)
         larger_time_end = master.time()
@@ -123,6 +125,14 @@ class CodeTimingTest(unittest.TestCase):
         # even with all the starts and stops the total time needs to be between these two values.
         self.assertGreater(timer.time, lesser_time_end - lesser_time_start)
         self.assertLess(timer.time, larger_time_end - larger_time_start)
+        self.assertEqual(timer.pauses, 3)
+
+        # test report
+        table = codeTiming.MasterTimer.report(inclusion_cutoff=0.01, total_time=True)
+        self.assertIn("TIMER REPORTS", table)
+        self.assertIn(name, table)
+        self.assertIn("CUMULATIVE", table)
+        self.assertIn("ACTIVE", table)
 
 
 if __name__ == "__main__":
