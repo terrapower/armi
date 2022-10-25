@@ -447,7 +447,7 @@ class Block(composites.Composite):
         xsType = self.p.xsType
         if len(xsType) == 1:
             return xsType + bu
-        elif len(xsType) == 2 and ord(bu) < ord("A"):
+        elif len(xsType) == 2 and ord(bu) > ord("A"):
             raise ValueError(
                 f"Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
