@@ -2,18 +2,29 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.5
+ARMI v0.2.6
 ===========
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-
 #. TBD
+
+Bug fixes
+---------
+#. TBD
+
+
+ARMI v0.2.5
+===========
+Release Date: 2022-10-24
+
+What's new in ARMI
+------------------
 #. Cleanup of stale ``coveragerc`` file (`PR#923 <https://github.com/terrapower/armi/pull/923>`_)
 #. Added `medium` writer style option to ``SettingsWriter``. Added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_), and to clone CLI (`PR#932 <https://github.com/terrapower/armi/pull/932>`_).
 #. Update the EntryPoint class to provide user feedback on required positional arguments (`PR#922 <https://github.com/terrapower/armi/pull/922>`_)
-#. Allow for the loading of a reactor from a db without necessarily setting the associated cs as the master
+#. Overhaul ``reactor.zones`` tooling and remove application-specific zoning logic (`PR#943 <https://github.com/terrapower/armi/pull/943>`_)
 
 Bug fixes
 ---------

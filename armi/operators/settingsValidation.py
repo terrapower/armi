@@ -365,16 +365,6 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-                self.cs[globalSettings.CONF_ZONING_STRATEGY] == "manual"
-                and not self.cs["zoneDefinitions"]
-            ),
-            "`manual` zoningStrategy requires that `zoneDefinitions` setting be defined. Run will have "
-            "no zones.",
-            "",
-            self.NO_ACTION,
-        )
-        self.addQuery(
-            lambda: (
                 (
                     self.cs["beta"]
                     and isinstance(self.cs["beta"], list)

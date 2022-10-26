@@ -724,6 +724,7 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
+                # only continue of the Assembly is in a Zone
                 if zoneList:
                     found = False  # guilty until proven innocent
                     for zone in zoneList:
