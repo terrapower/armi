@@ -25,6 +25,7 @@ from armi.reactor import systemLayoutInput
 from armi.reactor.blueprints import Blueprints
 from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
 from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP, FULL_BP_GRID
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 LATTICE_BLUEPRINT = """
@@ -337,7 +338,12 @@ class TestGridBlueprintsSection(unittest.TestCase):
     """Tests for lattice blueprint section."""
 
     def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
         self.grids = Grids.load(LATTICE_BLUEPRINT.format(self._testMethodName))
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
 
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
@@ -405,10 +411,6 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertNotIn("readFromLatticeMap", outText)
 
         self.assertTrue(os.path.exists(filePath))
-        try:
-            os.remove(filePath)
-        except:
-            pass
 
     def test_simpleReadNoLatticeMap(self):
         # Cartesian full, even/odd hybrid
@@ -440,10 +442,6 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertNotIn("readFromLatticeMap", outText)
 
         self.assertTrue(os.path.exists(filePath))
-        try:
-            os.remove(filePath)
-        except:
-            pass
 
 
 class TestRZTGridBlueprint(unittest.TestCase):
