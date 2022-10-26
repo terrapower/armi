@@ -21,6 +21,7 @@ import numpy as np
 
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.reportPlotting import (
     buVsTime,
     createPlotMetaData,
@@ -36,6 +37,11 @@ from armi.utils.reportPlotting import (
 class TestRadar(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
 
     def test_radar(self):
         """Test execution of radar plot. Note this has no asserts and is therefore a smoke test."""
@@ -45,7 +51,6 @@ class TestRadar(unittest.TestCase):
         r2.core.p.voidWorth = 1.0
         r2.core.p.doppler = 1.0
         plotCoreOverviewRadar([self.r, r2], ["Label1", "Label2"])
-        os.remove("reactor_comparison.png")
 
     def test_createPlotMetaData(self):
         title = "test_createPlotMetaData"
@@ -74,7 +79,6 @@ class TestRadar(unittest.TestCase):
 
         plotAxialProfile(vals, np.ones((5, 2)), fName, meta, nPlot=2)
         self.assertTrue(os.path.exists(fName + ".png"))
-        os.remove(fName + ".png")
 
     def test_keffVsTime(self):
         t = list(range(12))
@@ -84,13 +88,11 @@ class TestRadar(unittest.TestCase):
         keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.keff.png"))
         self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
-        os.remove("R-armiRun.keff.png")
 
         # plot with a keff function
         keffVsTime(self.r.name, t, t, t, extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.keff.png"))
         self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
-        os.remove("R-armiRun.keff.png")
 
     def test_valueVsTime(self):
         t = list(range(12))
@@ -98,7 +100,6 @@ class TestRadar(unittest.TestCase):
         valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
         self.assertTrue(os.path.exists("R-armiRun.val.png"))
         self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
-        os.remove("R-armiRun.val.png")
 
     def test_buVsTime(self):
         name = "buvstime"
@@ -112,7 +113,6 @@ class TestRadar(unittest.TestCase):
         buVsTime(name, scalars, "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
-        os.remove(figName)
 
     def test_movesVsCycle(self):
         name = "movesVsCycle"
@@ -128,7 +128,6 @@ class TestRadar(unittest.TestCase):
         movesVsCycle(name, scalars, "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
-        os.remove(figName)
 
     def test_xsHistoryVsTime(self):
         name = "xsHistoryVsTime"
@@ -145,7 +144,6 @@ class TestRadar(unittest.TestCase):
         xsHistoryVsTime(name, history, [], "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
-        os.remove(figName)
 
 
 if __name__ == "__main__":

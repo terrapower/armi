@@ -226,9 +226,9 @@ class TestBlockConverter(unittest.TestCase):
 
             for c in list(reversed(convertedBlock))[:externalRings]:
                 self.assertTrue(c.isFuel(), "c was {}".format(c.name))
-                convertedBlock.remove(
-                    c
-                )  # remove external driver rings in preperation to check composition
+                # remove external driver rings in preperation to check composition
+                convertedBlock.remove(c)
+
             self._checkAreaAndComposition(block, convertedBlock)
 
     def _checkAreaAndComposition(self, block, convertedBlock):

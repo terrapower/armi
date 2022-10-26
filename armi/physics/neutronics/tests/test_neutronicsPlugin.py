@@ -48,6 +48,13 @@ BA:
 class Test_NeutronicsPlugin(TestPlugin):
     plugin = neutronics.NeutronicsPlugin
 
+    def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
     def test_customSettingObjectIO(self):
         """Check specialized settings can build objects as values and write."""
         cs = caseSettings.Settings()
@@ -59,7 +66,6 @@ class Test_NeutronicsPlugin(TestPlugin):
         cs.writeToYamlFile(fname)
         outText = open(fname, "r").read()
         self.assertIn("geometry: 0D", outText)
-        os.remove(fname)
 
     def test_customSettingRoundTrip(self):
         """Check specialized settings can go back and forth."""
@@ -73,7 +79,6 @@ class Test_NeutronicsPlugin(TestPlugin):
         outText = open(fname, "r").read()
         self.assertIn("geometry: 0D", outText)
         self.assertIn("geometry: 1D", outText)
-        os.remove(fname)
 
     def test_neutronicsSettingsLoaded(self):
         """Check that various special neutronics-specifics settings are loaded"""

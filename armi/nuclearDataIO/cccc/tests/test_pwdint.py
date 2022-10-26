@@ -19,6 +19,7 @@ import os
 import unittest
 
 from armi.nuclearDataIO.cccc import pwdint
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 SIMPLE_PWDINT = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.pwdint")
@@ -38,9 +39,9 @@ class TestGeodst(unittest.TestCase):
         self.assertGreater(pwr.powerDensity.min(), 0.0)
 
     def test_writeGeodst(self):
-        """Ensure that we can write a modified PWDINT."""
-        pwr = pwdint.readBinary(SIMPLE_PWDINT)
-        pwdint.writeBinary(pwr, "PWDINT2")
-        pwr2 = pwdint.readBinary("PWDINT2")
-        self.assertTrue((pwr2.powerDensity == pwr.powerDensity).all())
-        os.remove("PWDINT2")
+        """Ensure that we can write a modified PWDINT"""
+        with TemporaryDirectoryChanger():
+            pwr = pwdint.readBinary(SIMPLE_PWDINT)
+            pwdint.writeBinary(pwr, "PWDINT2")
+            pwr2 = pwdint.readBinary("PWDINT2")
+            self.assertTrue((pwr2.powerDensity == pwr.powerDensity).all())

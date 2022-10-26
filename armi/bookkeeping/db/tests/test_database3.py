@@ -622,6 +622,13 @@ class TestDatabase3(unittest.TestCase):
 class TestLocationPacking(unittest.TestCase):
     r"""Tests for database location"""
 
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
     def test_locationPacking(self):
         # pylint: disable=protected-access
         loc1 = grids.IndexLocation(1, 2, 3, None)
