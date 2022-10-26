@@ -44,4 +44,3 @@ settings:
   Tout: 20.0
   verbosity: extra
   xsBlockRepresentation: ComponentAverage1DSlab
-  zoneFlowSummary: false

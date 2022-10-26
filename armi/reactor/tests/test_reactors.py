@@ -936,6 +936,32 @@ class HexReactorTests(ReactorTests):
                     for param in equalParameters:
                         self.assertAlmostEqual(oldBlockParameters[param][b], b.p[param])
 
+    def test_buildManualZones(self):
+        # define some manual zones in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+            "ring-3: 003-001, 003-002, 003-003",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.r.core.buildManualZones(cs)
+
+        zonez = self.r.core.zones
+        self.assertEqual(len(list(zonez)), 3)
+        self.assertIn("002-001", zonez["ring-2"])
+        self.assertIn("003-002", zonez["ring-3"])
+
+    def test_buildManualZonesEmpty(self):
+        # ensure there are no zone definitions in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = []
+        cs = self.o.cs.modified(newSettings=newSettings)
+
+        # verify that buildZones behaves well when no zones are defined
+        self.r.core.buildManualZones(cs)
+        self.assertEqual(len(list(self.r.core.zones)), 0)
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):

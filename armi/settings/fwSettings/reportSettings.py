@@ -21,7 +21,6 @@ from armi.settings import setting
 
 CONF_GEN_REPORTS = "genReports"
 CONF_ASSEM_POW_SUMMARY = "assemPowSummary"
-CONF_ZONE_FLOW_SUMMARY = "zoneFlowSummary"
 CONF_SUMMARIZE_ASSEM_DESIGN = "summarizeAssemDesign"
 CONF_TIMELINE_INCLUSION_CUTOFF = "timelineInclusionCutoff"
 
@@ -42,12 +41,6 @@ def defineSettings():
             label="Summarize Assembly Power",
             description="Print a summary of how much power is in each assembly "
             "type at every timenode",
-        ),
-        setting.Setting(
-            CONF_ZONE_FLOW_SUMMARY,
-            default=True,
-            label="Zone Flow Summary",
-            description="Print flow and power edits for peak and average assemblies",
         ),
         setting.Setting(
             CONF_SUMMARIZE_ASSEM_DESIGN,

@@ -1704,21 +1704,21 @@ class HexGrid(Grid):
         nLocs = int(nLocs)  # need to make this an integer
 
         # next, generate a list of locations and corresponding distances
-        locList = []
+        locs = []
         for ring in range(1, hexagon.numRingsToHoldNumCells(nLocs) + 1):
             positions = self.getPositionsInRing(ring)
             for position in range(1, positions + 1):
                 i, j = self.getIndicesFromRingAndPos(ring, position)
-                locList.append(self[(i, j, 0)])
+                locs.append(self[(i, j, 0)])
         # round to avoid differences due to floating point math
-        locList.sort(
+        locs.sort(
             key=lambda loc: (
                 round(numpy.linalg.norm(loc.getGlobalCoordinates()), 6),
                 loc.i,  # loc.i=ring
                 loc.j,
             )
         )  # loc.j= pos
-        return locList[:nLocs]
+        return locs[:nLocs]
 
     # TODO: this is only used by testing and another method that just needs the count of assemblies
     #       in a ring, not the actual positions
