@@ -20,32 +20,32 @@ Assemblies are made of blocks.
 
 Blocks are made of components.
 """
-import math
-import copy
-import collections
 from typing import Optional, Type, Tuple, ClassVar
+import collections
+import copy
+import math
 
 import numpy
 
-from armi.reactor import composites
 from armi import runLog
 from armi import settings
+from armi.bookkeeping import report
 from armi.nucDirectory import nucDir
-from armi.reactor import geometry
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
-from armi.reactor import grids
-from armi.reactor.flags import Flags
 from armi.reactor import components
+from armi.reactor import composites
+from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import parameters
+from armi.reactor.flags import Flags
+from armi.reactor.parameters import ParamLocation
+from armi.utils import densityTools
+from armi.utils import hexagon
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
-from armi.bookkeeping import report
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.utils import hexagon
-from armi.utils import densityTools
-from armi.physics.neutronics import NEUTRON
-from armi.physics.neutronics import GAMMA
-from armi.reactor.parameters import ParamLocation
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -437,18 +437,22 @@ class Block(composites.Composite):
         setting has length 1 (i.e. no burnup groups are defined). This is useful for
         high-fidelity XS modeling of V&V models such as the ZPPRs.
         """
-
         bu = self.p.buGroup
         if not bu:
             raise RuntimeError(
                 "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
                 "".format(self, self.parent)
             )
+
         xsType = self.p.xsType
-        if len(xsType) == 2 and len(settings.getMasterCs()["buGroups"]) == 1:
-            return xsType
-        else:
+        if len(xsType) == 1:
             return xsType + bu
+        elif len(xsType) == 2 and ord(bu) > ord("A"):
+            raise ValueError(
+                f"Use of multiple burnup groups is not allowed with multi-character xs groups!"
+            )
+        else:
+            return xsType
 
     def getHeight(self):
         """Return the block height."""
