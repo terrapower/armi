@@ -21,7 +21,7 @@ data pathways.
 import os
 import hashlib
 
-from armi.utils import directoryChangers
+from armi.utils import directoryChangers, pathTools
 from armi import runLog
 from armi.context import getFastPath, MPI_RANK
 
@@ -178,11 +178,18 @@ class DefaultExecuter(Executer):
             )
         self._performGeometryTransformations()
         inputs, outputs = self._collectInputsAndOutputs()
+        state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"
+        outputDir = os.path.join(
+            pathTools.armiAbsPath(os.getcwd()), state, self.options.label
+        )
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()
         with directoryChangers.ForcedCreationDirectoryChanger(
-            self.options.runDir, filesToMove=inputs, filesToRetrieve=outputs
+            self.options.runDir,
+            filesToMove=inputs,
+            filesToRetrieve=outputs,
+            outputPath=outputDir,
         ) as dc:
             self.options.workingDir = dc.initial
             self._execute()
