@@ -60,6 +60,7 @@ setup(
         "future",
         "h5py>=3.0",
         "matplotlib",
+        "notebookjs",
         "numpy",
         "ordered-set",
         "pillow",

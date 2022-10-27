@@ -1,0 +1,25 @@
+# This file is part of the walthrough_inputs tutorial in ARMI, which
+# uses .. literalinclude to bring in sections of this file. Thus, 
+# the comments and order are important. These will get wiped out
+# if you load and re-write a settings file via the ARMI gui, unfortunately.
+# begin-metadata
+metadata:
+  version: uncontrolled
+# begin-settings
+settings:
+  availabilityFactor: 0.9
+  power: 1000000000.0
+  cycleLength: 411.11
+# end-section-1
+  loadingFile: anl-afci-177-blueprints.yaml
+  shuffleLogic: anl-afci-177-fuelManagement.py
+  fuelHandlerName: SampleShuffler
+# end-section-2
+  nCycles: 10
+  burnSteps: 2
+# end-section-3
+  buGroups:
+    - 100
+  comment: ANL-AFCI-177 CR 1.0 metal core but with HALEU instead of TRU
+  genXS: Neutron
+  numProcessors: 1

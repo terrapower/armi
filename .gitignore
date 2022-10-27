@@ -26,6 +26,8 @@ doc/gallery-src/framework/*.yaml
 coverage.xml
 htmlcov/
 monkeytype.*
+node_modules
+package-lock.json
 
 # No workspace crumbs.
 *~
