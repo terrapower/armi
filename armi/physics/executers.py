@@ -53,6 +53,9 @@ class ExecutionOptions:
         a shared network location. Auto-applied during execution by default.
     label : str
         A name for the run that may be used as a prefix for input/output files generated.
+    interface : str
+        A name for the interface calling the Executer that may be used to organize the
+        input/output files generated within sub-folders under the working directory.
     applyResultsToReactor : bool
         Update the in-memory reactor model with results upon completion. Set to False
         when information from a run is needed for auxiliary purposes rather than progressing
@@ -68,6 +71,7 @@ class ExecutionOptions:
         self.runDir = None
         self.workingDir = None
         self.label = label
+        self.interfaceName = None
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
 
@@ -179,9 +183,8 @@ class DefaultExecuter(Executer):
         self._performGeometryTransformations()
         inputs, outputs = self._collectInputsAndOutputs()
         state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"
-        outputDir = os.path.join(
-            pathTools.armiAbsPath(os.getcwd()), state, self.options.label
-        )
+        dirName = self.options.interfaceName or self.options.label
+        outputDir = os.path.join(pathTools.armiAbsPath(os.getcwd()), state, dirName)
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()
