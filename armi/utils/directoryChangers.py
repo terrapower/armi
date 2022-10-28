@@ -141,7 +141,7 @@ class DirectoryChanger:
         self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
         if not self.outputPath == self.initial:
             destinationPath = self.outputPath
-        self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
+            self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
 
     def _retrieveEntireFolder(self):
         """
