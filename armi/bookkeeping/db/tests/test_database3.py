@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Tests for the Database3 class
-"""
+r""" Tests for the Database3 class"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import os
 import subprocess
@@ -23,7 +22,9 @@ import h5py
 import numpy
 
 from armi import context
-from armi.bookkeeping.db import _getH5File, database3
+from armi.bookkeeping.db import _getH5File
+from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import layout
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor.tests import test_reactors
@@ -638,13 +639,13 @@ class TestLocationPacking(unittest.TestCase):
         loc3.append(grids.IndexLocation(10, 11, 12, None))
 
         locs = [loc1, loc2, loc3]
-        tp, data = database3._packLocations(locs)
+        tp, data = layout._packLocations(locs)
 
-        self.assertEqual(tp[0], database3.LOC_INDEX)
-        self.assertEqual(tp[1], database3.LOC_COORD)
-        self.assertEqual(tp[2], database3.LOC_MULTI + "2")
+        self.assertEqual(tp[0], layout.LOC_INDEX)
+        self.assertEqual(tp[1], layout.LOC_COORD)
+        self.assertEqual(tp[2], layout.LOC_MULTI + "2")
 
-        unpackedData = database3._unpackLocations(tp, data)
+        unpackedData = layout._unpackLocations(tp, data)
 
         self.assertEqual(unpackedData[0], (1, 2, 3))
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
@@ -660,13 +661,13 @@ class TestLocationPacking(unittest.TestCase):
             loc3.append(grids.IndexLocation(10, 11, 12, None))
 
             locs = [loc1, loc2, loc3]
-            tp, data = database3._packLocations(locs, minorVersion=version)
+            tp, data = layout._packLocations(locs, minorVersion=version)
 
             self.assertEqual(tp[0], "IndexLocation")
             self.assertEqual(tp[1], "CoordinateLocation")
             self.assertEqual(tp[2], "MultiIndexLocation")
 
-            unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
+            unpackedData = layout._unpackLocations(tp, data, minorVersion=version)
 
             self.assertEqual(unpackedData[0], (1, 2, 3))
             self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
@@ -684,13 +685,13 @@ class TestLocationPacking(unittest.TestCase):
         loc3.append(grids.IndexLocation(10, 11, 12, None))
 
         locs = [loc1, loc2, loc3]
-        tp, data = database3._packLocations(locs, minorVersion=version)
+        tp, data = layout._packLocations(locs, minorVersion=version)
 
         self.assertEqual(tp[0], "I")
         self.assertEqual(tp[1], "C")
         self.assertEqual(tp[2], "M:2")
 
-        unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
+        unpackedData = layout._unpackLocations(tp, data, minorVersion=version)
 
         self.assertEqual(unpackedData[0], (1, 2, 3))
         self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
