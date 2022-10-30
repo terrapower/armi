@@ -82,8 +82,7 @@ from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 
-ATTR_LINK = re.compile("^@(.*)$")
-
+# CONSTANTS
 _SERIALIZER_NAME = "serializerName"
 _SERIALIZER_VERSION = "serializerVersion"
 
@@ -125,6 +124,7 @@ class Database3:
     `doc/user/outputs/database` for more details.
     """
 
+    attr_link = re.compile("^@(.*)$")
     timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
 
     def __init__(self, fileName: os.PathLike, permission: str):
@@ -1667,7 +1667,7 @@ def _resolveAttrs(attrs, group):
                 # which does not preserve references.
                 resolved[key] = group[val]
             elif isinstance(val, str):
-                m = ATTR_LINK.match(val)
+                m = self.attr_link.match(val)
                 if m:
                     # dereference the path to get the data out of the dataset.
                     resolved[key] = group[m.group(1)][()]
