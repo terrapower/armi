@@ -13,10 +13,13 @@
 # limitations under the License.
 
 """
-When interacting with the database file, the ``Layout`` class is used to help map the
-hierarchical Composite Reactor Model to the flat representation in the database.
+``Database3`` groundwork.
 
-TODO: JOHN
+When interacting with the database file, the ``Layout`` class is used to help map the
+hierarchical Composite Reactor Model to the flat representation in ``Database3``.
+
+This module also stores packing/packing tools to support ``Database3``, as well as
+datbase versioning information.
 """
 
 import collections
@@ -38,8 +41,10 @@ from armi.reactor import grids
 from armi.reactor.reactors import Core
 from armi.reactor.reactors import Reactor
 
+# Here we store the Database3 version information.
 DB_MAJOR = 3
 DB_MINOR = 4
+DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
 
 # TODO: move when GRID_CLASSES moves.  # JOHN
 def allSubclasses(cls):

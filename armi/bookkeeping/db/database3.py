@@ -85,8 +85,7 @@ from armi import runLog
 from armi import settings
 from armi.bookkeeping.db.layout import (
     Layout,
-    DB_MAJOR,  # TODO: Do I need a better location for these? JOHN
-    DB_MINOR,
+    DB_VERSION,
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
 )
@@ -105,21 +104,28 @@ from armi.reactor import systemLayoutInput
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 
-DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
-
 ATTR_LINK = re.compile("^@(.*)$")
 
 _SERIALIZER_NAME = "serializerName"
 _SERIALIZER_VERSION = "serializerVersion"
 
 
-def getH5GroupName(cycle, timeNode, statePointName=None):
-    """TODO: JOHN"""
+def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str:
+    """
+    Naming convention specifier.
+
+    ARMI defines the naming convention cXXnYY for groups of simulation data.
+    That is, data is grouped by cycle and time node information during a
+    simulated run.
+    """
     return "c{:0>2}n{:0>2}{}".format(cycle, timeNode, statePointName or "")
 
 
-def updateGlobalAssemblyNum(r):
-    """TODO: JOHN"""
+def updateGlobalAssemblyNum(r) -> None:
+    """
+    Updated the global assembly number counter in ARMI, using the assemblies
+    read from a database.
+    """
     assemNum = r.core.p.maxAssemNum
     if assemNum is not None:
         assemblies.setAssemNumCounter(int(assemNum + 1))
