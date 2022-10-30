@@ -15,6 +15,8 @@
 """
 When interacting with the database file, the ``Layout`` class is used to help map the
 hierarchical Composite Reactor Model to the flat representation in the database.
+
+TODO: JOHN
 """
 
 import collections
@@ -47,7 +49,7 @@ def allSubclasses(cls):
     )
 
 
-# TODO: Move this out of the global space! (Please tell me no one uses this downstream.) JOHN
+# TODO: Move this out of the global space! (No one uses this downstream.) JOHN
 # TODO: This will likely become an issue with extensibility via plugins. There are a
 # couple of options to resolve this:
 # - Perform this operation each time we make a Layout. Wasteful, but robust
@@ -57,6 +59,7 @@ def allSubclasses(cls):
 GRID_CLASSES = {c.__name__: c for c in allSubclasses(grids.Grid)}
 GRID_CLASSES["Grid"] = grids.Grid
 
+# TODO: None of those LOC/LOCATION stuff is used anywhere but here. Should it be moved inside the class?  JOHN
 LOC_NONE = "N"
 LOC_COORD = "C"
 LOC_INDEX = "I"
@@ -69,7 +72,8 @@ LOCATION_TYPE_LABELS = {
     grids.MultiIndexLocation: LOC_MULTI,
 }
 
-# XXX: we're going to assume no one assigns min(int)+2 as a meaningful value
+# TODO: Place this into the Layout class.  JOHN
+# NOTE: Here we assume no one assigns min(int)+2 as a meaningful value
 NONE_MAP = {float: float("nan"), str: "<!None!>"}
 NONE_MAP.update(
     {
@@ -844,8 +848,7 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
     --------
     replaceNonesWithNonsense
     """
-    # TODO: This is super closely-related to the NONE_MAP collection, and should
-    # probably use it somehow.
+    # NOTE: This is super closely-related to the Layout.NONE_MAP collection.
     if numpy.issubdtype(data.dtype, numpy.floating):
         isNone = numpy.isnan(data)
     elif numpy.issubdtype(data.dtype, numpy.integer):

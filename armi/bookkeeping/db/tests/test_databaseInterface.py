@@ -26,7 +26,8 @@ from armi import __version__ as version
 from armi import interfaces
 from armi import runLog
 from armi import settings
-from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
+from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.reactor import grids
 from armi.reactor.flags import Flags
