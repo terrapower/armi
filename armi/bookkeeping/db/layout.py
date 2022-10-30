@@ -48,24 +48,6 @@ DB_MAJOR = 3
 DB_MINOR = 4
 DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
 
-# TODO: move when GRID_CLASSES moves.  # JOHN
-def allSubclasses(cls):
-    """This currently include Materials... and it should not."""
-    return set(cls.__subclasses__()).union(
-        [s for c in cls.__subclasses__() for s in allSubclasses(c)]
-    )
-
-
-# TODO: Move this out of the global space! (No one uses this downstream.) JOHN
-# TODO: This will likely become an issue with extensibility via plugins. There are a
-# couple of options to resolve this:
-# - Perform this operation each time we make a Layout. Wasteful, but robust
-# - Scrape all of these names off of a set of Composites that register with a base
-#   metaclass. Less wasteful, but probably equally robust. Downside is it's metaclassy
-#   and Madjickal.
-GRID_CLASSES = {c.__name__: c for c in allSubclasses(grids.Grid)}
-GRID_CLASSES["Grid"] = grids.Grid
-
 # TODO: None of those LOC/LOCATION stuff is used anywhere but here. Should it be moved inside the class?  JOHN
 LOC_NONE = "N"
 LOC_COORD = "C"
@@ -197,6 +179,10 @@ class Layout:
             self._readLayout(h5group)
 
         self._snToLayoutIndex = {sn: i for i, sn in enumerate(self.serialNum)}
+
+        # find all subclasses of Grid
+        self.gridClasses = {c.__name__: c for c in Layout.allSubclasses(grids.Grid)}
+        self.gridClasses["Grid"] = grids.Grid
 
     def __getitem__(self, sn):
         layoutIndex = self._snToLayoutIndex[sn]
@@ -391,7 +377,7 @@ class Layout:
 
             if gridIndex is not None:
                 gridParams = self.gridParams[gridIndex]
-                comp.spatialGrid = GRID_CLASSES[gridParams[0]](
+                comp.spatialGrid = self.gridClasses[gridParams[0]](
                     *gridParams[1], armiObject=comp
                 )
 
@@ -544,6 +530,14 @@ class Layout:
                 ]
 
         return ancestors
+
+    # TODO: JOHN... Materials?
+    @staticmethod
+    def allSubclasses(cls):
+        """TODO: This currently include Materials... and it should not."""
+        return set(cls.__subclasses__()).union(
+            [s for c in cls.__subclasses__() for s in Layout.allSubclasses(c)]
+        )
 
 
 def _packLocations(

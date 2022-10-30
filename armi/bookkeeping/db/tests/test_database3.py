@@ -445,7 +445,7 @@ class TestDatabase3(unittest.TestCase):
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
-        database3._writeAttrs(
+        database3.Database3._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
@@ -468,8 +468,10 @@ class TestDatabase3(unittest.TestCase):
                 "@/c01n00/attrs/0_fakeBigData",
             )
 
-            # actually exercise the _resolveAttrs function
-            attrs = database3._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
+            # exercise the _resolveAttrs function
+            attrs = database3.Database3._resolveAttrs(
+                tnGroup["layout/serialNum"].attrs, tnGroup
+            )
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
 
             keys = sorted(db2.keys())

@@ -124,7 +124,6 @@ class Database3:
     `doc/user/outputs/database` for more details.
     """
 
-    attr_link = re.compile("^@(.*)$")
     timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
 
     def __init__(self, fileName: os.PathLike, permission: str):
@@ -922,7 +921,7 @@ class Database3:
 
                 dataset = g.create_dataset(paramDef.name, data=data, compression="gzip")
                 if any(attrs):
-                    _writeAttrs(dataset, h5group, attrs)
+                    Database3._writeAttrs(dataset, h5group, attrs)
             except Exception:
                 runLog.error(
                     "Failed to write {} to database. Data: "
@@ -982,7 +981,7 @@ class Database3:
                         raise
 
             data = dataSet[:]
-            attrs = _resolveAttrs(dataSet.attrs, h5group)
+            attrs = Database3._resolveAttrs(dataSet.attrs, h5group)
 
             if pDef.serializer is not None:
                 assert _SERIALIZER_NAME in dataSet.attrs
@@ -1376,6 +1375,80 @@ class Database3:
 
         return histData
 
+    @staticmethod
+    def _writeAttrs(obj, group, attrs):
+        """
+        Handle safely writing attributes to a dataset, handling large data if necessary.
+
+        This will attempt to store attributes directly onto an HDF5 object if possible,
+        falling back to proper datasets and reference attributes if necessary. This is
+        needed because HDF5 tries to fit attributes into the object header, which has
+        limited space. If an attribute is too large, h5py raises a RuntimeError.
+        In such cases, this will store the attribute data in a proper dataset and
+        place a reference to that dataset in the attribute instead.
+
+        In practice, this takes ``linkedDims`` attrs from a particular component type (like
+        ``c00n00/Circle/id``) and stores them in new datasets (like
+        ``c00n00/attrs/1_linkedDims``, ``c00n00/attrs/2_linkedDims``) and then sets the
+        object's attrs to links to those datasets.
+        """
+        for key, value in attrs.items():
+            try:
+                obj.attrs[key] = value
+            except RuntimeError as err:
+                if "object header message is too large" not in err.args[0]:
+                    raise
+
+                runLog.info(
+                    "Storing attribute `{}` for `{}` into it's own dataset within "
+                    "`{}/attrs`".format(key, obj, group)
+                )
+
+                if "attrs" not in group:
+                    attrGroup = group.create_group("attrs")
+                else:
+                    attrGroup = group["attrs"]
+                dataName = str(len(attrGroup)) + "_" + key
+                attrGroup[dataName] = value
+
+                # using a soft link here allows us to cheaply copy time nodes without
+                # needing to crawl through and update object references.
+                linkName = attrGroup[dataName].name
+                obj.attrs[key] = "@{}".format(linkName)
+
+    @staticmethod
+    def _resolveAttrs(attrs, group):
+        """
+        Reverse the action of _writeAttrs.
+
+        This reads actual attrs and looks for the real data
+        in the datasets that the attrs were pointing to.
+        """
+        attr_link = re.compile("^@(.*)$")
+
+        resolved = {}
+        for key, val in attrs.items():
+            try:
+                if isinstance(val, h5py.h5r.Reference):
+                    # Old style object reference. If this cannot be dereferenced, it is
+                    # likely because mergeHistory was used to get the current database,
+                    # which does not preserve references.
+                    resolved[key] = group[val]
+                elif isinstance(val, str):
+                    m = attr_link.match(val)  # TODO: JOHN! BROKEN!
+                    if m:
+                        # dereference the path to get the data out of the dataset.
+                        resolved[key] = group[m.group(1)][()]
+                    else:
+                        resolved[key] = val
+                else:
+                    resolved[key] = val
+            except ValueError:
+                runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
+                raise
+
+        return resolved
+
 
 def packSpecialData(
     data: numpy.ndarray, paramName: str
@@ -1422,9 +1495,7 @@ def packSpecialData(
     See Also
     --------
     unpackSpecialData
-
     """
-
     # Check to make sure that we even need to do this. If the numpy data type is
     # not "O", chances are we have nice, clean data.
     if data.dtype != "O":
@@ -1608,77 +1679,6 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
         "Do not recognize the type of special formatting that was applied "
         "to {}. Attrs: {}".format(paramName, {k: v for k, v in attrs.items()})
     )
-
-
-def _writeAttrs(obj, group, attrs):
-    """
-    Handle safely writing attributes to a dataset, handling large data if necessary.
-
-    This will attempt to store attributes directly onto an HDF5 object if possible,
-    falling back to proper datasets and reference attributes if necessary. This is
-    needed because HDF5 tries to fit attributes into the object header, which has
-    limited space. If an attribute is too large, h5py raises a RuntimeError.
-    In such cases, this will store the attribute data in a proper dataset and
-    place a reference to that dataset in the attribute instead.
-
-    In practice, this takes ``linkedDims`` attrs from a particular component type (like
-    ``c00n00/Circle/id``) and stores them in new datasets (like
-    ``c00n00/attrs/1_linkedDims``, ``c00n00/attrs/2_linkedDims``) and then sets the
-    object's attrs to links to those datasets.
-    """
-    for key, value in attrs.items():
-        try:
-            obj.attrs[key] = value
-        except RuntimeError as err:
-            if "object header message is too large" not in err.args[0]:
-                raise
-
-            runLog.info(
-                "Storing attribute `{}` for `{}` into it's own dataset within "
-                "`{}/attrs`".format(key, obj, group)
-            )
-
-            if "attrs" not in group:
-                attrGroup = group.create_group("attrs")
-            else:
-                attrGroup = group["attrs"]
-            dataName = str(len(attrGroup)) + "_" + key
-            attrGroup[dataName] = value
-
-            # using a soft link here allows us to cheaply copy time nodes without
-            # needing to crawl through and update object references.
-            linkName = attrGroup[dataName].name
-            obj.attrs[key] = "@{}".format(linkName)
-
-
-def _resolveAttrs(attrs, group):
-    """
-    Reverse the action of _writeAttrs.
-
-    This reads actual attrs and looks for the real data
-    in the datasets that the attrs were pointing to.
-    """
-    resolved = {}
-    for key, val in attrs.items():
-        try:
-            if isinstance(val, h5py.h5r.Reference):
-                # Old style object reference. If this cannot be dereferenced, it is
-                # likely because mergeHistory was used to get the current database,
-                # which does not preserve references.
-                resolved[key] = group[val]
-            elif isinstance(val, str):
-                m = self.attr_link.match(val)
-                if m:
-                    # dereference the path to get the data out of the dataset.
-                    resolved[key] = group[m.group(1)][()]
-                else:
-                    resolved[key] = val
-            else:
-                resolved[key] = val
-        except ValueError:
-            runLog.error(f"HDF error loading {key} : {val}\nGroup: {group}")
-            raise
-    return resolved
 
 
 def collectBlockNumberDensities(blocks) -> Dict[str, numpy.ndarray]:
