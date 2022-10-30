@@ -1435,7 +1435,7 @@ class Database3:
                     # which does not preserve references.
                     resolved[key] = group[val]
                 elif isinstance(val, str):
-                    m = attr_link.match(val)  # TODO: JOHN! BROKEN!
+                    m = attr_link.match(val)
                     if m:
                         # dereference the path to get the data out of the dataset.
                         resolved[key] = group[m.group(1)][()]
