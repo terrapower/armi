@@ -61,7 +61,7 @@ LOCATION_TYPE_LABELS = {
     grids.MultiIndexLocation: LOC_MULTI,
 }
 
-# TODO: Place this into the Layout class.  JOHN
+# TODO: Place this out of the global scope?  JOHN
 # NOTE: Here we assume no one assigns min(int)+2 as a meaningful value
 NONE_MAP = {float: float("nan"), str: "<!None!>"}
 NONE_MAP.update(
@@ -93,38 +93,31 @@ NONE_MAP.update({floatType: floatType("nan") for floatType in (float, numpy.floa
 
 class Layout:
     """
-    The Layout class describes the hierarchical layout of the composite Reactor model in a flat representation.
+    The Layout class describes the hierarchical layout of the Composite Reactor model
+    in a flat representation for
+    :py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`.
 
-    A Layout is built up by starting at the root of a composite tree and recursively
-    appending each node in the tree to the list of data. So for a typical Reactor model,
-    the data will be ordered by depth-first search: [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2,
-    a1b2c1, ..., a2, ...].
+    A Layout is built by starting at the root of a composite tree and recursively
+    appending each node in the tree to a list of data. So the data will be ordered by
+    depth-first search: [r, c, a1, a1b1, a1b1c1, a1b1c2, a1b2, a1b2c1, ..., a2, ...].
 
     The layout is also responsible for storing Component attributes, like location,
-    material, and temperatures (from blueprints), which aren't stored as Parameters.
-    Temperatures, specifically, are rather complicated beasts in ARMI, and more
-    fundamental changes to how we deal with them may allow us to remove them from
-    Layout.
+    material, and temperatures, which aren't stored as Parameters. Temperatures,
+    specifically, are rather complicated in ARMI.
 
     Notes
     -----
-    As this format is liable to be consumed by other code, it is important to specify
-    its structure so that code attempting to read/write Layouts can make safe
-    assumptions. Below is a list of things to be aware of. More will be added as issues
-    arise or things become more precise:
-
      * Elements in Layout are stored in depth-first order. This permits use of
-       algorithms such as Pre-Order Tree Traversal for efficient traversal of regions of
-       the model.
+       algorithms such as Pre-Order Tree Traversal for efficient traversal of regions
+       of the model.
 
-     * ``indexInData`` increases monotonically within each object ``type``. This means
-       that, for instance, the data for all ``HexBlock`` children of a given parent
-       are stored contiguously within the ``HexBlock`` group, and will not be
-       interleaved with data from the ``HexBlock`` children of any of the parent's
-       siblings.
+     * ``indexInData`` increases monotonically within each object ``type``. For
+       example, the data for all ``HexBlock`` children of a given parent are stored
+       contiguously within the ``HexBlock`` group, and will not be interleaved with
+       data from the ``HexBlock`` children of any of the parent's siblings.
 
-     * Aside from the hierarchy itself, there is no guarantee what order objects are
-       stored in the layout.  "`The` ``Core``" is not necessarily the first child of the
+     * Aside from the hierarchy, there is no guarantee what order objects are stored
+       in the layout.  The ``Core`` is not necessarily the first child of the
        ``Reactor``, and is not guaranteed to use the zeroth grid.
     """
 
@@ -849,7 +842,7 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
     --------
     replaceNonesWithNonsense
     """
-    # NOTE: This is super closely-related to the Layout.NONE_MAP collection.
+    # NOTE: This is closely-related to the NONE_MAP.
     if numpy.issubdtype(data.dtype, numpy.floating):
         isNone = numpy.isnan(data)
     elif numpy.issubdtype(data.dtype, numpy.integer):
