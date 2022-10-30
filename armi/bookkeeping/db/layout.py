@@ -13,13 +13,15 @@
 # limitations under the License.
 
 """
-``Database3`` groundwork.
+Groundwork for ARMI Database, version 3.4.
 
-When interacting with the database file, the ``Layout`` class is used to help map the
-hierarchical Composite Reactor Model to the flat representation in ``Database3``.
+When interacting with the database file, the :py:class:`Layout` class is used to help
+map the hierarchical Composite Reactor Model to the flat representation in
+:py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`.
 
-This module also stores packing/packing tools to support ``Database3``, as well as
-datbase versioning information.
+This module also stores packing/packing tools to support
+:py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`, as well as datbase
+versioning information.
 """
 
 import collections

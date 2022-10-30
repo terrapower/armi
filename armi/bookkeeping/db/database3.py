@@ -13,45 +13,23 @@
 # limitations under the License.
 
 """
-ARMI Database implementation, version 3.
+ARMI Database implementation, version 3.4.
 
-This Implementation of the database is a significant departure from the previous. One of
-the foundational concepts in this version is that a reactor model should be fully
-recoverable from the database itself; all the way down to the component level. As a
-result, the structure of the underlying data is bound to the hierarchical Composite
-Reactor Model, rather than an ad hoc collection of Block parameter fields and other
-parameters. Furthermore, this format is intended to be more dynamic, permitting as-yet
-undeveloped levels and classes in the Composite Reactor Model to be supported as they
-are added. More high-level discussion is contained in :doc:`/user/outputs/database`.
+A reactor model should be fully recoverable from the database; all the way down to the
+component level. As a result, the structure of the underlying data is bound to the
+hierarchical Composite Reactor Model. Furthermore, this database format is intended to
+be more dynamic, permitting as-yet undeveloped levels and classes in the Composite
+Reactor Model to be supported as they are added. More high-level discussion is
+contained in :doc:`/user/outputs/database`.
 
-The ``Database3`` class contains most of the functionality for interacting with the
-underlying data. This includes things like dumping a Reactor state to the database and
-loading it back again, as well as extracting historical data for a given object or
-collection of object from the database file. If the name of this class and file seem
-wrong, consider them "wrong for good"; changing it would be more work than its worth.
+The :py:class:`Database3` class contains most of the functionality for interacting
+with the underlying data. This includes things like dumping a Reactor state to the
+database and loading it back again, as well as extracting historical data for a given
+object or collection of object from the database file. However, for the nitty-gritty
+details of how the hierarchical Composite Reactor Model is translated to the flat file
+database, please refer to :py:mod:`armi.bookkeeping.db.layout`.
 
-Refer to :py:mod:`armi.bookkeeping.db` for notes about versioning.
-
-Minor revision changelog
-------------------------
- - 3.1: Improve the handling of reading/writing grids.
-
- - 3.2: Change the strategy for storing large attributes from using an Object Reference
-   to an external dataset to using a special string starting with an "@" symbol (e.g.,
-   "@/c00n00/attrs/5_linkedDims"). This was done to support copying time node datasets
-   from one file to another without invalidating the references. Support is maintained
-   for reading previous versions, and for performing a ``mergeHistory()`` and converting
-   to the new reference strategy, but the old version cannot be written.
-
- - 3.3: Compress the way locations are stored in the database and allow MultiIndex
-   locations to be read and written.
-
- - 3.4: Modified the way that locations are stored in the database to include complete
-   indices for indices that can be composed from multiple grids. This was done since the
-   space is already being used to be able to store them, and because having complete
-   indices allows for more efficient means of extracting information based on location
-   without having to compose the full model.
-
+Refer to :py:mod:`armi.bookkeeping.db` for information about versioning.
 """
 import collections
 import copy
