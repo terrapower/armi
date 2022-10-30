@@ -62,7 +62,8 @@ from armi.reactor import reactors
 
 # re-export package components for easier import
 from .permissions import Permissions
-from .database3 import Database3, DatabaseInterface, updateGlobalAssemblyNum
+from .database3 import Database3, updateGlobalAssemblyNum
+from .databaseInterface import DatabaseInterface
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
 

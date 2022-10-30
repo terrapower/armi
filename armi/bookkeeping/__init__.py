@@ -22,7 +22,7 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        from armi.bookkeeping.db import database3
+        from armi.bookkeeping.db import databaseInterface
         from armi.bookkeeping import historyTracker
         from armi.bookkeeping import memoryProfiler
         from armi.bookkeeping import mainInterface
@@ -31,7 +31,7 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
 
         interfaceInfo = []
         interfaceInfo += plugins.collectInterfaceDescriptions(mainInterface, cs)
-        interfaceInfo += plugins.collectInterfaceDescriptions(database3, cs)
+        interfaceInfo += plugins.collectInterfaceDescriptions(databaseInterface, cs)
         interfaceInfo += plugins.collectInterfaceDescriptions(historyTracker, cs)
         interfaceInfo += plugins.collectInterfaceDescriptions(memoryProfiler, cs)
         interfaceInfo += plugins.collectInterfaceDescriptions(reportInterface, cs)
