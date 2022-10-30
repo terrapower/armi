@@ -48,7 +48,7 @@ DB_MAJOR = 3
 DB_MINOR = 4
 DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
 
-# TODO: None of those LOC/LOCATION stuff is used anywhere but here. Should it be moved inside the class?  JOHN
+# CONSTANTS USED TO PACK AND UNPACK DATA
 LOC_NONE = "N"
 LOC_COORD = "C"
 LOC_INDEX = "I"
@@ -61,7 +61,6 @@ LOCATION_TYPE_LABELS = {
     grids.MultiIndexLocation: LOC_MULTI,
 }
 
-# TODO: Place this out of the global scope?  JOHN
 # NOTE: Here we assume no one assigns min(int)+2 as a meaningful value
 NONE_MAP = {float: float("nan"), str: "<!None!>"}
 NONE_MAP.update(

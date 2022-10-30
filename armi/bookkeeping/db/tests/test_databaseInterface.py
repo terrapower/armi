@@ -441,6 +441,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         mock = MockInterface(o.r, o.cs, None)
 
+        # pylint: disable=unused-argument
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
             # suseptable to cancelation of errors off by one.
