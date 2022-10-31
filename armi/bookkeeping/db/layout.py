@@ -523,10 +523,9 @@ class Layout:
 
         return ancestors
 
-    # TODO: JOHN... Materials?
     @staticmethod
-    def allSubclasses(cls):
-        """TODO: This currently include Materials... and it should not."""
+    def allSubclasses(cls) -> set:
+        """Find all subclasses of the given class, in any namespace."""
         return set(cls.__subclasses__()).union(
             [s for c in cls.__subclasses__() for s in Layout.allSubclasses(c)]
         )
