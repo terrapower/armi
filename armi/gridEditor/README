@@ -1,0 +1,10 @@
+To run the GUI in this notebook interface:
+
+1. Install `npm` if you don't already have it on your machine.
+2. Run `npm install`. This would download `webpack` and `d3` NPM modules.
+3. Run `npm run build`. This would output `dist/bundle.js` that contains the
+   D3 dependency.
+4. Run `jupyter notebook`. This would start a notebook kernel. It should open a
+   browser tab that displays a file tree. If not, click the `localhost` URL link
+   that the command outputs to view the file tree in the browser.
+5. In that browser tab, open `gui.ipynb`, and run the cells in sequence.
