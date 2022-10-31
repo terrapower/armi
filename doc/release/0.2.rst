@@ -8,7 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. TBD
+#. Added an experimental notebook-based GUI.
 
 Bug fixes
 ---------
