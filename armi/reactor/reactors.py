@@ -1684,9 +1684,7 @@ class Core(composites.Composite):
         --------
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
         """
-        a = self.parent.blueprints.constructAssem(
-            cs or settings.getMasterCs(), name=assemType
-        )
+        a = self.parent.blueprints.constructAssem(cs, name=assemType)
 
         # check to see if a default bol assembly is being used or we are adding more information
         if enrichList:
