@@ -1,3 +1,22 @@
+/**
+* Copyright 2022 Google, LLC
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+/**
+* Part of a working prototype for a notebook-based replacement for the
+*  wxPython-based grid editor GUI.
+*/
 import * as d3 from "d3";
 
 const SQRT3 = Math.sqrt(3);
@@ -11,9 +30,11 @@ const UNIT_HEXAGON = [
     [+0.5, +SQRT3 * 0.5],
 ];
 
-const DEFAULT_CELL_WIDTH = 40;  // For Cartesian grid
-const DEFAULT_CELL_RADIUS = 30; // For Hexagonal grid
+const DEFAULT_CELL_WIDTH = 40;   // For Cartesian grid
+const DEFAULT_CELL_RADIUS = 30;  // For Hexagonal grid
 
+// Global variable that holds the text contents of the debug console.
+// Hacky, but works.
 let consoleLogContents = "Debug console.";
 
 const celltypeSelectorData = {
@@ -26,43 +47,9 @@ const fuelPathContext = {
     "isFuelPathMode": false,
 };
 
+// Global variable that maps the specifiers to the names and colors.
+// This is loaded from "data" in the main function.
 let specifierMap = {};
-
-function defineNavBar(navBar) {
-    navBar.attr("id", "navbar");
-    navBar.append("a")
-        .attr("class", "navbar-brand")
-        .attr("href", "#")
-        .text("Grid Editor");
-}
-
-function axialToCorners(ijList, radius, xyOffset) {
-  /** Convert a list of axial coordinates to pixel offsets.
-
-  Args:
-    ijList: List of (i,j) coordinates, with origin at the center of the
-      hexagon. i points in the 2 o'clock direction, while j points in the
-      12 o'clock direction. See:
-      https://terrapower.github.io/armi/gallery/framework/run_grids1_hex.html#make-a-hex-grid
-    radius: Number of pixels between the center of a cell to any of
-      its corners.
-    xyOffset: Displacement from the top-right corner of the grid area to the
-      center of the (0, 0) cell.
-
-  Returns:
-    List of (x, y) pixel offsets from top-right corner of the grid area
-      to the center of each cell.
-  */
-  const hexCellList = [];
-  for (let [i, j] of ijList) {
-    let cell = {};
-
-    x += SQRT3 * i * radius;
-    y -= (i + j * 2) * radius;
-    xyList.push([x, y]);
-  }
-  return xyList;
-}
 
 const DI_DJ_LIST = [
     [+1, -1],
@@ -74,65 +61,111 @@ const DI_DJ_LIST = [
 ];
 
 function numRingsToIjList(numRings) {
-  const ijList = [];
-  for (let r = 0; r < numRings; r++) {
-    if (r == 0) {
-      ijList.push([0, 0]);
-    } else {
-      let i = 0;
-      let j = r;
-      for (let di_dj of DI_DJ_LIST) {
-          for (let rr = 0; rr < r; rr++) {
-            const di = di_dj[0];
-            const dj = di_dj[1];
-            ijList.push([i, j]);
-            i += di;
-            j += dj;
-          }
-      }
+/** Generates a list of (i,j) coordinates for a full hexagonal core.
+
+    Args:
+        numRings: Number of rings. Must be an integer 1 or greater.
+
+    Returns:
+        List of (i, j) coordinates.
+    */
+    const ijList = [];
+    for (let r = 0; r < numRings; r++) {
+        if (r == 0) {
+            ijList.push([0, 0]);
+        } else {
+            let i = 0;
+            let j = r;
+            for (let di_dj of DI_DJ_LIST) {
+                for (let rr = 0; rr < r; rr++) {
+                    const di = di_dj[0];
+                    const dj = di_dj[1];
+                    ijList.push([i, j]);
+                    i += di;
+                    j += dj;
+                }
+            }
+        }
     }
-  }
-  return ijList;
+    return ijList;
 }
 
 function ijToXHexCenter(i, j, radius, xOffset) {
-  return (SQRT3 * i) * radius * (SQRT3 / 2) + xOffset;
+/** Converts an (i, j) coordinate to the x-OffSet of the center of the hexagon.
+
+    Args:
+        i: i-coordinate in a hexagonal grid.
+        j: j-coordinate in a hexagonal grid.
+        radius: Distance between the center of the hexagon to its corner.
+        xOffset: Any additional xOffset to add to the result.
+
+    Returns:
+        The xOffset.
+    */
+    return (SQRT3 * i) * radius * (SQRT3 / 2) + xOffset;
 }
 
 function ijToYHexCenter(i, j, radius, yOffset) {
-  return -(i + j * 2) * radius * (SQRT3 / 2) + yOffset;
+/** Converts an (i, j) coordinate to the y-OffSet of the center of the hexagon.
+
+    Args:
+        i: i-coordinate in a hexagonal grid.
+        j: j-coordinate in a hexagonal grid.
+        radius: Distance between the center of the hexagon to its corner.
+        yOffset: Any additional yOffset to add to the result.
+
+    Returns:
+        The yOffset.
+    */
+    return -(i + j * 2) * radius * (SQRT3 / 2) + yOffset;
 }
 
 function ijToHexCorners(i, j, radius, xOffset, yOffset) {
+/** Converts an (i, j) coord to a list of 6 corners of the hexagon in XY coords.
 
-  const hexCornersList = [];
-  const xHexCenter = ijToXHexCenter(i, j, radius, xOffset);
-  const yHexCenter = ijToYHexCenter(i, j, radius, yOffset);
-  for (let [x, y] of UNIT_HEXAGON) {
-      x = x * radius + xHexCenter;
-      y = y * radius + yHexCenter;
-      hexCornersList.push([x, y]);
-  }
-  return hexCornersList;
+    Args:
+        i: i-coordinate in a hexagonal grid.
+        j: j-coordinate in a hexagonal grid.
+        radius: Distance between the center of the hexagon to its corner.
+        xOffset: Any additional xOffset to add to the results.
+        yOffset: Any additional yOffset to add to the results.
+
+    Returns:
+        List containing 6 (x,y) coordinates, one for each corner of the hexagon.
+    */
+    const hexCornersList = [];
+    const xHexCenter = ijToXHexCenter(i, j, radius, xOffset);
+    const yHexCenter = ijToYHexCenter(i, j, radius, yOffset);
+    for (let [x, y] of UNIT_HEXAGON) {
+        x = x * radius + xHexCenter;
+        y = y * radius + yHexCenter;
+        hexCornersList.push([x, y]);
+    }
+    return hexCornersList;
 }
 
 function backGroundRGBToString(backgroundRGB) {
-  const [r, g, b] = backgroundRGB;
-  return "rgb(" + r + "," + g + "," + b + ")";
+/** Converts a RGB array to an RGB string. */
+    const [r, g, b] = backgroundRGB;
+    return "rgb(" + r + "," + g + "," + b + ")";
 }
 
 function textColorForBackground(backgroundRGB) {
-  const [r, g, b] = backgroundRGB;
-  const relativeLuminance = (0.2126 * r + 0.7132 * g + 0.0722 * b) / 255;
-  let textColor = "black";
-  if (relativeLuminance < 0.51) {
-    textColor = "white";
-  }
-  return textColor;
+/** Computes text color that is readable against from the background color. */
+    const [r, g, b] = backgroundRGB;
+    const relativeLuminance = (0.2126 * r + 0.7132 * g + 0.0722 * b) / 255;
+    let textColor = "black";
+    if (relativeLuminance < 0.51) {
+        textColor = "white";
+    }
+    return textColor;
 }
 
 function rgbToHsl(rgb) {
-    // Note that the returned s and l are between 0 and 1, not 0 to 100.
+/** Converts RGB values to HSL.
+
+    Note that the returned s and l are between 0 and 1 (not between 0 and 100).
+    */
     const [r_rel, g_rel, b_rel] = [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255];
     const [c_max, c_min] = [Math.max(...rgb) / 255, Math.min(...rgb) / 255];
     const delta = c_max - c_min;
@@ -140,52 +173,59 @@ function rgbToHsl(rgb) {
     const s = delta ? (delta / (1 - Math.abs(2 * l - 1))) : 0;
     let h = 0;
     if (delta === 0) {
-      h = 0;
+        h = 0;
     } else if (c_max === r_rel) {
-      h = 60 * ((6 + ((g_rel - b_rel) / delta)) % 6);
+        h = 60 * ((6 + ((g_rel - b_rel) / delta)) % 6);
     } else if (c_max === g_rel) {
-      h = 60 * (((b_rel - r_rel) / delta) + 2);
+        h = 60 * (((b_rel - r_rel) / delta) + 2);
     } else if (c_max === b_rel) {
-      h = 60 * (((r_rel - g_rel) / delta) + 4);
+        h = 60 * (((r_rel - g_rel) / delta) + 4);
     }
 
     return [h, s, l];
 }
 
 function hslToRgb(hsl) {
+/** Converts HSL values to RGB.
+
+    Note that the expected s and l are between 0 and 1 (not between 0 and 100).
+    */
     const [h, s, l] = hsl;
     const c = (1 - Math.abs(2 * l - 1)) * s;
     const x = c * (1 - Math.abs((h / 60) % 2 - 1));
     const m = l - c / 2;
     let [r_rel, g_rel, b_rel] = [0, 0, 0];
     if (0 <= h && h < 60) {
-      [r_rel, g_rel, b_rel] = [c, x, 0];
+        [r_rel, g_rel, b_rel] = [c, x, 0];
     } else if (60 <= h && h < 120) {
-      [r_rel, g_rel, b_rel] = [x, c, 0];
+        [r_rel, g_rel, b_rel] = [x, c, 0];
     } else if (120 <= h && h < 180) {
-      [r_rel, g_rel, b_rel] = [0, c, x];
+        [r_rel, g_rel, b_rel] = [0, c, x];
     } else if (180 <= h && h < 240) {
-      [r_rel, g_rel, b_rel] = [0, x, c];
+        [r_rel, g_rel, b_rel] = [0, x, c];
     } else if (240 <= h && h < 300) {
-      [r_rel, g_rel, b_rel] = [x, 0, c];
+        [r_rel, g_rel, b_rel] = [x, 0, c];
     } else {
-      [r_rel, g_rel, b_rel] = [c, 0, x];
+        [r_rel, g_rel, b_rel] = [c, 0, x];
     }
     return [(r_rel + m) * 255, (g_rel + m) * 255, (b_rel + m) * 255];
 }
 
 function desaturateFn(backgroundRGB) {
+/** Computes a desaturated RGB value. */
     const [h, s, l] = rgbToHsl(backgroundRGB);
     const l_new = l + (1.0 - l) * 0.5;
     return hslToRgb([h, s, l_new]);
 }
 
-
 function gridCellClickHandler() {
+/** Handles grid cell being clicked. */
     const i = d3.select(this).attr("gridcell-i");
     const j = d3.select(this).attr("gridcell-j");
-    const polygonElement = d3.select(`#grid-area polygon[gridcell-i="${i}"][gridcell-j="${j}"]`);
-    const textElement = d3.select(`#grid-area text[gridcell-i="${i}"][gridcell-j="${j}"]`);
+    const polygonElement = d3.select(
+        `#grid-area polygon[gridcell-i="${i}"][gridcell-j="${j}"]`);
+    const textElement = d3.select(
+        `#grid-area text[gridcell-i="${i}"][gridcell-j="${j}"]`);
     if (!fuelPathContext["isFuelPathMode"]) {
         if (celltypeSelectorData["isEmpty"]) {
             consoleLog(`cell (${i},${j}) clicked. unsetting celltype.`);
@@ -197,7 +237,8 @@ function gridCellClickHandler() {
         } else {
             const specifier = celltypeSelectorData["specifier"];
             const rgb = celltypeSelectorData["rgb"];
-            consoleLog(`cell (${i},${j}) clicked. setting celltype to ${specifier}.`);
+            consoleLog(
+                `cell (${i},${j}) clicked. setting celltype to ${specifier}.`);
             polygonElement
                 .attr("gridcell-specifier", specifier)
                 .attr("gridcell-r", rgb[0])
@@ -212,7 +253,9 @@ function gridCellClickHandler() {
     } else {
         const path = d3.select("#fuel_path_input").property("value");
         const index = d3.select("#fuel_path_index").property("value");
-        consoleLog(`cell (${i},${j}) clicked. resaturate and label w fuel path (${path},${index}).`);
+        consoleLog(
+            `cell (${i},${j}) clicked. `
+            `resaturate and label w fuel path (${path},${index}).`);
         const r = polygonElement.attr("gridcell-r");
         const g = polygonElement.attr("gridcell-g");
         const b = polygonElement.attr("gridcell-b");
@@ -226,9 +269,7 @@ function gridCellClickHandler() {
 function updateDrawChart(svg, scale, xOffset, yOffset, data) {
     const geomtype = data["geomtype"];
     const points = data["points"];
-    var g = svg.selectAll("g").data(points).enter()
-        .filter((d) => d.specifier !== "-")
-        .append("g");
+    const g = svg.selectAll("g").data(points).enter().append("g");
 
     if (geomtype == "cartesian") {
         const l = DEFAULT_CELL_WIDTH * scale;
@@ -261,10 +302,14 @@ function updateDrawChart(svg, scale, xOffset, yOffset, data) {
             .attr("gridcell-g", (d) => specifierMap[d.specifier]["color"][1])
             .attr("gridcell-b", (d) => specifierMap[d.specifier]["color"][2])
             .attr("gridcell-desaturate", "false")
-            .attr("points", (d) => ijToHexCorners(d.i, d.j, radius, 350 + xOffset, 350 + yOffset))
+            .attr("points",
+                  (d) => ijToHexCorners(d.i, d.j, radius,
+                                        350 + xOffset, 350 + yOffset))
             .attr("stroke", "black")
             .attr("stroke-width", "1px")
-            .style("fill", (d) => backGroundRGBToString(specifierMap[d.specifier]["color"]))
+            .style("fill",
+                   (d) => backGroundRGBToString(
+                       specifierMap[d.specifier]["color"]))
             .on("click", gridCellClickHandler);
 
         g.append("text")
@@ -277,10 +322,18 @@ function updateDrawChart(svg, scale, xOffset, yOffset, data) {
             .attr("dominant-baseline", "middle")
             .attr("text-anchor", "middle")
             .attr("class", "grid-gui-gridcell")
-            .attr("fill", (d) => textColorForBackground(specifierMap[d.specifier]["color"]))
+            .attr("fill", (d) => textColorForBackground(
+                specifierMap[d.specifier]["color"]))
             .on("click", gridCellClickHandler);
     }
+}
 
+function defineNavBar(navBar) {
+    navBar.attr("id", "navbar");
+    navBar.append("a")
+        .attr("class", "navbar-brand")
+        .attr("href", "#")
+        .text("Grid Editor");
 }
 
 function defineDisplayArea(displayArea, data) {
@@ -369,7 +422,8 @@ function defineSidePanel(sidePanel) {
         .attr("celltype-selector-blue", (d) => d.color[2])
         .text((d) => d.name)
         .on("click", function(e) {
-            const specifier = d3.select(this).attr("celltype-selector-specifier");
+            const specifier = d3.select(this)
+                .attr("celltype-selector-specifier");
             const r = d3.select(this).attr("celltype-selector-red");
             const g = d3.select(this).attr("celltype-selector-green");
             const b = d3.select(this).attr("celltype-selector-blue");
@@ -378,20 +432,23 @@ function defineSidePanel(sidePanel) {
             // Deselect all other buttons
             d3.selectAll(".selector-button").attr("aria-pressed", "false");
             if (!pressed) {
-              d3.select(this).attr("aria-pressed", "true");
-              pressed = e.target.getAttribute("aria-pressed");
-              celltypeSelectorData["isEmpty"] = false;
-              celltypeSelectorData["specifier"] = specifier;
-              celltypeSelectorData["rgb"] = [r, g, b];
+                d3.select(this).attr("aria-pressed", "true");
+                pressed = e.target.getAttribute("aria-pressed");
+                celltypeSelectorData["isEmpty"] = false;
+                celltypeSelectorData["specifier"] = specifier;
+                celltypeSelectorData["rgb"] = [r, g, b];
             } else {
-              celltypeSelectorData["isEmpty"] = true;
-              celltypeSelectorData["specifier"] = null;
-              celltypeSelectorData["rgb"] = null;
+                celltypeSelectorData["isEmpty"] = true;
+                celltypeSelectorData["specifier"] = null;
+                celltypeSelectorData["rgb"] = null;
             }
-            consoleLog(`celltype-selector clicked. specifier: ${celltypeSelectorData["specifier"]}`);
+            consoleLog(`celltype-selector clicked. `
+                       `specifier: ${celltypeSelectorData["specifier"]}`);
         });
 
-    sidePanel.append("h4").text("Equilibrium Fuel Path").style("padding-bottom", "0.75em");
+    sidePanel.append("h4")
+        .text("Equilibrium Fuel Path")
+        .style("padding-bottom", "0.75em");
     const fuelPathButtonRow = sidePanel.append("div")
         .style("display", "flex")
         .style("flex-direction", "row");
@@ -406,50 +463,55 @@ function defineSidePanel(sidePanel) {
         .style("padding-right", "4.2px")
         .text("Fuel Path")
         .on("click", function(e) {
-           consoleLog("fuel_path_btn clicked. Changing cell saturation.");
-           // Remember this button state.
-           let pressed = e.target.getAttribute("aria-pressed") === "true";
-           if (!pressed) {
-              d3.select(this).attr("aria-pressed", "true");
-              fuelPathContext["isFuelPathMode"] = true;
-           } else {
-              d3.select(this).attr("aria-pressed", "false");
-              fuelPathContext["isFuelPathMode"] = false;
-           }
-           if (fuelPathContext["isFuelPathMode"]) {
-               d3.selectAll("#grid-area polygon").style("fill", function() {
-                   let r = d3.select(this).attr("gridcell-r");
-                   let g = d3.select(this).attr("gridcell-g");
-                   let b = d3.select(this).attr("gridcell-b");
-                   const desaturate = (d3.select(this).attr("gridcell-desaturate") === "true");
-                   const newDesaturate = !desaturate;
-                   d3.select(this).attr("gridcell-desaturate", newDesaturate ? "true" : "false");
-                   if (newDesaturate) {
+            consoleLog("fuel_path_btn clicked. Changing cell saturation.");
+            // Remember this button state.
+            let pressed = e.target.getAttribute("aria-pressed") === "true";
+            if (!pressed) {
+                d3.select(this).attr("aria-pressed", "true");
+                fuelPathContext["isFuelPathMode"] = true;
+            } else {
+                d3.select(this).attr("aria-pressed", "false");
+                fuelPathContext["isFuelPathMode"] = false;
+            }
+            if (fuelPathContext["isFuelPathMode"]) {
+                d3.selectAll("#grid-area polygon").style("fill", function() {
+                    let r = d3.select(this).attr("gridcell-r");
+                    let g = d3.select(this).attr("gridcell-g");
+                    let b = d3.select(this).attr("gridcell-b");
+                    const desaturate = (
+                        d3.select(this).attr("gridcell-desaturate") === "true");
+                    const newDesaturate = !desaturate;
+                    d3.select(this).attr("gridcell-desaturate",
+                                         newDesaturate ? "true" : "false");
+                    if (newDesaturate) {
                      [r, g, b] = desaturateFn([r, g, b]);
-                   }
-                   return backGroundRGBToString([r, g, b]);
-               });
-               d3.selectAll("#grid-area text").text(function() {
-                   const polygon = d3.select(this.parentNode).select("polygon");
-                   const desaturate = (polygon.attr("gridcell-desaturate") === "true");
-                   if (desaturate) {
-                     return "-";
-                   }
-                   return d3.select(this).attr("gridcell-specifier");
-               });
-               fuelPathContext["path"] = d3.select("#fuel_path_input").attr("value");
-               fuelPathContext["index"] = d3.select("#fuel_path_index").attr("value");
-           } else {
-               d3.selectAll("#grid-area polygon").style("fill", function() {
-                   let r = d3.select(this).attr("gridcell-r");
-                   let g = d3.select(this).attr("gridcell-g");
-                   let b = d3.select(this).attr("gridcell-b");
-                   return backGroundRGBToString([r, g, b]);
-               }).attr("gridcell-desaturate", "false");
-               d3.selectAll("#grid-area text").text(function() {
-                   return d3.select(this).attr("gridcell-specifier");
-               });
-           }
+                    }
+                    return backGroundRGBToString([r, g, b]);
+                });
+                d3.selectAll("#grid-area text").text(function() {
+                    const polygon = d3.select(this.parentNode).select("polygon");
+                    const desaturate = (
+                        polygon.attr("gridcell-desaturate") === "true");
+                    if (desaturate) {
+                      return "-";
+                    }
+                    return d3.select(this).attr("gridcell-specifier");
+                });
+                fuelPathContext["path"] = d3.select("#fuel_path_input")
+                    .attr("value");
+                fuelPathContext["index"] = d3.select("#fuel_path_index")
+                    .attr("value");
+            } else {
+                d3.selectAll("#grid-area polygon").style("fill", function() {
+                    let r = d3.select(this).attr("gridcell-r");
+                    let g = d3.select(this).attr("gridcell-g");
+                    let b = d3.select(this).attr("gridcell-b");
+                    return backGroundRGBToString([r, g, b]);
+                }).attr("gridcell-desaturate", "false");
+                d3.selectAll("#grid-area text").text(function() {
+                    return d3.select(this).attr("gridcell-specifier");
+                });
+            }
         });
 
     fuelPathButtonRow.append("button")
@@ -487,50 +549,23 @@ function defineSidePanel(sidePanel) {
 
 function defineMiddleContainer(middleContainer, data) {
     middleContainer.attr("id", "middle-container");
-    var displayArea = middleContainer.append("div");
+    const displayArea = middleContainer.append("div");
     defineDisplayArea(displayArea, data);
-    var sidePanel = middleContainer.append("div");
+    const sidePanel = middleContainer.append("div");
     defineSidePanel(sidePanel);
 }
 
 function defineBottomPanel(bottomPanel) {
-    var bottomBoxArea = bottomPanel
+    const bottomBoxArea = bottomPanel
         .attr("id", "bottom-box-area");
 
     bottomBoxArea.append("div")
         .style("width", "100%")
         .text("Num. Rings");
-
-    bottomBoxArea.append("div").append("button")
-        .attr("type", "button")
-        .attr("class", "my-button")
-        .text("Expand to Full Core");
-
-    bottomBoxArea.append("div").append("button")
-        .attr("type", "button")
-        .attr("class", "my-button")
-        .text("Save Grid Blueprints")
-        .on("click", () => {
-            const a = document.createElement('a');
-            const file = new Blob(["Dummy Blueprint YAML file contents"], {type: 'text/plain'});
-            a.href = URL.createObjectURL(file);
-            a.download = "my-blueprint.yaml";
-            a.click();
-            URL.revokeObjectURL(a.href);
-        });
-
-    bottomBoxArea.append("div").append("button")
-        .attr("type", "button")
-        .attr("class", "my-button")
-        .attr("id", "apply_button")
-        .text("Help");
-
-    bottomBoxArea.append("div").append("button")
-        .attr("type", "button")
-        .attr("class", "my-button")
-        .attr("id", "apply_button")
-        .text("Save Image...");
-
+    bottomBoxArea.append("div");
+    bottomBoxArea.append("div");
+    bottomBoxArea.append("div");
+    bottomBoxArea.append("div");
     bottomBoxArea.append("div").append("input")
         .attr("type", "number")
         .attr("id", "numRings")
@@ -541,42 +576,8 @@ function defineBottomPanel(bottomPanel) {
         .attr("value", 5)
         .attr("title", "Select how many rings of the grid to display");
 
-    const modeOptions = ["Specifier", "(i,j)", "(Ring, Position)"];
-    var modeSelector = bottomBoxArea.append("div").append("select")
-        .style("width", "100%")
-        .style("height", "90%")
-        .style("text-align", "center");
-
-    modeSelector // Add a button
-        .selectAll("myOptions") // Next 4 lines add 6 options = 6 colors
-        .data(modeOptions)
-        .enter()
-        .append("option")
-        .text((d) => (d)) // text showed in the menu
-        .attr("value", (d) => (d)) // corresponding value returned by the button
-        .on("change", () => {
-            // recover the option that has been chosen
-            const selectedOption = modeSelector.property("value");
-            // refer to https://www.d3-graph-gallery.com/graph/interactivity_button.html
-
-            // run the updateChart function with this selected option
-            // Put the function here
-            let comm = new CommAPI("update_graph", (ret)=>{alert("The returned value is " + ret.results["n"])});
-            comm.call({n: selectedOption});
-            // updateChart(selectedOption)
-        });
-
-    bottomBoxArea.append("div").append("label")
-        .attr("for", "open_blueprint_btn")
-        .attr("class", "my-button")
-        .style("width", "100%")
-        .style("text-align", "center")
-        .text("Open Grid Blueprints")
-        .append("input")
-        .attr("id", "open_blueprint_btn")
-        .attr("type", "file")
-        .attr("class", "invisible");
-
+    bottomBoxArea.append("div");
+    bottomBoxArea.append("div");
     bottomBoxArea.append("div");
     bottomBoxArea.append("div");
 
@@ -588,7 +589,7 @@ function defineBottomPanel(bottomPanel) {
         .on("click", () => {
             // Update the number of rings.
             const numRings = d3.select("#numRings").property("value");
-            const data_dict = {"geomtype": "hex"};
+            const dataDict = {"geomtype": "hex"};
             const points = [];
             const ijList = numRingsToIjList(numRings);
             for (let [i, j] of ijList) {
@@ -596,14 +597,14 @@ function defineBottomPanel(bottomPanel) {
                     {"i": i, "j": j, "specifier": "-"}
                 );
             }
-            data_dict["points"] = points;
-            data_dict["specifierMap"] = specifierMap;
+            dataDict["points"] = points;
             const displayAreaSvg = d3.select("#grid-area");
             displayAreaSvg.selectAll("g").remove();
-            updateDrawChart(displayAreaSvg, 1.0, 0, 0, data_dict);
+            updateDrawChart(displayAreaSvg, 1.0, 0, 0, dataDict);
         });
 
-//    bottomBoxArea.append("div");
+
+    bottomBoxArea.append("div");
     bottomBoxArea.append("button")
         .attr("type", "button")
         .attr("class", "my-button")
@@ -611,33 +612,30 @@ function defineBottomPanel(bottomPanel) {
         .text("Export points")
         .on("click", () => {
             // Export ASCII Map.
-            const comm = new CommAPI("test", () => { consoleLog("points export complete."); });
+            const comm = new CommAPI("test",
+                () => { consoleLog("points export complete."); });
             const points = [];
             d3.selectAll("#grid-area polygon").each(function() {
-              const point = {};
-              point["i"] = parseInt(d3.select(this).attr("gridcell-i"));
-              point["j"] = parseInt(d3.select(this).attr("gridcell-j"));
-              point["specifier"] = d3.select(this).attr("gridcell-specifier");
-              points.push(point);
+                const point = {};
+                point["i"] = parseInt(d3.select(this).attr("gridcell-i"));
+                point["j"] = parseInt(d3.select(this).attr("gridcell-j"));
+                point["specifier"] = d3.select(this).attr("gridcell-specifier");
+                points.push(point);
             })
             comm.call({"points": points});
         });
-    bottomBoxArea.append("button")
-        .attr("type", "button")
-        .attr("class", "my-button")
-        .attr("id", "apply_button")
-        .text("New Grid Blueprints");
 }
 
 function consoleLog(logStr) {
-  consoleLogContents += "\n" + logStr;
-  const debugConsole = d3.select("#debug-console");
-  if (debugConsole) {
-    debugConsole.property("value", consoleLogContents);
-    // Force it to scroll to the bottom.
-    const scrollHeight = debugConsole.property("scrollHeight");
-    debugConsole.property("scrollTop", scrollHeight);
-  }
+/** Logs to the debug console at the bottom of the UI. */
+    consoleLogContents += "\n" + logStr;
+    const debugConsole = d3.select("#debug-console");
+    if (debugConsole) {
+        debugConsole.property("value", consoleLogContents);
+        // Force the debug console to scroll to the bottom.
+        const scrollHeight = debugConsole.property("scrollHeight");
+        debugConsole.property("scrollTop", scrollHeight);
+    }
 }
 
 function defineDebugPanel(debugPanel) {
