@@ -165,6 +165,7 @@ def _getNeutronicsBlockParams():
                 units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
                 o'clock.  See TP1-1.9.31-RPT-0010 for more details.
             """,
+            categories=[parameters.Category.pinQuantities],
             saveToDB=True,
             default=None,
         )
@@ -173,6 +174,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxesAdj",
             units="",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
         )
@@ -181,6 +183,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxesGamma",
             units="g/s/cm$^2$",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
         )
@@ -372,6 +375,7 @@ def _getNeutronicsBlockParams():
                 "heating results applies."
             ),
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
@@ -387,6 +391,7 @@ def _getNeutronicsBlockParams():
             units="W/cm",
             description="Pin linear neutron heat rate. This is the neutron heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
@@ -402,6 +407,7 @@ def _getNeutronicsBlockParams():
             units="W/cm",
             description="Pin linear gamma heat rate. This is the gamma heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
