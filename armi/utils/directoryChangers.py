@@ -131,6 +131,9 @@ class DirectoryChanger:
         initialPath = self.initial
         destinationPath = self.destination
         self._transferFiles(initialPath, destinationPath, self._filesToMove)
+        if not self.outputPath == self.initial:
+            destinationPath = self.outputPath
+            self._transferFiles(initialPath, destinationPath, self._filesToMove)
 
     def retrieveFiles(self):
         """
@@ -156,6 +159,8 @@ class DirectoryChanger:
         shutil.copytree(self.destination, recoveryPath)
 
     def _createOutputDirectory(self):
+        if self.outputPath == self.initial:
+            return
         if not os.path.exists(self.outputPath):
             runLog.extra(f"Creating output folder: {self.outputPath}")
             try:
