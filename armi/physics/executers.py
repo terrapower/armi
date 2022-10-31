@@ -184,7 +184,11 @@ class DefaultExecuter(Executer):
         inputs, outputs = self._collectInputsAndOutputs()
         state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"
         dirName = self.options.interfaceName or self.options.label
-        outputDir = os.path.join(pathTools.armiAbsPath(os.getcwd()), state, dirName)
+        cycleNodeStamp = "{self.r.p.cycle:03d}{self.r.p.timeNode:03d}"
+        if cycleNodeStamp in self.cs["dumpSnapshot"]:
+            outputDir = os.path.join(pathTools.armiAbsPath(os.getcwd()), state, dirName)
+        else:
+            outputDir = None
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()

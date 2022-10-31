@@ -402,9 +402,9 @@ class Inspector:
 
         self.addQuery(
             lambda: self.cs["runType"] == operators.RunTypes.SNAPSHOTS
-            and not (self.cs["dumpSnapshot"] or self.cs["defaultSnapshots"]),
+            and not (self.cs["runSnapshot"] or self.cs["defaultSnapshots"]),
             "The Snapshots operator was specified, but no dump snapshots were chosen."
-            "Please specify snapshot steps with the `dumpSnapshot` setting.",
+            "Please specify snapshot steps with the `runSnapshot` setting.",
             "",
             self.NO_ACTION,
         )

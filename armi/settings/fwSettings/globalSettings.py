@@ -64,6 +64,7 @@ CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
+CONF_RUN_SNAPSHOT = "runSnapshot"
 CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_FRESH_FEED_TYPE = "freshFeedType"
@@ -444,10 +445,17 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_DUMP_SNAPSHOT,
             default=[],
-            label="Detailed Reactor Snapshots",
+            label="Dump Detailed Reactor Snapshots",
             description="List of snapshots to dump detailed reactor analysis data. Can "
-            "be used to perform follow-on analysis (i.e., reactivity coefficient "
+            "be used to perform follow-on analysis (e.g., reactivity coefficient "
             "generation).",
+        ),
+        setting.Setting(
+            CONF_RUN_SNAPSHOT,
+            default=[],
+            label="Detailed Reactor Snapshots",
+            description="List of snapshots to perform detailed reactor analysis, "
+            "e.g., reactivity coefficient calculations.",
         ),
         setting.Setting(
             CONF_DO_ORIFICED_TH,
@@ -495,7 +503,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0,
             label="Start Cycle",
             description="Cycle number to continue calculation from. Database will "
-            "load from the time step just before. For snapshots use `dumpSnapshot`.",
+            "load from the time step just before. For snapshots use `runSnapshot`.",
             oldNames=[
                 ("loadCycle", None),
             ],

@@ -349,10 +349,10 @@ class Interface:
 
         if cycle is None and node is None:
             return True
-        if not self.cs["dumpSnapshot"]:
+        if not self.cs["runSnapshot"]:
             return True
 
-        for cnStamp in self.cs["dumpSnapshot"]:
+        for cnStamp in self.cs["runSnapshot"]:
             ci, ni = snapshotInterface.extractCycleNodeFromStamp(cnStamp)
             if cycle is None and ni == node:
                 # case where only node counts (like in equilibrium cases)

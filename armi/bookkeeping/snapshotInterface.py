@@ -25,7 +25,7 @@ What in particular is done is dependent on the case settings and the collection 
 * You may want to run extra long-running physics simulations only at a few time points (e.g. BOL, EOL). This
   is useful for detailed transient analysis, or other follow-on analysis.
 
-Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defaultSnapshots``.
+Snapshots can be requested through the settings: ``runSnapshot`` and/or ``defaultSnapshots``.
 """
 from armi import interfaces
 from armi import runLog
@@ -53,7 +53,7 @@ class SnapshotInterface(interfaces.Interface):
 
     def interactEveryNode(self, cycle, node):
         snapText = getCycleNodeStamp(cycle, node)  # CCCNNN
-        if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
+        if self.cs["runSnapshot"] and snapText in self.cs["runSnapshot"]:
             self.o.snapshotRequest(cycle, node)
 
     def activateDefaultSnapshots(self):
@@ -67,11 +67,11 @@ class SnapshotInterface(interfaces.Interface):
 
         # determine if there are new snapshots to add to the setings file
         for snapT in snapText:
-            if snapT not in self.cs["dumpSnapshot"]:
+            if snapT not in self.cs["runSnapshot"]:
                 runLog.info(
                     "Adding default snapshot {0} to snapshot queue.".format(snapT)
                 )
-                self.cs["dumpSnapshot"] = self.cs["dumpSnapshot"] + [snapT]
+                self.cs["runSnapshot"] = self.cs["runSnapshot"] + [snapT]
 
     def _getSnapTimesEquilibrium(self):
         """Set BOEC, MOEC, EOEC snapshots."""
