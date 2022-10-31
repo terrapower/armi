@@ -345,10 +345,14 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
         self.cs = cs
+        self.snapshotList = cs["dumpSnapshot"]
 
     def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
+
+        cycleNodeStamp = "{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
+        self.dumpSnapshot = cycleNodeStamp in self.snapshotList
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):

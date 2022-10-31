@@ -52,7 +52,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         self.interactAllBOL()
 
         # figure out which snapshots to run in. Parse the CCCNNN settings
-        snapshots = [(int(i[:3]), int(i[3:])) for i in self.cs["dumpSnapshot"]]
+        snapshots = [(int(i[:3]), int(i[3:])) for i in self.cs["runSnapshot"]]
 
         # update the snapshot requests if the user chose to load from a specific cycle/node
         dbi = self.getInterface("database")

@@ -125,7 +125,7 @@ def getCycleNodeStamp(cycle, node):
 
     See Also
     --------
-    isRequestedDetailPoint : compares a cycle,node to the dumpSnapshots list.
+    isRequestedDetailPoint : compares a cycle,node to the runSnapshots list.
     extractCycleNodeFromStamp : does the opposite
     """
     return "{0:03d}{1:03d}".format(cycle, node)
