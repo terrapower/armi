@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Tests for the Database3 class
-"""
+r""" Tests for the Database3 class"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
-import os
 import subprocess
 import unittest
 
 import h5py
 import numpy
 
-from armi import context
-from armi.bookkeeping.db import _getH5File, database3
-from armi.reactor import grids
+from armi.bookkeeping.db import _getH5File
+from armi.bookkeeping.db import database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
@@ -42,7 +40,7 @@ class TestDatabase3(unittest.TestCase):
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
         )
 
-        self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: database3.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
@@ -206,7 +204,7 @@ class TestDatabase3(unittest.TestCase):
         )
 
         # create a db based on the cs
-        dbi = database3.DatabaseInterface(r, cs)
+        dbi = DatabaseInterface(r, cs)
         dbi.initDB(fName="reloadingDB.h5")
         db = dbi.database
 
@@ -242,7 +240,7 @@ class TestDatabase3(unittest.TestCase):
         )
 
         # create a db based on the cs
-        dbi = database3.DatabaseInterface(r, cs)
+        dbi = DatabaseInterface(r, cs)
         dbi.initDB(fName="reloadingDB.h5")
         db = dbi.database
 
@@ -447,7 +445,7 @@ class TestDatabase3(unittest.TestCase):
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
-        database3._writeAttrs(
+        database3.Database3._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
@@ -470,8 +468,10 @@ class TestDatabase3(unittest.TestCase):
                 "@/c01n00/attrs/0_fakeBigData",
             )
 
-            # actually exercise the _resolveAttrs function
-            attrs = database3._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
+            # exercise the _resolveAttrs function
+            attrs = database3.Database3._resolveAttrs(
+                tnGroup["layout/serialNum"].attrs, tnGroup
+            )
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
 
             keys = sorted(db2.keys())
@@ -617,102 +617,6 @@ class TestDatabase3(unittest.TestCase):
         bp = self.db.loadBlueprints()
         self.assertIsNone(bp.nuclideFlags)
         self.assertEqual(len(bp.assemblies), 0)
-
-
-class TestLocationPacking(unittest.TestCase):
-    r"""Tests for database location"""
-
-    def setUp(self):
-        self.td = TemporaryDirectoryChanger()
-        self.td.__enter__()
-
-    def tearDown(self):
-        self.td.__exit__(None, None, None)
-
-    def test_locationPacking(self):
-        # pylint: disable=protected-access
-        loc1 = grids.IndexLocation(1, 2, 3, None)
-        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
-        loc3 = grids.MultiIndexLocation(None)
-        loc3.append(grids.IndexLocation(7, 8, 9, None))
-        loc3.append(grids.IndexLocation(10, 11, 12, None))
-
-        locs = [loc1, loc2, loc3]
-        tp, data = database3._packLocations(locs)
-
-        self.assertEqual(tp[0], database3.LOC_INDEX)
-        self.assertEqual(tp[1], database3.LOC_COORD)
-        self.assertEqual(tp[2], database3.LOC_MULTI + "2")
-
-        unpackedData = database3._unpackLocations(tp, data)
-
-        self.assertEqual(unpackedData[0], (1, 2, 3))
-        self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-        self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
-
-    def test_locationPackingOlderVersions(self):
-        # pylint: disable=protected-access
-        for version in [1, 2]:
-            loc1 = grids.IndexLocation(1, 2, 3, None)
-            loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
-            loc3 = grids.MultiIndexLocation(None)
-            loc3.append(grids.IndexLocation(7, 8, 9, None))
-            loc3.append(grids.IndexLocation(10, 11, 12, None))
-
-            locs = [loc1, loc2, loc3]
-            tp, data = database3._packLocations(locs, minorVersion=version)
-
-            self.assertEqual(tp[0], "IndexLocation")
-            self.assertEqual(tp[1], "CoordinateLocation")
-            self.assertEqual(tp[2], "MultiIndexLocation")
-
-            unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
-
-            self.assertEqual(unpackedData[0], (1, 2, 3))
-            self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-            self.assertEqual(unpackedData[2][0].tolist(), [7, 8, 9])
-            self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
-
-    def test_locationPackingOldVersion(self):
-        # pylint: disable=protected-access
-        version = 3
-
-        loc1 = grids.IndexLocation(1, 2, 3, None)
-        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
-        loc3 = grids.MultiIndexLocation(None)
-        loc3.append(grids.IndexLocation(7, 8, 9, None))
-        loc3.append(grids.IndexLocation(10, 11, 12, None))
-
-        locs = [loc1, loc2, loc3]
-        tp, data = database3._packLocations(locs, minorVersion=version)
-
-        self.assertEqual(tp[0], "I")
-        self.assertEqual(tp[1], "C")
-        self.assertEqual(tp[2], "M:2")
-
-        unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
-
-        self.assertEqual(unpackedData[0], (1, 2, 3))
-        self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-        self.assertEqual(unpackedData[2][0], (7, 8, 9))
-        self.assertEqual(unpackedData[2][1], (10, 11, 12))
-
-    def test_close(self):
-        intendedFileName = "xyz.h5"
-
-        db = database3.Database3(intendedFileName, "w")
-        self.assertEqual(db._fileName, intendedFileName)
-        self.assertIsNone(db._fullPath)  # this isn't set until the db is opened
-
-        db.open()
-        self.assertEqual(
-            db._fullPath, os.path.join(context.getFastPath(), intendedFileName)
-        )
-
-        db.close()  # this should move the file out of the FAST_PATH
-        self.assertEqual(
-            db._fullPath, os.path.join(os.path.abspath("."), intendedFileName)
-        )
 
 
 if __name__ == "__main__":
