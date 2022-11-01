@@ -8,6 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. Split 3 classes in ``da5abase3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
 #. TBD
 
 Bug fixes

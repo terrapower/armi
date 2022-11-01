@@ -19,7 +19,6 @@ import unittest
 import h5py
 import numpy as np
 
-from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.compareDB3 import (
     _compareAuxData,
     _diffSimpleData,
@@ -28,6 +27,7 @@ from armi.bookkeeping.db.compareDB3 import (
     DiffResults,
     OutputWriter,
 )
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs, TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -94,7 +94,7 @@ class TestCompareDB3(unittest.TestCase):
         dbs = []
         for i in range(2):
             # create the tests DB
-            dbi = database3.DatabaseInterface(r, o.cs)
+            dbi = DatabaseInterface(r, o.cs)
             dbi.initDB(fName=self._testMethodName + str(i) + ".h5")
             db = dbi.database
 
@@ -138,7 +138,7 @@ class TestCompareDB3(unittest.TestCase):
             )
 
             # create the tests DB
-            dbi = database3.DatabaseInterface(r, cs)
+            dbi = DatabaseInterface(r, cs)
             dbi.initDB(fName=self._testMethodName + str(nCycles) + ".h5")
             db = dbi.database
 

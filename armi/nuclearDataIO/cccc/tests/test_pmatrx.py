@@ -220,7 +220,7 @@ class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
     """
     Tests that show you can read and write pmatrx files from ascii libraries.
 
-    NOTES
+    Notes
     -----
     This runs all the tests from TestPmatrx.
     """
