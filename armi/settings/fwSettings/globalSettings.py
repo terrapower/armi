@@ -64,7 +64,7 @@ CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
-CONF_RUN_SNAPSHOT = "runSnapshot"
+CONF_RUN_SNAPSHOT = "runDetailedSnapshot"
 CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_FRESH_FEED_TYPE = "freshFeedType"
@@ -503,7 +503,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0,
             label="Start Cycle",
             description="Cycle number to continue calculation from. Database will "
-            "load from the time step just before. For snapshots use `runSnapshot`.",
+            "load from the time step just before. For snapshots use `runDetailedSnapshot`.",
             oldNames=[
                 ("loadCycle", None),
             ],

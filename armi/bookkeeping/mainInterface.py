@@ -168,7 +168,7 @@ class MainInterface(interfaces.Interface):
                 # clean intermediate XS
                 os.remove(fileName)
 
-        for snapText in self.cs["runSnapshot"]:
+        for snapText in self.cs["runDetailedSnapshot"]:
             # snapText is a CCCNNN with C=cycle and N=node
             cycle = int(snapText[0:3])
             node = int(snapText[3:])
