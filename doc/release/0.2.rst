@@ -8,8 +8,9 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Copy physics kernel inputs and outputs to directories organized by cycle and time step number (e.g., c2n1) to retain all important files from a simulation and avoid overwriting them. Changed the `dumpSnapshot` setting name to `runDetailedSnapshot`. `dumpSnapshot` is now used to specify the statepoints at which the physics kernel I/O is to be dumped. 
 #. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
+#. Copy physics kernel I/O to directories organized by cycle and time step number (e.g., c2n1) to retain files from a simulation and avoid overwriting them. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
+#. Changed the `dumpSnapshot` setting name to `runDetailedSnapshot`. `dumpSnapshot` is now used to specify the statepoints at which the physics kernel I/O is to be dumped. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
 #. TBD
 
 Bug fixes
