@@ -75,7 +75,7 @@ setup(
     ],
     extras_require={
         "mpi": ["mpi4py"],
-        "grids": ["wxpython"],
+        "grids": ["wxpython<=4.1.1"],
         "memprof": ["psutil"],
         "dev": [
             "mako",

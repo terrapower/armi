@@ -26,7 +26,8 @@ from armi import __version__ as version
 from armi import interfaces
 from armi import runLog
 from armi import settings
-from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
+from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.reactor import grids
 from armi.reactor.flags import Flags
@@ -440,6 +441,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         mock = MockInterface(o.r, o.cs, None)
 
+        # pylint: disable=unused-argument
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
             # suseptable to cancelation of errors off by one.
