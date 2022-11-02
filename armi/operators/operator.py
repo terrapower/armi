@@ -30,6 +30,8 @@ import os
 import re
 import shutil
 import time
+import collections
+from tabulate import tabulate
 
 from armi import context
 from armi import interfaces
@@ -376,10 +378,16 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.r.p.timeNode = timeNode
         self.interactAllEveryNode(cycle, timeNode)
         # perform tight coupling if requested
-        if self.cs["numCoupledIterations"]:
-            for coupledIteration in range(self.cs["numCoupledIterations"]):
+        if self.cs["tightCoupling"]:
+            self.convergenceSummary = collections.defaultdict(list)
+            for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
+                self._tightCouplingOldValues()
                 self.interactAllCoupled(coupledIteration)
+                converged = self._computeTightCouplingConvergence()
+                if converged:
+                    break
+            self._printTightCouplingReport()
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
@@ -614,6 +622,42 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
+
+    def _tightCouplingOldValues(self):
+        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+        for interface in activeInterfaces:
+            interface.tightCouplingOldValue = interface.getTightCouplingValue()
+
+    def _computeTightCouplingConvergence(self):
+        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+        convergence = []
+        for interface in activeInterfaces:
+            if interface.tightCouplingOldValue is not None:
+                key = interface.name+": "+interface.tightCouplingConvergeOn
+                value = abs(interface.tightCouplingOldValue - interface.getTightCouplingValue())
+                self.convergenceSummary[key].append(value)
+                if value > interface.tightCouplingTolerance:
+                    convergence.append(False)
+                else:
+                    convergence.append(True)
+        
+        self._printTightCouplingReport() # it's usually useful to print convergence progress as it unfolds
+        return all(convergence)
+    
+    def _checkTightCouplingConvergence(self):
+        for interface,convergenceList in self.convergenceSummary.items():
+            for value in convergenceList:
+                if value > interface.tightCouplingTolerance:
+                    # one of the interfaces is not converged
+                    return False
+        # all interfaces are converged!
+        return True
+
+    def _printTightCouplingReport(self):
+        runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
+        runLog.info(
+            tabulate(self.convergenceSummary, headers="keys", showindex=True, tablefmt="armi")
+        )
 
     def interactAllError(self):
         """Interact when an error is raised by any other interface. Provides a wrap-up option on the way to a crash."""
@@ -1060,4 +1104,4 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""
-        return self.cs["looseCoupling"] or self.cs["numCoupledIterations"] > 0
+        return self.cs["tightCoupling"]

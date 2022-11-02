@@ -48,7 +48,6 @@ settings:
     armi.reactor.reactors: info
   nCycles: 6
   nodeGroup: OnlineNodes,TP
-  numCoupledIterations: 0
   outputFileExtension: png
   percentNaReduction: 10.0
   power: 100000000.0

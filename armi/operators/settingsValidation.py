@@ -478,12 +478,11 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupling iterations selected.".format(
-                self.cs["numCoupledIterations"]
-            ),
-            "1 coupling iteration doubles run time (2 triples, etc). Do you want to use 0 instead? ",
-            lambda: self._assignCS("numCoupledIterations", 0),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingMaxNumIters"] != 15),
+            "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
+            "Assuming you meant to set tightCoupling: True.",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(

@@ -153,6 +153,11 @@ class Interface:
         self.cs = settings.getMasterCs() if cs is None else cs
         self.r = r
         self.o = r.o if r else None
+        # default interface variables used for tight coupling
+        self.tightCouplingTolerance = 1e-4
+        self.tightCouplingVariables = None
+        self.tightCouplingConvergeOn = None
+        self.tightCouplingOldValue = None
 
     def __repr__(self):
         return "<Interface {0}>".format(self.name)
@@ -308,6 +313,10 @@ class Interface:
 
     def interactCoupled(self, iteration):
         """Called repeatedly at each time node/subcycle when tight physics couping is active."""
+        pass
+
+    def getTightCouplingValue(self):
+        """abstract method to retrive the value in which tight coupling is to converge on"""
         pass
 
     def interactError(self):

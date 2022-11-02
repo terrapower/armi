@@ -765,8 +765,8 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
         "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
     )
     report.setData(
-        "Loose Physics Coupling Enabled",
-        "{}".format(bool(cs["looseCoupling"])),
+        "Tight Physics Coupling Enabled",
+        "{}".format(bool(cs["tightCoupling"])),
         coreDesignTable,
         report.DESIGN,
     )

@@ -64,6 +64,9 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
+        # for tight coupling, overwrite base class
+        self.tightCouplingVariables = ["keff", "power"]
+        self.tightCouplingConvergeOn = "keff"
 
     @staticmethod
     def getHistoryParams():
@@ -222,6 +225,12 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         executer.run()
 
         GlobalFluxInterface.interactCoupled(self, iteration)
+
+    def getTightCouplingValue(self):
+        if self.tightCouplingConvergeOn == "keff":
+            return self.r.core.p.keff
+        else:
+            return None
 
     @staticmethod
     def getOptionsCls():

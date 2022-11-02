@@ -76,7 +76,8 @@ CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_MPI_TASKS_PER_NODE = "mpiTasksPerNode"
 CONF_N_CYCLES = "nCycles"
-CONF_NUM_COUPLED_ITERATIONS = "numCoupledIterations"
+CONF_TIGHT_COUPLING = "tightCoupling"
+CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PLOTS = "plots"
@@ -95,7 +96,6 @@ CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_HCF_CORETYPE = "HCFcoretype"
-CONF_LOOSE_COUPLING = "looseCoupling"
 CONF_T_IN = "Tin"
 CONF_T_OUT = "Tout"
 CONF_DEFERRED_INTERFACES_CYCLE = "deferredInterfacesCycle"
@@ -565,12 +565,16 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of blocks with control for a REBUS poison search",
         ),
         setting.Setting(
-            CONF_NUM_COUPLED_ITERATIONS,
-            default=0,
-            label="Tight Coupling Iterations",
-            description="Number of tight coupled physics iterations to occur at each "
-            "timestep",
-            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
+            CONF_TIGHT_COUPLING,
+            default=False,
+            label="Tight Coupling",
+            description="Boolean to turn on/off tight coupling",
+        ),
+        setting.Setting(
+            CONF_TIGHT_COUPLING_MAX_ITERS,
+            default=15,
+            label="Maximum number of iterations for tight coupling.",
+            description="Maximum number of iterations for tight coupling."
         ),
         setting.Setting(
             CONF_OPERATOR_LOCATION,
@@ -711,14 +715,6 @@ def defineSettings() -> List[setting.Setting]:
             description="Switch to apply different sets of hot channel factors based "
             "on design being analyzed",
             options=["TWRC", "TWRP", "TWRC-HEX"],
-        ),
-        setting.Setting(
-            CONF_LOOSE_COUPLING,
-            default=False,
-            label="Activate Loose Physics Coupling",
-            description="Update material densities and dimensions after running "
-            "thermal-hydraulics. Note: Thermal-hydraulics calculation is needed "
-            "to perform the loose physics coupling calculation.",
         ),
         setting.Setting(
             CONF_T_IN,
