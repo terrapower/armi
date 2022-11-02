@@ -352,7 +352,10 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.symmetry = reactor.core.symmetry
 
         cycleNodeStamp = "{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
-        self.dumpSnapshot = cycleNodeStamp in self.snapshotList
+        if self.snapshotList is not None:
+            self.dumpSnapshot = cycleNodeStamp in self.snapshotList
+        else:
+            self.dumpSnapshot = False
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):
