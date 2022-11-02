@@ -14,9 +14,11 @@ Interface outputs
 Physics kernel outputs
     If ARMI executes an external physics kernel during a run, its associated output files are often available in the
     working directory. These files are typically read by ARMI during the run, and relevant data is transferred onto the
-    reactor model (and ends up in the ARMI **database**). The files are stored in folders organized by cycle and time 
-    step number (e.g., c2n1 for cycle 2, step 1). Within each cXnY folder, files are stored in folders organized by the 
-    label or name of the Executer that uses them.
+    reactor model (and ends up in the ARMI **database**). If the user desires to retain all of the inputs and outputs 
+    associated with the physics kernel runs for a given time step, this can be specified with the ``dumpSnapshot`` setting.
+    For any time step specified in the list under ``dumpSnapshot``, a ``cXnY/`` folder will be created, and ARMI will store all 
+    inputs and outputs associated with each physics kernel executed at this time step in a folder inside of ``cXnY/``. 
+    The format for specifying a state point is 00X00Y for cycle X, step Y.
 
 Together the output fully define the analyzed
 ARMI case.
