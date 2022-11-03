@@ -32,6 +32,12 @@ import shutil
 import time
 import collections
 from tabulate import tabulate
+from numpy.linalg import norm
+from numpy import (
+    subtract,
+    inf,
+    ndarray,
+)
 
 from armi import context
 from armi import interfaces
@@ -135,6 +141,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._maxBurnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
+        self.convergenceSummary = None
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
@@ -634,9 +641,18 @@ class Operator:  # pylint: disable=too-many-public-methods
         for interface in activeInterfaces:
             if interface.tightCouplingOldValue is not None:
                 key = interface.name+": "+interface.tightCouplingConvergeOn
-                value = abs(interface.tightCouplingOldValue - interface.getTightCouplingValue())
-                self.convergenceSummary[key].append(value)
-                if value > interface.tightCouplingTolerance:
+                if isinstance(interface.tightCouplingOldValue, float):
+                    eps = abs(interface.tightCouplingOldValue - interface.getTightCouplingValue())
+                elif isinstance(interface.tightCouplingOldValue, ndarray):
+                    newValue = interface.getTightCouplingValue()
+                    epsVec = []
+                    for old,new in zip(interface.tightCouplingOldValue, newValue):
+                        epsVec.append(norm(subtract(old,new), ord=2))
+                    eps = norm(epsVec, ord=inf)
+                else:
+                    raise RuntimeError("Only currently set up to handle either floats or lists... Sorry.")
+                self.convergenceSummary[key].append(eps)
+                if eps > interface.tightCouplingTolerance:
                     convergence.append(False)
                 else:
                     convergence.append(True)

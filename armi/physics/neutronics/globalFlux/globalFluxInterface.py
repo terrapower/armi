@@ -229,8 +229,19 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def getTightCouplingValue(self):
         if self.tightCouplingConvergeOn == "keff":
             return self.r.core.p.keff
-        else:
-            return None
+        if self.tightCouplingConvergeOn == "power":
+            scaledCorePowerDistribution = []
+            for a in self.r.core.getChildren():
+                scaledPower = []
+                assemPower = sum(b.p.power for b in a)
+                for b in a:
+                    scaledPower.append(b.p.power/assemPower)
+                
+                scaledCorePowerDistribution.append(scaledPower)
+            
+            return numpy.array(scaledCorePowerDistribution, dtype=object)
+
+        return None
 
     @staticmethod
     def getOptionsCls():
