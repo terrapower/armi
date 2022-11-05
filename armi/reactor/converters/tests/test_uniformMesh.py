@@ -68,7 +68,6 @@ class TestAssemblyUniformMesh(unittest.TestCase):
                 )
             prevB = newB
 
-
         newAssemNumberDens = newAssem.getNumberDensities()
         for nuc, val in sourceAssem.getNumberDensities().items():
             self.assertAlmostEqual(val, newAssemNumberDens[nuc])
@@ -95,9 +94,10 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.assertNotEqual(len(newAssem), len(sourceAssem))
         newHeights = [b.getHeight() for b in newAssem]
-        sourceHeights = [ b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)]
+        sourceHeights = [
+            b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)
+        ]
         self.assertListEqual(newHeights, sourceHeights)
-
 
     def test_makeAssemUniformMeshParamMappingSameMesh(self):
         """Tests creating a uniform mesh assembly while mapping both number densities and specified parameters."""
