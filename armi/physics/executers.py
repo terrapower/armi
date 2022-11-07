@@ -56,7 +56,7 @@ class ExecutionOptions:
     interface : str
         A name for the interface calling the Executer that may be used to organize the
         input/output files generated within sub-folders under the working directory.
-    dumpSnapshot : bool
+    savePhysicsFiles : bool
         Dump the physics kernel I/O files from the execution to a dedicated directory that
         will not be overwritten so they will be available after the run.
     applyResultsToReactor : bool
@@ -77,7 +77,7 @@ class ExecutionOptions:
         self.interfaceName = None
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
-        self.dumpSnapshot = False
+        self.savePhysicsFiles = False
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.label}>"
@@ -188,7 +188,7 @@ class DefaultExecuter(Executer):
         inputs, outputs = self._collectInputsAndOutputs()
         state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"
         dirName = self.options.interfaceName or self.options.label
-        if self.options.dumpSnapshot:
+        if self.options.savePhysicsFiles:
             outputDir = os.path.join(pathTools.armiAbsPath(os.getcwd()), state, dirName)
         else:
             outputDir = None

@@ -64,7 +64,7 @@ CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
-CONF_RUN_SNAPSHOT = "runDetailedSnapshot"
+CONF_PHYSICS_FILES = "savePhysicsFiles"
 CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_FRESH_FEED_TYPE = "freshFeedType"
@@ -80,6 +80,7 @@ CONF_N_CYCLES = "nCycles"
 CONF_NUM_COUPLED_ITERATIONS = "numCoupledIterations"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
+CONF_PHYSICS_IO = "savePhysicsIO"
 CONF_PLOTS = "plots"
 CONF_POWER = "power"
 CONF_RUN_TYPE = "runType"
@@ -451,11 +452,11 @@ def defineSettings() -> List[setting.Setting]:
             "generation).",
         ),
         setting.Setting(
-            CONF_RUN_SNAPSHOT,
+            CONF_PHYSICS_FILES,
             default=[],
-            label="Detailed Reactor Snapshots",
-            description="List of snapshots to perform detailed reactor analysis, "
-            "e.g., reactivity coefficient calculations.",
+            label="Dump Snapshot Files",
+            description="List of snapshots to dump reactor physics kernel input and "
+            "output files. Can be used to perform follow-on analysis.",
         ),
         setting.Setting(
             CONF_DO_ORIFICED_TH,
