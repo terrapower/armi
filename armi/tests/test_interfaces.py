@@ -33,7 +33,7 @@ class TestCodeInterface(unittest.TestCase):
     def test_isRequestedDetailPoint(self):
         """Tests notification of detail points."""
         cs = settings.Settings()
-        newSettings = {"runDetailedSnapshot": ["000001", "995190"]}
+        newSettings = {"dumpSnapshot": ["000001", "995190"]}
         cs = cs.modified(newSettings=newSettings)
 
         i = DummyInterface(None, cs)

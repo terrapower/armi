@@ -80,7 +80,6 @@ CONF_N_CYCLES = "nCycles"
 CONF_NUM_COUPLED_ITERATIONS = "numCoupledIterations"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
-CONF_PHYSICS_IO = "savePhysicsIO"
 CONF_PLOTS = "plots"
 CONF_POWER = "power"
 CONF_RUN_TYPE = "runType"
@@ -446,10 +445,9 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_DUMP_SNAPSHOT,
             default=[],
-            label="Dump Detailed Reactor Snapshots",
-            description="List of snapshots to dump detailed reactor analysis data. Can "
-            "be used to perform follow-on analysis (e.g., reactivity coefficient "
-            "generation).",
+            label="Detailed Reactor Snapshots",
+            description="List of snapshots to perform detailed reactor analysis, "
+            "such as reactivity coefficient generation.",
         ),
         setting.Setting(
             CONF_PHYSICS_FILES,
@@ -504,7 +502,7 @@ def defineSettings() -> List[setting.Setting]:
             default=0,
             label="Start Cycle",
             description="Cycle number to continue calculation from. Database will "
-            "load from the time step just before. For snapshots use `runDetailedSnapshot`.",
+            "load from the time step just before. For snapshots use `dumpSnapshot`.",
             oldNames=[
                 ("loadCycle", None),
             ],
