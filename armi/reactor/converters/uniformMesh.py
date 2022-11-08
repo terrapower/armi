@@ -792,6 +792,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     BLOCK_PARAM_MAPPING_CATEGORIES = [
         parameters.Category.detailedAxialExpansion,
         parameters.Category.multiGroupQuantities,
+        parameters.Category.pinQuantities,
     ]
 
     def __init__(self, cs=None, calcReactionRates=True):
