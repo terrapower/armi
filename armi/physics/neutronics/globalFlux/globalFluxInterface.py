@@ -308,7 +308,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadElevation = None
         self.loadPadLength = None
         self.cs = None
-        self.savePhysicsFileList = None
+        self.savePhysicsFilesList = None
 
         self._geomType: geometry.GeomType
         self.symmetry: str
