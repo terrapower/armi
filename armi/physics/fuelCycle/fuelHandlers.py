@@ -38,7 +38,6 @@ from armi.reactor.flags import Flags
 from armi.utils.mathematics import findClosest, resampleStepwise
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
-from armi.physics.fuelCycle import translationFunctions
 
 
 class FuelHandler:
