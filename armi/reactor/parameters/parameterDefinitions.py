@@ -61,20 +61,16 @@ class Category:
     """A "namespace" for storing parameter categories."""
 
     assignInBlueprints = "assign in blueprints"
-
     retainOnReplacement = "retain on replacement"
-
     volumeIntegrated = "volumeIntegrated"
-
+    pinQuantities = "pinQuantities"
     fluxQuantities = "fluxQuantities"
-
     multiGroupQuantities = "multi-group quantities"
+    neutronics = "neutronics"
 
     # This is used to tell the UniformMesh converter to map these parameters back and
-    # forth between the source and destination meshs.
+    # forth between the source and destination meshes.
     detailedAxialExpansion = "detailedAxialExpansion"
-
-    neutronics = "neutronics"
 
 
 class ParamLocation(enum.Flag):
