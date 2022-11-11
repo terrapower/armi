@@ -10,6 +10,7 @@ What's new in ARMI
 ------------------
 #. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
 #. Add pinQuantities parameter category for blockParams that have spatial distribution within a block.
+#. Use r.core.p.axialMesh instead of r.core.refAssem.getAxialMesh() for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
 #. TBD
 
 Bug fixes
