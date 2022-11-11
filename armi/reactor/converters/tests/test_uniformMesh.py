@@ -79,6 +79,26 @@ class TestAssemblyUniformMesh(unittest.TestCase):
                 newAssem.getNumberOfAtoms(nuc) / sourceAssem.getNumberOfAtoms(nuc), 1.0
             )
 
+    def test_makeAssemWithUniformMeshSubmesh(self):
+        """If sourceAssem has submesh, check that newAssem splits into separate blocks"""
+
+        # assign axMesh to blocks randomly
+        sourceAssem = self.r.core.refAssem
+        for i, b in enumerate(sourceAssem):
+            b.p.axMesh = i % 2 + 1
+
+        self.r.core.updateAxialMesh()
+        newAssem = self.converter.makeAssemWithUniformMesh(
+            sourceAssem, self.r.core.p.axialMesh[1:]
+        )
+
+        self.assertNotEqual(len(newAssem), len(sourceAssem))
+        newHeights = [b.getHeight() for b in newAssem]
+        sourceHeights = [
+            b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)
+        ]
+        self.assertListEqual(newHeights, sourceHeights)
+
     def test_makeAssemUniformMeshParamMappingSameMesh(self):
         """Tests creating a uniform mesh assembly while mapping both number densities and specified parameters."""
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)

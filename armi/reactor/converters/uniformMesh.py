@@ -131,11 +131,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
+            self.convReactor.core.updateAxialMesh()
             self._setParamsToUpdate()
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
                 homogAssem = self.makeAssemWithUniformMesh(
                     assem,
-                    self.convReactor.core.refAssem.getAxialMesh(),
+                    self.convReactor.core.p.axialMesh[1:],
                     self.blockParamNames,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
