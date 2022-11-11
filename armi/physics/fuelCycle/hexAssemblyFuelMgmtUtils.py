@@ -14,10 +14,16 @@
 """
 TODO: JOHN
 
+TODO: pylint armi\physics\fuelCycle\hexAssemblyFuelMgmtUtils.py | grep -v consider-using-f-stri | grep -v missing-raises-doc
+    (Do it, the code was a mess to start.)
 """
+import math
+
+import numpy
 
 from armi import runLog
 from armi.reactor.flags import Flags
+from armi.utils.mathematics import findClosest
 
 
 def buReducingAssemblyRotation(fh):
@@ -40,7 +46,6 @@ def buReducingAssemblyRotation(fh):
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
         # no point in rotation if there's no pin detail
         if aNow in hist.getDetailAssemblies():
-
             rot = getOptimalAssemblyOrientation(aNow, aPrev)
             aNow.rotatePins(rot)  # rot = integer between 0 and 5
             numRotated += 1
@@ -424,68 +429,6 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     return convergent, conWidths
 
 
-def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
-    r"""
-    Expands simple ringSchedule input into full-on location schedule
-
-    Parameters
-    ----------
-    core : Core object
-        Fully initialized Core object, for a hex assembly reactor.
-
-    ringSchedule : list
-        List of ring bounds that is required to be an even number of entries.  These
-        entries then are used in a from - to approach to add the rings.  The from ring will
-        always be included.
-
-    circularRingOrder : str
-        From the circularRingOrder setting. Valid values include angle and distanceSmart,
-        anything else will
-
-    Returns
-    -------
-    locationSchedule : list
-    """
-
-    def squaredDistanceFromOrigin(a):
-        origin = numpy.array([0.0, 0.0, 0.0])
-        p = numpy.array(a.spatialLocator.getLocalCoordinates())
-        return ((p - origin) ** 2).sum()
-
-    def assemAngle(a):
-        x, y, _ = a.spatialLocator.getLocalCoordinates()
-        return math.atan2(y, x)
-
-    # start by expanding the user-input eqRingSchedule list into a list containing
-    # all the rings as it goes.
-    ringList = _buildEqRingScheduleHelper(ringSchedule, core.getNumRings())
-
-    # now build the locationSchedule ring by ring using this ringSchedule
-    lastRing = 0
-    locationSchedule = []
-    for ring in ringList:
-        assemsInRing = core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
-        if circularRingOrder == "angle":
-            sorter = lambda a: assemAngle(a)
-        elif circularRingOrder == "distanceSmart":
-            if lastRing == ring + 1:
-                # converging. Put things on the outside first.
-                sorter = lambda a: -squaredDistanceFromOrigin(a)
-            else:
-                # diverging. Put things on the inside first.
-                sorter = lambda a: squaredDistanceFromOrigin(a)
-        else:
-            # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-            sorter = lambda a: squaredDistanceFromOrigin(a)
-
-        assemsInRing = sorted(assemsInRing, key=sorter)
-        for a in assemsInRing:
-            locationSchedule.append(a.getLocation())
-        lastRing = ring
-
-    return locationSchedule
-
-
 def _buildEqRingScheduleHelper(ringSchedule, numRings):
     r"""
     turns ringScheduler into explicit list of rings
@@ -550,3 +493,67 @@ def _buildEqRingScheduleHelper(ringSchedule, numRings):
         lastRing = ring
 
     return newList
+
+
+def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
+    r"""
+    Expands simple ringSchedule input into full-on location schedule
+
+    Parameters
+    ----------
+    core : Core object
+        Fully initialized Core object, for a hex assembly reactor.
+
+    ringSchedule : list
+        List of ring bounds that is required to be an even number of entries.  These
+        entries then are used in a from - to approach to add the rings.  The from ring will
+        always be included.
+
+    circularRingOrder : str
+        From the circularRingOrder setting. Valid values include angle and distanceSmart,
+        anything else will
+
+    Returns
+    -------
+    locationSchedule : list
+    """
+
+    def squaredDistanceFromOrigin(
+        a,
+    ):  # TODO: JOHN Move out of function, to be testable.
+        origin = numpy.array([0.0, 0.0, 0.0])
+        p = numpy.array(a.spatialLocator.getLocalCoordinates())
+        return ((p - origin) ** 2).sum()
+
+    def assemAngle(a):  # TODO: JOHN Move out of function, to be testable.
+        x, y, _ = a.spatialLocator.getLocalCoordinates()
+        return math.atan2(y, x)
+
+    # start by expanding the user-input eqRingSchedule list into a list containing
+    # all the rings as it goes.
+    ringList = _buildEqRingScheduleHelper(ringSchedule, core.getNumRings())
+
+    # now build the locationSchedule ring by ring using this ringSchedule
+    lastRing = 0
+    locationSchedule = []
+    for ring in ringList:
+        assemsInRing = core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
+        if circularRingOrder == "angle":
+            sorter = lambda a: assemAngle(a)
+        elif circularRingOrder == "distanceSmart":
+            if lastRing == ring + 1:
+                # converging. Put things on the outside first.
+                sorter = lambda a: -squaredDistanceFromOrigin(a)
+            else:
+                # diverging. Put things on the inside first.
+                sorter = lambda a: squaredDistanceFromOrigin(a)
+        else:
+            # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
+            sorter = lambda a: squaredDistanceFromOrigin(a)
+
+        assemsInRing = sorted(assemsInRing, key=sorter)
+        for a in assemsInRing:
+            locationSchedule.append(a.getLocation())
+        lastRing = ring
+
+    return locationSchedule

@@ -31,11 +31,10 @@ import warnings
 
 import numpy
 
-
 from armi import runLog
 from armi.utils.customExceptions import InputError
 from armi.reactor.flags import Flags
-from armi.utils.mathematics import findClosest, resampleStepwise
+from armi.utils.mathematics import resampleStepwise
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 
@@ -600,7 +599,7 @@ class FuelHandler:
                 return minDiff[1]
 
         if not minDiff[1]:
-            # warning("can't find assembly in targetRing %d with close %s to %s" % (targetRing,param,compareTo),'findAssembly')
+            # can't find assembly in targetRing with close param to compareTo
             pass
 
         if findMany:
@@ -647,7 +646,6 @@ class FuelHandler:
         -------
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
-
         """
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
@@ -674,9 +672,7 @@ class FuelHandler:
                         assemListTmp2.append(a)
                     # make the list of lists of assemblies
                     assemblyList[i] = assemListTmp2
-
         else:
-
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
                 assemList = self.r.core.sfp.getChildren()
@@ -875,7 +871,6 @@ class FuelHandler:
         processMoveList : Converts a stored list of moves into a functional list of assemblies to swap
         makeShuffleReport : Creates the file that is processed here
         """
-
         # read moves file
         moves = self.readMoves(explicitRepeatShuffles)
         # get the correct cycle number
@@ -924,7 +919,6 @@ class FuelHandler:
         repeatShufflePattern : reads this file and repeats the shuffling
         outage : creates the moveList in the first place.
         makeShuffleReport : writes the file that is read here.
-
         """
         try:
             f = open(fname)
@@ -1037,9 +1031,7 @@ class FuelHandler:
         See Also
         --------
         repeatShufflePattern
-        mcnpInterface.getMoveCards
         processMoveList
-
         """
         if alreadyDone is None:
             alreadyDone = []
@@ -1157,13 +1149,10 @@ class FuelHandler:
         --------
         makeShuffleReport : writes the file that is being processed
         repeatShufflePattern : uses this to repeat shuffles
-
         """
         alreadyDone = []
         loadChains = []  # moves that have discharges
-        loadChargeTypes = (
-            []
-        )  # the assembly types (strings) that should be used in a load chain.
+        loadChargeTypes = []  # the assembly types (str) to be used in a load chain.
         loopChains = []  # moves that don't have discharges
         enriches = []  # enrichments of each loadChain
         loadNames = []  # assembly name of each load assembly (to read from SFP)
