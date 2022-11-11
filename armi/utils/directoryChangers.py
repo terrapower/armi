@@ -55,16 +55,29 @@ class DirectoryChanger:
     dumpOnException : bool, optional
         Flag to tell system to retrieve the entire directory if an exception
         is raised within a the context manager.
+    outputPath : str, optional
+        Output path for filesToRetrieve. If None, default is the initial working directory
+        from which the DirectoryChanger is called.
     """
 
     def __init__(
-        self, destination, filesToMove=None, filesToRetrieve=None, dumpOnException=True
+        self,
+        destination,
+        filesToMove=None,
+        filesToRetrieve=None,
+        dumpOnException=True,
+        outputPath=None,
     ):
         """Establish the new and return directories"""
         self.initial = pathTools.armiAbsPath(os.getcwd())
         self.destination = None
+        self.outputPath = None
         if destination is not None:
             self.destination = pathTools.armiAbsPath(destination)
+        if outputPath is not None:
+            self.outputPath = pathTools.armiAbsPath(outputPath)
+        else:
+            self.outputPath = self.initial
         self._filesToMove = filesToMove or []
         self._filesToRetrieve = filesToRetrieve or []
         self._dumpOnException = dumpOnException
@@ -79,6 +92,7 @@ class DirectoryChanger:
     def __exit__(self, exc_type, exc_value, traceback):
         """At the termination of a with command, navigate back to the original directory."""
         runLog.debug("Returning to directory {}".format(self.initial))
+        self._createOutputDirectory()
         if exc_type is not None and self._dumpOnException:
             runLog.info(
                 "An exception was raised within a DirectoryChanger. "
@@ -117,6 +131,9 @@ class DirectoryChanger:
         initialPath = self.initial
         destinationPath = self.destination
         self._transferFiles(initialPath, destinationPath, self._filesToMove)
+        if not self.outputPath == self.initial:
+            destinationPath = self.outputPath
+            self._transferFiles(initialPath, destinationPath, self._filesToMove)
 
     def retrieveFiles(self):
         """
@@ -124,8 +141,10 @@ class DirectoryChanger:
         """
         initialPath = self.destination
         destinationPath = self.initial
-        fileList = self._filesToRetrieve
-        self._transferFiles(initialPath, destinationPath, fileList)
+        self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
+        if not self.outputPath == self.initial:
+            destinationPath = self.outputPath
+            self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
 
     def _retrieveEntireFolder(self):
         """
@@ -138,6 +157,24 @@ class DirectoryChanger:
         folderName = os.path.split(self.destination)[1]
         recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
         shutil.copytree(self.destination, recoveryPath)
+
+    def _createOutputDirectory(self):
+        if self.outputPath == self.initial:
+            return
+        if not os.path.exists(self.outputPath):
+            runLog.extra(f"Creating output folder: {self.outputPath}")
+            try:
+                os.makedirs(self.outputPath)
+            except OSError as ee:
+                # even though we checked exists, this still fails
+                # sometimes when multiple MPI nodes try
+                # to make the dirs due to I/O delays
+                runLog.error(
+                    f"Failed to make output folder: {self.outputPath}. "
+                    f"Exception: {ee}"
+                )
+        else:
+            runLog.extra(f"Output folder already exists: {self.outputPath}")
 
     @staticmethod
     def _transferFiles(initialPath, destinationPath, fileList):
@@ -169,7 +206,7 @@ class DirectoryChanger:
         if not fileList:
             return
         if not os.path.exists(destinationPath):
-            os.mkdir(destinationPath)
+            os.makedirs(destinationPath)
         for pattern in fileList:
             if isinstance(pattern, tuple):
                 # allow renames in transit
@@ -206,10 +243,20 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     """
 
     def __init__(
-        self, root=None, filesToMove=None, filesToRetrieve=None, dumpOnException=True
+        self,
+        root=None,
+        filesToMove=None,
+        filesToRetrieve=None,
+        dumpOnException=True,
+        outputPath=None,
     ):
         DirectoryChanger.__init__(
-            self, root, filesToMove, filesToRetrieve, dumpOnException
+            self,
+            root,
+            filesToMove,
+            filesToRetrieve,
+            dumpOnException,
+            outputPath,
         )
 
         # If no root dir is given, the default path comes from context.getFastPath, which
@@ -252,7 +299,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
         )
 
     def __enter__(self):
-        os.mkdir(self.destination)
+        os.makedirs(self.destination)
         return DirectoryChanger.__enter__(self)
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -278,11 +325,17 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
         filesToMove=None,
         filesToRetrieve=None,
         dumpOnException=True,
+        outputPath=None,
     ):
         if not destination:
             raise ValueError("A destination directory must be provided.")
         DirectoryChanger.__init__(
-            self, destination, filesToMove, filesToRetrieve, dumpOnException
+            self,
+            destination,
+            filesToMove,
+            filesToRetrieve,
+            dumpOnException,
+            outputPath,
         )
 
     def __enter__(self):
