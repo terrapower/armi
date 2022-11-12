@@ -103,10 +103,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
-        blockNeedsFPs = (
-            representativeBlock.hasFlags(Flags.FUEL)
-            and representativeBlock.getLumpedFissionProductCollection()
-        )
+        blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() != None
+
         self.modelFissionProducts = (
             blockNeedsFPs and self.cs["fpModel"] != "noFissionProducts"
         )

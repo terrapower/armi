@@ -198,6 +198,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
+        newReactor.o = (
+            sourceReactor.o
+        )  # This is needed later for geometry transformation
 
         # check if the sourceReactor has been modified from the blueprints
         if sourceReactor.core.isFullCore and not newReactor.core.isFullCore:
