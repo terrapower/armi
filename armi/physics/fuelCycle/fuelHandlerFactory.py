@@ -13,9 +13,8 @@
 # limitations under the License.
 
 """factory for the FuelHandler"""
-from armi.operators import RunTypes
-from armi.utils import directoryChangers, pathTools
 from armi.physics.fuelCycle import fuelHandlers
+from armi.utils import directoryChangers, pathTools
 
 
 def fuelHandlerFactory(operator):

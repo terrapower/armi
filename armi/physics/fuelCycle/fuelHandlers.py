@@ -24,7 +24,6 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
-import math
 import os
 import re
 import warnings
@@ -32,11 +31,11 @@ import warnings
 import numpy
 
 from armi import runLog
-from armi.utils.customExceptions import InputError
-from armi.reactor.flags import Flags
-from armi.utils.mathematics import resampleStepwise
+from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
+from armi.reactor.flags import Flags
+from armi.utils.customExceptions import InputError
 
 
 class FuelHandler:
@@ -119,16 +118,16 @@ class FuelHandler:
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
         if self.cs["fluxRecon"] and self.cs["assemblyRotationAlgorithm"]:
-            # Rotate assemblies ONLY IF at least some assemblies have pin detail (enabled by fluxRecon)
+            # Rotate assemblies ONLY IF at least some assemblies have pin detail
             # The user can choose the algorithm method name directly in the settings
-            if hasattr(self, self.cs["assemblyRotationAlgorithm"]):
-                rotationMethod = getattr(self, self.cs["assemblyRotationAlgorithm"])
+            if hasattr(rotAlgos, self.cs["assemblyRotationAlgorithm"]):
+                rotationMethod = getattr(rotAlgos, self.cs["assemblyRotationAlgorithm"])
                 rotationMethod()
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
                     'Change your "assemblyRotationAlgorithm" setting'
-                    "".format(self, self.cs["assemblyRotationAlgorithm"])
+                    "".format(rotAlgos, self.cs["assemblyRotationAlgorithm"])
                 )
 
         # inform the reactor of how many moves occurred so it can put the number in the database.
@@ -168,9 +167,7 @@ class FuelHandler:
         return moved
 
     def chooseSwaps(self, shuffleFactors=None):
-        """
-        Moves the fuel around or otherwise processes it between cycles.
-        """
+        """Moves the fuel around or otherwise processes it between cycles."""
         raise NotImplementedError
 
     @staticmethod

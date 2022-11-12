@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
+TODO
+
 Tests some capabilities of the fuel handling tools,
 specific to hex-assembly reactors.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import hexAssemblyFuelMgmtUtils as hexUtils
-from armi.physics.fuelCycle.tests.test_fuelHandlers import addSomeDetailAssemblies
-from armi.physics.fuelCycle.tests.test_fuelHandlers import TestFuelHandler
-from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import ArmiTestHelper, TEST_ROOT
 from armi.utils import directoryChangers
@@ -117,42 +115,6 @@ class TestHexAssemMgmtTools(ArmiTestHelper):
         )
         self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
         self.assertEqual(widths, zeroWidths)
-
-
-# TODO: JOHN! LOCATION AND NAME!
-class TestFuelHandlerMgmtTools(TestFuelHandler):
-    def test_buReducingAssemblyRotation(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
-        newSettings = {"assemblyRotationStationary": True}
-        self.o.cs = self.o.cs.modified(newSettings=newSettings)
-        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-
-        # apply dummy pin-level data to allow intelligent rotation
-        for b in assem.getBlocks(Flags.FUEL):
-            b.breakFuelComponentsIntoIndividuals()
-            b.initializePinLocations()
-            b.p.percentBuMaxPinLocation = 10
-            b.p.percentBuMax = 5
-            b.p.linPowByPin = list(reversed(range(b.getNumPins())))
-
-        addSomeDetailAssemblies(hist, [assem])
-        rotNum = b.getRotationNum()
-        hexUtils.buReducingAssemblyRotation(fh)
-        self.assertNotEqual(b.getRotationNum(), rotNum)
-
-    def test_simpleAssemblyRotation(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        newSettings = {"assemblyRotationStationary": True}
-        self.o.cs = self.o.cs.modified(newSettings=newSettings)
-        hist = self.o.getInterface("history")
-        assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
-        addSomeDetailAssemblies(hist, assems)
-        b = self.o.r.core.getFirstBlock(Flags.FUEL)
-        rotNum = b.getRotationNum()
-        hexUtils.simpleAssemblyRotation(fh)
-        hexUtils.simpleAssemblyRotation(fh)
-        self.assertEqual(b.getRotationNum(), rotNum + 2)
 
 
 if __name__ == "__main__":
