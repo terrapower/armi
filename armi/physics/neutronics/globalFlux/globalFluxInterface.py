@@ -352,7 +352,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
 
-        cycleNodeStamp = "{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
+        cycleNodeStamp = f"{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
         if self.savePhysicsFilesList is not None:
             self.savePhysicsFiles = cycleNodeStamp in self.savePhysicsFilesList
         else:
