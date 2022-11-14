@@ -29,7 +29,13 @@ from armi.tests import ISOAA_PATH
 
 
 # pylint: disable=abstract-method
-class MockParams:
+class MockReactorParams:
+    def __init__(self):
+        self.cycle = 0
+        self.timeNode = 0
+
+
+class MockCoreParams:
     pass
 
 
@@ -38,13 +44,14 @@ class MockCore:
         # just pick a random geomType
         self.geomType = geometry.GeomType.CARTESIAN
         self.symmetry = "full"
-        self.p = MockParams()
+        self.p = MockCoreParams()
 
 
 class MockReactor:
     def __init__(self):
         self.core = MockCore()
         self.o = None
+        self.p = MockReactorParams()
 
 
 class MockGlobalFluxInterface(globalFluxInterface.GlobalFluxInterface):
