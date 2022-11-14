@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-TODO: JOHN
+Algorithms used to rotate hex assemblies in a reactor core.
 
-TODO: pylint armi\physics\fuelCycle\hexAssemblyFuelMgmtUtils.py | grep -v consider-using-f-stri | grep -v missing-raises-doc
-    (Do it, the code was a mess to start.)
+Notes
+-----
+These algorithms are defined in assemblyRotationAlgorithms.py, but they are used in:
+``FuelHandler.outage()``.
+
+.. warning:: Nothing should do in this file, but rotation algorithms.
 """
 from armi import runLog
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (

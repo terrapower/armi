@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-TODO: JOHN
+This is a selection of fuel management utilities that seem generally useful enough to
+keep in ARMI, but they still only apply to hex assembly reactors.
 
-TODO: pylint armi\physics\fuelCycle\hexAssemblyFuelMgmtUtils.py | grep -v consider-using-f-stri | grep -v missing-raises-doc
-    (Do it, the code was a mess to start.)
+Notes
+-----
+We are keeping these in ARMI even if they appear unused internally.
 """
 import math
 
@@ -246,9 +248,8 @@ def buildRingSchedule(
 
     # step 1: build the base rings
     numSteps = int((abs(dischargeRing - chargeRing) + 1) * (1.0 - coarseFactor))
-    if numSteps < 2:
-        # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
-        numSteps = 2
+    # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
+    numSteps = max(numSteps, 2)
 
     baseRings = [
         int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
@@ -260,7 +261,7 @@ def buildRingSchedule(
             newBaseRings.append(br)
 
     baseRings = newBaseRings
-    # baseRings = list(set(baseRings)) # eliminate duplicates. but ruins order.
+
     # build widths
     widths = []
     for i, ring in enumerate(baseRings[:-1]):
@@ -327,9 +328,8 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     """
     # step 1: build the convergent rings
     numSteps = int((chargeRing - dischargeRing + 1) * (1.0 - coarseFactor))
-    if numSteps < 2:
-        # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
-        numSteps = 2
+    # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
+    numSteps = max(numSteps, 2)
     convergent = [
         int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
     ]
@@ -413,6 +413,47 @@ def _buildEqRingScheduleHelper(ringSchedule, numRings):
     return newList
 
 
+def _squaredDistanceFromOrigin(a):
+    """Get the squared distance from the origin of an assembly.
+
+    Notes
+    -----
+    Just a helper for ``buildEqRingSchedule()``
+
+    Parameters
+    ----------
+    a: Assembly
+        Fully initialize Assembly object; already part of a reactor core.
+
+    Returns
+    -------
+    float: Distance from reactor center
+    """
+    origin = numpy.array([0.0, 0.0, 0.0])
+    p = numpy.array(a.spatialLocator.getLocalCoordinates())
+    return ((p - origin) ** 2).sum()
+
+
+def _assemAngle(a):
+    """Get the angle of the Assembly, in the reactor core.
+
+    Notes
+    -----
+    Just a helper for ``buildEqRingSchedule()``
+
+    Parameters
+    ----------
+    a: Assembly
+        Fully initialize Assembly object; already part of a reactor core.
+
+    Returns
+    -------
+    float: Angle position of assembly around the reactor core
+    """
+    x, y, _ = a.spatialLocator.getLocalCoordinates()
+    return math.atan2(y, x)
+
+
 def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
     r"""
     Expands simple ringSchedule input into full-on location schedule
@@ -433,20 +474,8 @@ def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
 
     Returns
     -------
-    locationSchedule : list
+    list: location schedule
     """
-
-    def squaredDistanceFromOrigin(
-        a,
-    ):  # TODO: JOHN Move out of function, to be testable.
-        origin = numpy.array([0.0, 0.0, 0.0])
-        p = numpy.array(a.spatialLocator.getLocalCoordinates())
-        return ((p - origin) ** 2).sum()
-
-    def assemAngle(a):  # TODO: JOHN Move out of function, to be testable.
-        x, y, _ = a.spatialLocator.getLocalCoordinates()
-        return math.atan2(y, x)
-
     # start by expanding the user-input eqRingSchedule list into a list containing
     # all the rings as it goes.
     ringList = _buildEqRingScheduleHelper(ringSchedule, core.getNumRings())
@@ -457,17 +486,17 @@ def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
     for ring in ringList:
         assemsInRing = core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
         if circularRingOrder == "angle":
-            sorter = lambda a: assemAngle(a)
+            sorter = lambda a: _assemAngle(a)
         elif circularRingOrder == "distanceSmart":
             if lastRing == ring + 1:
                 # converging. Put things on the outside first.
-                sorter = lambda a: -squaredDistanceFromOrigin(a)
+                sorter = lambda a: -_squaredDistanceFromOrigin(a)
             else:
                 # diverging. Put things on the inside first.
-                sorter = lambda a: squaredDistanceFromOrigin(a)
+                sorter = _squaredDistanceFromOrigin
         else:
             # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-            sorter = lambda a: squaredDistanceFromOrigin(a)
+            sorter = _squaredDistanceFromOrigin
 
         assemsInRing = sorted(assemsInRing, key=sorter)
         for a in assemsInRing:
