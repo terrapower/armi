@@ -59,7 +59,7 @@ class Test_NeutronicsPlugin(TestPlugin):
         """Check specialized settings can build objects as values and write."""
         cs = caseSettings.Settings()
         yaml = YAML()
-        inp = yaml.YAML(typ="unsafe", pure=True).load(io.StringIO(XS_EXAMPLE))
+        inp = yaml.load(io.StringIO(XS_EXAMPLE))
         cs[CONF_CROSS_SECTION] = inp
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].geometry, "0D")
         fname = "test_setting_obj_io_.yaml"
@@ -71,7 +71,7 @@ class Test_NeutronicsPlugin(TestPlugin):
         """Check specialized settings can go back and forth."""
         cs = caseSettings.Settings()
         yaml = YAML()
-        inp = yaml.YAML(typ="unsafe", pure=True).load(io.StringIO(XS_EXAMPLE))
+        inp = yaml.load(io.StringIO(XS_EXAMPLE))
         cs[CONF_CROSS_SECTION] = inp
         cs[CONF_CROSS_SECTION] = cs[CONF_CROSS_SECTION]
         fname = "test_setting_obj_io_round.yaml"
