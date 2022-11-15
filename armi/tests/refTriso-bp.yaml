@@ -15,16 +15,16 @@ blocks:
             blends: 
               - triso particle
             blendFracs: 
-              - 0.350
+              - 0.70
             material: Graphite
             Tinput: 600.0
             Thot: 600.0
-            mult: 20.0 
+            mult: 2
             id: 0.0
             od: 1.2446
         duct: 
             shape: Hexagon
-            material: HT9
+            material: Cu
             Tinput: 600.0
             Thot: 600.0
             ip: 9.0
@@ -32,7 +32,7 @@ blocks:
             op: 10.0
         coolant: 
             shape: DerivedShape
-            material: Graphite
+            material: NaCl
             Tinput: 25.0
             Thot: 600.0
 
@@ -48,7 +48,7 @@ components:
         od: 0.010625
     buffer:
         shape: Sphere
-        material: Graphite
+        material: Lead
         Tinput: 600.0
         Thot: 600.0
         id: kernel.od
@@ -56,7 +56,7 @@ components:
         od: 0.015625
     ipyc:
         shape: Sphere
-        material: Graphite
+        material: Lead
         Tinput: 600.0
         Thot: 600.0
         id: buffer.od
@@ -64,7 +64,7 @@ components:
         od: 0.017375
     sic:
         shape: Sphere
-        material: SiC
+        material: Lead
         Tinput: 600.0
         Thot: 600.0
         id: ipyc.od
@@ -72,7 +72,7 @@ components:
         od: 0.019125
     opyc:
         shape: Sphere
-        material: Graphite
+        material: Lead
         Tinput: 600.0
         Thot: 600.0
         id: sic.od
@@ -91,7 +91,7 @@ component groups:
         mult: 1
       opyc:
         mult: 1
-        
+
 
 assemblies:
     fuel a: &assembly_a
@@ -143,3 +143,17 @@ grids:
                     IC  IC  IC  OC
                   IC  IC  IC  IC  OC
         symmetry: third periodic
+
+nuclide flags:
+    B: &nuc_flags {burn: false, xs: true}
+    C: *nuc_flags
+    PB: *nuc_flags
+    ZR: *nuc_flags
+    U235: *nuc_flags
+    U238: *nuc_flags
+    CU63: *nuc_flags
+    CU65: *nuc_flags
+    CL35: *nuc_flags
+    CL37: *nuc_flags
+    CL37: *nuc_flags
+    NA23: *nuc_flags

@@ -193,10 +193,18 @@ class ComponentBlueprint(yamlize.Object):
                     # build the background object
                     constructedObject = components.factory(shape, [], kwargs)
                     # build the child objects
+                    # all grouped components have to be input with the same mult for now
+                    inputMult = None
                     for groupedComponent in group:
                         componentDesign = blueprint.componentDesigns[
                             groupedComponent.name
                         ]
+                        if inputMult is None:
+                            inputMult = componentDesign.mult 
+                        if componentDesign.mult != inputMult:
+                            raise ValueError(
+                                f"Grouped components must all have the same input mult of {inputMult}"
+                            )
                         component = componentDesign.construct(blueprint, matMods=dict())
                         # temporarily set grouped component mults to the blend fraction
                         # these will be updated based on parent component volume

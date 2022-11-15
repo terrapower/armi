@@ -29,6 +29,7 @@ from armi import settings
 from armi.reactor import reactors
 from armi import operators
 from armi.bookkeeping import db
+from armi.materials.uZr import UZr
 
 TEST_NAME = "refTriso-settings.yaml"
 
@@ -53,30 +54,85 @@ class ComponentGroupReactorTests(unittest.TestCase):
         settings.setMasterCs(cs)
         self.o.initializeInterfaces(self.r)
 
-    def test_particleFuel(self):
+        self.trisoBlock = self.o.r.core[-1][0]
+        self.trisoComponent = self.trisoBlock[0]
+        self.blockHeight = self.trisoBlock.getHeight()
+        self.expectedSingleCompactVolume = (
+            self.blockHeight * math.pi * 1.2446**2 / 4.0
+        )
+        self.blendFrac = 0.7
+        self.kernel = self.trisoComponent[0]
+        self.opyc = self.trisoComponent[-1]
+        self.compactMult = 2.0
+        self.expectedSingleCompactVolume = (
+            self.blockHeight * math.pi * 1.2446**2 / 4.0
+        )
+        self.singleParticleVolume = 4.0 / 3.0 * math.pi * (self.opyc.p.od / 2) ** 3
+        self.expectedKernelFrac = 0.010625**3 / 0.021125**3
+
+    def test_triso_has_components(self):
+        self.assertEqual(len(list(self.trisoComponent.iterComponents())), 5)
+        self.assertGreater(self.trisoComponent.getMass("U235"), 0.0)
+        self.assertGreater(self.trisoBlock.getMass("U235"), 0.0)
+
+        # ensure all uranium is in the triso compact
+        uraniumMass = self.trisoBlock.getMass("U")
+        self.assertAlmostEqual(uraniumMass, self.trisoComponent.getMass("U"))
+
+    def test_background_component_has_mass(self):
         """
         Make sure composition is blended as expected
+
+        ensure the mass of the background component gets picked up
+        (in this test only the triso compact component has any Graphite)
         """
-        trisoBlock = self.o.r.core[-1][0]
-        trisoComponent = trisoBlock[0]
-        self.assertEqual(len(list(trisoComponent.iterComponents())), 5)
-        self.assertGreater(trisoComponent.getMass("U235"), 0.0)
-        self.assertGreater(trisoComponent.getMass("C"), 0.0)
+        blockCMass = self.trisoBlock.getMass("C")
+        compactCMass = self.trisoComponent.getMass("C")
+        self.assertGreater(compactCMass, 0.0)
+        self.assertGreater(blockCMass, 0.0)
+        self.assertEqual(blockCMass, compactCMass)
 
-        uraniumMass = trisoBlock.getMass("U")
-        # compute triso compact volume from blueprints dimensions
-        blockHeight = trisoBlock.getHeight()
+    def test_particle_mult(self):
+        """Make sure triso mult gets computed as expected"""
+        # check inferred mult.
+        # if the compact is supposed to be 70% triso particles by volume,
+        # how many trisos should be in one of them (ignoring compact mult)?
+        expectedMult = (
+            self.expectedSingleCompactVolume
+            * self.blendFrac
+            / self.singleParticleVolume
+        )
+        self.assertAlmostEqual(expectedMult, self.kernel.p.mult)
 
-        # expected volume of all kernels in 1 block
-        trisoVolume = blockHeight * math.pi * 1.2466 ** 2 / 4.0 * 20 * 0.350
+    def test_particle_volume(self):
 
-        # u vol frac within one kernel
-        uraniumFrac = 0.010625 ** 3 / 0.021125 ** 3
+        expectedParticleVolume = self.expectedSingleCompactVolume * self.blendFrac
+        actualParticleVolume = sum([c.getVolume() for c in self.trisoComponent])
+        self.assertAlmostEqual(expectedParticleVolume, actualParticleVolume)
 
-        # UZr is 15 g/cc with 90% U
-        expectedMass = 15.6 * 0.9 * trisoVolume * uraniumFrac
-        diff = abs(uraniumMass - expectedMass) / uraniumMass
-        self.assertLess(diff, 0.01)
+        # u vol frac within one particle
+        actualKernelFrac = self.kernel.p.od**3 / self.opyc.p.od**3
+        self.assertAlmostEqual(self.t guiexpectedKernelFrac, actualKernelFrac)
+
+    def test_check_particle_mass(self):
+        # mults need to cascade as well. So if you're looking at a single kernel
+        # it should have a mult within that compact, but the compact can
+        # also have a mult (e.g. representing number of pins) that needs
+        # to be applied properly.
+        uraniumMass = self.trisoBlock.getMass("U")
+
+        rho = UZr().density(Tc=600)
+        expectedUraniumMass = (
+            rho
+            * 0.9
+            * self.expectedSingleCompactVolume
+            * self.blendFrac
+            * self.expectedKernelFrac
+            * self.compactMult
+        )
+        self.assertAlmostEqual(expectedUraniumMass, uraniumMass)
+
+        self.assertAlmostEqual(uraniumMass, self.kernel.getMass("U") * self.compactMult)
 
     def test_db(self):
         """Show that this kind of reactor configuration can write and load from DB"""
@@ -90,8 +146,10 @@ class ComponentGroupReactorTests(unittest.TestCase):
         dbi.initDB()
         dbi.database.writeToDB(self.o.r)
 
+        dbPath = dbi.database._fullPath
+
         # read
-        dbo = db.databaseFactory(TEST_NAME.replace(".yaml", ".h5"), permission="r")
+        dbo = db.databaseFactory(dbPath, permission="r")
         with dbo:
             r = dbo.load(0, 0)
 

@@ -276,7 +276,7 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
-            math.pi * (cladID ** 2) / 4.0 * self.getNumComponents(Flags.FUEL)
+            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
@@ -755,12 +755,23 @@ class Block(composites.Composite):
         """
         Update component group mults.
 
+        This applies only to block child components that themselves have child components.
+
         They were temporarily set to the desired blend fraction during component
         construction. This derives the actual multiplicity based on the target
         blend fraction.
 
         Note that the blend fractions are applied to the hot thermally-expanded
         dimensions.
+
+        In order to account properly for the mass of the background material
+        in addition to the materials of the children, we must also shrink
+        the background component's mult.
+
+        See Also
+        --------
+        reactor.blueprints.componentBlueprint.ComponentBlueprint : sets the mults
+        reactor.blurprints.blockBlueprint.BlockBlueprint.construct : calls this
         """
         for c in self.getChildren():
             if len(c) > 1:
@@ -769,11 +780,13 @@ class Block(composites.Composite):
                 blendFrac = c[0].p.mult
                 # remove scaling by mult=blendFrac here
                 childVol = sum(subchild.getVolume() / blendFrac for subchild in c)
-                # mult should be such that subchild/backgroundVol = blendFrac
-                # so subchild * blendFrac * newMult = blendFrac * backgroundVol
+                # mult should be such that childVol/backgroundVol = blendFrac
+                # so: childVol * newMult = blendFrac * backgroundVol
                 newMult = blendFrac * backgroundVol / childVol
                 for subchild in c:
                     subchild.setDimension("mult", newMult)
+                # shrink background component to fit
+                c.setDimension("mult", c.p.mult * (1 - blendFrac))
 
     def completeInitialLoading(self, bolBlock=None):
         """
@@ -1929,14 +1942,10 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
-                if (
-                    symmetryLine
-                    in [
-                        grids.BOUNDARY_0_DEGREES,
-                        grids.BOUNDARY_120_DEGREES,
-                    ]
-                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
-                ):
+                if symmetryLine in [
+                    grids.BOUNDARY_0_DEGREES,
+                    grids.BOUNDARY_120_DEGREES,
+                ] and bool(self.core.childrenByLocator.get(upperEdgeLoc)):
                     return 2.0
         return 1.0
 
