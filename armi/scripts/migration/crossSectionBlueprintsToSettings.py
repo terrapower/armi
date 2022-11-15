@@ -133,7 +133,7 @@ def _migrateInputData(origXsInputLines):
         "mesh points per cm": CONF_MESH_PER_CM,
     }
     yaml = YAML()
-    oldXsData = yaml.load(io.StringIO("\n".join(origXsInputLines)))
+    oldXsData = yaml.YAML(typ="unsafe", pure=True).load(io.StringIO("\n".join(origXsInputLines)))
     newXsData = {}
     for xsID, xsIdData in oldXsData["cross sections"].items():
         newIdData = {}

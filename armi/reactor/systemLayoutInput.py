@@ -275,7 +275,7 @@ class SystemLayoutInput:
         consistent inputs.
         """
         yaml = YAML()
-        tree = yaml.load(stream)
+        tree = yaml.YAML(typ="unsafe", pure=True).load(stream)
         tree = INPUT_SCHEMA(tree)
         self.assemTypeByIndices.clear()
         for _systemName, system in tree[INP_SYSTEMS].items():

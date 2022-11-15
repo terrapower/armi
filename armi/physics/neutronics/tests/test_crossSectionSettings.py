@@ -159,7 +159,7 @@ class Test_XSSettings(unittest.TestCase):
     def test_yamlIO(self):
         """Ensure we can read/write this custom setting object to yaml"""
         yaml = YAML()
-        inp = yaml.load(io.StringIO(XS_EXAMPLE))
+        inp = yaml.YAML(typ="unsafe", pure=True).load(io.StringIO(XS_EXAMPLE))
         xs = XSSettingDef("TestSetting")
         xs.setValue(inp)
         self.assertEqual(xs.value["BA"].geometry, "1D slab")
@@ -167,7 +167,7 @@ class Test_XSSettings(unittest.TestCase):
         output = xs.dump()
         yaml.dump(output, outBuf)
         outBuf.seek(0)
-        inp2 = yaml.load(outBuf)
+        inp2 = yaml.YAML(typ="unsafe", pure=True).load(outBuf)
         self.assertEqual(inp.keys(), inp2.keys())
 
     def test_caseSettings(self):

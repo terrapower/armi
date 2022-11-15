@@ -208,7 +208,7 @@ class SettingsReader:
         from armi.physics.thermalHydraulics import const  # avoid circular import
 
         yaml = YAML()
-        tree = yaml.load(stream)
+        tree = yaml.YAML(typ="unsafe", pure=True).load(stream)
         if "settings" not in tree:
             raise InvalidSettingsFileError(
                 self.inputPath,

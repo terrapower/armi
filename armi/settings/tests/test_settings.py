@@ -153,12 +153,12 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         yaml = YAML()
 
-        inp = yaml.load(good_input)
+        inp = yaml.YAML(typ="unsafe", pure=True).load(good_input)
         for inputSetting, inputVal in inp.items():
             settin = [s for s in newSettings if s.name == inputSetting][0]
             settin.schema(inputVal)
 
-        inp = yaml.load(bad_input)
+        inp = yaml.YAML(typ="unsafe", pure=True).load(bad_input)
         for inputSetting, inputVal in inp.items():
             with self.assertRaises(vol.error.MultipleInvalid):
                 settin = [s for s in newSettings if s.name == inputSetting][0]

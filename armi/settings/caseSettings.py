@@ -403,7 +403,7 @@ class Settings:
         # from the settings file to know which settings are user-defined
         with open(fPath, "r") as stream:
             yaml = YAML()
-            tree = yaml.load(stream)
+            tree = yaml.YAML(typ="unsafe", pure=True).load(stream)
             userSettings = tree[settingsIO.Roots.CUSTOM]
         userSettingsNames = list(userSettings.keys())
         return userSettingsNames
