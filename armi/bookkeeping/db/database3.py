@@ -79,6 +79,7 @@ from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.reactor import systemLayoutInput
+from armi.utils import getNodesPerCycle
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
 
@@ -681,19 +682,20 @@ class Database3:
         Providing these from the client could be useful when performing snapshot runs
         or where it is expected to use results from a run using different settings and
         continue with new settings (or if blueprints are not on the database).
-        Geom is read from the database itself.
+        Geometry is read from the database itself.
 
         Parameters
         ----------
         cycle : int
-            cycle number
+            Cycle number
         node : int
-            time node
-        cs : armi.settings.Settings, optional
-            if not provided one is read from the database
-        bp : armi.reactor.Blueprints, optional
-            if not provided one is read from the database
-        statePointName : str, optional
+            Time node. If value is negative, will be indexed from EOC backwards
+            like a list.
+        cs : armi.settings.Settings (optional)
+            If not provided one is read from the database
+        bp : armi.reactor.Blueprints (optional)
+            If not provided one is read from the database
+        statePointName : str
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
@@ -719,6 +721,14 @@ class Database3:
             # apply to avoid defaults in getMasterCs calls
             settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
+
+        if node < 0:
+            numNodes = getNodesPerCycle(cs)[cycle]
+            if (node + numNodes) < 0:
+                raise ValueError(
+                    f"Node {node} specified does not exist for cycle {cycle}"
+                )
+            node = numNodes + node
 
         h5group = self.h5db[getH5GroupName(cycle, node, statePointName)]
 

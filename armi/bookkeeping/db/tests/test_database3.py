@@ -326,6 +326,15 @@ class TestDatabase3(unittest.TestCase):
 
         _r = self.db.load(0, 0, allowMissing=True)
 
+        # show that we can use negative indices to load
+        r = self.db.load(0, -2, allowMissing=True)
+        self.assertEqual(r.p.timeNode, 1)
+
+        with self.assertRaises(ValueError):
+            # makeShuffleHistory only populates 2 nodes, but the case settings
+            # defines 3, so we must check -4 before getting an error
+            self.db.load(0, -4, allowMissing=True)
+
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
