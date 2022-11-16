@@ -308,7 +308,7 @@ def __readMc2Nuclides():
     that have already been added from RIPL.
     """
     with open(os.path.join(context.RES, "mc2Nuclides.yaml"), "r") as mc2Nucs:
-        mc2Nuclides = yaml.YAML(typ="unsafe", pure=True).load(mc2Nucs)
+        mc2Nuclides = yaml.YAML().load(mc2Nucs)
 
     # now add the mc2 specific nuclideBases, and correct the mc2Ids when a > 0 and state = 0
     for name, data in mc2Nuclides.items():
@@ -400,7 +400,7 @@ def imposeBurnChain(burnChainStream):
         runLog.warning("Burn chain already imposed. Skipping reimposition.")
         return
     _burnChainImposed = True
-    burnData = yaml.YAML(typ="unsafe", pure=True).load(burnChainStream)
+    burnData = yaml.YAML().load(burnChainStream)
 
     for nucName, burnInfo in burnData.items():
         nuclide = byName[nucName]
