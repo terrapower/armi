@@ -401,7 +401,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         This reads the 2-D (x,y) indexing for assemblies. geodstCoordMap maps DIF3D
         nodal hex indexing to DIF3D GEODST indexing.
         This DIF3D GEODST indexing is different than (but similar to) the MCNP GEODST ordering.
-        See TP1-1.9.31-RPT-0010 for more details on hex ordering.
 
         For Nodal, let N be the number of assemblies. Let M be the number of
         "external hex surfaces" exposed to the outer reactor boundary (usually vacuum). M
