@@ -70,27 +70,6 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THdeltaPAccel",
-            units="Pa",
-            saveToDB=False,
-            description="Acceleration component to the pressure drop.",
-        )
-
-        pb.defParam(
-            "THdeltaPInlet",
-            units="Pa",
-            saveToDB=False,
-            description="Pressure drop at the inlet of the block.",
-        )
-
-        pb.defParam(
-            "THdeltaPOutlet",
-            units="Pa",
-            saveToDB=False,
-            description="Pressure drop at the outlet of the block.",
-        )
-
-        pb.defParam(
             "THhotChannelCladMidwallT",
             units=units.DEGC,
             saveToDB=False,
@@ -243,14 +222,6 @@ def _getBlockParams():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam(
-            "THmaxLifeTimePower",
-            units="W",
-            description="Maximum power over the lifetime of this block.",
-            default=0.0,
-            location=ParamLocation.MAX,
-        )
-
     with pDefs.createBuilder(
         default=0.0, categories=["thInterface"], saveToDB=True
     ) as pb:
@@ -386,13 +357,6 @@ def _getBlockParams():
             "THdeltaPTotal",
             units="Pa",
             description="Total pressure difference in a block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THinletCoolantVel",
-            units="m/s",
-            description="Flow velocity",
             location=ParamLocation.AVERAGE,
         )
 
