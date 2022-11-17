@@ -163,7 +163,7 @@ def _getNeutronicsBlockParams():
             description="""
                 The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
                 units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
-                o'clock.  See TP1-1.9.31-RPT-0010 for more details.
+                o'clock.
             """,
             categories=[parameters.Category.pinQuantities],
             saveToDB=True,
