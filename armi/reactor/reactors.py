@@ -2285,10 +2285,19 @@ class Core(composites.Composite):
                 )
                 self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
 
+            assems = [
+                a
+                for a in self.getAssemblies()
+                if not any(a.hasFlags(f) for f in nonUniformAssems)
+            ]
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
-                applySubMesh=False
+                assems=assems,
+                applySubMesh=False,
             )
-            self.p.axialMesh = self.findAllAxialMeshPoints()
+            self.p.axialMesh = self.findAllAxialMeshPoints(
+                assems=assems,
+                applySubMesh=True,
+            )
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
