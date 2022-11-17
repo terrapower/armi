@@ -2285,17 +2285,19 @@ class Core(composites.Composite):
                 )
                 self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
 
-            assems = [
+            # some assemblies, like control assemblies, have a non-conforming mesh
+            # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
+            uniformAssems = [
                 a
                 for a in self.getAssemblies()
                 if not any(a.hasFlags(f) for f in nonUniformAssems)
             ]
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
-                assems=assems,
+                assems=uniformAssems,
                 applySubMesh=False,
             )
             self.p.axialMesh = self.findAllAxialMeshPoints(
-                assems=assems,
+                assems=uniformAssems,
                 applySubMesh=True,
             )
 
