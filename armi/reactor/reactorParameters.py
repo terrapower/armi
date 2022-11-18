@@ -423,14 +423,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "maxTH2SigmaCladIDT",
-            units=units.DEGC,
-            description="Max 2-sigma temperature of the inner-diameter of the cladding",
-            default=0.0,
-            categories=["block-max"],
-        )
-
-        pb.defParam(
             "maxTranPCT",
             units=units.DEGC,
             description="Max Peak Clading Temperature of transients",
@@ -483,42 +475,6 @@ def defineCoreParameters():
     ) as pb:
 
         pb.defParam(
-            "assemblyPumpHead",
-            units="Pa",
-            description="Pressure drop for the max power assembly in zone",
-        )
-
-        pb.defParam(
-            "CoreAvgTOut",
-            units=units.DEGC,
-            description="Core average outlet temperature",
-        )
-
-        pb.defParam(
-            "outletTempIdeal",
-            units=units.DEGC,
-            description="Average outlet tempeture loop through all assemblies after doing TH",
-        )
-
-        pb.defParam(
-            "SCMaxDilationPressure",
-            units="Pa",
-            description="The maximum dilation pressure in the core",
-        )
-
-        pb.defParam(
-            "SCorificeEfficiency",
-            units=None,
-            description="Ratio of total flow rate for the optimized orificing scheme to total flow rate for an ideal orificing scheme",
-        )
-
-        pb.defParam(
-            "SCovercoolingRatio",
-            units=None,
-            description="Ratio of the max flow rate to the average flow rate",
-        )
-
-        pb.defParam(
             "THmaxDeltaPPump",
             units="Pa",
             description="The maximum pumping pressure rise required to pump the given mass flow rate through the rod bundle",
@@ -532,20 +488,6 @@ def defineCoreParameters():
             "THoutletTempIdeal",
             units=units.DEGC,
             description="Average outlet temperature loop through all assemblies after doing TH",
-        )
-
-        pb.defParam("vesselTemp", units=units.DEGC, description="vessel temperature")
-
-        pb.defParam(
-            "LMDT",
-            units=units.DEGC,
-            description="Log mean temperature difference in heat exchanger",
-        )
-
-        pb.defParam(
-            "peakTemperature",
-            units=units.DEGC,
-            description="peak temperature anywhere in the reactor",
         )
 
     with pDefs.createBuilder(

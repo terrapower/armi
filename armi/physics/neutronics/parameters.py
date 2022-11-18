@@ -534,10 +534,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
 
-        pb.defParam(
-            "arealPdGamma", units="MW/m^2", description="Areal gamma power density"
-        )
-
         pb.defParam("fertileBonus", units=None, description="The fertile bonus")
 
         pb.defParam(
