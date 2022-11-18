@@ -26,7 +26,6 @@ from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
-MPI_COMM = context.MPI_COMM
 
 
 class PathToolsTests(unittest.TestCase):
