@@ -92,38 +92,11 @@ def defineReactorParameters():
         )
 
         pb.defParam(
-            "eFissile",
-            units="MT",
-            description="Fissile mass required in reactor economics",
-        )
-
-        pb.defParam(
-            "eFuelCycleCost",
-            units="$/MT",
-            description="Cost of fuel cycle in an equilibrium-mode in reactor economics",
-        )
-
-        pb.defParam(
-            "eFuelCycleCostRate",
-            units="$/year",
-            description="Rate of fuel cycle cost in an equilibrium mode in reactor economics",
-        )
-
-        pb.defParam(
-            "eProduct",
-            units="MT",
-            description="Total mass of manufactured fuel in reactor economics",
-        )
-
-        pb.defParam(
             "eSWU",
             units="kgSWU",
             description="Separative work units in reactor economics",
         )
 
-        pb.defParam(
-            "eTailsMT", units="MT", description="Depleted Uranium in reactor economics"
-        )
     return pDefs
 
 
