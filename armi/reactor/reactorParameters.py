@@ -494,8 +494,6 @@ def defineCoreParameters():
             description="Core average outlet temperature",
         )
 
-        pb.defParam("CoreMdot", units="kg/s", description="Mass flow rate of full core")
-
         pb.defParam(
             "outletTempIdeal",
             units=units.DEGC,
