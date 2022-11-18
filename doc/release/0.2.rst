@@ -17,7 +17,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. TBD
+#. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
 
 
 ARMI v0.2.5
