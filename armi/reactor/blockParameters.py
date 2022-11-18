@@ -1170,13 +1170,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "powerShapePercent",
-            units="%",
-            description="Percent change in power shape when core temperature rises.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "puFrac",
             units="None",
             description="Current Pu number density relative to HM at BOL",

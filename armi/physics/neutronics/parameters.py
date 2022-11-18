@@ -234,25 +234,7 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "axialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
             "axialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutronAdj",
             units="",
             description="",
             location=ParamLocation.AVERAGE,
@@ -757,30 +739,12 @@ def _getNeutronicsBlockParams():
             saveToDB=True,
             default=None,
         )
-        pb.defParam(
-            "pointsEdgeFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at edges of the block",
-            location=ParamLocation.EDGES,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
 
         pb.defParam(
             "pointsCornerDpa",
             units="dpa",
             description="displacements per atom at corners of the block",
             location=ParamLocation.CORNERS,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpa",
-            units="dpa",
-            description="displacements per atom at edges of the block",
-            location=ParamLocation.EDGES,
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
@@ -792,15 +756,6 @@ def _getNeutronicsBlockParams():
             description="Current time derivative of the displacement per atoms at corners of the block",
             location=ParamLocation.CORNERS,
             categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at edges of the block",
-            categories=["detailedAxialExpansion", "depletion"],
-            location=ParamLocation.EDGES,
             saveToDB=True,
             default=None,
         )
