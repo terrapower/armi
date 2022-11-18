@@ -529,18 +529,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "fluxDeltaFromRef",
-            units="None",
-            description="Relative difference between the current flux and the directly-computed perturbed flux.",
-        )
-
-        pb.defParam(
-            "fluxDirect",
-            units="n/cm^2/s",
-            description="Flux is computed with a direct method",
-        )
-
-        pb.defParam(
             "fluxGamma",
             units="g/cm^2/s",
             description="Gamma scalar flux",
@@ -555,22 +543,6 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
         )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirect",
-            units="None",
-            description="Relative difference between the perturbed flux and the directly-computed perturbed flux",
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirectfluxRefWeighted", units="None", description=""
-        )
-
-        pb.defParam(
-            "fluxPerturbed", units="1/cm^2/s", description="Flux is computed by MEPT"
-        )
-
-        pb.defParam("fluxRef", units="1/cm^2/s", description="Reference flux")
 
         pb.defParam(
             "kInf",
