@@ -100,6 +100,7 @@ class PathToolsTests(unittest.TestCase):
             os.mkdir(dir2)
 
             self.assertTrue(os.path.exists(dir2))
+            pathTools.cleanPath(dir2, mpiRank=0)
             self.assertFalse(os.path.exists(dir2))
 
             # TEST 3: Delete a directory with two files inside
