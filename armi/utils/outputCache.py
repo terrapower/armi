@@ -182,7 +182,6 @@ def deleteCache(cachedFolder):
         raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
 
     cleanPath(cachedFolder)
-    context.waitAll()
 
 
 def cacheCall(
