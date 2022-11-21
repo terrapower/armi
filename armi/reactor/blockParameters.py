@@ -1051,10 +1051,4 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-    with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
-
-        pb.defParam("harmonic", units="?", description="?")
-
-        pb.defParam("harmonicAdj", units="?", description="?")
-
     return pDefs
