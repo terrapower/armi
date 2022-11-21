@@ -1053,8 +1053,6 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
 
-        pb.defParam("distortionReactivity", units="?", description="?")
-
         pb.defParam("harmonic", units="?", description="?")
 
         pb.defParam("harmonicAdj", units="?", description="?")
