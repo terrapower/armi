@@ -92,6 +92,12 @@ def defineReactorParameters():
         )
 
         pb.defParam(
+            "eFissile",
+            units="MT",
+            description="Fissile mass required in reactor economics",
+        )
+
+        pb.defParam(
             "eSWU",
             units="kgSWU",
             description="Separative work units in reactor economics",
