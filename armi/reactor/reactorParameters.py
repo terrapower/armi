@@ -213,13 +213,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "breedingRatio2",
-            units="N/A",
-            description="Ratio of fissile Burned and discharged to fissile discharged",
-            saveToDB=False,
-        )
-
-        pb.defParam(
             "critSearchSlope", units=None, description="Critical keff search slope"
         )
 
@@ -227,13 +220,6 @@ def defineCoreParameters():
             "directPertKeff",
             units=None,
             description="K-eff is computed for the perturbed case with a direct calculation",
-        )
-
-        pb.defParam(
-            "distortionReactivity",
-            units="pcm",
-            description="The reactivity effect of the current distortions",
-            default=None,
         )
 
         pb.defParam(
