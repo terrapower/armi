@@ -62,7 +62,6 @@ class Category:
 
     assignInBlueprints = "assign in blueprints"
     retainOnReplacement = "retain on replacement"
-    volumeIntegrated = "volumeIntegrated"
     pinQuantities = "pinQuantities"
     fluxQuantities = "fluxQuantities"
     multiGroupQuantities = "multi-group quantities"
