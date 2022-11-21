@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Parameter definitions for Blocks."""
-
+"""Parameter definitions for Blocks"""
 import numpy
-
 import six
 
 from armi import runLog
@@ -1004,94 +1002,6 @@ def getBlockParameterDefinitions():
             units="1/cm^5/s^2",
             description="Change in fuel temperature due to 1% rise in power.",
             location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "dilationElasticPM",
-            units="mm",
-            description="Combined elastic membrane and bending components of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationElasticT",
-            units="mm",
-            description="Thermal expansion component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationElasticTRefueling",
-            units="mm",
-            description="Thermal expansion component of duct dilation at refueling temperature (180C)",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationCreepIrrad",
-            units="mm",
-            description="Irradiation creep component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationSwellingSF",
-            units="mm",
-            description="Stress-free void swelling component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "blockAxialSwellingSF",
-            units="mm",
-            description="Axial stress-free void swelling of block",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationSwellingSE",
-            units="mm",
-            description="Stress-enhanced swelling component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationCreepTh1",
-            units="mm",
-            description="Primary thermal creep component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationCreepTh2",
-            units="mm",
-            description="Secondary thermal creep component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationTotal",
-            units="mm",
-            description="Total duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationRefueling",
-            units="mm",
-            description="Amount of duct dilation at refueling temperature (180C)",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
         )
 
         pb.defParam("displacementMAG", units="?", description="?")
