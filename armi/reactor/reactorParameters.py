@@ -283,69 +283,6 @@ def defineCoreParameters():
         pb.defParam("maxcladFCCI", units="", description="", default=0.0)
 
         pb.defParam(
-            "maxCladulof",
-            units=units.DEGC,
-            description="Max Clading Temperature in Unprotected Loss of Flow (ULOF) transient",
-        )
-
-        pb.defParam(
-            "maxCladulohs",
-            units=units.DEGC,
-            description="Max Clading Temperature in Unprotected Loss of Heat Sink (ULOHS) transient",
-        )
-
-        pb.defParam(
-            "maxCladutop",
-            units=units.DEGC,
-            description="Max Clading Temperature in Unprotected Transient Overpower (UTOP) transient",
-        )
-
-        pb.defParam(
-            "maxCladptop",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected Transient Overpower (PTOP) transient",
-        )
-
-        pb.defParam(
-            "maxCladlockrotor",
-            units=units.DEGC,
-            description="Max Clading Temperature in lock rotor transient",
-        )
-        pb.defParam(
-            "maxCladplohs",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected loss of heat sink (PLOHS) transient",
-        )
-        pb.defParam(
-            "maxCladplof",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected loss of flow (PLOF) transient",
-        )
-        pb.defParam(
-            "maxCladplof2pump",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected loss of 2 primary pumps (PLOF2pump) transient",
-        )
-
-        pb.defParam(
-            "maxCladoscillation",
-            units=units.DEGC,
-            description="Max Clading Temperature in oscillation-driven transient",
-        )
-
-        pb.defParam(
-            "maxCladpowerdefect",
-            units=units.DEGC,
-            description="Max Clading Temperature in powerdefect transient",
-        )
-
-        pb.defParam(
-            "maxCladsteadystate",
-            units=units.DEGC,
-            description="Max Clading Temperature in steady state transient",
-        )
-
-        pb.defParam(
             "maxDPA",
             units="dpa",
             description="Maximum DPA based on pin-level max if it exists, block level max otherwise",
@@ -357,12 +294,6 @@ def defineCoreParameters():
             "maxProcessMemoryInMB",
             units="MB",
             description="Maximum memory used by an ARMI process",
-        )
-
-        pb.defParam(
-            "maxTranPCT",
-            units=units.DEGC,
-            description="Max Peak Clading Temperature of transients",
         )
 
         pb.defParam(
@@ -860,14 +791,6 @@ def defineCoreParameters():
         pb.defParam("fisFrac", units="?", description="?")
 
         pb.defParam("fisRateCore", units="?", description="?")
-
-        pb.defParam(
-            "maxcladWastage",
-            units="microns",
-            description="Maximum clad wastage in any block in the core",
-            default=0.0,
-            categories=["block-max"],
-        )
 
         pb.defParam(
             "maxdilationTotal",
