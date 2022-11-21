@@ -332,21 +332,11 @@ def defineCoreParameters():
             units=units.DEGC,
             description="Max Clading Temperature in oscillation-driven transient",
         )
-        pb.defParam(
-            "maxFueloscillation",
-            units=units.DEGC,
-            description="Max Fuel Temperature in oscillation-driven transient",
-        )
 
         pb.defParam(
             "maxCladpowerdefect",
             units=units.DEGC,
             description="Max Clading Temperature in powerdefect transient",
-        )
-        pb.defParam(
-            "maxFuelpowerdefect",
-            units=units.DEGC,
-            description="Max Fuel Temperature in powerdefect transient",
         )
 
         pb.defParam(
@@ -361,38 +351,6 @@ def defineCoreParameters():
             description="Maximum DPA based on pin-level max if it exists, block level max otherwise",
         )
 
-        pb.defParam("maxFuelulof", units=units.DEGC, description="maxFuelulof")
-
-        pb.defParam("maxFuelulohs", units=units.DEGC, description="maxFuelulohs")
-
-        pb.defParam("maxFuelutop", units=units.DEGC, description="maxFuelutop")
-
-        pb.defParam(
-            "maxFuelptop",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected Transient Overpower (PTOP) transient",
-        )
-
-        pb.defParam(
-            "maxFuellockrotor",
-            units=units.DEGC,
-            description="Max Clading Temperature in lock rotor transient",
-        )
-        pb.defParam(
-            "maxFuelplohs",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected loss of heat sink (PLOHS) transient",
-        )
-        pb.defParam(
-            "maxFuelplof",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected loss of flow (PLOF) transient",
-        )
-        pb.defParam(
-            "maxFuelplof2pump",
-            units=units.DEGC,
-            description="Max Clading Temperature in protected loss of 2 primary pumps (PLOF2pump) transient",
-        )
         pb.defParam("maxGridDpa", units="dpa", description="Grid plate max dpa")
 
         pb.defParam(
