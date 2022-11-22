@@ -271,7 +271,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 self.convReactor, self._sourceReactor, mapNumberDensities=True
             )
             # we should re-evaluate the use of mapNumberDensities=True here
-            # Based on what we've seen with block parameters like detailedDpa and mgFlux, 
+            # Based on what we've seen with block parameters like detailedDpa and mgFlux,
             # this would probably cause numerical diffusion of the number densities across blocks
 
             # We want to map the converted reactor core's library to the source reactor
@@ -809,7 +809,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         parameters.Category.pinQuantities,
     ]
 
-    def __init__(self, cs=None,calcReactionRates=True, mapBlockParamsIn=True):
+    def __init__(self, cs=None, calcReactionRates=True, mapBlockParamsIn=True):
         """
         Parameters
         ----------
