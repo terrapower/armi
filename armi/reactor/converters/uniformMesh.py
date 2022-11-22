@@ -96,6 +96,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self.reactorParamNames = []
         self.blockParamNames = []
         self.calcReactionRates = False
+        self.mapBlockParamsIn = False
 
         # These dictionaries represent back-up data from the source reactor
         # that can be recovered if the data is not being brought back from
@@ -132,7 +133,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             )
             self.convReactor = self._sourceReactor
             self.convReactor.core.updateAxialMesh()
-            self._setParamsToUpdate()
+            self._setParamsToUpdate(mapBlockParamsIn=self.mapBlockParamsIn)
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
                 homogAssem = self.makeAssemWithUniformMesh(
                     assem,
@@ -160,7 +161,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
-            self._setParamsToUpdate()
+            # I am positing that we should not map block parameters FROM the non-uniform reactor/assembly INTO the uniform assemblies
+            # This mapping seems to be causing numerical diffusion in accumulated parameters like detailedDpa, or in parameters like neutron flux in a neutron/gamma calculation
+            # So this is starting as an option for _setParamsToUpdate, but we might want to lean towards a strong default of False for the option
+            self._setParamsToUpdate(mapBlockParamsIn=self.mapBlockParamsIn)
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
@@ -215,6 +219,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         completeStartTime = timer()
 
+        # map the block parameters back to the non-uniform assembly
+        self._setParamsToUpdate(mapBlockParamsIn=True)
+
         # If we have non-uniform mesh assemblies then we need to apply a
         # different approach to undo the geometry transformations on an
         # assembly by assembly basis.
@@ -263,6 +270,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._mapStateFromReactorToOther(
                 self.convReactor, self._sourceReactor, mapNumberDensities=True
             )
+            # we should re-evaluate the use of mapNumberDensities=True here
+            # Based on what we've seen with block parameters like detailedDpa and mgFlux,
+            # this would probably cause numerical diffusion of the number densities across blocks
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
@@ -673,7 +683,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._cachedReactorCoreParamData = {}
         super().reset()
 
-    def _setParamsToUpdate(self):
+    def _setParamsToUpdate(self, mapBlockParamsIn=True):
         """Activate conversion of various paramters."""
         self.reactorParamNames = []
         self.blockParamNames = []
@@ -799,7 +809,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         parameters.Category.pinQuantities,
     ]
 
-    def __init__(self, cs=None, calcReactionRates=True):
+    def __init__(self, cs=None, calcReactionRates=True, mapBlockParamsIn=True):
         """
         Parameters
         ----------
@@ -813,8 +823,9 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         """
         UniformMeshGeometryConverter.__init__(self, cs)
         self.calcReactionRates = calcReactionRates
+        self.mapBlockparamsIn = mapBlockParamsIn
 
-    def _setParamsToUpdate(self):
+    def _setParamsToUpdate(self, mapBlockParamsIn=True):
         """Activate conversion of various neutronics-only paramters."""
         UniformMeshGeometryConverter._setParamsToUpdate(self)
 
@@ -823,9 +834,10 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
 
-        b = self._sourceReactor.core.getFirstBlock()
-        for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
-            self.blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
+        if mapBlockParamsIn:
+            b = self._sourceReactor.core.getFirstBlock()
+            for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
+                self.blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
 
     def _mapStateFromReactorToOther(
         self, sourceReactor, destReactor, mapNumberDensities=True
