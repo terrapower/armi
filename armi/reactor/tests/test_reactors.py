@@ -962,6 +962,26 @@ class HexReactorTests(ReactorTests):
         self.r.core.buildManualZones(cs)
         self.assertEqual(len(list(self.r.core.zones)), 0)
 
+    def test_updateGridPlatePitch(self):
+        """ensures proper operation for wrapper that updates grid plate pitch and that Tin gets updated"""
+        origGridPlatePitch = self.r.core.spatialGrid.pitch
+        origBlockPitch = list(
+            b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
+        )
+        newInletTemp = 400.0  # deg C
+        self.r.core.updateGridPlatePitch(self.o.cs, newInletTemp)
+
+        # effectively tests calculateNewGridPlatePitchFromTemp + spatial grid portion of setPitchUniform
+        self.assertGreater(self.r.core.spatialGrid.pitch, origGridPlatePitch)
+        # effectively tests reactors.py::Core::updateGridPlatePitch
+        self.assertEqual(self.o.cs["Tin"], newInletTemp)
+        # effectively tests block portion of setPitchUniform
+        newBlockPitch = list(
+            b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
+        )
+        for old, new in zip(origBlockPitch, newBlockPitch):
+            self.assertGreater(new, old)
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
