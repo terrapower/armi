@@ -2129,8 +2129,34 @@ class Core(composites.Composite):
 
         return converter
 
+    def checkGridPlateMaterialConsistency(self):
+        """check that the grid plates in the core are the same material"""
+        gridPlateBlocks = self.getBlocks(Flags.GRID_PLATE)
+        for ib, b in enumerate(gridPlateBlocks):
+            gridPlateComponent = b.getComponent(Flags.GRID_PLATE)
+            gridPlateMaterial = gridPlateComponent.material
+            if ib == 0:
+                refGridPlateMat = gridPlateMaterial
+                continue
+            if not isinstance(gridPlateMaterial, type(refGridPlateMat)):
+                runLog.warning(
+                    "Grid plate material for assembly is not consistent! Grid plate expansion/contraction assumes\n"
+                    f"a consistent material and will use {refGridPlateMat}. The inconsistency is:\n"
+                    f"Reference grid plate material = {refGridPlateMat}\n"
+                    f"Inconsistent grid plate material = {gridPlateMaterial} -- is in {b.parent}"
+                )
+
     def calculateNewGridPlatePitchFromTemp(self, cs, isoTemp: float) -> float:
-        """calculate a grid plate pitch using a new bulk ave core inlet temperature in C"""
+        """calculate a grid plate pitch using a new bulk ave core inlet temperature in C
+
+        Parameters
+        ----------
+        cs
+            case settings
+        isoTemp : float
+            an isothermal temperature in C to apply to cs["Tin"]
+        """
+        self.checkGridPlateMaterialConsistency()
         # retrieve the first grid plate (all the same material, so just get the first)
         gridPlateBlock = self.getFirstBlock(blockType=Flags.GRID_PLATE)
         # retrieve common grid plate component, material, temp, and pitch
@@ -2150,15 +2176,17 @@ class Core(composites.Composite):
         # compute new grid place pitch
         return currentGridPlatePitch * (1.0 + dll)
 
-    def updateGridPlatePitch(self, cs, isoTemp: float):
+    def updateGridPlatePitch(self, cs, isoTemp: float, updateInletTemp: bool = False):
         """update the grid plate pitch using a new bulk ave core inlet temperature in C
 
         Parameters
         ----------
         cs
             case settings
-        isoTemp : float, optional
+        isoTemp : float
             an isothermal temperature in C to apply to cs["Tin"]
+        updateInletTemp: bool, optional
+            optional boolean to determine if the bulk average core inlet temperature should be updated to isoTemp
 
         Notes
         -----
@@ -2168,8 +2196,9 @@ class Core(composites.Composite):
         newGridPlatePitch = self.calculateNewGridPlatePitchFromTemp(cs, isoTemp)
         # update the pitch
         self.setPitchUniform(newGridPlatePitch)
-        # update the bulk core average inlet temperature
-        cs["Tin"] = isoTemp
+        if updateInletTemp:
+            # update the bulk core average inlet temperature
+            cs["Tin"] = isoTemp
 
     def setPitchUniform(self, pitchInCm):
         """
