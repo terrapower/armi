@@ -2129,6 +2129,48 @@ class Core(composites.Composite):
 
         return converter
 
+    def calculateNewGridPlatePitchFromTemp(self, cs, isoTemp: float) -> float:
+        """calculate a grid plate pitch using a new bulk ave core inlet temperature in C"""
+        # retrieve the first grid plate (all the same material, so just get the first)
+        gridPlateBlock = self.getFirstBlock(blockType=Flags.GRID_PLATE)
+        # retrieve common grid plate component, material, temp, and pitch
+        gridPlateComponent = gridPlateBlock.getComponent(Flags.GRID_PLATE)
+        gridPlateMaterial = gridPlateComponent.material
+        currentGridPlatePitch = self.getAssemblyPitch()
+        currentGridPlateTemp = cs["Tin"]
+        runLog.info(
+            f"Using a {Flags.GRID_PLATE} material of {gridPlateMaterial} for grid plate expansion/contraction calculations "
+            f"with an initial temperature of {currentGridPlateTemp} C and new temperature of {isoTemp} C."
+        )
+        # compute expansion/contraction fraction
+        dll = gridPlateMaterial.linearExpansionFactor(
+            Tc=isoTemp,
+            T0=currentGridPlateTemp,
+        )
+        # compute new grid place pitch
+        return currentGridPlatePitch * (1.0 + dll)
+
+    def updateGridPlatePitch(self, cs, isoTemp: float):
+        """update the grid plate pitch using a new bulk ave core inlet temperature in C
+
+        Parameters
+        ----------
+        cs
+            case settings
+        isoTemp : float, optional
+            an isothermal temperature in C to apply to cs["Tin"]
+
+        Notes
+        -----
+        1) all grid plate blocks are the same material
+        2) all grid plate blocks are isothermal and equal to cs["Tin"]
+        """
+        newGridPlatePitch = self.calculateNewGridPlatePitchFromTemp(cs, isoTemp)
+        # update the pitch
+        self.setPitchUniform(newGridPlatePitch)
+        # update the bulk core average inlet temperature
+        cs["Tin"] = isoTemp
+
     def setPitchUniform(self, pitchInCm):
         """
         set the pitch in all blocks
