@@ -838,6 +838,16 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             b = self._sourceReactor.core.getFirstBlock()
             for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
                 self.blockParamNames.extend(b.p.paramDefs.inCategory(category).names)
+        else:
+            b = self._sourceReactor.core.getFirstBlock()
+            for category in self.BLOCK_PARAM_MAPPING_CATEGORIES:
+                self.blockParamNames.extend(
+                    [
+                        name
+                        for name in b.p.paramDefs.inCategory(category).names
+                        if "power" in name
+                    ]
+                )
 
     def _mapStateFromReactorToOther(
         self, sourceReactor, destReactor, mapNumberDensities=True
