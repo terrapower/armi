@@ -185,15 +185,6 @@ def getAssemblyParameterDefinitions():
             setter=_enforceNotesRestrictions,
         )
 
-        pb.defParam(
-            "fuelVent",
-            units=None,
-            description="Boolean option to turn on/off vented fuel pins in TWR design",
-            saveToDB=False,
-            default=False,
-            categories=[parameters.Category.assignInBlueprints],
-        )
-
     with pDefs.createBuilder(
         location="N/A", default=0.0, categories=["control rods"]
     ) as pb:
