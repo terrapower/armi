@@ -466,13 +466,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "distortWorth",
-            units="pcm/cm^3",
-            description="Distortion reactivity distribution",
-            default=None,
-        )
-
-        pb.defParam(
             "fuelWorth",
             units="dk/kk'-kg",
             description="Reactivity worth of fuel material per unit mass",
@@ -654,34 +647,8 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "virdentGr",
-            units="pcm/%/cm^3",
-            description="Radial surface leakage reactivity",
-        )
-
-        pb.defParam(
-            "virdentGz",
-            units="pcm/%/cm^3",
-            description="Axial surface leakage reactivity",
-        )
-
-        pb.defParam(
-            "virdentLr",
-            units="pcm/%/cm^3",
-            description="Radial volume leakage reactivity",
-        )
-
-        pb.defParam(
-            "virdentLz",
-            units="pcm/%/cm^3",
-            description="Axial volume leakage reactivity",
-        )
-
-        pb.defParam(
             "assemPeakStd", units="pcm/%/cm^3", description="Spectral reactivity"
         )
-
-        pb.defParam("virdentS", units="pcm/%/cm^3", description="Spectral reactivity")
 
     with pDefs.createBuilder(
         default=0.0,
@@ -870,13 +837,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam(
-            "VirDenTerr",
-            units="%",
-            description="VirDenT error",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "assemNum",
             units="None",
             description="Index that refers, nominally, to the assemNum parameter of "
@@ -1004,8 +964,6 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("displacementMAG", units="?", description="?")
-
         pb.defParam(
             "heightBOL",
             units="cm",
@@ -1092,13 +1050,5 @@ def getBlockParameterDefinitions():
             description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
             location=ParamLocation.AVERAGE,
         )
-
-    with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
-
-        pb.defParam("distortionReactivity", units="?", description="?")
-
-        pb.defParam("harmonic", units="?", description="?")
-
-        pb.defParam("harmonicAdj", units="?", description="?")
 
     return pDefs
