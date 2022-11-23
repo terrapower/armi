@@ -17,7 +17,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. TBD
+#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`)
 
 
 ARMI v0.2.5
