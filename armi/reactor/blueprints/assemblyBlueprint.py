@@ -175,6 +175,9 @@ class AssemblyBlueprint(yamlize.Object):
         aziMeshPoints = self.azimuthalMeshPoints or 1
         a.p.AziMesh = aziMeshPoints
 
+        # TODO: How can this be done better?
+        a.p.THcoolantInletT = cs["Tin"]
+
         # loop a second time because we needed all the blocks before choosing the
         # assembly class.
         for axialIndex, block in enumerate(blocks):

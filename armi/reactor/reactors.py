@@ -2132,12 +2132,12 @@ class Core(composites.Composite):
     def checkGridPlateMaterialConsistency(self):
         """check that the grid plates in the core are the same material"""
         gridPlateBlocks = self.getBlocks(Flags.GRID_PLATE)
-        for ib, b in enumerate(gridPlateBlocks):
+        refGridPlateMat = (
+            self.getFirstBlock(Flags.GRID_PLATE).getComponent(Flags.GRID_PLATE).material
+        )
+        for b in gridPlateBlocks:
             gridPlateComponent = b.getComponent(Flags.GRID_PLATE)
             gridPlateMaterial = gridPlateComponent.material
-            if ib == 0:
-                refGridPlateMat = gridPlateMaterial
-                continue
             if not isinstance(gridPlateMaterial, type(refGridPlateMat)):
                 runLog.warning(
                     "Grid plate material for assembly is not consistent! Grid plate expansion/contraction assumes\n"
@@ -2146,63 +2146,66 @@ class Core(composites.Composite):
                     f"Inconsistent grid plate material = {gridPlateMaterial} -- is in {b.parent}"
                 )
 
-    def calculateNewGridPlatePitchFromTemp(self, cs, isoTemp: float) -> float:
+    def calculateNewGridPlatePitchFromTemp(self, inletTemp: float) -> float:
         """calculate a grid plate pitch using a new bulk ave core inlet temperature in C
 
         Parameters
         ----------
-        cs
-            case settings
-        isoTemp : float
+        inletTemp : float
             an isothermal temperature in C to apply to cs["Tin"]
         """
         self.checkGridPlateMaterialConsistency()
-        # retrieve the first grid plate (all the same material, so just get the first)
-        gridPlateBlock = self.getFirstBlock(blockType=Flags.GRID_PLATE)
-        # retrieve common grid plate component, material, temp, and pitch
-        gridPlateComponent = gridPlateBlock.getComponent(Flags.GRID_PLATE)
-        gridPlateMaterial = gridPlateComponent.material
+        # retrieve the first grid plate's material (all grid plates are the same material, so just get the first)
+        gridPlateMaterial = (
+            self.getFirstBlock(Flags.GRID_PLATE).getComponent(Flags.GRID_PLATE).material
+        )
         currentGridPlatePitch = self.getAssemblyPitch()
-        currentGridPlateTemp = cs["Tin"]
+        currentGridPlateTemp = self.refAssem.p.THcoolantInletT
         runLog.info(
             f"Using a {Flags.GRID_PLATE} material of {gridPlateMaterial} for grid plate expansion/contraction calculations "
-            f"with an initial temperature of {currentGridPlateTemp} C and new temperature of {isoTemp} C."
+            f"with an initial temperature of {currentGridPlateTemp} C and new temperature of {inletTemp} C."
         )
         # compute expansion/contraction fraction
         dll = gridPlateMaterial.linearExpansionFactor(
-            Tc=isoTemp,
+            Tc=inletTemp,
             T0=currentGridPlateTemp,
         )
         # compute new grid place pitch
         return currentGridPlatePitch * (1.0 + dll)
 
-    def updateGridPlatePitch(self, cs, isoTemp: float, updateInletTemp: bool = False):
+    def updateGridPlatePitch(self, inletTemp: float, updateInletTemp: bool = False):
         """update the grid plate pitch using a new bulk ave core inlet temperature in C
 
         Parameters
         ----------
-        cs
-            case settings
-        isoTemp : float
-            an isothermal temperature in C to apply to cs["Tin"]
+        inletTemp : float
+            an isothermal core bulk average inlet temperature in C
         updateInletTemp: bool, optional
-            optional boolean to determine if the bulk average core inlet temperature should be updated to isoTemp
+            optional boolean to determine if the bulk average core inlet temperature should be updated to inletTemp
 
         Notes
         -----
         1) all grid plate blocks are the same material
         2) all grid plate blocks are isothermal and equal to cs["Tin"]
         """
-        newGridPlatePitch = self.calculateNewGridPlatePitchFromTemp(cs, isoTemp)
+        newGridPlatePitch = self.calculateNewGridPlatePitchFromTemp(inletTemp)
         # update the pitch
         self.setPitchUniform(newGridPlatePitch)
         if updateInletTemp:
-            # update the bulk core average inlet temperature
-            cs["Tin"] = isoTemp
+            self.updateInletTemp(inletTemp)
+
+    def updateInletTemp(self, inletTemp):
+        """update core bulk average inlet temp for all assemblies"""
+        for a in self.getAssemblies():
+            a.p.THcoolantInletT = inletTemp
 
     def setPitchUniform(self, pitchInCm):
-        """
-        set the pitch in all blocks
+        """update block pitch and reactor grid pitch
+
+        Parameters
+        ----------
+        pitchInCm: float
+            the updated/new pitch in cm
         """
         for b in self.getBlocks():
             b.setPitch(pitchInCm)

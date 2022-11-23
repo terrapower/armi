@@ -969,12 +969,12 @@ class HexReactorTests(ReactorTests):
             b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
         )
         newInletTemp = 400.0  # deg C
-        self.r.core.updateGridPlatePitch(self.o.cs, newInletTemp, updateInletTemp=True)
+        self.r.core.updateGridPlatePitch(newInletTemp, updateInletTemp=True)
 
         # effectively tests calculateNewGridPlatePitchFromTemp + spatial grid portion of setPitchUniform
         self.assertGreater(self.r.core.spatialGrid.pitch, origGridPlatePitch)
         # effectively tests reactors.py::Core::updateGridPlatePitch
-        self.assertEqual(self.o.cs["Tin"], newInletTemp)
+        self.assertEqual(self.r.core.refAssem.p.THcoolantInletT, newInletTemp)
         # effectively tests block portion of setPitchUniform
         newBlockPitch = list(
             b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
