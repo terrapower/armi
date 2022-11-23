@@ -973,7 +973,7 @@ class HexReactorTests(ReactorTests):
 
         # effectively tests calculateNewGridPlatePitchFromTemp + spatial grid portion of setPitchUniform
         self.assertGreater(self.r.core.spatialGrid.pitch, origGridPlatePitch)
-        # effectively tests reactors.py::Core::updateGridPlatePitch
+        # effectively tests reactors.py::Core::updateGridPlatePitch + updateInletTemp
         self.assertEqual(self.r.core.refAssem.p.THcoolantInletT, newInletTemp)
         # effectively tests block portion of setPitchUniform
         newBlockPitch = list(
