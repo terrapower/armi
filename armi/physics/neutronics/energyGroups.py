@@ -779,7 +779,7 @@ GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
 Taken from Table 5.1 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
-GROUP_STRUCTURE["ANL21PHOTON"] = [
+GROUP_STRUCTURE["ANL21G"] = [
     2.0e7,
     1.0e7,
     8.0e6,
@@ -807,7 +807,7 @@ GROUP_STRUCTURE["ANL21PHOTON"] = [
 Taken from Table 5.2 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
-GROUP_STRUCTURE["ANL94PHOTON"] = [
+GROUP_STRUCTURE["ANL94G"] = [
     2.000e07,
     1.400e07,
     1.200e07,
