@@ -136,10 +136,10 @@ def loadTestReactor(
 
     Parameters
     ----------
-    inputFilePath : str
+    inputFilePath : str, default=TEST_ROOT
         Path to the directory of the input file.
 
-    customSettings : dict with str keys and values of any type
+    customSettings : dict with str keys and values of any type, default=None
         For each key in customSettings, the cs which is loaded from the
         armiRun.yaml will be overwritten to the value given in customSettings
         for that key.

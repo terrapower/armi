@@ -367,7 +367,7 @@ class Case:
                 o.operate()
 
         # if in the settings, report the coverage and profiling
-        Case._endCoverage(cov)
+        Case._endCoverage(self.cs["coverageConfigFile"], cov)
         Case._endProfiling(profiler)
 
     def _startCoverage(self):
@@ -382,7 +382,10 @@ class Case:
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
-                config_file=Case._getCoverageRcFile(makeCopy=True), debug=["dataio"]
+                config_file=Case._getCoverageRcFile(
+                    userCovFile=self.cs["coverageConfigFile"], makeCopy=True
+                ),
+                debug=["dataio"],
             )
             if context.MPI_SIZE > 1:
                 # interestingly, you cannot set the parallel flag in the constructor
@@ -395,12 +398,15 @@ class Case:
         return cov
 
     @staticmethod
-    def _endCoverage(cov=None):
+    def _endCoverage(userCovFile, cov=None):
         """Helper to the Case.run(): stop and report code coverage,
         if the CaseSettings file says to.
 
         Parameters
         ----------
+        userCovFile : str
+            File path to user-supplied coverage configuration file (default setting is
+            empty string)
         cov: coverage.Coverage (optional)
             Hopefully, a valid and non-empty set of coverage data.
         """
@@ -417,7 +423,7 @@ class Case:
             # combine all the parallel coverage data files into one and make
             # the XML and HTML reports for the whole run.
             combinedCoverage = coverage.Coverage(
-                config_file=Case._getCoverageRcFile(), debug=["dataio"]
+                config_file=Case._getCoverageRcFile(userCovFile), debug=["dataio"]
             )
             combinedCoverage.config.parallel = True
             # combine does delete the files it merges
@@ -427,11 +433,15 @@ class Case:
             combinedCoverage.xml_report()
 
     @staticmethod
-    def _getCoverageRcFile(makeCopy=False):
-        """Helper to provide the coverage configuration file according to the OS.
+    def _getCoverageRcFile(userCovFile, makeCopy=False):
+        """Helper to provide the coverage configuration file according to the OS. A
+        user-supplied file will take precedence, and is not checked for a dot-filename.
 
         Parameters
         ----------
+        userCovFile : str
+            File path to user-supplied coverage configuration file (default setting is
+            empty string)
         makeCopy : bool (optional)
             Whether or not to copy the coverage config file to an alternate file path
 
@@ -440,6 +450,10 @@ class Case:
         covFile : str
             path of coveragerc file
         """
+        # User-defined file takes precedence.
+        if userCovFile:
+            return os.path.abspath(userCovFile)
+
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
         covFile = os.path.join(covRcDir, ".coveragerc")
         if platform.system() == "Windows":
@@ -601,7 +615,13 @@ class Case:
 
         return command
 
-    def clone(self, additionalFiles=None, title=None, modifiedSettings=None):
+    def clone(
+        self,
+        additionalFiles=None,
+        title=None,
+        modifiedSettings=None,
+        writeStyle="short",
+    ):
         """
         Clone existing ARMI inputs to current directory with optional settings modifications.
 
@@ -616,6 +636,9 @@ class Case:
             title of new case
         modifiedSettings : dict (optional)
             settings to set/modify before creating the cloned case
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Raises
         ------
@@ -644,7 +667,7 @@ class Case:
         clone.cs = newCs
 
         runLog.important("writing settings file {}".format(clone.cs.path))
-        clone.cs.writeToYamlFile(clone.cs.path)
+        clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
         fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
@@ -732,7 +755,9 @@ class Case:
 
         return code
 
-    def writeInputs(self, sourceDir: Optional[str] = None):
+    def writeInputs(
+        self, sourceDir: Optional[str] = None, writeStyle: Optional[str] = "short"
+    ):
         """
         Write the inputs to disk.
 
@@ -742,9 +767,12 @@ class Case:
 
         Parameters
         ----------
-        sourceDir : str, optional
+        sourceDir : str (optional)
             The path to copy inputs from (if different from the cs.path). Needed
             in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Notes
         -----
@@ -789,7 +817,13 @@ class Case:
                 newSettings[settingName] = value
 
             self.cs = self.cs.modified(newSettings=newSettings)
-            self.cs.writeToYamlFile(self.title + ".yaml")
+            if sourceDir:
+                fromPath = os.path.join(sourceDir, self.title + ".yaml")
+            else:
+                fromPath = self.cs.path
+            self.cs.writeToYamlFile(
+                self.title + ".yaml", style=writeStyle, fromFile=fromPath
+            )
 
 
 def _copyInputsHelper(
@@ -807,13 +841,10 @@ def _copyInputsHelper(
     ----------
     fileDescription : str
         A file description for the copyOrWarn method
-
     sourcePath : str
         The absolute file path of the file to copy
-
     destPath : str
         The target directory to copy input files to
-
     origFile : str
         File path as defined in the original settings file
 
@@ -857,11 +888,9 @@ def copyInterfaceInputs(
     ----------
     cs : CaseSettings
         The source case settings to find input files
-
     destination : str
         The target directory to copy input files to
-
-    sourceDir : str, optional
+    sourceDir : str (optional)
         The directory from which to copy files. Defaults to cs.inputDirectory
 
     Returns
