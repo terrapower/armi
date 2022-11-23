@@ -869,6 +869,20 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
         self.block.remove(self.fuelComponent)
 
+    def test_getMicroSuffix(self):
+        self.assertEqual(self.block.getMicroSuffix(), "AA")
+
+        self.block.p.xsType = "Z"
+        self.assertEqual(self.block.getMicroSuffix(), "ZA")
+
+        self.block.p.xsType = "RS"
+        self.assertEqual(self.block.getMicroSuffix(), "RS")
+
+        self.block.p.buGroup = "X"
+        self.block.p.xsType = "AB"
+        with self.assertRaises(ValueError):
+            self.block.getMicroSuffix()
+
     def test_getUraniumMassEnrich(self):
         self.block.adjustUEnrich(0.25)
 

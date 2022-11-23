@@ -178,18 +178,19 @@ def createTestXSLibraryFiles(cachePath):
 class TempFileMixin:
     """really a test case"""
 
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
     @property
     def testFileName(self):
         return os.path.join(
             THIS_DIR,
             "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
         )
-
-    def tearDown(self):
-        try:
-            os.remove(self.testFileName)
-        except OSError:
-            pass
 
 
 class TestXSLibrary(unittest.TestCase, TempFileMixin):
@@ -263,7 +264,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                     log.getStdoutValue(),
                 )
         finally:
-            os.remove(dummyFileName)
+            pass
 
     def _xsLibraryAttributeHelper(
         self,

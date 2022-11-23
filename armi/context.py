@@ -285,14 +285,6 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             pass
 
 
-def waitAll() -> None:
-    """
-    If there are parallel processes running, wait for all to catch up to the checkpoint.
-    """
-    if MPI_SIZE > 1 and MPI_DISTRIBUTABLE:
-        MPI_COMM.barrier()
-
-
 def disconnectAllHdfDBs() -> None:
     """
     Forcibly disconnect all instances of HdfDB objects

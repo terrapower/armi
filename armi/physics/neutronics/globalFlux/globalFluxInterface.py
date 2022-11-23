@@ -308,6 +308,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadElevation = None
         self.loadPadLength = None
         self.cs = None
+        self.savePhysicsFilesList = None
 
         self._geomType: geometry.GeomType
         self.symmetry: str
@@ -345,10 +346,17 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
         self.cs = cs
+        self.savePhysicsFilesList = cs["savePhysicsFiles"]
 
     def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
+
+        cycleNodeStamp = f"{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
+        if self.savePhysicsFilesList is not None:
+            self.savePhysicsFiles = cycleNodeStamp in self.savePhysicsFilesList
+        else:
+            self.savePhysicsFiles = False
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):

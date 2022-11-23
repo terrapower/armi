@@ -131,11 +131,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
+            self.convReactor.core.updateAxialMesh()
             self._setParamsToUpdate()
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
                 homogAssem = self.makeAssemWithUniformMesh(
                     assem,
-                    self.convReactor.core.refAssem.getAxialMesh(),
+                    self.convReactor.core.p.axialMesh[1:],
                     self.blockParamNames,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
@@ -197,6 +198,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
+        newReactor.o = (
+            sourceReactor.o
+        )  # This is needed later for geometry transformation
 
         # check if the sourceReactor has been modified from the blueprints
         if sourceReactor.core.isFullCore and not newReactor.core.isFullCore:
@@ -792,6 +796,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     BLOCK_PARAM_MAPPING_CATEGORIES = [
         parameters.Category.detailedAxialExpansion,
         parameters.Category.multiGroupQuantities,
+        parameters.Category.pinQuantities,
     ]
 
     def __init__(self, cs=None, calcReactionRates=True):

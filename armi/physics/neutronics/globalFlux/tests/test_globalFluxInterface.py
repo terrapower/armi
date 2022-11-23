@@ -29,7 +29,13 @@ from armi.tests import ISOAA_PATH
 
 
 # pylint: disable=abstract-method
-class MockParams:
+class MockReactorParams:
+    def __init__(self):
+        self.cycle = 1
+        self.timeNode = 2
+
+
+class MockCoreParams:
     pass
 
 
@@ -38,13 +44,14 @@ class MockCore:
         # just pick a random geomType
         self.geomType = geometry.GeomType.CARTESIAN
         self.symmetry = "full"
-        self.p = MockParams()
+        self.p = MockCoreParams()
 
 
 class MockReactor:
     def __init__(self):
         self.core = MockCore()
         self.o = None
+        self.p = MockReactorParams()
 
 
 class MockGlobalFluxInterface(globalFluxInterface.GlobalFluxInterface):
@@ -96,6 +103,21 @@ class TestGlobalFluxOptions(unittest.TestCase):
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromReactor(reactor)
         self.assertEqual(opts.geomType, geometry.GeomType.CARTESIAN)
+        self.assertFalse(opts.savePhysicsFiles)
+
+    def test_savePhysicsFiles(self):
+        reactor = MockReactor()
+        opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
+
+        # savePhysicsFilesList matches MockReactor parameters
+        opts.savePhysicsFilesList = ["001002"]
+        opts.fromReactor(reactor)
+        self.assertTrue(opts.savePhysicsFiles)
+
+        # savePhysicsFilesList does not match MockReactor parameters
+        opts.savePhysicsFilesList = ["001000"]
+        opts.fromReactor(reactor)
+        self.assertFalse(opts.savePhysicsFiles)
 
 
 class TestGlobalFluxInterface(unittest.TestCase):

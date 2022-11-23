@@ -25,7 +25,7 @@ import numpy as np
 
 from armi import settings
 from armi.nuclearDataIO.cccc import nhflux
-
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -181,13 +181,13 @@ class TestNhflux(unittest.TestCase):
 
     def test_write(self):
         """Verify binary equivalence of written binary file."""
-        nhflux.NhfluxStream.writeBinary(self.nhf, "NHFLUX2")
-        with open(SIMPLE_HEXZ_NHFLUX, "rb") as f1, open("NHFLUX2", "rb") as f2:
-            expectedData = f1.read()
-            actualData = f2.read()
-        for expected, actual in zip(expectedData, actualData):
-            self.assertEqual(expected, actual)
-        os.remove("NHFLUX2")
+        with TemporaryDirectoryChanger():
+            nhflux.NhfluxStream.writeBinary(self.nhf, "NHFLUX2")
+            with open(SIMPLE_HEXZ_NHFLUX, "rb") as f1, open("NHFLUX2", "rb") as f2:
+                expectedData = f1.read()
+                actualData = f2.read()
+            for expected, actual in zip(expectedData, actualData):
+                self.assertEqual(expected, actual)
 
 
 class TestNhfluxVariant(unittest.TestCase):
@@ -212,7 +212,6 @@ class TestNhfluxVariant(unittest.TestCase):
         self.assertEqual(self.nhf.metadata["nMoms"], 0)
 
     def test_fluxMoments(self):
-        """"""
         # node 1 (ring=1, position=1), axial=3, group=2
         i = 0
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
@@ -240,16 +239,16 @@ class TestNhfluxVariant(unittest.TestCase):
         )
 
     def test_write(self):
-        """
-        Verify binary equivalence of written binary file.
-        """
-        nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
-        with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open("NHFLUX2", "rb") as f2:
-            expectedData = f1.read()
-            actualData = f2.read()
-        for expected, actual in zip(expectedData, actualData):
-            self.assertEqual(expected, actual)
-        os.remove("NHFLUX2")
+        """Verify binary equivalence of written binary file"""
+        with TemporaryDirectoryChanger():
+            nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
+            with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(
+                "NHFLUX2", "rb"
+            ) as f2:
+                expectedData = f1.read()
+                actualData = f2.read()
+            for expected, actual in zip(expectedData, actualData):
+                self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

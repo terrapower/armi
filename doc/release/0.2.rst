@@ -2,21 +2,40 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.5
+ARMI v0.2.6
 ===========
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-
-#. TBD
-#. Cleanup of stale ``coveragerc`` file (`PR#923 <https://github.com/terrapower/armi/pull/923>`_)
-#. Added `medium` writer style option to ``SettingsWriter``. Added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_), and to clone CLI (`PR#932 <https://github.com/terrapower/armi/pull/932>`_).
-#. Update the EntryPoint class to provide user feedback on required positional arguments (`PR#922 <https://github.com/terrapower/armi/pull/922>`_)
+#. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
+#. savePhysicsFiles setting to copy physics kernel input and output to directories organized by cycle and time step number (e.g., c2n1) to retain files from a simulation and avoid overwriting them. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
+#. Add pinQuantities parameter category for blockParams that have spatial distribution within a block.
+#. Use r.core.p.axialMesh instead of r.core.refAssem.getAxialMesh() for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
+#. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
+#. Add ability to load from a db using negative node index
 
 Bug fixes
 ---------
+#. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
+
+
+ARMI v0.2.5
+===========
+Release Date: 2022-10-24
+
+What's new in ARMI
+------------------
+#. Cleanup of stale ``coveragerc`` file (`PR#923 <https://github.com/terrapower/armi/pull/923>`_)
+#. Added `medium` writer style option to ``SettingsWriter``. Added it as arg to modify CLI (`PR#924 <https://github.com/terrapower/armi/pull/924>`_), and to clone CLI (`PR#932 <https://github.com/terrapower/armi/pull/932>`_).
+#. Update the EntryPoint class to provide user feedback on required positional arguments (`PR#922 <https://github.com/terrapower/armi/pull/922>`_)
+#. Overhaul ``reactor.zones`` tooling and remove application-specific zoning logic (`PR#943 <https://github.com/terrapower/armi/pull/943>`_)
+
+Bug fixes
+---------
+#. Adjusted density3 in armi/materials/b4C.py to include the theoretical density. (`PR#942 <https://github.com/terrapower/armi/pull/942>`_)
 #. Fixed bug in ``fastFlux`` block parameter mapping in the ``UniformMeshConverter`` by applying it to the ``detailedAxialExpansion`` category.
+#. Fixed issue where shuffles might duplicate in restart runs.
 
 
 ARMI v0.2.4
