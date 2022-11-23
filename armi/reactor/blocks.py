@@ -29,8 +29,10 @@ import numpy
 
 from armi import runLog
 from armi import settings
+from armi.materials import Material
 from armi.bookkeeping import report
 from armi.nucDirectory import nucDir
+from armi.reactor.components import basicShapes
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters

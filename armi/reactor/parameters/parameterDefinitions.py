@@ -60,12 +60,14 @@ NEVER = 32
 class Category:
     """A "namespace" for storing parameter categories."""
 
+    cumulative = "cumulative"
     assignInBlueprints = "assign in blueprints"
     retainOnReplacement = "retain on replacement"
     pinQuantities = "pinQuantities"
     fluxQuantities = "fluxQuantities"
     multiGroupQuantities = "multi-group quantities"
     neutronics = "neutronics"
+    gamma = "gamma"
 
     # This is used to tell the UniformMesh converter to map these parameters back and
     # forth between the source and destination meshes.
