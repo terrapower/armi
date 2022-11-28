@@ -285,7 +285,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.real = True
         self.adjoint = False
         self.neutrons = True
-        self.photons = None
+        self.photons = False
         self.boundaryConditions = {}
         self.epsFissionSourceAvg = None
         self.epsFissionSourcePoint = None

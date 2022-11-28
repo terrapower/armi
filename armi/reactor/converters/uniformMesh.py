@@ -74,7 +74,7 @@ from armi.reactor.reactors import Reactor
 
 
 def converterFactory(globalFluxOptions):
-    if globalFluxOptions.gamma:
+    if globalFluxOptions.photons:
         return GammaUniformMeshConverter
     else:
         return NeutronicsUniformMeshConverter
