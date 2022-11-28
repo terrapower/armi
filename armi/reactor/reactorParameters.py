@@ -217,12 +217,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "directPertKeff",
-            units=None,
-            description="K-eff is computed for the perturbed case with a direct calculation",
-        )
-
-        pb.defParam(
             "doublingTime",
             units="EFPY",
             description="The time it takes to produce enough spent fuel to fuel a daughter reactor",
@@ -232,12 +226,6 @@ def defineCoreParameters():
 
         pb.defParam(
             "heavyMetalMass", units="g", description="Heavy Metal mass of the reactor"
-        )
-
-        pb.defParam(
-            "innerMatrixIndex",
-            units=None,
-            description="The item index of the inner matrix in an optimization case",
         )
 
         pb.defParam(
@@ -505,16 +493,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "cladDensity", units="cents/K", description="Clad temperature coefficient"
-        )
-
-        pb.defParam(
-            "structureDensity",
-            units="cents/K",
-            description="Structure temperature coefficient",
-        )
-
-        pb.defParam(
             "Voideddoppler", units="cents/K", description="Voided Doppler coefficient"
         )
 
@@ -769,8 +747,6 @@ def defineCoreParameters():
             description="Percent of axial growth of fuel blocks",
             default=0.0,
         )
-
-        pb.defParam("corePow", units="?", description="?")
 
         pb.defParam("coupledIteration", units="?", description="?", default=0)
 

@@ -408,12 +408,6 @@ def _getNeutronicsBlockParams():
     ) as pb:
         # Neutronics reaction rate params that are not re-derived in mesh conversion
         pb.defParam(
-            "rateBalance",
-            units="1/cm^3/s",
-            description="Numerical balance between particle production and destruction (should be small)",
-        )
-
-        pb.defParam(
             "rateExtSrc",
             units="1/cm^3/s",
             description="Rate of production of neutrons from an external source.",
@@ -634,20 +628,6 @@ def _getNeutronicsBlockParams():
         pb.defParam("powerNeutron", units="W", description="Total neutron power")
 
     with pDefs.createBuilder(default=0.0) as pb:
-        pb.defParam(
-            "detailedDpaNewCycle",
-            units="dpa",
-            description="The total DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "detailedDpaPeakNewCycle",
-            units="dpa",
-            description="The total peak DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
         pb.defParam(
             "detailedDpaThisCycle",
             units="dpa",
