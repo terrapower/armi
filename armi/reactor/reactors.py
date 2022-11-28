@@ -2186,16 +2186,36 @@ class Core(composites.Composite):
         Notes
         -----
         1) all grid plate blocks are the same material
-        2) all grid plate blocks are isothermal and equal to cs["Tin"]
+        2) all grid plate blocks are isothermal and equal to inletTemp
+
+        See Also
+        --------
+        updateInletTemp
         """
         newGridPlatePitch = self.calculateNewGridPlatePitchFromTemp(inletTemp)
         # update the pitch
         self.setPitchUniform(newGridPlatePitch)
         if updateInletTemp:
-            self.updateInletTemp(inletTemp)
+            self.updateInletTemp(inletTemp, updatePitch=False)  # pitch already updated
 
-    def updateInletTemp(self, inletTemp):
-        """update core bulk average inlet temp for all assemblies"""
+    def updateInletTemp(self, inletTemp: float, updatePitch: bool = False):
+        """update core bulk average inlet temp for all assemblies
+
+        Parameters
+        ----------
+        inletTemp: float
+            bulk average core inlet temperature
+        updatePitch: bool, optional
+            optional boolean to determine if grid plate pitch should be
+            updated to match the new inlet temperature
+
+        See Also
+        --------
+        updateGridPlatePitch
+        """
+        if updatePitch:
+            newGridPlatePitch = self.calculateNewGridPlatePitchFromTemp(inletTemp)
+            self.setPitchUniform(newGridPlatePitch)
         for a in self.getAssemblies():
             a.p.THcoolantInletT = inletTemp
 

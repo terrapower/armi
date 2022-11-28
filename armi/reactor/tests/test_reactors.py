@@ -963,14 +963,26 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(len(list(self.r.core.zones)), 0)
 
     def test_updateGridPlatePitch(self):
-        """ensures proper operation for wrapper that updates grid plate pitch and that Tin gets updated"""
+        """ensures that reactors.py::Core::updateGridPlatePitch updates grid plate pitch and that Tin"""
         origGridPlatePitch = self.r.core.spatialGrid.pitch
         origBlockPitch = list(
             b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
         )
         newInletTemp = 400.0  # deg C
         self.r.core.updateGridPlatePitch(newInletTemp, updateInletTemp=True)
+        self.checkGridPlatePitchAndTemp(origGridPlatePitch, origBlockPitch, newInletTemp)
 
+    def test_updateInletTemp(self):
+        """ensures that reactors.py::Core::updateInletTemp updates grid plate pitch and that Tin"""
+        origGridPlatePitch = self.r.core.spatialGrid.pitch
+        origBlockPitch = list(
+            b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
+        )
+        newInletTemp = 400.0  # deg C
+        self.r.core.updateInletTemp(newInletTemp, updatePitch=True)
+        self.checkGridPlatePitchAndTemp(origGridPlatePitch, origBlockPitch, newInletTemp)
+
+    def checkGridPlatePitchAndTemp(self, origGridPlatePitch, origBlockPitch, newInletTemp):
         # effectively tests calculateNewGridPlatePitchFromTemp + spatial grid portion of setPitchUniform
         self.assertGreater(self.r.core.spatialGrid.pitch, origGridPlatePitch)
         # effectively tests reactors.py::Core::updateGridPlatePitch + updateInletTemp
