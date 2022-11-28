@@ -130,7 +130,10 @@ def _getNeutronicsBlockParams():
             description="multigroup gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
-            categories=[parameters.Category.multiGroupQuantities, parameters.Category.gamma],
+            categories=[
+                parameters.Category.multiGroupQuantities,
+                parameters.Category.gamma,
+            ],
             default=None,
         )
 
@@ -561,7 +564,12 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("ppdens", units="W/cm^3", description="Peak power density")
 
-        pb.defParam("ppdensGamma", units="W/cm^3", description="Peak gamma density", categories=[parameters.Category.gamma])
+        pb.defParam(
+            "ppdensGamma",
+            units="W/cm^3",
+            description="Peak gamma density",
+            categories=[parameters.Category.gamma],
+        )
 
     # rx rate params that are derived during mesh conversion.
     # We'd like all things that can be derived from flux and XS to be
@@ -615,9 +623,19 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("powerDecay", units="W", description="Total decay power")
 
-        pb.defParam("powerGamma", units="W", description="Total gamma power", categories=[parameters.Category.gamma])
+        pb.defParam(
+            "powerGamma",
+            units="W",
+            description="Total gamma power",
+            categories=[parameters.Category.gamma],
+        )
 
-        pb.defParam("powerNeutron", units="W", description="Total neutron power", categories=[parameters.Category.gamma])
+        pb.defParam(
+            "powerNeutron",
+            units="W",
+            description="Total neutron power",
+            categories=[parameters.Category.gamma],
+        )
 
     with pDefs.createBuilder(default=0.0) as pb:
         pb.defParam(
