@@ -48,7 +48,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.converter._computeAverageAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
-            sourceAssem, self.converter._uniformMesh
+            sourceAssem, self.converter._uniformMesh, [], mapNumberDensities=True
         )
 
         prevB = None
@@ -89,7 +89,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.r.core.updateAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
-            sourceAssem, self.r.core.p.axialMesh[1:]
+            sourceAssem, self.r.core.p.axialMesh[1:], []
         )
 
         self.assertNotEqual(len(newAssem), len(sourceAssem))
@@ -114,6 +114,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             sourceAssem,
             sourceAssem.getAxialMesh(),
             blockParamNames=["flux", "power", "mgFlux"],
+            mapNumberDensities=True,
         )
         for b, origB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 1.0)
